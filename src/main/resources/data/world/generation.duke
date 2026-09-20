@@ -72,6 +72,14 @@ ProceduralMap
     ; rooms sit close together he may be a storey lower.
     EntranceStorey = 0
     BossStorey = 2
+
+    ; How the floor rises and falls over its storeys, in steps of a sixteenth of a
+    ; cell: SAGE's height map, a whole number at every corner. Up to 15 and
+    ; never steeper than a body can walk, since a cell is a cliff from 16 steps
+    ; between its corners. 0 lays every floor flat on its storey.
+    Hills = 6
+    ; About how many cells across a hill is.
+    HillSize = 4
   End
 
   ; ---- which depth wears which ----
