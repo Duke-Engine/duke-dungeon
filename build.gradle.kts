@@ -3,13 +3,36 @@ plugins {
     application
 }
 
+group = "uz.duke-engine"
+version = "0.2.0"
+
+repositories {
+    mavenCentral()
+}
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(25))
+    }
+}
+
+tasks.withType<Test>().configureEach {
+    useJUnitPlatform()
+}
+
 dependencies {
-    // The 3D client, for an angled camera over a world of solid shapes. No models
-    // are bound, so every creature renders as a coloured primitive — which is the
-    // point at this stage: the shapes are the game, not a stand-in for art.
-    implementation(project(":client3d"))
+    // The engine, at one version. See settings.gradle.kts: while `includeBuild` is there these come
+    // from the checkout beside this one rather than from a repository.
+    implementation(platform("uz.duke-engine:bom:0.2.0"))
+
+    // The 3D client, for an angled camera over a world of solid shapes.
+    implementation("uz.duke-engine:client3d")
     // The starter set: the effects every game may use, and the art they are drawn with.
-    implementation(project(":kit"))
+    implementation("uz.duke-engine:kit")
+
+    testImplementation(platform("org.junit:junit-bom:5.11.3"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 application {
@@ -17,9 +40,9 @@ application {
 }
 
 // ---------------------------------------------------------------------------
-// Cuts the icon sheets in dungeon/art/icons into one file per icon:
+// Cuts the icon sheets in art/icons into one file per icon:
 //
-//   ./gradlew :dungeon:cutIcons
+//   ./gradlew cutIcons
 //
 // Here rather than done by hand for the reason the example stage is: twenty-two
 // crops nobody can repeat are twenty-two crops nobody dares change. The sheets
@@ -27,16 +50,16 @@ application {
 // the repository without travelling inside the game.
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-// Turns the .fbx animations in dungeon/art/anim into .glb libraries the game can
+// Turns the .fbx animations in art/anim into .glb libraries the game can
 // read:
 //
-//   ./gradlew :dungeon:convertAnimations
-//   ./gradlew :dungeon:convertAnimations -PblenderPath="D:/apps/blender.exe"
+//   ./gradlew convertAnimations
+//   ./gradlew convertAnimations -PblenderPath="D:/apps/blender.exe"
 //
 // jME reads glTF and nothing else, and nothing else in this repository reads
 // FBX — so the conversion is Blender's, run headless. Kept as a task for the
 // reason the icon cut is: a step nobody can repeat is a step nobody dares
-// change. See dungeon/art/anim/fbx_to_glb.py for what it does on the way.
+// change. See art/anim/fbx_to_glb.py for what it does on the way.
 //
 // Blender is not a build dependency. This task is run by hand when an animation
 // arrives, and the build does not depend on it: what ships is the .glb it wrote,
@@ -69,16 +92,16 @@ tasks.register("convertAnimations") {
             ?: throw GradleException(
                 "Blender was not found on the PATH or where it is usually installed. " +
                     "Install it, or point at it: " +
-                    "./gradlew :dungeon:convertAnimations -PblenderPath=\"...\""
+                    "./gradlew convertAnimations -PblenderPath=\"...\""
             )
         animations.forEach { (from, into, clip) ->
             providers.exec {
                 workingDir = rootProject.projectDir
                 commandLine(
                     blender, "-b", "--factory-startup",
-                    "-P", "dungeon/art/anim/fbx_to_glb.py", "--",
-                    "dungeon/art/anim/$from",
-                    "dungeon/src/main/resources/animations/characters/$into",
+                    "-P", "art/anim/fbx_to_glb.py", "--",
+                    "art/anim/$from",
+                    "src/main/resources/animations/characters/$into",
                     clip,
                 )
             }.standardOutput.asText.get()
@@ -90,8 +113,8 @@ tasks.register("convertAnimations") {
 
 // A map drawn once, from a seed, then filled by hand on the Map tab of the IDE:
 //
-//   ./gradlew :dungeon:newMap --args="crypt 42"             # a floor's size, at depth 1
-//   ./gradlew :dungeon:newMap --args="crypt 42 3 60 40 12"  # depth 3, 60 by 40 cells, 12 rooms
+//   ./gradlew newMap --args="crypt 42"             # a floor's size, at depth 1
+//   ./gradlew newMap --args="crypt 42 3 60 40 12"  # depth 3, 60 by 40 cells, 12 rooms
 //
 // From the repository root, so the folder lands in this module's maps/ rather
 // than under the module's own directory, where nothing would ever read it.
@@ -134,8 +157,8 @@ tasks.register<JavaExec>("cutIcons") {
 // ---------------------------------------------------------------------------
 // The installer, for the machine you are sitting at.
 //
-//   ./gradlew :dungeon:packageInstaller
-//   ./gradlew :dungeon:packageInstaller -PinstallerVersion=1.2.0
+//   ./gradlew packageInstaller
+//   ./gradlew packageInstaller -PinstallerVersion=1.2.0
 //
 // The same thing the release workflow builds, by the same route and with the
 // same flags, so what comes out of a laptop and what comes out of CI are the
@@ -166,7 +189,7 @@ tasks.register<Exec>("packageInstaller") {
     executable = File(jdkHome, "bin/jpackage" + if (onWindows) ".exe" else "").absolutePath
 
     val type = if (onWindows) "msi" else if (onMac) "dmg" else "deb"
-    val lib = layout.buildDirectory.dir("install/dungeon/lib").get().asFile
+    val lib = layout.buildDirectory.dir("install/duke-dungeon/lib").get().asFile
     val out = layout.buildDirectory.dir("installer").get().asFile
     // Not the project's own 0.1.0-SNAPSHOT: jpackage takes one to three integers
     // and nothing else, and macOS additionally refuses a leading zero — the

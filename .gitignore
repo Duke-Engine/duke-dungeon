@@ -1,0 +1,17 @@
+.gradle/
+build/
+dist/
+*.class
+
+# IntelliJ
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+# OS
+.DS_Store
+Thumbs.db
+graphify-out/cost.json        # lokal — har mashinada boshqacha
+graphify-out/cache/*

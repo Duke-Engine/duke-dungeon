@@ -1,16 +1,32 @@
-# `dungeon` — Duke Dungeon (engine'dagi ilk o'yin)
+# Duke Dungeon
 
-**Rol: O'YIN.** Engine emas, engine'ning **mijozi**. Bu modul faqat `game`
-ning ommaviy API'siga bog'lanadi va engine'ga bironta narsa qo'shmaydi —
-aynan shu uning maqsadi: agar o'yin yashash uchun yangi engine imkoniyatini
-talab qilsa, demak engine tugallanmagan.
+3D roguelike, [Duke Engine](https://github.com/Duke-Engine/duke-engine) ustida.
+Qavatlari seed'dan chiziladi, yoki **stage** — bir marta chizilib matn fayliga
+muzlatilgan va har safar bir xil o'ynaladigan qavat.
 
-| | |
-|---|---|
-| Bog'liqligi | `implementation project(":client3d")` — engine'ning 3D klienti |
-| Hajmi | 3 fayl, ~270 qator |
-| Testlar | 5 ta (headless) |
-| Ishga tushirish | `./gradlew :dungeon:run` |
+**Bu o'yin, engine emas.** U faqat engine'ning ommaviy API'siga bog'lanadi va
+unga bironta narsa qo'shmaydi — aynan shu uning maqsadi: agar o'yin yashash
+uchun yangi engine imkoniyatini talab qilsa, demak engine tugallanmagan.
+
+```
+./gradlew run                       # o'ynash
+./gradlew run --args=--map=first    # muzlatilgan xaritada
+./gradlew build                     # 701 test
+```
+
+## Engine qayerdan olinadi
+
+`settings.gradle.kts` dagi `includeBuild("../duke-engine")` — ya'ni engine'ning
+checkout'i **yonma-yon** turishi kutiladi:
+
+```
+<papka>/
+  duke-engine/
+  duke-dungeon/
+```
+
+Engine Maven Central'ga chiqqandan keyin o'sha satrni o'chirish kifoya —
+`build.gradle.kts` dagi bog'liqliklar allaqachon oddiy koordinatalar.
 
 ## Hozirgi qadam
 
@@ -74,7 +90,7 @@ o'sha burchaklarda o'sha maxluqlar, har safar. Savol "shuni yengaman-mi?" ga
 aylanadi — Warcraft custom map uslubi.
 
 ```
-./gradlew :dungeon:run --args="--map=first"
+./gradlew run --args="--map=first"
 ```
 
 yoki `data/game.duke` da:
@@ -116,11 +132,11 @@ yetib bo'lmaydigan xona, toshdagi maxluq yoki belgilanmagan boss bilan kelsa,
 o'yin **hammasini ro'yxat qilib to'xtaydi** — jimgina roguelike'ga qaytmaydi.
 Yurish engine'ning `PathGrid.canStep` i bilan tekshiriladi, nusxasi bilan emas.
 
-Stage yasash — `./gradlew :dungeon:newMap --args="nom seed [chuqurlik [eni bo'yi xonalar]]"` qavatni seed'dan chizadi; nima qayerda turishini IDE'dagi **Map** tabida qo'lda qo'yasiz.
+Stage yasash — `./gradlew newMap --args="nom seed [chuqurlik [eni bo'yi xonalar]]"` qavatni seed'dan chizadi; nima qayerda turishini IDE'dagi **Map** tabida qo'lda qo'yasiz.
 
 Har bir map papkasida `preview.png` — mapning ustidan ko'rinishi, va map tanlanadigan
 ekran shuni ko'rsatadi. `newMap` uni o'zi yozadi; allaqachon chizilgan maplar uchun
-`./gradlew :dungeon:writeMapPreviews` (mapning o'ziga tegmaydi), IDE'da esa **Map**
+`./gradlew writeMapPreviews` (mapning o'ziga tegmaydi), IDE'da esa **Map**
 tabidagi **Save Preview**.
 
 ### Qiyinchilik = chuqurlik
@@ -151,7 +167,7 @@ Generatsiya o'lchami endi `Layout` record'i orqali override qilinadi
 
 Shipping bosqichlar: `maps/first/first.map` (50×36, 9 xona, chuqurlik 1) va
 `maps/deep/deep.map` (100×76, 28 xona, **chuqurlik 8** — tushishdan chuqurroq).
-Ikkalasini `./gradlew :dungeon:writeExampleMaps` qayta yozadi.
+Ikkalasini `./gradlew writeExampleMaps` qayta yozadi.
 
 **Ulanish kafolati kattalikda ham tekshirilgan:** `LayoutTest` 180×140 / 60 xona
 o'lchamda 12 ta seed'ni `StageCheck` bilan yurib chiqadi.

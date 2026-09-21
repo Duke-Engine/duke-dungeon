@@ -28,7 +28,7 @@ import uz.dukeengine.dungeon.gen.Layout;
 public final class MapWriter {
 
     /** Where the game's own maps live: one folder a map, named for it, as every map is kept. */
-    static final Path FOLDER = Path.of("dungeon", "src", "main", "resources", "maps");
+    static final Path FOLDER = Path.of("src", "main", "resources", "maps");
 
     /**
      * One map to draw.
