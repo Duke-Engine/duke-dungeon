@@ -57,18 +57,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Fetch the engine, which settings.gradle.kts includes
-        shell: bash
-        run: |
-          # `includeBuild("../duke-engine")`: the game and the engine are built
-          # together until the engine is on Central, so a checkout of this
-          # repository alone does not build. A runner has only this repository,
-          # so the engine is fetched beside it — one commit deep, because
-          # nothing here reads its history.
-          cd "$GITHUB_WORKSPACE/.."
-          rm -rf duke-engine
-          git clone --depth 1 https://github.com/Duke-Engine/duke-engine.git duke-engine
-
       - name: Install Java 25
         uses: actions/setup-java@v4
         with:
@@ -114,13 +102,6 @@ jobs:
             type: deb
     steps:
       - uses: actions/checkout@v4
-
-      - name: Fetch the engine, which settings.gradle.kts includes
-        shell: bash
-        run: |
-          cd "$GITHUB_WORKSPACE/.."
-          rm -rf duke-engine
-          git clone --depth 1 https://github.com/Duke-Engine/duke-engine.git duke-engine
 
       - name: Install Java 25
         uses: actions/setup-java@v4

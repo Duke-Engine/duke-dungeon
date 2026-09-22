@@ -21,8 +21,9 @@ tasks.withType<Test>().configureEach {
 }
 
 dependencies {
-    // The engine, at one version. See settings.gradle.kts: while `includeBuild` is there these come
-    // from the checkout beside this one rather than from a repository.
+    // The engine, from Maven Central. The BOM names the version once and the modules below take it, so
+    // there is one number to change and no way to mix two of them. See settings.gradle.kts for building
+    // against a checkout instead.
     implementation(platform("uz.duke-engine:bom:0.2.0"))
 
     // The 3D client, for an angled camera over a world of solid shapes.
