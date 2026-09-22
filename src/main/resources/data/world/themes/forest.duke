@@ -84,7 +84,7 @@ Theme
       Name = Wooded
       Floor = models/tiles/forest/floor.gltf
       Wall = models/tiles/forest/tree.gltf
-    End
+    End,
     Tone
       Name = Stony
       Floor = models/tiles/forest/floor_rocky.gltf
@@ -96,19 +96,19 @@ Theme
       Name = Pillar
       Model = models/props/forest/tree_bare.gltf
       ModelScale = 3.5
-    End
+    End,
     ThemeMonster
       Name = Statue
       Model = models/props/forest/rock.gltf
       ; A boulder about as wide as the Statue template is round, so what you see and
       ; what you walk into are the same stone.
       ModelScale = 6.5
-    End
+    End,
     ThemeMonster
       Name = Barrel
       Model = models/props/forest/rock_small.gltf
       ModelScale = 9.0
-    End
+    End,
     ThemeMonster
       Name = Chest
       Model = models/props/forest/chest.gltf

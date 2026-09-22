@@ -72,7 +72,7 @@ Theme
       Name = Stone
       Floor = models/tiles/dungeon/floor.gltf
       Wall = models/tiles/dungeon/wall.gltf
-    End
+    End,
     Tone
       Name = Cracked
       Floor = models/tiles/dungeon/floor_rocks.gltf
@@ -89,17 +89,17 @@ Theme
       Name = Pillar
       Model = models/props/dungeon/pillar.gltf
       ModelScale = 2.5
-    End
+    End,
     ThemeMonster
       Name = Statue
       Model = models/props/dungeon/pillar_decorated.gltf
       ModelScale = 2.5
-    End
+    End,
     ThemeMonster
       Name = Barrel
       Model = models/props/dungeon/barrel.gltf
       ModelScale = 3.0
-    End
+    End,
     ; The chest a monster leaves behind. It has been a torch-coloured box since the
     ; game was written, because no kit shipped with one; this one does.
     ThemeMonster

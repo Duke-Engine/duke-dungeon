@@ -753,7 +753,7 @@ class SkillCastingTest {
                       Effect = DASH
                       Distance = 120
                       CooldownFrames = 60
-                    End
+                    End,
                     Skill
                       Key = S
                       Effect = STRIKE

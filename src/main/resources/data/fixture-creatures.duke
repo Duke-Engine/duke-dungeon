@@ -24,11 +24,11 @@ Object
   Modules = [
     ActiveBody
       MaxHealth = 200
-    End
+    End,
     MoveUpdate
       Speed = 45
       TurnRate = 720
-    End
+    End,
     WeaponUpdate
       Damage = 14
       AttackRange = 8
@@ -49,10 +49,10 @@ Object
   Modules = [
     ActiveBody
       MaxHealth = 60
-    End
+    End,
     MoveUpdate
       Speed = 0
-    End
+    End,
     WeaponUpdate
       Damage = 4
       AttackRange = 10

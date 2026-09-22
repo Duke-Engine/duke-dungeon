@@ -15,11 +15,11 @@ Monster
     GrowableBody
       ; The frailest of the three: it is the one to kill first.
       MaxHealth = 36
-    End
+    End,
     MoveUpdate
       Speed = 13
       TurnRate = 0
-    End
+    End,
     ; For while the mending comes back: weaker than the Skeleton Mage's fire, and
     ; reaching the far edge of the same band.
     WeaponUpdate
@@ -27,23 +27,23 @@ Monster
       AttackRange = 58
       ReloadFrames = 60
       AttackOnTheMove = No
-    End
+    End,
     SkillBook
-    End
+    End,
     ; Before the Bow, as on the Skeleton Mage: a throw still leaving it holds its mending.
     Swing
-    End
+    End,
     Bow
       Projectile = HolySpark
       Speed = 95
       MuzzleOffset = 8
-    End
+    End,
     EyesOnly
-    End
+    End,
     StatusUpdate
-    End
+    End,
     MonsterBrain
-    End
+    End,
     ExperienceModule
       ExperienceValue = 22
       ExperienceRequired = [0, 0, 0]

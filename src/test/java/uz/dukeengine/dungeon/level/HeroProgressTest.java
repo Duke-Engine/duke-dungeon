@@ -46,11 +46,23 @@ class HeroProgressTest {
             Hero
               Name = Rogue
               Primary = AGI
-              Attributes
-                STR = [12, 4]
-                AGI = [12, 12]
-                INT = [8, 1]
-              End
+              Attributes = [
+                Attribute
+                  Name = STR
+                  Base = 12
+                  Growth = 4
+                End,
+                Attribute
+                  Name = AGI
+                  Base = 12
+                  Growth = 12
+                End,
+                Attribute
+                  Name = INT
+                  Base = 8
+                  Growth = 1
+                End
+              ]
             End
             """);
 

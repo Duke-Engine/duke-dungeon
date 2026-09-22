@@ -10,29 +10,29 @@ Monster
   Modules = [
     GrowableBody
       MaxHealth = 170
-    End
+    End,
     MoveUpdate
       ; Slow enough to be outrun, hard enough that you should.
       Speed = 10
       TurnRate = 0
-    End
+    End,
     WeaponUpdate
       Damage = 20
       AttackRange = 10
       ReloadFrames = 48
-    End
+    End,
     ; Tells the brain the frame a blow landed, so it stands and finishes the swing
     ; instead of walking off mid-blow. It launches nothing -- see Swing.
     Swing
-    End
+    End,
     ; Timers for the statuses it is wearing -- the engine's own, and today that
     ; means SLOWED. MoveUpdate already halves the step of anything wearing it, and
     ; StatusUpdate already counts it down and takes it off, so a monster that
     ; carries this thaws by itself whether or not whoever chilled it is still alive.
     StatusUpdate
-    End
+    End,
     MonsterBrain
-    End
+    End,
     ExperienceModule
       ExperienceValue = 26
       ExperienceRequired = [0, 0, 0]

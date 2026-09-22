@@ -47,11 +47,23 @@ class DepthTest {
             Hero
               Name = Rogue
               Primary = AGI
-              Attributes
-                STR = [12, 3]
-                AGI = [12, 4]
-                INT = [8, 1]
-              End
+              Attributes = [
+                Attribute
+                  Name = STR
+                  Base = 12
+                  Growth = 3
+                End,
+                Attribute
+                  Name = AGI
+                  Base = 12
+                  Growth = 4
+                End,
+                Attribute
+                  Name = INT
+                  Base = 8
+                  Growth = 1
+                End
+              ]
             End
             """);
 

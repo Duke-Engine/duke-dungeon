@@ -38,7 +38,7 @@ Hero
       ; ArmourPercent below, which is a separate axis: health is how long he
       ; lasts, armour is how much each blow is worth.
       MaxHealth = 716
-    End
+    End,
     MoveUpdate
       ; Slower than 29, and this is the price of the rest of the page. He cannot
       ; leave a fight he has walked into, so walking in has to be a decision.
@@ -47,7 +47,7 @@ Hero
       ; 0 = turn on the spot, as the archer does. See the note in his block: a
       ; positive rate is SAGE's vehicle behaviour and makes a man drive in arcs.
       TurnRate = 0
-    End
+    End,
     WeaponUpdate
       ; Twice the archer's 14 a swing, and slower with it: 34 frames against 24.
       ; Worked out, that is 0.88 a frame against his 0.58 -- about half again as
@@ -69,7 +69,7 @@ Hero
       ; He swings as he closes, unlike a drawn bow — a swordsman who had to stop
       ; before every blow would never land one on anything that was backing away.
       AttackOnTheMove = Yes
-    End
+    End,
     ; No Bow and no EyesOnly: both are the archer's, and both are about a shot that
     ; has to cross a room. EyesOnly would also switch off the engine's own target
     ; acquisition, which is exactly what a creature fighting at arm's length wants
@@ -77,13 +77,13 @@ Hero
     ;
     ; Walks to whatever he is told to attack — see HeroBrain, which both heroes use.
     HeroBrain
-    End
+    End,
     ; Q, W, E and R. Which four is in the Skill blocks at the end of this file,
     ; exactly as the archer's are in his: this line only says that he has skills.
     SkillBook
-    End
+    End,
     Recovery
-    End
+    End,
     ExperienceModule
       ExperienceValue = 0
       ExperienceRequired = [0, 0, 0]
@@ -192,7 +192,7 @@ Hero
       Bone = handslot.r
       ; Body and blade came out of the same pack at the same size.
       Scale = 1
-    End
+    End,
     ; The RIGHT hand, unlike the rogue: he draws no string, he swings. If he ends
     ; up fighting left-handed, this is the line -- handslot.l.
     ;
@@ -223,11 +223,23 @@ Hero
   ; these make the knight he always was: 716 + 22 x 12 = 980 health,
   ; 19.5 + 10 x 0.15 = 21 speed, 8 + 22 = 30 a swing.
   Primary = STR
-  Attributes
-    STR = [22, 3.0]
-    AGI = [10, 1.2]
-    INT = [8, 1.0]
-  End
+  Attributes = [
+    Attribute
+      Name = STR
+      Base = 22
+      Growth = 3.0
+    End,
+    Attribute
+      Name = AGI
+      Base = 10
+      Growth = 1.2
+    End,
+    Attribute
+      Name = INT
+      Base = 8
+      Growth = 1.0
+    End
+  ]
   ; ★ WHAT HE CASTS OUT OF, before his intelligence: 10 + 8 x 5 = 50. The shallowest
   ; pool in the game, and his skills are priced to match -- see his Skills.
   ; He is the hero who lives off his ordinary swing, and mana is what stops him
@@ -317,7 +329,7 @@ Hero
       Blurb = Oldidagi bir joyga zarba beradi va o'sha yerdagi hamma dushmanga tegadi. Bittasiga emas — to'daga. Uning eng tez-tez ishlatadigan mahorati.
       ManaCost = 7
       ManaCostPerLevel = 1
-    End
+    End,
 
     Skill
       Key = W
@@ -347,7 +359,7 @@ Hero
       Blurb = Oldinga otiladi va yo'lida uchraganlarni ham urib o'tadi. Qo'li kalta odamning nishoniga yetadigan yagona yo'li.
       ManaCost = 12
       ManaCostPerLevel = 1
-    End
+    End,
 
     Skill
       Key = E
@@ -373,7 +385,7 @@ Hero
       Blurb = Bir necha soniya har zarbadan kamroq zarar oladi. Kamonchida bunaqasi yo'q va bo'lmasligi ham kerak: uning javobi — o'sha yerda bo'lmaslik.
       ManaCost = 14
       ManaCostPerLevel = 0
-    End
+    End,
 
     Skill
       Key = R

@@ -11,11 +11,11 @@ Monster
     GrowableBody
       ; Frail. It reaches you first; it should not also survive the exchange.
       MaxHealth = 40
-    End
+    End,
     MoveUpdate
       Speed = 16
       TurnRate = 0
-    End
+    End,
     WeaponUpdate
       ; Hits harder than the ordinary one, because it is frail and dies quickly
       ; once anything reaches it.
@@ -29,7 +29,7 @@ Monster
       ReloadFrames = 70
       ; A crossbow is levelled standing still, like the hero's bow.
       AttackOnTheMove = No
-    End
+    End,
     ; Its bolts leave the crossbow and have to get there -- the same module the
     ; hero's bow uses, saying which projectile of its own it looses.
     Bow
@@ -38,26 +38,26 @@ Monster
       ; Out at the crossbow rather than at the middle of the ribcage. Its own
       ; radius is 3, so five left the bolt starting inside it and squeezing out.
       MuzzleOffset = 9
-    End
+    End,
     ; And it shoots at what it can SEE. Not decoration: the engine's weapon knows
     ; nothing about walls, so the first thing down here with a reach worth the name
     ; would otherwise shoot the hero through the stone between them -- which is the
     ; one thing a dungeon must not allow. The hero has carried this since he had a
     ; bow; this is the same rule for the first monster to need it.
     EyesOnly
-    End
+    End,
     ; Tells the brain the frame a blow landed, so it stands and finishes the shot
     ; instead of walking off mid-shot. It launches nothing -- see Swing.
     Swing
-    End
+    End,
     ; Timers for the statuses it is wearing -- the engine's own, and today that
     ; means SLOWED. MoveUpdate already halves the step of anything wearing it, and
     ; StatusUpdate already counts it down and takes it off, so a monster that
     ; carries this thaws by itself whether or not whoever chilled it is still alive.
     StatusUpdate
-    End
+    End,
     MonsterBrain
-    End
+    End,
     ExperienceModule
       ExperienceValue = 18
       ExperienceRequired = [0, 0, 0]

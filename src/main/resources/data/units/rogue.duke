@@ -31,7 +31,7 @@ Hero
       ; is built -- 550 in all, low enough that a careless walk into a second room
       ; can end the run.
       MaxHealth = 430
-    End
+    End,
     MoveUpdate
       ; ★ Before his agility: 27.2 and twelve points at 0.15 are 29.
       Speed = 27.2
@@ -40,7 +40,7 @@ Hero
       ; right for a vehicle and wrong for a man — sent back the way he came, the
       ; hero drove a wide arc instead of turning round.
       TurnRate = 0
-    End
+    End,
     WeaponUpdate
       ; ★ Before agility, which is his primary and adds all twelve of its points:
       ; 14 an arrow.
@@ -70,27 +70,27 @@ Hero
       ; while retreating for ever. He carries on reloading on the way, and keeps
       ; whatever he was pointed at, so the shot leaves the moment he stops.
       AttackOnTheMove = No
-    End
+    End,
     ; His shots leave the bow and have to get there — see uz.dukeengine.dungeon.combat.
     Bow
-    End
+    End,
     ; He shoots at what he can see. This also switches the engine's own target
     ; acquisition off for him -- it is a nearest-enemy search that knows nothing
     ; about walls -- and hands the choosing to HeroBrain, which does. Monsters do
     ; not carry it: they fight at arm's length, with nothing in between.
     EyesOnly
-    End
+    End,
     ; Walks to whatever he is told to attack — see HeroBrain.
     HeroBrain
-    End
+    End,
     ; Q, W, E and R. Which four they are is not written here: this line says he has
     ; skills, and the Skill blocks at the end of this file say which. A second
     ; hero gets the same line and his own blocks.
     SkillBook
-    End
+    End,
     ; Health coming back on its own, at the rate his Hero block names.
     Recovery
-    End
+    End,
     ; Counts what he kills. He is worth nothing himself, and the engine's own four
     ; ranks are switched off (0 0 0), leaving a plain experience total for the game
     ; to spend on levels of its own devising.
@@ -189,7 +189,7 @@ Hero
       ; A bow is symmetrical top to bottom, so the fix is one half-turn and nothing
       ; else needs touching.
       Roll = 180
-    End
+    End,
 
     ; ★ AND THE ARROWS FOR IT. A second Held, which is the whole of what the
     ; repeatable form is for: a bow with no quiver is a man who has brought one
@@ -235,11 +235,23 @@ Hero
   ; exactly the archer he always was: 430 + 10 x 12 = 550 health,
   ; 27.2 + 12 x 0.15 = 29 speed, 2 + 12 = 14 an arrow.
   Primary = AGI
-  Attributes
-    STR = [10, 1.6]
-    AGI = [12, 2.2]
-    INT = [8, 1.0]
-  End
+  Attributes = [
+    Attribute
+      Name = STR
+      Base = 10
+      Growth = 1.6
+    End,
+    Attribute
+      Name = AGI
+      Base = 12
+      Growth = 2.2
+    End,
+    Attribute
+      Name = INT
+      Base = 8
+      Growth = 1.0
+    End
+  ]
   ; ★ WHAT HE CASTS OUT OF, before his intelligence: 40 + 8 x 5 = 80.
   MaxMana = 40
   ; ★ WHAT COMES BACK ON ITS OWN, in TENTHS of a point a second -- 15 is 1.5. Fixed:
@@ -378,7 +390,7 @@ Hero
       Blurb = Kamonni to'liq tortib bitta dushmanga og'ir o'q otadi. O'q xonani kesib o'tadi, shuning uchun nishon qochib ulgurishi mumkin.
       ManaCost = 14
       ManaCostPerLevel = 1
-    End
+    End,
 
     Skill
       Key = W
@@ -399,7 +411,7 @@ Hero
       Blurb = Atrofdagi hamma dushmanga bir vaqtda zarar yetkazadi. Qurshab olinganda bosiladi.
       ManaCost = 24
       ManaCostPerLevel = 2
-    End
+    End,
 
     Skill
       Key = E
@@ -419,7 +431,7 @@ Hero
       Blurb = Ko'rsatilgan tomonga tez siljiydi. Hech kimga zarar bermaydi — bu jangdan chiqish yo'li, jangga kirish emas.
       ManaCost = 16
       ManaCostPerLevel = 0
-    End
+    End,
 
     Skill
       Key = R

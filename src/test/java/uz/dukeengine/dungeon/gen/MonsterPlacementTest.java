@@ -175,14 +175,9 @@ class MonsterPlacementTest {
     /** The shipped files with the boss guarded by this one line, or by nobody at all. */
     private static DungeonSettings guardedBy(String guard) {
         var data = uz.dukeengine.dungeon.content.Content.data();
-        var shipped = """
-                    BossGuards
-                      SkeletonHealer = 2
-                      SkeletonSummoner = 2
-                    End
-                """;
+        var shipped = "    BossGuards = [SkeletonHealer = 2, SkeletonSummoner = 2]\n";
         assertTrue(data.contains(shipped), "the shipped map no longer guards its boss this way");
-        var guards = guard.isEmpty() ? "" : "    BossGuards\n      " + guard + "\n    End\n";
+        var guards = guard.isEmpty() ? "" : "    BossGuards = [" + guard + "]\n";
         return DungeonSettings.parse(data.replace(shipped, guards));
     }
 

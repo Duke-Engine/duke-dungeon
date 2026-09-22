@@ -13,11 +13,11 @@ Monster
   Modules = [
     GrowableBody
       MaxHealth = 460
-    End
+    End,
     MoveUpdate
       Speed = 13
       TurnRate = 0
-    End
+    End,
     WeaponUpdate
       Damage = 20
       ; It throws fire, like the Revenant it is a bigger cousin of. Further than
@@ -26,7 +26,7 @@ Monster
       AttackRange = 56
       ReloadFrames = 50
       AttackOnTheMove = No
-    End
+    End,
     ; The same fire as the Revenant's, thrown by something three times the size --
     ; so it is a bigger ball, which is a projectile of its own rather than a number
     ; on this one. See Projectile GreaterFireball.
@@ -35,23 +35,23 @@ Monster
       Speed = 105
       ; Out at the end of a staff held by something twenty units tall.
       MuzzleOffset = 12
-    End
+    End,
     ; It throws at what it can see, like everything else down here that throws.
     EyesOnly
-    End
+    End,
     AutoHealUpdate
       HealPerSecond = 9
-    End
+    End,
     Swing
-    End
+    End,
     ; Timers for the statuses it is wearing -- the engine's own, and today that
     ; means SLOWED. MoveUpdate already halves the step of anything wearing it, and
     ; StatusUpdate already counts it down and takes it off, so a monster that
     ; carries this thaws by itself whether or not whoever chilled it is still alive.
     StatusUpdate
-    End
+    End,
     MonsterBrain
-    End
+    End,
     ExperienceModule
       ExperienceValue = 130
       ExperienceRequired = [0, 0, 0]

@@ -358,7 +358,9 @@ class HeroStatusTest {
                   HealthPerPoint = 3
                 End
                 """;
-        var data = Content.data().replace("    AGI = [12, 2.2]\n", "    AGI = [12, 2.2]\n    VIG = [7, 0.5]\n");
+        var rogueAgility = "    Attribute\n      Name = AGI\n      Base = 12\n      Growth = 2.2\n    End,\n";
+        var data = Content.data().replace(rogueAgility, rogueAgility
+                + "    Attribute\n      Name = VIG\n      Base = 7\n      Growth = 0.5\n    End,\n");
         var settings = DungeonSettings.parse(data + block);
         var session = Dungeon.newSession(4321L, settings);
         var game = session.game();

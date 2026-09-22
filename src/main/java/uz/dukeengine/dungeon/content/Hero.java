@@ -9,7 +9,6 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import uz.dukeengine.core.module.ModuleData;
 import uz.dukeengine.core.thing.Classified;
@@ -31,8 +30,8 @@ import uz.dukeengine.dungeon.skill.Skill;
  *
  * @param primary    which attribute he hits with, by its short name; none for a hero who
  *                   has no attributes
- * @param attributes each attribute he has, by its short name: what he starts with and what a
- *                   level adds, {@code STR = [10, 1.6]}
+ * @param attributes each attribute he has, an {@code Attribute} block in {@code Attributes = [ … ]}:
+ *                   which it is, what he starts with in it and what a level adds
  * @param animations the {@link AnimationSet} he moves by; his own clips are the ones he plays differently
  * @param held       what he carries, each a {@code Held} block in {@code Held = [ … ]}, in the order written
  */
@@ -40,7 +39,7 @@ public record Hero(@Group("Identity") String name, String displayName, Set<Kind>
         @Group("Body") float visionRange, Geometry geometry,
         @Group("Modules") List<ModuleData> modules,
         @Group("Identity") String title, @Group("Stats") float closeDistance, int armourPercent, int maxMana,
-        int manaRegen, int healthRegen, String primary, Map<String, Growth> attributes,
+        int manaRegen, int healthRegen, String primary, List<Attribute> attributes,
         @Group("Look") String model, String texture, float modelScale, float facing,
         @Group("Animation") @Link(AnimationSet.class) String animations,
         @Clip String idle, @Clip String walk, @Clip String attack, @Clip String hurt, @Clip String death,
@@ -61,14 +60,25 @@ public record Hero(@Group("Identity") String name, String displayName, Set<Kind>
         }
     }
 
-    /** What he starts with in one attribute, and what a level adds to it. */
-    public record Growth(Tenths base, Tenths perLevel) {
+    /**
+     * One attribute of his: which it is, by the short name or the name its {@code Attribute} block
+     * gives it, what he starts with in it and what a level adds.
+     */
+    public record Attribute(String name, Tenths base, Tenths growth) {
+        public Attribute {
+            if (name == null) {
+                throw new IllegalArgumentException("an Attribute says which one it is: Name = STR");
+            }
+            if (base == null || growth == null) {
+                throw new IllegalArgumentException(name + " needs both a Base and a Growth");
+            }
+        }
     }
 
     /** What a block leaves out. */
     static final Hero DEFAULTS = new Hero("", "", Set.of(), 0f, Geometry.POINT, List.of(),
             "", 0f, 0, 0, 0, 0,
-            null, Map.of(),
+            null, List.of(),
             null, null, 1f, 90f, null,
             null, null, null, null, null, List.of(),
             null, List.of());
@@ -79,7 +89,7 @@ public record Hero(@Group("Identity") String name, String displayName, Set<Kind>
         geometry = geometry == null ? Geometry.POINT : geometry;
         modules = modules == null ? List.of() : List.copyOf(modules);
         title = title == null ? "" : title;
-        attributes = attributes == null ? Map.of() : attributes;
+        attributes = attributes == null ? List.of() : List.copyOf(attributes);
         held = held == null ? List.of() : List.copyOf(held);
         skills = skills == null ? List.of() : List.copyOf(skills);
     }
@@ -110,11 +120,11 @@ public record Hero(@Group("Identity") String name, String displayName, Set<Kind>
         int size = rules.attributes().size();
         var base = new int[size];
         var perLevel = new int[size];
-        for (var attribute : attributes.entrySet()) {
-            int at = rules.indexOf(attribute.getKey());
+        for (var attribute : attributes) {
+            int at = rules.indexOf(attribute.name());
             if (at >= 0) {
-                base[at] = attribute.getValue().base().value();
-                perLevel[at] = attribute.getValue().perLevel().value();
+                base[at] = attribute.base().value();
+                perLevel[at] = attribute.growth().value();
             }
         }
         return new HeroAttributes(rules.indexOf(primary), Attributes.of(base), Attributes.of(perLevel));

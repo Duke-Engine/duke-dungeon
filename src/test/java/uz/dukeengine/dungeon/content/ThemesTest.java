@@ -42,7 +42,7 @@ class ThemesTest {
                 Tone
                   Name = Damp
                   Floor = Models/stone/damp.obj
-                End
+                End,
                 Tone
                   Name = Dry
                   Floor = Models/stone/dry.obj

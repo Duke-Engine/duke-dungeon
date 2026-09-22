@@ -14,12 +14,12 @@ Monster
   Modules = [
     GrowableBody
       MaxHealth = 40
-    End
+    End,
     MoveUpdate
       ; Slower than any hero, so the one it is backing away from can catch it.
       Speed = 13
       TurnRate = 0
-    End
+    End,
     ; Its ordinary fire, for while the fireball comes back: weak, and reaching the far
     ; edge of the band it keeps (KeepDistance 35 55), so it is never standing about.
     WeaponUpdate
@@ -27,28 +27,28 @@ Monster
       AttackRange = 58
       ReloadFrames = 54
       AttackOnTheMove = No
-    End
+    End,
     ; That it has skills. Which ones is its Skill blocks' business, below.
     SkillBook
-    End
+    End,
     ; Before the Bow, because a shot goes to the first launcher that takes it. Swing
     ; only notes the frame and passes it on, which is how the brain knows a throw is
     ; still leaving and holds its fireball until it has.
     Swing
-    End
+    End,
     ; The Revenant's small fire, which has to get there.
     Bow
       Projectile = Fireball
       Speed = 95
       MuzzleOffset = 8
-    End
+    End,
     ; And only at what it can see.
     EyesOnly
-    End
+    End,
     StatusUpdate
-    End
+    End,
     MonsterBrain
-    End
+    End,
     ExperienceModule
       ExperienceValue = 20
       ExperienceRequired = [0, 0, 0]

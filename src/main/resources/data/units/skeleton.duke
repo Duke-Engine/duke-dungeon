@@ -10,32 +10,32 @@ Monster
   Modules = [
     ActiveBody
       MaxHealth = 60
-    End
+    End,
     MoveUpdate
       ; Slower than the hero on purpose: breaking off a fight has to be possible.
       Speed = 17
       ; Turns on the spot, for the same reason the hero does — a skeleton that
       ; banked like a vehicle would circle the hero instead of closing on him.
       TurnRate = 0
-    End
+    End,
     WeaponUpdate
       Damage = 7
       AttackRange = 10
       ReloadFrames = 30
-    End
+    End,
     ; Comes for the hero when it notices him — see MonsterBrain.
     ; Tells the brain the frame a blow landed, so it stands and finishes the swing
     ; instead of walking off mid-blow. It launches nothing -- see Swing.
     Swing
-    End
+    End,
     ; Timers for the statuses it is wearing -- the engine's own, and today that
     ; means SLOWED. MoveUpdate already halves the step of anything wearing it, and
     ; StatusUpdate already counts it down and takes it off, so a monster that
     ; carries this thaws by itself whether or not whoever chilled it is still alive.
     StatusUpdate
-    End
+    End,
     MonsterBrain
-    End
+    End,
     ; What killing one is worth to the hero. Its own ranks are switched off too.
     ExperienceModule
       ExperienceValue = 10

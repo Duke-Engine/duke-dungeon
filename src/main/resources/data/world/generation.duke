@@ -131,10 +131,7 @@ ProceduralMap
     ; They stand on a square ring BossGuardRing cells out from the boss, corners first,
     ; and further out if the room has no floor there. MaxPerRoom is for rooms the draw
     ; fills and does not apply here. Leave BossGuards out and every boss waits alone.
-    BossGuards
-      SkeletonHealer = 2
-      SkeletonSummoner = 2
-    End
+    BossGuards = [SkeletonHealer = 2, SkeletonSummoner = 2]
     BossGuardRing = 2
 
     ; Percentages are of the creature's base value, added per depth beyond the

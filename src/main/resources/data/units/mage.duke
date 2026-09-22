@@ -36,7 +36,7 @@ Hero
       ; knight's 980. Three blows from anything at depth and he is finished, which is
       ; why Blink is on a key of its own.
       MaxHealth = 284
-    End
+    End,
     MoveUpdate
       ; Between the two of them -- 29 and 21. He is not running away from anything
       ; on foot; that is what E is for. Before his agility: 23.65 and nine points at
@@ -44,7 +44,7 @@ Hero
       Speed = 23.65
       ; 0 = turn on the spot, as both the others do.
       TurnRate = 0
-    End
+    End,
     WeaponUpdate
       ; Feebler than the archer's 14 and slower with it: 32 frames against 24. That
       ; works out at 0.36 a frame against his 0.58 -- not far off half. Everything
@@ -59,24 +59,24 @@ Hero
       ReloadFrames = 32
       ; He stops to cast, exactly as the archer stops to draw.
       AttackOnTheMove = No
-    End
+    End,
     ; His shots cross the room like everybody else's. Projectile names his own
     ; rather than taking the hero's arrow: a wizard firing a wooden shaft is the
     ; sort of thing nobody mentions and everybody sees.
     Bow
       Projectile = MageBolt
-    End
+    End,
     ; Stone stops what he throws as well as what he sees.
     EyesOnly
-    End
+    End,
     HeroBrain
-    End
+    End,
     ; Q, W, E and R -- Fireball, Frost Nova, Blink and Meteor. Which four is in
     ; the Skill blocks further down, as it is for the other two.
     SkillBook
-    End
+    End,
     Recovery
-    End
+    End,
     ExperienceModule
       ExperienceValue = 0
       ExperienceRequired = [0, 0, 0]
@@ -153,7 +153,7 @@ Hero
       Model = models/heroes/staff.gltf
       Bone = handslot.r
       Scale = 1
-    End
+    End,
 
     ; ★ AND THE BOOK, which the kit ships for him and which used to be a note in
     ; this block saying it was not possible. It is now: Held is a list.
@@ -187,11 +187,23 @@ Hero
   ; mage he always was: 284 + 8 x 12 = 380 health, 23.65 + 9 x 0.15 = 25 speed,
   ; 2 + 10 = 12 a bolt, 70 + 10 x 5 = 120 mana.
   Primary = INT
-  Attributes
-    STR = [8, 1.2]
-    AGI = [9, 1.0]
-    INT = [10, 2.0]
-  End
+  Attributes = [
+    Attribute
+      Name = STR
+      Base = 8
+      Growth = 1.2
+    End,
+    Attribute
+      Name = AGI
+      Base = 9
+      Growth = 1.0
+    End,
+    Attribute
+      Name = INT
+      Base = 10
+      Growth = 2.0
+    End
+  ]
   ; ★ WHAT HE CASTS OUT OF, before his intelligence. The deepest pool of the three
   ; and it deepens fastest, and skills that cost three times the knight's. He is the
   ; hero the resource is FOR: his four together come to 155 against a pool of 120,
@@ -342,7 +354,7 @@ Hero
       Blurb = Yo'nalish bo'ylab olov o'qi otadi. Birinchi uchragan tanaga yoki devorga urilib to'xtaydi va o'sha joyda portlaydi.
       ManaCost = 22
       ManaCostPerLevel = 2
-    End
+    End,
 
     Skill
       Key = W
@@ -379,7 +391,7 @@ Hero
       Blurb = Tanlangan joyda muz portlatadi: u yerdagilarga zarar beradi va ularni bir muddat sekinlashtiradi. Zarari emas — sekinlashuvi muhim.
       ManaCost = 38
       ManaCostPerLevel = 3
-    End
+    End,
 
     Skill
       Key = E
@@ -413,7 +425,7 @@ Hero
       Blurb = Bir zumda boshqa joyda paydo bo'ladi. Oradagi narsa — devormi, dushmanmi — umuman ahamiyatsiz.
       ManaCost = 25
       ManaCostPerLevel = -2
-    End
+    End,
 
     Skill
       Key = R

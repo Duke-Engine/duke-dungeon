@@ -37,6 +37,12 @@ class AttributesTest {
     private static final HeroAttributes ARCHER = new HeroAttributes(AGI,
             Attributes.ofWhole(10, 12, 8), Attributes.of(16, 22, 10));
 
+    /** The shipped blocks these tests rewrite, whole so the anchor cannot match another hero's. */
+    private static final String KNIGHT_STRENGTH =
+            "    Attribute\n      Name = STR\n      Base = 22\n      Growth = 3.0\n    End,\n";
+    private static final String ROGUE_AGILITY =
+            "    Attribute\n      Name = AGI\n      Base = 12\n      Growth = 2.2\n    End,\n";
+
     private static final HeroBase KNIGHTS_BLOCK = new HeroBase(716f, 19.5f, 0f, 8f);
     private static final HeroBase ARCHERS_BLOCK = new HeroBase(430f, 27.2f, 0f, 2f);
 
@@ -271,12 +277,12 @@ class AttributesTest {
         assertEquals(shipped.attributeRules().health(knight) * 20 / 12,
                 richer.attributeRules().health(knight), "a point of strength is worth what the file says");
 
-        var stronger = DungeonSettings.parse(data.replace("    STR = [22, 3.0]",
-                "    STR = [30, 3.0]"));
+        var stronger = DungeonSettings.parse(data.replace(KNIGHT_STRENGTH,
+                KNIGHT_STRENGTH.replace("Base = 22", "Base = 30")));
         assertEquals(300, stronger.heroNamed("Knight").attributes().base().at(STR));
 
-        var quicker = DungeonSettings.parse(data.replace("    AGI = [12, 2.2]",
-                "    AGI = [12, 3.4]"));
+        var quicker = DungeonSettings.parse(data.replace(ROGUE_AGILITY,
+                ROGUE_AGILITY.replace("Growth = 2.2", "Growth = 3.4")));
         assertEquals(34, quicker.heroNamed("Rogue").attributes().perLevel().at(AGI));
 
         var swapped = DungeonSettings.parse(data.replace("  Primary = AGI", "  Primary = STR"));
@@ -302,8 +308,8 @@ class AttributesTest {
                   ManaPerPoint = 2
                 End
                 """;
-        var settings = DungeonSettings.parse(Content.data()
-                .replace("    STR = [22, 3.0]\n", "    STR = [22, 3.0]\n    VIG = [10, 1.0]\n") + vigour);
+        var settings = DungeonSettings.parse(Content.data().replace(KNIGHT_STRENGTH, KNIGHT_STRENGTH
+                + "    Attribute\n      Name = VIG\n      Base = 10\n      Growth = 1.0\n    End,\n") + vigour);
         var rules = settings.attributeRules();
 
         assertEquals(List.of("STR", "AGI", "INT", "VIG"),
@@ -342,10 +348,18 @@ class AttributesTest {
                 Hero
                   Name = Solo
                   Primary = INT
-                  Attributes
-                    STR = [22.5, 0]
-                    INT = [0, 1.8]
-                  End
+                  Attributes = [
+                    Attribute
+                      Name = STR
+                      Base = 22.5
+                      Growth = 0
+                    End,
+                    Attribute
+                      Name = INT
+                      Base = 0
+                      Growth = 1.8
+                    End
+                  ]
                 End
                 """);
         var rules = exact.attributeRules();
@@ -366,9 +380,13 @@ class AttributesTest {
                 Hero
                   Name = Solo
                   Primary = STR
-                  Attributes
-                    STR = [22.55, 0]
-                  End
+                  Attributes = [
+                    Attribute
+                      Name = STR
+                      Base = 22.55
+                      Growth = 0
+                    End
+                  ]
                 End
                 """), "and a second place on an attribute");
     }
@@ -378,24 +396,31 @@ class AttributesTest {
         assertThrows(RuntimeException.class, () -> DungeonSettings.parse("""
                 Hero
                   Name = Solo
-                  Attributes
-                    STR = [12, 0]
-                  End
+                  Attributes = [
+                    Attribute
+                      Name = STR
+                      Base = 12
+                      Growth = 0
+                    End
+                  ]
                 End
                 """), "a hero with attributes has to say which one he hits with");
     }
 
     /** A hero's attribute is which, what he starts with and what a level adds — all three. */
     @Test
-    void aHerosAttributeLineHasToBeWhole() {
-        for (var line : new String[] {
-            "    LUCK = [5, 1]\n", // no attribute is called that
-            "    STR = [12]\n", // what a level adds is missing
-            "    STR = [12, 1, 5]\n", // and something is left over
-            "    STR = [12, 1]\n    Strength = [3, 0]\n", // the same one twice
+    void aHerosAttributeBlockHasToBeWhole() {
+        for (var block : new String[] {
+            "Name = LUCK\n      Base = 5\n      Growth = 1\n", // no attribute is called that
+            "Name = STR\n      Base = 12\n", // what a level adds is missing
+            "Base = 12\n      Growth = 1\n", // and which one it is
+            "Name = STR\n      Base = 12\n      Luck = 1\n", // something the block does not have
+            "Name = STR\n      Base = 12\n      Growth = 1\n    End,\n    Attribute\n"
+                + "      Name = Strength\n      Base = 3\n      Growth = 0\n", // the same one twice
         }) {
             assertThrows(RuntimeException.class, () -> DungeonSettings.parse(
-                    "Hero\n  Name = Solo\n  Primary = STR\n  Attributes\n" + line + "  End\nEnd\n"), line);
+                    "Hero\n  Name = Solo\n  Primary = STR\n  Attributes = [\n    Attribute\n      "
+                        + block + "    End\n  ]\nEnd\n"), block);
         }
         assertThrows(RuntimeException.class, () -> DungeonSettings.parse("""
                 Hero

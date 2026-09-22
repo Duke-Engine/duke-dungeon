@@ -702,12 +702,12 @@ public final class DungeonSettings {
         for (var hero : heroes) {
             var name = "Hero " + hero.name();
             var named = new java.util.HashSet<Integer>();
-            for (var attribute : hero.attributes().entrySet()) {
-                int at = rules.indexOf(attribute.getKey());
-                require(at >= 0, name + " has " + attribute.getKey()
+            for (var attribute : hero.attributes()) {
+                int at = rules.indexOf(attribute.name());
+                require(at >= 0, name + " has " + attribute.name()
                         + ", and no Attribute is called that");
-                require(named.add(at), name + " names " + attribute.getKey() + " twice");
-                require(attribute.getValue().base().value() >= 0 && attribute.getValue().perLevel().value() >= 0,
+                require(named.add(at), name + " names " + attribute.name() + " twice");
+                require(attribute.base().value() >= 0 && attribute.growth().value() >= 0,
                         name + ": an attribute cannot be negative, and a level cannot take one away");
             }
             require(hero.primary() == null || rules.indexOf(hero.primary()) >= 0,
