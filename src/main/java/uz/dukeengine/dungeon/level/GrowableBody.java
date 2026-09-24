@@ -1,6 +1,5 @@
 package uz.dukeengine.dungeon.level;
 
-import uz.dukeengine.core.module.Armor;
 import uz.dukeengine.core.module.BodyModule;
 import uz.dukeengine.core.module.DamageType;
 import uz.dukeengine.core.module.ModuleData;
@@ -18,9 +17,9 @@ import uz.dukeengine.rts.module.RtsModuleGroups;
  * kill. Rather than change the engine's body, the game supplies its own through
  * the module seam the engine already offers — which is what that seam is for.
  *
- * <p>Armour is the engine's {@link Armor}, rebuilt whenever it changes and set
- * across every damage type, so a hero who has earned protection is protected from
- * whatever the dungeon later learns to throw.
+ * <p>Armour is one multiplier over every damage type, named or not: the engine's
+ * damage types are an open set, so a hero who has earned protection is protected
+ * from whatever the dungeon later learns to throw.
  *
  * <p>Growing raises current health by the same amount it raises the maximum. A
  * full heal on level-up would make levelling a free escape from a losing fight,
@@ -36,7 +35,7 @@ public final class GrowableBody extends BodyModule {
 
     private float maxHealth;
     private float health;
-    private Armor armor = Armor.NONE;
+    private float damageTaken = 1f;
 
     public GrowableBody(GameObject owner, Data data) {
         super(owner);
@@ -55,11 +54,7 @@ public final class GrowableBody extends BodyModule {
 
     /** Take {@code multiplier} of the damage aimed at us — below 1 is armour. */
     public void setDamageTaken(float multiplier) {
-        var builder = Armor.builder();
-        for (var type : DamageType.values()) {
-            builder.set(type, multiplier);
-        }
-        this.armor = builder.build();
+        this.damageTaken = multiplier;
     }
 
     @Override
@@ -82,7 +77,12 @@ public final class GrowableBody extends BodyModule {
         if (amount <= 0f) {
             return;
         }
-        health = clamp(health - amount * armor.getMultiplier(type));
+        health = clamp(health - amount * damageTaken);
+    }
+
+    @Override
+    public float estimateDamage(float amount, DamageType type) {
+        return amount <= 0f ? 0f : amount * damageTaken;
     }
 
     @Override

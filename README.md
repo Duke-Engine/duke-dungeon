@@ -16,8 +16,9 @@ uchun yangi engine imkoniyatini talab qilsa, demak engine tugallanmagan.
 
 ## Engine qayerdan olinadi
 
-`settings.gradle.kts` dagi `includeBuild("../duke-engine")` — ya'ni engine'ning
-checkout'i **yonma-yon** turishi kutiladi:
+O'yin engine **0.6.0** ga yozilgan, u esa hali Maven Central'da yo'q. Shuning
+uchun `gradle.properties` dagi `dukeEngineLocal=true` engine'ni **yonma-yon**
+turgan checkout'dan quradi (`settings.gradle.kts` dagi `includeBuild`):
 
 ```
 <papka>/
@@ -25,8 +26,12 @@ checkout'i **yonma-yon** turishi kutiladi:
   duke-dungeon/
 ```
 
-Engine Maven Central'ga chiqqandan keyin o'sha satrni o'chirish kifoya —
-`build.gradle.kts` dagi bog'liqliklar allaqachon oddiy koordinatalar.
+Engine'ning ishchi nusxasi yarim o'zgarishda turib kompilyatsiya bo'lmasa, boshqa
+checkout ko'rsatiladi: `./gradlew run -PdukeEngineDir=<yo'l>` (masalan, oxirgi
+commit'ning nusxasi).
+
+0.6.0 Central'ga chiqqandan keyin `gradle.properties` dagi o'sha qatorni o'chirish
+kifoya — `build.gradle.kts` dagi bog'liqliklar allaqachon oddiy koordinatalar.
 
 ## Hozirgi qadam
 

@@ -17,6 +17,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import org.junit.jupiter.api.Test;
 import uz.dukeengine.core.module.Module;
+import uz.dukeengine.core.module.ModuleData;
 import uz.dukeengine.core.module.ModuleGroups;
 import uz.dukeengine.dungeon.skill.SkillBook;
 import uz.dukeengine.rts.module.RtsModuleGroups;
@@ -78,11 +79,26 @@ class EveryModuleIsGroupedTest {
         for (var name : names) {
             var type = Class.forName(name, false, loader);
             if (Module.class.isAssignableFrom(type) && !type.isInterface()
-                    && !Modifier.isAbstract(type.getModifiers()) && !type.isAnonymousClass()) {
+                    && !Modifier.isAbstract(type.getModifiers()) && !type.isAnonymousClass()
+                    && aFileCanNameIt(type)) {
                 modules.add(type.asSubclass(Module.class));
             }
         }
         return modules;
+    }
+
+    /**
+     * Whether a block can build it: it declares the data record a block is read into, which is how a file names
+     * a module (see {@code ModuleFactory.nameOf}). One the engine attaches itself — a builder's {@code BuildOrder}
+     * — has none, and no tool could offer it.
+     */
+    private static boolean aFileCanNameIt(Class<?> type) {
+        for (var nested : type.getDeclaredClasses()) {
+            if (ModuleData.class.isAssignableFrom(nested)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static void addClass(Set<String> names, String file) {
