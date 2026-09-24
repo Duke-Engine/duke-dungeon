@@ -92,6 +92,18 @@ public record Themes(List<String> order, WhenExhausted whenExhausted, List<Theme
         return z ^ (z >>> 31);
     }
 
+    /**
+     * The ground the floor at {@code depth} is carved into: its theme's, or the defaults where no theme is named or
+     * the one named is not described.
+     *
+     * <p>Asked of the depth alone, which is what the theme is chosen by — so the generator and the look it is
+     * dressed in cannot disagree about which theme a floor is, and asking draws nothing from anybody's dice.
+     */
+    public Theme.Terrain terrainAt(int depth) {
+        var theme = themeNamed(nameFor(depth));
+        return theme == null ? Theme.Terrain.DEFAULTS : theme.terrain();
+    }
+
     /** Which theme depth wears, following the order and then the policy. */
     public String nameFor(int depth) {
         if (order.isEmpty()) {

@@ -46,45 +46,54 @@ class DungeonShapeTest {
                         + (widest * 2f) + " across");
     }
 
-    /** A carved corridor really is that many cells thick on the map. */
+    /**
+     * Nothing on the floor is narrower than a tunnel: every cell of it lies inside a square of floor that wide.
+     *
+     * <p>Every cell rather than the tunnels, because the tunnels are no longer the only place a body can be
+     * squeezed. A chamber's worn edge leaves spurs and slits, and a slit a cell wide is the corridor that used to
+     * wedge the boss, wherever it happens to be. Over the ground both themes carve, the wood's ragged and the
+     * cellar's close.
+     */
     @Test
-    void theCarvedCorridorsAreAsWideAsTheSettingSays() {
-        var floor = DungeonGenerator.generate(5L, SETTINGS, 1);
-        var grid = uz.dukeengine.core.pathfind.MapLoader.fromText(floor.asciiMap());
-
-        // Walk the straight leg between two joined rooms and measure across it.
-        var link = floor.links().get(0);
-        var from = floor.rooms().get(link.from());
-        var to = floor.rooms().get(link.to());
-        int y = from.centerCellY();
-        int thinnest = Integer.MAX_VALUE;
-        for (int x = Math.min(from.centerCellX(), to.centerCellX());
-                x <= Math.max(from.centerCellX(), to.centerCellX()); x++) {
-            if (insideAnyRoom(floor, x, y)) {
-                continue; // rooms are wide by nature; this is about the corridor
-            }
-            int open = 0;
-            for (int dy = -4; dy <= 4; dy++) {
-                if (!grid.isBlocked(x, y + dy)) {
-                    open++;
+    void nothingOnTheFloorIsNarrowerThanATunnel() {
+        int side = SETTINGS.corridorWidth();
+        for (long seed = 0; seed <= 40; seed++) {
+            for (int depth : new int[] {1, 3}) {
+                var rows = DungeonGenerator.generate(seed, SETTINGS, depth).asciiMap().strip().split("\n");
+                for (int y = 0; y < rows.length; y++) {
+                    for (int x = 0; x < rows[y].length(); x++) {
+                        if (rows[y].charAt(x) != '#') {
+                            assertTrue(inAWholeSquare(rows, x, y, side),
+                                    "seed " + seed + ", depth " + depth + ": the floor at " + x + "," + y
+                                            + " is narrower than " + side + " cells");
+                        }
+                    }
                 }
             }
-            thinnest = Math.min(thinnest, open);
-        }
-        if (thinnest != Integer.MAX_VALUE) {
-            assertTrue(thinnest >= SETTINGS.corridorWidth(),
-                    "the narrowest point measured " + thinnest + " cells");
         }
     }
 
-    private static boolean insideAnyRoom(GeneratedDungeon floor, int x, int y) {
-        for (var room : floor.rooms()) {
-            if (x >= room.x() && x < room.x() + room.w()
-                    && y >= room.y() && y < room.y() + room.h()) {
-                return true;
+    /** Whether some {@code side}-wide square of floor holds the cell. */
+    private static boolean inAWholeSquare(String[] rows, int x, int y, int side) {
+        for (int top = y - side + 1; top <= y; top++) {
+            for (int left = x - side + 1; left <= x; left++) {
+                if (allFloor(rows, left, top, side)) {
+                    return true;
+                }
             }
         }
         return false;
+    }
+
+    private static boolean allFloor(String[] rows, int left, int top, int side) {
+        for (int y = top; y < top + side; y++) {
+            for (int x = left; x < left + side; x++) {
+                if (y < 0 || x < 0 || y >= rows.length || x >= rows[y].length() || rows[y].charAt(x) == '#') {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     /**

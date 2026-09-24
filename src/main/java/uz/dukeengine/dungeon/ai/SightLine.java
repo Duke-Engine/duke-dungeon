@@ -146,19 +146,14 @@ public final class SightLine {
     }
 
     /**
-     * Which storey the ground at a point belongs to.
+     * Which storey the ground at a point belongs to: the level of its cell, as the client's fog reads it.
      *
-     * <p>Rounded <em>down</em>, and that is the whole of what makes a staircase
-     * something you can see up. A stair cell's floor climbs across it, so the
-     * middle of one reads half a storey up — taken to the nearest it would be the
-     * upper storey and the stair would hide itself, which is not what the client
-     * does and not what anybody sees. A stair belongs to the floor it starts from.
+     * <p>The level, and not how high the ground stands. A hill is something you see over — the fog draws what
+     * stands on one — and a height divided into storeys put anything more than a storey up a slope behind an
+     * edge that is not there. A stair belongs to the floor it starts from, which is its level too.
      */
     private static int storeyOf(World world, Coord3D at, float storeyHeight) {
-        if (storeyHeight <= 0f) {
-            return 0;
-        }
-        return (int) Math.floor(world.groundHeight(at) / storeyHeight + 0.001f);
+        return storeyHeight <= 0f ? 0 : world.levelAt(at);
     }
 
     private static int cell(float world) {

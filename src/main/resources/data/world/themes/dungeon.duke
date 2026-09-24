@@ -1,16 +1,18 @@
 ; ---------------------------------------------------------------------------
 ; How a floor looks
 ;
-; Every floor is the same fight; what changes is what it is made of. A theme is
-; a kit to build the floor from, a colour for the dark, and whatever creatures
-; are drawn differently while it lasts. It changes no room, no monster and no
-; number the simulation reads -- which is exactly why the choice can be drawn
-; from the seed without disturbing the world's own dice, and why a test can hold
-; the checksum still across a change of theme.
+; A theme is two things. Its Terrain is the ground: how the chambers are cut and
+; how the land rises under them -- a wood is open and rolling, a cellar close and
+; cut, and those are different floors, not one floor dressed twice. Everything
+; else is the look: a kit to build the floor from, a colour for the dark, and
+; whatever creatures are drawn differently while it lasts. The look changes no
+; cell, no monster and no number the simulation reads -- which is why a test can
+; hold the checksum still across two themes that differ only in how they look.
 ;
 ; A fourth theme is a file like this one and a folder of models. There is no Java.
 ;
 ;   Theme      what the kit is and how it is placed
+;   Terrain    the ground its floors are carved into
 ;   Tones      its variations, one drawn from the seed for each floor
 ;   Monsters   the creatures drawn differently while it lasts
 ;
@@ -67,6 +69,32 @@ Theme
   ; No WallBase: a wall is a surface here, so two storeys of rock is two courses
   ; of masonry and the mass between them is already closed in by its own faces.
   FogTint = 0x07060A
+  ; ---- the ground ----
+  ;
+  ; Caverns cut out of the rock and the tunnels between them. Close: the edges
+  ; stay near the curve they were cut to, because worked stone laid along a
+  ; ragged line is a wall of notches. Each cavern floor is laid nearly level and
+  ; the tunnels do the climbing -- going deeper is walking down a slope into the
+  ; next hall, where it used to be a flight of stairs at every doorway.
+  Terrain = Terrain
+    ; How far a chamber's edge strays from the curve, and a tunnel from the
+    ; straight line, as percentages.
+    Ragged = 20
+    Winding = 30
+    ; Tunnels beyond the ones that join every chamber, as a percentage of the
+    ; chambers: a way round. Never into the boss's hall.
+    Loops = 20
+    ; A block of rock left standing inside a cavern -- a pillar to fight round.
+    IslandsPerRoom = [0, 2]
+    ; The ground, in steps of a sixteenth of a cell. Rise is how high it gets
+    ; over the lowest point, HillSize about how many cells across a rise is, and
+    ; Slope the steepest it may be across one cell: 16 is a cliff, so up to 15.
+    Rise = 40
+    HillSize = 7
+    Slope = 7
+    ; How level a cavern's floor is laid, as a percentage.
+    Level = 70
+  End
   Tones = [
     Tone
       Name = Stone

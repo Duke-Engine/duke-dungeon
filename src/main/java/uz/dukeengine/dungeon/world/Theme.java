@@ -9,17 +9,18 @@ import uz.dukeengine.client3d.Held;
 import uz.dukeengine.dungeon.content.MonsterLook;
 
 /**
- * One way a floor can look: the kit it is built from, the colour of its dark, its variations, and
- * whatever creatures walk it differently.
+ * One kind of place a floor can be: the ground it is carved into, the kit it is built from, the colour of its
+ * dark, its variations, and whatever creatures walk it differently.
  *
- * <p>Look and nothing else. Which theme a floor wears changes no room, no monster and no number
- * the simulation reads — a stone dungeon and a sci-fi corridor at the same depth are the same fight
- * in different clothes. That is what lets the choice be made from the seed without touching the
- * world's own randomness, and what lets a test prove the checksum is untouched.
+ * <p>Two halves, and only one of them is a look. The {@link Terrain} is the ground: how ragged a chamber is, how
+ * a tunnel winds, how high the hills rise — a forest is open and rolling where a cellar is close and cut, and
+ * that is a different floor, not the same one dressed differently. Everything else — the kit, the tones, the dark,
+ * the creatures' skins — changes no cell, no monster and no number the simulation reads, which is what lets a
+ * test prove two themes that differ only in look play one run.
  *
  * <p>Adding one is a file and a folder of models, and no Java: the block says what the kit is, its
- * {@code Tones} how it varies and its {@code Monsters} what lives there; which depth wears which is
- * the map's to say.
+ * {@code Tones} how it varies, its {@code Monsters} what lives there and its {@code Terrain} what the ground
+ * is like; which depth wears which is the map's to say.
  *
  * <p>Every asset it names is a whole path from the resource root, so a kit's files may sit
  * wherever its author keeps them.
@@ -51,6 +52,7 @@ import uz.dukeengine.dungeon.content.MonsterLook;
  *     The same question as {@code capTint} one level out: a raised room is the same tiles higher up
  * @param fogTint       what the dark is coloured here, packed {@code 0xRRGGBB} — bluish under ice, red
  *     under lava, black in plain stone
+ * @param terrain       the ground its floors are carved into — see {@link Terrain}
  */
 public record Theme(
         String name,
@@ -70,11 +72,12 @@ public record Theme(
         int storeyShadePercent,
         int fogTint,
         List<Tone> tones,
-        List<ThemeMonster> monsters) {
+        List<ThemeMonster> monsters,
+        Terrain terrain) {
 
     /** What a block leaves out. */
     public static final Theme DEFAULTS = new Theme("", 4f, 0f, 4f, 0f, 0f, false, false, 1, 0f, 0f, null, null,
-            0xFFFFFF, 100, 0, List.of(), List.of());
+            0xFFFFFF, 100, 0, List.of(), List.of(), Terrain.DEFAULTS);
 
     public Theme {
         // A kit whose walls are on the same module as its floors says so by not saying anything,
@@ -83,6 +86,38 @@ public record Theme(
         wallTileSize = wallTileSize > 0f ? wallTileSize : tileSize;
         tones = List.copyOf(tones);
         monsters = List.copyOf(monsters);
+        terrain = terrain == null ? Terrain.DEFAULTS : terrain;
+    }
+
+    /**
+     * The ground a theme's floors are carved into: the shape of the place rather than what it is built from.
+     *
+     * <p>Chambers are grown in the footprints the map's {@code Generation} places, and joined by tunnels along the
+     * same tree; what this says is what they are like. Every number is the file's, so a close stone cellar and an
+     * open rolling wood come out of one generator.
+     *
+     * @param ragged         how far a chamber's edge strays from a smooth curve, as a percentage: 0 is an
+     *     ellipse, 60 is a cave that bulges and notches all round
+     * @param winding        how far a tunnel bends away from the straight line, as a percentage of its length
+     * @param loops          extra tunnels beyond the ones that join every chamber, as a percentage of the
+     *     chambers: a way round rather than only a way through. Never into the boss's chamber, so it is as deep
+     *     as it ever was
+     * @param islandsPerRoom rock standing inside a chamber — a pillar in a cavern, a grove in a glade — fewest
+     *     and most, written {@code [0, 2]}. Only where floor rings it, so it never cuts anything off
+     * @param rise           how high the ground rises above its lowest point, in steps of a sixteenth of a cell
+     * @param hillSize       about how many cells across a hill is
+     * @param slope          the steepest the ground may get across one cell, in steps: a cell is a cliff from 16,
+     *     so 15 is the most there is and every cell stays walkable
+     * @param level          how flat a chamber's floor is laid, as a percentage: 100 levels it at the height of its
+     *     middle — so the climbing happens in the tunnels — and 0 lets the hills run straight through it
+     */
+    public record Terrain(int ragged, int winding, int loops,
+            uz.dukeengine.dungeon.map.ProceduralMap.PerRoom islandsPerRoom, int rise, int hillSize, int slope,
+            int level) {
+
+        /** What a block leaves out, and the ground of a floor no theme was named for. */
+        public static final Terrain DEFAULTS = new Terrain(25, 35, 20,
+                new uz.dukeengine.dungeon.map.ProceduralMap.PerRoom(0, 1), 32, 8, 6, 50);
     }
 
     /** How the wall piece stands, gathered from the four lines that say it. */

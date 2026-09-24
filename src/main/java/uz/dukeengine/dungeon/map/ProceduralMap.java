@@ -33,26 +33,20 @@ public record ProceduralMap(String name, Layout generation, @Link(Theme.class) L
     }
 
     /**
-     * How big a floor is and how it is cut.
+     * How big a floor is and how many chambers it is cut into. What the ground between them is like — how ragged,
+     * how winding, how hilly — is the theme's; see {@code Theme.Terrain}.
      *
-     * @param corridorWidth   corridor width in cells — wide enough for the largest creature to pass
-     * @param maxRoomSpacing  how far a new room may sit from the nearest already placed, in cells
-     * @param maxStorey       the highest a room may stand; zero is a floor on one level
-     * @param storeyChangePercent how often a corridor changes storey rather than running level
-     * @param stairLength     how many cells of a corridor a stair takes up
-     * @param entranceStorey  which storey the hero starts on, never above {@code maxStorey}
-     * @param bossStorey      which storey the boss waits on — the top, by default
-     * @param hills           how high the floor rises and falls over its storeys, in steps of a sixteenth of a
-     *                        cell, 0 to 15: never enough for a cliff; zero, and every floor lies flat
-     * @param hillSize        about how many cells across a hill is
+     * @param minRoomSize     the smallest footprint a chamber is grown in, in cells across
+     * @param corridorWidth   how many cells across a tunnel is at its narrowest — wide enough for the largest
+     *     creature to pass, and nothing anywhere on the floor is narrower
+     * @param maxRoomSpacing  how far a new chamber may sit from the nearest already placed, in cells
      */
     public record Layout(int mapWidth, int mapHeight, int minRooms, int maxRooms, int minRoomSize, int maxRoomSize,
             int roomGap, int placementAttempts, int corridorWidth, int maxRoomSpacing, int minSkeletonsPerRoom,
-            int maxSkeletonsPerRoom, int maxStorey, int storeyChangePercent, int stairLength, int entranceStorey,
-            int bossStorey, int hills, int hillSize) {
+            int maxSkeletonsPerRoom) {
 
         /** What a block leaves out. */
-        public static final Layout DEFAULTS = new Layout(50, 36, 5, 8, 5, 9, 1, 600, 2, 24, 2, 6, 2, 45, 1, 0, 2, 0, 4);
+        public static final Layout DEFAULTS = new Layout(50, 36, 5, 8, 5, 9, 1, 600, 2, 24, 2, 6);
     }
 
     /** Fewest and most, written {@code [0, 3]}. */

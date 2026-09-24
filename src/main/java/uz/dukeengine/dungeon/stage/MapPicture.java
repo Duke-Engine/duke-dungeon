@@ -52,10 +52,13 @@ public final class MapPicture {
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g2.setColor(BACKGROUND);
             g2.fillRect(0, 0, image.getWidth(), image.getHeight());
+            var relief = stage.floor().relief();
+            int highest = relief == null ? 0 : highestOf(relief);
             for (int y = 0; y < rows.size(); y++) {
                 var row = rows.get(y);
                 for (int x = 0; x < across; x++) {
-                    g2.setColor(groundOf(x < row.length() ? row.charAt(x) : '#'));
+                    int rise = relief == null || highest == 0 ? 0 : heightOf(relief, x, y) * HILL_LIFT / highest;
+                    g2.setColor(groundOf(x < row.length() ? row.charAt(x) : '#', rise));
                     g2.fillRect(x * cell, y * cell, cell, cell);
                 }
             }
@@ -96,17 +99,40 @@ public final class MapPicture {
         }
     }
 
-    /** Rock, or floor a shade lighter for every storey up, or — a stair, being neither — a colour of its own. */
-    private static Color groundOf(char cell) {
+    /**
+     * Rock, or floor a shade lighter for every storey up and for however high the ground stands, or — a stair,
+     * being neither — a colour of its own.
+     *
+     * @param rise how much lighter the ground's own height makes it, 0 at the lowest to {@link #HILL_LIFT} at the top
+     */
+    private static Color groundOf(char cell, int rise) {
         if (cell == '#') {
             return ROCK;
         }
         if (!Character.isDigit(cell)) {
             return STAIR;
         }
-        int lift = Math.min(cell - '0', 4) * 22;
+        int lift = Math.min(cell - '0', 4) * 22 + rise;
         return new Color(Math.min(255, FLOOR.getRed() + lift), Math.min(255, FLOOR.getGreen() + lift),
                 Math.min(255, FLOOR.getBlue() + lift));
+    }
+
+    /** How much lighter the highest ground on a map is drawn than its lowest: a hill reads as one from above. */
+    private static final int HILL_LIFT = 90;
+
+    /** A cell's height: the middle of its four corners. */
+    private static int heightOf(uz.dukeengine.core.pathfind.HeightMap relief, int x, int y) {
+        return (relief.at(x, y) + relief.at(x + 1, y) + relief.at(x, y + 1) + relief.at(x + 1, y + 1)) / 4;
+    }
+
+    private static int highestOf(uz.dukeengine.core.pathfind.HeightMap relief) {
+        int highest = 0;
+        for (int y = 0; y < relief.rows(); y++) {
+            for (int x = 0; x < relief.columns(); x++) {
+                highest = Math.max(highest, relief.at(x, y));
+            }
+        }
+        return highest;
     }
 
     /** A kind's own colour, drawn from its name so two kinds are two colours without anybody choosing them. */

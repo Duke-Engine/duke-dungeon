@@ -87,6 +87,33 @@ o'zgartira olmaydi. Baland devorlar kerak bo'lsa, bu engine ishi bo'ladi.
 Procedural generatsiya · ko'p xona, boss, leveling · o'lim/qaytadan sikli ·
 model, tekstura, ovoz, musiqa.
 
+## Generatsiya — kameralar, tunnellar, relyef
+
+Qavat endi to'rtburchak xonalar va zinali qavatlardan (storey) emas, balki
+**organik kameralar** va **silliq relyefdan** iborat (`gen/Cave`, `gen/Relief`):
+
+- **Kamera** — xona joylashadigan footprint ichida o'stiriladi: ellips, bir
+  necha bo'rtiq, keyin qirg'oqlari "yeyiladi". O'rtasi doim pol: qahramon va
+  boss shu yerda turadi.
+- **Tunnel** — kameralarni avvalgidek eng qisqa daraxt (MST) bo'yicha ulaydi,
+  lekin to'g'ri chiziq emas, egri-bugri. Qo'shimcha **halqalar** (loops) faqat
+  kirishdan bir xil (±1) uzoqlikdagi kameralar orasida, boss zaliga hech qachon —
+  shuning uchun boss avvalgidek uzoqda qoladi.
+- **Kafolatlar** — tunnellar va kameralar o'rtasi hech qachon toshga
+  aylantirilmaydi; `CorridorWidth` dan tor joy qolmaydi; kirishdan yetib
+  bo'lmaydigan pol olib tashlanadi. Ya'ni qavat qurilishning o'zidan bog'langan.
+- **Orolchalar** — kamera ichida qolgan tosh: g'orda ustun, o'rmonda daraxtzor.
+  Faqat atrofi pol bo'lgan joyda, shuning uchun hech narsani to'smaydi.
+- **Relyef** — qavat/zina o'rniga tepalik va pastliklar: kameralar turli
+  balandlikda, qiyalik tunnellarda. Har bir katak `Slope` dan tik emas (16 — jar),
+  demak hech qayerda jar yo'q.
+
+Yer qanday bo'lishini **tema** aytadi — `data/world/themes/*.duke` dagi
+`Terrain` bloki: `Ragged`, `Winding`, `Loops`, `IslandsPerRoom`, `Rise`,
+`HillSize`, `Slope`, `Level`. O'rmon ochiq va to'lqinli, zindon yopiq va tekis
+zalli. Temaning qolgan qismi (kit, tuman rangi, tonlar) faqat ko'rinish —
+simulyatsiyaga ta'sir qilmaydi (`DungeonThemeTest`).
+
 ## Stage rejimi — o'zgarmaydigan xarita
 
 O'yinning ikkinchi turi. Roguelike tushishi har run'da yangi qavat chizadi va

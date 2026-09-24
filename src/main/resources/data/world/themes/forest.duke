@@ -2,10 +2,10 @@
 ; The same dungeon, out of doors.
 ;
 ; Nothing is a wall here: what a body cannot cross is drawn as a tree, and the
-; rock between the rooms is roofed at ground level rather than at wall height —
-; so the whole map is forest floor, with tree lines standing where the corridors
-; are not. The layout is the one the generator always draws; only what it is
-; made of has changed, which is the whole point of a theme.
+; rock between the glades is roofed at ground level rather than at wall height —
+; so the whole map is forest floor, with the wood standing where the trails are
+; not. The ground is its own too: open glades with ragged edges, trails that
+; wander, groves standing in the clearings, and hills rolling under all of it.
 ;
 ; WallHeight = 0 is what lays that roof on the ground. WallShift moves each tree
 ; half a cell back into the rock it stands on, so the trunk marks the edge and
@@ -79,6 +79,24 @@ Theme
   StoreyShadePercent = 108
   ; Green in the dark, because everything here grows.
   FogTint = 0x060B06
+  ; ---- the ground ----
+  ;
+  ; Glades in a wood, and the trails between them. Ragged, because a tree line
+  ; is never a curve; winding, because nothing cut these paths with a rule; and
+  ; more of them, because a wood has more than one way through. The land rolls
+  ; under everything, glades included -- a clearing on a hillside is still a
+  ; clearing. The numbers mean what they mean in the cellar: see dungeon.duke.
+  Terrain = Terrain
+    Ragged = 45
+    Winding = 50
+    Loops = 40
+    ; A grove standing in a glade: something to lose an archer behind.
+    IslandsPerRoom = [1, 3]
+    Rise = 56
+    HillSize = 11
+    Slope = 6
+    Level = 25
+  End
   Tones = [
     Tone
       Name = Wooded

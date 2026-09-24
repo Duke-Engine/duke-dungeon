@@ -67,17 +67,24 @@ class PropsTest {
         }
     }
 
-    /** Nor on a stair, which is the one cell a floor cannot spare. */
+    /**
+     * Only in the open: two cells of floor all round every one of them, so none stands in a tunnel, a gap between
+     * the rock, or against a wall where a body would have to squeeze past it.
+     */
     @Test
-    void nothingStandsOnAStair() {
+    void everythingStandsInTheOpen() {
         for (long seed = 0; seed <= SEEDS; seed++) {
             var dungeon = generate(seed);
-            var lines = dungeon.levelMap().strip().split("\n");
+            var lines = dungeon.asciiMap().strip().split("\n");
             for (var prop : dungeon.props()) {
                 int cx = (int) Math.floor(prop.at().x() / PathGrid.DEFAULT_CELL_SIZE);
                 int cy = (int) Math.floor(prop.at().y() / PathGrid.DEFAULT_CELL_SIZE);
-                assertTrue(lines[cy].charAt(cx) != '/',
-                        "seed " + seed + ": a " + prop.kind() + " is standing on the stairs");
+                for (int y = cy - 2; y <= cy + 2; y++) {
+                    for (int x = cx - 2; x <= cx + 2; x++) {
+                        assertTrue(lines[y].charAt(x) != '#', "seed " + seed + ": a " + prop.kind() + " at "
+                                + cx + "," + cy + " stands within two cells of the rock");
+                    }
+                }
             }
         }
     }

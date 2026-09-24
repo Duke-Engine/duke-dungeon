@@ -1,6 +1,7 @@
 package uz.dukeengine.dungeon.gen;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.dungeon.content.MonsterKind;
@@ -11,37 +12,29 @@ import uz.dukeengine.dungeon.gen.GeneratedDungeon.Prop;
 import uz.dukeengine.dungeon.gen.GeneratedDungeon.Room;
 
 /**
- * Draws a dungeon from a seed: a handful of rooms joined by corridors, with the
- * hero in one and the skeletons scattered through the rest.
+ * Draws a floor from a seed: chambers of rock or glades of wood grown where the rooms are placed, joined by
+ * tunnels that wander, laid over hills — with the hero in the first and the monsters scattered through the rest.
  *
- * <p>The one property that matters more than any other is that <b>every room can
- * be reached</b> — a skeleton walled off in an island room is a run the player
- * cannot finish. This is guaranteed by construction rather than hoped for: each
- * room after the first is joined by a corridor to a room placed <em>before</em>
- * it, so the rooms form a spanning tree and the whole dungeon is one connected
- * space. No search, no retry, no "is it connected?" check that could pass by luck.
+ * <p>The one property that matters more than any other is that <b>every chamber can be reached</b> — a skeleton
+ * walled off in an island chamber is a run the player cannot finish. This is guaranteed by construction rather
+ * than hoped for: the chambers are joined along a spanning tree grown out of the first, and every tunnel of it is
+ * kept whatever the edges of the floor are worn into afterwards — see {@link Cave}. The ground under it is laid so
+ * no cell is steep enough to be a cliff — see {@link Relief} — so the floor that was connected on the flat is
+ * connected on the hills.
  *
- * <p>Which earlier room it joins is chosen to keep the walking short: the
- * <b>nearest</b> one, not simply the previous one. Joining rooms in placement
- * order meant regularly joining two rooms that random placement had thrown to
- * opposite corners, and the result was long empty corridors that were dull to
- * walk down. Picking the nearest earlier room is the same spanning-tree argument —
- * the partner is still an already-connected room — so the guarantee is untouched
- * while the corridors get much shorter.
+ * <p>Which earlier chamber a new one joins is chosen to keep the walking short: the <b>nearest</b> pair across the
+ * tree, grown one chamber at a time (Prim's). Joining in placement order regularly joined two chambers random
+ * placement had thrown to opposite corners, and the result was long empty tunnels that were dull to walk down.
  *
- * <p>Everything is drawn with a {@link DeterministicRng} in a fixed order, so a
- * seed names exactly one dungeon. Room placement is the only part that can fail
- * to progress (a room may land on another and be rejected); it is bounded by an
- * attempt count and simply stops with however many rooms fit.
+ * <p>Everything is drawn with a {@link DeterministicRng} in a fixed order, so a seed names exactly one floor.
+ * Placement is the only part that can fail to progress (a footprint may land on another and be rejected); it is
+ * bounded by an attempt count and simply stops with however many fit.
  *
- * <p>How many rooms, how big, how crowded: all of it comes from
- * {@link DungeonSettings}, which is read from a file. None of it is compiled in,
- * so a dungeon can be re-tuned without a rebuild.
+ * <p>How many chambers, how big, how crowded: all of it comes from {@link DungeonSettings}, which is read from a
+ * file. What the ground between them is like — ragged or smooth, winding or straight, hilly or flat — is the
+ * theme's the depth wears, from the same files. None of it is compiled in.
  */
 public final class DungeonGenerator {
-
-    private static final char STONE = '#';
-    private static final char FLOOR = '.';
 
     private DungeonGenerator() {
     }
@@ -63,9 +56,8 @@ public final class DungeonGenerator {
     /**
      * A floor of the dungeon at {@code depth}.
      *
-     * <p>Depth changes who lives here and how many of them, not the shape: the
-     * rooms and corridors are drawn the same way at every depth, so the thing that
-     * gets harder is the fighting rather than the walking.
+     * <p>Depth changes who lives here and how many of them, and which theme's ground the floor is carved into;
+     * the chambers are placed and joined the same way at every depth.
      */
     public static GeneratedDungeon generate(long seed, DungeonSettings settings, int depth) {
         return generate(seed, settings, depth, Layout.of(settings));
@@ -83,35 +75,23 @@ public final class DungeonGenerator {
     public static GeneratedDungeon generate(long seed, DungeonSettings settings, int depth,
             Layout layout) {
         var rng = new DeterministicRng(seed);
-
-        var cells = new char[layout.height()][layout.width()];
-        for (var row : cells) {
-            java.util.Arrays.fill(row, STONE);
-        }
+        var terrain = settings.themes().terrainAt(depth);
 
         var rooms = placeRooms(rng, settings, layout);
-        for (var room : rooms) {
-            carveRoom(cells, room);
-        }
-        var corridors = connectRooms(cells, rng, rooms, settings.corridorWidth());
-        var links = new ArrayList<Link>(corridors.size());
-        for (var corridor : corridors) {
-            links.add(new Link(corridor.from(), corridor.to()));
-        }
-
-        var hero = worldCenter(rooms.get(0).centerCellX(), rooms.get(0).centerCellY());
+        var links = spanningTree(rooms);
         int bossRoom = furthestRoomFromStart(rooms.size(), links);
-        var storeys = Storeys.of(rng, rooms, corridors, bossRoom, settings, cells);
-        var monsters = populate(rng, rooms, settings, depth, bossRoom);
-        var boss = new Monster(settings.bossKindAt(depth),
-                worldCenter(rooms.get(bossRoom).centerCellX(), rooms.get(bossRoom).centerCellY()));
-        monsters.addAll(guard(rooms.get(bossRoom), settings, depth));
-        var props = scatter(rng, rooms, settings, storeys.map(), monsters, hero, boss.at());
+        var cave = Cave.carve(rng, layout.width(), layout.height(), rooms, links, bossRoom,
+                settings.corridorWidth(), settings.maxRoomSpacing(), terrain);
 
-        return new GeneratedDungeon(render(cells), render(storeys.map()), hero, monsters, boss,
-                bossRoom, List.copyOf(rooms), List.copyOf(links), storeys.perRoom(), props,
-                settings.hills() > 0 ? Hills.of(seed, layout.width(), layout.height(), settings.hills(), settings.hillSize()) : null,
-                0f);
+        var hero = middleOf(rooms.get(0));
+        var monsters = populate(rng, cave, rooms, settings, depth, bossRoom);
+        var boss = new Monster(settings.bossKindAt(depth), middleOf(rooms.get(bossRoom)));
+        monsters.addAll(guard(cave, rooms.get(bossRoom), settings, depth));
+        var props = scatter(rng, cave, rooms, settings, monsters, hero, boss.at());
+
+        return new GeneratedDungeon(cave.walls(), cave.levels(), hero, monsters, boss, bossRoom,
+                List.copyOf(rooms), List.copyOf(links), Collections.nCopies(rooms.size(), 0), props,
+                Relief.of(seed, cave, rooms, terrain), 0f);
     }
 
     /**
@@ -144,23 +124,17 @@ public final class DungeonGenerator {
     }
 
     /**
-     * Join the rooms with the cheapest set of corridors that reaches all of them —
-     * a minimum spanning tree, grown one room at a time (Prim's).
+     * Which chambers a tunnel joins: the cheapest set that reaches all of them — a minimum spanning tree, grown one
+     * chamber at a time (Prim's).
      *
-     * <p>Connectivity is still a property of the construction, not of luck: the
-     * tree starts at room 0 and every step joins a room already in it to one that
-     * is not, so after {@code rooms - 1} steps every room hangs off room 0. What
-     * the minimum buys is the walking. Joining rooms in placement order, or even
-     * each to its nearest <em>earlier</em> room, leaves whichever room was placed
-     * out on its own tethered by a corridor across the map; choosing globally means
-     * no room is ever joined by a longer corridor than it has to be.
+     * <p>Connectivity is a property of the construction, not of luck: the tree starts at chamber 0 and every step
+     * joins one already in it to one that is not, so after {@code rooms - 1} steps every chamber hangs off the
+     * first. What the minimum buys is the walking: no chamber is ever joined by a longer tunnel than it has to be.
      *
-     * <p>Ties fall to the lowest room index by iteration order, so the result is
-     * the same everywhere.
+     * <p>Ties fall to the lowest index by iteration order, so the result is the same everywhere.
      */
-    private static List<Corridor> connectRooms(char[][] cells, DeterministicRng rng,
-            List<Room> rooms, int width) {
-        var links = new ArrayList<Corridor>();
+    private static List<Link> spanningTree(List<Room> rooms) {
+        var links = new ArrayList<Link>();
         var joined = new boolean[rooms.size()];
         joined[0] = true;
 
@@ -176,7 +150,7 @@ public final class DungeonGenerator {
                     if (joined[outside]) {
                         continue;
                     }
-                    int distance = corridorCost(rooms.get(inside), rooms.get(outside));
+                    int distance = tunnelCost(rooms.get(inside), rooms.get(outside));
                     if (distance < bestDistance) {
                         bestDistance = distance;
                         bestInside = inside;
@@ -185,13 +159,13 @@ public final class DungeonGenerator {
                 }
             }
             joined[bestOutside] = true;
-            links.add(carveCorridor(cells, rng, bestInside, bestOutside, rooms, width));
+            links.add(new Link(bestInside, bestOutside));
         }
         return links;
     }
 
-    /** Manhattan, because that is exactly how long the L-shaped corridor will be. */
-    private static int corridorCost(Room a, Room b) {
+    /** Manhattan between the two middles: about what a tunnel between them costs to walk. */
+    private static int tunnelCost(Room a, Room b) {
         return Math.abs(a.centerCellX() - b.centerCellX())
                 + Math.abs(a.centerCellY() - b.centerCellY());
     }
@@ -255,112 +229,16 @@ public final class DungeonGenerator {
         return false;
     }
 
-    private static void carveRoom(char[][] cells, Room room) {
-        for (int y = room.y(); y < room.y() + room.h(); y++) {
-            for (int x = room.x(); x < room.x() + room.w(); x++) {
-                cells[y][x] = FLOOR;
-            }
-        }
-    }
-
-    private static Corridor carveCorridor(char[][] cells, DeterministicRng rng, int fromRoom,
-            int toRoom, List<Room> rooms, int width) {
-        var from = rooms.get(fromRoom);
-        var to = rooms.get(toRoom);
-        int x1 = from.centerCellX();
-        int y1 = from.centerCellY();
-        int x2 = to.centerCellX();
-        int y2 = to.centerCellY();
-        // An L-bend: which leg comes first is a coin-flip, so corridors vary.
-        boolean horizontalFirst = rng.nextBoolean();
-        if (horizontalFirst) {
-            carveHorizontal(cells, y1, x1, x2, width);
-            carveVertical(cells, x2, y1, y2, width);
-        } else {
-            carveVertical(cells, x1, y1, y2, width);
-            carveHorizontal(cells, y2, x1, x2, width);
-        }
-        return new Corridor(fromRoom, toRoom, spine(x1, y1, x2, y2, horizontalFirst), width);
-    }
-
     /**
-     * The corridor's centre line, in the order it is walked from one room to the
-     * other.
-     *
-     * <p>Carving does not need an order — a floor is a floor whichever end it was
-     * cut from. Height does: a stair is somewhere <em>along</em> a corridor, with
-     * one storey behind it and another ahead, and that is a question about a
-     * journey rather than about a set of cells.
-     */
-    private static List<int[]> spine(int x1, int y1, int x2, int y2, boolean horizontalFirst) {
-        var walk = new ArrayList<int[]>();
-        if (horizontalFirst) {
-            walkX(walk, y1, x1, x2);
-            walkY(walk, x2, y1, y2);
-        } else {
-            walkY(walk, x1, y1, y2);
-            walkX(walk, y2, x1, x2);
-        }
-        return walk;
-    }
-
-    /** {@code {x, y, alongX}} — the flag says which way the corridor's width runs. */
-    private static void walkX(List<int[]> walk, int y, int from, int to) {
-        int step = from <= to ? 1 : -1;
-        for (int x = from; x != to + step; x += step) {
-            walk.add(new int[] {x, y, 1});
-        }
-    }
-
-    private static void walkY(List<int[]> walk, int x, int from, int to) {
-        int step = from <= to ? 1 : -1;
-        for (int y = from; y != to + step; y += step) {
-            walk.add(new int[] {x, y, 0});
-        }
-    }
-
-    /**
-     * Carve a band {@code width} cells thick, centred on the line.
-     *
-     * <p>A one-cell corridor is ten world units and the largest creature is
-     * sixteen across, which does not merely look tight — a mover with no room to
-     * step aside swerves into stone, and stone is where it stays. The width is a
-     * correctness setting, not a matter of taste.
-     */
-    private static void carveHorizontal(char[][] cells, int y, int xa, int xb, int width) {
-        for (int offset = -(width - 1) / 2; offset <= width / 2; offset++) {
-            int row = y + offset;
-            if (row <= 0 || row >= cells.length - 1) {
-                continue; // never breach the map's own border
-            }
-            for (int x = Math.min(xa, xb); x <= Math.max(xa, xb); x++) {
-                cells[row][x] = FLOOR;
-            }
-        }
-    }
-
-    private static void carveVertical(char[][] cells, int x, int ya, int yb, int width) {
-        for (int offset = -(width - 1) / 2; offset <= width / 2; offset++) {
-            int column = x + offset;
-            if (column <= 0 || column >= cells[0].length - 1) {
-                continue;
-            }
-            for (int y = Math.min(ya, yb); y <= Math.max(ya, yb); y++) {
-                cells[y][column] = FLOOR;
-            }
-        }
-    }
-
-    /**
-     * Fill the rooms the hero does not start in, drawing a kind for each monster
+     * Fill the chambers the hero does not start in, drawing a kind for each monster
      * from what the data file makes available at this depth.
      *
-     * <p>The boss's room is left to the boss and the guard the file names for it --
-     * see {@link #guard}. It is meant to be the end of the floor, and a crowd drawn at
-     * random around it would turn the fight that gates the next depth into a brawl
-     * the player stumbles into sideways.
+     * <p>Each stands on floor with floor all round it, never against the rock. The boss's chamber is left to the
+     * boss and the guard the file names for it -- see {@link #guard}. It is meant to be the end of the floor, and a
+     * crowd drawn at random around it would turn the fight that gates the next depth into a brawl the player
+     * stumbles into sideways.
      */
-    private static List<Monster> populate(DeterministicRng rng, List<Room> rooms,
+    private static List<Monster> populate(DeterministicRng rng, Cave cave, List<Room> rooms,
             DungeonSettings settings, int depth, int bossRoom) {
         var available = settings.roomFillersAt(depth);
         var monsters = new ArrayList<Monster>();
@@ -379,13 +257,12 @@ public final class DungeonGenerator {
             var room = rooms.get(i);
             int count = Math.round(rng.nextInt(settings.minSkeletonsPerRoom(),
                     settings.maxSkeletonsPerRoom()) * settings.monsterCountAt(depth));
+            var spots = cave.openAround(room, 1);
             var used = new ArrayList<int[]>();
             var inThisRoom = new java.util.HashMap<String, Integer>();
-            for (int n = 0; n < count; n++) {
-                // Interior cells only — always floor, never on the room's wall line.
-                int cx = rng.nextInt(room.x() + 1, room.x() + room.w() - 2);
-                int cy = rng.nextInt(room.y() + 1, room.y() + room.h() - 2);
-                if (occupied(used, cx, cy)) {
+            for (int n = 0; n < count && !spots.isEmpty(); n++) {
+                var spot = spots.get(rng.nextInt(spots.size()));
+                if (occupied(used, spot[0], spot[1])) {
                     continue; // one per cell, so they never spawn overlapping
                 }
                 // A kind with as many here as the file allows is drawn no more in this
@@ -394,11 +271,11 @@ public final class DungeonGenerator {
                 if (open.isEmpty()) {
                     break;
                 }
-                used.add(new int[] {cx, cy});
+                used.add(spot);
                 var kind = open.size() == available.size() ? draw(rng, available, totalWeight)
                         : draw(rng, open, weightOf(open));
                 inThisRoom.merge(kind.name(), 1, Integer::sum);
-                monsters.add(new Monster(kind.name(), worldCenter(cx, cy)));
+                monsters.add(new Monster(kind.name(), Placement.atCell(spot[0], spot[1])));
             }
         }
         return monsters;
@@ -408,13 +285,13 @@ public final class DungeonGenerator {
      * Stand the boss's guard round it: the kinds the file names for this depth, each on
      * the next cell of a square ring round the boss's own.
      *
-     * <p>No dice, so a floor's rooms, fillers and furniture are drawn exactly as they
+     * <p>No dice, so a floor's chambers, fillers and furniture are drawn exactly as they
      * were before its boss had a guard. The ring is {@code BossGuardRing} cells out --
      * a boss is wide -- with its corners taken first and then the middles of its sides,
-     * so four stand square round the boss. A cell on the wall line or outside the room
+     * so four stand square round the boss. A cell that is rock or outside the chamber's footprint
      * is passed over, and when one ring has no floor left the next ring out is tried.
      */
-    private static List<Monster> guard(Room room, DungeonSettings settings, int depth) {
+    private static List<Monster> guard(Cave cave, Room room, DungeonSettings settings, int depth) {
         var wanted = new ArrayList<String>();
         for (var guard : settings.bossGuardsAt(depth)) {
             for (int n = 0; n < guard.count(); n++) {
@@ -430,8 +307,8 @@ public final class DungeonGenerator {
             for (var cell : ringAround(ring)) {
                 int cx = bx + cell[0];
                 int cy = by + cell[1];
-                if (guards.size() < wanted.size() && inside(room, cx, cy)) {
-                    guards.add(new Monster(wanted.get(guards.size()), worldCenter(cx, cy)));
+                if (guards.size() < wanted.size() && inside(room, cx, cy) && cave.isFloor(cx, cy)) {
+                    guards.add(new Monster(wanted.get(guards.size()), Placement.atCell(cx, cy)));
                 }
             }
         }
@@ -460,24 +337,25 @@ public final class DungeonGenerator {
         return cells;
     }
 
-    /** Inside the room and off its wall line, where a filler may stand. */
+    /** Inside the chamber's footprint, which is what "in the boss's chamber" means. */
     private static boolean inside(Room room, int cx, int cy) {
-        return cx >= room.x() + 1 && cx <= room.x() + room.w() - 2
-                && cy >= room.y() + 1 && cy <= room.y() + room.h() - 2;
+        return cx >= room.x() && cx < room.x() + room.w()
+                && cy >= room.y() && cy < room.y() + room.h();
     }
 
     /**
-     * Scatter things through the rooms: a pillar to walk round, a statue, a barrel.
+     * Scatter things through the chambers: a pillar to walk round, a statue, a barrel.
      *
-     * <p>Solid, and that is the point — a room with nothing in it is a floor with
+     * <p>Solid, and that is the point — a chamber with nothing in it is a floor with
      * a fight on it, and something to put between yourself and a skeleton is the
      * difference between a room and a place. They are ordinary templates with a
      * shape and no body, so the engine bakes them into the navigation grid and
      * nothing shoots at them.
      *
-     * <p>Kept away from the walls, and off the stairs. A pillar in a doorway is a
-     * doorway a wide monster cannot use, and this game has spent enough of its
-     * life on units wedged in corridors.
+     * <p>Only in the open: two cells of floor all round each, so none ever stands in
+     * a tunnel or a gap between the rock. A pillar in a doorway is a doorway a wide
+     * monster cannot use, and this game has spent enough of its life on units wedged
+     * in corridors.
      *
      * <p>And never where something already stands. A solid thing dropped on a
      * skeleton leaves the skeleton inside an obstacle, which is not merely untidy:
@@ -485,9 +363,8 @@ public final class DungeonGenerator {
      * skeleton never moves again and the room it was guarding is a room the
      * player walks through unopposed.
      */
-    private static List<Prop> scatter(DeterministicRng rng, List<Room> rooms,
-            DungeonSettings settings, char[][] storeys, List<Monster> monsters,
-            Placement hero, Placement boss) {
+    private static List<Prop> scatter(DeterministicRng rng, Cave cave, List<Room> rooms,
+            DungeonSettings settings, List<Monster> monsters, Placement hero, Placement boss) {
         var kinds = settings.propKinds();
         var props = new ArrayList<Prop>();
         if (kinds.isEmpty() || settings.maxPropsPerRoom() <= 0) {
@@ -510,16 +387,13 @@ public final class DungeonGenerator {
 
         for (var room : rooms) {
             int count = rng.nextInt(settings.minPropsPerRoom(), settings.maxPropsPerRoom());
-            for (int i = 0; i < count; i++) {
-                // Two cells in from the wall: one is the wall line itself, and the
-                // one beside it is where a doorway opens.
-                int cx = rng.nextInt(room.x() + 2, room.x() + room.w() - 3);
-                int cy = rng.nextInt(room.y() + 2, room.y() + room.h() - 3);
-                if (cx <= room.x() + 1 || cy <= room.y() + 1 || storeys[cy][cx] == '/'
-                        || !taken.add(((long) cy << 32) | cx)) {
-                    continue; // one to a cell, never on a stair, never on anybody
+            var spots = cave.openAround(room, 2);
+            for (int i = 0; i < count && !spots.isEmpty(); i++) {
+                var spot = spots.get(rng.nextInt(spots.size()));
+                if (!taken.add(((long) spot[1] << 32) | spot[0])) {
+                    continue; // one to a cell, never on anybody
                 }
-                props.add(new Prop(drawProp(rng, kinds, totalWeight), worldCenter(cx, cy)));
+                props.add(new Prop(drawProp(rng, kinds, totalWeight), Placement.atCell(spot[0], spot[1])));
             }
         }
         return List.copyOf(props);
@@ -589,15 +463,8 @@ public final class DungeonGenerator {
         return false;
     }
 
-    private static Placement worldCenter(int cx, int cy) {
-        return Placement.atCell(cx, cy);
-    }
-
-    private static String render(char[][] cells) {
-        var text = new StringBuilder(cells.length * (cells[0].length + 1));
-        for (var row : cells) {
-            text.append(row).append('\n');
-        }
-        return text.toString();
+    /** Where a chamber is walked to and from, and where whoever it is for stands: its middle cell. */
+    private static Placement middleOf(Room room) {
+        return Placement.atCell(room.centerCellX(), room.centerCellY());
     }
 }

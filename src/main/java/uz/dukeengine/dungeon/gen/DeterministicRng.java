@@ -45,11 +45,6 @@ public final class DeterministicRng {
         return origin + nextInt(boundInclusive - origin + 1);
     }
 
-    /** Whether the next draw comes up heads. */
-    boolean nextBoolean() {
-        return (nextLong() & 1L) != 0L;
-    }
-
     /** The seed one link along the chain — how one run picks the next run's dungeon. */
     static long advance(long seed) {
         return new DeterministicRng(seed).nextLong();

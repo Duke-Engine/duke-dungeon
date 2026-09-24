@@ -588,23 +588,10 @@ public final class DungeonSettings {
         require(map.propsPerRoom().min() >= 0, "a room cannot hold fewer than no things");
         require(map.propsPerRoom().max() >= map.propsPerRoom().min(),
                 "MaxPerRoom must not be below MinPerRoom");
-        require(map.generation().maxStorey() >= 0, "MaxStorey cannot be negative");
-        require(map.generation().maxStorey() <= 9, "a storey is one character in the level map, so 9 is the ceiling");
-        require(map.generation().storeyChangePercent() >= 0 && map.generation().storeyChangePercent() <= 100,
-                "StoreyChangePercent is a percentage");
         require(world.levelHeight() >= 0f, "LevelHeight cannot be negative");
-        // A stair narrower than the corridor it sits in is a bottleneck, and a
-        // bottleneck is where the biggest creature wedges — see the corridor
-        // width above, which is a correctness setting for the same reason.
-        require(map.generation().stairLength() >= 1, "a stair of no cells is a cliff");
-        require(map.generation().hills() >= 0 && map.generation().hills() <= 15,
-                "Hills are 0 to 15 steps: from 16 a cell is a cliff, and a floor checked walkable would not be");
-        require(map.generation().hillSize() >= 1, "a hill is at least one cell across");
-        // Not checked against MaxStorey: turning height off with MaxStorey = 0
-        // should not then demand two more fields be edited to match. Both are
-        // read back through the ceiling — see entranceStorey() and bossStorey().
-        require(map.generation().entranceStorey() >= 0, "EntranceStorey cannot be negative");
-        require(map.generation().bossStorey() >= 0, "BossStorey cannot be negative");
+        for (var theme : themes) {
+            validateTerrain("Theme " + theme.name() + "'s Terrain", theme.terrain());
+        }
         require(run.respawnDelayFrames() >= 0, "the death pause cannot be negative");
         require(run.descendDelayFrames() >= 0, "the pause before descending cannot be negative");
         require(progression.maxLevel() >= Levelling.FIRST_LEVEL, "MaxLevel cannot be below the first level");
@@ -742,6 +729,22 @@ public final class DungeonSettings {
                 "HealthWord and SpeedNowWord may not contain ',' or '|'");
         require(hud.primaryWord().indexOf('|') < 0 && hud.eachPointWord().indexOf('|') < 0,
                 "PrimaryWord and EachPointWord may not contain '|'");
+    }
+
+    /** Ground the generator can carve: every percentage a percentage, and no slope steep enough to be a cliff. */
+    private static void validateTerrain(String who, Theme.Terrain terrain) {
+        require(percent(terrain.ragged()) && percent(terrain.winding()) && percent(terrain.loops())
+                && percent(terrain.level()), who + ": Ragged, Winding, Loops and Level are percentages, 0 to 100");
+        require(terrain.islandsPerRoom().min() >= 0 && terrain.islandsPerRoom().max() >= terrain.islandsPerRoom().min(),
+                who + ": IslandsPerRoom is fewest then most, and never fewer than none");
+        require(terrain.rise() >= 0, who + ": the ground cannot rise a negative height");
+        require(terrain.hillSize() >= 1, who + ": a hill is at least one cell across");
+        require(terrain.slope() >= 1 && terrain.slope() < uz.dukeengine.core.pathfind.HeightMap.CLIFF_STEPS,
+                who + ": Slope is 1 to 15 steps: from 16 a cell is a cliff, and a floor checked walkable would not be");
+    }
+
+    private static boolean percent(int value) {
+        return value >= 0 && value <= 100;
     }
 
     /** A unit that links animations links ones some file declares. */
@@ -1013,16 +1016,6 @@ public final class DungeonSettings {
         return map.generation().maxRoomSpacing();
     }
 
-    /** The highest a room may stand. Zero is a dungeon on one level, as before. */
-    public int maxStorey() {
-        return map.generation().maxStorey();
-    }
-
-    /** How often a corridor changes storey rather than running level, as a percentage. */
-    public int storeyChangePercent() {
-        return map.generation().storeyChangePercent();
-    }
-
     /** How far apart two storeys stand, in world units. */
     public float storeyHeight() {
         return world.levelHeight();
@@ -1031,31 +1024,6 @@ public final class DungeonSettings {
     /** The World block as the engine reads it: its name, and how tall a storey stands. */
     public World world() {
         return world;
-    }
-
-    /** How many cells of a corridor a stair takes up. */
-    public int stairLength() {
-        return map.generation().stairLength();
-    }
-
-    /** How high the floor rises and falls over its storeys, in steps; zero for flat floors. */
-    public int hills() {
-        return map.generation().hills();
-    }
-
-    /** About how many cells across a hill is. */
-    public int hillSize() {
-        return map.generation().hillSize();
-    }
-
-    /** Which storey the hero starts on, never above the dungeon's own ceiling. */
-    public int entranceStorey() {
-        return Math.min(map.generation().entranceStorey(), map.generation().maxStorey());
-    }
-
-    /** Which storey the boss waits on — the top of the dungeon, by default. */
-    public int bossStorey() {
-        return Math.min(map.generation().bossStorey(), map.generation().maxStorey());
     }
 
     public int minSkeletonsPerRoom() {

@@ -1,6 +1,7 @@
 package uz.dukeengine.dungeon;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -8,21 +9,23 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.dungeon.content.ShippedBlock;
+import uz.dukeengine.dungeon.gen.DungeonGenerator;
 
 /**
- * A floor's look is a look and nothing else.
+ * A theme is two things, and only one of them is a look.
  *
- * <p>This is the promise the whole idea rests on. Every floor is the same fight
- * however it is dressed: the same rooms in the same places, the same creatures
- * with the same numbers, the same fight the same seed always gave. If choosing a
- * theme moved the world by so much as one draw, then two players down one seed
+ * <p>Its {@code Terrain} is the ground — a wood is open and rolling, a cellar close
+ * and cut — so which theme a depth wears decides what its floor is shaped like.
+ * Everything else a theme says is dressing, and that half keeps the promise the
+ * whole idea rests on: dressed differently, a floor is the same fight, the same
+ * chambers in the same places, the same creatures with the same numbers. If the
+ * look moved the world by so much as one draw, then two players down one seed
  * would be playing two different games and every claim this project makes about
  * reproducibility would be worth nothing.
  *
- * <p>So the test is a checksum. The same seed is played twice, under themes that
- * could hardly differ more, and the two runs have to come out bit-identical —
- * which is the same shape as the one that holds fog out of the simulation, and
- * for the same reason.
+ * <p>So the look is held to a checksum: the same seed played twice under two looks,
+ * bit-identical — the same shape as the test that holds fog out of the simulation,
+ * and for the same reason. The ground is held to the floor it draws.
  */
 class DungeonThemeTest {
 
@@ -54,24 +57,65 @@ class DungeonThemeTest {
         return signature.toString();
     }
 
-    /** Play it in stone, play it in space: the same game happens either way. */
+    /** The shipped files with {@code from} rewritten as {@code to}, which has to be there to rewrite. */
+    private static String rewritten(String data, String from, String to) {
+        assertTrue(data.contains(from), "the shipped files no longer say " + from);
+        return data.replace(from, to);
+    }
+
+    /** Paint the shipped themes another colour, build them of other pieces: the same game happens either way. */
     @Test
     void whatAFloorLooksLikeChangesNothingThatHappens() {
-        var stone = playedOut(withOrder("Kenney"));
-        var space = playedOut(withOrder("SciFi"));
+        var shipped = uz.dukeengine.dungeon.content.Content.data();
+        var repainted = rewritten(shipped, "FogTint = 0x060B06", "FogTint = 0x0000FF");
+        repainted = rewritten(repainted, "FogTint = 0x07060A", "FogTint = 0xFF0000");
+        repainted = rewritten(repainted, "Wall = models/tiles/forest/tree.gltf", "Wall = models/tiles/forest/tree_round.gltf");
+        repainted = rewritten(repainted, "Floor = models/tiles/dungeon/floor.gltf",
+                "Floor = models/tiles/dungeon/floor_rocks.gltf");
 
-        assertNotEquals("", stone, "something has to have happened for this to say anything");
-        assertEquals(stone, space,
+        var asShipped = playedOut(DungeonSettings.parse(shipped));
+        var asRepainted = playedOut(DungeonSettings.parse(repainted));
+
+        assertNotEquals("", asShipped, "something has to have happened for this to say anything");
+        assertEquals(asShipped, asRepainted,
                 "the run depended on what it was made of, which makes it a rule and not a look");
     }
 
-    /** And a game with the themes taken out entirely plays the same run too. */
+    /**
+     * A theme that says nothing of its ground is only a look: its floors are the ones no theme at all would give,
+     * at every depth the order reaches.
+     */
     @Test
-    void aGameWithNoThemesPlaysTheSameRun() {
-        var themed = playedOut(withOrder("Kenney Dungeon Ruins SciFi"));
-        var bare = playedOut(withOrder(""));
+    void aThemeWithNoTerrainOfItsOwnIsOnlyALook() {
+        var bare = java.util.regex.Pattern.compile("(?s)  Terrain = Terrain\n.*?\n  End\n")
+                .matcher(uz.dukeengine.dungeon.content.Content.data()).replaceAll("");
+        assertFalse(bare.contains("Terrain = Terrain"), "a theme still carries its ground");
+        var themed = DungeonSettings.parse(bare);
+        var unthemed = DungeonSettings.parse(ShippedBlock.dataWith("Endless", "Themes", "[]").replaceAll(
+                "(?s)  Terrain = Terrain\n.*?\n  End\n", ""));
 
-        assertEquals(themed, bare, "having themes at all changed the game");
+        for (int depth = 1; depth <= 4; depth++) {
+            assertNotNull(themed.themes().pick(9L, depth), "depth " + depth + " should still wear a look");
+            assertEquals(DungeonGenerator.generate(9L, unthemed, depth), DungeonGenerator.generate(9L, themed, depth),
+                    "depth " + depth);
+        }
+    }
+
+    /** And a theme that does is its floors' ground: the wood and the cellar are not one floor dressed twice. */
+    @Test
+    void aThemesTerrainIsTheGroundItsFloorsAreCarvedInto() {
+        var wood = withOrder("Forest");
+        var cellar = withOrder("Dungeon");
+        int differ = 0;
+        for (long seed = 0; seed < 10; seed++) {
+            var inTheWood = DungeonGenerator.generate(seed, wood, 1);
+            var inTheCellar = DungeonGenerator.generate(seed, cellar, 1);
+            assertEquals(inTheWood.rooms(), inTheCellar.rooms(), "seed " + seed + ": the chambers stand where they stood");
+            if (!inTheWood.asciiMap().equals(inTheCellar.asciiMap())) {
+                differ++;
+            }
+        }
+        assertEquals(10, differ, "every floor should be cut to its own theme's ground");
     }
 
     // ---- what the shipped file actually describes ----

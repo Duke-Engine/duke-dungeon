@@ -8,78 +8,46 @@
 ProceduralMap
   Name = Endless
 
+  ; How big a floor is and how many chambers it is cut into. What the ground
+  ; between them is like — ragged or smooth, winding or straight, hills or level —
+  ; is the Terrain of the theme the depth wears: see data/world/themes/.
   Generation = Layout
-    ; Cells across and down. Kept tight on purpose: space beyond what the rooms
-    ; need just becomes corridor, and corridor is walked through, not played.
+    ; Cells across and down. Kept tight on purpose: space beyond what the chambers
+    ; need just becomes tunnel, and a tunnel is walked through, not played.
     MapWidth = 50
     MapHeight = 36
 
     ; MinRooms is what the generator aims for, and it can only be a number that
-    ; actually fits: rooms are placed by trying and rejecting, and one that will
+    ; actually fits: chambers are placed by trying and rejecting, and one that will
     ; not go in is one the floor does without. Six is what always fits at these
     ; sizes — asking for ten got eight, which made the file claim a floor it could
     ; not keep. DungeonGeneratorTest holds the claim to its word.
     MinRooms = 6
     MaxRooms = 15
+    ; The footprint a chamber is grown in, in cells across. The chamber itself is
+    ; rounder and rougher than its footprint, and never bigger.
     MinRoomSize = 7
     MaxRoomSize = 13
 
-    ; Stone left between rooms so a wall reads as a wall rather than a shared line.
+    ; Rock left between footprints, so two chambers grow apart rather than into one.
     RoomGap = 1
-    ; How many times to try landing a room before settling for the ones that fit.
+    ; How many times to try landing a chamber before settling for the ones that fit.
     PlacementAttempts = 3000
 
-    ; Corridor width in cells. Must be wide enough for the largest creature to walk
-    ; down: a cell is 10 world units and the boss is 16 across, so one cell would
-    ; wedge it. A mover with nowhere to swerve is how units used to end up inside
-    ; walls, so this is a correctness setting rather than a matter of taste.
+    ; How wide a tunnel is, in cells — and so the narrowest anything on the floor is
+    ; allowed to be: a cell is 10 world units and the boss is 16 across, so one cell
+    ; would wedge it. A mover with nowhere to swerve is how units used to end up
+    ; inside walls, so this is a correctness setting rather than a matter of taste.
     CorridorWidth = 2
 
-    ; How far a new room may be from the nearest one already placed, in cells.
-    ; Keeps the dungeon compact: rooms scattered to opposite corners are joined by
-    ; long empty corridors, which are the part a player walks rather than plays.
+    ; How far a new chamber may be from the nearest one already placed, in cells.
+    ; Keeps the floor compact: chambers scattered to opposite corners are joined by
+    ; long empty tunnels, which are the part a player walks rather than plays.
     MaxRoomSpacing = 30
 
-    ; Per room other than the hero's. Every occupied room gets at least the minimum.
+    ; Per chamber other than the hero's. Every occupied one gets at least the minimum.
     MinSkeletonsPerRoom = 2
     MaxSkeletonsPerRoom = 6
-
-    ; ---- height ----
-    ;
-    ; Rooms stand on storeys and the corridors between them run flat, at the
-    ; storey the way in is on. Every climb happens at a doorway: walking out of a
-    ; raised room you come down a step into the corridor. That is not a look — two
-    ; corridors that crossed at different storeys would be a wall across both of
-    ; them, built by nobody and invisible on the map.
-    ;
-    ; The highest a room may stand. 0 turns height off entirely and the dungeon is
-    ; the flat one this game had before.
-    MaxStorey = 2
-
-    ; How often a room stands a storey away from the one before it, as a
-    ; percentage. Every other room, roughly.
-    StoreyChangePercent = 45
-
-    ; How many cells of corridor one storey of stair takes. One cell is a proper
-    ; flight; two is a gentle ramp — and a correctness setting as much as a taste
-    ; one, because a corridor is measured centre to centre and most of it is room.
-    ; A climb that will not fit in the corridor is cut down until it does, so a
-    ; long stair means fewer rooms actually end up raised.
-    StairLength = 1
-
-    ; Where the hero comes in, and where the boss waits. The boss is asked for the
-    ; top and takes what the corridor into his room can hold, so on a floor whose
-    ; rooms sit close together he may be a storey lower.
-    EntranceStorey = 0
-    BossStorey = 2
-
-    ; How the floor rises and falls over its storeys, in steps of a sixteenth of a
-    ; cell: SAGE's height map, a whole number at every corner. Up to 15 and
-    ; never steeper than a body can walk, since a cell is a cliff from 16 steps
-    ; between its corners. 0 lays every floor flat on its storey.
-    Hills = 6
-    ; About how many cells across a hill is.
-    HillSize = 4
   End
 
   ; ---- which depth wears which ----
@@ -87,6 +55,9 @@ ProceduralMap
   ; Two floors out of doors, then two of stone, then round again. Out of doors
   ; first because the first floor is the one everybody sees and nobody chose to
   ; see -- the descent reads better as going in than as going further in.
+  ;
+  ; A theme is the ground as well as the look: the wood is open and rolling, the
+  ; cellar close and cut. See the Terrain in each file under data/world/themes/.
   ;
   ; WhenExhausted is the answer to a real question in a game with no bottom:
   ; Repeat begins the list over, Last stays in the deepest look for ever.

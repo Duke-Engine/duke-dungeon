@@ -16,27 +16,29 @@ import uz.dukeengine.core.pathfind.PathGrid;
  *
  * @param asciiMap  the map in the same {@code #}=stone / {@code .}=floor form the
  *                  engine's {@code MapLoader} already reads; row 0 is {@code cy=0}
- * @param levelMap  the same grid again, saying how high each cell stands: a digit
+ * @param levelMap  the same grid again, saying which storey each cell stands on: a digit
  *                  is a storey and {@code /} is a stair. Read by
  *                  {@code MapLoader.levels}, so the rule for what may be walked
- *                  between two of them belongs to the engine rather than here
+ *                  between two of them belongs to the engine rather than here. The
+ *                  generator lays every floor on storey 0 and lets the relief do the
+ *                  climbing; a stage drawn before it did may still have storeys
  * @param hero      where the hero starts (world units)
- * @param monsters  what fills the rooms the hero does not start in, each with
+ * @param monsters  what fills the chambers the hero does not start in, each with
  *                  the kind that was drawn for it
- * @param boss      the one in the furthest room — killing it opens the way down
- * @param bossRoom  which room that is, so the client can point at it
- * @param rooms     the carved rooms, in placement order — {@code rooms[0]} is the
- *                  start room
- * @param links     which rooms were joined by a corridor. Exposed because "the
- *                  corridors are short" is a property worth testing directly, and
- *                  an L-shaped corridor's length is exactly the Manhattan distance
- *                  between the two room centres
- * @param props       what stands about in the rooms — solid, and not alive
- * @param roomStoreys how high each room ended up standing, in the same order as
- *                  {@code rooms} — what the generator decided, after any climb it
- *                  had to give up to keep the dungeon walkable
- * @param relief      how the floor rises and falls over its storeys, corner by corner, or
- *                  {@code null} where it lies flat on them
+ * @param boss      the one in the furthest chamber — killing it opens the way down
+ * @param bossRoom  which chamber that is, so the client can point at it
+ * @param rooms     the chambers' footprints, in placement order — {@code rooms[0]} is
+ *                  the one the hero starts in
+ * @param links     which chambers a tunnel joins, as a spanning tree. Exposed because "the
+ *                  tunnels are short" is a property worth testing directly. The loops a
+ *                  terrain asks for are carved and not listed: they are floor, and no
+ *                  part of the guarantee
+ * @param props       what stands about in the chambers — solid, and not alive
+ * @param roomStoreys which storey each room stands on, in the same order as {@code rooms}:
+ *                  0 for every chamber the generator grows, and whatever a stage drawn in
+ *                  storeys wrote
+ * @param relief      how the ground rises and falls, corner by corner, or {@code null}
+ *                  where it lies flat
  */
 public record GeneratedDungeon(
         String asciiMap,
@@ -99,11 +101,14 @@ public record GeneratedDungeon(
     public record Prop(String kind, Placement at) {
     }
 
-    /** A carved rectangle of floor, in cell coordinates. */
+    /**
+     * The footprint a chamber was grown in, in cell coordinates: its floor lies inside it, round its middle, and
+     * nothing of another chamber does. A stage drawn before chambers were grown has plain rectangles of floor here.
+     */
     public record Room(int x, int y, int w, int h) {
 
         /**
-         * The cell the room is walked to and from.
+         * The cell the room is walked to and from: its middle, which is always floor.
          *
          * <p>Public because the reachability walk is not only the generator's any
          * more: a hand-edited stage is checked by the same rule, and a check that
