@@ -179,6 +179,9 @@ public final class Dungeon {
                     // Health coming back on its own, at the rate his block names --
                     // set by HeroProgress, as his mana is.
                     factory.register(Recovery.Data.class, (owner, data) -> new Recovery(owner));
+                    // And the water at the way in, mending whoever stands near it. See FountainUpdate.
+                    factory.register(uz.dukeengine.dungeon.level.FountainUpdate.Data.class,
+                            uz.dukeengine.dungeon.level.FountainUpdate::new);
                     // Which skills a unit has is the Skill blocks written inside its own:
                     // the SkillBook block says only that it has some.
                     factory.register(SkillBook.Data.class, (owner, data) -> new SkillBook(owner,

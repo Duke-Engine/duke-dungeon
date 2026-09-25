@@ -1,0 +1,16 @@
+	Fountain
+
+	Created by Poly by Google (the Google Poly archive, asset 4KKY7CmNe_r)
+	Source file: "Fountain by Poly by Google - 4KKY7CmNe_r.glb"
+
+			------------------------------
+
+	License: Creative Commons Attribution 3.0 (CC BY 3.0)
+	https://creativecommons.org/licenses/by/3.0/
+
+	Free to use, change and share, commercially too, as long as the author is credited.
+
+			------------------------------
+
+	Changed for this game: the model is lifted so its foot stands at y = 0, as every
+	other prop here does.

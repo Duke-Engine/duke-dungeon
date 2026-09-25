@@ -170,12 +170,11 @@ class StageChoiceTest {
         assertEquals(stage.floor().monsters().size() + (stage.floor().boss() == null ? 0 : 1),
                 monstersIn(session),
                 "the world holds a different floor's inhabitants than the stage's");
+        // At this floor's way in: beside the fountain that stands on it, a couple of cells off at most.
         var startsAt = stage.floor().hero();
         var him = heroIn(session);
-        assertEquals(startsAt.x(), him.getPosition().x(), 0.01f,
-                "the hero is standing where another floor put him");
-        assertEquals(startsAt.y(), him.getPosition().y(), 0.01f,
-                "the hero is standing where another floor put him");
+        float off = (float) Math.hypot(startsAt.x() - him.getPosition().x(), startsAt.y() - him.getPosition().y());
+        assertTrue(off <= 30f, "the hero is standing where another floor put him, " + off + " from this one's way in");
     }
 
     private static uz.dukeengine.core.thing.GameObject heroIn(Dungeon.Session session) {

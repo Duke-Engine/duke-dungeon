@@ -95,7 +95,8 @@ public final class Content {
             List.<Class<? extends ModuleData>>of(HeroBrain.Data.class, MonsterBrain.Data.class, GrowableBody.Data.class,
                     Recovery.Data.class, SkillBook.Data.class, Bow.Data.class, EyesOnly.Data.class,
                     ArrowUpdate.Data.class, FallingUpdate.Data.class, MendingUpdate.Data.class,
-                    SummoningUpdate.Data.class, Swing.Data.class, GroundItem.Data.class))
+                    SummoningUpdate.Data.class, Swing.Data.class, GroundItem.Data.class,
+                    uz.dukeengine.dungeon.level.FountainUpdate.Data.class))
             .flatMap(List::stream).toList();
 
     /** The record each block of a data file is, by the word it opens with: its own name, but for Object. */

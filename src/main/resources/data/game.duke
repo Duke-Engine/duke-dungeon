@@ -109,6 +109,7 @@ Game
     data/props/statue.duke,
     data/props/barrel.duke,
     data/props/chest.duke,
+    data/props/fountain.duke,
 
     data/sounds/sfx.duke,
     data/sounds/ui.duke,

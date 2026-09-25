@@ -45,6 +45,7 @@ public final class Spawner {
      * <p>The heroes are told rather than looked up, because once a player may choose there is no single answer in
      * the file to look up: {@code DefaultHero} is who plays when nobody was asked, and a menu is somebody being
      * asked. The first stands where the floor lets him in; the rest on the nearest floor beside him, a cell each.
+     * Where the run names something to stand at the way in — the fountain — it stands there and they round it.
      *
      * <p>What they leave behind is hung on each monster as it is placed rather than written into its creature
      * block, beside the depth bonus and for the same reason: a template says what a thing is, and what it leaves
@@ -54,7 +55,12 @@ public final class Spawner {
             GamePlayer dungeonPlayer, GeneratedDungeon dungeon, DungeonSettings settings, int depth,
             LootTable drops) {
         var logic = game.getLogic();
-        var spots = wayIn(dungeon, heroPlayers.size());
+        // What stands where the floor lets them in -- the fountain -- with the heroes round it rather than in it.
+        var standing = settings.run().wayIn();
+        var fountain = standing.isBlank() || logic.getThingFactory().findTemplate(standing) == null ? null
+                : roomForTheWayIn(dungeon);
+        var underIt = fountain == null ? java.util.Set.<Long>of() : around(fountain, 1);
+        var spots = wayIn(dungeon, heroPlayers.size(), fountain == null ? dungeon.hero() : fountain, underIt);
         var heroes = new ArrayList<GameObject>();
         for (int i = 0; i < heroPlayers.size(); i++) {
             var name = heroTemplates.get(i);
@@ -79,7 +85,9 @@ public final class Spawner {
         // navigation grid and bodies stop at them, and no body, so neither brain
         // will ever pick one as something to hit.
         for (var prop : dungeon.props()) {
-            spawn(game, dungeonPlayer, prop.kind(), at(logic, prop.at()));
+            if (!underIt.contains(key(prop.at().cellX(), prop.at().cellY()))) {
+                spawn(game, dungeonPlayer, prop.kind(), at(logic, prop.at()));
+            }
         }
 
         var boss = spawn(game, dungeonPlayer, dungeon.boss().kind(), at(logic, dungeon.boss().at()));
@@ -88,24 +96,104 @@ public final class Spawner {
                     settings.experienceAt(depth));
             dropsFrom(boss, drops, settings, depth, true);
         }
+        if (fountain != null) {
+            spawn(game, dungeonPlayer, standing, at(logic, fountain));
+        }
         return new Placed(java.util.Collections.unmodifiableList(heroes), boss, List.copyOf(monsters));
     }
 
+    /** How many steps from the way in a fountain may stand, looking for room enough round it. */
+    private static final int ROOM_SEARCH_STEPS = 8;
+
     /**
-     * Where {@code count} heroes come in: the floor's own way in, then the nearest open cells beside it — walked
-     * out from it a step at a time over floor of the same storey, so a party never stands on the far side of a
-     * wall or up a ledge, and never where a monster, a boss or a prop already does.
+     * Where the thing that stands at the way in goes: the way in itself, or the nearest cell to it with open floor
+     * two cells all round — so there is a walk round it, and nothing it stands on is anybody's — or {@code null}
+     * for a floor with no such cell near where the heroes come in.
      */
-    static List<GeneratedDungeon.Placement> wayIn(GeneratedDungeon dungeon, int count) {
-        var spots = new ArrayList<GeneratedDungeon.Placement>();
+    static GeneratedDungeon.Placement roomForTheWayIn(GeneratedDungeon dungeon) {
         var entrance = dungeon.hero();
-        if (entrance == null || count <= 0) {
+        if (entrance == null) {
+            return null;
+        }
+        var rows = dungeon.levelMap().strip().split("\n");
+        char storey = storeyAt(rows, entrance.cellX(), entrance.cellY());
+        var standing = new java.util.HashSet<Long>();
+        for (var monster : dungeon.monsters()) {
+            standing.add(key(monster.at().cellX(), monster.at().cellY()));
+        }
+        if (dungeon.boss() != null && dungeon.boss().at() != null) {
+            standing.add(key(dungeon.boss().at().cellX(), dungeon.boss().at().cellY()));
+        }
+        var seen = new java.util.HashSet<Long>();
+        var queue = new java.util.ArrayDeque<int[]>();
+        seen.add(key(entrance.cellX(), entrance.cellY()));
+        queue.add(new int[] {entrance.cellX(), entrance.cellY(), 0});
+        while (!queue.isEmpty()) {
+            var at = queue.poll();
+            var here = GeneratedDungeon.Placement.atCell(at[0], at[1]);
+            if (openAround(rows, storey, at[0], at[1], 2)
+                    && java.util.Collections.disjoint(standing, around(here, 1))) {
+                return here;
+            }
+            if (at[2] >= ROOM_SEARCH_STEPS) {
+                continue;
+            }
+            for (var step : STEPS) {
+                int x = at[0] + step[0];
+                int y = at[1] + step[1];
+                if (storeyAt(rows, x, y) == storey && seen.add(key(x, y))) {
+                    queue.add(new int[] {x, y, at[2] + 1});
+                }
+            }
+        }
+        return null;
+    }
+
+    /** Whether every cell within {@code reach} of a cell, the corners too, is floor of {@code storey}. */
+    private static boolean openAround(String[] rows, char storey, int x, int y, int reach) {
+        for (int dy = -reach; dy <= reach; dy++) {
+            for (int dx = -reach; dx <= reach; dx++) {
+                if (storeyAt(rows, x + dx, y + dy) != storey) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /** The cells within {@code reach} of a place's own, the corners too. */
+    private static java.util.Set<Long> around(GeneratedDungeon.Placement at, int reach) {
+        var cells = new java.util.HashSet<Long>();
+        for (int dy = -reach; dy <= reach; dy++) {
+            for (int dx = -reach; dx <= reach; dx++) {
+                cells.add(key(at.cellX() + dx, at.cellY() + dy));
+            }
+        }
+        return java.util.Set.copyOf(cells);
+    }
+
+    /** The four ways out of a cell, in the order every walk over the floor here takes them. */
+    private static final int[][] STEPS = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+
+    /** The floor's own way in, with nothing standing there that they gather round. */
+    static List<GeneratedDungeon.Placement> wayIn(GeneratedDungeon dungeon, int count) {
+        return wayIn(dungeon, count, dungeon.hero(), java.util.Set.of());
+    }
+
+    /**
+     * Where {@code count} heroes come in: {@code from}, then the nearest open cells beside it — walked out from it
+     * a step at a time over floor of the same storey, so a party never stands on the far side of a wall or up a
+     * ledge, and never where a monster, a boss or a prop already does, nor on the cells {@code standing} keeps: a
+     * fountain's, which they gather round.
+     */
+    static List<GeneratedDungeon.Placement> wayIn(GeneratedDungeon dungeon, int count,
+            GeneratedDungeon.Placement from, java.util.Set<Long> standing) {
+        var spots = new ArrayList<GeneratedDungeon.Placement>();
+        if (from == null || count <= 0) {
             return spots;
         }
-        spots.add(entrance);
         var rows = dungeon.levelMap().strip().split("\n");
-        var taken = new java.util.HashSet<Long>();
-        taken.add(key(entrance.cellX(), entrance.cellY()));
+        var taken = new java.util.HashSet<>(standing);
         for (var monster : dungeon.monsters()) {
             taken.add(key(monster.at().cellX(), monster.at().cellY()));
         }
@@ -115,15 +203,22 @@ public final class Spawner {
         if (dungeon.boss() != null && dungeon.boss().at() != null) {
             taken.add(key(dungeon.boss().at().cellX(), dungeon.boss().at().cellY()));
         }
-        char storey = storeyAt(rows, entrance.cellX(), entrance.cellY());
+        char storey = storeyAt(rows, from.cellX(), from.cellY());
+        // The first where he is let in, or -- a fountain standing there -- on the nearest open floor to it; the rest
+        // beside him, so a party comes in together on one side of it rather than round both.
+        var first = nearestOpen(rows, storey, from, taken);
+        if (first == null) {
+            return spots;
+        }
+        spots.add(first);
+        taken.add(key(first.cellX(), first.cellY()));
         var seen = new java.util.HashSet<Long>();
         var queue = new java.util.ArrayDeque<int[]>();
-        seen.add(key(entrance.cellX(), entrance.cellY()));
-        queue.add(new int[] {entrance.cellX(), entrance.cellY()});
-        int[][] steps = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+        seen.add(key(first.cellX(), first.cellY()));
+        queue.add(new int[] {first.cellX(), first.cellY()});
         while (!queue.isEmpty() && spots.size() < count) {
             var at = queue.poll();
-            for (var step : steps) {
+            for (var step : STEPS) {
                 int x = at[0] + step[0];
                 int y = at[1] + step[1];
                 if (storeyAt(rows, x, y) != storey || !seen.add(key(x, y))) {
@@ -136,6 +231,29 @@ public final class Spawner {
             }
         }
         return spots;
+    }
+
+    /** {@code from} if nothing keeps it, or else the nearest cell of its storey nothing does; {@code null} for none. */
+    private static GeneratedDungeon.Placement nearestOpen(String[] rows, char storey, GeneratedDungeon.Placement from,
+            java.util.Set<Long> taken) {
+        var seen = new java.util.HashSet<Long>();
+        var queue = new java.util.ArrayDeque<int[]>();
+        seen.add(key(from.cellX(), from.cellY()));
+        queue.add(new int[] {from.cellX(), from.cellY()});
+        while (!queue.isEmpty()) {
+            var at = queue.poll();
+            if (!taken.contains(key(at[0], at[1]))) {
+                return GeneratedDungeon.Placement.atCell(at[0], at[1]);
+            }
+            for (var step : STEPS) {
+                int x = at[0] + step[0];
+                int y = at[1] + step[1];
+                if (storeyAt(rows, x, y) == storey && seen.add(key(x, y))) {
+                    queue.add(new int[] {x, y});
+                }
+            }
+        }
+        return null;
     }
 
     /** The storey a cell stands on as the map writes it — a digit — or rock for anything else and off the map. */

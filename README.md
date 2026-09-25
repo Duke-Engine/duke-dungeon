@@ -11,7 +11,7 @@ uchun yangi engine imkoniyatini talab qilsa, demak engine tugallanmagan.
 ```
 ./gradlew run                       # o'ynash
 ./gradlew run --args=--map=first    # muzlatilgan xaritada
-./gradlew build                     # 738 test
+./gradlew build                     # 743 test
 ```
 
 ## Engine qayerdan olinadi
@@ -159,6 +159,28 @@ olish bepul davolanish bo'lardi. Daraja esa avvalgidek jonni ham ko'taradi.
 **Jamoada:** olish ham, tashlash ham `GameOrder` (`PickUp`, `DropItem`), har bir
 kompyuterda bir kadrda bajariladi. Kim yuborilsa, narsa o'shaniki; tashlangan
 narsani istalgan qahramon olishi mumkin.
+
+## Fontan — kirish joyidagi shifo favvorasi
+
+Har qavatda qahramonlar paydo bo'ladigan joyda **fontan** turadi, qahramonlar
+uning bir tomonida yonma-yon paydo bo'ladi. Suv oqib turadi: uchidan otilib
+qaytib tushadi, kosadan kosaga to'kiladi, havzadan tuman ko'tariladi, suv
+ustida uchqunlar yonib-o'chadi va atrofini sovuq ko'k nur yoritadi.
+
+Fontan har soniyada atrofidagi (36 birlik, ~3.5 katak) **hammaga** —
+qahramonlarga ham, monstrlarga ham — maksimal jon va mananing **5%** ini
+qaytaradi. Davolanganlar ustida yashil "+N" chiqadi. Foiz bo'lgani uchun har
+qavatda va har qahramonga bir xil qadrli. Fontan ichidan yurib bo'lmaydi,
+atrofidan aylanib o'tiladi.
+
+Hammasi ma'lumotda:
+- `data/props/fountain.duke` — radius, tezlik, foizlar va suv effekti (`FountainWater`);
+- `Run` blokidagi `WayIn = Fountain` — bo'sh qoldirilsa, fontan qo'yilmaydi;
+- mavzulardagi `ThemeMonster Fountain` — model va o'lcham.
+
+Kirish joyi atrofida 2 katak ochiq joy bo'lmasa, yaqin atrofdan joy
+qidiriladi. Topilmasa, o'sha qavat fontansiz qoladi. Model: Poly by Google,
+CC BY 3.0 (`CREDITS.md`).
 
 ## Generatsiya — kameralar, tunnellar, relyef
 

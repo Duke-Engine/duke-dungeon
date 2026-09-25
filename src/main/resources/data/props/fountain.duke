@@ -1,0 +1,175 @@
+; The fountain at the way in: water that mends whoever stands near it.
+;
+; It stands where every floor lets the heroes in -- the Run block's WayIn names it
+; -- and they gather round it. Every so often everything living within its reach
+; is given back a share of its health and its mana: the heroes, and the dungeon's
+; own as well. A fight by the fountain is a fight the monsters get their breath
+; back in too.
+;
+;   - no Body, so nothing ever shoots at it
+;   - a Geometry the width of its basin, so it is walked round rather than through
+;   - STRUCTURE, so the client draws it as a thing standing on the floor
+;
+; What it looks like is each theme's (see data/world/themes/), and the water is
+; the effect below, carried by it for as long as it stands.
+Object
+  Name = Fountain
+  DisplayName = Shifo favvorasi
+  KindOf = [STRUCTURE]
+  VisionRange = 0
+  ; The basin is about seven across its middle at the model's size in the themes.
+  Geometry = Cylinder
+    Radius = 7
+    Height = 11
+  End
+  Modules = [
+    FountainUpdate
+      ; A cell is 10 units: this takes in the heroes standing round it and the
+      ; first steps away from it.
+      Radius = 36
+      ; Once a second. A pulse rather than a trickle, so the numbers over a
+      ; mended head say what the fountain is doing.
+      EveryFrames = 30
+      ; A share of each one's own figures, so it is worth the same on every floor.
+      HealthPercent = 5
+      ManaPercent = 5
+    End
+  ]
+End
+
+; ---------------------------------------------------------------------------
+; The water. Three tiers of it, at the heights the model stands them at: a jet
+; out of the top, spilling from the little cup into the middle bowl, and from the
+; middle bowl into the basin, with mist off the basin, glints of the mending in
+; the air over it, and a cold light round the whole of it.
+;
+; Every layer here is one the fountain carries for as long as it stands: a TRAIL
+; lets its drops out continuously at the fountain's feet, Height up, and a LIGHT
+; with no Seconds of its own burns until it is gone.
+; ---------------------------------------------------------------------------
+Effect
+  Name = FountainWater
+
+  Layers = [
+    ; Out of the top and back down into the little cup.
+    Layer
+      Name = Spout
+      Type = TRAIL
+      Blend = Additive
+      Cover = 0.25
+      Count = 44
+      Rate = 48
+      Life = [0.8, 0.95]
+      Size = [0.9, 0.55]
+      SizeJitter = 0.3
+      Colour = [0xF2FDFF, 0x8ED9FF]
+      Alpha = [0.95, 0.4]
+      Speed = [9, 12]
+      Direction = UP
+      Spread = 12
+      Gravity = 26
+      Stretch = 0.05
+      Height = 11.2
+    End,
+
+    ; Over the lip of the little cup and down into the middle bowl.
+    Layer
+      Name = Crown
+      Type = TRAIL
+      Texture = kit/effects/particles/trace_01.png
+      Blend = Additive
+      Cover = 0.3
+      Count = 36
+      Rate = 60
+      Life = [0.5, 0.6]
+      Size = [1.6, 1.3]
+      Colour = [0xE6FAFF, 0x74CFFF]
+      Alpha = [0.8, 0.3]
+      Speed = [1.8, 2.6]
+      Direction = OUT
+      Spread = 10
+      Gravity = 20
+      Stretch = 0.04
+      Radius = 2.3
+      Height = 9.8
+    End,
+
+    ; Over the rim of the middle bowl and down into the basin: the veil.
+    Layer
+      Name = Veil
+      Type = TRAIL
+      Texture = kit/effects/particles/trace_01.png
+      Blend = Additive
+      Cover = 0.3
+      Count = 60
+      Rate = 90
+      Life = [0.6, 0.7]
+      Size = [2.0, 1.6]
+      Colour = [0xE6FAFF, 0x6CC8FF]
+      Alpha = [0.8, 0.25]
+      Speed = [2.6, 3.4]
+      Direction = OUT
+      Spread = 10
+      Gravity = 20
+      Stretch = 0.04
+      Radius = 4.1
+      Height = 7.6
+    End,
+
+    ; Spray off the basin, rising and gone.
+    Layer
+      Name = Mist
+      Type = TRAIL
+      Texture = kit/effects/particles/smoke_02.png
+      ; Spray is stuff, not light: laid over the floor, not added to it.
+      Blend = Alpha
+      Count = 24
+      Rate = 14
+      Life = [1.2, 1.7]
+      Size = [2.5, 6]
+      SizeEase = 2
+      Colour = [0xDDF6FF, 0xA8E4FF]
+      Alpha = [0.3, 0]
+      Speed = [0.5, 1.4]
+      Direction = UP
+      Spread = 40
+      Gravity = -0.6
+      Spin = 20
+      TurnJitter = 360
+      Radius = 5.5
+      Height = 3.6
+    End,
+
+    ; The mending, seen: glints rising off the water and twinkling out.
+    Layer
+      Name = Glints
+      Type = TRAIL
+      Texture = kit/effects/particles/star_06.png
+      Blend = Additive
+      Count = 18
+      Rate = 9
+      Life = [1.2, 2.0]
+      Size = [1.1, 0.2]
+      Colour = [0xFFFFFF, 0x8CFFD2]
+      Alpha = [1, 0.3]
+      Speed = [1.2, 2.6]
+      Direction = UP
+      Spread = 25
+      Gravity = -1.2
+      PulseRate = 4
+      PulseDepth = 0.8
+      Radius = 6.5
+      Height = 3.4
+    End,
+
+    ; A cold light over the water, lighting the floor about as far as it mends.
+    Layer
+      Name = Glow
+      Type = LIGHT
+      LightColour = 0x66D6FF
+      LightPower = 1.4
+      LightRadius = 40
+      Height = 8
+    End
+  ]
+End

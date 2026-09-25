@@ -49,6 +49,9 @@ class StagePlayTest {
     private static List<String> creatures(DukeGame game) {
         var standing = new ArrayList<String>();
         for (var object : game.getLogic().getObjects()) {
+            if (object.getTemplate() instanceof uz.dukeengine.dungeon.content.Projectile) {
+                continue; // a shot in the air is not something standing anywhere
+            }
             standing.add(object.getTemplate().name() + " at "
                     + Math.round(object.getPosition().x()) + ","
                     + Math.round(object.getPosition().y()));

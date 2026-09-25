@@ -131,6 +131,15 @@ Theme
       Name = Chest
       Model = models/props/forest/chest.gltf
       ModelScale = 5.0
+    End,
+    ; The fountain at the way in: the same stone in every theme, and the water it
+    ; carries is its Effect -- see data/props/fountain.duke. Scaled to fifteen across,
+    ; a cell and a half, the basin its Geometry is as wide as.
+    ThemeMonster
+      Name = Fountain
+      Model = models/props/fountain/fountain.glb
+      ModelScale = 7.5
+      Effect = FountainWater
     End
   ]
 End

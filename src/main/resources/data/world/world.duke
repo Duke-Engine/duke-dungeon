@@ -71,6 +71,11 @@ Run
   ; string built in Java, which is what it was -- the only thing the player read
   ; that was written in English in a source file.
   NextDepthWord = Chuqurlik %d
+
+  ; What stands where every floor lets the heroes in, with them round it: the
+  ; fountain, which mends whoever stands near it -- see data/props/fountain.duke.
+  ; A floor with no room for it at the way in goes without. Empty for nothing.
+  WayIn = Fountain
 End
 
 Moment
