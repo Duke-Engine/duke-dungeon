@@ -500,6 +500,10 @@ OrderMark
 
   MoveColour = 0x3CFF6E
   AttackColour = 0xFF4436
+  ; The same ring, round a thing a click gave an order of the game's own -- a
+  ; chest he is sent to pick up. It is somebody's "that one" too, so it is the
+  ; attack's picture; yellow, because it is not a fight.
+  ContextColour = 0xFFD23C
 End
 
 ; ---------------------------------------------------------------------------

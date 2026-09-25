@@ -11,7 +11,7 @@ uchun yangi engine imkoniyatini talab qilsa, demak engine tugallanmagan.
 ```
 ./gradlew run                       # o'ynash
 ./gradlew run --args=--map=first    # muzlatilgan xaritada
-./gradlew build                     # 737 test
+./gradlew build                     # 738 test
 ```
 
 ## Engine qayerdan olinadi
@@ -131,7 +131,8 @@ Monstr o'lganda **30%** ehtimol bilan narsa qoldiradi (boss — har doim). Narsa
 yerda **sandiq** bo'lib yotadi.
 
 - **Olish:** sandiq ustidan yurish hech narsa bermaydi. Qahramon tanlangan
-  holda sandiqni **o'ng tugma** bilan bosing (kursor ochiq qo'lga aylanadi) —
+  holda sandiqni **o'ng tugma** bilan bosing (kursor ochiq qo'lga aylanadi,
+  sandiq atrofida sariq doira ikki marta yonib o'chadi) —
   qahramon borib uni oladi. Sumka to'la bo'lsa, narsa joyida qoladi va panelda
   "Sumka to'la" chiqadi.
 - **Sumka:** ekranning o'ng tomonida, 6 ta uya. Narsa sumkada turgan ekan,

@@ -203,6 +203,15 @@ class BagScreenTest {
                 "and says what is in it: " + drawn.text);
     }
 
+    /** A click on a chest is answered as an attack is — the ring round it, blinking — but yellow, not the arrowheads. */
+    @Test
+    void aPickupIsAnsweredWithTheRingInYellow() {
+        var mark = SETTINGS.orderMark();
+        assertTrue(mark.ringsContextOrders(), "the ring, not a walk's arrowheads");
+        assertEquals(0xFFD23C, mark.contextColour());
+        assertTrue(mark.contextColour() != mark.attackColour(), "and not a fight's colour");
+    }
+
     @Test
     void aDropAimNamesItsSlot() {
         assertEquals(3, BagScreen.slotOf("drop:3"));
