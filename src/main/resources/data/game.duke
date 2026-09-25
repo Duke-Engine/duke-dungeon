@@ -31,6 +31,7 @@ Game
     ; The world: its rules, its panel, how it is lit, and what its floors are built of.
     data/world/world.duke,
     data/world/hud.duke,
+    data/world/party.duke,
     data/world/scene.duke,
     data/world/themes/dungeon.duke,
     data/world/themes/forest.duke,

@@ -182,11 +182,18 @@ public final class HeroProgress {
         apply(game, body);
     }
 
+    /**
+     * A level reached: his figures, and the word on his player's screen alone. A party's other machines run the
+     * same level on the same frame and say nothing of it — the banner is not part of the world, and a level of
+     * somebody else's is not news on yours.
+     */
     private void promote(DukeGame game, GameObject body, int earned) {
         level = earned;
         apply(game, body);
-        game.setBanner("Level " + earned + "!");
-        clearBannerAtFrame = game.getLogic().getFrame() + bannerFrames;
+        if (heroPlayer.getIndex() == game.getLocalPlayerIndex()) {
+            game.setBanner("Level " + earned + "!");
+            clearBannerAtFrame = game.getLogic().getFrame() + bannerFrames;
+        }
     }
 
     /**

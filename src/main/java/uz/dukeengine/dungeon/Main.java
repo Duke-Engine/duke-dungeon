@@ -14,6 +14,7 @@ import uz.dukeengine.core.thing.ObjectId;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.dungeon.content.HeroLook;
 import uz.dukeengine.dungeon.world.Theme;
+import uz.dukeengine.dungeon.party.PartyOrders;
 import uz.dukeengine.dungeon.skill.CastSkill;
 import uz.dukeengine.dungeon.stage.Stages;
 
@@ -25,9 +26,10 @@ import uz.dukeengine.dungeon.stage.Stages;
  * which is the whole difference between a diagram of a game and a game.
  *
  * <p>The front menu is this game's, not the client's. A dungeon has a run to
- * begin and a way out, and nothing else: it is one player against the dungeon,
- * so it does not offer to host a LAN game — which the client used to, on the
- * grounds that the monsters count as a second player.
+ * begin and a way out — alone, or with a party. The client's own LAN rows are
+ * not used: they seat every player the game has, monsters' side included, and
+ * start without asking anybody who he is. A party meets through the game's own
+ * rows instead — see {@link PartyFront}.
  *
  * <p>Controls are the engine's own: left-click the hero to select him,
  * right-click the floor to walk or a skeleton to attack it.
@@ -415,13 +417,40 @@ public final class Main {
         // the player to point at, and how far each of them reaches are all part of
         // who you chose, and none of them is known until he is chosen.
         var keys = controls(settings);
-        Duke3D.launch(session.game(), visuals, Shell.create()
+        // Held too: a party is a match of its own, built once its players have met, and
+        // it is the client that is asked to play it — see PartyFront.
+        var duke = Duke3D.of(session.game(), visuals).hotkeys(keys);
+        duke.shell(Shell.create()
                 .entry(Shell.Entry.PLAY, "Enter the dungeon")
                 .entry(Shell.Entry.SETTINGS)
                 .entry(Shell.Entry.QUIT)
-                // Which turns Play into a path rather than a start -- how, then
-                // where, then who. Nothing opens until it is walked. See howToPlay.
-                .asking(howToPlay(session, settings, visuals, keys)), keys);
+                // Which turns Play into a path rather than a start -- with whom, how,
+                // then where, then who. Nothing opens until it is walked. See whoGoesIn.
+                .asking(whoGoesIn(session, settings, visuals, keys, duke)));
+        duke.launch();
+    }
+
+    /**
+     * Who goes in: alone, down the path this game always had, or as a party — hosting one on this machine, or
+     * joining one on another. A build whose parties are one hero asks nothing new.
+     *
+     * <p>Every row lets go of a party still being waited for: whatever the player takes next, it is not the
+     * waiting room he walked away from.
+     */
+    static uz.dukeengine.client3d.Shell.Question whoGoesIn(Dungeon.Session session, DungeonSettings settings,
+            Visuals visuals, Hotkeys keys, Duke3D duke) {
+        var alone = howToPlay(session, settings, visuals, keys);
+        var party = settings.party();
+        if (party.maxPlayers() < 2) {
+            return alone;
+        }
+        var front = new PartyFront(session, settings, visuals, keys, duke);
+        return new uz.dukeengine.client3d.Shell.Question(party.whoWord(), party.whoHint(), List.of(
+                new uz.dukeengine.client3d.Shell.Option(party.aloneWord(), party.aloneBlurb(), front::cancel, alone),
+                new uz.dukeengine.client3d.Shell.Option(party.hostWord(), party.hostBlurb(), front::cancel,
+                        front.host()),
+                new uz.dukeengine.client3d.Shell.Option(party.joinWord(), party.joinBlurb(), front::cancel,
+                        front.join())));
     }
 
     /**
@@ -452,14 +481,14 @@ public final class Main {
         for (var skill : settings.skillsFor(hero)) {
             char key = skill.key();
             switch (skill.effect().aim()) {
-                case UNIT -> keys.onUnit(key, (game, id) -> game.postCommand(new CastSkill(
-                        game.getLocalPlayerIndex(), key, new ObjectId(id), null)));
-                case GROUND -> keys.onGround(key, (game, spot) -> game.postCommand(
-                        new CastSkill(game.getLocalPlayerIndex(), key, null, spot)));
-                case OPEN_GROUND -> keys.onOpenGround(key, (game, spot) -> game.postCommand(
-                        new CastSkill(game.getLocalPlayerIndex(), key, null, spot)));
-                case SELF -> keys.on(key, game -> game.postCommand(
-                        new CastSkill(game.getLocalPlayerIndex(), key)));
+                case UNIT -> keys.onUnit(key, (game, id) -> game.postCommand(PartyOrders.of(new CastSkill(
+                        game.getLocalPlayerIndex(), key, new ObjectId(id), null))));
+                case GROUND -> keys.onGround(key, (game, spot) -> game.postCommand(PartyOrders.of(
+                        new CastSkill(game.getLocalPlayerIndex(), key, null, spot))));
+                case OPEN_GROUND -> keys.onOpenGround(key, (game, spot) -> game.postCommand(PartyOrders.of(
+                        new CastSkill(game.getLocalPlayerIndex(), key, null, spot))));
+                case SELF -> keys.on(key, game -> game.postCommand(PartyOrders.of(
+                        new CastSkill(game.getLocalPlayerIndex(), key))));
             }
         }
     }
@@ -563,6 +592,18 @@ public final class Main {
      */
     static uz.dukeengine.client3d.Shell.Question whoToPlay(Dungeon.Session session,
             DungeonSettings settings, Visuals visuals, Hotkeys keys) {
+        return whoToPlay(session, settings, visuals, keys, him -> session.run().startWith(session.game(), him),
+                null);
+    }
+
+    /**
+     * The same roster, for a path that goes somewhere else once he is chosen: every row settles what the client
+     * knows about the hero picked, then does {@code then} with him, then opens {@code next} — or starts, where it
+     * is {@code null}. A party's rows go on to a waiting room instead: see {@link PartyFront}.
+     */
+    static uz.dukeengine.client3d.Shell.Question whoToPlay(Dungeon.Session session, DungeonSettings settings,
+            Visuals visuals, Hotkeys keys, java.util.function.Consumer<String> then,
+            uz.dukeengine.client3d.Shell.Question next) {
         var options = new java.util.ArrayList<uz.dukeengine.client3d.Shell.Option>();
         for (var hero : settings.heroes()) {
             var him = hero.name();
@@ -588,8 +629,8 @@ public final class Main {
                         aimsFor(keys, settings, him);
                         ringsFor(visuals, settings, him);
                         attackRingFor(visuals, session.game(), him);
-                        session.run().startWith(session.game(), him);
-                    }));
+                        then.accept(him);
+                    }, next));
         }
         return new uz.dukeengine.client3d.Shell.Question(settings.hud().chooseHeroWord(),
                 settings.hud().chooseHeroHint(), options);
@@ -612,20 +653,29 @@ public final class Main {
      */
     static uz.dukeengine.client3d.Shell.Question howToPlay(Dungeon.Session session,
             DungeonSettings settings, Visuals visuals, Hotkeys keys) {
-        var hero = whoToPlay(session, settings, visuals, keys);
+        return howToPlay(settings, whoToPlay(session, settings, visuals, keys),
+                () -> session.run().playing(uz.dukeengine.dungeon.run.Floors.generated(System.nanoTime(), settings)),
+                (listed, stage) -> session.run().playing(uz.dukeengine.dungeon.run.Floors.ofStage(stage)));
+    }
+
+    /**
+     * The same path to wherever {@code hero} leads, for whoever settles the answer: the endless descent is
+     * {@code endless}, and a stage that can be played is handed to {@code stage} with its row. A party's host settles the
+     * party's match with it — see {@link PartyFront}.
+     */
+    static uz.dukeengine.client3d.Shell.Question howToPlay(DungeonSettings settings,
+            uz.dukeengine.client3d.Shell.Question hero, Runnable endless,
+            java.util.function.BiConsumer<uz.dukeengine.dungeon.stage.Stages.Listed, uz.dukeengine.dungeon.stage.Stage> stage) {
         var stages = uz.dukeengine.dungeon.stage.Stages.all();
         if (stages.isEmpty()) {
             return hero; // nothing to choose between; the only question left is who
         }
         var modes = List.of(
                 new uz.dukeengine.client3d.Shell.Option(settings.hud().endlessWord(),
-                        settings.hud().endlessBlurb(),
-                        () -> session.run().playing(uz.dukeengine.dungeon.run.Floors.generated(
-                                System.nanoTime(), settings)),
-                        hero),
+                        settings.hud().endlessBlurb(), endless, hero),
                 new uz.dukeengine.client3d.Shell.Option(settings.hud().stagesWord(),
                         settings.hud().stagesBlurb(), null,
-                        whichStage(session, settings, stages, hero)));
+                        whichStage(settings, stages, hero, stage)));
         return new uz.dukeengine.client3d.Shell.Question(settings.hud().chooseModeWord(),
                 settings.hud().chooseModeHint(), modes);
     }
@@ -642,9 +692,9 @@ public final class Main {
      * question, which is the same one the endless descent asks — a stage does not
      * decide who plays it, and cannot.
      */
-    private static uz.dukeengine.client3d.Shell.Question whichStage(Dungeon.Session session,
-            DungeonSettings settings, List<uz.dukeengine.dungeon.stage.Stages.Listed> stages,
-            uz.dukeengine.client3d.Shell.Question hero) {
+    private static uz.dukeengine.client3d.Shell.Question whichStage(DungeonSettings settings,
+            List<uz.dukeengine.dungeon.stage.Stages.Listed> stages, uz.dukeengine.client3d.Shell.Question hero,
+            java.util.function.BiConsumer<uz.dukeengine.dungeon.stage.Stages.Listed, uz.dukeengine.dungeon.stage.Stage> chosen) {
         var rows = new java.util.ArrayList<uz.dukeengine.client3d.Shell.Option>();
         for (var listed : stages) {
             // Read when it is chosen rather than when it is listed: the row is written from the head of the
@@ -652,7 +702,7 @@ public final class Main {
             rows.add(new uz.dukeengine.client3d.Shell.Option(listed.title(), listed.description(), () -> {
                 var stage = uz.dukeengine.dungeon.stage.Stages.offer(listed, settings);
                 if (stage != null) {
-                    session.run().playing(uz.dukeengine.dungeon.run.Floors.ofStage(stage));
+                    chosen.accept(listed, stage);
                 }
             }, hero, listed.picture()));
         }
@@ -668,7 +718,7 @@ public final class Main {
      * somebody called Garen is two names for one man. Falls back to the template's
      * own name, which is what the panel falls back to.
      */
-    private static String displayNameOf(Dungeon.Session session, String template) {
+    static String displayNameOf(Dungeon.Session session, String template) {
         var found = session.game().getLogic() == null ? null
                 : session.game().getLogic().getThingFactory().findTemplate(template);
         return found == null ? template : uz.dukeengine.core.thing.Titled.of(found);
@@ -698,13 +748,13 @@ public final class Main {
         // Spending a level on a slot. A click on the badge rather than a letter,
         // so it comes through a door of its own -- and it is a COMMAND like every
         // other decision, settled on a frame boundary where the rules live.
-        keys.onRaiseSkill((game, key) -> game.postCommand(new uz.dukeengine.dungeon.skill.UpgradeSkill(
-                game.getLocalPlayerIndex(), key)));
+        keys.onRaiseSkill((game, key) -> game.postCommand(PartyOrders.of(new uz.dukeengine.dungeon.skill.UpgradeSkill(
+                game.getLocalPlayerIndex(), key))));
         orders(keys);
         // Which single creature he has picked out. The panel describes it, and
         // only the simulation can say what it is worth -- see Watching.
-        keys.onWatch((game, id) -> game.postCommand(new uz.dukeengine.dungeon.run.Watching(
-                game.getLocalPlayerIndex(), id < 0 ? null : new ObjectId(id))));
+        keys.onWatch((game, id) -> game.postCommand(PartyOrders.of(new uz.dukeengine.dungeon.run.Watching(
+                game.getLocalPlayerIndex(), id < 0 ? null : new ObjectId(id)))));
         return keys;
     }
 
@@ -797,16 +847,16 @@ public final class Main {
                 (game, id) -> game.postCommand(
                         new uz.dukeengine.rts.message.GameMessage.AttackObject(
                                 game.getLocalPlayerIndex(), selected(game), new ObjectId(id))),
-                (game, spot) -> game.postCommand(new uz.dukeengine.dungeon.ai.AttackMove(
-                        game.getLocalPlayerIndex(), spot)));
+                (game, spot) -> game.postCommand(PartyOrders.of(new uz.dukeengine.dungeon.ai.AttackMove(
+                        game.getLocalPlayerIndex(), spot))));
         // Stop is the loudest of the four: drop the walk, drop the target, and
         // start nothing until told otherwise. Two commands because two things are
         // being said -- the engine's own stop, and this game's "and stay stopped".
         keys.on('S', game -> {
             game.postCommand(new uz.dukeengine.rts.message.GameMessage.StopMoving(
                     game.getLocalPlayerIndex(), selected(game)));
-            game.postCommand(new uz.dukeengine.dungeon.ai.HoldGround(
-                    game.getLocalPlayerIndex(), true));
+            game.postCommand(PartyOrders.of(new uz.dukeengine.dungeon.ai.HoldGround(
+                    game.getLocalPlayerIndex(), true)));
         });
         // And Guard is the other half of that pair: stand where you are, and fight
         // whatever comes to you. The same two commands Stop sends with the second
@@ -823,8 +873,8 @@ public final class Main {
         keys.on('D', game -> {
             game.postCommand(new uz.dukeengine.rts.message.GameMessage.StopMoving(
                     game.getLocalPlayerIndex(), selected(game)));
-            game.postCommand(new uz.dukeengine.dungeon.ai.HoldGround(
-                    game.getLocalPlayerIndex(), false));
+            game.postCommand(PartyOrders.of(new uz.dukeengine.dungeon.ai.HoldGround(
+                    game.getLocalPlayerIndex(), false)));
         });
     }
 

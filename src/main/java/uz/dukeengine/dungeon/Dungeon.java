@@ -94,7 +94,7 @@ public final class Dungeon {
      *               because the command that sets one and the brain that obeys it
      *               have no other way to reach each other. See {@link Orders}
      */
-    public record Arena(DukeGame game, GamePlayer hero, GamePlayer dungeon, Orders orders) {
+    public record Arena(DukeGame game, GamePlayer hero, GamePlayer dungeon, Orders orders, java.util.List<GamePlayer> heroes) {
     }
 
     /** A game, the run loop that keeps it going, and the hero's progression. */
@@ -137,7 +137,28 @@ public final class Dungeon {
      */
     public static Arena world(String asciiMap, String levelMap, DungeonSettings settings,
             String creaturesIni, LootBag bag) {
+        return world(asciiMap, levelMap, settings, creaturesIni, java.util.List.of(bag));
+    }
+
+    /**
+     * The same for a party: a hero's side for every bag, in seat order — the host's first — allies of each other
+     * and every one of them the dungeon's enemy, and the dungeon's side last. What a hero stands on goes into his
+     * own bag.
+     */
+    public static Arena world(String asciiMap, String levelMap, DungeonSettings settings,
+            String creaturesIni, java.util.List<LootBag> bagsBySeat) {
         var orders = new Orders();
+        // Whose bag a chest goes into, by the player who stands on it — asked only when a chest is walked over,
+        // by which time every side has the number the engine gave it.
+        var heroes = new java.util.ArrayList<GamePlayer>();
+        java.util.function.IntFunction<LootBag> bags = playerIndex -> {
+            for (int seat = 0; seat < heroes.size(); seat++) {
+                if (heroes.get(seat).getIndex() == playerIndex) {
+                    return bagsBySeat.get(seat);
+                }
+            }
+            return null;
+        };
         // No subtitle here: what this world is called depends on why it was built,
         // and only the caller knows — an endless descent, or one named stage. See
         // the two entry points below.
@@ -195,7 +216,7 @@ public final class Dungeon {
                     // What a dead monster leaves lying about. The chest is a
                     // creature like any other -- it is in the world, so the client
                     // draws it without being told anything special.
-                    factory.register(LootUpdate.Data.class, (owner, data) -> new LootUpdate(owner, bag,
+                    factory.register(LootUpdate.Data.class, (owner, data) -> new LootUpdate(owner, bags,
                             settings.lootDrops().pickupRange(), settings.lootDrops().noteFrames()));
                 })
                 // A unit is one block, and its record is its word: a Monster block is a Monster.
@@ -214,10 +235,21 @@ public final class Dungeon {
             uz.dukeengine.core.pathfind.MapLoader.levels(game.getTerrain(), levelMap);
         }
 
-        var heroPlayer = game.addPlayer("Hero", HERO_COLOUR);
+        // The heroes' sides first, so a party's seats are the engine's players 1 to N — the numbers its network
+        // session hands out — and the dungeon's after them, played by nobody's machine.
+        for (int seat = 1; seat <= bagsBySeat.size(); seat++) {
+            heroes.add(game.addPlayer(seat == 1 ? "Hero" : "Hero " + seat, settings.party().colourOf(seat)));
+        }
         var dungeonPlayer = game.addPlayer("Dungeon", SKELETON_COLOUR);
-        game.enemies(heroPlayer, dungeonPlayer).localPlayer(heroPlayer);
-        return new Arena(game, heroPlayer, dungeonPlayer, orders);
+        for (int seat = 0; seat < heroes.size(); seat++) {
+            var hero = heroes.get(seat);
+            game.enemies(hero, dungeonPlayer);
+            for (var other : heroes.subList(0, seat)) {
+                game.allies(hero, other);
+            }
+        }
+        game.localPlayer(heroes.getFirst());
+        return new Arena(game, heroes.getFirst(), dungeonPlayer, orders, java.util.List.copyOf(heroes));
     }
 
     /**
@@ -283,48 +315,108 @@ public final class Dungeon {
      */
     private static Session open(uz.dukeengine.dungeon.gen.GeneratedDungeon floor, long seed,
             Floors floors, DungeonSettings settings, String subtitle) {
-        // What he has put his levels into: a floor gives him a fresh body and a
-        // fresh SkillBook, so what he has learnt has to live somewhere that
-        // outlives both.
-        var learnt = new uz.dukeengine.dungeon.skill.SkillRanks(settings.progression().skillSpread());
-        learnt.startWith(settings.skillsFor(settings.run().defaultHero()));
-        var bag = new LootBag();
-        var arena = world(floor.asciiMap(), floor.levelMap(), settings,
-                Content.units(), bag);
+        return open(floor, seed, floors, settings, subtitle, 1, null, null);
+    }
+
+    /**
+     * A party's game: the host's match, played by {@code heroes} players — every machine building the same one
+     * from the same line, and each playing the seat its session gave it.
+     *
+     * <p>Every hero is said once the match runs, this machine's as {@code localHero}, and the first floor waits
+     * until they all have been: see {@link DungeonRun#choose}. {@code net} is the session the lobby made, or
+     * {@code null} for a party whose players are all on this machine — which is what a test is.
+     */
+    public static Session newPartySession(uz.dukeengine.dungeon.party.PartyMatch match, int heroes,
+            uz.dukeengine.game.MultiplayerSession net, DungeonSettings settings, String localHero) {
+        if (match.isStage()) {
+            var stage = uz.dukeengine.dungeon.stage.Stages.load(match.stage(), settings);
+            return open(stage.floor(), stage.seed(), Floors.ofStage(stage), settings, stage.name(), heroes, net,
+                    localHero);
+        }
+        return open(DungeonGenerator.generate(match.seed(), settings, 1), match.seed(),
+                Floors.generated(match.seed(), settings), settings, "a party", heroes, net, localHero);
+    }
+
+    /**
+     * @param heroes    how many players' heroes go down: one alone, more for a party, whose heroes are said as
+     *                  orders once the match runs
+     * @param net       the party's session, attached before a frame is stepped; {@code null} alone
+     * @param localHero the hero this machine's player goes in as, said when the match starts; {@code null} alone,
+     *                  where the menu tells the run before it starts instead
+     */
+    private static Session open(uz.dukeengine.dungeon.gen.GeneratedDungeon floor, long seed,
+            Floors floors, DungeonSettings settings, String subtitle, int heroes,
+            uz.dukeengine.game.MultiplayerSession net, String localHero) {
+        // What each has put his levels into, and what each has picked up: a floor gives a hero a fresh body and a
+        // fresh SkillBook, so both have to live somewhere that outlives both.
+        var bags = new java.util.ArrayList<LootBag>();
+        var learnts = new java.util.ArrayList<uz.dukeengine.dungeon.skill.SkillRanks>();
+        for (int seat = 0; seat < heroes; seat++) {
+            bags.add(new LootBag());
+            var learnt = new uz.dukeengine.dungeon.skill.SkillRanks(settings.progression().skillSpread());
+            learnt.startWith(settings.skillsFor(settings.run().defaultHero()));
+            learnts.add(learnt);
+        }
+        var arena = world(floor.asciiMap(), floor.levelMap(), settings, Content.units(), bags);
         // And the relief the floors lie on, over the levels just laid: the same grid, as the next floor's is.
         arena.game().getTerrain().setRelief(floor.relief());
         if (floor.levelHeight() > 0f) {
             arena.game().getTerrain().setLevelHeight(floor.levelHeight());
         }
         var game = arena.game().subtitle(subtitle);
+        if (net != null) {
+            // Before a frame is stepped: from here this machine plays the seat the session gave it.
+            game.multiplayer(net);
+        }
 
-        // Told which creature is the hero and everything his block says about him --
+        // Told which creature each hero is and everything his block says about him --
         // see DefaultHero and Hero.
-        var progress = new HeroProgress(arena.hero(), settings.levelling(),
-                settings.attributeRules(), settings.progression().levelUpBannerFrames(), bag);
-        progress.playing(settings.playedHeroLook());
-        progress.manaPerKill(settings.progression().manaPerKill());
+        var progresses = new java.util.ArrayList<HeroProgress>();
+        for (int seat = 0; seat < heroes; seat++) {
+            var progress = new HeroProgress(arena.heroes().get(seat), settings.levelling(),
+                    settings.attributeRules(), settings.progression().levelUpBannerFrames(), bags.get(seat));
+            progress.playing(settings.playedHeroLook());
+            progress.manaPerKill(settings.progression().manaPerKill());
+            progresses.add(progress);
+        }
         // Drawn from the run's seed as well, so a seed is the whole run: the same
         // one drops the same things off the same monsters.
         var drops = new LootTable(settings.loot(), seed, settings.lootDrops().dropPercent(),
                 settings.lootDrops().bossDropPercent(), settings.lootDrops().valuePercentPerDepth());
-        var run = new DungeonRun(arena.hero(), arena.dungeon(), floors, settings, progress,
-                drops, arena.orders(), learnt);
+        var run = new DungeonRun(arena.hero(), arena.dungeon(), floors, settings, progresses.getFirst(),
+                drops, arena.orders(), learnts.getFirst());
+        for (int seat = 1; seat < heroes; seat++) {
+            run.seat(arena.heroes().get(seat), progresses.get(seat), learnts.get(seat));
+        }
+        if (localHero != null) {
+            run.awaitHeroes();
+        }
 
-        // Q, W, E and R arrive as this game's own command, through the same queue
+        // Q, W, E and R arrive as this game's own orders, through the same queue
         // the standard orders use — so a keypress lands on a frame boundary and is
         // recorded, rather than reaching into the simulation from the input thread.
-        game.onCommand(command -> {
+        // Heard as the order that carries them to every machine, or as the command
+        // itself where one was posted straight here.
+        java.util.function.Consumer<uz.dukeengine.core.message.Command> obey = command -> {
             switch (command) {
                 // The rank he has PUT INTO it, not the level he has reached. Four
                 // slots that were all as strong as the hero are now four that
-                // compete for his levels -- see SkillRanks.
-                case CastSkill cast -> Skills.cast(game.getLogic(), cast,
-                        learnt.rankOf(cast.key()));
+                // compete for his levels -- see SkillRanks. Whose ranks is whose
+                // hero is casting; a player with no hero casts nothing.
+                case CastSkill cast -> {
+                    var learnt = run.learntOf(cast.playerIndex());
+                    if (learnt != null) {
+                        Skills.cast(game.getLogic(), cast, learnt.rankOf(cast.key()));
+                    }
+                }
                 // And spending one of those levels, which is a click on the little
                 // button beside a slot.
-                case uz.dukeengine.dungeon.skill.UpgradeSkill raise ->
-                        Skills.raise(learnt, raise, progress.getLevel());
+                case uz.dukeengine.dungeon.skill.UpgradeSkill raise -> {
+                    var learnt = run.learntOf(raise.playerIndex());
+                    if (learnt != null) {
+                        Skills.raise(learnt, raise, run.progressOf(raise.playerIndex()).getLevel());
+                    }
+                }
                 // "Stand and pick no fights", which none of the engine's three
                 // orders can say. See HoldGround.
                 case uz.dukeengine.dungeon.ai.HoldGround hold ->
@@ -343,19 +435,38 @@ public final class Dungeon {
                 // something else. See Watching.
                 case uz.dukeengine.dungeon.run.Watching looking ->
                         arena.orders().watch(looking.playerIndex(), looking.unit());
+                // A party's player saying who he goes in as.
+                case uz.dukeengine.dungeon.party.ChooseHero pick ->
+                        run.choose(game, pick.playerIndex(), pick.hero());
                 default -> {
                     // Not one of ours; rts has already said so.
                 }
             }
+        };
+        game.onCommand(obey);
+        game.onOrder(order -> {
+            var command = uz.dukeengine.dungeon.party.PartyOrders.commandOf(order);
+            if (command != null) {
+                obey.accept(command);
+            }
         });
 
         // The first floor is laid out the same way every later one is, so the
-        // deep floors nobody plays as often cannot drift from the first.
-        game.onStart(started -> run.openOn(started, floor));
+        // deep floors nobody plays as often cannot drift from the first. A party's
+        // waits for its heroes, and this machine says its own as the match starts.
+        game.onStart(started -> {
+            run.openOn(started, floor);
+            if (localHero != null && started.getLocalPlayerIndex() > 0) {
+                started.postCommand(uz.dukeengine.dungeon.party.PartyOrders.of(
+                        new uz.dukeengine.dungeon.party.ChooseHero(started.getLocalPlayerIndex(), localHero)));
+            }
+        });
         game.onTick(run::tick);
-        game.onTick(progress::tick);
+        for (var progress : progresses) {
+            game.onTick(progress::tick);
+        }
 
-        return new Session(game, run, progress, arena.orders());
+        return new Session(game, run, progresses.getFirst(), arena.orders());
     }
 
     /** The attributes of the hero this creature is, or none for anything that is not one. */

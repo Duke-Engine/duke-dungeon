@@ -34,49 +34,34 @@ public final class Spawner {
     private Spawner() {
     }
 
-    /** Everything a floor puts in the world, and the boss it hangs its exit on. */
-    public record Placed(GameObject hero, GameObject boss, List<GameObject> monsters) {
+    /** Everything a floor puts in the world — the heroes in the order they were given — and the boss it hangs its exit on. */
+    public record Placed(List<GameObject> heroes, GameObject boss, List<GameObject> monsters) {
     }
 
     /**
-     * Lay out a floor: the hero where the generator put him, its monsters scaled
-     * to {@code depth}, and the boss in the furthest room.
-     */
-    public static Placed place(DukeGame game, GamePlayer heroPlayer, GamePlayer dungeonPlayer,
-            GeneratedDungeon dungeon, DungeonSettings settings, int depth) {
-        return place(game, heroPlayer, dungeonPlayer, dungeon, settings, depth, null);
-    }
-
-    /**
-     * The same, with a table saying what the inhabitants leave behind.
+     * Lay out a floor: each player's hero at the way in, its monsters scaled to {@code depth}, the boss in the
+     * furthest room, and — from {@code drops} — what the inhabitants leave behind.
      *
-     * <p>Hung on each monster as it is placed rather than written into its
-     * creature block, beside the depth bonus and for the same reason: a template
-     * says what a thing is, and what it leaves depends on where it was met.
-     */
-    public static Placed place(DukeGame game, GamePlayer heroPlayer, GamePlayer dungeonPlayer,
-            GeneratedDungeon dungeon, DungeonSettings settings, int depth, LootTable drops) {
-        return place(game, heroPlayer, dungeonPlayer, dungeon, settings, depth, drops,
-                settings.run().defaultHero());
-    }
-
-    /**
-     * The same, told which hero to put in it.
+     * <p>The heroes are told rather than looked up, because once a player may choose there is no single answer in
+     * the file to look up: {@code DefaultHero} is who plays when nobody was asked, and a menu is somebody being
+     * asked. The first stands where the floor lets him in; the rest on the nearest floor beside him, a cell each.
      *
-     * <p>Told rather than looked up, because once a player may choose there is no
-     * single answer in the file to look up: {@code DefaultHero} is who plays when
-     * nobody was asked, and a menu is somebody being asked. The overloads above
-     * keep the file's answer, which is what a headless run and a test want.
+     * <p>What they leave behind is hung on each monster as it is placed rather than written into its creature
+     * block, beside the depth bonus and for the same reason: a template says what a thing is, and what it leaves
+     * depends on where it was met.
      */
-    public static Placed place(DukeGame game, GamePlayer heroPlayer, GamePlayer dungeonPlayer,
-            GeneratedDungeon dungeon, DungeonSettings settings, int depth, LootTable drops,
-            String heroTemplate) {
+    public static Placed place(DukeGame game, List<GamePlayer> heroPlayers, List<String> heroTemplates,
+            GamePlayer dungeonPlayer, GeneratedDungeon dungeon, DungeonSettings settings, int depth,
+            LootTable drops) {
         var logic = game.getLogic();
-        // Whoever was chosen, or whoever the file names when nobody was asked --
-        // see DefaultHero. The word used to be here, so a second hero could be
-        // described in full and still never walk into a dungeon.
-        var hero = logic.spawn(logic.getThingFactory().findTemplate(heroTemplate),
-                at(logic, dungeon.hero()), heroPlayer.getIndex());
+        var spots = wayIn(dungeon, heroPlayers.size());
+        var heroes = new ArrayList<GameObject>();
+        for (int i = 0; i < heroPlayers.size(); i++) {
+            var name = heroTemplates.get(i);
+            var template = name == null ? null : logic.getThingFactory().findTemplate(name);
+            heroes.add(template == null || i >= spots.size() ? null
+                    : logic.spawn(template, at(logic, spots.get(i)), heroPlayers.get(i).getIndex()));
+        }
 
         var monsters = new ArrayList<GameObject>();
         for (var monster : dungeon.monsters()) {
@@ -103,7 +88,67 @@ public final class Spawner {
                     settings.experienceAt(depth));
             dropsFrom(boss, drops, settings, depth, true);
         }
-        return new Placed(hero, boss, List.copyOf(monsters));
+        return new Placed(java.util.Collections.unmodifiableList(heroes), boss, List.copyOf(monsters));
+    }
+
+    /**
+     * Where {@code count} heroes come in: the floor's own way in, then the nearest open cells beside it — walked
+     * out from it a step at a time over floor of the same storey, so a party never stands on the far side of a
+     * wall or up a ledge, and never where a monster, a boss or a prop already does.
+     */
+    static List<GeneratedDungeon.Placement> wayIn(GeneratedDungeon dungeon, int count) {
+        var spots = new ArrayList<GeneratedDungeon.Placement>();
+        var entrance = dungeon.hero();
+        if (entrance == null || count <= 0) {
+            return spots;
+        }
+        spots.add(entrance);
+        var rows = dungeon.levelMap().strip().split("\n");
+        var taken = new java.util.HashSet<Long>();
+        taken.add(key(entrance.cellX(), entrance.cellY()));
+        for (var monster : dungeon.monsters()) {
+            taken.add(key(monster.at().cellX(), monster.at().cellY()));
+        }
+        for (var prop : dungeon.props()) {
+            taken.add(key(prop.at().cellX(), prop.at().cellY()));
+        }
+        if (dungeon.boss() != null && dungeon.boss().at() != null) {
+            taken.add(key(dungeon.boss().at().cellX(), dungeon.boss().at().cellY()));
+        }
+        char storey = storeyAt(rows, entrance.cellX(), entrance.cellY());
+        var seen = new java.util.HashSet<Long>();
+        var queue = new java.util.ArrayDeque<int[]>();
+        seen.add(key(entrance.cellX(), entrance.cellY()));
+        queue.add(new int[] {entrance.cellX(), entrance.cellY()});
+        int[][] steps = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+        while (!queue.isEmpty() && spots.size() < count) {
+            var at = queue.poll();
+            for (var step : steps) {
+                int x = at[0] + step[0];
+                int y = at[1] + step[1];
+                if (storeyAt(rows, x, y) != storey || !seen.add(key(x, y))) {
+                    continue;
+                }
+                queue.add(new int[] {x, y});
+                if (spots.size() < count && taken.add(key(x, y))) {
+                    spots.add(GeneratedDungeon.Placement.atCell(x, y));
+                }
+            }
+        }
+        return spots;
+    }
+
+    /** The storey a cell stands on as the map writes it — a digit — or rock for anything else and off the map. */
+    private static char storeyAt(String[] rows, int x, int y) {
+        if (y < 0 || y >= rows.length || x < 0 || x >= rows[y].length()) {
+            return '#';
+        }
+        char cell = rows[y].charAt(x);
+        return Character.isDigit(cell) ? cell : '#';
+    }
+
+    private static long key(int x, int y) {
+        return ((long) y << 32) | (x & 0xFFFFFFFFL);
     }
 
     private static GameObject spawn(DukeGame game, GamePlayer owner, String kind, Coord3D where) {

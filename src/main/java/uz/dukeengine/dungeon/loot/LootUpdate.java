@@ -16,9 +16,9 @@ import uz.dukeengine.rts.module.RtsModuleGroups;
  * and a second one at the end of it would be a formality.
  *
  * <p>Whose it is, is decided by having skills, the same rule
- * {@link uz.dukeengine.dungeon.skill.Skills} uses to find a hero. A dungeon has one,
- * and saying so this way means a second hero would pick things up without
- * anything here being told about him.
+ * {@link uz.dukeengine.dungeon.skill.Skills} uses to find a hero — and a bag to put it in. Monsters have
+ * skills too now, and no bag, so a skeleton mage walks over a chest and leaves it lying. In a party each hero
+ * has his own: the nearest to stand on it takes it, the lowest id where two stand as near.
  *
  * <p>Deterministic: a distance in the simulation's own units, checked on a frame
  * boundary like everything else. What it holds was settled when it dropped.
@@ -30,15 +30,17 @@ public final class LootUpdate extends UpdateModule {
     public record Data() implements ModuleData {
     }
 
-    private final LootBag bag;
+    /** Each player's bag by his index, or {@code null} for a player who has none: the dungeon. */
+    private final java.util.function.IntFunction<LootBag> bags;
     private final float pickupRange;
     private final int noteFrames;
 
     private Loot holding;
 
-    public LootUpdate(GameObject owner, LootBag bag, float pickupRange, int noteFrames) {
+    public LootUpdate(GameObject owner, java.util.function.IntFunction<LootBag> bags, float pickupRange,
+            int noteFrames) {
         super(owner);
-        this.bag = bag;
+        this.bags = bags;
         this.pickupRange = pickupRange;
         this.noteFrames = noteFrames;
     }
@@ -60,13 +62,22 @@ public final class LootUpdate extends UpdateModule {
         if (world == null || holding == null) {
             return;
         }
-        var taker = world.objectsInRange(owner.getPosition(), pickupRange,
+        var takers = world.objectsInRange(owner.getPosition(), pickupRange,
                 candidate -> !candidate.isEffectivelyDead()
-                        && candidate.findModule(SkillBook.class) != null);
-        if (taker.isEmpty()) {
+                        && candidate.findModule(SkillBook.class) != null
+                        && bags.apply(candidate.getPlayerIndex()) != null);
+        if (takers.isEmpty()) {
             return;
         }
-        bag.take(holding, world.getFrame(), noteFrames);
+        var taker = takers.getFirst();
+        for (var other : takers) {
+            float nearer = owner.getPosition().distance(other.getPosition());
+            float nearest = owner.getPosition().distance(taker.getPosition());
+            if (nearer < nearest || nearer == nearest && other.getId().value() < taker.getId().value()) {
+                taker = other;
+            }
+        }
+        bags.apply(taker.getPlayerIndex()).take(holding, world.getFrame(), noteFrames);
         holding = null;
         // Gone the moment it is his: a chest that stayed would be picked up again
         // every frame he stood on it.

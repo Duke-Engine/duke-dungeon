@@ -1,0 +1,45 @@
+; Duke Dungeon — going down together.
+;
+; One player hosts a party, the others join it, and they fight the same floors on
+; their own machines: lock-step, the engine's — nothing crosses the wire but what
+; each of them orders, and every machine plays the same dungeon from it.
+;
+; A party of one is the game alone. Everything a hero has is his own — his level,
+; his skills, what he picks up — and a hero who falls waits for the others: the
+; boss down, the whole party goes to the next floor, the fallen standing again.
+; Only when every one of them has fallen is the run lost.
+Party
+  ; How many heroes may go down together, the host counted.
+  MaxPlayers = 4
+
+  ; Where a host listens for its guests, and what a guest calls when the address
+  ; it was given names no port. Behind a router, it is this port that is opened.
+  Port = 7777
+
+  ; Each hero's side, in seat order — the host's first: the colour of his ring and
+  ; his dot on the map, so four heroes on one floor are four heroes.
+  Colours = [0x5AAAFF, 0x7CD66A, 0xF2C94C, 0xC98BFF]
+
+  ; ---- the words on the way in ----
+  WhoWord = KIM BILAN KIRASIZ
+  WhoHint = YUQORI PAST tanlang    ENTER tanlash    ESC ortga
+  AloneWord = Yolg'iz
+  AloneBlurb = Bitta qahramon, butun zindon.
+  HostWord = Jamoa ochish
+  HostBlurb = Siz ochasiz, boshqalar shu kompyuterning manziliga ulanadi.
+  JoinWord = Jamoaga qo'shilish
+  JoinBlurb = Jamoani ochgan o'yinchining manzilini kiritasiz.
+  HowManyWord = NECHA QAHRAMON
+  ; %d is how many.
+  PlayersWord = %d qahramon
+  WaitingWord = JAMOA KUTILMOQDA
+  ; %s is the address the others type, %d how many the party is.
+  WaitingHint = Manzil: %s    hammasi (%d) kirganda boshlanadi
+  JoiningWord = JAMOAGA ULANILMOQDA
+  JoiningHint = Jamoani ochgan o'yinchi boshlashini kuting
+  AddressPrompt = Jamoani ochgan o'yinchining manzili (IP yoki IP:port):
+  CancelWord = Bekor qilish
+  FailedWord = Jamoa yig'ilmadi
+  ; The banner while every hero of the party is still being said.
+  GatheringWord = Qahramonlar yig'ilmoqda
+End

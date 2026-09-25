@@ -11,7 +11,7 @@ uchun yangi engine imkoniyatini talab qilsa, demak engine tugallanmagan.
 ```
 ./gradlew run                       # o'ynash
 ./gradlew run --args=--map=first    # muzlatilgan xaritada
-./gradlew build                     # 701 test
+./gradlew build                     # 720 test
 ```
 
 ## Engine qayerdan olinadi
@@ -86,6 +86,44 @@ o'zgartira olmaydi. Baland devorlar kerak bo'lsa, bu engine ishi bo'ladi.
 
 Procedural generatsiya · ko'p xona, boss, leveling · o'lim/qaytadan sikli ·
 model, tekstura, ovoz, musiqa.
+
+## Jamoa — LAN orqali birga o'ynash
+
+"Enter the dungeon" → **Kim bilan kirasiz**:
+
+- **Yolg'iz** — avvalgi yo'l: rejim → bosqich → qahramon.
+- **Jamoa ochish** — nechta qahramon (2–4) → rejim → bosqich → qahramon → kutish
+  xonasi. Unda boshqalar kiritadigan manzil (shu kompyuterning LAN IP'si)
+  ko'rsatiladi. Hamma kirgach o'yin o'zi boshlanadi.
+- **Jamoaga qo'shilish** — qahramon → host manzili (`IP` yoki `IP:port`, keyingi
+  safar uchun eslab qolinadi) → host boshlashini kutish.
+
+Port — `7777` (`data/world/party.duke`). Windows birinchi marta tarmoq
+ruxsatini so'rasa, ruxsat bering. Ikkala kompyuterda o'yinning bir xil build'i
+bo'lishi kerak — boshqa build'dagi host rad etiladi va sababi aytiladi.
+
+**Qoidalar (co-op):** qahramonlar ittifoqdosh, zindon hammaga dushman. Har kim
+o'z qahramonini tanlaydi. Daraja, mahorat va o'lja — har kimniki o'ziga.
+Yiqilgan qahramon boshqalarni kutadi: boss o'lgach butun jamoa keyingi qavatga
+tushadi, yiqilganlar ham turib chiqadi. Hamma yiqilsa — run tugaydi, yangisi
+hamma uchun boshlanadi.
+
+**Qanday ishlaydi:** engine'ning lock-step'i (`MultiplayerSession`): tarmoqdan
+faqat buyruqlar o'tadi, har bir kompyuter bir xil dunyoni o'zi hisoblaydi. O'yinning
+o'z buyruqlari (mahorat, himoya, hujum-yurish, qahramon tanlash) `GameOrder`
+bo'lib yuboriladi (`party/PartyOrders`). Hostning tanlovi (rejim, seed yoki
+bosqich) mehmonlarga bitta versiyali qatorda boradi (`party/PartyMatch`).
+`LanPartyTest` ikki "kompyuter"ni localhost socket'lari orqali ulab, bir daqiqalik
+jangda har bir kadr checksum'i bir xil qolishini tekshiradi.
+
+**Internet orqali (keyinroq):** lobby manzil va portga ulanadi, shuning uchun host
+routerda 7777-portni ochsa, mehmon tashqi IP bilan hozir ham ulana oladi. Port
+ocholmaydiganlar uchun uchrashish joyi (relay yoki server) — engine sessiyasining
+keyingi ishi. O'yin tomonida hamma buyruq allaqachon kerakli shaklda.
+
+**Hali yo'q:** chat (engine qo'llaydi, o'yinda yozish oynasi yo'q), qorong'ulikni
+jamoa bilan birga ochish (klient faqat o'z qahramoning atrofini ochadi),
+alohida server.
 
 ## Generatsiya — kameralar, tunnellar, relyef
 

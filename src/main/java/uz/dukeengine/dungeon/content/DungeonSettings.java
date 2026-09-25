@@ -79,6 +79,7 @@ public final class DungeonSettings {
     private LootDrops lootDrops = LootDrops.DEFAULTS;
     private Camera camera = Camera.DEFAULTS;
     private Hud hud = Hud.DEFAULTS;
+    private uz.dukeengine.dungeon.world.Party party = uz.dukeengine.dungeon.world.Party.DEFAULTS;
     private UnitBar unitBar = UnitBar.DEFAULTS;
     private StatBlock statBlock = StatBlock.DEFAULTS;
     private SkillRing skillRing = SkillRing.DEFAULTS;
@@ -120,6 +121,11 @@ public final class DungeonSettings {
 
     public Camera camera() {
         return camera;
+    }
+
+    /** Going down together: how many, where the host listens, and the words on the way in. */
+    public uz.dukeengine.dungeon.world.Party party() {
+        return party;
     }
 
     public Hud hud() {
@@ -341,6 +347,7 @@ public final class DungeonSettings {
                 case LootDrops block -> lootDrops = once(block, once);
                 case Camera block -> camera = once(block, once);
                 case Hud block -> hud = once(block, once);
+                case uz.dukeengine.dungeon.world.Party block -> party = once(block, once);
                 case UnitBar block -> unitBar = once(block, once);
                 case StatBlock block -> statBlock = once(block, once);
                 case SkillRing block -> skillRing = once(block, once);
@@ -602,6 +609,8 @@ public final class DungeonSettings {
         require(progression.minDamageTakenPercent() > 0 && progression.minDamageTakenPercent() <= 100,
                 "the damage floor must leave some way to lose");
         require(progression.levelUpBannerFrames() >= 0, "the level-up message cannot last negative frames");
+        require(party.maxPlayers() >= 1 && party.maxPlayers() <= 8, "a party is 1 to 8 heroes");
+        require(party.port() >= 1 && party.port() <= 65535, "a port is 1 to 65535");
         require(camera.edgeMargin() >= 0, "the screen's edge cannot be a negative width");
         require(camera.edgeSpeedPercent() >= 0, "a camera cannot be shoved backwards");
         require(fog.unseenPercent() >= 0 && fog.unseenPercent() <= 100,

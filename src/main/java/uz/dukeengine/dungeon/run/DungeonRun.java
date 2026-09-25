@@ -1,15 +1,15 @@
 package uz.dukeengine.dungeon.run;
 
-import uz.dukeengine.core.math.Coord3D;
+import java.util.ArrayList;
+import java.util.List;
 import uz.dukeengine.core.pathfind.MapLoader;
 import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.core.thing.ObjectId;
-import uz.dukeengine.core.thing.ThingTemplate;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.dungeon.gen.GeneratedDungeon;
 import uz.dukeengine.dungeon.level.HeroProgress;
 import uz.dukeengine.dungeon.loot.LootTable;
-import uz.dukeengine.dungeon.skill.SkillBook;
+import uz.dukeengine.dungeon.skill.SkillRanks;
 import uz.dukeengine.dungeon.skill.Skills;
 import uz.dukeengine.game.DukeGame;
 import uz.dukeengine.game.GamePlayer;
@@ -36,11 +36,18 @@ import uz.dukeengine.game.GamePlayer;
  * is the bottom of a one-floor game. The loop is the same either way, which is
  * the point: a stage is not a second mode with a second run loop in it.
  *
+ * <p><b>A party is more seats at the same loop.</b> Every player has a seat — his side, his hero, and everything
+ * that hero has earned — and the game alone is a party of one. A hero who falls waits while the others fight on;
+ * the boss down, every seat goes to the next floor, the fallen standing again with all they had; and only when
+ * every hero has fallen is the run lost, for all of them. A party's heroes are said as orders once the match runs
+ * ({@link #choose}), and its first floor waits until every one of them has been.
+ *
  * <p>This runs as a per-frame tick on the simulation thread, so it must stay
  * deterministic like everything else there: it reads the frame counter, never the
  * clock, and the seed of each new run is drawn from the last by the same
  * {@link DeterministicRng} chain. Given one starting seed, the entire sequence of
- * dungeons a session plays is fixed.
+ * dungeons a session plays is fixed. What it tells the panel is the one exception, and only because it is not
+ * part of the world: each machine describes its own player's hero.
  *
  * <p>Rebuilding in place reuses the engine's save/load seam — {@code clearWorld}
  * then respawn — which is safe from a tick because the frame's own object updates
@@ -65,17 +72,43 @@ public final class DungeonRun {
         WON
     }
 
-    private final GamePlayer heroPlayer;
+    /**
+     * One player's place in the run: his side, which hero he plays, and what that hero has earned.
+     *
+     * <p>Progress and skills are held here rather than on the hero so that they can be wiped when a run ends —
+     * which is the whole of why the run owns them: a roguelike keeps nothing, and a build is the most valuable
+     * thing there is to keep.
+     */
+    private static final class Seat {
+
+        final GamePlayer player;
+        final HeroProgress progress;
+        final SkillRanks learnt;
+        /**
+         * Which hero he plays: the file's {@code DefaultHero} until somebody chooses, and nobody at all for a party
+         * member who has not said yet.
+         */
+        String hero;
+        ObjectId heroId;
+
+        Seat(GamePlayer player, HeroProgress progress, SkillRanks learnt, String hero) {
+            this.player = player;
+            this.progress = progress;
+            this.learnt = learnt;
+            this.hero = hero;
+        }
+    }
+
     private final GamePlayer dungeonPlayer;
     private final DungeonSettings settings;
-
-    private final HeroProgress progress;
     private final LootTable drops;
+
+    /** The players' seats, the first player's first: a game alone has that one. */
+    private final List<Seat> seats = new ArrayList<>();
 
     /** Where each floor comes from: the seed chain, or the file one was frozen into. */
     private Floors floors;
     private State state = State.RUNNING;
-    private ObjectId heroId;
     private ObjectId bossId;
     private int depth = 1;
     /** When the run ended, whether it was lost or won. */
@@ -88,44 +121,43 @@ public final class DungeonRun {
     private String look;
     private int runCount; // how many times a new dungeon has been generated after a death
 
-    /** The standing orders his player has given; only the panel reads them. */
+    /** The standing orders every player has given; only the panel reads them. */
     private final uz.dukeengine.dungeon.ai.Orders orders;
 
-    /**
-     * Which hero this run is being played with.
-     *
-     * <p>Read from the file to begin with and replaced by whoever the player
-     * chooses. It is the run's rather than the settings' because a choice is not a
-     * setting: {@code DefaultHero} answers "who plays when nobody was asked",
-     * which is a headless run and a test, and a menu is somebody being asked.
-     */
-    private String heroTemplate;
-
-    /**
-     * What he has put his levels into.
-     *
-     * <p>Held here so that it can be wiped when a run ends, which is the whole of
-     * why the run owns it rather than the hero: a roguelike keeps nothing, and a
-     * build is the most valuable thing there is to keep.
-     */
-    private final uz.dukeengine.dungeon.skill.SkillRanks learnt;
+    /** The first floor, held while a party's heroes are still being said; {@code null} once it is laid. */
+    private GeneratedDungeon gathering;
 
     public DungeonRun(GamePlayer heroPlayer, GamePlayer dungeonPlayer, Floors floors,
             DungeonSettings settings, HeroProgress progress,
             LootTable drops, uz.dukeengine.dungeon.ai.Orders orders,
-            uz.dukeengine.dungeon.skill.SkillRanks learnt) {
-        this.learnt = learnt;
+            SkillRanks learnt) {
         this.orders = orders;
-        this.heroPlayer = heroPlayer;
         this.dungeonPlayer = dungeonPlayer;
         this.floors = floors;
         this.settings = settings;
-        this.progress = progress;
         this.drops = drops;
         this.themes = settings.themes();
         this.look = lookOfThisFloor();
-        this.heroTemplate = settings.run().defaultHero();
         this.depth = floors.firstDepth();
+        seats.add(new Seat(heroPlayer, progress, learnt, settings.run().defaultHero()));
+    }
+
+    /**
+     * Another player goes down with the first: a seat of his own, with his own progress and skills, and no hero
+     * until he says which — see {@link #choose}.
+     */
+    public void seat(GamePlayer player, HeroProgress progress, SkillRanks learnt) {
+        seats.add(new Seat(player, progress, learnt, null));
+    }
+
+    /**
+     * A party's heroes are said once the match runs, the first player's with the rest: every seat waits for its
+     * pick, and the first floor for all of them.
+     */
+    public void awaitHeroes() {
+        for (var seat : seats) {
+            seat.hero = null;
+        }
     }
 
     /**
@@ -147,20 +179,65 @@ public final class DungeonRun {
      * so nothing here has to cross one.
      */
     public void startWith(DukeGame game, String template) {
-        heroTemplate = template;
-        var his = settings.heroNamed(template);
-        progress.playing(his);
-        // His four, none of them learnt. A knight cannot inherit a mage's points,
-        // and a second run cannot inherit the first one's.
-        learnt.startWith(settings.skillsFor(template));
+        pick(seats.getFirst(), template);
         if (game.getLogic() != null) {
             begin(game);
         }
     }
 
-    /** What he has learnt, for the panel and for whatever spends a level. */
-    public uz.dukeengine.dungeon.skill.SkillRanks getLearnt() {
-        return learnt;
+    /**
+     * A player of a party says which hero he goes in as — an order, heard on the simulation thread on the same
+     * frame on every machine. Once, and only a hero this game has: a second pick would lay the floor again under
+     * everyone, and a name no {@code Hero} block has is somebody else's build talking. The last of a party to say
+     * lays the first floor.
+     */
+    public void choose(DukeGame game, int playerIndex, String template) {
+        var seat = seatOf(playerIndex);
+        if (seat == null || seat.hero != null || template == null
+                || !(game.getLogic().getThingFactory().findTemplate(template)
+                        instanceof uz.dukeengine.dungeon.content.Hero)) {
+            return;
+        }
+        pick(seat, template);
+        if (gathering != null && seats.stream().allMatch(each -> each.hero != null)) {
+            var first = gathering;
+            gathering = null;
+            game.setBanner("");
+            lay(game, first);
+        }
+    }
+
+    /** His hero from here on, with none of his skills learnt: a knight cannot inherit a mage's points. */
+    private void pick(Seat seat, String template) {
+        seat.hero = template;
+        seat.progress.playing(settings.heroNamed(template));
+        seat.learnt.startWith(settings.skillsFor(template));
+    }
+
+    /** What the first player has learnt, for the panel and for whatever spends a level. */
+    public SkillRanks getLearnt() {
+        return seats.getFirst().learnt;
+    }
+
+    /** What this player's hero has learnt, or {@code null} for a player with no seat. */
+    public SkillRanks learntOf(int playerIndex) {
+        var seat = seatOf(playerIndex);
+        return seat == null ? null : seat.learnt;
+    }
+
+    /** How far this player's hero has come, or {@code null} for a player with no seat. */
+    public HeroProgress progressOf(int playerIndex) {
+        var seat = seatOf(playerIndex);
+        return seat == null ? null : seat.progress;
+    }
+
+    private Seat seatOf(int playerIndex) {
+        for (var seat : seats) {
+            if (seat.player.getIndex() == playerIndex) {
+                return seat;
+            }
+        }
+        return null;
     }
 
     /**
@@ -196,9 +273,9 @@ public final class DungeonRun {
     /** Whether the floor the world was built around belongs to a game nobody chose. */
     private boolean openingIsStale;
 
-    /** Whoever is being played — the file's answer until somebody chooses. */
+    /** Whoever the first player plays — the file's answer until somebody chooses. */
     public String getHeroTemplate() {
-        return heroTemplate;
+        return seats.getFirst().hero;
     }
 
     /**
@@ -230,7 +307,8 @@ public final class DungeonRun {
      * Put the first floor in the world.
      *
      * <p>Goes through the same placement every later floor does, so the one the
-     * player always sees and the ones he rarely reaches cannot drift apart.
+     * player always sees and the ones he rarely reaches cannot drift apart. A party still saying its heroes holds
+     * it until the last of them has.
      */
     public void openOn(DukeGame game, GeneratedDungeon floor) {
         if (openingIsStale) {
@@ -243,15 +321,30 @@ public final class DungeonRun {
             descend(game);
             return;
         }
+        if (seats.stream().anyMatch(seat -> seat.hero == null)) {
+            gathering = floor;
+            game.setBanner(settings.party().gatheringWord());
+            return;
+        }
+        lay(game, floor);
+    }
+
+    /** The floor the world was built around, with everyone on it. */
+    private void lay(DukeGame game, GeneratedDungeon floor) {
         look = lookOfThisFloor();
-        var placed = Spawner.place(game, heroPlayer, dungeonPlayer, floor, settings, depth,
-                drops, heroTemplate);
-        heroId = placed.hero().getId();
+        var placed = Spawner.place(game, heroPlayers(), heroTemplates(), dungeonPlayer, floor, settings, depth,
+                drops);
+        for (int i = 0; i < seats.size(); i++) {
+            seats.get(i).heroId = placed.heroes().get(i) == null ? null : placed.heroes().get(i).getId();
+        }
         bossId = placed.boss() == null ? null : placed.boss().getId();
     }
 
     /** Called every logic frame on the simulation thread. */
     public void tick(DukeGame game) {
+        if (gathering != null) {
+            return; // nobody is on the floor until everybody is
+        }
         switch (state) {
             case RUNNING -> whileRunning(game);
             case DEAD -> whileDead(game);
@@ -261,16 +354,20 @@ public final class DungeonRun {
 
     private void whileRunning(DukeGame game) {
         var logic = game.getLogic();
-        // Learn the hero the first time we run, then track him by id.
-        if (heroId == null) {
-            var hero = findHero(game);
-            if (hero != null) {
-                heroId = hero.getId();
+        // Learn each hero the first time we run, then track him by id. The run is lost only when every one of
+        // them is down: a fallen hero waits for the others to take the floor.
+        boolean standing = false;
+        for (var seat : seats) {
+            if (seat.heroId == null) {
+                var hero = findHero(game, seat);
+                if (hero != null) {
+                    seat.heroId = hero.getId();
+                }
             }
+            var hero = seat.heroId == null ? null : logic.findObject(seat.heroId);
+            standing |= hero != null && hero.getBody().getHealth() > 0f;
         }
-        var hero = heroId == null ? null : logic.findObject(heroId);
-        boolean dead = hero == null || hero.getBody().getHealth() <= 0f;
-        if (dead) {
+        if (!standing) {
             state = State.DEAD;
             endedFrame = logic.getFrame();
             game.setBanner("lost|" + settings.run().diedWord());
@@ -305,18 +402,15 @@ public final class DungeonRun {
      * <p>Goes through the snapshot's status channel, which the engine carries and
      * never reads — depth and levels are this game's arithmetic and the engine has
      * no name for either. See {@link HeroStatus} for what is in the line.
-     */
-    /**
-     * What the bar says this frame, which is whatever the player has picked out.
      *
-     * <p>Three answers and they are tried in this order, which is the order of
-     * what is most specific. His own is asked first and asked before the creature
-     * is looked at at all: a dying hero is still the hero the bar is about, and
-     * the run has a screen of its own for what happens next.
+     * <p>About this machine's own player: the panel is his. It changes nothing in the world, which is the only
+     * reason a machine may say something here another does not.
      */
     private void showStatus(DukeGame game) {
-        game.setStatus(card(game) + HeroStatus.world(game.getLogic(),
-                Skills.heroOf(game.getLogic(), heroPlayer.getIndex()), progress, depth,
+        var seat = seatOf(game.getLocalPlayerIndex());
+        var mine = seat == null ? seats.getFirst() : seat;
+        game.setStatus(card(game, mine) + HeroStatus.world(game.getLogic(),
+                Skills.heroOf(game.getLogic(), mine.player.getIndex()), mine.progress, depth,
                 bossId, settings));
     }
 
@@ -326,16 +420,20 @@ public final class DungeonRun {
      * <p>Split from the floor's half above because the two answer different
      * questions. This one changes with every click; the bars over everybody's
      * heads are drawn whether anything is selected or not.
+     *
+     * <p>Three answers and they are tried in this order, which is the order of
+     * what is most specific. His own is asked first and asked before the creature
+     * is looked at at all: a dying hero is still the hero the bar is about, and
+     * the run has a screen of its own for what happens next.
      */
-    private String card(DukeGame game) {
-        var picked = orders.watchedBy(heroPlayer.getIndex());
+    private String card(DukeGame game, Seat seat) {
+        int player = seat.player.getIndex();
+        var picked = orders.watchedBy(player);
         var creature = picked == null ? null : game.getLogic().findObject(picked);
-        boolean his = creature != null && creature.getPlayerIndex() == heroPlayer.getIndex();
-        if (his && Skills.heroOf(game.getLogic(), heroPlayer.getIndex()) == creature) {
-            return HeroStatus.of(Skills.heroOf(game.getLogic(), heroPlayer.getIndex()),
-                    progress, depth, floors.lastDepth(), settings,
-                    game.getLogic().getFrame(), look,
-                    orders.isHolding(heroPlayer.getIndex()), learnt);
+        boolean his = creature != null && creature.getPlayerIndex() == player;
+        if (his && Skills.heroOf(game.getLogic(), player) == creature) {
+            return HeroStatus.of(creature, seat.progress, depth, floors.lastDepth(), settings,
+                    game.getLogic().getFrame(), look, orders.isHolding(player), seat.learnt);
         }
         if (creature != null && !creature.isEffectivelyDead()) {
             // Somebody else's creature, or one of his that is not the hero: the
@@ -348,7 +446,7 @@ public final class DungeonRun {
         // and loses the creature. A panel describing a corpse until the player
         // thinks to click somewhere is a panel that looks broken.
         return HeroStatus.nothing(depth, floors.lastDepth(), settings,
-                progress.getLoot().noteAt(game.getLogic().getFrame()), look);
+                seat.progress.getLoot().noteAt(game.getLogic().getFrame()), look);
     }
 
     /**
@@ -384,7 +482,7 @@ public final class DungeonRun {
         begin(game);
     }
 
-    /** A fresh run: the first floor, a hero with nothing, and the banner cleared. */
+    /** A fresh run: the first floor, heroes with nothing, and the banner cleared. */
     private void begin(DukeGame game) {
         // An ending is the end of everything, not just of this floor.
         // Back to the top of whatever is being played: the first floor of a
@@ -393,13 +491,15 @@ public final class DungeonRun {
         // worst way for a level meant to be re-attempted to fail.
         depth = floors.firstDepth();
         descendAtFrame = 0;
-        progress.reset();
-        // ★ AND WHAT HE HAD LEARNT. The same argument again and it was missed the
-        // first time: a hero who died came back at the first level with all four
-        // skills still open, so his second run began with twelve points he had
-        // not earned and no decisions left to make. A build is the most valuable
-        // thing a run has and a roguelike keeps nothing.
-        learnt.startWith(settings.skillsFor(heroTemplate));
+        for (var seat : seats) {
+            seat.progress.reset();
+            // ★ AND WHAT HE HAD LEARNT. The same argument again and it was missed the
+            // first time: a hero who died came back at the first level with all four
+            // skills still open, so his second run began with twelve points he had
+            // not earned and no decisions left to make. A build is the most valuable
+            // thing a run has and a roguelike keeps nothing.
+            seat.learnt.startWith(settings.skillsFor(seat.hero));
+        }
         descend(game);
         runCount++;
         state = State.RUNNING;
@@ -414,7 +514,7 @@ public final class DungeonRun {
      * alone would lay the new floor out flat and leave the hero walking through the
      * storeys of the last one.
      */
-    private static uz.dukeengine.core.pathfind.PathGrid terrainOf(uz.dukeengine.dungeon.gen.GeneratedDungeon floor) {
+    private static uz.dukeengine.core.pathfind.PathGrid terrainOf(GeneratedDungeon floor) {
         var grid = MapLoader.fromText(floor.asciiMap());
         MapLoader.levels(grid, floor.levelMap());
         grid.setRelief(floor.relief());
@@ -427,10 +527,10 @@ public final class DungeonRun {
 
     /**
      * Down a floor: a new seed, a new layout, and tougher inhabitants — but the
-     * same hero, still carrying what he has earned.
+     * same heroes, still carrying what they have earned, the fallen among them standing again.
      *
      * <p>The distinction from a death is the whole point of depth, and it has to
-     * be stated rather than inferred. Both replace the hero object, so anything
+     * be stated rather than inferred. Both replace the hero objects, so anything
      * watching for a new hero to decide whether to reset would wipe his levels on
      * every floor: {@link HeroProgress} is told which of the two this is.
      */
@@ -442,25 +542,39 @@ public final class DungeonRun {
         logic.clearWorld();
         game.applyMapTerrain(terrainOf(floor));
 
-        var placed = Spawner.place(game, heroPlayer, dungeonPlayer, floor, settings, depth,
-                drops, heroTemplate);
-        heroId = placed.hero().getId();
+        var placed = Spawner.place(game, heroPlayers(), heroTemplates(), dungeonPlayer, floor, settings, depth,
+                drops);
+        for (int i = 0; i < seats.size(); i++) {
+            var hero = placed.heroes().get(i);
+            var seat = seats.get(i);
+            seat.heroId = hero == null ? null : hero.getId();
+            if (hero != null) {
+                seat.progress.carryOver(game, hero);
+            }
+        }
         bossId = placed.boss() == null ? null : placed.boss().getId();
         look = lookOfThisFloor();
-        progress.carryOver(game, placed.hero());
+    }
+
+    private List<GamePlayer> heroPlayers() {
+        return seats.stream().map(seat -> seat.player).toList();
+    }
+
+    private List<String> heroTemplates() {
+        return seats.stream().map(seat -> seat.hero).toList();
     }
 
     /**
-     * Him, out of everything his player owns.
+     * His hero, out of everything his player owns.
      *
      * <p>The template check is not redundant beside the player check: his arrows
      * are his too, and one of them is not the hero. Which template that is comes
-     * out of the file, because there is more than one hero now.
+     * out of his seat, because there is more than one hero now.
      */
-    private GameObject findHero(DukeGame game) {
+    private GameObject findHero(DukeGame game, Seat seat) {
         for (var object : game.getLogic().getObjects()) {
-            if (object.getPlayerIndex() == heroPlayer.getIndex()
-                    && object.getTemplate().name().equals(heroTemplate)) {
+            if (object.getPlayerIndex() == seat.player.getIndex()
+                    && object.getTemplate().name().equals(seat.hero)) {
                 return object;
             }
         }
