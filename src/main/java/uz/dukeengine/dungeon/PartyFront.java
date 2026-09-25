@@ -32,18 +32,21 @@ final class PartyFront {
     private final Visuals visuals;
     private final Hotkeys keys;
     private final Duke3D duke;
+    private final BagScreen bag;
 
     /** The meeting under way, if any. */
     private volatile Lobby lobby;
     /** What the host has settled so far: the descent, unless a stage was chosen. */
     private volatile PartyMatch match;
 
-    PartyFront(Dungeon.Session session, DungeonSettings settings, Visuals visuals, Hotkeys keys, Duke3D duke) {
+    PartyFront(Dungeon.Session session, DungeonSettings settings, Visuals visuals, Hotkeys keys, Duke3D duke,
+            BagScreen bag) {
         this.session = session;
         this.settings = settings;
         this.visuals = visuals;
         this.keys = keys;
         this.duke = duke;
+        this.bag = bag;
     }
 
     /** Stop waiting for whoever was being waited for. */
@@ -157,6 +160,7 @@ final class PartyFront {
         lobby = null;
         try {
             var party = Dungeon.newPartySession(match, net.getPlayerCount(), net, settings, hero);
+            bag.show(party);
             duke.startMatch(party.game());
         } catch (RuntimeException e) {
             net.close();

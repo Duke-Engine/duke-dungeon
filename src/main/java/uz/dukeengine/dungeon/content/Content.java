@@ -33,7 +33,7 @@ import uz.dukeengine.dungeon.combat.Swing;
 import uz.dukeengine.dungeon.level.Attribute;
 import uz.dukeengine.dungeon.level.GrowableBody;
 import uz.dukeengine.dungeon.level.Recovery;
-import uz.dukeengine.dungeon.loot.LootUpdate;
+import uz.dukeengine.dungeon.loot.GroundItem;
 import uz.dukeengine.dungeon.map.ProceduralMap;
 import uz.dukeengine.dungeon.map.StaticMap;
 import uz.dukeengine.dungeon.skill.MendingUpdate;
@@ -95,7 +95,7 @@ public final class Content {
             List.<Class<? extends ModuleData>>of(HeroBrain.Data.class, MonsterBrain.Data.class, GrowableBody.Data.class,
                     Recovery.Data.class, SkillBook.Data.class, Bow.Data.class, EyesOnly.Data.class,
                     ArrowUpdate.Data.class, FallingUpdate.Data.class, MendingUpdate.Data.class,
-                    SummoningUpdate.Data.class, Swing.Data.class, LootUpdate.Data.class))
+                    SummoningUpdate.Data.class, Swing.Data.class, GroundItem.Data.class))
             .flatMap(List::stream).toList();
 
     /** The record each block of a data file is, by the word it opens with: its own name, but for Object. */

@@ -4,6 +4,8 @@ import java.util.List;
 import uz.dukeengine.core.message.Command;
 import uz.dukeengine.dungeon.ai.AttackMove;
 import uz.dukeengine.dungeon.ai.HoldGround;
+import uz.dukeengine.dungeon.loot.DropItem;
+import uz.dukeengine.dungeon.loot.PickUp;
 import uz.dukeengine.dungeon.run.Watching;
 import uz.dukeengine.dungeon.skill.CastSkill;
 import uz.dukeengine.dungeon.skill.UpgradeSkill;
@@ -28,6 +30,12 @@ public final class PartyOrders {
     static final String WATCH = "watch";
     /** Followed by the hero's template: the one order whose meaning is a name. */
     static final String HERO = "hero:";
+    /**
+     * What a click on a thing lying on the floor gives the hero: the engine sends it as the word the game named for
+     * that click (see {@code DukeGame.contextOrder}), and the pointer over one is the cursor of that name.
+     */
+    public static final String PICK_UP = "PickUp";
+    static final String DROP = "drop";
 
     private PartyOrders() {
     }
@@ -44,6 +52,8 @@ public final class PartyOrders {
             case Watching watching -> new GameOrder(watching.playerIndex(), WATCH, List.of(), null,
                     watching.unit(), 0);
             case ChooseHero pick -> new GameOrder(pick.playerIndex(), HERO + pick.hero(), List.of(), null, null, 0);
+            case PickUp pick -> new GameOrder(pick.playerIndex(), PICK_UP, List.of(), null, pick.item(), 0);
+            case DropItem drop -> new GameOrder(drop.playerIndex(), DROP, List.of(), drop.place(), null, drop.slot());
             default -> throw new IllegalArgumentException("not one of this game's orders: " + command);
         };
     }
@@ -63,6 +73,9 @@ public final class PartyOrders {
             case HOLD -> new HoldGround(order.playerIndex(), order.number() != 0);
             case MARCH -> order.place() == null ? null : new AttackMove(order.playerIndex(), order.place());
             case WATCH -> new Watching(order.playerIndex(), order.target());
+            case PICK_UP -> order.target() == null ? null : new PickUp(order.playerIndex(), order.target());
+            case DROP -> order.place() == null ? null
+                    : new DropItem(order.playerIndex(), (int) order.number(), order.place());
             default -> null;
         };
     }

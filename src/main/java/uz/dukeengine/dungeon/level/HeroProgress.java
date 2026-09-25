@@ -57,8 +57,15 @@ public final class HeroProgress {
      */
     private int manaPerKill;
 
-    /** How many items had been found when they were last applied. */
+    /** The bag's {@link LootBag#version} when it was last applied. */
     private int lootStamp = -1;
+
+    /**
+     * The body his figures were last applied to, and what they came to there with nothing carried — so the next
+     * time can tell what his level added, which lifts his health and mana, from what his bag did, which does not.
+     */
+    private ObjectId appliedTo;
+    private HeroFigures bare;
 
     private ObjectId heroId;
     private int level = Levelling.FIRST_LEVEL;
@@ -138,8 +145,8 @@ public final class HeroProgress {
         if (earned > level) {
             promote(game, body, earned);
         }
-        if (loot.getFound().size() != lootStamp) {
-            lootStamp = loot.getFound().size();
+        if (loot.version() != lootStamp) {
+            lootStamp = loot.version();
             apply(game, body);
         }
         expireBanner(game);
@@ -159,6 +166,8 @@ public final class HeroProgress {
         clearBannerAtFrame = 0;
         loot.clear();
         lootStamp = -1;
+        appliedTo = null;
+        bare = null;
         speedOnThisBody = Float.NaN;
     }
 
@@ -178,7 +187,7 @@ public final class HeroProgress {
         lastKnownExperience = 0;
         // What the body was built as: his block at the first level, nothing found.
         speedOnThisBody = figuresAt(body, Levelling.FIRST_LEVEL, HeroFigures.Found.NOTHING).speed();
-        lootStamp = loot.getFound().size();
+        lootStamp = loot.version();
         apply(game, body);
     }
 
@@ -202,17 +211,22 @@ public final class HeroProgress {
      * <p>Every figure is assigned from one computation rather than nudged by what
      * changed, so skipping two levels at once, or a level and a find on the same frame,
      * comes out as the same hero as taking them one at a time.
+     *
+     * <p>A body he has only just been given arrives whole. On the one he has, what a level added lifts his health
+     * and mana with the ceiling — not a full heal, or levelling mid-fight would be a free escape from losing one —
+     * and what his bag adds or takes away moves the ceiling alone: see {@link GrowableBody#setMaxHealth}.
      */
     private void apply(DukeGame game, GameObject body) {
         var now = figuresOf(body, found());
+        var levelled = figuresOf(body, HeroFigures.Found.NOTHING);
         var built = figuresAt(body, Levelling.FIRST_LEVEL, HeroFigures.Found.NOTHING);
+        boolean fresh = !body.getId().equals(appliedTo) || bare == null;
         if (body.getBody() instanceof GrowableBody growable) {
-            // Up to the figure and never down: a level or a find only ever adds, and
-            // current health rises with the ceiling -- it is not a full heal, or
-            // levelling mid-fight would be a free escape from losing one.
-            float more = now.maxHealth() - growable.getMaxHealth();
-            if (more > 0f) {
-                growable.growMaxHealth(more);
+            growable.setMaxHealth(now.maxHealth());
+            if (fresh) {
+                growable.setHealth(now.maxHealth());
+            } else if (levelled.maxHealth() > bare.maxHealth()) {
+                growable.heal(levelled.maxHealth() - bare.maxHealth());
             }
             // His own plate counts exactly like a breastplate he found, so the file's
             // floor on damage taken holds for a knight as it does for an archer who
@@ -228,11 +242,13 @@ public final class HeroProgress {
             player.setWeaponDamageBonus(built.attack() > 0f ? now.attack() / built.attack() : 1f);
         }
         applySpeed(body, now.speed());
-        applyMana(body, now.maxMana());
+        applyMana(body, now.maxMana(), fresh ? 0 : levelled.maxMana() - bare.maxMana());
         var recovery = body.findModule(Recovery.class);
         if (recovery != null) {
             recovery.rate(hero.healthRegen());
         }
+        appliedTo = body.getId();
+        bare = levelled;
     }
 
     /**
@@ -267,20 +283,24 @@ public final class HeroProgress {
      *
      * <p>A hero whose file names no pool is left with none, and then nothing he casts
      * costs anything, which is how the game worked before any of this.
+     *
+     * @param levelled how much a level has just added to it, which he is given as well as room for
      */
-    private void applyMana(GameObject body, int maxMana) {
+    private void applyMana(GameObject body, int maxMana, int levelled) {
         var book = body.findModule(uz.dukeengine.dungeon.skill.SkillBook.class);
         if (book == null) {
             return;
         }
         boolean isNew = book.getMaxMana() <= 0;
-        book.poolOf(maxMana, hero.manaRegen());
+        book.resize(maxMana, hero.manaRegen());
         if (isNew) {
             // A body he has only just been given: a new run, or the first frame on a
             // new floor. He arrives full, exactly as his health does -- a hero who
             // walked down a staircase and found himself unable to cast would be being
             // punished for the staircase.
             book.fillMana();
+        } else if (levelled > 0) {
+            book.restoreMana(levelled);
         }
     }
 

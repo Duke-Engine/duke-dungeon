@@ -23,7 +23,7 @@ import uz.dukeengine.dungeon.level.HeroProgress;
 import uz.dukeengine.dungeon.level.Recovery;
 import uz.dukeengine.dungeon.loot.LootBag;
 import uz.dukeengine.dungeon.loot.LootTable;
-import uz.dukeengine.dungeon.loot.LootUpdate;
+import uz.dukeengine.dungeon.loot.GroundItem;
 import uz.dukeengine.dungeon.skill.CastSkill;
 import uz.dukeengine.dungeon.skill.MendingUpdate;
 import uz.dukeengine.dungeon.skill.SummoningUpdate;
@@ -142,23 +142,12 @@ public final class Dungeon {
 
     /**
      * The same for a party: a hero's side for every bag, in seat order — the host's first — allies of each other
-     * and every one of them the dungeon's enemy, and the dungeon's side last. What a hero stands on goes into his
-     * own bag.
+     * and every one of them the dungeon's enemy, and the dungeon's side last.
      */
     public static Arena world(String asciiMap, String levelMap, DungeonSettings settings,
             String creaturesIni, java.util.List<LootBag> bagsBySeat) {
         var orders = new Orders();
-        // Whose bag a chest goes into, by the player who stands on it — asked only when a chest is walked over,
-        // by which time every side has the number the engine gave it.
         var heroes = new java.util.ArrayList<GamePlayer>();
-        java.util.function.IntFunction<LootBag> bags = playerIndex -> {
-            for (int seat = 0; seat < heroes.size(); seat++) {
-                if (heroes.get(seat).getIndex() == playerIndex) {
-                    return bagsBySeat.get(seat);
-                }
-            }
-            return null;
-        };
         // No subtitle here: what this world is called depends on why it was built,
         // and only the caller knows — an endless descent, or one named stage. See
         // the two entry points below.
@@ -216,8 +205,7 @@ public final class Dungeon {
                     // What a dead monster leaves lying about. The chest is a
                     // creature like any other -- it is in the world, so the client
                     // draws it without being told anything special.
-                    factory.register(LootUpdate.Data.class, (owner, data) -> new LootUpdate(owner, bags,
-                            settings.lootDrops().pickupRange(), settings.lootDrops().noteFrames()));
+                    factory.register(GroundItem.Data.class, (owner, data) -> new GroundItem(owner));
                 })
                 // A unit is one block, and its record is its word: a Monster block is a Monster.
                 .templates(loader -> loader.type(Monster.class).type(Hero.class)
@@ -352,7 +340,7 @@ public final class Dungeon {
         var bags = new java.util.ArrayList<LootBag>();
         var learnts = new java.util.ArrayList<uz.dukeengine.dungeon.skill.SkillRanks>();
         for (int seat = 0; seat < heroes; seat++) {
-            bags.add(new LootBag());
+            bags.add(new LootBag(settings.lootDrops().slots()));
             var learnt = new uz.dukeengine.dungeon.skill.SkillRanks(settings.progression().skillSpread());
             learnt.startWith(settings.skillsFor(settings.run().defaultHero()));
             learnts.add(learnt);
@@ -418,12 +406,36 @@ public final class Dungeon {
                     }
                 }
                 // "Stand and pick no fights", which none of the engine's three
-                // orders can say. See HoldGround.
-                case uz.dukeengine.dungeon.ai.HoldGround hold ->
-                        arena.orders().hold(hold.playerIndex(), hold.stand());
+                // orders can say. See HoldGround. Like every order after one, it
+                // calls off an errand for something on the floor.
+                case uz.dukeengine.dungeon.ai.HoldGround hold -> {
+                    giveUpErrands(game, hold.playerIndex());
+                    arena.orders().hold(hold.playerIndex(), hold.stand());
+                }
                 // "Go there and kill what you meet." See AttackMove.
-                case uz.dukeengine.dungeon.ai.AttackMove march ->
-                        arena.orders().attackMove(march.playerIndex(), march.spot());
+                case uz.dukeengine.dungeon.ai.AttackMove march -> {
+                    giveUpErrands(game, march.playerIndex());
+                    arena.orders().attackMove(march.playerIndex(), march.spot());
+                }
+                // Sent for something on the floor, or to put something of his
+                // down: the latest order wins, so a march he was on is over.
+                case uz.dukeengine.dungeon.loot.PickUp pick -> {
+                    var progress = run.progressOf(pick.playerIndex());
+                    if (progress != null && uz.dukeengine.dungeon.loot.ItemErrand.pickUp(
+                            Skills.heroOf(game.getLogic(), pick.playerIndex()),
+                            game.getLogic().findObject(pick.item()), progress.getLoot(),
+                            errandRules(settings, arena))) {
+                        arena.orders().attackMove(pick.playerIndex(), null);
+                    }
+                }
+                case uz.dukeengine.dungeon.loot.DropItem drop -> {
+                    var progress = run.progressOf(drop.playerIndex());
+                    if (progress != null && uz.dukeengine.dungeon.loot.ItemErrand.drop(
+                            Skills.heroOf(game.getLogic(), drop.playerIndex()), drop.slot(), drop.place(),
+                            progress.getLoot(), errandRules(settings, arena))) {
+                        arena.orders().attackMove(drop.playerIndex(), null);
+                    }
+                }
                 // ★ The three plain orders call it off, and they CANNOT be heard
                 // here: this handler is `onOtherCommand`, the engine's door for
                 // commands it does not recognise, so a MoveTo is applied by rts
@@ -467,6 +479,25 @@ public final class Dungeon {
         }
 
         return new Session(game, run, progresses.getFirst(), arena.orders());
+    }
+
+    /**
+     * What every errand for a thing on the floor shares. Asked as an order is obeyed rather than at assembly, by
+     * which time the dungeon's side has the number the engine gave it: whatever a hero puts down is the dungeon's,
+     * so it is nobody's hero's to select.
+     */
+    private static uz.dukeengine.dungeon.loot.ItemErrand.Rules errandRules(DungeonSettings settings, Arena arena) {
+        var drops = settings.lootDrops();
+        return new uz.dukeengine.dungeon.loot.ItemErrand.Rules(drops.pickupRange(), drops.noteFrames(),
+                drops.template(), arena.dungeon().getIndex(), drops.fullWord());
+    }
+
+    /** Whatever errand that player's hero is on, called off: he has been told something else. */
+    private static void giveUpErrands(DukeGame game, int playerIndex) {
+        var hero = Skills.heroOf(game.getLogic(), playerIndex);
+        if (hero != null) {
+            uz.dukeengine.rts.module.Errand.giveUpAll(hero);
+        }
     }
 
     /** The attributes of the hero this creature is, or none for anything that is not one. */

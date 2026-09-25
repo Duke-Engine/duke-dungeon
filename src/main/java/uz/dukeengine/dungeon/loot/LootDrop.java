@@ -47,16 +47,6 @@ public final class LootDrop extends Module implements DieModule {
         if (item == null) {
             return; // most deaths leave nothing, which is what makes the rest worth it
         }
-        var template = world.findTemplate(chestTemplate);
-        if (template == null) {
-            return; // no such thing in the data files; the monster simply leaves nothing
-        }
-        var chest = world.spawn(template, owner.getPosition(), owner.getPlayerIndex());
-        var lying = chest.findModule(LootUpdate.class);
-        if (lying == null) {
-            chest.markDestroyed(); // the template exists but is not something to pick up
-            return;
-        }
-        lying.holds(item);
+        GroundItem.lay(world, chestTemplate, item, owner.getPosition(), owner.getPlayerIndex());
     }
 }

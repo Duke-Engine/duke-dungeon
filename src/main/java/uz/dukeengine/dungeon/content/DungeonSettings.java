@@ -632,6 +632,8 @@ public final class DungeonSettings {
                 "BossDropPercent is a chance, not a count");
         require(lootDrops.pickupRange() > 0, "something he can never reach is not loot");
         require(lootDrops.noteFrames() >= 0, "the pickup message cannot last negative frames");
+        require(lootDrops.slots() >= 1 && lootDrops.slots() <= 12, "a bag holds from 1 to 12 things");
+        require(sayable(lootDrops.fullWord()), "FullWord may not contain ',' or '|'");
         for (var item : loot) {
             require(sayable(item.name()),
                     "an item's DisplayName may not contain ',' or '|': " + item.id());

@@ -11,6 +11,8 @@ import uz.dukeengine.core.network.CommandPacket;
 import uz.dukeengine.core.thing.ObjectId;
 import uz.dukeengine.dungeon.ai.AttackMove;
 import uz.dukeengine.dungeon.ai.HoldGround;
+import uz.dukeengine.dungeon.loot.DropItem;
+import uz.dukeengine.dungeon.loot.PickUp;
 import uz.dukeengine.dungeon.run.Watching;
 import uz.dukeengine.dungeon.skill.CastSkill;
 import uz.dukeengine.dungeon.skill.UpgradeSkill;
@@ -30,7 +32,9 @@ class PartyOrdersTest {
             new AttackMove(3, new Coord3D(10.5f, 20.25f, 3f)),
             new Watching(1, new ObjectId(7)),
             new Watching(1, null),
-            new ChooseHero(2, "Knight"));
+            new ChooseHero(2, "Knight"),
+            new PickUp(3, new ObjectId(88)),
+            new DropItem(2, 5, new Coord3D(31.75f, 402.5f, 0f)));
 
     @Test
     void anOrderIsTheCommandItCarries() {
@@ -55,5 +59,9 @@ class PartyOrdersTest {
         assertNull(PartyOrders.commandOf(new GameOrder(2, "sell", List.of(), null, null, 0)));
         assertNull(PartyOrders.commandOf(new GameOrder(2, PartyOrders.MARCH, List.of(), null, null, 0)),
                 "a march to nowhere");
+        assertNull(PartyOrders.commandOf(new GameOrder(2, PartyOrders.PICK_UP, List.of(), null, null, 0)),
+                "a pickup of nothing");
+        assertNull(PartyOrders.commandOf(new GameOrder(2, PartyOrders.DROP, List.of(), null, null, 1)),
+                "a thing put down nowhere");
     }
 }

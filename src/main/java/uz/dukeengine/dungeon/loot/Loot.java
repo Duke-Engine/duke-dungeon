@@ -11,9 +11,9 @@ package uz.dukeengine.dungeon.loot;
  * the status line separates its fields with.
  *
  * @param id        what the block is headed by; never seen by the player
- * @param name      what the message says he picked up, in the game's own language
- * @param icon      the drawing the panel puts in his bag, by the name the client
- *                  knows it under
+ * @param name      what it is called when he picks it up and when the pointer rests on
+ *                  it, in the game's own language
+ * @param icon      the picture his bag draws it with, a path from the resource root
  * @param kind      which figure it moves
  * @param value     percent for {@code ATTACK} and {@code ARMOUR}, flat health or mana
  *                  for {@code HEALTH} and {@code MANA}, whole points for

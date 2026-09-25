@@ -682,15 +682,37 @@ Cursor
   Tint = 0xA8322B
 End
 
+; And two of the game's own. PickUp is the word a click on a thing lying on the
+; floor gives him -- the client shows the pointer of that name over one -- and
+; Drop is the pointer while a thing from his bag is in hand, waiting for the
+; floor it goes down on. Both hands hold at their middle, not at a corner.
+Cursor
+  Name = PickUp
+  Image = ui/cursors/default/hand_small_open.png
+  HotX = 15
+  HotY = 13
+  Tint = 0xE8A33D
+End
+
+Cursor
+  Name = Drop
+  Image = ui/cursors/default/hand_small_closed.png
+  HotX = 15
+  HotY = 15
+  Tint = 0xE8A33D
+End
+
 ; ---------------------------------------------------------------------------
 ; The hero's bar: which blocks it has, in what order, how big its sockets are,
 ; and every colour it is painted in.
 ;
 ; Blocks IS the bar, left to right. Minimap is the map's socket with the order
 ; buttons beside it; Hero is his portrait, what is left of him under it, and his
-; name, experience and figures beside it; then Bag, Skills and Depth. Leave one
-; out and the bar closes up where it was -- and without Minimap the map stands
-; in the corner over the bar instead.
+; name, experience and figures beside it; then Skills and Depth. Leave one out
+; and the bar closes up where it was -- and without Minimap the map stands in
+; the corner over the bar instead. Bag is the client's own grid of what he
+; carries, which can only be looked at; this game draws a bag of its own that
+; can be used, so it leaves that one off.
 ;
 ; The sizes are in the pixels the design was drawn at, DesignWidth wide. The bar
 ; is scaled from there to the window: never smaller than MinScale while it still
@@ -702,7 +724,7 @@ End
 ; carved edges laid over it are the Skin blocks below, and are not these.
 ; ---------------------------------------------------------------------------
 PanelLook
-  Blocks = [Minimap, Hero, Bag, Skills, Depth]
+  Blocks = [Minimap, Hero, Skills, Depth]
   ; A block that stands on its own instead, hung from a corner or an edge of the
   ; window on a plate of the same stone:
   ;

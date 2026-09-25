@@ -63,7 +63,13 @@ class DungeonSettingsTest {
      */
     @Test
     void theHerosBarIsTheOneTheFileDescribes() {
-        assertEquals(PanelLook.DEFAULTS, DungeonSettings.load().panelLook());
+        assertEquals(List.of(PanelBlock.MINIMAP, PanelBlock.HERO, PanelBlock.SKILLS, PanelBlock.DEPTH),
+                DungeonSettings.load().panelLook().blocks(),
+                "the client's bag is off the bar: the game draws one of its own that can be used");
+        var shipped = Content.data();
+        assertTrue(shipped.contains("Blocks = [Minimap, Hero, Skills, Depth]"));
+        assertEquals(PanelLook.DEFAULTS, DungeonSettings.parse(shipped.replace("Blocks = [Minimap, Hero, Skills, Depth]",
+                "Blocks = [Minimap, Hero, Bag, Skills, Depth]")).panelLook(), "and the rest is the bar as designed");
         var own = DungeonSettings.parse("""
                 PanelLook
                   Blocks = [Skills, Hero]

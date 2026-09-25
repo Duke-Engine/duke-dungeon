@@ -281,18 +281,21 @@ Attribute
 End
 
 ; ---------------------------------------------------------------------------
-; What is left on the floor.
+; What is left on the floor, and what he carries.
 ;
-; A monster that dies may leave something behind, and walking over it is all it
-; takes: there is no inventory and nothing to equip. That is deliberate -- the
-; decision the loot asks for is whether to go and get it, and a second decision
-; at the end of it would be a formality.
+; A monster that dies may leave something behind: a chest, lying where it fell.
+; Walking over it does nothing. A click on it sends him for it -- the right
+; button, as on anything else he is sent at -- and it is his when he gets there,
+; if his bag has room. A thing in his bag counts for as long as it is in it: the
+; right button takes one in hand, and the left puts it down on the floor where
+; it is pointed, where it lies for anyone to pick up again.
 ;
-; What it gives is permanent for the run and gone with it, like everything else
-; here. The kinds are what a hero is made of: ATTACK (percent of his blow), HEALTH
+; The kinds are what a hero is made of: ATTACK (percent of his blow), HEALTH
 ; (flat maximum health), ARMOUR (percent taken off what reaches him), MANA (flat
 ; maximum mana) and ATTRIBUTE (whole points of the attribute its Attribute line
-; names -- see Attribute).
+; names -- see Attribute). HEALTH and MANA are room, not a draught: a heart makes
+; his body bigger and fills none of it, or putting one down and picking it up
+; again would be a heal.
 ;
 ; Which monster leaves what is drawn from the run's own seed and the monster's
 ; own id -- so the same seed drops the same things off the same monsters, whatever
@@ -306,30 +309,32 @@ LootDrops
   Template = Chest
   ; How often an ordinary monster leaves something. Loot that always drops is not
   ; loot, it is a tax on killing things.
-  DropPercent = 18
+  DropPercent = 30
   ; The thing guarding the way down always leaves something. It is the one fight
   ; on the floor the player cannot walk past.
   BossDropPercent = 100
-  ; How close he has to walk before it is his. A cell is 10 units, so this is
-  ; "standing on it" with enough margin that a fast run does not skip over it.
+  ; How close he has to walk before a thing changes hands, picked up or put down.
+  ; A cell is 10 units, so this is "standing on it" with room to spare.
   PickupRange = 14
   ; What an item is worth per floor beyond the first, as a percentage of itself.
   ValuePercentPerDepth = 20
   ; How long the panel says what he found, in logic frames (30 = one second).
   NoteFrames = 90
+  ; How many things his bag holds. A full bag leaves the next one lying.
+  Slots = 6
+  FullWord = Sumka to'la
+  ; Under a thing the pointer is on, and beside the pointer while one is in hand.
+  TakeHint = O'ng tugma: olish
+  DropHint = Chap tugma: yerga qo'yish
 End
 
-; ★ A BIGGER PURSE, not a draught. Everything in his bag is permanent -- that is
-; what the bag IS -- so this grows the pool rather than topping it up, and the
-; topping up comes free: a pool that grows gifts what it adds, so finding one in
-; a fight is a drink as well as a raise.
-;
-; A potion he carries and chooses to drink would be the other thing, and there is
-; nothing in this game he carries and chooses to do anything with.
+; Icon is the picture his bag draws it with, a path from the resource root.
+
+; ★ A BIGGER PURSE, not a draught: room for more mana, and none of it filled.
 LootItem
   Name = Manastone
   DisplayName = Mana toshi
-  Icon = flask
+  Icon = icons/stats/stat_crit.png
   Kind = MANA
   Value = 25
   Weight = 12
@@ -339,9 +344,7 @@ End
 LootItem
   Name = Blade
   DisplayName = O'tkir tig'
-  ; Which drawing goes in his bag, by the name the client's panel draws it under.
-  ; A name it does not know is drawn as a plain mark rather than left as a gap.
-  Icon = blade
+  Icon = icons/stats/stat_attack.png
   Kind = ATTACK
   Value = 8
   Weight = 20
@@ -350,7 +353,7 @@ End
 LootItem
   Name = Quiver
   DisplayName = To'la sadoq
-  Icon = shot
+  Icon = icons/stats/stat_range.png
   Kind = ATTACK
   Value = 14
   Weight = 12
@@ -360,7 +363,7 @@ End
 LootItem
   Name = Bread
   DisplayName = Zaxira non
-  Icon = flask
+  Icon = icons/stats/stat_lifesteal.png
   Kind = HEALTH
   Value = 40
   Weight = 20
@@ -369,7 +372,7 @@ End
 LootItem
   Name = Heart
   DisplayName = Tosh yurak
-  Icon = heart
+  Icon = icons/stats/stat_health.png
   Kind = HEALTH
   Value = 90
   Weight = 12
@@ -379,7 +382,7 @@ End
 LootItem
   Name = Shield
   DisplayName = Yorilgan qalqon
-  Icon = shield
+  Icon = icons/stats/stat_armor.png
   Kind = ARMOUR
   Value = 4
   Weight = 16
@@ -388,9 +391,43 @@ End
 LootItem
   Name = Plate
   DisplayName = Og'ir sovut
-  Icon = plate
+  Icon = icons/commands/cmd_guard.png
   Kind = ARMOUR
   Value = 8
   Weight = 10
   MinDepth = 3
+End
+
+; ---- the hero's own attributes ------------------------------------------------
+;
+; Whole points of one attribute, and everything that attribute is worth comes
+; with them: a strength hero who finds strength gets the health and the blow.
+LootItem
+  Name = Gauntlet
+  DisplayName = Kuch qo'lqopi
+  Icon = icons/stats/stat_strength.png
+  Kind = ATTRIBUTE
+  Attribute = Strength
+  Value = 3
+  Weight = 16
+End
+
+LootItem
+  Name = Boots
+  DisplayName = Chaqqon etik
+  Icon = icons/stats/stat_agility.png
+  Kind = ATTRIBUTE
+  Attribute = Agility
+  Value = 3
+  Weight = 16
+End
+
+LootItem
+  Name = Tome
+  DisplayName = Donolik kitobi
+  Icon = icons/stats/stat_intelligence.png
+  Kind = ATTRIBUTE
+  Attribute = Intelligence
+  Value = 3
+  Weight = 16
 End

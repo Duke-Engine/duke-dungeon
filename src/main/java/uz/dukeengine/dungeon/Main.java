@@ -420,13 +420,18 @@ public final class Main {
         // Held too: a party is a match of its own, built once its players have met, and
         // it is the client that is asked to play it — see PartyFront.
         var duke = Duke3D.of(session.game(), visuals).hotkeys(keys);
+        // His bag, drawn and handled by the game: what he carries, and a hand to take a thing out of it and put it
+        // down. Told of every match it is drawn over -- this one, and a party's that replaces it.
+        var bag = new BagScreen(settings, duke);
+        bag.show(session);
+        duke.canvas(bag).input(bag);
         duke.shell(Shell.create()
                 .entry(Shell.Entry.PLAY, "Enter the dungeon")
                 .entry(Shell.Entry.SETTINGS)
                 .entry(Shell.Entry.QUIT)
                 // Which turns Play into a path rather than a start -- with whom, how,
                 // then where, then who. Nothing opens until it is walked. See whoGoesIn.
-                .asking(whoGoesIn(session, settings, visuals, keys, duke)));
+                .asking(whoGoesIn(session, settings, visuals, keys, duke, bag)));
         duke.launch();
     }
 
@@ -438,13 +443,13 @@ public final class Main {
      * waiting room he walked away from.
      */
     static uz.dukeengine.client3d.Shell.Question whoGoesIn(Dungeon.Session session, DungeonSettings settings,
-            Visuals visuals, Hotkeys keys, Duke3D duke) {
+            Visuals visuals, Hotkeys keys, Duke3D duke, BagScreen bag) {
         var alone = howToPlay(session, settings, visuals, keys);
         var party = settings.party();
         if (party.maxPlayers() < 2) {
             return alone;
         }
-        var front = new PartyFront(session, settings, visuals, keys, duke);
+        var front = new PartyFront(session, settings, visuals, keys, duke, bag);
         return new uz.dukeengine.client3d.Shell.Question(party.whoWord(), party.whoHint(), List.of(
                 new uz.dukeengine.client3d.Shell.Option(party.aloneWord(), party.aloneBlurb(), front::cancel, alone),
                 new uz.dukeengine.client3d.Shell.Option(party.hostWord(), party.hostBlurb(), front::cancel,

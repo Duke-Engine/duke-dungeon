@@ -52,6 +52,16 @@ public final class GrowableBody extends BodyModule {
         health = clamp(health + extra);
     }
 
+    /**
+     * A new ceiling, up or down, and current health left where it is but for what no longer fits. What he carries
+     * moves the ceiling and nothing else: were it to lift him too, putting a heart down and picking it up again
+     * would be a heal.
+     */
+    public void setMaxHealth(float max) {
+        maxHealth = Math.max(1f, max);
+        health = clamp(health);
+    }
+
     /** Take {@code multiplier} of the damage aimed at us — below 1 is armour. */
     public void setDamageTaken(float multiplier) {
         this.damageTaken = multiplier;

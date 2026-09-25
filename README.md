@@ -11,7 +11,7 @@ uchun yangi engine imkoniyatini talab qilsa, demak engine tugallanmagan.
 ```
 ./gradlew run                       # o'ynash
 ./gradlew run --args=--map=first    # muzlatilgan xaritada
-./gradlew build                     # 720 test
+./gradlew build                     # 737 test
 ```
 
 ## Engine qayerdan olinadi
@@ -124,6 +124,40 @@ keyingi ishi. O'yin tomonida hamma buyruq allaqachon kerakli shaklda.
 **Hali yo'q:** chat (engine qo'llaydi, o'yinda yozish oynasi yo'q), qorong'ulikni
 jamoa bilan birga ochish (klient faqat o'z qahramoning atrofini ochadi),
 alohida server.
+
+## Narsalar — sumka, olish va tashlash
+
+Monstr o'lganda **30%** ehtimol bilan narsa qoldiradi (boss — har doim). Narsa
+yerda **sandiq** bo'lib yotadi.
+
+- **Olish:** sandiq ustidan yurish hech narsa bermaydi. Qahramon tanlangan
+  holda sandiqni **o'ng tugma** bilan bosing (kursor ochiq qo'lga aylanadi) —
+  qahramon borib uni oladi. Sumka to'la bo'lsa, narsa joyida qoladi va panelda
+  "Sumka to'la" chiqadi.
+- **Sumka:** ekranning o'ng tomonida, 6 ta uya. Narsa sumkada turgan ekan,
+  bonusi hisoblanadi.
+- **Tashlash:** sumkadagi narsani **o'ng tugma** bilan qo'lga oling (kursor
+  yopiq qo'lga aylanadi, narsa kursor yonida yuradi), keyin yerni **chap tugma**
+  bilan bosing — qahramon o'sha joyga borib qo'yadi. O'ng tugma yoki Esc —
+  fikrdan qaytish. Yetib bo'lmaydigan joy bosilsa, borishi mumkin bo'lgan eng
+  yaqin joyga qo'yadi.
+- **Ko'rsatma:** kursorni sumkadagi yoki yerdagi narsa ustiga olib borsangiz,
+  uning nomi va nima berishi chiqadi (masalan `+3 Kuch`, `+8% Zarba`).
+
+Narsalar: `O'tkir tig'`, `To'la sadoq` (zarba %), `Zaxira non`, `Tosh yurak`
+(jon), `Yorilgan qalqon`, `Og'ir sovut` (zirh %), `Mana toshi` (mana) va
+qahramon atributlari: `Kuch qo'lqopi` (+Kuch), `Chaqqon etik` (+Epchillik),
+`Donolik kitobi` (+Aql). Chuqurroq qavatda qimmatroq. Hammasi
+`data/world/world.duke` da (`LootDrops`, `LootItem`): yangi narsa — yangi blok,
+Java kerak emas.
+
+**Jon va mana — joy, to'ldirish emas.** Yurak maksimal jonni oshiradi, jonning
+o'zini emas; tashlansa, oshgan joy ham ketadi. Aks holda yurakni tashlab qayta
+olish bepul davolanish bo'lardi. Daraja esa avvalgidek jonni ham ko'taradi.
+
+**Jamoada:** olish ham, tashlash ham `GameOrder` (`PickUp`, `DropItem`), har bir
+kompyuterda bir kadrda bajariladi. Kim yuborilsa, narsa o'shaniki; tashlangan
+narsani istalgan qahramon olishi mumkin.
 
 ## Generatsiya — kameralar, tunnellar, relyef
 

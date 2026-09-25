@@ -257,12 +257,21 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Wea
      */
     public void poolOf(int max, int tenthsPerSecond) {
         int was = maxMana;
-        this.maxMana = Math.max(0, max);
-        this.manaTenthsPerSecond = Math.max(0, tenthsPerSecond);
-        this.usesMana = this.maxMana > 0;
+        resize(max, tenthsPerSecond);
         if (was > 0 && maxMana > was) {
             mana = Math.min(maxMana, mana + (maxMana - was));
         }
+    }
+
+    /**
+     * The same pool made bigger or smaller with nothing given: a bigger one is only room, and what no longer fits a
+     * smaller one spills. What he carries resizes his pool this way — were it a gift, putting a manastone down and
+     * picking it up again would be a drink.
+     */
+    public void resize(int max, int tenthsPerSecond) {
+        this.maxMana = Math.max(0, max);
+        this.manaTenthsPerSecond = Math.max(0, tenthsPerSecond);
+        this.usesMana = this.maxMana > 0;
         mana = Math.min(mana, maxMana);
     }
 

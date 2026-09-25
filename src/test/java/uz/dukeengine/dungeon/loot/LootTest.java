@@ -144,6 +144,35 @@ class LootTest {
         assertEquals("", bag.noteAt(130), "it has been said; the panel goes quiet again");
     }
 
+    @Test
+    void aBagHasRoomForSoManyAndNoMore() {
+        var bag = new LootBag(2);
+        assertTrue(bag.take(DECK.get(0), 0, 10));
+        assertTrue(bag.take(DECK.get(1), 0, 10));
+
+        assertTrue(bag.isFull());
+        assertFalse(bag.take(DECK.get(0), 0, 10), "a full bag takes nothing more");
+        assertEquals(2, bag.getFound().size());
+    }
+
+    @Test
+    void whatIsTakenOutLeavesItsSlotForTheNext() {
+        var bag = new LootBag(3);
+        bag.take(DECK.get(0), 0, 10);
+        bag.take(DECK.get(1), 0, 10);
+        int before = bag.version();
+
+        assertEquals(DECK.get(0), bag.remove(0));
+        assertTrue(bag.version() > before, "a change the figures have to hear of");
+        assertEquals(java.util.Arrays.asList(null, DECK.get(1), null), bag.slots());
+        assertEquals(0, bag.attackPercent(), "and it no longer counts");
+
+        bag.take(DECK.get(0), 0, 10);
+        assertEquals(DECK.get(0), bag.slots().getFirst(), "the next goes into the first empty slot");
+        assertNull(bag.remove(2), "an empty slot gives nothing");
+        assertNull(bag.remove(9), "nor one the bag does not have");
+    }
+
     // ---- in the game ----
 
     private static GameObject find(DukeGame game, String template) {
@@ -152,55 +181,128 @@ class LootTest {
                 .findFirst().orElse(null);
     }
 
-    /**
-     * A monster killed on a real floor leaves a chest, and walking the hero into
-     * it hands over what it held.
-     *
-     * <p>Driven through the shipped game rather than a fixture, because the two
-     * halves that could go wrong are both wiring: that a monster carries the drop
-     * at all, and that the chest the data file describes is one the pickup module
-     * is attached to.
-     */
-    @Test
-    void aChestIsLeftAndPickedUp() {
-        var settings = DungeonSettings.parse("""
-                LootDrops
-                  Template = Chest
-                  DropPercent = 100
-                  BossDropPercent = 100
-                  PickupRange = 14
-                  ValuePercentPerDepth = 0
-                  NoteFrames = 90
-                End
-                """);
-        var session = Dungeon.newSession(21L, settings);
-        var game = session.game();
-        game.runHeadless(1);
+    /** Every death leaves something, so a test about what is left is not a test about whether. */
+    private static final DungeonSettings GENEROUS = DungeonSettings.parse("""
+            LootDrops
+              Template = Chest
+              DropPercent = 100
+              BossDropPercent = 100
+              PickupRange = 14
+              ValuePercentPerDepth = 0
+              NoteFrames = 90
+            End
+            """);
 
+    /** A monster killed on a real floor, and the chest it left where it fell. */
+    private static GameObject killOneFor(DukeGame game) {
         var victim = game.getLogic().getObjects().stream()
                 .filter(object -> object.getPlayerIndex() != game.getLocalPlayerIndex())
                 .filter(object -> object.getBody() != null)
                 .findFirst().orElseThrow();
-        var where = victim.getPosition();
         game.getLogic().destroyObject(victim);
         game.runHeadless(2);
-
         var chest = find(game, "Chest");
         assertNotNull(chest, "a monster that always drops should have left something");
-        var lying = chest.findModule(LootUpdate.class);
+        return chest;
+    }
+
+    /**
+     * A monster killed on a real floor leaves a chest, and walking over it takes nothing: he has to be sent.
+     *
+     * <p>Driven through the shipped game rather than a fixture, because what could go wrong is wiring: that a
+     * monster carries the drop at all, and that the chest the data file describes holds what it dropped.
+     */
+    @Test
+    void aChestIsLeftAndWalkingOverItTakesNothing() {
+        var session = Dungeon.newSession(21L, GENEROUS);
+        var game = session.game();
+        game.runHeadless(1);
+        var chest = killOneFor(game);
+        var lying = chest.findModule(GroundItem.class);
         assertNotNull(lying);
         assertNotNull(lying.getHolding(), "and it should be holding something");
-        var item = lying.getHolding();
 
-        // Walk the hero onto it. Placed rather than ordered: this is about the
-        // pickup, not about the pathfinder.
-        var hero = find(game, "Rogue");
-        hero.setPosition(where);
-        game.runHeadless(2);
+        // Placed rather than ordered: this is about standing on it, not about the pathfinder.
+        find(game, "Rogue").setPosition(chest.getPosition());
+        game.runHeadless(30);
+
+        assertNotNull(find(game, "Chest"), "standing on it is not taking it");
+        assertTrue(session.progress().getLoot().getFound().isEmpty());
+    }
+
+    /** And a click on it — the order the client sends — hands over what it held. */
+    @Test
+    void aClickOnTheChestHandsItOver() {
+        var session = Dungeon.newSession(21L, GENEROUS);
+        var game = session.game();
+        game.runHeadless(1);
+        var chest = killOneFor(game);
+        var item = chest.findModule(GroundItem.class).getHolding();
+        find(game, "Rogue").setPosition(chest.getPosition());
+
+        game.postCommand(uz.dukeengine.dungeon.party.PartyOrders.of(
+                new PickUp(game.getLocalPlayerIndex(), chest.getId())));
+        game.runHeadless(3);
 
         assertNull(find(game, "Chest"), "the chest is gone the moment it is his");
         assertEquals(List.of(item.id()),
                 session.progress().getLoot().getFound().stream().map(Loot::id).toList());
+    }
+
+    /** What he puts down lies on the floor, the dungeon's to keep until somebody picks it up. */
+    @Test
+    void whatHePutsDownLiesOnTheFloor() {
+        var session = Dungeon.newSession(21L);
+        var game = session.game();
+        game.runHeadless(1);
+        var hero = find(game, "Rogue");
+        var player = game.getLogic().getRtsPlayer(game.getLocalPlayerIndex());
+        float plain = player.getWeaponDamageBonus();
+        var blade = new Loot("Blade", "Blade", "", LootKind.ATTACK, 25, 10, 1);
+        session.progress().getLoot().take(blade, 0, 30);
+        game.runHeadless(2);
+        assertTrue(player.getWeaponDamageBonus() > plain, "a sword in his bag is a sword in his hand");
+
+        game.postCommand(uz.dukeengine.dungeon.party.PartyOrders.of(
+                new DropItem(game.getLocalPlayerIndex(), 0, hero.getPosition())));
+        game.runHeadless(3);
+
+        assertTrue(session.progress().getLoot().getFound().isEmpty(), "out of his bag");
+        assertEquals(plain, player.getWeaponDamageBonus(), 0.0001f, "and out of his hand");
+        var chest = find(game, "Chest");
+        assertNotNull(chest, "and on the floor");
+        assertEquals(blade, chest.findModule(GroundItem.class).getHolding());
+        assertTrue(chest.getPlayerIndex() != game.getLocalPlayerIndex(), "nobody's hero's to select");
+    }
+
+    /**
+     * ★ Putting a heart down and taking it up again heals nothing. What he carries is room in him, not health:
+     * were a heart to bring the health it makes room for, that would be a heal any time he liked.
+     */
+    @Test
+    void puttingAHeartDownAndTakingItUpAgainHealsNothing() {
+        var session = Dungeon.newSession(21L);
+        var game = session.game();
+        game.runHeadless(1);
+        var body = find(game, "Rogue").getBody();
+        var bag = session.progress().getLoot();
+        var heart = new Loot("Heart", "Heart", "", LootKind.HEALTH, 90, 10, 1);
+        float bare = body.getMaxHealth();
+
+        bag.take(heart, 0, 30);
+        game.runHeadless(2);
+        assertEquals(bare + 90f, body.getMaxHealth(), 0.01f, "room for ninety more");
+        body.setHealth(body.getMaxHealth() * 0.4f);
+        float wounded = body.getHealth();
+
+        bag.remove(0);
+        game.runHeadless(2);
+        assertEquals(bare, body.getMaxHealth(), 0.01f, "the room goes with it");
+        bag.take(heart, 0, 30);
+        game.runHeadless(2);
+
+        assertEquals(bare + 90f, body.getMaxHealth(), 0.01f, "and comes back with it");
+        assertEquals(wounded, body.getHealth(), 1f, "and none of it came back filled");
     }
 
     @Test

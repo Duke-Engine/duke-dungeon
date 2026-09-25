@@ -1,4 +1,4 @@
-; What a dead monster leaves on the floor.
+; What a dead monster leaves on the floor, and what a hero puts down.
 ;
 ; Not a creature so much as a thing lying there, and the absences say so:
 ;
@@ -6,16 +6,17 @@
 ;   - no Geometry, so it does not shoulder anything aside or block a corridor
 ;   - no CAN_ATTACK and nothing to attack with
 ;
-; STRUCTURE is what makes the client draw it as a box on the floor rather than as
-; a creature, and gives it a bigger dot on the minimap -- which is the point of a
-; chest, since walking over to one is the decision it asks for.
+; STRUCTURE is what makes the client draw it as a thing on the floor rather than
+; as a creature, and gives it a bigger dot on the minimap. SELECTABLE is what lets
+; the pointer find it: a right click on it sends the hero to pick it up -- walking
+; over it does nothing -- and the pointer over it says what it holds.
 Object
   Name = Chest
-  DisplayName = Chest
-  KindOf = [STRUCTURE]
+  DisplayName = Sandiq
+  KindOf = [STRUCTURE, SELECTABLE]
   VisionRange = 0
   Modules = [
-    LootUpdate
+    GroundItem
     End
   ]
 End

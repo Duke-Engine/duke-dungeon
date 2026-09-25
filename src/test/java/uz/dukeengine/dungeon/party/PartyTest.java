@@ -17,8 +17,8 @@ import uz.dukeengine.game.DukeGame;
 
 /**
  * A party's rules, with every player on one machine: the heroes are said before the first floor is laid, a fallen
- * hero waits while the others fight on, the boss down stands everyone up on the next floor, and what a hero picks
- * up is his.
+ * hero waits while the others fight on, the boss down stands everyone up on the next floor, and what a hero is
+ * sent for is his.
  */
 class PartyTest {
 
@@ -103,7 +103,7 @@ class PartyTest {
     }
 
     @Test
-    void whatAHeroStandsOnIsHis() {
+    void whatAHeroIsSentForIsHis() {
         var settings = DungeonSettings.parse("""
                 LootDrops
                   Template = Chest
@@ -124,10 +124,13 @@ class PartyTest {
         game.runHeadless(2);
         var chest = game.getLogic().getObjects().stream()
                 .filter(object -> object.getTemplate().name().equals("Chest")).findFirst().orElseThrow();
-        var item = chest.findModule(uz.dukeengine.dungeon.loot.LootUpdate.class).getHolding();
+        var item = chest.findModule(uz.dukeengine.dungeon.loot.GroundItem.class).getHolding();
 
+        // Both standing on it: whose it is, is whoever was sent.
+        heroOf(game, 1, "Rogue").setPosition(where);
         heroOf(game, 2, "Knight").setPosition(where);
-        game.runHeadless(2);
+        game.postCommand(PartyOrders.of(new uz.dukeengine.dungeon.loot.PickUp(2, chest.getId())));
+        game.runHeadless(3);
 
         assertEquals(List.of(item.id()),
                 session.run().progressOf(2).getLoot().getFound().stream().map(Loot::id).toList(), "his");

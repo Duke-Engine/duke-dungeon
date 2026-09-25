@@ -390,16 +390,12 @@ final class HeroStatus {
     }
 
     /**
-     * What he is carrying, as one field per kind of thing with how many of it.
+     * What he is carrying, as one field per kind of thing with how many of it: grouped and counted, three of the
+     * same sword one picture reading three.
      *
-     * <p>The bag is already there — every item he picks up goes into it and its
-     * totals are what the figures under the bars are worked out from — so this
-     * shows what the game already knows rather than inventing an inventory. He
-     * cannot use or drop any of it yet; what the grid says today is "these are the
-     * things that made you stronger", which is what finding them means.
-     *
-     * <p>Grouped and counted: three of the same sword is one drawing reading three,
-     * which is what six sockets have room for.
+     * <p>For the client's own grid of his bag, which can only be looked at. The game draws a bag of its own that
+     * can be used — see {@code BagScreen} — and leaves the client's off the bar; the line still says what is in it,
+     * as it says everything else about him.
      */
     private static void appendItems(StringBuilder line, HeroProgress progress,
             DungeonSettings settings) {
