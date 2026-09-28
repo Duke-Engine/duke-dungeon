@@ -226,7 +226,9 @@ class HeroAttributesTest {
         assertTrue(fresh.isMoving(), "and they are still walking");
         assertEquals(goal, fresh.getGoal(), "to the same place");
         it.game().runHeadless(15 * SECOND);
-        assertTrue(body.getPosition().distance(goal) < 1f, "and they get him there");
+        // Into the cell he was sent to: a mover stops on its own cell's centre, which is at most half a cell's
+        // diagonal from the place clicked.
+        assertTrue(body.getPosition().distance(goal) < 7.5f, "and they get him there: " + body.getPosition());
     }
 
     // ---- the file ----

@@ -245,8 +245,10 @@ public final class HeroProgress {
         applyMana(body, now.maxMana(), fresh ? 0 : levelled.maxMana() - bare.maxMana());
         var recovery = body.findModule(Recovery.class);
         if (recovery != null) {
-            recovery.rate(hero.healthRegen());
+            // His own, and whole points a second from what he carries: the rate counts in tenths.
+            recovery.rate(hero.healthRegen() + 10 * loot.healthRegen());
         }
+        applyAttackSpeed(body, loot.attackSpeedPercent());
         appliedTo = body.getId();
         bare = levelled;
     }
@@ -279,6 +281,21 @@ public final class HeroProgress {
     }
 
     /**
+     * Quicker blows, from what he carries: put on him the first time he carries any, and kept at the figure after.
+     * Only ever from a tick, like his legs, so his module list is not changed under an update.
+     */
+    private static void applyAttackSpeed(GameObject body, int percent) {
+        var quick = body.findModule(AttackSpeed.class);
+        if (quick == null && percent > 0) {
+            quick = new AttackSpeed(body);
+            body.addModule(quick);
+        }
+        if (quick != null) {
+            quick.percent(percent);
+        }
+    }
+
+    /**
      * What he casts out of, handed to the book that spends it.
      *
      * <p>A hero whose file names no pool is left with none, and then nothing he casts
@@ -292,7 +309,7 @@ public final class HeroProgress {
             return;
         }
         boolean isNew = book.getMaxMana() <= 0;
-        book.resize(maxMana, hero.manaRegen());
+        book.resize(maxMana, hero.manaRegen() + 10 * loot.manaRegen());
         if (isNew) {
             // A body he has only just been given: a new run, or the first frame on a
             // new floor. He arrives full, exactly as his health does -- a hero who

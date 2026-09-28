@@ -173,6 +173,74 @@ class LootTest {
         assertNull(bag.remove(9), "nor one the bag does not have");
     }
 
+    // ---- three alike ----
+
+    private static final Loot GAUNTLET = new Loot("Gauntlet", "Gauntlet", "", LootKind.ATTRIBUTE, 3, 10, 1,
+            "Strength", LootExtra.HEALTH_REGEN, 0, 2, 1);
+
+    @Test
+    void threeAlikeJoinIntoOneOfTheNextLevel() {
+        var bag = new LootBag(6, 3, 3);
+        bag.take(GAUNTLET, 0, 10);
+        bag.take(GAUNTLET, 0, 10);
+        assertEquals(2, bag.getFound().size(), "two are two");
+
+        bag.take(GAUNTLET, 0, 10);
+
+        var joined = bag.getFound();
+        assertEquals(1, joined.size(), "three are one");
+        assertEquals(2, joined.getFirst().level());
+        assertEquals(9, joined.getFirst().value(), "worth the three of them");
+        assertEquals(2, joined.getFirst().extraValue(), "and the second level brings its extra");
+        assertEquals(2, bag.healthRegen());
+        assertEquals(joined.getFirst(), bag.slots().getFirst(), "in the first of their slots");
+        assertEquals("Gauntlet II", bag.noteAt(0), "and the panel says what it became");
+    }
+
+    @Test
+    void theThirdLevelIsThreeOfTheSecondAndNothingGoesHigher() {
+        var bag = new LootBag(6, 3, 3);
+        for (int i = 0; i < 9; i++) {
+            bag.take(GAUNTLET, 0, 10);
+        }
+        assertEquals(1, bag.getFound().size(), "nine of the first level are one of the third");
+        var top = bag.getFound().getFirst();
+        assertEquals(3, top.level());
+        assertEquals(27, top.value());
+        assertEquals(6, top.extraValue(), "three of the second level's extra");
+
+        for (int i = 0; i < 18; i++) {
+            bag.take(GAUNTLET, 0, 10);
+        }
+        assertEquals(3, bag.getFound().size(), "three of the top level stay three");
+        assertTrue(bag.getFound().stream().allMatch(item -> item.level() == 3));
+    }
+
+    @Test
+    void aThirdThatJoinsNeedsNoRoomOfItsOwn() {
+        var bag = new LootBag(3, 3, 3);
+        bag.take(GAUNTLET, 0, 10);
+        bag.take(GAUNTLET, 0, 10);
+        bag.take(DECK.get(0), 0, 10);
+        assertTrue(bag.isFull());
+
+        assertTrue(bag.take(GAUNTLET, 0, 10), "the third joins as it comes in");
+        assertEquals(2, bag.getFound().size());
+        assertTrue(bag.take(DECK.get(1), 0, 10), "and the room it left is room for one more");
+        assertFalse(bag.take(DECK.get(1), 0, 10), "but no more than that");
+    }
+
+    @Test
+    void onlyTheSameThingAtTheSameLevelJoins() {
+        var bag = new LootBag(6, 3, 3);
+        bag.take(GAUNTLET, 0, 10);
+        bag.take(GAUNTLET.joined(3), 0, 10);
+        bag.take(GAUNTLET, 0, 10);
+        bag.take(DECK.get(0), 0, 10);
+
+        assertEquals(4, bag.getFound().size(), "two of the first level, one of the second and a blade join nothing");
+    }
+
     // ---- in the game ----
 
     private static GameObject find(DukeGame game, String template) {
@@ -325,6 +393,56 @@ class LootTest {
                 "a new run starts with nothing, what he found included");
         assertEquals(plain, player.getWeaponDamageBonus(), 0.0001f,
                 "and the bonus goes with it rather than outliving him");
+    }
+
+    private static Loot shipped(String id) {
+        return SHIPPED.loot().stream().filter(item -> item.id().equals(id)).findFirst().orElseThrow();
+    }
+
+    /**
+     * What a joined thing brings beside its figure reaches him: health and mana coming back quicker, and quicker
+     * blows — and goes again with it.
+     */
+    @Test
+    void whatAJoinedThingBringsBesideItsFigureReachesHim() {
+        var session = Dungeon.newSession(21L);
+        var game = session.game();
+        game.runHeadless(2);
+        var hero = find(game, "Rogue");
+        var recovery = hero.findModule(uz.dukeengine.dungeon.level.Recovery.class);
+        var book = hero.findModule(uz.dukeengine.dungeon.skill.SkillBook.class);
+        int healthWas = recovery.getRate();
+        int manaWas = book.getManaRegen();
+        var bag = session.progress().getLoot();
+
+        bag.take(shipped("Gauntlet").joined(3), 0, 30);
+        bag.take(shipped("Tome").joined(3), 0, 30);
+        bag.take(shipped("Boots").joined(3), 0, 30);
+        game.runHeadless(2);
+
+        assertEquals(healthWas + 20, recovery.getRate(), "two points of health a second more, in tenths");
+        assertEquals(manaWas + 20, book.getManaRegen(), "and two of mana");
+        var quick = hero.findModule(uz.dukeengine.dungeon.level.AttackSpeed.class);
+        assertNotNull(quick, "and his blows made quicker");
+        assertEquals(1.2f, quick.rateOfFireMultiplier(), 0.0001f, "by a fifth");
+
+        bag.clear();
+        game.runHeadless(2);
+        assertEquals(healthWas, recovery.getRate(), "and all of it goes with them");
+        assertEquals(manaWas, book.getManaRegen());
+        assertEquals(1f, quick.rateOfFireMultiplier(), 0.0001f);
+    }
+
+    /** What the dungeon leaves today: the hero's three attributes, three points each, each with an extra to come. */
+    @Test
+    void theDungeonLeavesTheThreeAttributes() {
+        assertEquals(List.of("Gauntlet", "Boots", "Tome"), SHIPPED.loot().stream().map(Loot::id).toList());
+        for (var item : SHIPPED.loot()) {
+            assertEquals(LootKind.ATTRIBUTE, item.kind(), item.id());
+            assertEquals(3, item.value(), item.id());
+            assertTrue(item.extra() != LootExtra.NONE && item.extraStep() > 0, item.id() + " has an extra to come");
+        }
+        assertEquals(0, SHIPPED.lootDrops().valuePercentPerDepth(), "alike things have to stay alike to join");
     }
 
     @Test

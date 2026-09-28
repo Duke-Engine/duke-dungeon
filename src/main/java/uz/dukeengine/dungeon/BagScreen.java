@@ -23,8 +23,9 @@ import uz.dukeengine.game.view.WorldSnapshot;
  * word for ({@link PartyOrders#PICK_UP}); putting down is the client's aim at the ground, whose place comes back as
  * a {@link DropItem} order — so both go down the road every order goes, to every machine of a party.
  *
- * <p>On the window's thread, but for the two rules handed to the match, which the simulation asks as it builds a
- * frame: they only name and remember, and change nothing.
+ * <p>On the window's thread, but for what is handed to the match and run on the simulation's: the rule that names
+ * the pickup, and a look after every frame at what lies on the floor. Both only read, and change nothing. What the
+ * pointer rests on is the window's own word ({@code DukeGame.getPointedAt}), so it is said whatever is selected.
  */
 final class BagScreen implements Painter, CanvasInput {
 
@@ -41,8 +42,11 @@ final class BagScreen implements Painter, CanvasInput {
     /** The match being played: the one the window opened with, or the party's that replaced it. */
     private volatile Dungeon.Session session;
 
-    /** What the thing under the pointer holds, when the last frame found one there; the simulation's to write. */
-    private volatile Loot pointed;
+    /**
+     * What lies on the floor, by the id of the thing it lies in: read off the world after every frame, on the
+     * simulation's thread, and handed over whole — so the pointer can say what it rests on whatever is selected.
+     */
+    private volatile java.util.Map<Integer, Loot> lying = java.util.Map.of();
 
     // ---- the window's own ----
 
@@ -82,11 +86,10 @@ final class BagScreen implements Painter, CanvasInput {
     void show(Dungeon.Session match) {
         var game = match.game();
         game.contextOrder((selection, target) -> {
-            var lying = target.findModule(GroundItem.class);
-            var item = lying == null ? null : lying.getHolding();
-            pointed = item;
-            return item == null ? null : PartyOrders.PICK_UP;
+            var item = target.findModule(GroundItem.class);
+            return item == null || item.getHolding() == null ? null : PartyOrders.PICK_UP;
         });
+        game.onTick(ticked -> lying = lyingIn(ticked));
         game.onCommandPressed(press -> {
             int at = slotOf(press.id());
             if (at >= 0 && press.place() != null) {
@@ -94,6 +97,18 @@ final class BagScreen implements Painter, CanvasInput {
             }
         });
         session = match;
+    }
+
+    /** Everything lying on the floor of {@code game}, by the id of the thing it lies in. */
+    private static java.util.Map<Integer, Loot> lyingIn(uz.dukeengine.game.DukeGame game) {
+        var found = new java.util.HashMap<Integer, Loot>();
+        for (var thing : game.getLogic().getObjects()) {
+            var item = thing.findModule(GroundItem.class);
+            if (item != null && item.getHolding() != null) {
+                found.put(thing.getId().value(), item.getHolding());
+            }
+        }
+        return java.util.Map.copyOf(found);
     }
 
     /** The slot a drop aim's id names, or -1 for an id that is not one. */
@@ -156,6 +171,13 @@ final class BagScreen implements Painter, CanvasInput {
                 float inset = slot * 0.14f;
                 canvas.drawImage(Canvas.Image.of(item.icon()), x + inset, y + inset, x + slot - inset,
                         y + slot - inset, at == held ? 0x55FFFFFF : 0xFFFFFFFF, Canvas.Blend.ALPHA);
+                if (item.level() > 1) {
+                    // Which level, in the corner: II, III.
+                    var mark = "I".repeat(item.level());
+                    var size = canvas.measure(small(), mark);
+                    canvas.drawText(small(), mark, x + slot - size.width() - 3f, y + slot - size.lineHeight() - 1f,
+                            0xFF000000 | look.torchColour());
+                }
             }
         }
         var inHand = held >= 0 && held < slots.size() ? slots.get(held) : null;
@@ -167,14 +189,33 @@ final class BagScreen implements Painter, CanvasInput {
         } else if (over >= 0 && slots.get(over) != null) {
             var item = slots.get(over);
             tip(canvas, lines(item), slotX(over) - gap, slotY(over), true);
-        } else if (PartyOrders.PICK_UP.equals(match.game().getSnapshot().contextOrder()) && pointed != null) {
-            tip(canvas, lines(pointed), mouseX + 20, mouseY + 20, false);
+        } else if (!onTheBag(mouseX, mouseY) && lying.get(match.game().getPointedAt()) instanceof Loot under) {
+            tip(canvas, lines(under), mouseX + 20, mouseY + 20, false);
         }
     }
 
     /** Name, what it gives, and how to take it. */
     private List<String> lines(Loot item) {
-        return List.of(item.name(), bonusOf(item, settings), settings.lootDrops().takeHint());
+        var said = new java.util.ArrayList<String>();
+        said.add(LootBag.nameOf(item));
+        said.add(bonusOf(item, settings));
+        var extra = extraOf(item, settings);
+        if (!extra.isEmpty()) {
+            said.add(extra);
+        }
+        said.add(settings.lootDrops().takeHint());
+        return said;
+    }
+
+    /** What a thing gives beside its figure past the first level, as the pointer says it — {@code +2 Mana/s}. */
+    static String extraOf(Loot item, DungeonSettings settings) {
+        var drops = settings.lootDrops();
+        return item.extraValue() <= 0 ? "" : switch (item.extra()) {
+            case NONE -> "";
+            case HEALTH_REGEN -> "+" + item.extraValue() + " " + drops.healthRegenWord();
+            case MANA_REGEN -> "+" + item.extraValue() + " " + drops.manaRegenWord();
+            case ATTACK_SPEED -> "+" + item.extraValue() + "% " + drops.attackSpeedWord();
+        };
     }
 
     /**
@@ -183,11 +224,10 @@ final class BagScreen implements Painter, CanvasInput {
      */
     private void tip(Canvas canvas, List<String> lines, float x, float y, boolean leftOf) {
         var look = settings.menu();
-        var fonts = List.of(big(), small(), small());
         float across = 0f;
         float down = 0f;
         for (int i = 0; i < lines.size(); i++) {
-            var font = fonts.get(Math.min(i, fonts.size() - 1));
+            var font = i == 0 ? big() : small();
             var measure = canvas.measure(font, lines.get(i));
             across = Math.max(across, measure.width());
             down += measure.lineHeight() + (i == 0 ? 0f : 2f);
@@ -200,10 +240,11 @@ final class BagScreen implements Painter, CanvasInput {
         canvas.fillRect(at, from, w, h, 0xF0000000 | look.stoneDeepColour());
         canvas.openRect(at, from, w, h, 1.5f, 0xFF000000 | look.stoneEdgeColour());
         float line = from + pad;
-        int[] colours = {look.torchColour(), look.boneColour(), look.hintColour()};
         for (int i = 0; i < lines.size(); i++) {
-            var font = fonts.get(Math.min(i, fonts.size() - 1));
-            canvas.drawText(font, lines.get(i), at + pad, line, 0xFF000000 | colours[Math.min(i, colours.length - 1)]);
+            var font = i == 0 ? big() : small();
+            // A name, what it gives, and last how to take it: torch, bone and the hint's grey.
+            int colour = i == 0 ? look.torchColour() : i == lines.size() - 1 ? look.hintColour() : look.boneColour();
+            canvas.drawText(font, lines.get(i), at + pad, line, 0xFF000000 | colour);
             line += canvas.measure(font, lines.get(i)).lineHeight() + 2f;
         }
     }
@@ -258,10 +299,20 @@ final class BagScreen implements Painter, CanvasInput {
         return shown && x >= left && x < left + wide && y >= top && y < top + high;
     }
 
-    /** This machine's hero's bag in {@code match}, or null before the run has seated him. */
+    /**
+     * This machine's hero's bag in {@code match}, or null before the match has numbered its players: in the front
+     * end, which this is painted over too, and for the moment the match is being built.
+     */
     private static LootBag bagOf(Dungeon.Session match) {
-        var progress = match.run().progressOf(match.game().getLocalPlayerIndex());
-        return progress == null ? null : progress.getLoot();
+        if (match.game().getLogic() == null) {
+            return null;
+        }
+        try {
+            var progress = match.run().progressOf(match.game().getLocalPlayerIndex());
+            return progress == null ? null : progress.getLoot();
+        } catch (IllegalStateException notNumberedYet) {
+            return null;
+        }
     }
 
     /** Whether the world is being played: frames coming, and not paused under a menu. */

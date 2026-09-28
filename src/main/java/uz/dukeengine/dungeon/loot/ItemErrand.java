@@ -87,6 +87,8 @@ public final class ItemErrand extends UpdateModule implements Errand {
         if (legs != null) {
             if (errand.near(hero)) {
                 legs.stop();
+            } else if (errand.item != null) {
+                legs.moveExactlyTo(errand.goal); // onto the thing, not onto a place of his own beside it
             } else {
                 legs.moveTo(errand.goal);
             }
@@ -129,10 +131,11 @@ public final class ItemErrand extends UpdateModule implements Errand {
             legs.stop();
         }
         if (lying != null) {
-            if (bag.isFull()) {
-                bag.say(rules.fullWord(), world.getFrame(), rules.noteFrames());
+            // Into the bag if there is room for it, or if it makes up a set that joins into less room than it takes.
+            if (bag.take(lying.getHolding(), world.getFrame(), rules.noteFrames())) {
+                lying.take();
             } else {
-                bag.take(lying.take(), world.getFrame(), rules.noteFrames());
+                bag.say(rules.fullWord(), world.getFrame(), rules.noteFrames());
             }
             return;
         }

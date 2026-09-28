@@ -15,7 +15,8 @@ import java.util.List;
  * meant to take everything, and is told rather than left to infer.
  *
  * <p>What is in it counts for as long as it is in it. He picks a thing up by being sent to it, and puts one down
- * the same way — see {@link ItemErrand} — and a full bag leaves the next thing lying where it was.
+ * the same way — see {@link ItemErrand} — and a full bag leaves the next thing lying where it was. Three of the
+ * same thing at the same level join into one of the next, up to the top level: see {@link #take}.
  *
  * <p>Written on the simulation thread only. The window reads {@link #slots()}, a copy taken each time the bag
  * changes, so it never sees one half-changed.
@@ -27,8 +28,13 @@ public final class LootBag {
 
     /** How many things a bag holds when nobody says otherwise. */
     public static final int SLOTS = 6;
+    /** How many alike join into one of the next level, and the highest level they join to, likewise. */
+    public static final int JOIN = 3;
+    public static final int TOP_LEVEL = 3;
 
     private final Loot[] slots;
+    private final int join;
+    private final int topLevel;
 
     /** The slots as the window reads them: replaced whole on every change, never changed in place. */
     private volatile List<Loot> view;
@@ -45,21 +51,68 @@ public final class LootBag {
     }
 
     public LootBag(int slots) {
+        this(slots, JOIN, TOP_LEVEL);
+    }
+
+    /**
+     * @param join     how many alike join into one of the next level; less than two joins nothing
+     * @param topLevel the highest level a thing is joined to
+     */
+    public LootBag(int slots, int join, int topLevel) {
         this.slots = new Loot[Math.max(1, slots)];
+        this.join = join;
+        this.topLevel = topLevel;
         changed();
     }
 
-    /** Take one into the first empty slot, and remember it long enough to say so; false when there is no room. */
+    /**
+     * Take one in, and remember it long enough to say so; false when there is no room for it.
+     *
+     * <p>Where it makes up a set — the bag already holding one fewer than a join of the same thing at the same level
+     * — the set becomes one of the next level in the first of their slots, and that may make up a set of its own in
+     * turn. Such a thing needs no room: it takes some away.
+     */
     public boolean take(Loot item, int frame, int noteFrames) {
+        var coming = item;
+        int freed = -1;
+        while (join >= 2 && coming.level() < topLevel) {
+            var alike = new ArrayList<Integer>();
+            for (int at = 0; at < slots.length && alike.size() < join - 1; at++) {
+                if (coming.sameAs(slots[at])) {
+                    alike.add(at);
+                }
+            }
+            if (alike.size() < join - 1) {
+                break;
+            }
+            for (int at : alike) {
+                slots[at] = null;
+            }
+            freed = freed < 0 ? alike.getFirst() : Math.min(freed, alike.getFirst());
+            coming = coming.joined(join);
+        }
+        int at = freed >= 0 ? freed : firstEmpty();
+        if (at < 0) {
+            return false;
+        }
+        slots[at] = coming;
+        say(nameOf(coming), frame, noteFrames);
+        changed();
+        return true;
+    }
+
+    /** What the panel calls a thing: its name, and past the first level which level it is. */
+    public static String nameOf(Loot item) {
+        return item.level() <= 1 ? item.name() : item.name() + " " + "I".repeat(item.level());
+    }
+
+    private int firstEmpty() {
         for (int at = 0; at < slots.length; at++) {
             if (slots[at] == null) {
-                slots[at] = item;
-                say(item.name(), frame, noteFrames);
-                changed();
-                return true;
+                return at;
             }
         }
-        return false;
+        return -1;
     }
 
     /** Take what is in {@code slot} out of the bag: what it was, or {@code null} for an empty or unknown slot. */
@@ -148,6 +201,31 @@ public final class LootBag {
     /** Percent of incoming damage removed by everything he carries. */
     public int armourPercent() {
         return totalOf(LootKind.ARMOUR);
+    }
+
+    /** Whole points of health a second that what he carries adds to what comes back on its own. */
+    public int healthRegen() {
+        return extraOf(LootExtra.HEALTH_REGEN);
+    }
+
+    /** Whole points of mana a second that what he carries adds to what comes back on its own. */
+    public int manaRegen() {
+        return extraOf(LootExtra.MANA_REGEN);
+    }
+
+    /** Percent faster between blows, for everything he carries. */
+    public int attackSpeedPercent() {
+        return extraOf(LootExtra.ATTACK_SPEED);
+    }
+
+    private int extraOf(LootExtra extra) {
+        int total = 0;
+        for (var item : slots) {
+            if (item != null && item.extra() == extra) {
+                total += item.extraValue();
+            }
+        }
+        return total;
     }
 
     /**

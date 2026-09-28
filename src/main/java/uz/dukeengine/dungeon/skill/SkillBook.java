@@ -292,6 +292,11 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Wea
         return mana;
     }
 
+    /** How fast it comes back, in tenths of a point a second. */
+    public int getManaRegen() {
+        return manaTenthsPerSecond;
+    }
+
     /** The frame a cast was last refused for want of mana; 0 if none ever was. */
     public int getRefusedForManaFrame() {
         return refusedForManaFrame;

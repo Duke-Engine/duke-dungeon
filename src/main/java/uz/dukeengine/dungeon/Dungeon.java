@@ -343,7 +343,8 @@ public final class Dungeon {
         var bags = new java.util.ArrayList<LootBag>();
         var learnts = new java.util.ArrayList<uz.dukeengine.dungeon.skill.SkillRanks>();
         for (int seat = 0; seat < heroes; seat++) {
-            bags.add(new LootBag(settings.lootDrops().slots()));
+            bags.add(new LootBag(settings.lootDrops().slots(), settings.lootDrops().joinCount(),
+                    settings.lootDrops().topLevel()));
             var learnt = new uz.dukeengine.dungeon.skill.SkillRanks(settings.progression().skillSpread());
             learnt.startWith(settings.skillsFor(settings.run().defaultHero()));
             learnts.add(learnt);

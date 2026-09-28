@@ -633,6 +633,8 @@ public final class DungeonSettings {
         require(lootDrops.pickupRange() > 0, "something he can never reach is not loot");
         require(lootDrops.noteFrames() >= 0, "the pickup message cannot last negative frames");
         require(lootDrops.slots() >= 1 && lootDrops.slots() <= 12, "a bag holds from 1 to 12 things");
+        require(lootDrops.joinCount() >= 2, "JoinCount: it takes at least two alike to join");
+        require(lootDrops.topLevel() >= 1 && lootDrops.topLevel() <= 3, "TopLevel is 1 to 3");
         require(sayable(lootDrops.fullWord()), "FullWord may not contain ',' or '|'");
         for (var item : loot) {
             require(sayable(item.name()),
@@ -718,6 +720,7 @@ public final class DungeonSettings {
         }
         for (var item : loot) {
             var name = "LootItem " + item.id();
+            require(item.extraStep() >= 0, name + ": ExtraValue cannot be negative");
             if (item.kind() == LootKind.ATTRIBUTE) {
                 require(rules.indexOf(item.attribute()) >= 0, name + " gives "
                         + item.attribute() + ", and no Attribute is called that");

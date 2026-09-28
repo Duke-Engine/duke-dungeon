@@ -139,7 +139,7 @@ class BagScreenTest {
         var session = Dungeon.newSession(21L);
         var game = session.game();
         game.runHeadless(2);
-        var blade = SETTINGS.loot().stream().filter(item -> item.id().equals("Blade")).findFirst().orElseThrow();
+        var blade = SETTINGS.loot().stream().filter(item -> item.id().equals("Gauntlet")).findFirst().orElseThrow();
         session.progress().getLoot().take(blade, 0, 30);
         var duke = uz.dukeengine.client3d.Duke3D.of(game, uz.dukeengine.client3d.Visuals.create());
         var bag = new BagScreen(SETTINGS, duke);
@@ -180,12 +180,12 @@ class BagScreenTest {
     void aThingOnTheFloorSaysWhatItGives() {
         var session = Dungeon.newSession(21L);
         var game = session.game();
-        game.runHeadless(2);
-        var hero = find(game, "Rogue");
         var bag = new BagScreen(SETTINGS,
                 uz.dukeengine.client3d.Duke3D.of(game, uz.dukeengine.client3d.Visuals.create()));
-        bag.show(session);
-        var blade = SETTINGS.loot().stream().filter(item -> item.id().equals("Blade")).findFirst().orElseThrow();
+        bag.show(session); // before it starts, as the game tells it
+        game.runHeadless(2);
+        var hero = find(game, "Rogue");
+        var blade = SETTINGS.loot().stream().filter(item -> item.id().equals("Gauntlet")).findFirst().orElseThrow();
         session.progress().getLoot().take(blade, 0, 30);
         game.pressCommand("drop:0", hero.getPosition(), 0f, -1);
         game.runHeadless(4);
@@ -203,6 +203,44 @@ class BagScreenTest {
                 "and says what is in it: " + drawn.text);
     }
 
+    /**
+     * ★ And says it whatever is selected. A left click on the chest selects the chest, and one on the floor selects
+     * nothing, and either way his hero is no longer selected — which is exactly when a player wants to know what
+     * lies there before he sends anyone for it.
+     */
+    @Test
+    void aThingOnTheFloorSaysWhatItGivesWhateverIsSelected() {
+        var session = Dungeon.newSession(21L);
+        var game = session.game();
+        var bag = new BagScreen(SETTINGS,
+                uz.dukeengine.client3d.Duke3D.of(game, uz.dukeengine.client3d.Visuals.create()));
+        bag.show(session);
+        game.runHeadless(2);
+        var hero = find(game, "Rogue");
+        var blade = SETTINGS.loot().stream().filter(item -> item.id().equals("Gauntlet")).findFirst().orElseThrow();
+        session.progress().getLoot().take(blade, 0, 30);
+        game.pressCommand("drop:0", hero.getPosition(), 0f, -1);
+        game.runHeadless(4);
+        var chest = find(game, "Chest");
+        assertNotNull(chest);
+
+        for (var selected : List.of(List.<Integer>of(), List.of(chest.getId().value()))) {
+            game.setSelection(selected);
+            game.setPointedAt(chest.getId().value());
+            game.runHeadless(2);
+            var drawn = new Drawn();
+            bag.paint(drawn);
+            assertTrue(drawn.text.contains(blade.name()) && drawn.text.contains(BagScreen.bonusOf(blade, SETTINGS)),
+                    "with " + selected + " selected: " + drawn.text);
+        }
+
+        game.setPointedAt(-1);
+        game.runHeadless(1);
+        var drawn = new Drawn();
+        bag.paint(drawn);
+        assertFalse(drawn.text.contains(blade.name()), "and nothing once the pointer is off it: " + drawn.text);
+    }
+
     /** A click on a chest is answered as an attack is — the ring round it, blinking — but yellow, not the arrowheads. */
     @Test
     void aPickupIsAnsweredWithTheRingInYellow() {
@@ -210,6 +248,68 @@ class BagScreenTest {
         assertTrue(mark.ringsContextOrders(), "the ring, not a walk's arrowheads");
         assertEquals(0xFFD23C, mark.contextColour());
         assertTrue(mark.contextColour() != mark.attackColour(), "and not a fight's colour");
+    }
+
+    /**
+     * The same, down the client's own road: the window's raw pointer turned into the game's by the client's own
+     * listener, and the tooltip drawn on the client's own canvas, words and all.
+     */
+    @Test
+    void thePointerOnAThingInTheBagSaysSoThroughTheClientsOwnInputAndCanvas() {
+        var session = Dungeon.newSession(21L);
+        var game = session.game();
+        var bag = new BagScreen(SETTINGS,
+                uz.dukeengine.client3d.Duke3D.of(game, uz.dukeengine.client3d.Visuals.create()));
+        bag.show(session);
+        game.runHeadless(2);
+        var blade = SETTINGS.loot().stream().filter(item -> item.id().equals("Gauntlet")).findFirst().orElseThrow();
+        session.progress().getLoot().take(blade, 0, 30);
+        int height = 900;
+        var drawn = new Drawn(); // the same size of window: where the blade's slot is
+        bag.paint(drawn);
+        var slot = drawn.picture(blade.icon());
+
+        var before = uz.dukeengine.client3d.RealCanvas.frame(1600, height);
+        bag.paint(before);
+        // As the window says it: counted from the bottom, and moved.
+        uz.dukeengine.client3d.RealCanvas.inputs(bag, height).onMouseMotionEvent(
+                new com.jme3.input.event.MouseMotionEvent(slot.middleX(), height - slot.middleY(), 3, 3, 0, 0));
+        var after = uz.dukeengine.client3d.RealCanvas.frame(1600, height);
+        bag.paint(after);
+
+        int more = uz.dukeengine.client3d.RealCanvas.triangles(after)
+                - uz.dukeengine.client3d.RealCanvas.triangles(before);
+        assertTrue(more > 40, "a card with its words on it, drawn over the slot: " + more + " triangles more");
+    }
+
+    /** Painted over the front end too, before anybody is seated: it draws nothing there, and does not throw. */
+    @Test
+    void beforeTheMatchStartsNothingIsDrawn() {
+        var session = Dungeon.newSession(21L);
+        var bag = new BagScreen(SETTINGS,
+                uz.dukeengine.client3d.Duke3D.of(session.game(), uz.dukeengine.client3d.Visuals.create()));
+        bag.show(session);
+        var drawn = new Drawn();
+
+        bag.paint(drawn);
+
+        assertTrue(drawn.pictures.isEmpty() && drawn.text.isEmpty(), "nothing over the menu: " + drawn.text);
+    }
+
+    /** A joined thing says which level it is, what it gives, and what it brings beside that. */
+    @Test
+    void aJoinedThingSaysItsLevelAndItsExtra() {
+        var tome = SETTINGS.loot().stream().filter(item -> item.id().equals("Tome")).findFirst().orElseThrow();
+        var boots = SETTINGS.loot().stream().filter(item -> item.id().equals("Boots")).findFirst().orElseThrow();
+        var second = tome.joined(3);
+        var third = boots.joined(3).joined(3);
+
+        assertEquals(tome.name() + " II", uz.dukeengine.dungeon.loot.LootBag.nameOf(second));
+        assertEquals("+9 Aql", BagScreen.bonusOf(second, SETTINGS));
+        assertEquals("+2 " + SETTINGS.lootDrops().manaRegenWord(), BagScreen.extraOf(second, SETTINGS));
+        assertEquals("+27 Epchillik", BagScreen.bonusOf(third, SETTINGS));
+        assertEquals("+60% " + SETTINGS.lootDrops().attackSpeedWord(), BagScreen.extraOf(third, SETTINGS));
+        assertEquals("", BagScreen.extraOf(tome, SETTINGS), "nothing beside its figure at the first level");
     }
 
     @Test

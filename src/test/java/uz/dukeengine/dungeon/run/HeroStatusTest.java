@@ -427,7 +427,7 @@ class HeroStatusTest {
 
         var settings = DungeonSettings.load();
         var blade = settings.loot().stream()
-                .filter(item -> item.kind() == uz.dukeengine.dungeon.loot.LootKind.ATTACK)
+                .filter(item -> item.kind() == uz.dukeengine.dungeon.loot.LootKind.ATTRIBUTE)
                 .findFirst().orElseThrow();
         session.progress().getLoot().take(blade, game.getLogic().getFrame(), 60);
         game.runHeadless(2);

@@ -295,19 +295,28 @@ End
 ; right button takes one in hand, and the left puts it down on the floor where
 ; it is pointed, where it lies for anyone to pick up again.
 ;
-; The kinds are what a hero is made of: ATTACK (percent of his blow), HEALTH
-; (flat maximum health), ARMOUR (percent taken off what reaches him), MANA (flat
-; maximum mana) and ATTRIBUTE (whole points of the attribute its Attribute line
-; names -- see Attribute). HEALTH and MANA are room, not a draught: a heart makes
-; his body bigger and fills none of it, or putting one down and picking it up
-; again would be a heal.
+; ★ THREE ALIKE ARE ONE OF THE NEXT LEVEL. Three of the same thing at the same
+; level in his bag join into one, worth the three together, up to TopLevel. The
+; second level also brings the thing's Extra, and every level after is three of
+; the one before, Extra and all:
+;
+;   level 1   +3 of its attribute
+;   level 2   +9, and its Extra's value      (three of level 1)
+;   level 3   +27, and three times the Extra (three of level 2)
+;
+; A third alike needs no room of its own: it joins as it comes in.
+;
+; The kinds a thing may be are what a hero is made of: ATTACK (percent of his
+; blow), HEALTH (flat maximum health), ARMOUR (percent taken off what reaches
+; him), MANA (flat maximum mana) and ATTRIBUTE (whole points of the attribute its
+; Attribute line names -- see Attribute). What the dungeon leaves today is
+; attributes alone. An Extra is HEALTH_REGEN or MANA_REGEN (whole points a
+; second, on top of what comes back on its own) or ATTACK_SPEED (percent quicker
+; between blows).
 ;
 ; Which monster leaves what is drawn from the run's own seed and the monster's
 ; own id -- so the same seed drops the same things off the same monsters, whatever
 ; order the player kills them in.
-;
-; Deeper floors give more: an item is worth ValuePercentPerDepth more per floor,
-; and MinDepth keeps the better ones out of the first rooms entirely.
 ; ---------------------------------------------------------------------------
 LootDrops
   ; The creature a dropped item becomes. Naming none turns loot off entirely.
@@ -321,92 +330,29 @@ LootDrops
   ; How close he has to walk before a thing changes hands, picked up or put down.
   ; A cell is 10 units, so this is "standing on it" with room to spare.
   PickupRange = 14
-  ; What an item is worth per floor beyond the first, as a percentage of itself.
-  ValuePercentPerDepth = 20
+  ; Nothing is worth more for being found deeper: what joins has to be alike, and
+  ; a deeper floor's gauntlet worth four would never make three with two worth three.
+  ValuePercentPerDepth = 0
   ; How long the panel says what he found, in logic frames (30 = one second).
   NoteFrames = 90
-  ; How many things his bag holds. A full bag leaves the next one lying.
+  ; How many things his bag holds. A full bag leaves the next one lying -- unless
+  ; it is the third of a set, which joins as it comes in.
   Slots = 6
+  JoinCount = 3
+  TopLevel = 3
   FullWord = Sumka to'la
   ; Under a thing the pointer is on, and beside the pointer while one is in hand.
   TakeHint = O'ng tugma: olish
   DropHint = Chap tugma: yerga qo'yish
+  ; What each Extra is called when the pointer rests on a thing that has one.
+  HealthRegenWord = Jon/s
+  ManaRegenWord = Mana/s
+  AttackSpeedWord = Hujum tezligi
 End
 
 ; Icon is the picture his bag draws it with, a path from the resource root.
 
-; ★ A BIGGER PURSE, not a draught: room for more mana, and none of it filled.
-LootItem
-  Name = Manastone
-  DisplayName = Mana toshi
-  Icon = icons/stats/stat_crit.png
-  Kind = MANA
-  Value = 25
-  Weight = 12
-  MinDepth = 1
-End
-
-LootItem
-  Name = Blade
-  DisplayName = O'tkir tig'
-  Icon = icons/stats/stat_attack.png
-  Kind = ATTACK
-  Value = 8
-  Weight = 20
-End
-
-LootItem
-  Name = Quiver
-  DisplayName = To'la sadoq
-  Icon = icons/stats/stat_range.png
-  Kind = ATTACK
-  Value = 14
-  Weight = 12
-  MinDepth = 2
-End
-
-LootItem
-  Name = Bread
-  DisplayName = Zaxira non
-  Icon = icons/stats/stat_lifesteal.png
-  Kind = HEALTH
-  Value = 40
-  Weight = 20
-End
-
-LootItem
-  Name = Heart
-  DisplayName = Tosh yurak
-  Icon = icons/stats/stat_health.png
-  Kind = HEALTH
-  Value = 90
-  Weight = 12
-  MinDepth = 2
-End
-
-LootItem
-  Name = Shield
-  DisplayName = Yorilgan qalqon
-  Icon = icons/stats/stat_armor.png
-  Kind = ARMOUR
-  Value = 4
-  Weight = 16
-End
-
-LootItem
-  Name = Plate
-  DisplayName = Og'ir sovut
-  Icon = icons/commands/cmd_guard.png
-  Kind = ARMOUR
-  Value = 8
-  Weight = 10
-  MinDepth = 3
-End
-
-; ---- the hero's own attributes ------------------------------------------------
-;
-; Whole points of one attribute, and everything that attribute is worth comes
-; with them: a strength hero who finds strength gets the health and the blow.
+; His body: strength, and from the second level health coming back quicker.
 LootItem
   Name = Gauntlet
   DisplayName = Kuch qo'lqopi
@@ -414,9 +360,15 @@ LootItem
   Kind = ATTRIBUTE
   Attribute = Strength
   Value = 3
-  Weight = 16
+  Weight = 10
+  Extra = HEALTH_REGEN
+  ExtraValue = 2
 End
 
+; His legs: agility, and from the second level quicker blows. In percent: 2 would
+; take less than one frame off a blow that comes every 24 to 34 of them, which is
+; nothing a hand can feel, so the second level is a fifth quicker and the third
+; three fifths.
 LootItem
   Name = Boots
   DisplayName = Chaqqon etik
@@ -424,9 +376,12 @@ LootItem
   Kind = ATTRIBUTE
   Attribute = Agility
   Value = 3
-  Weight = 16
+  Weight = 10
+  Extra = ATTACK_SPEED
+  ExtraValue = 20
 End
 
+; His pool: intelligence, and from the second level mana coming back quicker.
 LootItem
   Name = Tome
   DisplayName = Donolik kitobi
@@ -434,5 +389,7 @@ LootItem
   Kind = ATTRIBUTE
   Attribute = Intelligence
   Value = 3
-  Weight = 16
+  Weight = 10
+  Extra = MANA_REGEN
+  ExtraValue = 2
 End

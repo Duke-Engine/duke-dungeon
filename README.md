@@ -11,7 +11,7 @@ uchun yangi engine imkoniyatini talab qilsa, demak engine tugallanmagan.
 ```
 ./gradlew run                       # o'ynash
 ./gradlew run --args=--map=first    # muzlatilgan xaritada
-./gradlew build                     # 743 test
+./gradlew build                     # 753 test
 ```
 
 ## Engine qayerdan olinadi
@@ -143,18 +143,33 @@ yerda **sandiq** bo'lib yotadi.
   fikrdan qaytish. Yetib bo'lmaydigan joy bosilsa, borishi mumkin bo'lgan eng
   yaqin joyga qo'yadi.
 - **Ko'rsatma:** kursorni sumkadagi yoki yerdagi narsa ustiga olib borsangiz,
-  uning nomi va nima berishi chiqadi (masalan `+3 Kuch`, `+8% Zarba`).
+  uning nomi, darajasi va nima berishi chiqadi (masalan `+9 Kuch`, `+2 Jon/s`).
+  Yerdagi narsa uchun ham qahramon tanlangan bo'lishi shart emas.
 
-Narsalar: `O'tkir tig'`, `To'la sadoq` (zarba %), `Zaxira non`, `Tosh yurak`
-(jon), `Yorilgan qalqon`, `Og'ir sovut` (zirh %), `Mana toshi` (mana) va
-qahramon atributlari: `Kuch qo'lqopi` (+Kuch), `Chaqqon etik` (+Epchillik),
-`Donolik kitobi` (+Aql). Chuqurroq qavatda qimmatroq. Hammasi
-`data/world/world.duke` da (`LootDrops`, `LootItem`): yangi narsa — yangi blok,
-Java kerak emas.
+Narsalar hozircha uch xil, har biri qahramon atributini beradi: `Kuch qo'lqopi`
+(+3 Kuch), `Chaqqon etik` (+3 Epchillik), `Donolik kitobi` (+3 Aql).
 
-**Jon va mana — joy, to'ldirish emas.** Yurak maksimal jonni oshiradi, jonning
-o'zini emas; tashlansa, oshgan joy ham ketadi. Aks holda yurakni tashlab qayta
-olish bepul davolanish bo'lardi. Daraja esa avvalgidek jonni ham ko'taradi.
+**Uchtasi birlashadi.** Sumkada bir xil darajadagi uchta bir xil narsa bo'lsa,
+ular bitta keyingi darajali narsaga aylanadi (uyacha burchagida `II`, `III`).
+Har daraja oldingi uchtasining yig'indisi, 2-darajadan esa qo'shimcha effekt
+ham beradi:
+
+| | 1-daraja | 2-daraja | 3-daraja |
+|---|---|---|---|
+| Kuch qo'lqopi | +3 Kuch | +9 Kuch, +2 jon/s | +27 Kuch, +6 jon/s |
+| Chaqqon etik | +3 Epchillik | +9 Epchillik, +20% hujum tezligi | +27 Epchillik, +60% hujum tezligi |
+| Donolik kitobi | +3 Aql | +9 Aql, +2 mana/s | +27 Aql, +6 mana/s |
+
+3-daraja eng yuqorisi. Uchinchi narsa to'la sumkaga ham sig'adi: u kirishi
+bilan birlashadi. Hujum tezligi foizda, chunki +2% hujumlar orasidagi 24–34
+kadrdan ko'pi bilan bittasini qisqartirardi. Hammasi `data/world/world.duke` da
+(`LootDrops`: `JoinCount`, `TopLevel`; `LootItem`: `Extra`, `ExtraValue`):
+yangi narsa — yangi blok, Java kerak emas.
+
+**Jon va mana — joy, to'ldirish emas.** Kuch maksimal jonni, Aql maksimal manani
+oshiradi, lekin jon va mananing o'zini emas; narsa tashlansa, oshgan joy ham
+ketadi. Aks holda uni tashlab qayta olish bepul davolanish bo'lardi. Daraja esa
+avvalgidek jonni ham ko'taradi.
 
 **Jamoada:** olish ham, tashlash ham `GameOrder` (`PickUp`, `DropItem`), har bir
 kompyuterda bir kadrda bajariladi. Kim yuborilsa, narsa o'shaniki; tashlangan

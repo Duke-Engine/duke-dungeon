@@ -139,14 +139,17 @@ class DungeonCombatTest {
                         + fight.hero().getPosition());
     }
 
-    /** And once he has arrived, he defends himself again. */
+    /**
+     * And once he has arrived, he defends himself again. Sent just past the skeleton rather than across the room:
+     * he walks round it without being held up, and one sent far enough outruns it until it gives up the chase.
+     */
     @Test
     void havingArrivedHeFightsWhateverFollowedHim() {
         var fight = fight(60f, 150f, 180f, 150f);
         var skeletonId = fight.skeleton().getId();
 
         fight.game().postCommand(new GameMessage.MoveTo(fight.game().getLocalPlayerIndex(),
-                List.of(fight.hero().getId()), new Coord3D(320f, 150f, 0f)));
+                List.of(fight.hero().getId()), new Coord3D(220f, 150f, 0f)));
         fight.game().runHeadless(900);
 
         assertNull(fight.game().getLogic().findObject(skeletonId),
