@@ -56,7 +56,7 @@ written from there.
 | Cursor Pack — the mouse pointers | Kenney | CC0 | `ui/cursors/` |
 | Voiceover Pack — what Erika says | Kenney | CC0 | `audio/voice/` |
 | Three pieces of music | freesound.org | **unconfirmed, see below** | `audio/music/` |
-| Cinzel — the lettering the menus are set in | Natanael Gama / the Cinzel Project Authors | [SIL OFL 1.1](https://openfontlicense.org) | `fonts/` |
+| Cinzel — the lettering the menus are set in, baked, and its own Regular and Bold faces (from github.com/NDISCOVER/Cinzel) for the hero bar to bake at the size it is drawn | Natanael Gama / the Cinzel Project Authors | [SIL OFL 1.1](https://openfontlicense.org) | `fonts/` |
 
 ### The two that needed a decision, and no longer do
 

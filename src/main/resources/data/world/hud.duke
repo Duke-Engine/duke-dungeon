@@ -747,7 +747,17 @@ PanelLook
   Places = []
   DesignWidth = 1300
   MinScale = 0.55
-  MaxScale = 1.3
+  ; Half as big again as the design at most: the size a 150% screen draws its own
+  ; things at. It was 1.3 while the lettering was a baked bitmap, which goes soft
+  ; the further it is stretched; now every line is baked at the size it is drawn.
+  MaxScale = 1.5
+  ; The faces the bar is lettered in -- whole paths to the font files, baked at the
+  ; exact pixel size each line is drawn at, so the words stay sharp at any scale:
+  ; Lettering for words and numbers, TitleLettering for names and headings. The
+  ; menus' Cinzel, its own Regular and Bold (fonts/, SIL OFL 1.1). Leave one out
+  ; and that part is drawn in the engine's baked bitmap lettering again.
+  Lettering = fonts/Cinzel-Regular.ttf
+  TitleLettering = fonts/Cinzel-Bold.ttf
 
   ItemColumns = 3
   ItemRows = 2

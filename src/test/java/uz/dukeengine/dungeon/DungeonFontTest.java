@@ -28,6 +28,26 @@ class DungeonFontTest {
         return new DesktopAssetManager(true).loadFont("fonts/" + name + ".fnt");
     }
 
+    /**
+     * The faces the hero bar is lettered in are shipped, and are faces.
+     *
+     * <p>Named in hud.duke's PanelLook and baked by the client at the size each line is drawn. A face that is missing
+     * or will not open is not an error there — the bar quietly goes back to the baked bitmap lettering, soft at any
+     * scale but one — so it is held here instead.
+     */
+    @Test
+    void theHeroBarsFacesAreShippedAndOpen() throws Exception {
+        var look = uz.dukeengine.dungeon.content.DungeonSettings.load().panelLook();
+        for (var path : new String[] {look.lettering(), look.titleLettering()}) {
+            assertNotNull(path, "the bar names no face, so it is lettered in the soft bitmap again");
+            try (var in = DungeonFontTest.class.getClassLoader().getResourceAsStream(path)) {
+                assertNotNull(in, path + " is named but not shipped");
+                var face = java.awt.Font.createFont(java.awt.Font.TRUETYPE_FONT, in);
+                assertEquals("Cinzel", face.getFamily(), path + " opened as " + face.getFamily());
+            }
+        }
+    }
+
     /** Every size the menus ask for is shipped and opens. */
     @Test
     void everySizeLoads() {

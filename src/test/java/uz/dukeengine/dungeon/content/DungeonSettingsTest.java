@@ -68,8 +68,18 @@ class DungeonSettingsTest {
                 "the client's bag is off the bar: the game draws one of its own that can be used");
         var shipped = Content.data();
         assertTrue(shipped.contains("Blocks = [Minimap, Hero, Skills, Depth]"));
-        assertEquals(PanelLook.DEFAULTS, DungeonSettings.parse(shipped.replace("Blocks = [Minimap, Hero, Skills, Depth]",
-                "Blocks = [Minimap, Hero, Bag, Skills, Depth]")).panelLook(), "and the rest is the bar as designed");
+        // Its own lettering, and room to grow into on a big screen now the lettering stays sharp at any scale:
+        // the three lines this game says differently from the design.
+        var look = DungeonSettings.load().panelLook();
+        assertEquals("fonts/Cinzel-Regular.ttf", look.lettering());
+        assertEquals("fonts/Cinzel-Bold.ttf", look.titleLettering());
+        assertEquals(1.5f, look.maxScale(), 0.0001f);
+        var asDesigned = shipped.replace("Blocks = [Minimap, Hero, Skills, Depth]",
+                        "Blocks = [Minimap, Hero, Bag, Skills, Depth]")
+                .replace("  MaxScale = 1.5\n", "  MaxScale = " + PanelLook.DEFAULTS.maxScale() + "\n")
+                .replaceAll("(?m)^  (Title)?Lettering = .*\\n", "");
+        assertEquals(PanelLook.DEFAULTS, DungeonSettings.parse(asDesigned).panelLook(),
+                "and the rest is the bar as designed");
         var own = DungeonSettings.parse("""
                 PanelLook
                   Blocks = [Skills, Hero]
