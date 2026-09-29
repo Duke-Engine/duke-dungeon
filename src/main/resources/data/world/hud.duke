@@ -215,11 +215,14 @@ End
 ;   MARKS    how much each division is worth, shared by every creature alive
 ;   COLOUR   whose it is, and whether it is the floor's boss
 ;
-; ★ THE MARKS ARE THE POINT OF THE TABLE. A player who has counted one monster's
-; bar can read the next one without counting, because both are divided in the
-; same lots. Scale the divisions to each creature's own maximum instead and every
-; bar looks identical -- twelve marks on everything, and twelve marks that mean
-; nothing.
+; ★ THE MARKS ARE THE POINT OF THE TABLE, and one mark is worth the same health
+; on every creature alive, as a MOBA's bars are: twice the marks is twice the
+; health, read at a glance, and a hero's bar fills with marks as he levels.
+; Scale the divisions to each creature's own maximum instead and every bar looks
+; identical -- twelve marks on everything, and twelve marks that mean nothing.
+; (It was a ladder of lots that held every bar between eight and twenty marks:
+; tidy, but a hero crossing a rung as he levelled came out with half the marks
+; he wore the level before, and a bar that said less the more he had.)
 ;
 ; ★ AND THE LENGTH IS **NOT** WORKED OUT FROM THE MARKS. It is tempting: marks x
 ; a fixed spacing makes the two agree by construction and is one rule instead of
@@ -232,24 +235,18 @@ UnitBar
 
   ; ---- how much each mark is worth ----
   ;
-  ; "<health up to>:<what one mark is worth>", coarsest last. The final rung is
-  ; written with * and covers everything above: a creature bigger than anything
-  ; planned for still gets marks rather than none.
+  ; "<health up to>:<what one mark is worth>", and a rung written with * covers
+  ; everything above -- so one open rung is one lot for every creature there is.
   ;
-  ; ★ THE RUNGS ARE CHOSEN SO THE COUNT STAYS BETWEEN 8 AND 20. Eight because
-  ; fewer than that is not a scale, it is four blocks; twenty because past it the
-  ; marks are closer together than they are wide and the bar reads as texture.
-  ; That fixes the arithmetic completely: a rung covering health from LO to HI in
-  ; lots of V needs HI/V <= 20 and LO/V >= 8, which is possible only while
-  ; HI <= 2.5 x LO. So every rung below steps up by two or two-and-a-half, never
-  ; more, and that is why there are nine of them rather than seven.
-  ;
-  ; ★ MEASURED AGAINST WHAT THE GAME ACTUALLY MAKES, not against a round range.
-  ; The smallest monster has 30 health and the largest is the
-  ; Champion, who at the deepest floor carries 600 x 2.2 = 1320; the Knight
-  ; reaches 1260 at level fifteen. Everything from 30 to 20000 lands inside 8-20
-  ; marks -- checked by DungeonUnitBarTest, which loads this file and walks it.
-  Segments = [40:2, 100:5, 200:10, 500:25, 1000:50, 2000:100, 5000:250, 10000:500, *:1000]
+  ; ★ FIFTY, MEASURED AGAINST WHAT THE GAME ACTUALLY MAKES. A hero wears about
+  ; four marks at his first level and up to twenty-nine at his fifteenth (1484
+  ; health, the most anything in the game has), a skeleton two, a runner's
+  ; thirty one block and no marks. Twenty-nine on the longest bar are about five
+  ; of the design's pixels apart -- seven and a half on a big screen, where the
+  ; bar is drawn half as big again. Twenty-five a mark would have put them under
+  ; three apart, where marks read as texture. DungeonUnitBarTest loads this file
+  ; and holds all of that.
+  Segments = [*:50]
 
   ; ---- how long ----
   ;

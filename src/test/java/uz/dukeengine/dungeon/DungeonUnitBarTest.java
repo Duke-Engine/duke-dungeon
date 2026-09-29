@@ -1,5 +1,6 @@
 package uz.dukeengine.dungeon;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -12,20 +13,12 @@ import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.dungeon.level.GrowableBody;
 
 /**
- * The segment table in the settings file divides everything this game makes.
+ * The marks on a creature's bar, as the settings file draws them.
  *
- * <p>The table is what lets a player read a bar he has never seen: every
- * creature alive is marked off in the same lots, so one that has been counted
- * teaches the next. That only works while the count stays in a band — too few
- * marks is not a scale, too many is texture — and nothing about a badly chosen
- * rung looks wrong. A monster with four marks looks like a decision.
- *
- * <p>So it is checked three ways, and they fail at different times. The first is
- * against the creatures the game ships <em>today</em>, which is what is on
- * screen. The second is against the whole range the table claims to cover, which
- * is what catches a new monster before anybody has drawn it. The third is the
- * arithmetic that makes the other two possible at all, which is what says why
- * there are nine rungs rather than seven.
+ * <p>One mark is worth the same health on every creature alive, as a MOBA's bars are: so a bar's marks say how
+ * much it has, a hero's bar fills with marks as he levels, and more health never wears fewer. The one thing that
+ * can go wrong unseen is a lot so small that the widest bar the game makes packs its marks closer than they can be
+ * told apart — which looks like a texture rather than like a mistake.
  *
  * <p>The rules themselves live on the client and are tested there — see
  * {@code uz.dukeengine.client3d.UnitBarLookTest}. This is about the file.
@@ -34,10 +27,12 @@ class DungeonUnitBarTest {
 
     private static final DungeonSettings SETTINGS = DungeonSettings.load();
 
-    /** Fewer than this is not a scale, it is four blocks. */
-    private static final int FEWEST = 8;
-    /** More, and the marks are closer together than they are wide. */
-    private static final int MOST = 20;
+    /**
+     * Closer together than this, in the bar's own pixels, and marks read as texture rather than as a count. The bar is
+     * drawn at its design size or bigger on any window at least the design's width, so there these are at least as
+     * many real pixels; on a narrower one the bar shrinks, and its marks close up with it.
+     */
+    private static final float CLOSEST = 4.5f;
 
     private static uz.dukeengine.client3d.UnitBarLook look() {
         return Main.unitBars(SETTINGS);
@@ -116,17 +111,44 @@ class DungeonUnitBarTest {
     }
 
     /**
-     * Every creature the game actually makes is divided into a countable number
-     * of marks.
+     * One lot for everyone: a mark on a skeleton is worth what a mark on the Champion is.
      *
-     * <p>Measured off the shipped files rather than against a round range:
-     * monsters at every depth they can be met, each floor's boss on its own
-     * floor with its own steeper curve, and both ends of what a hero grows into.
-     * A monster added to the file with an awkward maximum fails here before
-     * anybody has looked at it.
+     * <p>Asked of every creature the game makes — monsters at every depth they can be met, each floor's boss on its
+     * own steeper curve, and both ends of what a hero grows into — and of the whole range past them, so a rung added
+     * to the table later fails here before anybody has looked at a bar.
      */
     @Test
-    void everyCreatureThisGameMakesIsDividedIntoACountableBar() {
+    void aMarkIsWorthTheSameOnEveryCreature() {
+        var look = look();
+        int lot = look.valueFor(1f);
+        for (var size : everySizeTheGameMakes()) {
+            assertEquals(lot, look.valueFor(size[0]), Math.round(size[0]) + " health at depth " + (int) size[1]
+                    + " is marked in lots of " + look.valueFor(size[0]) + ", where everything else is " + lot);
+        }
+        for (int health = 1; health <= 20_000; health += 13) {
+            assertEquals(lot, look.valueFor(health), health + " health is marked in other lots");
+        }
+    }
+
+    /** So more health never wears fewer marks — which a ladder of lots did, at every rung a hero levelled across. */
+    @Test
+    void moreHealthNeverWearsFewerMarks() {
+        var look = look();
+        int before = 0;
+        for (int health = 1; health <= 20_000; health++) {
+            int marks = look.segmentsFor(health);
+            assertTrue(marks >= before, health + " health wears " + marks + " marks, where " + (health - 1)
+                    + " wore " + before);
+            before = marks;
+        }
+    }
+
+    /**
+     * And every bar the game draws keeps its marks far enough apart to be marks: the widest creature there is, on the
+     * longest bar there is, still wears a count rather than a texture.
+     */
+    @Test
+    void everyCreatureThisGameMakesWearsMarksThatReadAsMarks() {
         var look = look();
         var wrong = new ArrayList<String>();
         for (var size : everySizeTheGameMakes()) {
@@ -134,72 +156,14 @@ class DungeonUnitBarTest {
             if (health <= 0f) {
                 continue; // no body: a prop, and it is drawn no bar
             }
-            int marks = look.segmentsFor(health);
-            if (marks < FEWEST || marks > MOST) {
-                wrong.add(Math.round(health) + " health at depth " + (int) size[1]
-                        + " gives " + marks + " marks (one worth "
-                        + look.valueFor(health) + ")");
+            float apart = look.widthFor(health) / look.segmentsFor(health);
+            if (apart < CLOSEST) {
+                wrong.add(Math.round(health) + " health at depth " + (int) size[1] + " wears "
+                        + look.segmentsFor(health) + " marks " + apart + " apart");
             }
         }
         if (!wrong.isEmpty()) {
-            fail("the table divides these badly:\n  " + String.join("\n  ", wrong));
-        }
-    }
-
-    /**
-     * And everything the table claims to cover, not only what exists today.
-     *
-     * <p>The band is the table's promise, so it is worth holding across the whole
-     * range rather than across the handful of creatures that happen to be in the
-     * file. This is the test that fails when somebody moves a rung, which is a
-     * one-character edit whose effect is invisible anywhere else.
-     */
-    @Test
-    void theWholeRangeTheTableCoversIsCountable() {
-        var look = look();
-        int ceiling = look.steps().get(look.steps().size() - 1).value() * MOST;
-        for (int health = SETTINGS.unitBar().shortestAt(); health <= ceiling; health++) {
-            int marks = look.segmentsFor(health);
-            assertTrue(marks >= FEWEST && marks <= MOST,
-                    health + " health gives " + marks + " marks, one worth "
-                            + look.valueFor(health));
-        }
-    }
-
-    /**
-     * Why there are nine rungs and not seven.
-     *
-     * <p>A rung covering health from just over {@code LO} up to {@code HI} in
-     * lots of {@code V} needs {@code HI / V} at most twenty and {@code LO / V} at
-     * least eight. Both can hold only while {@code HI} is at most two-and-a-half
-     * times {@code LO} — so the rungs climb in steps of two or two-and-a-half and
-     * never in the powers of ten anybody would reach for first.
-     *
-     * <p>Stated as its own test because it is the constraint the table was built
-     * from, and a rung added later by eye will satisfy neither it nor the band
-     * above. This one says which rung and by how much; the band test only says
-     * that some health somewhere came out wrong.
-     */
-    @Test
-    void noRungClimbsFasterThanItsOwnArithmeticAllows() {
-        var steps = look().steps();
-        assertTrue(steps.size() >= 2, "a table of one rung is not a table");
-        for (int at = 1; at < steps.size(); at++) {
-            var rung = steps.get(at);
-            int below = steps.get(at - 1).upTo();
-            if (rung.upTo() == 0) {
-                continue; // the open end has no ceiling to be too far above
-            }
-            assertTrue(rung.upTo() <= below * 2.5f + 0.001f,
-                    "the rung ending at " + rung.upTo() + " starts just above "
-                            + below + ", which is further than "
-                            + FEWEST + "-to-" + MOST + " marks can stretch");
-            assertTrue(rung.value() * MOST >= rung.upTo(),
-                    "at " + rung.upTo() + " health, lots of " + rung.value()
-                            + " come to more than " + MOST + " marks");
-            assertTrue(rung.value() * FEWEST <= below + 1,
-                    "just above " + below + " health, lots of " + rung.value()
-                            + " come to fewer than " + FEWEST + " marks");
+            fail("these bars read as texture:\n  " + String.join("\n  ", wrong));
         }
     }
 
