@@ -16,9 +16,13 @@ uchun yangi engine imkoniyatini talab qilsa, demak engine tugallanmagan.
 
 ## Engine qayerdan olinadi
 
-O'yin engine **0.6.0** ga yozilgan, u esa hali Maven Central'da yo'q. Shuning
-uchun `gradle.properties` dagi `dukeEngineLocal=true` engine'ni **yonma-yon**
-turgan checkout'dan quradi (`settings.gradle.kts` dagi `includeBuild`):
+O'yin engine **0.6.0** ga yozilgan va uni Maven Central'dan oladi:
+`build.gradle.kts` dagi `uz.duke-engine:bom:0.6.0` versiyani bir marta aytadi,
+modullar uni oladi. Klon va `./gradlew build` yetarli — ikkinchi checkout kerak emas.
+
+Engine va o'yin ustida birga ishlash uchun engine'ni **yonma-yon** qo'yib,
+`-PdukeEngineLocal` bilan quring: har bir `uz.duke-engine:…` bog'liqlik o'sha
+checkout'dan olinadi (`settings.gradle.kts` dagi `includeBuild`):
 
 ```
 <papka>/
@@ -27,11 +31,8 @@ turgan checkout'dan quradi (`settings.gradle.kts` dagi `includeBuild`):
 ```
 
 Engine'ning ishchi nusxasi yarim o'zgarishda turib kompilyatsiya bo'lmasa, boshqa
-checkout ko'rsatiladi: `./gradlew run -PdukeEngineDir=<yo'l>` (masalan, oxirgi
-commit'ning nusxasi).
-
-0.6.0 Central'ga chiqqandan keyin `gradle.properties` dagi o'sha qatorni o'chirish
-kifoya — `build.gradle.kts` dagi bog'liqliklar allaqachon oddiy koordinatalar.
+checkout ko'rsatiladi: `./gradlew run -PdukeEngineLocal -PdukeEngineDir=<yo'l>`
+(masalan, oxirgi commit'ning nusxasi).
 
 ## Hozirgi qadam
 
