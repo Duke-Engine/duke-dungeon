@@ -61,9 +61,17 @@ keeps holding `MinRooms` to its word at the new size.
 
 ## Build order
 
-1. Stage 1: rocks in the dungeon theme, tests and credits (plan: `2026-09-29-rock-walls-and-larger-floors.md`);
-   the forest's undergrowth and more rocks per tone when E2 lands.
-2. Stage 4, first half: the descent at 96×72.
-3. Stage 3's generator: climate, the biome grid, per-region terrain, per-biome props and scenery lists, the new
-   biome files and models — tested headless, behind `Biomes`.
-4. Biomes on screen as E4 and E5 land; 128×96 after E3; Stage 2 after E6.
+1. ✓ Stage 1: rocks in the dungeon theme, tests and credits (plan: `2026-09-29-rock-walls-and-larger-floors.md`);
+   ✓ with E2, several cliffs and spires per tone and bushes among the forest's trees (`Walls`).
+2. ✓ Stage 4, first half: the descent at 96×72.
+3. ✓ Stage 3's generator: climate, the biome grid, per-region terrain, the new biomes (plan:
+   `2026-09-29-biome-generator.md`); the way in kept open five cells across, for the fountain.
+4. ✓ Biomes on screen: E4 (a look per cell, `run/FloorLooks`) and E5 (each biome's scenery, `gen/Scenery`), on
+   engine 0.7.0 built from the checkout (`gradle.properties`) until it is published; E3's fog sized to the map.
+5. ✓ Still things dressed by the cell they stand on (engine E4b).
+6. ✓ Stage 2, first half: E6 (option B, two navigation cells to a drawn cell, `NavigationCellsPerCell` in
+   `world.duke`) on floors that mix biomes; a wood's groves are trees on open ground with their trunks' footprints
+   (`Theme.Grove`), so a hero goes between two where they leave room and a boss goes round. Cavern and mine pillars
+   stay rock.
+7. Next: 128×96 once the owner has seen the frame rate at 96×72; the second half of Stage 2 — the boundary trees and
+   rocks round every glade as scenery with footprints — if the groves play well.

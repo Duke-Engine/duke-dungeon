@@ -113,16 +113,32 @@ Theme
   ; 0 to 100. Caves are more cut than grown, and damp enough for moss -- see
   ; Biomes in data/world/generation.duke.
   Climate = [15, 50]
+  ; What lies about on a cavern's floor, for the look alone -- nothing walks into
+  ; it: fallen stone. See forest.duke for what the numbers mean.
+  Scenery = [
+    Scatter
+      Model = models/tiles/forest/pebble.gltf
+      PerHundred = 12
+      Scale = 3
+    End,
+    Scatter
+      Model = models/tiles/forest/stone.gltf
+      PerHundred = 6
+      Scale = 2.5
+    End
+  ]
   Tones = [
     Tone
       Name = Stone
       Floor = models/tiles/dungeon/floor.gltf
       Wall = models/tiles/dungeon/cliff_a.gltf
+      Walls = [models/tiles/dungeon/cliff_b.gltf, models/tiles/dungeon/cliff_c.gltf, models/tiles/dungeon/spire_a.gltf]
     End,
     Tone
       Name = Cracked
       Floor = models/tiles/dungeon/floor_rocks.gltf
       Wall = models/tiles/dungeon/cliff_b.gltf
+      Walls = [models/tiles/dungeon/cliff_c.gltf, models/tiles/dungeon/spire_b.gltf, models/tiles/dungeon/cliff_a.gltf]
     End
   ]
   Monsters = [

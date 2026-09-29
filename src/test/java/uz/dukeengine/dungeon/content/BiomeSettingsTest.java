@@ -11,10 +11,17 @@ import uz.dukeengine.dungeon.world.Theme;
 /** What a map says about the biomes it mixes, and what it may not say. */
 class BiomeSettingsTest {
 
-    /** Off as shipped: a floor wears one look until the client can draw one per cell. */
+    /** The shipped descent mixes all six, the woods first, the worked and barren places last. */
     @Test
-    void theShippedDescentMixesNone() {
-        assertTrue(DungeonSettings.load().biomes().isEmpty());
+    void theShippedDescentMixesTheSixBiomes() {
+        assertEquals(List.of("Forest", "Autumn", "PineWood", "DeadLand", "Dungeon", "Mine"),
+                DungeonSettings.load().biomes().all().stream().map(Theme::name).toList());
+    }
+
+    /** And a map that lists none is back to one theme a floor. */
+    @Test
+    void listingNoneTurnsThemOff() {
+        assertTrue(BiomeFile.listing().biomes().isEmpty());
     }
 
     @Test

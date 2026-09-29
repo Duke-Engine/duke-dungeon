@@ -24,7 +24,7 @@ dependencies {
     // The engine, from Maven Central. The BOM names the version once and the modules below take it, so
     // there is one number to change and no way to mix two of them. See settings.gradle.kts for building
     // against a checkout instead.
-    implementation(platform("uz.duke-engine:bom:0.6.0"))
+    implementation(platform("uz.duke-engine:bom:0.7.0"))
 
     // The 3D client, for an angled camera over a world of solid shapes.
     implementation("uz.duke-engine:client3d")

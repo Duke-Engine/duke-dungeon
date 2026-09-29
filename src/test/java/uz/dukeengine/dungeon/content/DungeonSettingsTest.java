@@ -49,7 +49,7 @@ class DungeonSettingsTest {
                   End
                 End
                 """);
-        assertEquals(new World("Tower", 12f), settings.world());
+        assertEquals(new World("Tower", 12f, 1), settings.world(), "walked as drawn, where the block says nothing");
         assertEquals(70, settings.mapWidth(), "a section is read as its own block was");
 
         var game = uz.dukeengine.dungeon.Dungeon.world(".....\n.....\n", settings).game();

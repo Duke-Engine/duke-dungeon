@@ -100,16 +100,50 @@ Theme
   ; Where it grows on a floor that mixes biomes: how wild, then how alive, each
   ; 0 to 100. Wilderness, and lush -- see Biomes in data/world/generation.duke.
   Climate = [75, 75]
+  ; What lies about on its floor, as a biome, for the look alone -- nothing walks
+  ; into it. PerHundred is how many to every hundred cells of this biome's floor;
+  ; Scale how large against the model as made (2.5 is the kit's own proportion),
+  ; give or take Variety (a third either way unless it says); Tint a colour over it.
+  Scenery = [
+    Scatter
+      Model = models/tiles/forest/grass_short.gltf
+      PerHundred = 35
+      Scale = 3
+    End,
+    Scatter
+      Model = models/tiles/forest/grass_tall.gltf
+      PerHundred = 15
+      Scale = 3
+    End,
+    Scatter
+      Model = models/tiles/forest/bush_small.gltf
+      PerHundred = 6
+      Scale = 3
+    End
+  ]
+  ; A grove standing in a glade is trees on open ground, not a block of rock:
+  ; each in the way as far as its trunk (Footprint, in cells -- the trunk, not
+  ; the crown), so a hero goes between two where they leave him room and a boss
+  ; goes round. PerCell trees to each cell of the grove, Scale against the model
+  ; as made. Only on floors that mix biomes; a cavern's pillars stay rock.
+  Grove = Grove
+    Models = [models/tiles/forest/tree.gltf, models/tiles/forest/tree_round.gltf]
+    PerCell = 1
+    Scale = 3.1
+    Footprint = 0.15
+  End
   Tones = [
     Tone
       Name = Wooded
       Floor = models/tiles/forest/floor.gltf
       Wall = models/tiles/forest/tree.gltf
+      Walls = [models/tiles/forest/bush_wide.gltf]
     End,
     Tone
       Name = Stony
       Floor = models/tiles/forest/floor_rocky.gltf
       Wall = models/tiles/forest/tree_round.gltf
+      Walls = [models/tiles/forest/bush_tall.gltf]
     End
   ]
   Monsters = [

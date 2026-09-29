@@ -83,14 +83,16 @@ public final class DungeonGenerator {
         int bossRoom = furthestRoomFromStart(rooms.size(), links);
         // A map that mixes biomes lays them out now, from a stream of its own, so each region can be cut to its
         // own ground; one that does not cuts the whole floor to its depth's theme, exactly as it always has.
-        var biomes = settings.biomes().isEmpty() ? null
+        var biomes = settings.biomes().isEmpty() || !layout.mixesBiomes() ? null
                 : BiomeMap.draw(seed, depth, layout.width(), layout.height(), rooms, settings.biomes());
         var cave = biomes == null
                 ? Cave.carve(rng, layout.width(), layout.height(), rooms, links, bossRoom,
                         settings.corridorWidth(), settings.maxRoomSpacing(), terrain)
                 : Cave.carve(rng, layout.width(), layout.height(), rooms, links, bossRoom,
                         settings.corridorWidth(), settings.maxRoomSpacing(), terrainOfRooms(biomes, rooms.size()),
-                        (x, y) -> biomes.at(x, y).terrain().ragged());
+                        (x, y) -> biomes.at(x, y).terrain().ragged(),
+                        // A wood's islands are groves of trees a body can go between; a cavern's are rock.
+                        room -> biomes.ofRoom(room).grove() != null);
 
         var hero = middleOf(rooms.get(0));
         var monsters = populate(rng, cave, rooms, settings, depth, bossRoom);
@@ -101,9 +103,11 @@ public final class DungeonGenerator {
         var relief = biomes == null ? Relief.of(seed, cave, rooms, terrain)
                 : Relief.of(seed, cave, rooms, biomes.hills(), biomes::riseAt,
                         terrainOfRooms(biomes, rooms.size()).stream().map(Theme.Terrain::level).toList());
+        var scenery = biomes == null ? List.<GeneratedDungeon.Piece>of()
+                : Scenery.scatter(seed, cave, biomes, rooms.getFirst());
         return new GeneratedDungeon(cave.walls(), cave.levels(), hero, monsters, boss, bossRoom,
                 List.copyOf(rooms), List.copyOf(links), Collections.nCopies(rooms.size(), 0), props,
-                relief, 0f, biomes);
+                relief, 0f, biomes, scenery);
     }
 
     /** Each chamber's ground: its own biome's. */

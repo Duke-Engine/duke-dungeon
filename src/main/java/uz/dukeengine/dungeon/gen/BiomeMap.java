@@ -73,7 +73,12 @@ public final class BiomeMap {
 
     /** The biome of the cell at {@code (x, y)}. */
     public Theme at(int x, int y) {
-        return biomes.get(cells[y * width + x]);
+        return biomes.get(indexAt(x, y));
+    }
+
+    /** Which of {@link #biomes()} the cell at {@code (x, y)} is. */
+    public int indexAt(int x, int y) {
+        return cells[y * width + x];
     }
 
     /** The biome chamber {@code room} is, whole. */
@@ -84,6 +89,18 @@ public final class BiomeMap {
     /** Every biome the map could hold, in the file's order — not only the ones this floor grew. */
     public List<Theme> biomes() {
         return biomes;
+    }
+
+    /** The same biomes in the same cells: a floor drawn twice from one seed is one floor, biomes and all. */
+    @Override
+    public boolean equals(Object other) {
+        return other instanceof BiomeMap map && width == map.width && biomes.equals(map.biomes)
+                && Arrays.equals(cells, map.cells) && Arrays.equals(rooms, map.rooms);
+    }
+
+    @Override
+    public int hashCode() {
+        return 31 * Arrays.hashCode(cells) + Arrays.hashCode(rooms);
     }
 
     /**

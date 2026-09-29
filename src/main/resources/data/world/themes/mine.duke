@@ -41,16 +41,47 @@ Theme
   End
   ; Worked, and barren.
   Climate = [15, 10]
+  ; What the digging left: ore -- gold, silver, copper, the brightest things
+  ; underground -- broken stone and the odd timber.
+  Scenery = [
+    Scatter
+      Model = models/props/mine/gold_nuggets.gltf
+      PerHundred = 3
+      Scale = 3.5
+    End,
+    Scatter
+      Model = models/props/mine/silver_nuggets.gltf
+      PerHundred = 3
+      Scale = 3.5
+    End,
+    Scatter
+      Model = models/props/mine/copper_nuggets.gltf
+      PerHundred = 4
+      Scale = 3.5
+    End,
+    Scatter
+      Model = models/props/mine/stone_chunks.gltf
+      PerHundred = 8
+      Scale = 3
+    End,
+    Scatter
+      Model = models/props/mine/wood_log.gltf
+      PerHundred = 3
+      Scale = 3
+    End
+  ]
   Tones = [
     Tone
       Name = Dirt
       Floor = models/tiles/forest/floor.gltf
       Wall = models/tiles/forest/rock_cluster.gltf
+      Walls = [models/tiles/forest/rock_cluster_low.gltf]
     End,
     Tone
       Name = Gravel
       Floor = models/tiles/forest/floor_rocky.gltf
       Wall = models/tiles/forest/rock_cluster_low.gltf
+      Walls = [models/tiles/forest/rock_cluster.gltf]
     End
   ]
   Monsters = [

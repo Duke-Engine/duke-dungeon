@@ -40,16 +40,43 @@ Theme
   End
   ; Wilderness, and alive only just: needles, stone and cold.
   Climate = [90, 35]
+  ; Thin grass between the needles, and stone.
+  Scenery = [
+    Scatter
+      Model = models/tiles/forest/grass_short.gltf
+      PerHundred = 15
+      Scale = 3
+    End,
+    Scatter
+      Model = models/tiles/forest/pebble.gltf
+      PerHundred = 8
+      Scale = 3
+    End,
+    Scatter
+      Model = models/tiles/forest/stone.gltf
+      PerHundred = 3
+      Scale = 2.5
+    End
+  ]
+  ; Its groves, two narrow pines to a cell: see forest.duke.
+  Grove = Grove
+    Models = [models/tiles/forest/pine_tall.gltf, models/tiles/forest/pine.gltf]
+    PerCell = 2
+    Scale = 1.67
+    Footprint = 0.1
+  End
   Tones = [
     Tone
       Name = Tall
       Floor = models/tiles/forest/floor_rocky.gltf
       Wall = models/tiles/forest/pine_tall.gltf
+      Walls = [models/tiles/forest/pine.gltf]
     End,
     Tone
       Name = Young
       Floor = models/tiles/forest/floor.gltf
       Wall = models/tiles/forest/pine.gltf
+      Walls = [models/tiles/forest/pine_tall.gltf, models/tiles/forest/bush_tall.gltf]
     End
   ]
   ; What stands about is the wood's own: see forest.duke.

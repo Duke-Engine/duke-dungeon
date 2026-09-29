@@ -32,8 +32,12 @@ import uz.dukeengine.dungeon.content.DungeonSettings;
  * @param attempts   how many times to try landing a room before settling for the
  *                   ones that fit. Rooms are placed by rejection, so this has to
  *                   grow with how many are wanted and how full the map is getting
+ * @param mixesBiomes whether the floor mixes the map's biomes. The descent's own do; a
+ *                   map drawn once does not, because a stage's file keeps its cells and
+ *                   its heights and has nowhere to keep a biome for each — so a stage
+ *                   wears its depth's theme whole, as stages always have
  */
-public record Layout(int width, int height, int minRooms, int maxRooms, int attempts) {
+public record Layout(int width, int height, int minRooms, int maxRooms, int attempts, boolean mixesBiomes) {
 
     /**
      * Roughly how much map one room wants, counting the corridor to reach it and
@@ -49,7 +53,7 @@ public record Layout(int width, int height, int minRooms, int maxRooms, int atte
     /** The dungeon the settings file describes: the descent's own floors. */
     public static Layout of(DungeonSettings settings) {
         return new Layout(settings.mapWidth(), settings.mapHeight(),
-                settings.minRooms(), settings.maxRooms(), settings.placementAttempts());
+                settings.minRooms(), settings.maxRooms(), settings.placementAttempts(), true);
     }
 
     /**
@@ -65,7 +69,7 @@ public record Layout(int width, int height, int minRooms, int maxRooms, int atte
     public static Layout sized(DungeonSettings settings, int width, int height, int rooms) {
         int wanted = Math.max(1, rooms);
         return new Layout(width, height, wanted, wanted,
-                Math.max(settings.placementAttempts(), wanted * 500));
+                Math.max(settings.placementAttempts(), wanted * 500), false);
     }
 
     /** About how many rooms a map this size has space for — a hint, never a rule. */

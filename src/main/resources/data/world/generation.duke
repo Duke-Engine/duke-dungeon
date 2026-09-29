@@ -81,13 +81,12 @@ ProceduralMap
   ; cliff where two meet. Left out, the floor is the depth's theme above, exactly
   ; as it always was.
   ;
-  ; ★ Off for now, and on purpose: the client draws one look per floor until the
-  ; engine can draw one per cell (its request E4), so a mixed floor would be cut
-  ; region by region and dressed whole as the biome its heroes come in to. The
-  ; generator, its tests and the pictures (MapPicture washes each region in its
-  ; biome's colour) are ready; uncomment to try the shapes.
-  ;
-  ; Biomes = [Forest, Autumn, PineWood, DeadLand, Dungeon, Mine]
+  ; Each cell is drawn in its own biome's kit (engine 0.7.0 asks the floor what
+  ; every cell wears); what stands about and walks is dressed as the biome the
+  ; heroes come in to. MapPicture washes each region in its biome's colour. Take
+  ; the line out and every floor wears one theme whole again, by depth, exactly
+  ; as before.
+  Biomes = [Forest, Autumn, PineWood, DeadLand, Dungeon, Mine]
   ;
   ; About how many cells across one sweep of weather is -- so how big a region
   ; comes out. Forty gives three to five places on a floor of 96 by 72.

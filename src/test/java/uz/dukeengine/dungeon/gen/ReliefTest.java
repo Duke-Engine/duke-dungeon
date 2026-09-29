@@ -8,13 +8,17 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 import uz.dukeengine.core.pathfind.HeightMap;
-import uz.dukeengine.dungeon.content.Content;
+import uz.dukeengine.dungeon.content.BiomeFile;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 
 /** The ground under a floor: hills that rise and fall, and not one cell anywhere too steep to walk. */
 class ReliefTest {
 
-    private static final DungeonSettings SETTINGS = DungeonSettings.load();
+    /**
+     * Whole floors, each its depth's theme: these tune one theme's ground and watch what it does, and a floor that
+     * mixes biomes never asks the depth's theme — BiomeFloorTest holds the same promises for those.
+     */
+    private static final DungeonSettings SETTINGS = BiomeFile.listing();
 
     /** The shipped files with {@code from} rewritten as {@code to}, which has to be there to rewrite. */
     private static String rewritten(String data, String from, String to) {
@@ -86,7 +90,7 @@ class ReliefTest {
     /** The hills are only the ground: the same floor, the same monsters, the same furniture, flat or not. */
     @Test
     void theHillsChangeNothingButTheGround() {
-        var flatData = rewritten(Content.data(), "    Rise = 56\n", "    Rise = 0\n");
+        var flatData = rewritten(BiomeFile.textListing(), "    Rise = 56\n", "    Rise = 0\n");
         var flat = DungeonSettings.parse(rewritten(flatData, "    Rise = 40\n", "    Rise = 0\n"));
         for (int depth = 1; depth <= 4; depth++) {
             for (long seed = 0; seed < 10; seed++) {
@@ -103,7 +107,8 @@ class ReliefTest {
     /** A chamber laid level is flatter than the same chamber left to the hills. */
     @Test
     void aLevelledChamberIsFlatterThanTheHillsItStandsIn() {
-        var cellar = rewritten(Content.data(), "  Themes = [Forest, Forest, Dungeon, Dungeon]\n", "  Themes = [Dungeon]\n");
+        var cellar = rewritten(BiomeFile.textListing(), "  Themes = [Forest, Forest, Dungeon, Dungeon]\n",
+                "  Themes = [Dungeon]\n");
         var levelled = DungeonSettings.parse(rewritten(cellar, "    Level = 70\n", "    Level = 100\n"));
         var rolling = DungeonSettings.parse(rewritten(cellar, "    Level = 70\n", "    Level = 0\n"));
         long levelledSteepness = 0;

@@ -39,18 +39,46 @@ Theme
   End
   ; Wild, and as barren as anything grows.
   Climate = [55, 15]
+  ; Grass gone dry -- the forest's, browned by a tint -- and loose stone.
+  Scenery = [
+    Scatter
+      Model = models/tiles/forest/grass_tall.gltf
+      PerHundred = 12
+      Scale = 3
+      Tint = 0xB89A60
+    End,
+    Scatter
+      Model = models/tiles/forest/pebble.gltf
+      PerHundred = 8
+      Scale = 3
+    End,
+    Scatter
+      Model = models/tiles/forest/stone.gltf
+      PerHundred = 4
+      Scale = 2.5
+    End
+  ]
+  ; Its groves, dead trees standing: see forest.duke.
+  Grove = Grove
+    Models = [models/tiles/forest/tree_twisted.gltf, models/tiles/forest/tree_stunted.gltf]
+    PerCell = 1
+    Scale = 2.67
+    Footprint = 0.15
+  End
   Tones = [
     ; A tint lies over the whole kit, trees and dirt alike: ash, then bone.
     Tone
       Name = Ash
       Floor = models/tiles/forest/floor_rocky.gltf
       Wall = models/tiles/forest/tree_twisted.gltf
+      Walls = [models/tiles/forest/tree_stunted.gltf]
       Tint = 0xA8A298
     End,
     Tone
       Name = Bone
       Floor = models/tiles/forest/floor.gltf
       Wall = models/tiles/forest/tree_stunted.gltf
+      Walls = [models/tiles/forest/tree_twisted.gltf]
       Tint = 0xBDB4A2
     End
   ]

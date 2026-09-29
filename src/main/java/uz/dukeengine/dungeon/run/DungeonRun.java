@@ -310,6 +310,24 @@ public final class DungeonRun {
     }
 
     /**
+     * What each cell of {@code floor} is drawn as, for a floor that mixes biomes, or null for one that wears its look
+     * whole. Each biome in the tone the depth draws for it — the same draw {@link #lookOf} makes for the biome the
+     * heroes come in to, so the cells round them and the status line name one look.
+     */
+    private FloorLooks looksOf(GeneratedDungeon floor) {
+        if (floor.biomes() == null) {
+            return null;
+        }
+        var looks = new java.util.ArrayList<String>();
+        for (var biome : floor.biomes().biomes()) {
+            var chosen = themes.dressedAs(biome, floors.seed(), depth);
+            looks.add(chosen == null ? null : chosen.asStatus());
+        }
+        return new FloorLooks("descent", floor.biomes(), looks, floor.scenery(),
+                settings.world().navigationCellsPerCell());
+    }
+
+    /**
      * Put the first floor in the world.
      *
      * <p>Goes through the same placement every later floor does, so the one the
@@ -338,6 +356,12 @@ public final class DungeonRun {
     /** The floor the world was built around, with everyone on it. */
     private void lay(DukeGame game, GeneratedDungeon floor) {
         look = lookOf(floor);
+        var looks = looksOf(floor);
+        if (looks != null) {
+            // The world was built around this floor's grid before the run knew its seed and depth; the grid stays
+            // as it was, and the client is told what each of its cells wears.
+            game.applyMapTerrain(game.getTerrain(), looks);
+        }
         var placed = Spawner.place(game, heroPlayers(), heroTemplates(), dungeonPlayer, floor, settings, depth,
                 drops);
         for (int i = 0; i < seats.size(); i++) {
@@ -546,7 +570,7 @@ public final class DungeonRun {
 
         var logic = game.getLogic();
         logic.clearWorld();
-        game.applyMapTerrain(terrainOf(floor));
+        game.applyMapTerrain(terrainOf(floor), looksOf(floor));
 
         var placed = Spawner.place(game, heroPlayers(), heroTemplates(), dungeonPlayer, floor, settings, depth,
                 drops);

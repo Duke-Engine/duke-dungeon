@@ -30,6 +30,26 @@ class BiomeFloorTest {
         }
     }
 
+    /**
+     * Whatever biome the heroes come in to, the way in has room for the fountain with a walk round it: open floor
+     * two cells every way from the first chamber's middle. A cramped glade with a grove or two once left none.
+     */
+    @Test
+    void theWayInAlwaysHasRoomForTheFountain() {
+        for (long seed = 0; seed <= 80; seed++) {
+            var floor = DungeonGenerator.generate(seed, ALL, 1 + (int) (seed % 4));
+            var rows = floor.asciiMap().split("\n");
+            var middle = floor.rooms().getFirst();
+            for (int dy = -2; dy <= 2; dy++) {
+                for (int dx = -2; dx <= 2; dx++) {
+                    assertTrue(rows[middle.centerCellY() + dy].charAt(middle.centerCellX() + dx) == '.',
+                            "seed " + seed + " (" + floor.biomes().ofRoom(0).name() + ") has rock "
+                                    + dx + "," + dy + " from the way in");
+                }
+            }
+        }
+    }
+
     /** Two biomes' hills meet somewhere on every floor, and where they meet is never a cliff. */
     @Test
     void noBorderBetweenTwoBiomesIsACliff() {
@@ -57,6 +77,15 @@ class BiomeFloorTest {
         for (long seed = 1; seed <= 40; seed++) {
             var floor = DungeonGenerator.generate(seed, MIXED, 1);
             var rows = floor.asciiMap().strip().split("\n");
+            // A grove stands in its glade as an island stood: walkable between its trunks now, and still part of what
+            // makes a glade rougher than a cavern — so its cells count here as what the floor is cut round.
+            for (var piece : floor.scenery()) {
+                if (piece.footprint() > 0f) {
+                    int x = (int) piece.x();
+                    int y = (int) piece.y();
+                    rows[y] = rows[y].substring(0, x) + '#' + rows[y].substring(x + 1);
+                }
+            }
             for (int i = 0; i < floor.rooms().size(); i++) {
                 double edge = edgeShare(rows, floor.rooms().get(i));
                 if (floor.biomes().ofRoom(i).name().equals("Forest")) {

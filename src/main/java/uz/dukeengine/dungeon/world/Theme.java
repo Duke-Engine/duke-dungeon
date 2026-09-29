@@ -55,6 +55,11 @@ import uz.dukeengine.dungeon.content.MonsterLook;
  * @param terrain       the ground its floors are carved into — see {@link Terrain}
  * @param climate       where it grows when a floor mixes biomes — see {@link Climate} — or null for a theme that is
  *     only ever a whole floor's
+ * @param scenery       what lies about on its floor for its look alone — grass, bushes, pebbles, ore — when it is a
+ *     biome of a floor that mixes them; see {@link Scatter}
+ * @param grove         what a block of rock left standing in one of its chambers is instead, when it is a biome:
+ *     trees on open ground, each in the way only as far as its trunk — see {@link Grove} — or null for rock, as a
+ *     cavern's pillar is
  */
 public record Theme(
         String name,
@@ -76,11 +81,13 @@ public record Theme(
         List<Tone> tones,
         List<ThemeMonster> monsters,
         Terrain terrain,
-        Climate climate) {
+        Climate climate,
+        List<Scatter> scenery,
+        Grove grove) {
 
     /** What a block leaves out. */
     public static final Theme DEFAULTS = new Theme("", 4f, 0f, 4f, 0f, 0f, false, false, 1, 0f, 0f, null, null,
-            0xFFFFFF, 100, 0, List.of(), List.of(), Terrain.DEFAULTS, null);
+            0xFFFFFF, 100, 0, List.of(), List.of(), Terrain.DEFAULTS, null, List.of(), null);
 
     public Theme {
         // A kit whose walls are on the same module as its floors says so by not saying anything,
@@ -90,6 +97,47 @@ public record Theme(
         tones = List.copyOf(tones);
         monsters = List.copyOf(monsters);
         terrain = terrain == null ? Terrain.DEFAULTS : terrain;
+        scenery = scenery == null ? List.of() : List.copyOf(scenery);
+    }
+
+    /**
+     * One kind of thing that lies about on a biome's floor for its look alone: nothing walks into it, nothing reads
+     * it, and every machine scatters the same ones in the same places from the same seed.
+     *
+     * @param model      the model, a whole path from the resource root
+     * @param perHundred how many to every hundred cells of this biome's floor
+     * @param scale      how large against the model as it was made — about 2.5 is the kit's own proportion
+     * @param variety    how much each differs in size, as a fraction either way
+     * @param tint       a colour over it, packed {@code 0xRRGGBB}; white leaves it as it was made
+     */
+    public record Scatter(String model, int perHundred, float scale, float variety, int tint) {
+
+        /** What a block leaves out. */
+        public static final Scatter DEFAULTS = new Scatter(null, 0, 2.5f, 0.3f, 0xFFFFFF);
+    }
+
+    /**
+     * A grove: what a biome's chambers have standing in them where a cavern has a pillar of rock — trees on open
+     * ground, each in the way only as far as its trunk, so a body goes between two where they leave it room and a
+     * wider one goes round.
+     *
+     * <p>Only on a floor that mixes biomes, which is walked finer than it is drawn; a floor of one theme keeps its
+     * groves as rock with the kit's trees on it, as it always had.
+     *
+     * @param models    the trees, whole paths from the resource root; each tree takes one by the draw
+     * @param perCell   how many stand in each cell of the grove
+     * @param scale     how large against the model as it was made
+     * @param variety   how much each differs in size, as a fraction either way
+     * @param footprint how far round its middle each is in the way, in cells: its trunk, not its crown
+     */
+    public record Grove(List<String> models, int perCell, float scale, float variety, float footprint) {
+
+        /** What a block leaves out. */
+        public static final Grove DEFAULTS = new Grove(List.of(), 1, 2.5f, 0.3f, 0.15f);
+
+        public Grove {
+            models = models == null ? List.of() : List.copyOf(models);
+        }
     }
 
     /**
@@ -178,10 +226,29 @@ public record Theme(
      * room and the same stone — and a player who plays the same theme twice in one run does not see
      * the same floor twice.
      */
-    public record Tone(String name, String floor, String wall, String corner, int tint) {
+    public record Tone(String name, String floor, String wall, String corner, int tint, List<String> walls) {
 
         /** What a block leaves out. */
-        public static final Tone DEFAULTS = new Tone("", null, null, null, 0xFFFFFF);
+        public static final Tone DEFAULTS = new Tone("", null, null, null, 0xFFFFFF, List.of());
+
+        public Tone {
+            walls = walls == null ? List.of() : List.copyOf(walls);
+        }
+
+        /**
+         * Every model the wall is drawn from: {@code Wall} and then the {@code Walls} beside it, each placement taking
+         * one by where it stands — so a cliff line is several rocks and a wood's edge trees with bushes between them,
+         * the same ones in the same places every time the floor is drawn. The client sizes them all by the theme's
+         * one module, so they are modelled alike.
+         */
+        public List<String> allWalls() {
+            var all = new java.util.ArrayList<String>();
+            if (wall != null) {
+                all.add(wall);
+            }
+            all.addAll(walls);
+            return List.copyOf(all);
+        }
 
         public java.awt.Color awtTint() {
             return new java.awt.Color(tint);

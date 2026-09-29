@@ -343,7 +343,7 @@ public final class Main {
                 visuals.theme(theme.name() + "," + tone.name(), look -> {
                     look.tiles(Tileset.create()
                             .floor(tone.floor())
-                            .wall(tone.wall())
+                            .wall(tone.allWalls().toArray(String[]::new))
                             .corner(tone.corner())
                             .stairs(theme.stairs())
                             .tileSize(theme.tileSize())
@@ -1067,7 +1067,8 @@ public final class Main {
         visuals.fog(new Fog(settings.fog().lineOfSight(),
                 settings.fog().unseenPercent() / 100f, settings.fog().rememberedPercent() / 100f,
                 settings.fog().visiblePercent() / 100f, settings.fog().softenCells(),
-                settings.fog().openPerSecond(), settings.fog().textureSize(), settings.fog().tint()));
+                settings.fog().openPerSecond(), settings.fog().textureSize(), settings.fog().tint(),
+                settings.fog().texelsPerCell()));
 
         // What a caster is seen doing, keyed by the recipe the cast is announced
         // under -- see Visuals.castAnim. A skill that names no gesture is cast

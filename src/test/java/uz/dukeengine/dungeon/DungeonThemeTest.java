@@ -29,10 +29,18 @@ import uz.dukeengine.dungeon.gen.DungeonGenerator;
  */
 class DungeonThemeTest {
 
-    /** The shipped files with the endless map's theme order rewritten. */
+    /**
+     * The shipped files with the endless map's theme order rewritten, and its biomes taken out — the order is what
+     * dresses a floor that wears one theme whole, and a floor that mixes biomes never asks it.
+     */
     private static DungeonSettings withOrder(String order) {
         var themes = "[" + String.join(", ", order.split(" ")) + "]";
-        return DungeonSettings.parse(ShippedBlock.dataWith("Endless", "Themes", themes));
+        return DungeonSettings.parse(wholeFloors(ShippedBlock.dataWith("Endless", "Themes", themes)));
+    }
+
+    /** {@code data} with the descent's biomes taken out, so each floor wears its depth's theme whole. */
+    private static String wholeFloors(String data) {
+        return data.replaceFirst("(?m)^  Biomes = .*\\n", "");
     }
 
     /**
@@ -88,10 +96,10 @@ class DungeonThemeTest {
     @Test
     void aThemeWithNoTerrainOfItsOwnIsOnlyALook() {
         var bare = java.util.regex.Pattern.compile("(?s)  Terrain = Terrain\n.*?\n  End\n")
-                .matcher(uz.dukeengine.dungeon.content.Content.data()).replaceAll("");
+                .matcher(wholeFloors(uz.dukeengine.dungeon.content.Content.data())).replaceAll("");
         assertFalse(bare.contains("Terrain = Terrain"), "a theme still carries its ground");
         var themed = DungeonSettings.parse(bare);
-        var unthemed = DungeonSettings.parse(ShippedBlock.dataWith("Endless", "Themes", "[]").replaceAll(
+        var unthemed = DungeonSettings.parse(wholeFloors(ShippedBlock.dataWith("Endless", "Themes", "[]")).replaceAll(
                 "(?s)  Terrain = Terrain\n.*?\n  End\n", ""));
 
         for (int depth = 1; depth <= 4; depth++) {
@@ -165,8 +173,37 @@ class DungeonThemeTest {
         var look = status.substring(status.indexOf("|look=") + "|look=".length());
         int end = look.indexOf('|');
         look = end < 0 ? look : look.substring(0, end);
-        assertEquals(SHIPPED.themes().pick(11L, 1).asStatus(), look,
+        // The shipped descent mixes biomes, so the floor is dressed as the one its heroes come in to.
+        var cameInTo = DungeonGenerator.generate(11L, SHIPPED, 1).biomes().ofRoom(0);
+        assertEquals(SHIPPED.themes().dressedAs(cameInTo, 11L, 1).asStatus(), look,
                 "it named a different floor from the one it drew");
+    }
+
+    /**
+     * And the client is told what every cell wears: a record beside the floor's grid, naming each chamber's biome in
+     * the tone this floor draws for it — the chamber the heroes stand in naming the status line's own look.
+     */
+    @Test
+    void aMixedFloorTellsTheClientWhatEveryCellWears() {
+        var session = Dungeon.newSession(11L);
+        session.game().runHeadless(2);
+        var floor = DungeonGenerator.generate(11L, SHIPPED, 1);
+
+        var record = session.game().getMapRecord();
+        assertTrue(record instanceof uz.dukeengine.core.map.Looked, "the client was told nothing per cell: " + record);
+        var looked = (uz.dukeengine.core.map.Looked) record;
+        for (int i = 0; i < floor.rooms().size(); i++) {
+            var middle = floor.rooms().get(i);
+            assertEquals(SHIPPED.themes().dressedAs(floor.biomes().ofRoom(i), 11L, 1).asStatus(),
+                    looked.lookAt(middle.centerCellX(), middle.centerCellY()), "chamber " + i);
+        }
+        var status = session.game().getSnapshot().status();
+        assertTrue(status.contains("|look=" + looked.lookAt(floor.rooms().get(0).centerCellX(),
+                floor.rooms().get(0).centerCellY())), "the heroes' chamber and the status line disagree: " + status);
+        // And what lies about on it, which the client draws from the same record.
+        assertEquals(floor.scenery(), ((uz.dukeengine.core.map.Dressed) record).scenery());
+        // And how finely it is walked: the world's two, so a grove's trunks leave a body room between them.
+        assertEquals(2, ((uz.dukeengine.core.map.Subdivided) record).navigationCellsPerCell());
     }
 
     /**

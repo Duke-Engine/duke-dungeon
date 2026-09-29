@@ -14,10 +14,12 @@ package uz.dukeengine.dungeon.world;
  * @param openPerSecond     how fast the dark gives way, as a share of the remaining gap per second
  * @param textureSize       how many texels across the fog sheet is drawn — nothing to do with cells
  * @param tint              what unlit stone fades toward — the colour of the dark itself
+ * @param texelsPerCell     how many texels to a cell the sheet is drawn at, sized to each map; 0 keeps the one
+ *     {@code textureSize} whatever the map
  */
 public record Fog(boolean lineOfSight, int unseenPercent, int rememberedPercent, int visiblePercent,
-        int softenCells, int openPerSecond, int textureSize, int tint) {
+        int softenCells, int openPerSecond, int textureSize, int tint, int texelsPerCell) {
 
     /** What a block leaves out. */
-    public static final Fog DEFAULTS = new Fog(true, 0, 34, 100, 2, 7, 256, 0x000000);
+    public static final Fog DEFAULTS = new Fog(true, 0, 34, 100, 2, 7, 256, 0x000000, 0);
 }

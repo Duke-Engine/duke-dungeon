@@ -32,12 +32,20 @@ final class Cave {
 
     static final char STONE = '#';
     static final char FLOOR = '.';
+    /**
+     * A grove: ground the engine walks, with trees standing on it that are in the way only as far as their trunks —
+     * see {@link Scenery}. Floor to the map it hands on; not floor to anything placed here, so nobody is set down
+     * inside a tree.
+     */
+    static final char GROVE = ',';
 
     private final int width;
     private final int height;
     private final char[][] cells;
     /** Floor by promise: the tunnels and the middle of every chamber. Wearing never takes them. */
     private final boolean[][] kept;
+    /** Every cell of every grove, in the order they were raised: where {@link Scenery} plants their trees. */
+    private final List<int[]> groves = new ArrayList<>();
     /** How wide a tunnel is stamped: the settings' corridor width, and never less than a cell. */
     private final int brush;
 
@@ -59,7 +67,7 @@ final class Cave {
     static Cave carve(DeterministicRng rng, int width, int height, List<Room> rooms, List<Link> links, int bossRoom,
             int corridorWidth, int maxSpacing, Theme.Terrain terrain) {
         return carve(rng, width, height, rooms, links, bossRoom, corridorWidth, maxSpacing,
-                java.util.Collections.nCopies(rooms.size(), terrain), (x, y) -> terrain.ragged());
+                java.util.Collections.nCopies(rooms.size(), terrain), (x, y) -> terrain.ragged(), room -> false);
     }
 
     /**
@@ -67,13 +75,16 @@ final class Cave {
      * {@code ofRoom}'s terrain, a tunnel to the mean of its two ends', the loops to the chambers' mean, and every
      * cell worn as ragged as {@code raggedAt} says there. One terrain everywhere is exactly the call above — the same
      * numbers go to the same draws in the same order.
+     *
+     * <p>A chamber {@code groveIn} names has its islands raised as groves rather than rock: the same blocks in the
+     * same places, drawn by the same dice, left walkable for the trees {@link Scenery} plants on them.
      */
     static Cave carve(DeterministicRng rng, int width, int height, List<Room> rooms, List<Link> links, int bossRoom,
             int corridorWidth, int maxSpacing, List<Theme.Terrain> ofRoom,
-            java.util.function.IntBinaryOperator raggedAt) {
+            java.util.function.IntBinaryOperator raggedAt, java.util.function.IntPredicate groveIn) {
         var cave = new Cave(width, height, corridorWidth);
         for (int i = 0; i < rooms.size(); i++) {
-            cave.chamber(rng, rooms.get(i), ofRoom.get(i).ragged());
+            cave.chamber(rng, rooms.get(i), ofRoom.get(i).ragged(), i == 0 ? WAY_IN : 3);
         }
         for (var link : links) {
             cave.tunnel(rng, rooms, ofRoom, link);
@@ -85,7 +96,7 @@ final class Cave {
         cave.wear(rng, raggedAt);
         cave.dropSlits();
         cave.dropUnreachable(rooms.getFirst().centerCellX(), rooms.getFirst().centerCellY());
-        cave.raiseIslands(rng, rooms, bossRoom, ofRoom);
+        cave.raiseIslands(rng, rooms, bossRoom, ofRoom, groveIn);
         return cave;
     }
 
@@ -101,13 +112,13 @@ final class Cave {
         return x >= 0 && y >= 0 && x < width && y < height && cells[y][x] == FLOOR;
     }
 
-    /** The map as {@code MapLoader} reads it: {@code #} is rock, {@code .} is floor. */
+    /** The map as {@code MapLoader} reads it: {@code #} is rock, {@code .} is floor — a grove's ground among it. */
     String walls() {
         var text = new StringBuilder(height * (width + 1));
         for (var row : cells) {
             text.append(row).append('\n');
         }
-        return text.toString();
+        return text.toString().replace(GROVE, FLOOR);
     }
 
     /** The same map in storeys: all of the floor on the one, because the ground's height is the relief's now. */
@@ -134,10 +145,18 @@ final class Cave {
     // ---- carving ----
 
     /**
-     * A chamber: an ellipse filling most of its footprint, a few lobes bulging out of it, and its middle floor
-     * whatever the two made of it — the hero comes in there, the boss waits there, and the tunnels meet there.
+     * How much of the first chamber's middle is floor whatever happens to the rest: five cells across, which is the
+     * fountain at the way in with a walk round it. A cramped glade with a grove or two in it left no such place, and
+     * the heroes came in to no fountain at all.
      */
-    private void chamber(DeterministicRng rng, Room room, int ragged) {
+    private static final int WAY_IN = 5;
+
+    /**
+     * A chamber: an ellipse filling most of its footprint, a few lobes bulging out of it, and its middle — {@code core}
+     * cells across — floor whatever the two made of it: the hero comes in there, the boss waits there, and the
+     * tunnels meet there.
+     */
+    private void chamber(DeterministicRng rng, Room room, int ragged, int core) {
         double middleX = room.centerCellX() + 0.5;
         double middleY = room.centerCellY() + 0.5;
         int body = 100 - rng.nextInt(ragged / 2 + 1);
@@ -149,7 +168,7 @@ final class Cave {
             int size = 45 + rng.nextInt(26);
             ellipse(room, middleX + offX, middleY + offY, room.w() / 2.0 * size / 100, room.h() / 2.0 * size / 100);
         }
-        int core = Math.max(3, brush);
+        core = Math.max(core, brush);
         for (int y = room.centerCellY() - (core - 1) / 2; y <= room.centerCellY() + core / 2; y++) {
             for (int x = room.centerCellX() - (core - 1) / 2; x <= room.centerCellX() + core / 2; x++) {
                 keep(x, y);
@@ -420,15 +439,18 @@ final class Cave {
      * Rock left standing inside the chambers: a pillar in a cavern, a grove in a glade. A block of one or two cells
      * across, only where floor rings it as wide as a tunnel — so it is always something to walk round and never
      * something that walls anything off — and never on the tunnels or a chamber's middle. None in the boss's
-     * chamber, which is an arena and wants to be one.
+     * chamber, which is an arena and wants to be one. In a chamber {@code groveIn} names, the block is a grove
+     * instead: the same cells, left walkable, for trees to stand on.
      */
-    private void raiseIslands(DeterministicRng rng, List<Room> rooms, int bossRoom, List<Theme.Terrain> ofRoom) {
+    private void raiseIslands(DeterministicRng rng, List<Room> rooms, int bossRoom, List<Theme.Terrain> ofRoom,
+            java.util.function.IntPredicate groveIn) {
         int margin = Math.max(2, brush);
         for (int i = 0; i < rooms.size(); i++) {
             ProceduralMap.PerRoom perRoom = ofRoom.get(i).islandsPerRoom();
             if (perRoom.max() <= 0) {
                 continue;
             }
+            char island = groveIn.test(i) ? GROVE : STONE;
             int count = rng.nextInt(perRoom.min(), perRoom.max());
             for (int n = 0; n < count && i != bossRoom; n++) {
                 int size = 1 + rng.nextInt(2);
@@ -439,11 +461,19 @@ final class Cave {
                 var spot = spots.get(rng.nextInt(spots.size()));
                 for (int y = spot[1]; y < spot[1] + size; y++) {
                     for (int x = spot[0]; x < spot[0] + size; x++) {
-                        cells[y][x] = STONE;
+                        cells[y][x] = island;
+                        if (island == GROVE) {
+                            groves.add(new int[] {x, y});
+                        }
                     }
                 }
             }
         }
+    }
+
+    /** Every cell of every grove, in the order they were raised. */
+    List<int[]> groves() {
+        return groves;
     }
 
     /** Where a block {@code size} across may stand in {@code room}: its own cells free, floor all round it. */

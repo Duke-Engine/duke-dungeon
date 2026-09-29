@@ -6,13 +6,17 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayDeque;
 import org.junit.jupiter.api.Test;
-import uz.dukeengine.dungeon.content.Content;
+import uz.dukeengine.dungeon.content.BiomeFile;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 
 /** The floor carved out of the rock: grown rather than cut, all of it reachable, and its loops no short cut. */
 class CaveTest {
 
-    private static final DungeonSettings SETTINGS = DungeonSettings.load();
+    /**
+     * Whole floors, each its depth's theme: these tune one theme's ground and watch what it does, and a floor that
+     * mixes biomes never asks the depth's theme — BiomeFloorTest holds the same promises for those.
+     */
+    private static final DungeonSettings SETTINGS = BiomeFile.listing();
 
     /** The shipped files with {@code from} rewritten as {@code to}, which has to be there to rewrite. */
     private static String rewritten(String data, String from, String to) {
@@ -120,7 +124,7 @@ class CaveTest {
      */
     @Test
     void islandsAreRockLeftStandingInTheFloor() {
-        var bare = DungeonSettings.parse(rewritten(rewritten(Content.data(),
+        var bare = DungeonSettings.parse(rewritten(rewritten(BiomeFile.textListing(),
                 "    IslandsPerRoom = [1, 3]\n", "    IslandsPerRoom = [0, 0]\n"),
                 "    IslandsPerRoom = [0, 2]\n", "    IslandsPerRoom = [0, 0]\n"));
         int fewer = 0;

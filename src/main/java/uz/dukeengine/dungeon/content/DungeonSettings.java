@@ -596,6 +596,8 @@ public final class DungeonSettings {
         require(map.propsPerRoom().max() >= map.propsPerRoom().min(),
                 "MaxPerRoom must not be below MinPerRoom");
         require(world.levelHeight() >= 0f, "LevelHeight cannot be negative");
+        require(world.navigationCellsPerCell() >= 1 && world.navigationCellsPerCell() <= 4,
+                "NavigationCellsPerCell is 1 to 4: finer than a quarter of a cell costs sixteen times the walking");
         for (var theme : themes) {
             validateTerrain("Theme " + theme.name() + "'s Terrain", theme.terrain());
         }

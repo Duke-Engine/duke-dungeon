@@ -11,6 +11,12 @@ World
   ; is one wall piece rather than one and a fraction. A cell is also ten across,
   ; which makes a one-cell stair climb at forty-five degrees.
   LevelHeight = 10
+  ; How many cells a side a floor that mixes biomes is WALKED at for each one it
+  ; is drawn at. Two: ten-unit cells walked as five-unit ones, so what stands in
+  ; the way is its own shape rather than the whole of its cell -- a grove's trees
+  ; are trunks with room between them, and a hero goes through where a boss goes
+  ; round. Every rule counted in cells is still counted in ten-unit ones.
+  NavigationCellsPerCell = 2
 End
 
 ; ---------------------------------------------------------------------------

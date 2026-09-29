@@ -38,16 +38,43 @@ Theme
   End
   ; Half wild -- an old wood people walk in -- and alive: the year turning.
   Climate = [35, 85]
+  ; Its grass and bushes are the forest's on the repainted atlas: gold and red.
+  Scenery = [
+    Scatter
+      Model = models/tiles/autumn/grass_short.gltf
+      PerHundred = 25
+      Scale = 3
+    End,
+    Scatter
+      Model = models/tiles/autumn/grass_tall.gltf
+      PerHundred = 10
+      Scale = 3
+    End,
+    Scatter
+      Model = models/tiles/autumn/bush_small.gltf
+      PerHundred = 8
+      Scale = 3
+    End
+  ]
+  ; Its groves: see forest.duke.
+  Grove = Grove
+    Models = [models/tiles/autumn/tree.gltf, models/tiles/autumn/tree_small.gltf]
+    PerCell = 1
+    Scale = 2.17
+    Footprint = 0.18
+  End
   Tones = [
     Tone
       Name = Turning
       Floor = models/tiles/forest/floor.gltf
       Wall = models/tiles/autumn/tree.gltf
+      Walls = [models/tiles/autumn/bush_wide.gltf, models/tiles/autumn/tree_small.gltf]
     End,
     Tone
       Name = Fallen
       Floor = models/tiles/forest/floor_rocky.gltf
       Wall = models/tiles/autumn/tree_small.gltf
+      Walls = [models/tiles/autumn/bush_tall.gltf, models/tiles/autumn/tree.gltf]
     End
   ]
   ; What stands about is the wood's own: see forest.duke.

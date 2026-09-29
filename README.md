@@ -11,14 +11,17 @@ uchun yangi engine imkoniyatini talab qilsa, demak engine tugallanmagan.
 ```
 ./gradlew run                       # o'ynash
 ./gradlew run --args=--map=first    # muzlatilgan xaritada
-./gradlew build                     # 770 test
+./gradlew build                     # 779 test
 ```
 
 ## Engine qayerdan olinadi
 
-O'yin engine **0.6.0** ga yozilgan va uni Maven Central'dan oladi:
-`build.gradle.kts` dagi `uz.duke-engine:bom:0.6.0` versiyani bir marta aytadi,
-modullar uni oladi. Klon va `./gradlew build` yetarli — ikkinchi checkout kerak emas.
+O'yin engine **0.7.0** ga yozilgan (`build.gradle.kts` dagi
+`uz.duke-engine:bom:0.7.0`). 0.7.0 hali Maven Central'da **yo'q**, shuning uchun
+`gradle.properties` dagi `dukeEngineLocal=true` o'yinni yonidagi engine
+checkout'idan quradi — 0.6.0 chiqquncha qanday bo'lgan bo'lsa, shunday. 0.7.0
+chiqqach o'sha qatorni o'chirsangiz, o'yin yana Central'dan oladi va klon hamda
+`./gradlew build` yetarli bo'ladi.
 
 Engine va o'yin ustida birga ishlash uchun engine'ni **yonma-yon** qo'yib,
 `-PdukeEngineLocal` bilan quring: har bir `uz.duke-engine:…` bog'liqlik o'sha
@@ -237,11 +240,28 @@ dog'lar qolmaydi, chuqurlashgan sari ob-havo `ClimatePerDepth` bo'yicha siljiydi
 
 Biomlar: **Forest**, **Autumn** (kuzgi o'rmon — oltin, to'q sariq, qizil),
 **PineWood** (qarag'ay), **DeadLand** (o'lik o'rmon), **Dungeon** (g'orlar),
-**Mine** (kon). `generation.duke` da `Biomes` hozircha
-**o'chiq**: klient bitta qavatga bitta ko'rinish chizadi, engine har katakka
-alohida ko'rinish chizmaguncha (E4 so'rovi). Generator, testlar va `MapPicture`
-(har mintaqani biom rangiga bo'yaydi) tayyor — sinab ko'rish uchun `Biomes`
-qatorini oching. Biomsiz qavatlar avvalgidek, bir xil seed bilan aynan bir xil.
+**Mine** (kon). Har katak o'z biomining kit'i bilan chiziladi (`run/FloorLooks`,
+engine 0.7.0 `Looked`); har biomning polida o'z **dekoratsiyasi** yotadi —
+o't, butalar, toshchalar, konda oltin/kumush/mis rudasi (`gen/Scenery`, tema
+faylidagi `Scenery`, engine `Dressed`) — faqat ko'rinish uchun, hech narsani
+to'smaydi. Devor modellari ham bir nechta (`Walls`): g'orda qoyalar va
+nayzasimon toshlar, o'rmonda daraxtlar orasida butalar. Kirish joyi (5×5) doim
+ochiq — favvora shu yerda turadi. Turg'un narsalar (ustun, bochka, sandiq,
+favvora) turgan katagining biomi ko'rinishida; yuruvchi maxluqlar — kirish
+biomining ko'rinishida.
+
+**Daraxtzorlar (grove)** — o'rmonli biomlarda kamera ichidagi orolcha endi tosh
+blok emas, ochiq yerda turgan daraxtlar: har biri faqat tanasi (`Footprint`)
+qadar yo'lni to'sadi. Biomli qavat 5 birlikli katakchalarda yuriladi
+(`world.duke` dagi `NavigationCellsPerCell = 2`, engine `Subdivided`), shuning
+uchun qahramon daraxtlar orasidan joy bor joyda o'tadi, boss esa aylanib o'tadi.
+G'or va kondagi ustunlar tosh bo'lib qoladi. Qoidalardagi masofalar (yonida,
+yetib borish) hamon 10 birlikli katakda sanaladi.
+
+`generation.duke` dagi `Biomes` qatorini olib tashlasangiz, qavatlar avvalgidek
+chuqurlik bo'yicha bitta temada bo'ladi. Stage'lar (`newMap`) doim bitta temada
+kesiladi — stage fayli biom xaritasini saqlamaydi. `MapPicture` har mintaqani
+biom rangiga bo'yaydi.
 
 ## Stage rejimi — o'zgarmaydigan xarita
 

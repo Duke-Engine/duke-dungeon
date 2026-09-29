@@ -91,6 +91,11 @@ Fog
   ; dungeon floor is several texels to a cell. Higher costs a little more to push
   ; to the card each frame and nothing else.
   TextureSize = 256
+  ; Or drawn at so many texels to a cell, the sheet sized to each map instead:
+  ; 256 across a floor of 96 cells is under three a cell, and a floor twice
+  ; that would be one. Four is a soft edge on any floor, at 96 by 72 a sheet of
+  ; 384 by 288. When this is set, TextureSize above is not asked.
+  TexelsPerCell = 4
   ; The colour of nothing: cold, and slightly blue, so unlit stone reads as stone
   ; rather than as a gap. Also the window's own background, exactly -- the sheet
   ; at full strength and the void beyond the map are the same dark, and any

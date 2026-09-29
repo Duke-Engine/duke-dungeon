@@ -40,6 +40,8 @@ import uz.dukeengine.core.pathfind.PathGrid;
  * @param relief      how the ground rises and falls, corner by corner, or {@code null}
  *                  where it lies flat
  * @param biomes      which biome every cell is, or {@code null} for a floor that wears one theme whole
+ * @param scenery     what lies about on the floor for its look alone, each biome's own — none on a floor of one
+ *                  theme
  */
 public record GeneratedDungeon(
         String asciiMap,
@@ -55,14 +57,28 @@ public record GeneratedDungeon(
         HeightMap relief,
         /** How tall one storey of this floor stands, in world units; 0 leaves the world's own. */
         float levelHeight,
-        BiomeMap biomes) {
+        BiomeMap biomes,
+        List<Piece> scenery) {
 
     /** A floor that wears one theme whole — a stage, or the descent when its map mixes no biomes. */
     public GeneratedDungeon(String asciiMap, String levelMap, Placement hero, List<Monster> monsters, Monster boss,
             int bossRoom, List<Room> rooms, List<Link> links, List<Integer> roomStoreys, List<Prop> props,
             HeightMap relief, float levelHeight) {
         this(asciiMap, levelMap, hero, monsters, boss, bossRoom, rooms, links, roomStoreys, props, relief,
-                levelHeight, null);
+                levelHeight, null, List.of());
+    }
+
+    public GeneratedDungeon {
+        scenery = scenery == null ? List.of() : List.copyOf(scenery);
+    }
+
+    /**
+     * One piece of scenery: a model standing on the floor, where the engine is told to draw it — in cells, as
+     * everything a map hands the engine is. Grass and pebbles are in nobody's way; a grove's tree is, as far round
+     * its middle as {@code footprint} says.
+     */
+    public record Piece(String model, float x, float y, float facing, float scale, int tint, float footprint)
+            implements uz.dukeengine.core.map.MapScenery {
     }
 
     /** A spot in the world, in world units (not cells). */

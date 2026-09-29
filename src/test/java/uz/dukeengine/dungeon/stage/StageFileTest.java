@@ -28,9 +28,14 @@ class StageFileTest {
     private static final DungeonSettings SETTINGS = DungeonSettings.load();
     private static final int SEEDS = 100;
 
+    /** A floor cut the way MapWriter cuts a stage: at a floor's size, and wearing one theme whole. */
+    private static uz.dukeengine.dungeon.gen.GeneratedDungeon floorOf(long seed) {
+        return DungeonGenerator.generate(seed, SETTINGS, 1, uz.dukeengine.dungeon.gen.Layout.sized(SETTINGS,
+                SETTINGS.mapWidth(), SETTINGS.mapHeight(), SETTINGS.maxRooms()));
+    }
+
     private static Stage stageOf(long seed) {
-        return new Stage("test", "Test", "cut from seed " + seed, 1, 1, seed,
-                DungeonGenerator.generate(seed, SETTINGS, 1));
+        return new Stage("test", "Test", "cut from seed " + seed, 1, 1, seed, floorOf(seed));
     }
 
     @Test
@@ -91,8 +96,7 @@ class StageFileTest {
     /** A semicolon begins a comment, so a description holding one is written quoted — and comes back whole. */
     @Test
     void aDescriptionKeepsItsSemicolon() {
-        var stage = new Stage("test", "Test", "one room; then another", 1, 1, 1L,
-                DungeonGenerator.generate(1L, SETTINGS, 1));
+        var stage = new Stage("test", "Test", "one room; then another", 1, 1, 1L, floorOf(1L));
         assertEquals(stage, StageFile.read(StageFile.write(stage), "test"));
     }
 

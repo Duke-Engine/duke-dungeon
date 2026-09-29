@@ -283,7 +283,15 @@ class DungeonTilesTest {
 
         for (var theme : themes.all()) {
             for (var tone : theme.tones()) {
-                for (var path : new String[] {tone.floor(), tone.wall(), tone.corner()}) {
+                var pieces = new java.util.ArrayList<String>(tone.allWalls());
+                pieces.add(tone.floor());
+                pieces.add(tone.corner());
+                // And what lies about on its floor, and its groves' trees, drawn from paths the same way.
+                theme.scenery().forEach(scatter -> pieces.add(scatter.model()));
+                if (theme.grove() != null) {
+                    pieces.addAll(theme.grove().models());
+                }
+                for (var path : pieces) {
                     if (path == null) {
                         continue; // a kit is allowed to have no corner post
                     }
@@ -353,10 +361,17 @@ class DungeonTilesTest {
                 // A thing is not a module: nothing tiles against it, so its size is a choice rather than a
                 // measurement -- a pine is three to a cell, where a cell-wide one would stand three storeys
                 // tall. What stays a fact is that it is never WIDER than its cell, or it stands in the floor
-                // beside the rock it marks.
-                assertTrue(theme.wallTileSize() / 2f >= wall.getXExtent() - 0.05f,
-                        theme.name() + " sizes its " + wall.getXExtent() * 2f + "-wide wall by a module of "
-                                + theme.wallTileSize() + ", so it comes out wider than a cell");
+                // beside the rock it marks -- asked of every model any tone draws it from, since the client
+                // sizes them all by the one module.
+                for (var each : theme.tones()) {
+                    for (var path : each.allWalls()) {
+                        var body = boundsOf(assets.loadModel(path));
+                        assertTrue(theme.wallTileSize() / 2f >= body.getXExtent() - 0.05f,
+                                theme.name() + " sizes its " + body.getXExtent() * 2f + "-wide " + path
+                                        + " by a module of " + theme.wallTileSize() + ", so it comes out wider"
+                                        + " than a cell");
+                    }
+                }
             } else {
                 assertEquals(theme.wallTileSize() / 2f, wall.getXExtent(), 0.05f,
                         theme.name() + " says its walls are " + theme.wallTileSize()
@@ -398,13 +413,15 @@ class DungeonTilesTest {
             if (tone.wall() == null) {
                 continue;
             }
-            var wall = boundsOf(assets.loadModel(tone.wall()));
-            float bottom = wall.getCenter().y - wall.getYExtent() + theme.wallLift();
-            // Within a tenth of the module it was modelled at. Not exactly zero,
-            // because a wall need not be masonry: a theme whose boundary is a line
-            // of trees has roots, and a root dips below the ground it grows out of.
-            assertEquals(0f, bottom, theme.wallTileSize() * 0.1f,
-                    theme.name() + " stands its walls " + bottom + " off the floor");
+            for (var path : tone.allWalls()) {
+                var wall = boundsOf(assets.loadModel(path));
+                float bottom = wall.getCenter().y - wall.getYExtent() + theme.wallLift();
+                // Within a tenth of the module it was modelled at. Not exactly zero,
+                // because a wall need not be masonry: a theme whose boundary is a line
+                // of trees has roots, and a root dips below the ground it grows out of.
+                assertEquals(0f, bottom, theme.wallTileSize() * 0.1f,
+                        theme.name() + " stands " + path + " " + bottom + " off the floor");
+            }
         }
     }
 
