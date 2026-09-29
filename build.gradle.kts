@@ -215,7 +215,9 @@ tasks.register<Exec>("packageInstaller") {
                 // Spelled out rather than left to the default: LWJGL reaches for
                 // sun.misc.Unsafe, which lives in jdk.unsupported, and a runtime
                 // built without it fails at the first frame rather than here.
-                "--add-modules", "java.se,jdk.unsupported",
+                // jdk.zipfs is how the engine lists the maps inside the game's
+                // own jar; without it the exe says only "Failed to launch JVM".
+                "--add-modules", "java.se,jdk.unsupported,jdk.zipfs",
                 "--java-options", "-Xmx2g",
                 "--dest", out.absolutePath,
             ))

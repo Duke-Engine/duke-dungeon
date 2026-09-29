@@ -158,7 +158,9 @@ jobs:
       # runtime. --add-modules is spelled out rather than left to the default:
       # LWJGL needs sun.misc.Unsafe, which lives in jdk.unsupported, and a
       # runtime built without it fails at the first frame rather than at build
-      # time. The per-platform flags below are all about where the game ends up
+      # time. jdk.zipfs is how the engine lists the maps inside the game's own
+      # jar; without it the exe says only "Failed to launch JVM".
+      # The per-platform flags below are all about where the game ends up
       # and how it is started, which is the part an archive left to the player.
       - name: Build the installer
         id: installer
@@ -196,7 +198,7 @@ jobs:
             --input build/install/duke-dungeon/lib \
             --main-jar "$MAIN_JAR" \
             --main-class "$MAIN_CLASS" \
-            --add-modules java.se,jdk.unsupported \
+            --add-modules java.se,jdk.unsupported,jdk.zipfs \
             --java-options "-Xmx2g" \
             "${EXTRA[@]}" \
             --dest build/installer
