@@ -123,6 +123,43 @@ class BagScreenTest {
         }
     }
 
+    /**
+     * A bag drawn over {@code game} with its clock held still, so whether the world is being played is for its frames
+     * to say and not for how long the machine running the test took between two paints.
+     */
+    private static BagScreen bagOver(uz.dukeengine.game.DukeGame game) {
+        return new BagScreen(SETTINGS,
+                uz.dukeengine.client3d.Duke3D.of(game, uz.dukeengine.client3d.Visuals.create()), () -> 0L);
+    }
+
+    /**
+     * A world that has stood still for half a second is taken for one a menu is over, and the bag is put away with
+     * it; the next frame that comes brings it back. By the clock handed in, never the machine's.
+     */
+    @Test
+    void aWorldStandingStillPutsTheBagAwayAndAFrameBringsItBack() {
+        var session = Dungeon.newSession(21L);
+        var game = session.game();
+        var now = new java.util.concurrent.atomic.AtomicLong();
+        var bag = new BagScreen(SETTINGS,
+                uz.dukeengine.client3d.Duke3D.of(game, uz.dukeengine.client3d.Visuals.create()), now::get);
+        bag.show(session);
+        game.runHeadless(2);
+        var drawn = new Drawn();
+        bag.paint(drawn);
+        assertTrue(drawn.text.contains(SETTINGS.hud().itemsWord()), "drawn while frames come");
+
+        now.addAndGet(600_000_000L); // six tenths of a second, and not a frame
+        drawn.clear();
+        bag.paint(drawn);
+        assertTrue(drawn.text.isEmpty(), "put away while the world stands still: " + drawn.text);
+
+        game.runHeadless(1);
+        drawn.clear();
+        bag.paint(drawn);
+        assertTrue(drawn.text.contains(SETTINGS.hud().itemsWord()), "and back with the next frame");
+    }
+
     private static uz.dukeengine.core.thing.GameObject find(uz.dukeengine.game.DukeGame game, String template) {
         return game.getLogic().getObjects().stream()
                 .filter(object -> object.getTemplate().name().equals(template))
@@ -142,7 +179,7 @@ class BagScreenTest {
         var blade = SETTINGS.loot().stream().filter(item -> item.id().equals("Gauntlet")).findFirst().orElseThrow();
         session.progress().getLoot().take(blade, 0, 30);
         var duke = uz.dukeengine.client3d.Duke3D.of(game, uz.dukeengine.client3d.Visuals.create());
-        var bag = new BagScreen(SETTINGS, duke);
+        var bag = new BagScreen(SETTINGS, duke, () -> 0L);
         bag.show(session);
         var drawn = new Drawn();
 
@@ -180,8 +217,7 @@ class BagScreenTest {
     void aThingOnTheFloorSaysWhatItGives() {
         var session = Dungeon.newSession(21L);
         var game = session.game();
-        var bag = new BagScreen(SETTINGS,
-                uz.dukeengine.client3d.Duke3D.of(game, uz.dukeengine.client3d.Visuals.create()));
+        var bag = bagOver(game);
         bag.show(session); // before it starts, as the game tells it
         game.runHeadless(2);
         var hero = find(game, "Rogue");
@@ -212,8 +248,7 @@ class BagScreenTest {
     void aThingOnTheFloorSaysWhatItGivesWhateverIsSelected() {
         var session = Dungeon.newSession(21L);
         var game = session.game();
-        var bag = new BagScreen(SETTINGS,
-                uz.dukeengine.client3d.Duke3D.of(game, uz.dukeengine.client3d.Visuals.create()));
+        var bag = bagOver(game);
         bag.show(session);
         game.runHeadless(2);
         var hero = find(game, "Rogue");
@@ -258,8 +293,7 @@ class BagScreenTest {
     void thePointerOnAThingInTheBagSaysSoThroughTheClientsOwnInputAndCanvas() {
         var session = Dungeon.newSession(21L);
         var game = session.game();
-        var bag = new BagScreen(SETTINGS,
-                uz.dukeengine.client3d.Duke3D.of(game, uz.dukeengine.client3d.Visuals.create()));
+        var bag = bagOver(game);
         bag.show(session);
         game.runHeadless(2);
         var blade = SETTINGS.loot().stream().filter(item -> item.id().equals("Gauntlet")).findFirst().orElseThrow();
@@ -286,8 +320,7 @@ class BagScreenTest {
     @Test
     void beforeTheMatchStartsNothingIsDrawn() {
         var session = Dungeon.newSession(21L);
-        var bag = new BagScreen(SETTINGS,
-                uz.dukeengine.client3d.Duke3D.of(session.game(), uz.dukeengine.client3d.Visuals.create()));
+        var bag = bagOver(session.game());
         bag.show(session);
         var drawn = new Drawn();
 

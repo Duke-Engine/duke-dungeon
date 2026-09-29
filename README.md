@@ -11,7 +11,7 @@ uchun yangi engine imkoniyatini talab qilsa, demak engine tugallanmagan.
 ```
 ./gradlew run                       # o'ynash
 ./gradlew run --args=--map=first    # muzlatilgan xaritada
-./gradlew build                     # 753 test
+./gradlew build                     # 754 test
 ```
 
 ## Engine qayerdan olinadi

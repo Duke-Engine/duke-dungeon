@@ -74,9 +74,17 @@ final class BagScreen implements Painter, CanvasInput {
     private int lastFrame = -1;
     private long lastFrameAt;
 
+    /** Where the time is read, in nanoseconds: the window's own clock, or one a test holds still. */
+    private final java.util.function.LongSupplier clock;
+
     BagScreen(DungeonSettings settings, Duke3D duke) {
+        this(settings, duke, System::nanoTime);
+    }
+
+    BagScreen(DungeonSettings settings, Duke3D duke, java.util.function.LongSupplier clock) {
         this.settings = settings;
         this.duke = duke;
+        this.clock = clock;
     }
 
     /**
@@ -317,7 +325,7 @@ final class BagScreen implements Painter, CanvasInput {
 
     /** Whether the world is being played: frames coming, and not paused under a menu. */
     private boolean live(WorldSnapshot snapshot) {
-        long now = System.nanoTime();
+        long now = clock.getAsLong();
         if (snapshot.frame() != lastFrame) {
             lastFrame = snapshot.frame();
             lastFrameAt = now;
