@@ -70,6 +70,32 @@ ProceduralMap
   Themes = [Forest, Forest, Dungeon, Dungeon]
   WhenExhausted = Repeat
 
+  ; ---- biomes: several places on one floor ----
+  ;
+  ; Listed, a floor stops wearing one theme whole and mixes these instead, the way
+  ; a Minecraft world lays out its taigas and its deserts: two broad sweeps of
+  ; weather cross the floor -- how wild, how alive -- and every cell grows the
+  ; biome whose Climate (in its own file) is nearest the weather there. A chamber
+  ; is one biome throughout, cut to that biome's Terrain; a tunnel between two is
+  ; as like one as the other; and the hills rise as each region says without a
+  ; cliff where two meet. Left out, the floor is the depth's theme above, exactly
+  ; as it always was.
+  ;
+  ; ★ Off for now, and on purpose: the client draws one look per floor until the
+  ; engine can draw one per cell (its request E4), so a mixed floor would be cut
+  ; region by region and dressed whole as the biome its heroes come in to. The
+  ; generator, its tests and the pictures (MapPicture washes each region in its
+  ; biome's colour) are ready; uncomment to try the shapes.
+  ;
+  ; Biomes = [Forest, Autumn, PineWood, DeadLand, Dungeon, Mine]
+  ;
+  ; About how many cells across one sweep of weather is -- so how big a region
+  ; comes out. Forty gives three to five places on a floor of 96 by 72.
+  BiomeSize = 40
+  ; How far the whole floor's weather drifts per floor down, wild then alive: the
+  ; woods thin and the worked, barren places -- mines, dead land -- gather deeper.
+  ClimatePerDepth = [-6, -5]
+
   ; ---- what stands about in the rooms ----
   ;
   ; A room with nothing in it is a floor with a fight on it. These are ordinary

@@ -168,4 +168,28 @@ class DungeonThemeTest {
         assertEquals(SHIPPED.themes().pick(11L, 1).asStatus(), look,
                 "it named a different floor from the one it drew");
     }
+
+    /**
+     * A floor that mixes biomes is dressed as the biome its heroes come in to.
+     *
+     * <p>Proved on a floor whose first chamber grew caves where the depth alone says wood: the look can only have
+     * come from the chamber.
+     */
+    @Test
+    void aFloorThatMixesBiomesIsDressedAsItsFirstChamber() {
+        var mixed = uz.dukeengine.dungeon.content.BiomeFile.listing("Forest", "Dungeon");
+        assertEquals("Forest", mixed.themes().nameFor(1), "the depth alone would say wood");
+        long seed = 1;
+        while (!uz.dukeengine.dungeon.gen.DungeonGenerator.generate(seed, mixed, 1).biomes().ofRoom(0).name()
+                .equals("Dungeon")) {
+            seed++;
+        }
+
+        var session = Dungeon.newSession(seed, mixed);
+        session.game().runHeadless(2);
+        var status = session.game().getSnapshot().status();
+        var look = status.substring(status.indexOf("|look=") + "|look=".length());
+
+        assertTrue(look.startsWith("Dungeon,"), "seed " + seed + " came in to caves and was dressed as " + look);
+    }
 }

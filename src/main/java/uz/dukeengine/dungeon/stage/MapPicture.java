@@ -42,7 +42,15 @@ public final class MapPicture {
 
     /** The floor of {@code stage} from above. */
     public static BufferedImage of(Stage stage) {
-        var rows = stage.floor().levelMap().strip().lines().toList();
+        return of(stage.floor());
+    }
+
+    /**
+     * Any floor from above — a floor of the descent too. One that mixes biomes has each region washed with its
+     * biome's colour, floor and rock alike, so the landscape reads before anything stands in it.
+     */
+    public static BufferedImage of(uz.dukeengine.dungeon.gen.GeneratedDungeon floor) {
+        var rows = floor.levelMap().strip().lines().toList();
         int across = rows.stream().mapToInt(String::length).max().orElse(1);
         int down = Math.max(rows.size(), 1);
         int cell = Math.max(1, SIDE / Math.max(across, down));
@@ -52,17 +60,22 @@ public final class MapPicture {
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g2.setColor(BACKGROUND);
             g2.fillRect(0, 0, image.getWidth(), image.getHeight());
-            var relief = stage.floor().relief();
+            var relief = floor.relief();
             int highest = relief == null ? 0 : highestOf(relief);
+            var biomes = floor.biomes();
             for (int y = 0; y < rows.size(); y++) {
                 var row = rows.get(y);
                 for (int x = 0; x < across; x++) {
                     int rise = relief == null || highest == 0 ? 0 : heightOf(relief, x, y) * HILL_LIFT / highest;
-                    g2.setColor(groundOf(x < row.length() ? row.charAt(x) : '#', rise));
+                    char ground = x < row.length() ? row.charAt(x) : '#';
+                    var colour = groundOf(ground, rise);
+                    if (biomes != null) {
+                        colour = washed(colour, biomeColour(biomes, biomes.at(x, y)), ground == '#' ? 0.18f : 0.45f);
+                    }
+                    g2.setColor(colour);
                     g2.fillRect(x * cell, y * cell, cell, cell);
                 }
             }
-            var floor = stage.floor();
             for (var prop : floor.props()) {
                 mark(g2, cell, prop.at(), colourOf(prop.kind()), 0.7f);
             }
@@ -133,6 +146,22 @@ public final class MapPicture {
             }
         }
         return highest;
+    }
+
+    /**
+     * A biome's own colour: the hues shared out evenly round the wheel in the map's order, rather than drawn from
+     * the name as a kind's are — five biomes whose names happened to hash near one another would be one blur.
+     */
+    public static Color biomeColour(uz.dukeengine.dungeon.gen.BiomeMap biomes,
+            uz.dukeengine.dungeon.world.Theme biome) {
+        return Color.getHSBColor(biomes.biomes().indexOf(biome) / (float) biomes.biomes().size(), 0.55f, 0.95f);
+    }
+
+    /** {@code base} with {@code share} of {@code wash} over it. */
+    private static Color washed(Color base, Color wash, float share) {
+        return new Color(Math.round(base.getRed() + (wash.getRed() - base.getRed()) * share),
+                Math.round(base.getGreen() + (wash.getGreen() - base.getGreen()) * share),
+                Math.round(base.getBlue() + (wash.getBlue() - base.getBlue()) * share));
     }
 
     /** A kind's own colour, drawn from its name so two kinds are two colours without anybody choosing them. */

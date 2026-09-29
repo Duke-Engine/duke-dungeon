@@ -599,6 +599,16 @@ public final class DungeonSettings {
         for (var theme : themes) {
             validateTerrain("Theme " + theme.name() + "'s Terrain", theme.terrain());
         }
+        for (var name : map.biomes()) {
+            var climate = themes.stream().filter(theme -> theme.name().equals(name)).findFirst()
+                    .map(Theme::climate).orElse(null);
+            require(climate != null, "Biome " + name + " has no Climate: a biome grows where its climate suits it,"
+                    + " and this one says nowhere");
+            require(percent(climate.wild()) && percent(climate.alive()),
+                    "Biome " + name + "'s Climate is how wild then how alive, each 0 to 100");
+        }
+        require(map.biomes().isEmpty() || map.biomeSize() >= 8,
+                "BiomeSize is at least 8 cells: a sweep of climate smaller than a chamber is no region at all");
         require(run.respawnDelayFrames() >= 0, "the death pause cannot be negative");
         require(run.descendDelayFrames() >= 0, "the pause before descending cannot be negative");
         require(progression.maxLevel() >= Levelling.FIRST_LEVEL, "MaxLevel cannot be below the first level");
@@ -898,6 +908,15 @@ public final class DungeonSettings {
     /** Every theme the files describe, and which depth wears which. */
     public Themes themes() {
         return new Themes(map.themes(), map.whenExhausted(), themes);
+    }
+
+    /** The themes one floor of the descent mixes, or none — see {@link Biomes}. */
+    public Biomes biomes() {
+        var named = new java.util.ArrayList<Theme>();
+        for (var name : map.biomes()) {
+            themes.stream().filter(theme -> theme.name().equals(name)).findFirst().ifPresent(named::add);
+        }
+        return new Biomes(named, map.biomeSize(), map.climatePerDepth());
     }
 
     /** Everything that can be found on a floor, in file order. */

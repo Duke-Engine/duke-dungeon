@@ -137,7 +137,7 @@ public final class DungeonRun {
         this.settings = settings;
         this.drops = drops;
         this.themes = settings.themes();
-        this.look = lookOfThisFloor();
+        this.look = lookOf(null);
         this.depth = floors.firstDepth();
         seats.add(new Seat(heroPlayer, progress, learnt, settings.run().defaultHero()));
     }
@@ -262,7 +262,7 @@ public final class DungeonRun {
         // would be fought at depth one however hard its author made it, and
         // nothing anywhere would say so.
         this.depth = floors.firstDepth();
-        this.look = lookOfThisFloor();
+        this.look = lookOf(null);
         // The world was built around a floor from the floors we no longer have.
         // Nobody has seen it — this is answered on the menu — but it is still
         // standing, and opening on it would put the player in the game he did not
@@ -297,9 +297,15 @@ public final class DungeonRun {
      * both of which the run already has -- with a generator of its own, so asking
      * what a floor looks like cannot move the world's dice by a step. Held rather
      * than recomputed because it is asked for every frame and settled once a floor.
+     *
+     * <p>A floor that mixes biomes is dressed as the biome its first chamber grew, in the tone the depth draws for
+     * it: the client shows one look per floor, and the one the heroes come in to is the one that has to be right.
+     * Before a floor exists, and for one that mixes none, it is the depth's theme as ever.
      */
-    private String lookOfThisFloor() {
-        var chosen = themes.pick(floors.seed(), depth);
+    private String lookOf(GeneratedDungeon floor) {
+        var chosen = floor != null && floor.biomes() != null
+                ? themes.dressedAs(floor.biomes().ofRoom(0), floors.seed(), depth)
+                : themes.pick(floors.seed(), depth);
         return chosen == null ? null : chosen.asStatus();
     }
 
@@ -331,7 +337,7 @@ public final class DungeonRun {
 
     /** The floor the world was built around, with everyone on it. */
     private void lay(DukeGame game, GeneratedDungeon floor) {
-        look = lookOfThisFloor();
+        look = lookOf(floor);
         var placed = Spawner.place(game, heroPlayers(), heroTemplates(), dungeonPlayer, floor, settings, depth,
                 drops);
         for (int i = 0; i < seats.size(); i++) {
@@ -553,7 +559,7 @@ public final class DungeonRun {
             }
         }
         bossId = placed.boss() == null ? null : placed.boss().getId();
-        look = lookOfThisFloor();
+        look = lookOf(floor);
     }
 
     private List<GamePlayer> heroPlayers() {

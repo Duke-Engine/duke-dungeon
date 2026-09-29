@@ -58,20 +58,34 @@ final class Cave {
      */
     static Cave carve(DeterministicRng rng, int width, int height, List<Room> rooms, List<Link> links, int bossRoom,
             int corridorWidth, int maxSpacing, Theme.Terrain terrain) {
+        return carve(rng, width, height, rooms, links, bossRoom, corridorWidth, maxSpacing,
+                java.util.Collections.nCopies(rooms.size(), terrain), (x, y) -> terrain.ragged());
+    }
+
+    /**
+     * The same floor with its ground told region by region, as a floor that mixes biomes is: each chamber cut to
+     * {@code ofRoom}'s terrain, a tunnel to the mean of its two ends', the loops to the chambers' mean, and every
+     * cell worn as ragged as {@code raggedAt} says there. One terrain everywhere is exactly the call above — the same
+     * numbers go to the same draws in the same order.
+     */
+    static Cave carve(DeterministicRng rng, int width, int height, List<Room> rooms, List<Link> links, int bossRoom,
+            int corridorWidth, int maxSpacing, List<Theme.Terrain> ofRoom,
+            java.util.function.IntBinaryOperator raggedAt) {
         var cave = new Cave(width, height, corridorWidth);
-        for (var room : rooms) {
-            cave.chamber(rng, room, terrain.ragged());
+        for (int i = 0; i < rooms.size(); i++) {
+            cave.chamber(rng, rooms.get(i), ofRoom.get(i).ragged());
         }
         for (var link : links) {
-            cave.tunnel(rng, rooms.get(link.from()), rooms.get(link.to()), terrain);
+            cave.tunnel(rng, rooms, ofRoom, link);
         }
-        for (var loop : loops(rooms, links, bossRoom, maxSpacing, terrain.loops())) {
-            cave.tunnel(rng, rooms.get(loop.from()), rooms.get(loop.to()), terrain);
+        int loops = ofRoom.stream().mapToInt(Theme.Terrain::loops).sum() / Math.max(1, ofRoom.size());
+        for (var loop : loops(rooms, links, bossRoom, maxSpacing, loops)) {
+            cave.tunnel(rng, rooms, ofRoom, loop);
         }
-        cave.wear(rng, terrain.ragged());
+        cave.wear(rng, raggedAt);
         cave.dropSlits();
         cave.dropUnreachable(rooms.getFirst().centerCellX(), rooms.getFirst().centerCellY());
-        cave.raiseIslands(rng, rooms, bossRoom, terrain.islandsPerRoom());
+        cave.raiseIslands(rng, rooms, bossRoom, ofRoom);
         return cave;
     }
 
@@ -161,14 +175,19 @@ final class Cave {
      * half again, so it wanders the way water-cut rock and a deer path do — and a pocket where it turns, now and
      * then, because a cave is not a pipe.
      */
-    private void tunnel(DeterministicRng rng, Room from, Room to, Theme.Terrain terrain) {
+    private void tunnel(DeterministicRng rng, List<Room> rooms, List<Theme.Terrain> ofRoom, Link link) {
+        var from = rooms.get(link.from());
+        var to = rooms.get(link.to());
+        // Between two places, as much like either as the other.
+        int winding = (ofRoom.get(link.from()).winding() + ofRoom.get(link.to()).winding()) / 2;
+        int ragged = (ofRoom.get(link.from()).ragged() + ofRoom.get(link.to()).ragged()) / 2;
         var bends = new ArrayList<int[]>();
         var start = new int[] {from.centerCellX(), from.centerCellY()};
         bends.add(start);
-        bend(rng, start, new int[] {to.centerCellX(), to.centerCellY()}, terrain.winding(), 3, bends);
+        bend(rng, start, new int[] {to.centerCellX(), to.centerCellY()}, winding, 3, bends);
         for (int i = 1; i < bends.size(); i++) {
             line(bends.get(i - 1), bends.get(i));
-            if (i < bends.size() - 1 && rng.nextInt(100) < terrain.ragged()) {
+            if (i < bends.size() - 1 && rng.nextInt(100) < ragged) {
                 pocket(bends.get(i), 1 + rng.nextInt(2));
             }
         }
@@ -296,10 +315,10 @@ final class Cave {
 
     /**
      * Two passes over the edges: a spur of floor or a notch of rock smoothed away, and the rest of the edge eaten
-     * back or grown out, each by a chance the terrain's raggedness sets. Both passes read the floor as it was before
-     * the pass, so the order the cells are visited in changes nothing but which dice they get.
+     * back or grown out, each by a chance the raggedness where it stands sets. Both passes read the floor as it was
+     * before the pass, so the order the cells are visited in changes nothing but which dice they get.
      */
-    private void wear(DeterministicRng rng, int ragged) {
+    private void wear(DeterministicRng rng, java.util.function.IntBinaryOperator raggedAt) {
         for (int pass = 0; pass < 2; pass++) {
             var before = new char[height][];
             for (int y = 0; y < height; y++) {
@@ -311,6 +330,7 @@ final class Cave {
                         continue;
                     }
                     int around = floorAround(before, x, y);
+                    int ragged = raggedAt.applyAsInt(x, y);
                     if (before[y][x] == FLOOR) {
                         if (around <= 2 || around <= 5 && rng.nextInt(100) < ragged / 2) {
                             cells[y][x] = STONE;
@@ -402,12 +422,13 @@ final class Cave {
      * something that walls anything off — and never on the tunnels or a chamber's middle. None in the boss's
      * chamber, which is an arena and wants to be one.
      */
-    private void raiseIslands(DeterministicRng rng, List<Room> rooms, int bossRoom, ProceduralMap.PerRoom perRoom) {
-        if (perRoom.max() <= 0) {
-            return;
-        }
+    private void raiseIslands(DeterministicRng rng, List<Room> rooms, int bossRoom, List<Theme.Terrain> ofRoom) {
         int margin = Math.max(2, brush);
         for (int i = 0; i < rooms.size(); i++) {
+            ProceduralMap.PerRoom perRoom = ofRoom.get(i).islandsPerRoom();
+            if (perRoom.max() <= 0) {
+                continue;
+            }
             int count = rng.nextInt(perRoom.min(), perRoom.max());
             for (int n = 0; n < count && i != bossRoom; n++) {
                 int size = 1 + rng.nextInt(2);

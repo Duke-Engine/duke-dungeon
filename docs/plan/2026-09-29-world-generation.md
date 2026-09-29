@@ -29,8 +29,9 @@ and a boss that does not fit goes round. `CorridorWidth` and the sliver rule are
 ## Stage 3 — Biomes (generator now, drawn when E4 and E5 land)
 
 - **A biome is a theme placed per region** rather than per depth: the existing `Theme` block (terrain + kit +
-  look). New ones beside Forest and Dungeon, each a file and a folder of models: a pine wood, an autumn wood (the
-  forest atlas repainted), dead land, caves, ancient halls (banners, torches), a mine (ore, logs).
+  look). New ones beside Forest and Dungeon (the caves), each a file and a folder of models: a pine wood, an autumn
+  wood (the forest atlas repainted), dead land and a mine. No halls of worked stone: their edges would be masonry,
+  and the owner's rule is that a boundary is rock or wood, never slabs.
 - **Climate picks the biome.** Two value-noise fields per floor — how wild (worked stone ↔ wilderness) and how
   alive (barren ↔ lush) — about forty cells to a feature, from their own seed stream. Each biome file states the
   point it sits at (`Climate = [wild, alive]`) and a cell takes the nearest; depth moves the whole floor toward

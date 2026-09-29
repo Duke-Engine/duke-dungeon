@@ -1,0 +1,85 @@
+; ---------------------------------------------------------------------------
+; Dead land: a wood that died standing.
+;
+; The forest's kit gone grey -- twisted dead trees where its live ones stand, on
+; the same dirt washed ashen by a tone -- over low, tired ground with little to
+; hide behind. What stands about is the wood's own, dead or not.
+;
+; A biome more than a whole floor's theme: a floor that mixes them grows this
+; wherever its weather is wild and barren -- see Biomes in
+; data/world/generation.duke. The numbers mean what they mean in forest.duke.
+; ---------------------------------------------------------------------------
+Theme
+  Name = DeadLand
+  TileSize = 4
+  ; The twisted tree is 3.74 across: one to a cell, about fourteen units tall.
+  WallTileSize = 3.74
+  WallHeight = 0
+  ; Its roots reach further under the ground than the kit's other trees, and a
+  ; tenth of a unit up stands it on the floor rather than in it.
+  WallLift = 0.1
+  Stairs = models/tiles/forest/stairs.gltf
+  WallFillsRock = Yes
+  WallClump = 2
+  WallSpread = 0.25
+  WallVariety = 0.5
+  RockFace = models/props/forest/wall.gltf
+  StoreyShadePercent = 108
+  ; Grey-brown dark, like old ash.
+  FogTint = 0x0B0A09
+  Terrain = Terrain
+    Ragged = 35
+    Winding = 40
+    Loops = 25
+    IslandsPerRoom = [0, 2]
+    Rise = 24
+    HillSize = 9
+    Slope = 6
+    Level = 40
+  End
+  ; Wild, and as barren as anything grows.
+  Climate = [55, 15]
+  Tones = [
+    ; A tint lies over the whole kit, trees and dirt alike: ash, then bone.
+    Tone
+      Name = Ash
+      Floor = models/tiles/forest/floor_rocky.gltf
+      Wall = models/tiles/forest/tree_twisted.gltf
+      Tint = 0xA8A298
+    End,
+    Tone
+      Name = Bone
+      Floor = models/tiles/forest/floor.gltf
+      Wall = models/tiles/forest/tree_stunted.gltf
+      Tint = 0xBDB4A2
+    End
+  ]
+  Monsters = [
+    ThemeMonster
+      Name = Pillar
+      Model = models/props/forest/tree_bare.gltf
+      ModelScale = 3.5
+    End,
+    ThemeMonster
+      Name = Statue
+      Model = models/props/forest/rock.gltf
+      ModelScale = 6.5
+    End,
+    ThemeMonster
+      Name = Barrel
+      Model = models/props/forest/rock_small.gltf
+      ModelScale = 9.0
+    End,
+    ThemeMonster
+      Name = Chest
+      Model = models/props/forest/chest.gltf
+      ModelScale = 5.0
+    End,
+    ThemeMonster
+      Name = Fountain
+      Model = models/props/fountain/fountain.glb
+      ModelScale = 7.5
+      Effect = FountainWater
+    End
+  ]
+End

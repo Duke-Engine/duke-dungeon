@@ -19,17 +19,26 @@ import uz.dukeengine.dungeon.world.Theme;
  * @param propsPerRoom  how many things stand about in a room, fewest and most — the one the hero
  *     starts in included. Kept low: things to walk round are furniture, and a room full of
  *     furniture is a room nobody can fight in
+ * @param biomes        the themes one floor mixes, each where its {@code Climate} suits it; empty is a
+ *     floor that wears one theme whole, chosen by depth from {@code themes}
+ * @param biomeSize     about how many cells across one sweep of climate is — so how big a biome's
+ *     region comes out
+ * @param climatePerDepth how far the whole floor's climate drifts per floor down, wild then alive
  */
 public record ProceduralMap(String name, Layout generation, @Link(Theme.class) List<String> themes,
         Themes.WhenExhausted whenExhausted,
-        PerRoom propsPerRoom, Descent descent) {
+        PerRoom propsPerRoom, Descent descent, @Link(Theme.class) List<String> biomes, int biomeSize,
+        Theme.Climate climatePerDepth) {
 
     /** What a block leaves out. */
     public static final ProceduralMap DEFAULTS = new ProceduralMap("", Layout.DEFAULTS, List.of(),
-            Themes.WhenExhausted.REPEAT, new PerRoom(0, 3), Descent.DEFAULTS);
+            Themes.WhenExhausted.REPEAT, new PerRoom(0, 3), Descent.DEFAULTS, List.of(), 40,
+            new Theme.Climate(0, 0));
 
     public ProceduralMap {
         themes = themes == null ? List.of() : List.copyOf(themes);
+        biomes = biomes == null ? List.of() : List.copyOf(biomes);
+        climatePerDepth = climatePerDepth == null ? new Theme.Climate(0, 0) : climatePerDepth;
     }
 
     /**

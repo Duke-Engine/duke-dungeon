@@ -109,6 +109,10 @@ Theme
     ; How level a cavern's floor is laid, as a percentage.
     Level = 70
   End
+  ; Where it grows on a floor that mixes biomes: how wild, then how alive, each
+  ; 0 to 100. Caves are more cut than grown, and damp enough for moss -- see
+  ; Biomes in data/world/generation.duke.
+  Climate = [15, 50]
   Tones = [
     Tone
       Name = Stone

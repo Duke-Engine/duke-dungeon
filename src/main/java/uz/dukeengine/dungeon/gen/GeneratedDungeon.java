@@ -39,6 +39,7 @@ import uz.dukeengine.core.pathfind.PathGrid;
  *                  storeys wrote
  * @param relief      how the ground rises and falls, corner by corner, or {@code null}
  *                  where it lies flat
+ * @param biomes      which biome every cell is, or {@code null} for a floor that wears one theme whole
  */
 public record GeneratedDungeon(
         String asciiMap,
@@ -53,7 +54,16 @@ public record GeneratedDungeon(
         List<Prop> props,
         HeightMap relief,
         /** How tall one storey of this floor stands, in world units; 0 leaves the world's own. */
-        float levelHeight) {
+        float levelHeight,
+        BiomeMap biomes) {
+
+    /** A floor that wears one theme whole — a stage, or the descent when its map mixes no biomes. */
+    public GeneratedDungeon(String asciiMap, String levelMap, Placement hero, List<Monster> monsters, Monster boss,
+            int bossRoom, List<Room> rooms, List<Link> links, List<Integer> roomStoreys, List<Prop> props,
+            HeightMap relief, float levelHeight) {
+        this(asciiMap, levelMap, hero, monsters, boss, bossRoom, rooms, links, roomStoreys, props, relief,
+                levelHeight, null);
+    }
 
     /** A spot in the world, in world units (not cells). */
     public record Placement(float x, float y) {

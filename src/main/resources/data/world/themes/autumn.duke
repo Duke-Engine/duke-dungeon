@@ -1,0 +1,82 @@
+; ---------------------------------------------------------------------------
+; An autumn wood: the forest turning.
+;
+; The Forest pack's broad deciduous trees on the forest's own dirt, drawn on a
+; copy of its atlas with the foliage gradient repainted -- gold where the sun
+; catches a crown, orange, then red in its shade -- which is the whole of the
+; difference, and the brightest colour anywhere in the descent. Gentler ground
+; than the forest's, and more ways through.
+;
+; A biome more than a whole floor's theme: a floor that mixes them grows this
+; where its weather is wild and middling alive -- see Biomes in
+; data/world/generation.duke. The numbers mean what they mean in forest.duke.
+; ---------------------------------------------------------------------------
+Theme
+  Name = Autumn
+  TileSize = 4
+  ; The broad tree is 4.6 across: one to a cell, about fifteen units tall.
+  WallTileSize = 4.6
+  WallHeight = 0
+  Stairs = models/tiles/forest/stairs.gltf
+  WallFillsRock = Yes
+  WallClump = 3
+  WallSpread = 0.28
+  WallVariety = 0.5
+  RockFace = models/props/forest/wall.gltf
+  StoreyShadePercent = 108
+  ; A warm dark, like leaf litter.
+  FogTint = 0x0B0705
+  Terrain = Terrain
+    Ragged = 40
+    Winding = 45
+    Loops = 35
+    IslandsPerRoom = [1, 2]
+    Rise = 48
+    HillSize = 10
+    Slope = 6
+    Level = 30
+  End
+  ; Half wild -- an old wood people walk in -- and alive: the year turning.
+  Climate = [35, 85]
+  Tones = [
+    Tone
+      Name = Turning
+      Floor = models/tiles/forest/floor.gltf
+      Wall = models/tiles/autumn/tree.gltf
+    End,
+    Tone
+      Name = Fallen
+      Floor = models/tiles/forest/floor_rocky.gltf
+      Wall = models/tiles/autumn/tree_small.gltf
+    End
+  ]
+  ; What stands about is the wood's own: see forest.duke.
+  Monsters = [
+    ThemeMonster
+      Name = Pillar
+      Model = models/props/forest/tree_bare.gltf
+      ModelScale = 3.5
+    End,
+    ThemeMonster
+      Name = Statue
+      Model = models/props/forest/rock.gltf
+      ModelScale = 6.5
+    End,
+    ThemeMonster
+      Name = Barrel
+      Model = models/props/forest/rock_small.gltf
+      ModelScale = 9.0
+    End,
+    ThemeMonster
+      Name = Chest
+      Model = models/props/forest/chest.gltf
+      ModelScale = 5.0
+    End,
+    ThemeMonster
+      Name = Fountain
+      Model = models/props/fountain/fountain.glb
+      ModelScale = 7.5
+      Effect = FountainWater
+    End
+  ]
+End

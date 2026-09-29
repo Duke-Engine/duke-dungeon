@@ -97,6 +97,9 @@ Theme
     Slope = 6
     Level = 25
   End
+  ; Where it grows on a floor that mixes biomes: how wild, then how alive, each
+  ; 0 to 100. Wilderness, and lush -- see Biomes in data/world/generation.duke.
+  Climate = [75, 75]
   Tones = [
     Tone
       Name = Wooded

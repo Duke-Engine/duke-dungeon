@@ -11,7 +11,7 @@ uchun yangi engine imkoniyatini talab qilsa, demak engine tugallanmagan.
 ```
 ./gradlew run                       # o'ynash
 ./gradlew run --args=--map=first    # muzlatilgan xaritada
-./gradlew build                     # 755 test
+./gradlew build                     # 770 test
 ```
 
 ## Engine qayerdan olinadi
@@ -224,6 +224,24 @@ Yer qanday bo'lishini **tema** aytadi — `data/world/themes/*.duke` dagi
 `HillSize`, `Slope`, `Level`. O'rmon ochiq va to'lqinli, zindon yopiq va tekis
 zalli. Temaning qolgan qismi (kit, tuman rangi, tonlar) faqat ko'rinish —
 simulyatsiyaga ta'sir qilmaydi (`DungeonThemeTest`).
+
+### Biomlar — bitta qavatda bir nechta joy
+
+Minecraft'dagidek: qavat ustidan ikki keng "ob-havo" maydoni o'tadi — **qanchalik
+yovvoyi** va **qanchalik tirik** (`gen/BiomeMap`). Har bir katak `Climate` nuqtasi
+(tema faylida, `[wild, alive]`) shu ob-havoga eng yaqin biomni oladi. Kamera
+butunlay bitta biom va o'sha biomning `Terrain`i bilan kesiladi; tunnel ikki
+uchining o'rtachasi; relyef mintaqa bo'yicha, lekin chegarada jar yo'q. Mayda
+dog'lar qolmaydi, chuqurlashgan sari ob-havo `ClimatePerDepth` bo'yicha siljiydi
+(o'rmonlar kamayadi, kon va o'lik yerlar ko'payadi).
+
+Biomlar: **Forest**, **Autumn** (kuzgi o'rmon — oltin, to'q sariq, qizil),
+**PineWood** (qarag'ay), **DeadLand** (o'lik o'rmon), **Dungeon** (g'orlar),
+**Mine** (kon). `generation.duke` da `Biomes` hozircha
+**o'chiq**: klient bitta qavatga bitta ko'rinish chizadi, engine har katakka
+alohida ko'rinish chizmaguncha (E4 so'rovi). Generator, testlar va `MapPicture`
+(har mintaqani biom rangiga bo'yaydi) tayyor — sinab ko'rish uchun `Biomes`
+qatorini oching. Biomsiz qavatlar avvalgidek, bir xil seed bilan aynan bir xil.
 
 ## Stage rejimi — o'zgarmaydigan xarita
 

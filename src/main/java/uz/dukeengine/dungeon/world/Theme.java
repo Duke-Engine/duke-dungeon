@@ -53,6 +53,8 @@ import uz.dukeengine.dungeon.content.MonsterLook;
  * @param fogTint       what the dark is coloured here, packed {@code 0xRRGGBB} — bluish under ice, red
  *     under lava, black in plain stone
  * @param terrain       the ground its floors are carved into — see {@link Terrain}
+ * @param climate       where it grows when a floor mixes biomes — see {@link Climate} — or null for a theme that is
+ *     only ever a whole floor's
  */
 public record Theme(
         String name,
@@ -73,11 +75,12 @@ public record Theme(
         int fogTint,
         List<Tone> tones,
         List<ThemeMonster> monsters,
-        Terrain terrain) {
+        Terrain terrain,
+        Climate climate) {
 
     /** What a block leaves out. */
     public static final Theme DEFAULTS = new Theme("", 4f, 0f, 4f, 0f, 0f, false, false, 1, 0f, 0f, null, null,
-            0xFFFFFF, 100, 0, List.of(), List.of(), Terrain.DEFAULTS);
+            0xFFFFFF, 100, 0, List.of(), List.of(), Terrain.DEFAULTS, null);
 
     public Theme {
         // A kit whose walls are on the same module as its floors says so by not saying anything,
@@ -118,6 +121,20 @@ public record Theme(
         /** What a block leaves out, and the ground of a floor no theme was named for. */
         public static final Terrain DEFAULTS = new Terrain(25, 35, 20,
                 new uz.dukeengine.dungeon.map.ProceduralMap.PerRoom(0, 1), 32, 8, 6, 50);
+    }
+
+    /**
+     * Where a biome grows, as a point in the two things a floor's climate varies in, each 0 to 100.
+     *
+     * <p>A floor that mixes biomes draws both across itself as broad hills of noise, and every cell grows the biome
+     * whose point is nearest the climate there — so a biome is wherever the weather suits it, the way a Minecraft
+     * world lays its deserts and its taigas, and two biomes meet where their climates do. The map may also drift
+     * the whole floor's climate with depth: the same numbers, read as a shift per floor down.
+     *
+     * @param wild  worked stone at 0 — halls, a mine — and wilderness at 100
+     * @param alive barren at 0 — dead land, bare rock — and lush at 100
+     */
+    public record Climate(int wild, int alive) {
     }
 
     /** How the wall piece stands, gathered from the four lines that say it. */

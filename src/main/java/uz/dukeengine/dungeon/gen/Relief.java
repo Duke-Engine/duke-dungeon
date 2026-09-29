@@ -29,7 +29,19 @@ final class Relief {
 
     /** The heights at every corner of {@code cave}'s cells, or null for ground that lies flat. */
     static HeightMap of(long seed, Cave cave, List<Room> rooms, Theme.Terrain terrain) {
-        if (terrain.rise() <= 0) {
+        return of(seed, cave, rooms, terrain, (x, y) -> terrain.rise(),
+                java.util.Collections.nCopies(rooms.size(), terrain.level()));
+    }
+
+    /**
+     * The same ground with its hills told region by region, as a floor that mixes biomes is: the hills drawn once
+     * at {@code floor}'s size and height and each corner's then scaled to the rise {@code riseAt} gives it, each
+     * chamber levelled as much as {@code levelOf} says, and the whole held to {@code floor}'s slope. One terrain
+     * everywhere scales every corner by exactly one, and is the call above.
+     */
+    static HeightMap of(long seed, Cave cave, List<Room> rooms, Theme.Terrain floor,
+            java.util.function.IntBinaryOperator riseAt, List<Integer> levelOf) {
+        if (floor.rise() <= 0) {
             return null;
         }
         int columns = cave.width() + 1;
@@ -37,13 +49,19 @@ final class Relief {
         var rng = new DeterministicRng(seed ^ 0x72656C696566L);
         var steps = new int[columns * rows];
         // Two sizes of hill, the broad one twice the height of the one riding on it.
-        int broad = terrain.rise() * 2 / 3;
-        octave(rng, steps, columns, rows, terrain.hillSize(), broad);
-        octave(rng, steps, columns, rows, Math.max(1, terrain.hillSize() / 2), terrain.rise() - broad);
-        level(steps, columns, cave, rooms, terrain.level());
+        int broad = floor.rise() * 2 / 3;
+        octave(rng, steps, columns, rows, floor.hillSize(), broad);
+        octave(rng, steps, columns, rows, Math.max(1, floor.hillSize() / 2), floor.rise() - broad);
+        for (int y = 0; y < rows; y++) {
+            for (int x = 0; x < columns; x++) {
+                steps[y * columns + x] = (int) ((long) steps[y * columns + x] * riseAt.applyAsInt(x, y)
+                        / floor.rise());
+            }
+        }
+        level(steps, columns, cave, rooms, levelOf);
         smooth(steps, columns, rows);
         smooth(steps, columns, rows);
-        limit(steps, columns, rows, terrain.slope());
+        limit(steps, columns, rows, floor.slope());
         int lowest = java.util.Arrays.stream(steps).min().orElse(0);
         for (int i = 0; i < steps.length; i++) {
             steps[i] -= lowest;
@@ -53,9 +71,9 @@ final class Relief {
 
     /**
      * Value noise: a height drawn every {@code size} corners and eased between, the slope flat at each drawn one so
-     * a hill has a top rather than a point.
+     * a hill has a top rather than a point. The biomes' weather is drawn with it too — see {@link BiomeMap}.
      */
-    private static void octave(DeterministicRng rng, int[] steps, int columns, int rows, int size, int most) {
+    static void octave(DeterministicRng rng, int[] steps, int columns, int rows, int size, int most) {
         if (most <= 0) {
             return;
         }
@@ -83,13 +101,15 @@ final class Relief {
         return (long) t * t * (3L * size - 2L * t);
     }
 
-    /** Each chamber's floor drawn {@code percent} of the way toward the height at its middle. */
-    private static void level(int[] steps, int columns, Cave cave, List<Room> rooms, int percent) {
-        if (percent <= 0) {
-            return;
-        }
+    /** Each chamber's floor drawn its own {@code levelOf} percent of the way toward the height at its middle. */
+    private static void level(int[] steps, int columns, Cave cave, List<Room> rooms, List<Integer> levelOf) {
         var before = steps.clone();
-        for (var room : rooms) {
+        for (int i = 0; i < rooms.size(); i++) {
+            var room = rooms.get(i);
+            int percent = levelOf.get(i);
+            if (percent <= 0) {
+                continue;
+            }
             int target = before[room.centerCellY() * columns + room.centerCellX()];
             for (int y = room.y(); y < room.y() + room.h(); y++) {
                 for (int x = room.x(); x < room.x() + room.w(); x++) {

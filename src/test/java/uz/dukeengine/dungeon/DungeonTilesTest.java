@@ -349,9 +349,19 @@ class DungeonTilesTest {
                 continue;
             }
             var wall = boundsOf(assets.loadModel(tone.wall()));
-            assertEquals(theme.wallTileSize() / 2f, wall.getXExtent(), 0.05f,
-                    theme.name() + " says its walls are " + theme.wallTileSize()
-                            + " wide but they are " + wall.getXExtent() * 2f);
+            if (theme.standing().fillsRock()) {
+                // A thing is not a module: nothing tiles against it, so its size is a choice rather than a
+                // measurement -- a pine is three to a cell, where a cell-wide one would stand three storeys
+                // tall. What stays a fact is that it is never WIDER than its cell, or it stands in the floor
+                // beside the rock it marks.
+                assertTrue(theme.wallTileSize() / 2f >= wall.getXExtent() - 0.05f,
+                        theme.name() + " sizes its " + wall.getXExtent() * 2f + "-wide wall by a module of "
+                                + theme.wallTileSize() + ", so it comes out wider than a cell");
+            } else {
+                assertEquals(theme.wallTileSize() / 2f, wall.getXExtent(), 0.05f,
+                        theme.name() + " says its walls are " + theme.wallTileSize()
+                                + " wide but they are " + wall.getXExtent() * 2f);
+            }
             // Loosely, and on purpose. WallHeight is where the roof is laid, which
             // is the height of the wall proper — a kit whose walls carry a moulded
             // top edge stands a few percent taller than the line a roof belongs on.

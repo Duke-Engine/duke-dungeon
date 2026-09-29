@@ -1,0 +1,84 @@
+; ---------------------------------------------------------------------------
+; A mine: shafts cut through broken rock.
+;
+; Dirt underfoot and rubble for walls -- the Forest pack's blocky rock clusters,
+; lower than the caverns' cliffs, so a mine reads as a place something was dug
+; out of rather than grown in. The chambers are levelled where somebody worked
+; them and the tunnels wander the way a seam does. What stands about is the
+; cellar's: barrels, pillars, a chest.
+;
+; A biome more than a whole floor's theme: a floor that mixes them grows this
+; wherever its weather is worked and barren -- see Biomes in
+; data/world/generation.duke. The numbers mean what they mean in dungeon.duke.
+; ---------------------------------------------------------------------------
+Theme
+  Name = Mine
+  TileSize = 4
+  ; The rock cluster is 3.70 across: one to a cell, about seven units high.
+  WallTileSize = 3.7
+  WallHeight = 0
+  Stairs = models/tiles/dungeon/stairs.gltf
+  WallFillsRock = Yes
+  WallClump = 2
+  WallSpread = 0.15
+  WallVariety = 0.3
+  RockFace = models/tiles/dungeon/wall.gltf
+  ; The lid beyond the rubble is dirt; darkened, for the same reason as the
+  ; caverns': so the rock past the first rocks does not read as more floor.
+  CapTint = 0x6A5E52
+  StoreyShadePercent = 108
+  ; A warm dark, lamp-oil and earth.
+  FogTint = 0x0B0806
+  Terrain = Terrain
+    Ragged = 15
+    Winding = 60
+    Loops = 10
+    IslandsPerRoom = [0, 1]
+    Rise = 44
+    HillSize = 6
+    Slope = 7
+    Level = 80
+  End
+  ; Worked, and barren.
+  Climate = [15, 10]
+  Tones = [
+    Tone
+      Name = Dirt
+      Floor = models/tiles/forest/floor.gltf
+      Wall = models/tiles/forest/rock_cluster.gltf
+    End,
+    Tone
+      Name = Gravel
+      Floor = models/tiles/forest/floor_rocky.gltf
+      Wall = models/tiles/forest/rock_cluster_low.gltf
+    End
+  ]
+  Monsters = [
+    ThemeMonster
+      Name = Pillar
+      Model = models/props/dungeon/pillar.gltf
+      ModelScale = 2.5
+    End,
+    ThemeMonster
+      Name = Statue
+      Model = models/props/dungeon/pillar_decorated.gltf
+      ModelScale = 2.5
+    End,
+    ThemeMonster
+      Name = Barrel
+      Model = models/props/dungeon/barrel.gltf
+      ModelScale = 3.0
+    End,
+    ThemeMonster
+      Name = Chest
+      Model = models/props/dungeon/chest.gltf
+      ModelScale = 5.0
+    End,
+    ThemeMonster
+      Name = Fountain
+      Model = models/props/fountain/fountain.glb
+      ModelScale = 7.5
+      Effect = FountainWater
+    End
+  ]
+End

@@ -38,6 +38,8 @@ written from there.
 | Forest Nature Pack — the trees that stand where a wall would | KayKit | CC0 | `models/tiles/forest/` |
 | …and its rocks and bare trees | KayKit | CC0 | `models/props/forest/` |
 | …and the cliff rocks the caverns are bounded by, on its own atlas | KayKit | CC0 | `models/tiles/dungeon/cliff_*.gltf`, `models/tiles/dungeon/forest_texture.png` |
+| …and the pines, the dead trees and the rock clusters of the pine wood, the dead land and the mine | KayKit | CC0 | `models/tiles/forest/{pine,pine_tall,tree_twisted,tree_stunted,rock_cluster,rock_cluster_low}.gltf` |
+| …and the autumn wood's trees, on a copy of its atlas with the foliage gradient repainted gold, orange and red | KayKit, repainted here | CC0 (a repaint of a CC0 atlas) | `models/tiles/autumn/` |
 | Fountain — the one at every way in, lifted to stand on its own foot | **Poly by Google** (Google Poly asset `4KKY7CmNe_r`), supplied by the owner | **CC BY 3.0** — attribution required, given here | `models/props/fountain/` |
 | Skeletons — everything that walks the floors, and its blades, axes and staves | KayKit | CC0 | `models/monsters/` |
 | …and its atlas repainted with a green robe and a purple one, for the Skeleton Healer and the Skeleton Summoner | repainted from the original KayKit atlas, supplied by the owner | CC0 (a repaint of a CC0 atlas) | `models/monsters/skeleton_texture_{green,purple}.png` |

@@ -63,7 +63,15 @@ public record Themes(List<String> order, WhenExhausted whenExhausted, List<Theme
         if (isEmpty()) {
             return null;
         }
-        var theme = themeNamed(nameFor(depth));
+        return dressedAs(themeNamed(nameFor(depth)), seed, depth);
+    }
+
+    /**
+     * {@code theme}, in the tone the floor at {@code depth} of the run that began with {@code seed} draws for it —
+     * how a floor that mixes biomes is dressed while the client can show it only one look. Null for no theme, or
+     * one with no tones.
+     */
+    public Chosen dressedAs(Theme theme, long seed, int depth) {
         if (theme == null || theme.tones().isEmpty()) {
             return null;
         }

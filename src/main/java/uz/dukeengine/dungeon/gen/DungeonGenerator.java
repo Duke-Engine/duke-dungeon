@@ -10,6 +10,7 @@ import uz.dukeengine.dungeon.gen.GeneratedDungeon.Monster;
 import uz.dukeengine.dungeon.gen.GeneratedDungeon.Placement;
 import uz.dukeengine.dungeon.gen.GeneratedDungeon.Prop;
 import uz.dukeengine.dungeon.gen.GeneratedDungeon.Room;
+import uz.dukeengine.dungeon.world.Theme;
 
 /**
  * Draws a floor from a seed: chambers of rock or glades of wood grown where the rooms are placed, joined by
@@ -80,8 +81,16 @@ public final class DungeonGenerator {
         var rooms = placeRooms(rng, settings, layout);
         var links = spanningTree(rooms);
         int bossRoom = furthestRoomFromStart(rooms.size(), links);
-        var cave = Cave.carve(rng, layout.width(), layout.height(), rooms, links, bossRoom,
-                settings.corridorWidth(), settings.maxRoomSpacing(), terrain);
+        // A map that mixes biomes lays them out now, from a stream of its own, so each region can be cut to its
+        // own ground; one that does not cuts the whole floor to its depth's theme, exactly as it always has.
+        var biomes = settings.biomes().isEmpty() ? null
+                : BiomeMap.draw(seed, depth, layout.width(), layout.height(), rooms, settings.biomes());
+        var cave = biomes == null
+                ? Cave.carve(rng, layout.width(), layout.height(), rooms, links, bossRoom,
+                        settings.corridorWidth(), settings.maxRoomSpacing(), terrain)
+                : Cave.carve(rng, layout.width(), layout.height(), rooms, links, bossRoom,
+                        settings.corridorWidth(), settings.maxRoomSpacing(), terrainOfRooms(biomes, rooms.size()),
+                        (x, y) -> biomes.at(x, y).terrain().ragged());
 
         var hero = middleOf(rooms.get(0));
         var monsters = populate(rng, cave, rooms, settings, depth, bossRoom);
@@ -89,9 +98,21 @@ public final class DungeonGenerator {
         monsters.addAll(guard(cave, rooms.get(bossRoom), settings, depth));
         var props = scatter(rng, cave, rooms, settings, monsters, hero, boss.at());
 
+        var relief = biomes == null ? Relief.of(seed, cave, rooms, terrain)
+                : Relief.of(seed, cave, rooms, biomes.hills(), biomes::riseAt,
+                        terrainOfRooms(biomes, rooms.size()).stream().map(Theme.Terrain::level).toList());
         return new GeneratedDungeon(cave.walls(), cave.levels(), hero, monsters, boss, bossRoom,
                 List.copyOf(rooms), List.copyOf(links), Collections.nCopies(rooms.size(), 0), props,
-                Relief.of(seed, cave, rooms, terrain), 0f);
+                relief, 0f, biomes);
+    }
+
+    /** Each chamber's ground: its own biome's. */
+    private static List<Theme.Terrain> terrainOfRooms(BiomeMap biomes, int rooms) {
+        var terrains = new ArrayList<Theme.Terrain>(rooms);
+        for (int room = 0; room < rooms; room++) {
+            terrains.add(biomes.ofRoom(room).terrain());
+        }
+        return terrains;
     }
 
     /**
