@@ -34,29 +34,45 @@
 ; they existed.
 ; ---------------------------------------------------------------------------
 
-; Worked stone, four-unit tiles, one colour atlas. The wall is a slab a unit
-; thick centred on its own origin, so it is pushed back half a unit to put its
-; face on the boundary; it stands on its origin, so it needs no lift.
+; Caverns floored with worked stone and bounded by the cliff they were cut from.
+; The owner's rule: a cave is walled by rock, and a worked slab belongs only where
+; something was built -- so the wall is a THING, a cliff rock standing in each
+; piece of rock that borders a floor (the KayKit Forest pack's, on the forest's
+; atlas, which is why that picture is in the dungeon's folder too), and the
+; masonry slab survives only as the RockFace under raised ground.
 ;
-; No corner post. This kit's corner piece is a length of wall bent round a right
-; angle rather than the quarter-tile plug the notch wants, and a bent wall
-; dropped into the notch stands across both walls that meet there.
+; No corner post: a cliff line has no notch to plug, and this kit's corner piece
+; is a length of wall bent round a right angle anyway.
 Theme
   Name = Dungeon
   TileSize = 4
-  WallHeight = 4
-  WallShift = -0.5
+  ; The rocks are modelled on their own scale -- 3.69 across, where the floor is
+  ; four -- so they are sized by their own module: one rock is one cell across
+  ; and about a storey tall. Measured off the model, as every number here is.
+  WallTileSize = 3.69
+  ; The lid over the rock lies on the ground, as the wood's does: what you cannot
+  ; walk into is the cliff standing on it, not a roof at wall height.
+  WallHeight = 0
+  ; No WallShift: a rock stands in the middle of its own cell and takes none, and
+  ; the masonry face sets itself back by its own measured depth.
   Stairs = models/tiles/dungeon/stairs.gltf
-  ; ★ The lid on the rock is a FLOOR TILE -- the same model and the same picture
-  ; as the ground of a room, laid at the top of the walls instead of under the
-  ; feet. That is right, and it is also the reason a player asked where he was
-  ; allowed to walk: two surfaces, one texture, both facing up, so the one sun
-  ; meets them at the same angle and shades them the same. No light fixes it --
-  ; see Sun -- and a colour does, for one material and no extra geometry.
-  ;
-  ; Cooler and about two thirds as bright: the top of a wall is stone in shade,
-  ; and it still reads as the same stone.
-  CapTint = 0xA8A8B4
+  WallFillsRock = Yes
+  ; Two rocks to a cell, close about its middle, each a little bigger or smaller
+  ; and turned its own way: a cliff line rather than a row of one boulder. Close,
+  ; because a rock is solid to the ground where a tree is a trunk, and a rock
+  ; leaning out over the floor is a rock the heroes walk through.
+  WallClump = 2
+  WallSpread = 0.18
+  WallVariety = 0.35
+  ; Masonry is for what was built: the retaining wall under a raised floor, which
+  ; the client draws only where rock stands above the foot of its face.
+  RockFace = models/tiles/dungeon/wall.gltf
+  ; ★ The lid on the rock is a FLOOR TILE, the same model and picture as the
+  ; ground of a room, and deeper in the rock nothing stands on it -- so without a
+  ; colour of its own the rock beyond the cliff line reads as more floor. Dark and
+  ; a little cold: rock in shadow. Under the rocks themselves it barely shows,
+  ; because they cover their cell -- which is also why the wood can go without.
+  CapTint = 0x66626E
   ; And each storey up a little brighter, which is the same question one level
   ; out: a raised room is the same tiles higher up, and looking down a slope
   ; there is otherwise nothing to say it is not simply further away. 100 is flat.
@@ -66,16 +82,14 @@ Theme
   ; hands back the white it already was. So the top floor is left alone and the
   ; ones under it step down, which comes out looking like what this says.
   StoreyShadePercent = 108
-  ; No WallBase: a wall is a surface here, so two storeys of rock is two courses
-  ; of masonry and the mass between them is already closed in by its own faces.
   FogTint = 0x07060A
   ; ---- the ground ----
   ;
-  ; Caverns cut out of the rock and the tunnels between them. Close: the edges
-  ; stay near the curve they were cut to, because worked stone laid along a
-  ; ragged line is a wall of notches. Each cavern floor is laid nearly level and
-  ; the tunnels do the climbing -- going deeper is walking down a slope into the
-  ; next hall, where it used to be a flight of stairs at every doorway.
+  ; Caverns cut out of the rock and the tunnels between them. Close: a hall keeps
+  ; near the curve it was cut to, where a wood's glades wander. Each cavern floor
+  ; is laid nearly level and the tunnels do the climbing -- going deeper is
+  ; walking down a slope into the next hall, where it used to be a flight of
+  ; stairs at every doorway.
   Terrain = Terrain
     ; How far a chamber's edge strays from the curve, and a tunnel from the
     ; straight line, as percentages.
@@ -99,12 +113,12 @@ Theme
     Tone
       Name = Stone
       Floor = models/tiles/dungeon/floor.gltf
-      Wall = models/tiles/dungeon/wall.gltf
+      Wall = models/tiles/dungeon/cliff_a.gltf
     End,
     Tone
       Name = Cracked
       Floor = models/tiles/dungeon/floor_rocks.gltf
-      Wall = models/tiles/dungeon/wall_cracked.gltf
+      Wall = models/tiles/dungeon/cliff_b.gltf
     End
   ]
   Monsters = [

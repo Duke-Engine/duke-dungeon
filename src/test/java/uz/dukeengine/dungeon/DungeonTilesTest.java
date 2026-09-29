@@ -594,6 +594,28 @@ class DungeonTilesTest {
     }
 
     /**
+     * The dungeon's rooms are bounded by rock, and its masonry only holds up raised ground.
+     *
+     * <p>The owner's call, pinned: a cave is walled by the cliff it was cut from, and a
+     * worked slab belongs only where something was built -- the retaining wall of a
+     * raised floor. So the wall is a thing standing in the rock, and the slab is the
+     * RockFace the client draws only where rock stands above the foot of its face.
+     */
+    @Test
+    void theDungeonIsBoundedByRockAndItsMasonryOnlyHoldsUpRaisedGround() {
+        var dungeon = uz.dukeengine.dungeon.content.DungeonSettings.load().themes().themeNamed("Dungeon");
+
+        assertTrue(dungeon.standing().fillsRock(),
+                "the dungeon's boundary is rock standing in the rock, not a wall along it");
+        assertEquals("models/tiles/dungeon/wall.gltf", dungeon.rockFace(),
+                "and the masonry slab only faces raised ground");
+        for (var tone : dungeon.tones()) {
+            assertNotEquals("models/tiles/dungeon/wall.gltf", tone.wall(),
+                    tone.name() + " still walls its rooms with masonry");
+        }
+    }
+
+    /**
      * A theme whose walls stand up draws their tops in a different colour from the
      * floor.
      *
@@ -612,19 +634,20 @@ class DungeonTilesTest {
      * costs nothing because masonry is laid on cell boundaries and the grid is
      * already on show; where the lid lies at the floor's own height and a tree
      * stands on it, the tint is all you see of it.
+     *
+     * <p>No shipped theme stands its walls up now -- the caverns became cliffs on the
+     * ground as the wood is trees on it -- so this guards the next one that does (a
+     * hall of worked stone), and passes empty until then.
      */
     @Test
     void everyThemeWhoseWallsStandUpTellsTheirTopsFromTheFloor() {
-        int checked = 0;
         for (var theme : uz.dukeengine.dungeon.content.DungeonSettings.load().themes().all()) {
             if (theme.wallHeight() <= 0f) {
                 continue; // its lids lie on the ground; what marks them is what stands on them
             }
             assertNotEquals(0xFFFFFF, theme.capTint(),
                     theme.name() + " draws the top of its walls in exactly the floor's colours");
-            checked++;
         }
-        assertTrue(checked > 0, "some theme should have walls with height, or this proves nothing");
     }
 
     /**
