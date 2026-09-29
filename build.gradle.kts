@@ -207,7 +207,10 @@ tasks.register<Exec>("packageInstaller") {
                 "--type", type,
                 "--name", "Duke Dungeon",
                 "--app-version", appVersion,
-                "--vendor", "abdurasul29052002",
+                // The release workflow's vendor, its repository's owner: the MSI's
+                // upgrade code is made from vendor and name, and any other vendor
+                // installs beside a released game instead of over it.
+                "--vendor", "Duke-Engine",
                 "--description", "A dungeon crawler on the duke-engine",
                 "--input", lib.absolutePath,
                 "--main-jar", tasks.jar.get().archiveFileName.get(),
