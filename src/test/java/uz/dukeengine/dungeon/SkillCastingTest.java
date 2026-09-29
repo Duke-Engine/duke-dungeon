@@ -32,6 +32,50 @@ class SkillCastingTest {
 
     private static final DungeonSettings SETTINGS = DungeonSettings.load();
 
+    /**
+     * A floor of the real descent he comes in facing open ground on: the first seed from 11 up.
+     *
+     * <p>The dash goes the way he faces, and a hero who comes in nose to the rock dashes
+     * nowhere -- which the tests that press E through the queue would read as the command
+     * never arriving. Which floors those are moves with every change to the generator (11
+     * was one until the floors grew, and put him beside the fountain facing a cliff), so
+     * rather than a seed that happened to work, the first one that does.
+     */
+    private static final long FACING_OPEN_GROUND = firstSeedFacingOpenGround();
+
+    private static long firstSeedFacingOpenGround() {
+        for (long seed = 11; seed < 211; seed++) {
+            var game = Dungeon.newSession(seed, SETTINGS).game();
+            game.runHeadless(2);
+            if (facesOpenGround(game, creature(game, "Rogue"), 60f)) {
+                return seed;
+            }
+        }
+        throw new AssertionError("no floor in two hundred lets the Rogue dash the way he comes in facing");
+    }
+
+    /** Open floor, and nothing standing within a body's width of it, for {@code reach} the way he faces. */
+    private static boolean facesOpenGround(DukeGame game, GameObject hero, float reach) {
+        var grid = game.getTerrain();
+        var from = hero.getPosition();
+        for (float along = 2f; along <= reach; along += 2f) {
+            float x = from.x() + hero.getFacingCos() * along;
+            float y = from.y() + hero.getFacingSin() * along;
+            int cx = (int) Math.floor(x / grid.getCellSize());
+            int cy = (int) Math.floor(y / grid.getCellSize());
+            if (!grid.inBounds(cx, cy) || grid.isTerrainBlocked(cx, cy)) {
+                return false;
+            }
+            for (var other : game.getLogic().getObjects()) {
+                var at = other.getPosition();
+                if (other != hero && Math.hypot(at.x() - x, at.y() - y) < 12f) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     private static String arena() {
         int width = 40;
         int height = 30;
@@ -794,7 +838,7 @@ class SkillCastingTest {
      */
     @Test
     void castingArrivesAsACommand() {
-        var session = Dungeon.newSession(11L, SETTINGS);
+        var session = Dungeon.newSession(FACING_OPEN_GROUND, SETTINGS);
         var game = session.game();
         game.runHeadless(2);
         var hero = creature(game, "Rogue");
@@ -1037,7 +1081,7 @@ class SkillCastingTest {
     }
 
     private static long playedOut(boolean cast) {
-        var session = Dungeon.newSession(11L, SETTINGS);
+        var session = Dungeon.newSession(FACING_OPEN_GROUND, SETTINGS);
         var game = session.game();
         game.runHeadless(2);
         // Bought before cast, and bought in BOTH runs: what is being compared is

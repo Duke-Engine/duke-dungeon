@@ -12,18 +12,23 @@ ProceduralMap
   ; between them is like — ragged or smooth, winding or straight, hills or level —
   ; is the Terrain of the theme the depth wears: see data/world/themes/.
   Generation = Layout
-    ; Cells across and down. Kept tight on purpose: space beyond what the chambers
-    ; need just becomes tunnel, and a tunnel is walked through, not played.
-    MapWidth = 50
-    MapHeight = 36
+    ; Cells across and down. About four times the floor this used to be (50 by 36):
+    ; a floor is now somewhere to go through rather than a room to clear, and the
+    ; biomes coming next need space to be more than one of. Still no bigger than
+    ; the chambers fill -- MaxRoomSpacing below keeps them together, and space
+    ; nothing reaches just stays rock. Kept inside the 100 by 76 the 3D client
+    ; carries today, which is deep.map's size, and deep.map stays the larger.
+    MapWidth = 96
+    MapHeight = 72
 
     ; MinRooms is what the generator aims for, and it can only be a number that
     ; actually fits: chambers are placed by trying and rejecting, and one that will
-    ; not go in is one the floor does without. Six is what always fits at these
-    ; sizes — asking for ten got eight, which made the file claim a floor it could
-    ; not keep. DungeonGeneratorTest holds the claim to its word.
-    MinRooms = 6
-    MaxRooms = 15
+    ; not go in is one the floor does without. Sixteen is what always fits at these
+    ; sizes -- the file must not claim a floor it cannot keep, and
+    ; DungeonGeneratorTest holds it to its word. MaxRooms stays under deep.map's 28,
+    ; the stage that is there to be bigger than any floor of the descent.
+    MinRooms = 16
+    MaxRooms = 26
     ; The footprint a chamber is grown in, in cells across. The chamber itself is
     ; rounder and rougher than its footprint, and never bigger.
     MinRoomSize = 7
@@ -32,7 +37,8 @@ ProceduralMap
     ; Rock left between footprints, so two chambers grow apart rather than into one.
     RoomGap = 1
     ; How many times to try landing a chamber before settling for the ones that fit.
-    PlacementAttempts = 3000
+    ; Grown with the floor: the fuller it gets, the more throws the next one takes.
+    PlacementAttempts = 8000
 
     ; How wide a tunnel is, in cells — and so the narrowest anything on the floor is
     ; allowed to be: a cell is 10 world units and the boss is 16 across, so one cell

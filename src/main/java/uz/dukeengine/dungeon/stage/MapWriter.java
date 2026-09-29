@@ -40,13 +40,14 @@ public final class MapWriter {
             int height, int rooms) {
     }
 
-    // The two the game ships, as a pair on purpose: one the size and danger of an ordinary floor, the other what
-    // a map can be that a generated floor never is -- kept to four times the floor, because the 3D client builds
-    // one Geometry per stone cell and batches none of them.
+    // The two the game ships, as a pair on purpose: one the size and danger a floor was when it was drawn (the
+    // descent's floors have grown since, to 96 by 72), the other what a map can be that a generated floor never
+    // is -- larger and deeper than any, and kept to 100 by 76 because the 3D client builds one Geometry per stone
+    // cell and batches none of them.
     static final Drawn FIRST = new Drawn("first", "The First Descent",
             "One floor, drawn once and never again — learn it, then win it.", 20260911L, 1, 50, 36, 9);
     static final Drawn DEEP = new Drawn("deep", "The Long Dark",
-            "Four times the floor and eight times down. Bring everything.", 20260912L, 8, 100, 76, 28);
+            "Wider than any floor and eight times down. Bring everything.", 20260912L, 8, 100, 76, 28);
 
     private MapWriter() {
     }

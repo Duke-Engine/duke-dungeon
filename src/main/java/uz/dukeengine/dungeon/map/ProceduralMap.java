@@ -46,7 +46,7 @@ public record ProceduralMap(String name, Layout generation, @Link(Theme.class) L
             int maxSkeletonsPerRoom) {
 
         /** What a block leaves out. */
-        public static final Layout DEFAULTS = new Layout(50, 36, 5, 8, 5, 9, 1, 600, 2, 24, 2, 6);
+        public static final Layout DEFAULTS = new Layout(96, 72, 5, 8, 5, 9, 1, 600, 2, 24, 2, 6);
     }
 
     /** Fewest and most, written {@code [0, 3]}. */

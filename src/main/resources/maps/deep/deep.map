@@ -17,7 +17,7 @@
 StaticMap
   Name = deep
   DisplayName = The Long Dark
-  Description = Four times the floor and eight times down. Bring everything.
+  Description = Wider than any floor and eight times down. Bring everything.
   Difficulty = 8
   Players = 1
   ; The seed this floor was cut from. The loot and the look of the place
