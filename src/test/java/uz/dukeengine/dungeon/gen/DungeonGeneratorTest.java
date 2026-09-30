@@ -51,7 +51,9 @@ class DungeonGeneratorTest {
     @Test
     void roomCountStaysInRange() {
         for (long seed = 0; seed <= 200; seed++) {
-            int rooms = generate(seed).rooms().size();
+            var floor = generate(seed);
+            // The keep is built after the chambers are placed, and is not one of the rooms the file counts.
+            int rooms = floor.rooms().size() - (floor.keep() == null ? 0 : 1);
             assertTrue(rooms >= SETTINGS.minRooms() && rooms <= SETTINGS.maxRooms(),
                     "seed " + seed + " produced " + rooms + " rooms");
         }

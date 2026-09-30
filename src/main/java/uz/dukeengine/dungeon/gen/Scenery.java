@@ -44,10 +44,11 @@ final class Scenery {
                 pieces.add(new Piece(model, across, down, facing, size, 0xFFFFFF, grove.footprint()));
             }
         }
+        var keep = cave.keep();
         for (int y = 0; y < cave.height(); y++) {
             for (int x = 0; x < cave.width(); x++) {
                 if (!cave.isFloor(x, y) || Math.abs(x - wayIn.centerCellX()) <= CLEAR
-                        && Math.abs(y - wayIn.centerCellY()) <= CLEAR) {
+                        && Math.abs(y - wayIn.centerCellY()) <= CLEAR || keep != null && keep.holds(x, y)) {
                     continue;
                 }
                 for (var scatter : biomes.at(x, y).scenery()) {

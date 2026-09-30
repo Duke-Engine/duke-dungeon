@@ -25,7 +25,7 @@ class BiomeFloorTest {
             assertNotNull(floor.biomes(), "the map lists biomes, so the floor should carry them");
             var problems = StageCheck.problems(new Stage("mixed", "Mixed", "", 1, 1, seed, floor), ALL);
             assertTrue(problems.isEmpty(), "seed " + seed + ": " + problems);
-            int rooms = floor.rooms().size();
+            int rooms = floor.rooms().size() - (floor.keep() == null ? 0 : 1);
             assertTrue(rooms >= ALL.minRooms() && rooms <= ALL.maxRooms(), "seed " + seed + ": " + rooms);
         }
     }
@@ -87,6 +87,9 @@ class BiomeFloorTest {
                 }
             }
             for (int i = 0; i < floor.rooms().size(); i++) {
+                if (floor.keep() != null && i == floor.bossRoom()) {
+                    continue; // built, not cut to its biome
+                }
                 double edge = edgeShare(rows, floor.rooms().get(i));
                 if (floor.biomes().ofRoom(i).name().equals("Forest")) {
                     woodEdge += edge;

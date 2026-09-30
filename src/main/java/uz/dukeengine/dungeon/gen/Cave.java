@@ -46,6 +46,8 @@ final class Cave {
     private final boolean[][] kept;
     /** Every cell of every grove, in the order they were raised: where {@link Scenery} plants their trees. */
     private final List<int[]> groves = new ArrayList<>();
+    /** The boss's keep once it is built in — see {@link #raise} — and null before, or on a floor with none. */
+    private Keep keep;
     /** How wide a tunnel is stamped: the settings' corridor width, and never less than a cell. */
     private final int brush;
 
@@ -126,20 +128,33 @@ final class Cave {
         return text.toString().replace(GROVE, FLOOR);
     }
 
-    /** The same map in storeys: all of the floor on the one, because the ground's height is the relief's now. */
+    /**
+     * The same map in storeys: all of the floor on the one, because the ground's height is the relief's now — but for
+     * a keep's court and doorway, a storey up, and the stair to them.
+     */
     String levels() {
-        return walls().replace(FLOOR, '0');
+        var text = new StringBuilder(height * (width + 1));
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                text.append(cells[y][x] == STONE ? STONE : keep == null ? '0' : keep.storeyAt(x, y));
+            }
+            text.append('\n');
+        }
+        return text.toString();
     }
 
     /**
      * Floor cells inside {@code room}'s footprint with floor all round them to {@code reach} cells, row by row: where
-     * something may stand without hugging a wall ({@code reach} 1) or be stood without narrowing a way (2).
+     * something may stand without hugging a wall ({@code reach} 1) or be stood without narrowing a way (2) — and never
+     * on a keep's cells for any chamber but the keep: a chamber's footprint may reach into the rock a keep was later
+     * built in.
      */
     List<int[]> openAround(Room room, int reach) {
         var open = new ArrayList<int[]>();
         for (int y = room.y(); y < room.y() + room.h(); y++) {
             for (int x = room.x(); x < room.x() + room.w(); x++) {
-                if (floorWithin(x - reach, y - reach, x + reach, y + reach)) {
+                if (floorWithin(x - reach, y - reach, x + reach, y + reach)
+                        && (keep == null || keep.walls().equals(room) || !keep.holds(x, y))) {
                     open.add(new int[] {x, y});
                 }
             }
@@ -479,6 +494,34 @@ final class Cave {
     /** Every cell of every grove, in the order they were raised. */
     List<int[]> groves() {
         return groves;
+    }
+
+    /** The keep built into this floor, or null. */
+    Keep keep() {
+        return keep;
+    }
+
+    /**
+     * Build {@code keep} into the carved floor: its ring of wall, its court and doorway, the stair before the doorway,
+     * and a straight road from beyond the stair to the middle of the chamber it hangs off in {@code rooms}. All of it
+     * kept, the ring rock: a built thing is not worn. The road never touches the ring — it leaves the gate's side
+     * outward, the side having been chosen for that, and a straight line leaving a square outward never meets it
+     * again.
+     */
+    void raise(Keep keep, List<Room> rooms) {
+        this.keep = keep;
+        var walls = keep.walls();
+        for (int y = walls.y() - 1; y <= walls.y() + walls.h(); y++) {
+            for (int x = walls.x() - 1; x <= walls.x() + walls.w(); x++) {
+                if (keep.isCourt(x, y) || keep.isDoorway(x, y) || keep.isStair(x, y)) {
+                    keep(x, y);
+                } else if (keep.holds(x, y)) {
+                    cells[y][x] = STONE;
+                }
+            }
+        }
+        var to = rooms.get(keep.chamber());
+        line(keep.roadStart(), new int[] {to.centerCellX(), to.centerCellY()});
     }
 
     /** Where a block {@code size} across may stand in {@code room}: its own cells free, floor all round it. */

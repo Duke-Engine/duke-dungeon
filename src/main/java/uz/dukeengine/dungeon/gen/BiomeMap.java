@@ -86,6 +86,23 @@ public final class BiomeMap {
         return biomes.get(rooms[room]);
     }
 
+    /**
+     * The same map with one more chamber, whole in the biome under its middle, numbered after the rest: a keep, built
+     * once the floor was carved.
+     */
+    BiomeMap withRoom(Room room) {
+        var painted = cells.clone();
+        int biome = painted[room.centerCellY() * width + room.centerCellX()];
+        for (int y = room.y(); y < room.y() + room.h(); y++) {
+            for (int x = room.x(); x < room.x() + room.w(); x++) {
+                painted[y * width + x] = biome;
+            }
+        }
+        var more = Arrays.copyOf(rooms, rooms.length + 1);
+        more[rooms.length] = biome;
+        return new BiomeMap(width, biomes, painted, more);
+    }
+
     /** Every biome the map could hold, in the file's order — not only the ones this floor grew. */
     public List<Theme> biomes() {
         return biomes;

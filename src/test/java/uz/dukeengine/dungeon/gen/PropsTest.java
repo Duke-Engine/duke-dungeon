@@ -77,6 +77,9 @@ class PropsTest {
             var dungeon = generate(seed);
             var lines = dungeon.asciiMap().strip().split("\n");
             for (var prop : dungeon.props()) {
+                if (prop.kind().equals(SETTINGS.keep().gate())) {
+                    continue; // the keep's gate, in its doorway until it opens — see KeepFloorTest
+                }
                 int cx = (int) Math.floor(prop.at().x() / PathGrid.DEFAULT_CELL_SIZE);
                 int cy = (int) Math.floor(prop.at().y() / PathGrid.DEFAULT_CELL_SIZE);
                 for (int y = cy - 2; y <= cy + 2; y++) {
@@ -105,6 +108,9 @@ class PropsTest {
             MapLoader.levels(grid, dungeon.levelMap());
             grid.beginObstacles();
             for (var prop : dungeon.props()) {
+                if (prop.kind().equals(SETTINGS.keep().gate())) {
+                    continue; // the keep's gate, in its doorway until it opens — see KeepFloorTest
+                }
                 grid.setObstacle((int) Math.floor(prop.at().x() / PathGrid.DEFAULT_CELL_SIZE),
                         (int) Math.floor(prop.at().y() / PathGrid.DEFAULT_CELL_SIZE));
             }
@@ -163,7 +169,9 @@ class PropsTest {
         for (long seed = 0; seed < 20; seed++) {
             var dungeon = DungeonGenerator.generate(seed, bare, 1);
 
-            assertEquals(0, dungeon.props().size(), "seed " + seed);
+            // Furniture, not the keep's gate: it stands in its doorway whatever PropsPerRoom says — see KeepFloorTest.
+            assertEquals(0, dungeon.props().stream().filter(prop -> !prop.kind().equals(bare.keep().gate())).count(),
+                    "seed " + seed);
             assertEquals(generate(seed).asciiMap(), dungeon.asciiMap(),
                     "furniture should not change the shape of the floor");
         }

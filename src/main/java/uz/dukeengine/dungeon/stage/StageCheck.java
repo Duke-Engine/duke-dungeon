@@ -65,6 +65,10 @@ public final class StageCheck {
         for (var kind : settings.propKinds()) {
             propKinds.add(kind.template());
         }
+        // And the keep's gate, which stands in its doorway rather than being scattered — see gen/Keep.
+        if (!settings.keep().gate().isBlank()) {
+            propKinds.add(settings.keep().gate());
+        }
 
         // One cell, one thing. Kept as a map rather than a set so the complaint can
         // name what was already standing there — "on top of something" sends an

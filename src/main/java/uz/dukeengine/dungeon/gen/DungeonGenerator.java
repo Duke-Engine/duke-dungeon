@@ -16,6 +16,9 @@ import uz.dukeengine.dungeon.world.Theme;
  * Draws a floor from a seed: chambers of rock or glades of wood grown where the rooms are placed, joined by
  * tunnels that wander, laid over hills — with the hero in the first and the monsters scattered through the rest.
  *
+ * <p>The floor ends in the boss's {@link Keep}: a walled court a storey up, built in solid rock once the rest is
+ * carved, so it cuts nothing off; the last of the rooms, and the boss's.
+ *
  * <p>The one property that matters more than any other is that <b>every chamber can be reached</b> — a skeleton
  * walled off in an island chamber is a run the player cannot finish. This is guaranteed by construction rather
  * than hoped for: the chambers are joined along a spanning tree grown out of the first, and every tunnel of it is
@@ -80,34 +83,59 @@ public final class DungeonGenerator {
 
         var rooms = placeRooms(rng, settings, layout);
         var links = spanningTree(rooms);
-        int bossRoom = furthestRoomFromStart(rooms.size(), links);
+        int furthest = furthestRoomFromStart(rooms.size(), links);
         // A map that mixes biomes lays them out now, from a stream of its own, so each region can be cut to its
         // own ground; one that does not cuts the whole floor to its depth's theme, exactly as it always has.
-        var biomes = settings.biomes().isEmpty() || !layout.mixesBiomes() ? null
+        var drawn = settings.biomes().isEmpty() || !layout.mixesBiomes() ? null
                 : BiomeMap.draw(seed, depth, layout.width(), layout.height(), rooms, settings.biomes());
-        var cave = biomes == null
-                ? Cave.carve(rng, layout.width(), layout.height(), rooms, links, bossRoom,
+        var cave = drawn == null
+                ? Cave.carve(rng, layout.width(), layout.height(), rooms, links, furthest,
                         settings.corridorWidth(), settings.maxRoomSpacing(), terrain)
-                : Cave.carve(rng, layout.width(), layout.height(), rooms, links, bossRoom,
-                        settings.corridorWidth(), settings.maxRoomSpacing(), terrainOfRooms(biomes, rooms.size()),
-                        (x, y) -> biomes.at(x, y).terrain().ragged(),
+                : Cave.carve(rng, layout.width(), layout.height(), rooms, links, furthest,
+                        settings.corridorWidth(), settings.maxRoomSpacing(), terrainOfRooms(drawn, rooms.size()),
+                        (x, y) -> drawn.at(x, y).terrain().ragged(),
                         // A wood's islands are groves of trees a body can go between; a cavern's are rock.
-                        room -> biomes.ofRoom(room).grove() != null);
+                        room -> drawn.ofRoom(room).grove() != null);
+
+        // The boss's keep, in solid rock beside the deepest chamber with room for it — see Keep. A map drawn once
+        // gets none: its file keeps no look for one, as it keeps no biome for a cell (see Layout). Where none fits,
+        // the boss waits in the furthest chamber as it always did, and the floor is today's.
+        var keep = layout.mixesBiomes()
+                ? Keep.site(cave, rooms, links, settings.keep().sizes(), settings.maxRoomSpacing()) : null;
+        var chambers = new ArrayList<>(rooms);
+        var joined = new ArrayList<>(links);
+        int bossRoom = furthest;
+        if (keep != null) {
+            cave.raise(keep, rooms);
+            chambers.add(keep.walls());
+            joined.add(new Link(keep.chamber(), chambers.size() - 1));
+            bossRoom = chambers.size() - 1;
+        }
+        var biomes = drawn == null || keep == null ? drawn : drawn.withRoom(keep.walls());
 
         var hero = middleOf(rooms.get(0));
-        var monsters = populate(rng, cave, rooms, settings, depth, bossRoom);
-        var boss = new Monster(settings.bossKindAt(depth), middleOf(rooms.get(bossRoom)));
-        monsters.addAll(guard(cave, rooms.get(bossRoom), settings, depth));
-        var props = scatter(rng, cave, rooms, settings, monsters, hero, boss.at());
+        var monsters = populate(rng, cave, chambers, settings, depth, bossRoom);
+        var boss = new Monster(settings.bossKindAt(depth), middleOf(chambers.get(bossRoom)));
+        monsters.addAll(guard(cave, chambers.get(bossRoom), settings, depth));
+        var props = new ArrayList<>(scatter(rng, cave, chambers, settings, monsters, hero, boss.at()));
+        if (keep != null) {
+            // In the doorway until it is opened. Spawned as a prop is, and turned across the doorway: see Spawner.
+            var gate = keep.gate();
+            props.add(new Prop(settings.keep().gate(), Placement.atCell(gate[0], gate[1])));
+        }
 
-        var relief = biomes == null ? Relief.of(seed, cave, rooms, terrain)
-                : Relief.of(seed, cave, rooms, biomes.hills(), biomes::riseAt,
-                        terrainOfRooms(biomes, rooms.size()).stream().map(Theme.Terrain::level).toList());
+        var relief = biomes == null ? Relief.of(seed, cave, chambers, terrain)
+                : Relief.of(seed, cave, chambers, biomes.hills(), biomes::riseAt,
+                        terrainOfRooms(biomes, chambers.size()).stream().map(Theme.Terrain::level).toList());
         var scenery = biomes == null ? List.<GeneratedDungeon.Piece>of()
                 : Scenery.scatter(seed, cave, biomes, rooms.getFirst());
+        var storeys = new ArrayList<>(Collections.nCopies(chambers.size(), 0));
+        if (keep != null) {
+            storeys.set(bossRoom, 1);
+        }
         return new GeneratedDungeon(cave.walls(), cave.levels(), hero, monsters, boss, bossRoom,
-                List.copyOf(rooms), List.copyOf(links), Collections.nCopies(rooms.size(), 0), props,
-                relief, 0f, biomes, scenery);
+                List.copyOf(chambers), List.copyOf(joined), List.copyOf(storeys), List.copyOf(props),
+                relief, 0f, biomes, scenery, keep);
     }
 
     /** Each chamber's ground: its own biome's. */

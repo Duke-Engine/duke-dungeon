@@ -118,7 +118,11 @@ class DungeonThemeTest {
         for (long seed = 0; seed < 10; seed++) {
             var inTheWood = DungeonGenerator.generate(seed, wood, 1);
             var inTheCellar = DungeonGenerator.generate(seed, cellar, 1);
-            assertEquals(inTheWood.rooms(), inTheCellar.rooms(), "seed " + seed + ": the chambers stand where they stood");
+            // The keep is sited in each ground's own carved rock, so it is not placement: compare the chambers alone.
+            int woodChambers = inTheWood.rooms().size() - (inTheWood.keep() == null ? 0 : 1);
+            int cellarChambers = inTheCellar.rooms().size() - (inTheCellar.keep() == null ? 0 : 1);
+            assertEquals(inTheWood.rooms().subList(0, woodChambers), inTheCellar.rooms().subList(0, cellarChambers),
+                    "seed " + seed + ": the chambers stand where they stood");
             if (!inTheWood.asciiMap().equals(inTheCellar.asciiMap())) {
                 differ++;
             }

@@ -42,6 +42,8 @@ import uz.dukeengine.core.pathfind.PathGrid;
  * @param biomes      which biome every cell is, or {@code null} for a floor that wears one theme whole
  * @param scenery     what lies about on the floor for its look alone, each biome's own — none on a floor of one
  *                  theme
+ * @param keep        the boss's keep — a walled court a storey up, the last of {@code rooms} and the boss's — or
+ *                  {@code null} for a floor with none: a stage, a map that asks for none, or one where none fitted
  */
 public record GeneratedDungeon(
         String asciiMap,
@@ -58,14 +60,23 @@ public record GeneratedDungeon(
         /** How tall one storey of this floor stands, in world units; 0 leaves the world's own. */
         float levelHeight,
         BiomeMap biomes,
-        List<Piece> scenery) {
+        List<Piece> scenery,
+        Keep keep) {
 
     /** A floor that wears one theme whole — a stage, or the descent when its map mixes no biomes. */
     public GeneratedDungeon(String asciiMap, String levelMap, Placement hero, List<Monster> monsters, Monster boss,
             int bossRoom, List<Room> rooms, List<Link> links, List<Integer> roomStoreys, List<Prop> props,
             HeightMap relief, float levelHeight) {
         this(asciiMap, levelMap, hero, monsters, boss, bossRoom, rooms, links, roomStoreys, props, relief,
-                levelHeight, null, List.of());
+                levelHeight, null, List.of(), null);
+    }
+
+    /** A floor with no keep. */
+    public GeneratedDungeon(String asciiMap, String levelMap, Placement hero, List<Monster> monsters, Monster boss,
+            int bossRoom, List<Room> rooms, List<Link> links, List<Integer> roomStoreys, List<Prop> props,
+            HeightMap relief, float levelHeight, BiomeMap biomes, List<Piece> scenery) {
+        this(asciiMap, levelMap, hero, monsters, boss, bossRoom, rooms, links, roomStoreys, props, relief,
+                levelHeight, biomes, scenery, null);
     }
 
     public GeneratedDungeon {
