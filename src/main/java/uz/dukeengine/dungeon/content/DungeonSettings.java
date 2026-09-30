@@ -610,6 +610,12 @@ public final class DungeonSettings {
             require(guard.getValue() >= 1, "BossGuards has to put at least one " + guard.getKey() + " there");
         }
         require(map.descent().bossGuardRing() >= 1, "BossGuardRing has to stand the guard off the boss's own cell");
+        var descent = map.descent();
+        require(descent.wayInLevel() >= 1 && descent.beforeBossLevel() >= descent.wayInLevel(),
+                "a monster's level starts at WayInLevel, at least 1, and climbs to BeforeBossLevel, no lower");
+        require(descent.tierGrowthPercent() >= 0 && descent.bossLevelsAbove() >= 0,
+                "TierGrowthPercent and BossLevelsAbove cannot step a monster's level back down");
+        require(descent.maxMonsterLevel() >= 1, "MaxMonsterLevel is at least the first level");
         require(map.generation().corridorWidth() >= 1, "a corridor narrower than one cell is a wall");
         require(map.generation().maxRoomSpacing() > map.generation().maxRoomSize(), "rooms could never reach one another");
         require(map.propsPerRoom().min() >= 0, "a room cannot hold fewer than no things");
@@ -1247,5 +1253,56 @@ public final class DungeonSettings {
      */
     private static float scaled(int percentPerDepth, int depth) {
         return 1f + Math.max(0, depth - 1) * percentPerDepth / 100f;
+    }
+
+    // ---- a monster's level ----
+
+    /** The highest level anything down here stands at, its boss included: {@code MaxMonsterLevel}. */
+    public int maxMonsterLevel() {
+        return map.descent().maxMonsterLevel();
+    }
+
+    /**
+     * The level of the chamber before the boss's, in a place of this tier: {@code BeforeBossLevel} on the first, grown
+     * by {@code TierGrowthPercent} a tier past it -- worked out in one step, never compounded tier by tier, so the
+     * fourth is the same reached by playing or asked for -- rounded once, and never above the cap.
+     *
+     * <p>A tier is how hard a place is: today a floor's depth, which is what a stage's {@code Difficulty} already
+     * means. The rule is handed the tier and knows nothing else of floors.
+     */
+    public int beforeBossLevel(int tier) {
+        var descent = map.descent();
+        double grown = descent.beforeBossLevel()
+                * StrictMath.pow(1 + descent.tierGrowthPercent() / 100.0, Math.max(0, tier - 1));
+        return (int) Math.min(descent.maxMonsterLevel(), Math.round(grown));
+    }
+
+    /**
+     * The level at the way in: {@code WayInLevel} on the first tier, and on every later one where the tier before
+     * closed -- so a descent never steps back down, as an open world's regions run 1-8, 8-13, 13-20.
+     */
+    public int wayInLevel(int tier) {
+        return tier <= 1 ? Math.min(map.descent().wayInLevel(), map.descent().maxMonsterLevel())
+                : beforeBossLevel(tier - 1);
+    }
+
+    /** The boss's: {@code BossLevelsAbove} over the chamber before its own, and never above the cap either. */
+    public int bossLevel(int tier) {
+        return Math.min(beforeBossLevel(tier) + map.descent().bossLevelsAbove(), map.descent().maxMonsterLevel());
+    }
+
+    /**
+     * A monster's level {@code walked} steps along a way {@code way} steps long, from the way in to the middle of the
+     * chamber before the boss's: the way in's level and its share of the climb to that chamber's -- the share never
+     * above the whole of it, so everything past that chamber stands at its level -- rounded once. A monster no step
+     * reaches, and a way of no steps, count as the whole way.
+     */
+    public int levelAlong(int tier, int walked, int way) {
+        int in = wayInLevel(tier);
+        int end = beforeBossLevel(tier);
+        if (walked < 0 || way <= 0 || walked >= way) {
+            return end;
+        }
+        return in + (int) Math.round((end - in) * (double) walked / way);
     }
 }

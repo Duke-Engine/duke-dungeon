@@ -67,6 +67,12 @@ public record ProceduralMap(String name, Layout generation, @Link(Theme.class) L
     /**
      * How the descent grows harder, floor by floor.
      *
+     * <p>And what level a monster stands at, by the tier of the place it is met in -- today a floor's depth: from
+     * {@code wayInLevel} at the way in of the first tier to {@code beforeBossLevel} in the chamber before its boss's,
+     * that end grown by {@code tierGrowthPercent} a tier past the first, and every later tier's way in where the tier
+     * before closed; its boss {@code bossLevelsAbove} over that chamber's, and nothing above {@code maxMonsterLevel}.
+     * See {@code DungeonSettings.levelAlong}.
+     *
      * @param bosses        one per floor, in order, and the list is also how many floors there are:
      *     kill the last and the run is won. Empty is a descent with no bottom
      * @param bossGuards    who stands with the boss, and how many of each — in the order written
@@ -75,10 +81,12 @@ public record ProceduralMap(String name, Layout generation, @Link(Theme.class) L
     public record Descent(@Link(Monster.class) List<String> bosses,
             @Link(Monster.class) Map<String, Integer> bossGuards, int bossGuardRing,
             int monsterHealthPercentPerDepth, int monsterDamagePercentPerDepth, int monsterCountPercentPerDepth,
-            int bossHealthPercentPerDepth, int bossDamagePercentPerDepth, int experiencePercentPerDepth) {
+            int bossHealthPercentPerDepth, int bossDamagePercentPerDepth, int experiencePercentPerDepth,
+            int wayInLevel, int beforeBossLevel, int tierGrowthPercent, int bossLevelsAbove, int maxMonsterLevel) {
 
         /** What a block leaves out. */
-        public static final Descent DEFAULTS = new Descent(List.of(), Map.of(), 2, 25, 15, 20, 40, 25, 30);
+        public static final Descent DEFAULTS = new Descent(List.of(), Map.of(), 2, 25, 15, 20, 40, 25, 30,
+                1, 8, 60, 2, 50);
 
         public Descent {
             bosses = bosses == null ? List.of() : List.copyOf(bosses);

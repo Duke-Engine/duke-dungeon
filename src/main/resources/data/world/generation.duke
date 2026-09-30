@@ -170,5 +170,28 @@ ProceduralMap
     ; Experience is worth more the deeper it was earned, so levelling roughly keeps
     ; pace with what it is levelling against.
     ExperiencePercentPerDepth = 30
+
+    ; ---- the level of what lives here ----
+    ;
+    ; Every monster stands at a level of its own. A place has a tier -- how hard
+    ; it is: today a floor's depth, which is what a stage's Difficulty means --
+    ; and the tier gives two ends: the way in, and the chamber before the boss's
+    ; (the one the keep's road leaves from; the boss itself where there is no
+    ; keep). A monster between them has the way in's level and its share of the
+    ; climb -- the steps walked from the way in to it over the steps to that
+    ; chamber's middle -- rounded once. Past that chamber, its far side, the
+    ; road, the court and the guard in it all stand at its level; the boss
+    ; BossLevelsAbove over it; and what rises from a rift at its caller's.
+    ;
+    ; The first tier runs from WayInLevel to BeforeBossLevel. Each tier past it
+    ; starts where the one before closed and ends TierGrowthPercent higher, worked
+    ; out in one step: 1-8, 8-13, 13-20, 20-33, the boss two above each. Nothing
+    ; stands above MaxMonsterLevel: the deep stage, at Difficulty 8, would play
+    ; 134 to 215, and plays 50 throughout.
+    WayInLevel = 1
+    BeforeBossLevel = 8
+    TierGrowthPercent = 60
+    BossLevelsAbove = 2
+    MaxMonsterLevel = 50
   End
 End
