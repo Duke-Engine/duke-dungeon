@@ -741,10 +741,12 @@ public final class DungeonSettings {
         for (var item : loot) {
             require(item.kind() != LootKind.KEY || item.weight() == 0,
                     "LootItem " + item.id() + " is a KEY, which is given and never found: its Weight is 0");
+            require(item.kind() != LootKind.KEY || item.use() == uz.dukeengine.dungeon.loot.ItemUse.UNLOCK,
+                    "LootItem " + item.id() + " is a KEY, which opens a gate and does nothing else: its Use is UNLOCK");
         }
-        require(map.keep().sizes().isEmpty()
-                        || loot.stream().anyMatch(item -> item.use() == uz.dukeengine.dungeon.loot.ItemUse.UNLOCK),
-                "a Keep's gate opens only to a key, and no LootItem has Use = UNLOCK");
+        // The floor lays the first KEY there is, and the gate opens to whatever is UNLOCK: a keep needs the first.
+        require(map.keep().sizes().isEmpty() || loot.stream().anyMatch(item -> item.kind() == LootKind.KEY),
+                "a Keep's gate opens only to a key, and no LootItem has Kind = KEY to lay on its floor");
         for (var moment : moments) {
             require(!moment.effect().isBlank(), "Moment " + moment.name() + " plays no Effect");
             require(moment.scale() > 0f, "Moment " + moment.name() + " has to be drawn at some size");

@@ -33,6 +33,19 @@ public final class GateUpdate extends Module {
             opens = opens == null ? "" : opens;
             withoutKeyWord = withoutKeyWord == null ? "" : withoutKeyWord;
             withKeyWord = withKeyWord == null ? "" : withKeyWord;
+            requireSayable("WithoutKeyWord", withoutKeyWord);
+            requireSayable("WithKeyWord", withKeyWord);
+        }
+
+        /**
+         * What he says goes down the panel's status line as his note, which splits on ',' and '|': the rule FullWord
+         * and NoUseWord are held to in {@code DungeonSettings}. The gate is an Object block, which the settings do not
+         * read, so its lines are held to it here, where the block is read — and the binder says where.
+         */
+        private static void requireSayable(String field, String words) {
+            if (words.indexOf(',') >= 0 || words.indexOf('|') >= 0) {
+                throw new IllegalArgumentException(field + " may not contain ',' or '|'");
+            }
         }
     }
 

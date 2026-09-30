@@ -9,6 +9,7 @@ import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.dungeon.gen.GeneratedDungeon;
 import uz.dukeengine.dungeon.level.HeroProgress;
 import uz.dukeengine.dungeon.loot.KeyDrop;
+import uz.dukeengine.dungeon.loot.LootKind;
 import uz.dukeengine.dungeon.loot.LootTable;
 import uz.dukeengine.dungeon.skill.SkillRanks;
 import uz.dukeengine.dungeon.skill.Skills;
@@ -386,15 +387,19 @@ public final class DungeonRun {
     }
 
     /**
-     * What a floor just laid asks of the party: its mission, if it has a keep, and of every hero that he leave the
-     * key where he falls, so a party never loses the way on with him.
+     * What a floor just laid asks of the party: that no hero bring a key from the floor above, its mission, if it has
+     * a keep, and of every hero that he leave the key where he falls, so a party never loses the way on with him.
+     *
+     * <p>A key belongs to the floor it was found on: one carried down would open this floor's gate unearned, and have
+     * the tracker say "give it" of a key that is still lying.
      */
     private void onTheFloor(DukeGame game, GeneratedDungeon floor, Spawner.Placed placed) {
         for (int i = 0; i < seats.size(); i++) {
+            var bag = seats.get(i).progress.getLoot();
+            bag.removeAll(LootKind.KEY);
             var hero = placed.heroes().get(i);
             if (hero != null) {
-                hero.addModule(new KeyDrop(hero, seats.get(i).progress.getLoot(), settings.lootDrops().template(),
-                        dungeonPlayer.getIndex()));
+                hero.addModule(new KeyDrop(hero, bag, settings.lootDrops().template(), dungeonPlayer.getIndex()));
             }
         }
         mission = Mission.of(game.getLogic(), floor, placed, settings, dungeonPlayer.getIndex());

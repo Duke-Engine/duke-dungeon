@@ -20,6 +20,9 @@ import uz.dukeengine.dungeon.loot.GroundItem;
 import uz.dukeengine.dungeon.loot.Loot;
 import uz.dukeengine.dungeon.loot.LootKind;
 import uz.dukeengine.dungeon.loot.PickUp;
+import uz.dukeengine.dungeon.loot.UseItem;
+import uz.dukeengine.dungeon.party.ChooseHero;
+import uz.dukeengine.dungeon.party.PartyMatch;
 import uz.dukeengine.dungeon.party.PartyOrders;
 import uz.dukeengine.dungeon.stage.Stage;
 import uz.dukeengine.game.DukeGame;
@@ -302,6 +305,110 @@ class MissionTest {
 
         var thrown = assertThrows(IllegalStateException.class, () -> game.runHeadless(1));
         assertTrue(thrown.getMessage().contains("NoSuchThing"), "it names the template: " + thrown.getMessage());
+    }
+
+    // ---- a key belongs to the floor it was found on ----
+
+    /**
+     * The hero of the first floor with a key in his bag when its boss falls: the floor closes, the second is laid, and
+     * the bag is what he carries into it.
+     */
+    private static Dungeon.Session downWithAKey() {
+        var session = opened(SETTINGS);
+        var game = session.game();
+        session.progress().getLoot().take(key(), 0, 0);
+
+        game.getLogic().destroyObject(find(game, SETTINGS.bossKindAt(1)));
+        game.runHeadless(SETTINGS.run().descendDelayFrames() + 4);
+
+        assertEquals(2, session.run().getDepth(), "the premise: he went down a floor with a key in his bag");
+        return session;
+    }
+
+    /** A key carried past its floor is left behind: the next floor is laid, and the bag he brings to it holds none. */
+    @Test
+    void aKeyDoesNotOutliveItsFloorInTheBagOfAHeroWhoCarriesItDown() {
+        var session = downWithAKey();
+
+        assertFalse(session.progress().getLoot().holds(LootKind.KEY), "he took the key down with him");
+    }
+
+    /**
+     * The floor below says its own step: the count of what stands outside its keep and, the last of them fallen and
+     * the floor's own key lying where it fell, "take it" — not "give it" of a key that was never this floor's.
+     */
+    @Test
+    void theFloorBelowCountsItsOwnOutsideWhateverWasCarriedDown() {
+        var session = downWithAKey();
+        var game = session.game();
+        var run = session.run();
+
+        assertEquals(Mission.Step.CLEAR, run.getStep());
+        assertTrue(run.getMission().outside() > 0, "the premise: the floor puts somebody outside its keep");
+        assertEquals(SETTINGS.run().clearWord(0, run.getMission().outside()), run.getTracker(),
+                "its own count of its own outside");
+
+        var own = game.getLogic().getObjects().stream()
+                .filter(object -> object.findModule(Mission.Counted.class) != null).toList();
+        assertEquals(run.getMission().outside(), own.size(), "the premise: all of them stand, and all are counted");
+        own.forEach(monster -> game.getLogic().destroyObject(monster));
+        game.runHeadless(1);
+
+        assertEquals(1, keysLying(game), "the floor's own key lies where the last of them fell");
+        assertEquals(Mission.Step.TAKE, run.getStep(), "and it is not in anybody's bag yet");
+        assertEquals(SETTINGS.run().takeKeyWord(), run.getTracker());
+    }
+
+    /** A key from the floor above opens nothing on this one: sent to the gate from its slot, he has none to give. */
+    @Test
+    void theFloorBelowKeepsItsGateShutToAKeyFromAbove() {
+        var session = downWithAKey();
+        var game = session.game();
+        var gate = find(game, "Gate");
+        find(game, "Rogue").setPosition(gate.getPosition());
+
+        game.postCommand(PartyOrders.of(new UseItem(game.getLocalPlayerIndex(), 0, gate.getId())));
+        game.runHeadless(5);
+
+        assertNotNull(find(game, "Gate"), "the key from the floor above opened this floor's gate");
+        assertNull(find(game, "OpenGate"));
+    }
+
+    /** Only the key is left behind: the rest of what he carries goes down with him, whatever sits either side of it. */
+    @Test
+    void theRestOfWhatHeCarriesGoesDownWithHimWhenTheKeyIsLeftBehind() {
+        var session = opened(SETTINGS);
+        var game = session.game();
+        var bag = session.progress().getLoot();
+        var things = SETTINGS.loot().stream().filter(item -> item.kind() != LootKind.KEY).limit(2).toList();
+        bag.take(things.get(0), 0, 0);
+        bag.take(key(), 0, 0);
+        bag.take(things.get(1), 0, 0);
+
+        game.getLogic().destroyObject(find(game, SETTINGS.bossKindAt(1)));
+        game.runHeadless(SETTINGS.run().descendDelayFrames() + 4);
+
+        assertEquals(2, session.run().getDepth(), "the premise: he went down a floor");
+        assertEquals(things, bag.getFound(), "all of it but the key");
+    }
+
+    /** It is every seat's bag that is emptied of keys, not the first player's alone: a party carries one key each. */
+    @Test
+    void everyHeroOfAPartyLeavesHisKeyBehind() {
+        var session = Dungeon.newPartySession(PartyMatch.endless(4242L), 2, null, SETTINGS, "Rogue");
+        var game = session.game();
+        game.runHeadless(1);
+        game.postCommand(PartyOrders.of(new ChooseHero(2, "Knight")));
+        game.runHeadless(3);
+        session.run().progressOf(1).getLoot().take(key(), 0, 0);
+        session.run().progressOf(2).getLoot().take(key(), 0, 0);
+
+        game.getLogic().destroyObject(find(game, SETTINGS.bossKindAt(1)));
+        game.runHeadless(SETTINGS.run().descendDelayFrames() + 4);
+
+        assertEquals(2, session.run().getDepth(), "the premise: the party went down a floor, a key each");
+        assertFalse(session.run().progressOf(1).getLoot().holds(LootKind.KEY), "the first hero's");
+        assertFalse(session.run().progressOf(2).getLoot().holds(LootKind.KEY), "and the second's");
     }
 
     /** The tracker's words are the owner's, as the spec writes them. */

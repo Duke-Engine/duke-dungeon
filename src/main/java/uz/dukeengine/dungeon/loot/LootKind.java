@@ -36,7 +36,9 @@ public enum LootKind {
 
     /**
      * None of his figures: the key to the boss's keep, which opens its gate and gives him nothing. It never joins
-     * with another, and it is given rather than found — see {@code run/Mission}.
+     * with another, and it is given rather than found — see {@code run/Mission}. It belongs to the floor it was found
+     * on: a floor laid takes every key out of every bag — see {@code DungeonRun}. Its {@code Use} is always
+     * {@code UNLOCK}, and a keep needs one: the file is refused otherwise.
      */
     KEY
 }
