@@ -302,11 +302,6 @@ public final class DungeonSettings {
             settings.fillInMissingLoot();
             settings.fillInMissingAttributes();
             settings.fillInMissingAnimationSets();
-            // A block that re-tunes a monster and says nothing of its skill keeps the shipped
-            // one, as every other skill is kept -- and so keeps casting it, if it is one that is cast.
-            settings.monsters.replaceAll(kind -> kind.hasSkill() ? kind : settings.skillsFor(kind.name())
-                    .stream().filter(skill -> !skill.effect().isPassive()).findFirst()
-                    .map(skill -> kind.casting(skill.key())).orElse(kind));
         }
         settings.validate();
         return settings;
@@ -592,15 +587,21 @@ public final class DungeonSettings {
                 "SummonTurnDegrees times SummonTurns has to stay within a half turn");
         for (var kind : monsters) {
             var name = "Monster " + kind.name();
-            if (kind.hasSkill()) {
-                var skill = skillsFor(kind.name()).stream()
-                        .filter(one -> one.key() == kind.skillKey()).findFirst().orElse(null);
-                require(skill != null, name + " casts " + kind.skillKey() + ", and no Skill inside it"
-                        + " says what that is");
-                // A mending is cast on its own side, so how far off HE is means nothing to it.
-                require(skill.effect() == SkillEffect.HEAL
-                                || kind.skillNearest() >= 0f && kind.skillFurthest() > kind.skillNearest(),
-                        name + " has to cast across some distance: SkillDistance nearest furthest");
+            for (var skill : skillsFor(kind.name())) {
+                // A passive is never cast, and a mending is cast on its own side, so how far off HE
+                // is means nothing to either. Everything else is cast at him, from one band.
+                if (skill.effect().isPassive() || skill.effect() == SkillEffect.HEAL) {
+                    continue;
+                }
+                require(kind.skillNearest() >= 0f && kind.skillFurthest() > kind.skillNearest(),
+                        name + " has to cast its Skill " + skill.key()
+                                + " across some distance: SkillDistance nearest furthest");
+                // And what is aimed at him has to reach the band's far end, or it falls short from there.
+                // What goes off round the caster itself -- a summoning's rifts -- is aimed at nothing.
+                require(skill.effect().aim() == SkillEffect.Aim.SELF || skill.range() >= kind.skillFurthest(),
+                        name + "'s Skill " + skill.key() + " reaches " + skill.range() + ", short of the "
+                                + kind.skillFurthest() + " its SkillDistance casts from: give it a Range of at"
+                                + " least that");
             }
             require(kind.keepFurthest() == 0f
                             || kind.keepNearest() >= 0f && kind.keepFurthest() > kind.keepNearest(),

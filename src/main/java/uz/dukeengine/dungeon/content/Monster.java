@@ -28,7 +28,8 @@ import uz.dukeengine.dungeon.skill.Skill;
  * <p>The behaviour is the simulation's and the look is not: {@link #kind()} and {@link #look()}
  * hand each out apart, so nothing the game decides can come to depend on something drawn.
  *
- * @param skillDistance the nearest and the furthest it casts its skill from, surface to surface
+ * @param skillDistance the nearest and the furthest it casts any skill at him from, surface to surface: one band,
+ *                      whichever skill, and every skill aimed at him reaches its far end
  * @param keepDistance  the band it holds around him: nearer and it backs away, further and it
  *                      comes. None, and it closes to {@code closeDistance} like everything else
  * @param maxPerRoom    how many of it one room may hold, or zero for no limit
@@ -76,7 +77,7 @@ public record Monster(@Group("Identity") String name, String displayName, Set<Ki
     /** What it does, which the simulation reads. */
     public MonsterKind kind() {
         return new MonsterKind(name, senseRadius, chaseRadius, closeDistance, alertRadius, repathFrames,
-                swingFrames, minDepth, weight, colour, scale, look(), skillKey(), skillDistance.nearest(),
+                swingFrames, minDepth, weight, colour, scale, look(), skillDistance.nearest(),
                 skillDistance.furthest(), keepDistance.nearest(), keepDistance.furthest(), maxPerRoom,
                 maxMana, manaRegen);
     }
@@ -85,18 +86,5 @@ public record Monster(@Group("Identity") String name, String displayName, Set<Ki
     public MonsterLook look() {
         return new MonsterLook(model, texture, modelScale, tint, facing, animations, List.of(), idle, walk, attack,
                 hurt, death, held, effect);
-    }
-
-    /**
-     * The key of the skill it casts: the first of its own, written inside it, that is cast at all -- a passive holds
-     * without being cast (see {@code SkillEffect.isPassive}) -- or none.
-     */
-    public char skillKey() {
-        for (var skill : skills) {
-            if (!skill.effect().isPassive()) {
-                return Character.toUpperCase(skill.key());
-            }
-        }
-        return 0;
     }
 }

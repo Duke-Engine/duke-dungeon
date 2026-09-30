@@ -236,9 +236,9 @@ public enum SkillEffect {
      * Said once, on the constant -- {@code LIFESTEAL(Aim.SELF, true)} -- so that a
      * passive cannot be half declared.
      *
-     * <p>{@link SkillBook#cast} refuses one with its cooldown untouched, and a monster
-     * casts the first of its skills that is not one (see {@code Monster.skillKey}), so
-     * a creature whose only skill is a passive casts nothing. What a passive does is
+     * <p>{@link SkillBook#cast} refuses one with its cooldown untouched, and a monster's
+     * brain passes over one wherever it is written (see {@code MonsterBrain}), so a
+     * creature whose only skill is a passive casts nothing. What a passive does is
      * heard where the thing it changes happens -- a lifesteal where a blow lands --
      * rather than when a key is pressed.
      *

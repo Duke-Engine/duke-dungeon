@@ -4,6 +4,7 @@ import uz.dukeengine.core.math.Coord3D;
 import uz.dukeengine.core.module.MoveUpdate;
 import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.core.thing.World;
+import uz.dukeengine.dungeon.combat.LevelBonus;
 import uz.dukeengine.dungeon.combat.Swing;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.dungeon.content.MonsterKind;
@@ -33,11 +34,13 @@ import uz.dukeengine.rts.module.WeaponUpdate;
  * fight does not break off the moment the hero steps back — but is finite, so
  * outrunning something slower than you is a real move.
  *
- * <p>A kind the file gives a skill decides for itself when to cast it, and a kind
- * given a band of distance holds that band instead of closing: it backs away from
- * him when he comes too near and follows when he gets too far. Both are numbers
- * on its block, so a caster is still this one mind. A mending is the one skill not
- * cast at him: it goes to whichever of its own needs it most -- see {@link Mending}.
+ * <p>A kind the file gives skills decides for itself which to cast and when: the
+ * first, in the order its block writes them, that its level has opened, that is
+ * ready, that it can pay for and whose own condition holds. And a kind given a band
+ * of distance holds that band instead of closing: it backs away from him when he
+ * comes too near and follows when he gets too far. Both are numbers on its block,
+ * so a caster is still this one mind. A mending is the one skill not cast at him:
+ * it goes to whichever of its own needs it most -- see {@link Mending}.
  *
  * <p>Deterministic: no randomness at all, and the frame a monster re-plans on is
  * staggered by its own object id, so a roomful does not all path on the same
@@ -55,12 +58,6 @@ public final class MonsterBrain extends UnitScript {
      * hurt: whoever did it is coming to answer for it wherever they are standing.
      */
     private static final float THE_WHOLE_FLOOR = 100_000f;
-
-    /**
-     * A monster's skill has no ranks to buy: it is cast at the first, and what makes
-     * it hit harder further down is the depth's bonus, as for its weapon.
-     */
-    private static final int ITS_ONLY_RANK = 1;
 
     /** The creature it is, taken in {@link #onStart} from the block the unit was built from. */
     private MonsterKind kind;
@@ -202,52 +199,64 @@ public final class MonsterBrain extends UnitScript {
     }
 
     /**
-     * Its skill, when everything a player checks before casting holds: he is within
-     * the distance it casts across, nothing but air is between them, and the skill is
-     * ready. Thrown at where he stands now, so a player who keeps moving can walk out
-     * of its way -- which is the whole of what makes it fair.
+     * One of its skills, when everything a player checks before casting holds: the
+     * first, in the order its block writes them, that its level has opened, that is
+     * ready, that it can pay for and that is cast at all -- and whose own condition
+     * holds: for a mending, one of its own hurt enough in reach and sight; for anything
+     * else, him inside the distance it casts across with nothing but air between them.
+     * A cast the book declines -- no room for a rift -- passes to the next skill.
      *
-     * <p>Not while its ordinary shot is still leaving it, and nothing more leaves its
+     * <p>Thrown at where he stands now, so a player who keeps moving can walk out of
+     * its way -- which is the whole of what makes it fair. Not while its ordinary shot
+     * is still leaving it, nor while its last cast is, and nothing more leaves its
      * weapon until the cast is done: one throw at a time, so each is seen.
+     *
+     * <p>A monster holds rank 1 of every skill its level has opened -- the level its
+     * first rank waits for, as a hero's does (see {@link Skill#levelForRank}) -- and
+     * rank 0, which the book refuses, of the rest. It never ranks past 1: what makes it
+     * hit harder is its level's bonus, as for its weapon.
      */
     private void castAt(GameObject hero) {
-        if (!kind.hasSkill() || midBlow()) {
-            return;
-        }
         var book = unit().findModule(SkillBook.class);
-        if (book == null || !book.isReady(kind.skillKey())) {
+        if (book == null || midBlow() || midCast()) {
             return;
         }
-        var skill = book.skillOn(kind.skillKey());
-        if (skill.effect() == SkillEffect.HEAL) {
-            mend(book, skill);
-            return;
-        }
-        float gap = World.reachBetween(unit(), hero);
-        if (gap < kind.skillNearest() || gap > kind.skillFurthest()
-                || !SightLine.clear(unit(), hero)) {
-            return;
-        }
-        if (book.cast(kind.skillKey(), ITS_ONLY_RANK, null, hero.getPosition())) {
-            holdTheWeapon();
+        int level = LevelBonus.levelOf(unit());
+        for (var skill : book.getSkills()) {
+            int rank = level >= skill.levelForRank(1) ? 1 : 0;
+            if (rank == 0 || skill.effect().isPassive() || !book.isReady(skill.key())
+                    || !book.canAfford(skill.key(), rank)) {
+                continue;
+            }
+            boolean cast = skill.effect() == SkillEffect.HEAL ? mend(book, skill, rank)
+                    : throwAt(book, skill, rank, hero);
+            if (cast) {
+                holdTheWeapon();
+                return;
+            }
         }
     }
 
+    /** At him, if he stands inside the distance it casts across and in plain sight: whether it went. */
+    private boolean throwAt(SkillBook book, Skill skill, int rank, GameObject hero) {
+        float gap = World.reachBetween(unit(), hero);
+        return gap >= kind.skillNearest() && gap <= kind.skillFurthest() && SightLine.clear(unit(), hero)
+                && book.cast(skill.key(), rank, null, hero.getPosition());
+    }
+
     /**
-     * Mend whichever of its own is worst hurt, if anyone is hurt enough.
+     * Mend whichever of its own is worst hurt, if anyone is hurt enough: whether it did.
      *
      * <p>Looked for on one frame in every few, staggered by its id as a route is: the
      * search is everything round it, and nobody bleeds out in the wait.
      */
-    private void mend(SkillBook book, Skill skill) {
+    private boolean mend(SkillBook book, Skill skill, int rank) {
         int every = kind.repathFrames();
         if (frame() % every != Math.floorMod(unit().getId().value(), every)) {
-            return;
+            return false;
         }
         var patient = Mending.worstHurt(world(), unit(), skill.range(), skill.healBelowPercent());
-        if (patient != null && book.cast(kind.skillKey(), ITS_ONLY_RANK, patient.getId(), null)) {
-            holdTheWeapon();
-        }
+        return patient != null && book.cast(skill.key(), rank, patient.getId(), null);
     }
 
     /**
