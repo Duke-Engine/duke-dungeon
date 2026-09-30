@@ -34,8 +34,11 @@ public final class Spawner {
     private Spawner() {
     }
 
-    /** Everything a floor puts in the world — the heroes in the order they were given — and the boss it hangs its exit on. */
-    public record Placed(List<GameObject> heroes, GameObject boss, List<GameObject> monsters) {
+    /**
+     * Everything a floor puts in the world — the heroes in the order they were given — the boss it hangs its exit
+     * on, and the gate across its keep's doorway, or null for a floor with none.
+     */
+    public record Placed(List<GameObject> heroes, GameObject boss, List<GameObject> monsters, GameObject gate) {
     }
 
     /**
@@ -86,11 +89,13 @@ public final class Spawner {
         // will ever pick one as something to hit. All but the gate, which is
         // turned: its shape is a box as long as its doorway, which it shuts only
         // lying along the wall, where every other prop is round, or has no shape.
+        GameObject gate = null;
         for (var prop : dungeon.props()) {
             if (!underIt.contains(key(prop.at().cellX(), prop.at().cellY()))) {
                 var thing = spawn(game, dungeonPlayer, prop.kind(), at(logic, prop.at()));
                 if (thing != null && thing.findModule(GateUpdate.class) != null) {
                     thing.setOrientation(acrossTheDoorway(dungeon, prop.at()));
+                    gate = thing;
                 }
             }
         }
@@ -104,7 +109,7 @@ public final class Spawner {
         if (fountain != null) {
             spawn(game, dungeonPlayer, standing, at(logic, fountain));
         }
-        return new Placed(java.util.Collections.unmodifiableList(heroes), boss, List.copyOf(monsters));
+        return new Placed(java.util.Collections.unmodifiableList(heroes), boss, List.copyOf(monsters), gate);
     }
 
     /** How many steps from the way in a fountain may stand, looking for room enough round it. */

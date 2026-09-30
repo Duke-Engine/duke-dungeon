@@ -82,6 +82,16 @@ Run
   ; fountain, which mends whoever stands near it -- see data/props/fountain.duke.
   ; A floor with no room for it at the way in goes without. Empty for nothing.
   WayIn = Fountain
+
+  ; What the tracker at the top of the screen says of a floor's mission, a step
+  ; at a time -- see run/Mission. The first counts: %d the monsters the floor
+  ; put outside its keep that are dead, then %d how many it put there. A floor
+  ; with no keep -- a stage, or one where none fitted -- has no mission, and its
+  ; tracker says only the last.
+  ClearWord = Qal'adan tashqaridagi barcha monstrlarni o'ldiring — %d/%d
+  TakeKeyWord = Kalitni oling
+  GiveKeyWord = Kalitni boss darvozasiga bering
+  KillBossWord = Bossni o'ldiring
 End
 
 Moment
