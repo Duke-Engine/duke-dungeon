@@ -115,6 +115,28 @@ terrain is checked only at a walker's centre cell (GameLogic ~510-525).
 Done when: a hero (radius 4-5) walks between two trees whose trunks stand 12+ units apart, and a boss (radius 8)
 goes round.
 
+## E7 — A creature's own level on its bar (2026-09-30, small)
+
+The game is giving every monster a level of its own — rising with the floor's depth and, within a floor, with the
+way to the boss (roadmap piece 4, `2026-09-30-roadmap.md`). The bar's medallion shows the floor's depth for anybody
+but the hero (`UnitBarReading.levelOn`: `isHero ? heroLevel : depth`), so every monster on a floor shows one number.
+
+- The game names a word prefix in its unit-bar look (e.g. `LevelWord = level:` in the `UnitBar` block → a field on
+  `UnitBarLook`), and sets a condition on each creature, `level:7` (`GameObject.setCondition`, simulation state,
+  already in the snapshot as `UnitView.conditions`).
+- The medallion shows the number after that prefix for a creature carrying such a word; the hero keeps his own
+  (`heroLevel`); anybody else falls back to the depth, as now. A game that names no prefix changes nothing.
+
+Done when: two skeletons on one floor, one with `level:3` and one with `level:8`, show 3 and 8; a floor with no such
+words looks exactly as today.
+
+**Landed** in the engine as 1e1c71a4 (0.7.0, unreleased): `UnitBarLook` has a last component `levelWord`, and
+`withLevelWord(String)` on any look; the game adds `LevelWord = level:` to its own `UnitBar` record and hands it
+through `withLevelWord`, and sets `GameObject.setCondition("level:7")` on each creature (one such word per creature:
+the words are sorted and the first that starts with the prefix wins). The hero keeps `heroLevel`; a creature with no
+such word, or one that is not a number, shows the depth; a game naming no prefix changes nothing. The prefix matches
+exactly, case included.
+
 ---
 
 **Order the game can use them in:** E1 and E2 at once (small). E3 before the descent grows past ~100×76. E4
