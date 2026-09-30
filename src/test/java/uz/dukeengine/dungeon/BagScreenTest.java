@@ -2,6 +2,7 @@ package uz.dukeengine.dungeon;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -348,6 +349,62 @@ class BagScreenTest {
         assertTrue(drawn.text.contains(key.name()) && drawn.text.contains(SETTINGS.lootDrops().takeHint()),
                 "the pointer on it says what it is and how to take it: " + drawn.text);
         assertTrue(drawn.text.stream().noneMatch(String::isEmpty), "and leaves no row empty: " + drawn.text);
+    }
+
+    /**
+     * A thing that does something says how it is used, beside how it is taken, on its card in the bag — the key's left
+     * click would be known to nobody otherwise. A thing that does nothing says only how it is taken, and so does the
+     * key lying on the floor, where a left click does nothing to it.
+     */
+    @Test
+    void aThingThatDoesSomethingSaysHowToUseItInTheBagAndOnlyThere() {
+        var session = Dungeon.newSession(21L);
+        var game = session.game();
+        var bag = bagOver(game);
+        bag.show(session);
+        game.runHeadless(2);
+        var gauntlet = SETTINGS.loot().stream().filter(item -> item.id().equals("Gauntlet")).findFirst()
+                .orElseThrow();
+        var key = SETTINGS.loot().stream().filter(item -> item.kind() == LootKind.KEY).findFirst().orElseThrow();
+        session.progress().getLoot().take(gauntlet, 0, 30);
+        session.progress().getLoot().take(key, 0, 30);
+        var take = SETTINGS.lootDrops().takeHint();
+        var use = SETTINGS.lootDrops().useHint();
+        assertNotEquals(uz.dukeengine.dungeon.world.LootDrops.DEFAULTS.useHint(), use,
+                "the file says it, not the default");
+        var drawn = new Drawn();
+        bag.paint(drawn);
+        var onGauntlet = drawn.picture(gauntlet.icon());
+        var onKey = drawn.picture(key.icon());
+        assertNotNull(onGauntlet, "the gauntlet is drawn in its slot: " + drawn.pictures);
+        assertNotNull(onKey, "the key is drawn in its slot: " + drawn.pictures);
+
+        bag.take(new uz.dukeengine.client3d.CanvasInput.Pointer(onGauntlet.middleX(), onGauntlet.middleY()));
+        drawn.clear();
+        bag.paint(drawn);
+        assertTrue(drawn.text.contains(gauntlet.name()) && drawn.text.contains(take) && !drawn.text.contains(use),
+                "a thing that does nothing is only taken: " + drawn.text);
+
+        bag.take(new uz.dukeengine.client3d.CanvasInput.Pointer(onKey.middleX(), onKey.middleY()));
+        drawn.clear();
+        bag.paint(drawn);
+        assertTrue(drawn.text.contains(key.name()) && drawn.text.contains(take) && drawn.text.contains(use),
+                "the key is taken, and used: " + drawn.text);
+        assertTrue(drawn.text.indexOf(take) < drawn.text.indexOf(use), "how to take it first: " + drawn.text);
+
+        // Put down, the key lies on the floor, and the pointer on it there says only how to take it.
+        var hero = find(game, "Rogue");
+        game.pressCommand("drop:1", hero.getPosition(), 0f, -1);
+        game.runHeadless(4);
+        var lying = find(game, "Key");
+        assertNotNull(lying, "the key is not on the floor");
+        bag.take(new uz.dukeengine.client3d.CanvasInput.Pointer(40, 40));
+        game.setPointedAt(lying.getId().value());
+        game.runHeadless(2);
+        drawn.clear();
+        bag.paint(drawn);
+        assertTrue(drawn.text.contains(key.name()) && drawn.text.contains(take) && !drawn.text.contains(use),
+                "lying on the floor it is only taken: " + drawn.text);
     }
 
     /** The pointer on a thing lying on the floor, with his hero in hand, says what it gives and how to take it. */

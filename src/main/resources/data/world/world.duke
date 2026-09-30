@@ -358,9 +358,11 @@ LootDrops
   JoinCount = 3
   TopLevel = 3
   FullWord = Sumka to'la
-  ; Under a thing the pointer is on, and beside the pointer while one is in hand.
+  ; Under a thing the pointer is on, and beside the pointer while one is in hand. A
+  ; thing in the bag that does something -- the key -- says UseHint under it as well.
   TakeHint = O'ng tugma: olish
   DropHint = Chap tugma: yerga qo'yish
+  UseHint = Chap tugma: ishlatish
   ; What each Extra is called when the pointer rests on a thing that has one.
   HealthRegenWord = Jon/s
   ManaRegenWord = Mana/s

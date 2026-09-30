@@ -10,9 +10,10 @@ import uz.dukeengine.dungeon.content.DungeonSettings;
  * hero says in a bubble over his head, above his bar.
  *
  * <p>Drawn on the game's own canvas with the bag, on the window's thread, and only reading: the tracker's words are
- * the run's, written whole on the simulation's thread every frame ({@code DungeonRun.getTracker}); a hero's are his
- * bag's note ({@code LootBag.say}) — what he makes of the gate, why he kept the key, that the bag is full, what he
- * just picked up — and where he is on the screen is where the client put his bar this frame ({@link Canvas#barOf}).
+ * the run's, written whole on the simulation's thread every frame ({@code DungeonRun.getTracker}) and blank once the
+ * run is lost or won, when nothing is drawn but the banner; a hero's are his bag's note ({@code LootBag.say}) — what
+ * he makes of the gate, why he kept the key, that the bag is full, what he just picked up — and where he is on the
+ * screen is where the client put his bar this frame ({@link Canvas#barOf}).
  */
 final class MissionScreen {
 
@@ -23,7 +24,7 @@ final class MissionScreen {
     static void paint(Canvas canvas, Dungeon.Session match, DungeonSettings settings) {
         var look = settings.menu();
         var words = match.run().getTracker();
-        if (!words.isEmpty()) {
+        if (!words.isBlank()) {
             tracker(canvas, words, look);
         }
         var heroes = settings.heroes().stream().map(hero -> hero.name()).collect(Collectors.toUnmodifiableSet());

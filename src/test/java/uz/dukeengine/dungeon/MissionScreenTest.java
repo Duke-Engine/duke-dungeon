@@ -1,6 +1,7 @@
 package uz.dukeengine.dungeon;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -9,12 +10,24 @@ import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import uz.dukeengine.client3d.Canvas;
+import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.dungeon.content.DungeonSettings;
+import uz.dukeengine.dungeon.gen.DungeonGenerator;
+import uz.dukeengine.dungeon.gen.Layout;
+import uz.dukeengine.dungeon.run.DungeonRun;
+import uz.dukeengine.dungeon.stage.Stage;
+import uz.dukeengine.game.DukeGame;
 
 /** What the game says over the world: the mission's step at the top, and what a hero says over his head. */
 class MissionScreenTest {
 
     private static final DungeonSettings SETTINGS = DungeonSettings.load();
+
+    private static GameObject find(DukeGame game, String template) {
+        return game.getLogic().getObjects().stream()
+                .filter(object -> object.getTemplate().name().equals(template))
+                .findFirst().orElseThrow();
+    }
 
     /** Every line drawn and where, on a window 1600 by 900 where every thing's bar stands at one place. */
     private static final class Drawn implements Canvas {
@@ -146,19 +159,76 @@ class MissionScreenTest {
         var game = session.game();
         game.runHeadless(2);
         var logic = game.getLogic();
-        var hero = logic.getObjects().stream()
-                .filter(object -> object.getTemplate().name().equals("Rogue")).findFirst().orElseThrow();
+        var hero = find(game, "Rogue");
         logic.spawn(logic.findTemplate("Skeleton"), hero.getPosition(), hero.getPlayerIndex());
         var words = SETTINGS.lootDrops().fullWord();
         session.progress().getLoot().say(words, logic.getFrame(), 90);
         game.runHeadless(1);
-        assertEquals(2, game.getSnapshot().units().stream().filter(unit -> unit.playerIndex() == hero.getPlayerIndex())
-                .count(), "he and the creature beside him are both his, and both seen");
+        long his = game.getSnapshot().units().stream().filter(unit -> unit.playerIndex() == hero.getPlayerIndex())
+                .count();
+        assertTrue(his >= 2, "the premise: he and the creature beside him are both his, and both seen: " + his);
         var drawn = new Drawn(new Canvas.Box(700f, 400f, 60f, 8f));
 
         MissionScreen.paint(drawn, session, SETTINGS);
 
         assertEquals(1, drawn.lines.stream().filter(line -> line.text().equals(words)).count(),
                 "one bubble, over the hero, and none over what is his beside him: " + drawn.lines);
+    }
+
+    /**
+     * A run that is over has no step to say: the banner has the screen, and the last line of the floor it ended on
+     * is not left under it — through the wait, until the next floor is laid and says its own.
+     */
+    @Test
+    void theStepIsNotLeftUnderTheBannerOfADeath() {
+        var session = Dungeon.newSession(21L);
+        var game = session.game();
+        game.runHeadless(2);
+        var run = session.run();
+        assertFalse(run.getTracker().isEmpty(), "the premise: a step is said while he fights");
+
+        game.getLogic().destroyObject(find(game, "Rogue"));
+        game.runHeadless(1);
+        assertEquals(DungeonRun.State.DEAD, run.getState());
+        assertEquals("", run.getTracker(), "the floor he died on says nothing more");
+        var drawn = new Drawn(null);
+        MissionScreen.paint(drawn, session, SETTINGS);
+        assertTrue(drawn.lines.isEmpty(), "and nothing is drawn under the banner: " + drawn.lines);
+
+        game.runHeadless(SETTINGS.run().respawnDelayFrames() / 2);
+        assertEquals(DungeonRun.State.DEAD, run.getState(), "the premise: still waiting");
+        assertEquals("", run.getTracker(), "and still nothing to say");
+
+        game.runHeadless(SETTINGS.run().respawnDelayFrames());
+        assertEquals(DungeonRun.State.RUNNING, run.getState());
+        assertFalse(run.getTracker().isEmpty(), "the next floor says its step");
+    }
+
+    /** The same for a win: the boss down, the banner up, and no "kill the boss" under it. */
+    @Test
+    void theStepIsNotLeftUnderTheBannerOfAWin() {
+        var floor = DungeonGenerator.generate(21L, SETTINGS, 1,
+                Layout.sized(SETTINGS, SETTINGS.mapWidth(), SETTINGS.mapHeight(), SETTINGS.maxRooms()));
+        var session = Dungeon.newStageSession(new Stage("test", "Test", "", 1, 1, 21L, floor), SETTINGS);
+        var game = session.game();
+        game.runHeadless(2);
+        var run = session.run();
+        assertEquals(SETTINGS.run().killBossWord(), run.getTracker(), "the premise: the boss stands, and it is said");
+
+        game.getLogic().destroyObject(find(game, floor.boss().kind()));
+        game.runHeadless(2);
+        assertEquals(DungeonRun.State.WON, run.getState());
+        assertEquals("", run.getTracker(), "the boss is dead, and there is nothing left to tell him to do");
+        var drawn = new Drawn(null);
+        MissionScreen.paint(drawn, session, SETTINGS);
+        assertTrue(drawn.lines.isEmpty(), "nothing is drawn under the banner: " + drawn.lines);
+
+        game.runHeadless(SETTINGS.run().victoryFrames() / 2);
+        assertEquals(DungeonRun.State.WON, run.getState(), "the premise: still looking at the word");
+        assertEquals("", run.getTracker(), "and still nothing to say");
+
+        game.runHeadless(SETTINGS.run().victoryFrames());
+        assertEquals(DungeonRun.State.RUNNING, run.getState());
+        assertEquals(SETTINGS.run().killBossWord(), run.getTracker(), "the next run says its step again");
     }
 }

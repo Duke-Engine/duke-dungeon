@@ -132,7 +132,10 @@ public final class DungeonRun {
     private Mission mission;
     /** Where it stands, worked out every frame the floor is played: the last step on a floor with none. */
     private Mission.Step step = Mission.Step.KILL;
-    /** The tracker's words for it, read by the window: written whole, on the simulation's thread, every frame. */
+    /**
+     * The tracker's words for it, read by the window: written whole, on the simulation's thread, every frame the floor
+     * is played — and blank from the frame the run is lost or won until the next floor is laid.
+     */
     private volatile String tracker = "";
 
     public DungeonRun(GamePlayer heroPlayer, GamePlayer dungeonPlayer, Floors floors,
@@ -434,6 +437,7 @@ public final class DungeonRun {
         if (!standing) {
             state = State.DEAD;
             endedFrame = logic.getFrame();
+            tracker = ""; // the banner has the screen: the next floor says its step when it is laid
             game.setBanner("lost|" + settings.run().diedWord());
             return;
         }
@@ -445,6 +449,7 @@ public final class DungeonRun {
             if (floors.lastDepth() > 0 && depth >= floors.lastDepth()) {
                 state = State.WON;
                 endedFrame = logic.getFrame();
+                tracker = "";
                 game.setBanner("won|" + settings.run().wonWord());
                 return;
             }
@@ -673,7 +678,10 @@ public final class DungeonRun {
         return step;
     }
 
-    /** The mission's step in words, as the tracker at the top of the window says it — from any thread. */
+    /**
+     * The mission's step in words, as the tracker at the top of the window says it — from any thread — or blank
+     * while a run that was lost or won waits to start again.
+     */
     public String getTracker() {
         return tracker;
     }

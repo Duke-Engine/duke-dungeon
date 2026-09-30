@@ -223,17 +223,18 @@ final class BagScreen implements Painter, CanvasInput {
             canvas.drawImage(Canvas.Image.of(inHand.icon()), mouseX + 10, mouseY + 10, mouseX + 10 + size,
                     mouseY + 10 + size, 0xD0FFFFFF, Canvas.Blend.ALPHA);
             if (!using) {
-                tip(canvas, List.of(settings.lootDrops().dropHint()), mouseX + 14, mouseY + 14 + size, false);
+                tip(canvas, List.of(), List.of(settings.lootDrops().dropHint()), mouseX + 14, mouseY + 14 + size,
+                        false);
             }
         } else if (over >= 0 && slots.get(over) != null) {
             var item = slots.get(over);
-            tip(canvas, lines(item), slotX(over) - gap, slotY(over), true);
+            tip(canvas, lines(item), hintsOf(item, true), slotX(over) - gap, slotY(over), true);
         } else if (!onTheBag(mouseX, mouseY) && lying.get(match.game().getPointedAt()) instanceof Loot under) {
-            tip(canvas, lines(under), mouseX + 20, mouseY + 20, false);
+            tip(canvas, lines(under), hintsOf(under, false), mouseX + 20, mouseY + 20, false);
         }
     }
 
-    /** Name, what it gives if it gives anything, and how to take it. */
+    /** Name, and what it gives if it gives anything. */
     private List<String> lines(Loot item) {
         var said = new java.util.ArrayList<String>();
         said.add(LootBag.nameOf(item));
@@ -245,8 +246,19 @@ final class BagScreen implements Painter, CanvasInput {
         if (!extra.isEmpty()) {
             said.add(extra);
         }
-        said.add(settings.lootDrops().takeHint());
         return said;
+    }
+
+    /**
+     * How to take it and, on its card in the bag, how to use it if it does something: the left button, see
+     * {@link #click}. Lying on the floor a left click does nothing to it, so there it says only how to take it.
+     */
+    private List<String> hintsOf(Loot item, boolean inBag) {
+        var drops = settings.lootDrops();
+        if (inBag && item.use() != ItemUse.NONE) {
+            return List.of(drops.takeHint(), drops.useHint());
+        }
+        return List.of(drops.takeHint());
     }
 
     /** What a thing gives beside its figure past the first level, as the pointer says it — {@code +2 Mana/s}. */
@@ -261,10 +273,13 @@ final class BagScreen implements Painter, CanvasInput {
     }
 
     /**
-     * A card of {@code lines}: the first a name, the last a hint, and between them what it gives, if anything. Beside
-     * {@code (x, y)} — to its left when {@code leftOf}, as a slot's is — and kept on the screen.
+     * A card: {@code said}, the first line a name and then what it gives, if anything, and under it {@code hints}, how
+     * to handle it — a card of hints alone has its first as its heading. Beside {@code (x, y)} — to its left when
+     * {@code leftOf}, as a slot's is — and kept on the screen.
      */
-    private void tip(Canvas canvas, List<String> lines, float x, float y, boolean leftOf) {
+    private void tip(Canvas canvas, List<String> said, List<String> hints, float x, float y, boolean leftOf) {
+        var lines = new java.util.ArrayList<>(said);
+        lines.addAll(hints);
         var look = settings.menu();
         float across = 0f;
         float down = 0f;
@@ -284,8 +299,8 @@ final class BagScreen implements Painter, CanvasInput {
         float line = from + pad;
         for (int i = 0; i < lines.size(); i++) {
             var font = i == 0 ? big() : small();
-            // A name, what it gives, and last how to take it: torch, bone and the hint's grey.
-            int colour = i == 0 ? look.torchColour() : i == lines.size() - 1 ? look.hintColour() : look.boneColour();
+            // A name, what it gives, and last how to handle it: torch, bone and the hints' grey.
+            int colour = i == 0 ? look.torchColour() : i >= said.size() ? look.hintColour() : look.boneColour();
             canvas.drawText(font, lines.get(i), at + pad, line, 0xFF000000 | colour);
             line += canvas.measure(font, lines.get(i)).lineHeight() + 2f;
         }
