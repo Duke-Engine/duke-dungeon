@@ -73,10 +73,10 @@ class KeepShapeTest {
     }
 
     /** Reusable cave for placement tests. */
-    private static Cave twoRoomCave() {
+    private static Cave twoRoomCave(int seed) {
         var rooms = List.of(new Room(3, 10, 9, 9), new Room(20, 10, 9, 9));
         var links = List.of(new Link(0, 1));
-        return Cave.carve(new DeterministicRng(1), 60, 30, rooms, links, 1, 2, 30, Theme.Terrain.DEFAULTS);
+        return Cave.carve(new DeterministicRng(seed), 60, 30, rooms, links, 1, 2, 30, Theme.Terrain.DEFAULTS);
     }
 
     /** In solid rock beside the deeper of two chambers, its gate toward it, its road no longer than it may be. */
@@ -84,7 +84,7 @@ class KeepShapeTest {
     void itGoesInSolidRockBesideTheDeepestChamberFacingIt() {
         var rooms = List.of(new Room(3, 10, 9, 9), new Room(20, 10, 9, 9));
         var links = List.of(new Link(0, 1));
-        var cave = twoRoomCave();
+        var cave = twoRoomCave(1);
 
         var keep = Keep.site(cave, rooms, links, List.of(9), 30);
 
@@ -117,18 +117,19 @@ class KeepShapeTest {
         assertNull(Keep.site(cave, rooms, links, List.of(15, 9), 30));
     }
 
-    /** Larger sizes are tried first beside the deepest chambers. */
+    /** Larger sizes beside one-tunnel-short-of-deepest beat smaller beside the deepest. */
     @Test
     void largerSizeFirstBesideTheDeepest() {
-        var rooms = List.of(new Room(3, 10, 9, 9), new Room(20, 10, 9, 9));
+        // Rooms swapped: chamber 0 is deepest, chamber 1 is one tunnel away
+        var rooms = List.of(new Room(20, 10, 9, 9), new Room(3, 10, 9, 9));
         var links = List.of(new Link(0, 1));
-        var cave = twoRoomCave();
+        var cave = Cave.carve(new DeterministicRng(1), 60, 30, rooms, links, 0, 2, 12, Theme.Terrain.DEFAULTS);
 
-        var keep = Keep.site(cave, rooms, links, List.of(11, 9), 30);
+        var keep = Keep.site(cave, rooms, links, List.of(11, 9), 12);
 
-        assertNotNull(keep, "an 11-cell keep fits in the same rock");
-        assertEquals(11, keep.size(), "phase 1 returns the larger size");
-        assertEquals(1, keep.chamber(), "beside the deeper chamber");
+        assertNotNull(keep, "an 11-cell keep fits in solid rock");
+        assertEquals(11, keep.size(), "the 11 beside one-tunnel-short beats 9 beside the deepest");
+        assertEquals(0, keep.chamber(), "beside chamber 0, which is one tunnel from the deepest");
     }
 
     /** The road cannot exceed maxSpacing. */
@@ -136,7 +137,7 @@ class KeepShapeTest {
     void roadBoundEnforced() {
         var rooms = List.of(new Room(3, 10, 9, 9), new Room(20, 10, 9, 9));
         var links = List.of(new Link(0, 1));
-        var cave = twoRoomCave();
+        var cave = twoRoomCave(1);
 
         assertNull(Keep.site(cave, rooms, links, List.of(9), 3), "no keep fits with road <= 3");
     }
@@ -146,44 +147,50 @@ class KeepShapeTest {
     void shortestRoadAndReadingOrder() {
         var rooms = List.of(new Room(3, 10, 9, 9), new Room(20, 10, 9, 9));
         var links = List.of(new Link(0, 1));
-        var cave = twoRoomCave();
 
-        var keep = Keep.site(cave, rooms, links, List.of(9), 30);
-        var chamber = rooms.get(1);
-        int chosenRoad = Math.abs(chamber.centerCellX() - keep.walls().centerCellX())
-                + Math.abs(chamber.centerCellY() - keep.walls().centerCellY()) - keep.walls().w() / 2;
+        // Test across multiple seeds; seed 2 has ties that test reading-order tie-breaking
+        for (int seed = 1; seed <= 20; seed++) {
+            var cave = twoRoomCave(seed);
+            var keep = Keep.site(cave, rooms, links, List.of(9), 30);
+            if (keep == null) {
+                continue;
+            }
+            var chamber = rooms.get(1);
+            int chosenRoad = Math.abs(chamber.centerCellX() - keep.walls().centerCellX())
+                    + Math.abs(chamber.centerCellY() - keep.walls().centerCellY()) - keep.walls().w() / 2;
 
-        // Brute force: check every valid position
-        int earlierOrEqual = 0;
-        for (int y = 2; y + 9 + 2 <= 30; y++) {
-            for (int x = 2; x + 9 + 2 <= 60; x++) {
-                // Must be surrounded by rock
-                boolean surrounded = true;
-                for (int dy = -1; dy <= 9; dy++) {
-                    for (int dx = -1; dx <= 9; dx++) {
-                        if (!cave.isStone(x + dx, y + dy)) {
-                            surrounded = false;
-                            break;
+            // Brute force: check every valid position
+            int earlierOrEqual = 0;
+            for (int y = 2; y + 9 + 2 <= 30; y++) {
+                for (int x = 2; x + 9 + 2 <= 60; x++) {
+                    // Must be surrounded by rock
+                    boolean surrounded = true;
+                    for (int dy = -1; dy <= 9; dy++) {
+                        for (int dx = -1; dx <= 9; dx++) {
+                            if (!cave.isStone(x + dx, y + dy)) {
+                                surrounded = false;
+                                break;
+                            }
                         }
+                        if (!surrounded) break;
                     }
-                    if (!surrounded) break;
-                }
-                if (!surrounded) {
-                    continue;
-                }
-                // Check road length
-                int road = Math.abs(chamber.centerCellX() - (x + 4))
-                        + Math.abs(chamber.centerCellY() - (y + 4)) - 4;
-                if (road > 30) {
-                    continue;
-                }
-                if (road < chosenRoad || (road == chosenRoad && (y < keep.walls().y()
-                        || (y == keep.walls().y() && x < keep.walls().x())))) {
-                    earlierOrEqual++;
+                    if (!surrounded) {
+                        continue;
+                    }
+                    // Check road length
+                    int road = Math.abs(chamber.centerCellX() - (x + 4))
+                            + Math.abs(chamber.centerCellY() - (y + 4)) - 4;
+                    if (road > 30) {
+                        continue;
+                    }
+                    if (road < chosenRoad || (road == chosenRoad && (y < keep.walls().y()
+                            || (y == keep.walls().y() && x < keep.walls().x())))) {
+                        earlierOrEqual++;
+                    }
                 }
             }
+            assertEquals(0, earlierOrEqual, "seed " + seed + ": no position has shorter road or equal road in earlier order");
         }
-        assertEquals(0, earlierOrEqual, "no position has shorter road or equal road in earlier order");
     }
 
     /** All four sides work: EAST has the gate on the right, SOUTH at the bottom. */
