@@ -23,7 +23,7 @@ import uz.dukeengine.dungeon.skill.SkillBook;
 import uz.dukeengine.dungeon.skill.Summoned;
 import uz.dukeengine.dungeon.skill.Summoning;
 import uz.dukeengine.game.DukeGame;
-import uz.dukeengine.rts.module.ExperienceModule;
+import uz.dukeengine.combat.module.ExperienceModule;
 
 /**
  * A monster that calls up more of them: which, how many, where, for how long, what they

@@ -18,7 +18,7 @@ import uz.dukeengine.dungeon.level.GrowableBody;
 import uz.dukeengine.dungeon.level.HeroProgress;
 import uz.dukeengine.dungeon.skill.SkillBook;
 import uz.dukeengine.dungeon.skill.SkillEffect;
-import uz.dukeengine.rts.module.WeaponUpdate;
+import uz.dukeengine.combat.module.WeaponUpdate;
 
 /**
  * The second hero, and the promise that adding him was a file rather than a

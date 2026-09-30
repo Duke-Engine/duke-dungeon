@@ -12,8 +12,8 @@ import uz.dukeengine.dungeon.Dungeon;
 import uz.dukeengine.dungeon.content.Content;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.game.DukeGame;
-import uz.dukeengine.rts.message.GameMessage;
-import uz.dukeengine.rts.module.ExperienceModule;
+import uz.dukeengine.combat.message.CombatOrder;
+import uz.dukeengine.combat.module.ExperienceModule;
 
 /**
  * The hero getting stronger by killing things, in the game he is actually played
@@ -134,7 +134,7 @@ class HeroProgressTest {
         assertNotNull(skeleton, "a skeleton should have been spawned to fight");
         var skeletonId = skeleton.getId();
 
-        game.postCommand(new GameMessage.AttackObject(game.getLocalPlayerIndex(),
+        game.postCommand(new CombatOrder.AttackObject(game.getLocalPlayerIndex(),
                 List.of(hero(game).getId()), skeletonId));
 
         int frames = 0;
@@ -216,7 +216,7 @@ class HeroProgressTest {
         assertNotNull(target);
         var skeletonId = target.getId();
 
-        game.postCommand(new GameMessage.AttackObject(game.getLocalPlayerIndex(),
+        game.postCommand(new CombatOrder.AttackObject(game.getLocalPlayerIndex(),
                 List.of(hero.getId()), skeletonId));
 
         int frames = 0;
@@ -287,7 +287,7 @@ class HeroProgressTest {
         for (int i = 0; i < 40 && session.progress().getLevel() == 1; i++) {
             var skeleton = creature(game, "Skeleton");
             if (skeleton != null && hero(game) != null) {
-                game.postCommand(new GameMessage.AttackObject(game.getLocalPlayerIndex(),
+                game.postCommand(new CombatOrder.AttackObject(game.getLocalPlayerIndex(),
                         List.of(hero(game).getId()), skeleton.getId()));
             }
             game.runHeadless(60);

@@ -13,7 +13,7 @@ import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.dungeon.Dungeon;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.game.DukeGame;
-import uz.dukeengine.rts.message.GameMessage;
+import uz.dukeengine.combat.message.CombatOrder;
 
 /**
  * A hero sent for a thing on the floor, or to put one of his down: he walks there and it changes hands — and the
@@ -119,7 +119,7 @@ class ItemErrandTest {
         ItemErrand.pickUp(room.hero(), chest, bag, room.rules());
         room.game().runHeadless(5);
 
-        room.game().postCommand(new GameMessage.MoveTo(room.hero().getPlayerIndex(), List.of(room.hero().getId()),
+        room.game().postCommand(new CombatOrder.MoveTo(room.hero().getPlayerIndex(), List.of(room.hero().getId()),
                 new Coord3D(300f, 60f, 0f)));
         room.game().runHeadless(300);
 

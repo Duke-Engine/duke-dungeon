@@ -11,7 +11,7 @@ import uz.dukeengine.core.thing.World;
 import uz.dukeengine.dungeon.combat.LevelBonus;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.dungeon.run.Spawner;
-import uz.dukeengine.rts.module.ExperienceModule;
+import uz.dukeengine.combat.module.ExperienceModule;
 
 /**
  * A rift in the floor that one of the dungeon's own is about to climb out of.

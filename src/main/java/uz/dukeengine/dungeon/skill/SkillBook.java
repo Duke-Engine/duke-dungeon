@@ -19,11 +19,11 @@ import uz.dukeengine.dungeon.combat.LevelBonus;
 import uz.dukeengine.dungeon.combat.Shot;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.dungeon.run.Seal;
-import uz.dukeengine.rts.event.WeaponFired;
-import uz.dukeengine.rts.module.DamageModifier;
-import uz.dukeengine.rts.module.StatusUpdate;
-import uz.dukeengine.rts.module.WeaponHold;
-import uz.dukeengine.rts.module.WeaponUpdate;
+import uz.dukeengine.combat.event.WeaponFired;
+import uz.dukeengine.combat.module.DamageModifier;
+import uz.dukeengine.combat.module.StatusUpdate;
+import uz.dukeengine.combat.module.WeaponHold;
+import uz.dukeengine.combat.module.WeaponUpdate;
 
 /**
  * The skills a hero has, what they are doing right now, and how long until he can

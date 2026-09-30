@@ -544,7 +544,7 @@ final class HeroStatus {
 
     private static float weaponDamage(ThingTemplate template) {
         for (var entry : template.modules()) {
-            if (entry instanceof uz.dukeengine.rts.module.WeaponUpdate.Data weapon) {
+            if (entry instanceof uz.dukeengine.combat.module.WeaponUpdate.Data weapon) {
                 return weapon.damage();
             }
         }

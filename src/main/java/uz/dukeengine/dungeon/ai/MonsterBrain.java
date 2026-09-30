@@ -17,7 +17,7 @@ import uz.dukeengine.core.module.ModuleData;
 import uz.dukeengine.core.module.ModuleGroup;
 import uz.dukeengine.core.module.ModuleGroups;
 import uz.dukeengine.game.script.UnitScript;
-import uz.dukeengine.rts.module.WeaponUpdate;
+import uz.dukeengine.combat.module.WeaponUpdate;
 
 /**
  * The mind every monster in the dungeon shares: notice the hero, close to your

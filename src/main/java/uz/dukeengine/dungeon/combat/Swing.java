@@ -8,7 +8,7 @@ import uz.dukeengine.core.module.ModuleGroups;
 import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.dungeon.run.Seal;
 import uz.dukeengine.dungeon.skill.SkillBook;
-import uz.dukeengine.rts.module.ProjectileLauncher;
+import uz.dukeengine.combat.module.ProjectileLauncher;
 
 /**
  * Remembers the frame this creature last struck a blow, and lets it drink from the blow if a skill of its says so --

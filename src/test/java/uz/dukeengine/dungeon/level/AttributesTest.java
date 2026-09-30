@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 import uz.dukeengine.core.module.MoveUpdate;
 import uz.dukeengine.dungeon.content.Content;
 import uz.dukeengine.dungeon.content.DungeonSettings;
-import uz.dukeengine.rts.module.WeaponUpdate;
+import uz.dukeengine.combat.module.WeaponUpdate;
 
 /**
  * What an attribute is worth, asked without a dungeon.

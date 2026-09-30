@@ -29,10 +29,6 @@ ThemeMonster
   Name = Key
   Model = models/props/key/key_crown.glb
   ModelScale = 6
-  ; The client keeps a model's colour only through a texture, and this model has
-  ; none -- its silver is a colour in the file, which is not read -- so the silver
-  ; is said here. A cool grey, and a little lighter than the picture in the bag:
-  ; the sun lights a plain colour on the floor to about nine tenths of it, and
-  ; nothing on this one catches the light as the picture's highlights do.
-  Tint = 0x9EA3AB
+  ; No Tint: the model has no texture, and the client draws it in the silver its
+  ; file gives it (baseColorFactor); a tint would only darken that.
 End

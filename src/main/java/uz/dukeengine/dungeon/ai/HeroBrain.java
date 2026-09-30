@@ -12,7 +12,7 @@ import uz.dukeengine.core.module.ModuleData;
 import uz.dukeengine.core.module.ModuleGroup;
 import uz.dukeengine.core.module.ModuleGroups;
 import uz.dukeengine.game.script.UnitScript;
-import uz.dukeengine.rts.module.WeaponUpdate;
+import uz.dukeengine.combat.module.WeaponUpdate;
 
 /**
  * What the hero does with an order: walk to what he was pointed at, shoot what he

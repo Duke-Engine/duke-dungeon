@@ -10,7 +10,7 @@ import uz.dukeengine.core.math.Coord3D;
 import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.game.DukeGame;
-import uz.dukeengine.rts.message.GameMessage;
+import uz.dukeengine.combat.message.CombatOrder;
 
 /**
  * Combat as the player meets it: what he clicks on, what comes for him unbidden,
@@ -84,7 +84,7 @@ class DungeonCombatTest {
         var skeletonId = fight.skeleton().getId();
         float startDistance = fight.hero().getPosition().distance(fight.skeleton().getPosition());
 
-        fight.game().postCommand(new GameMessage.AttackObject(
+        fight.game().postCommand(new CombatOrder.AttackObject(
                 fight.game().getLocalPlayerIndex(), List.of(fight.hero().getId()), skeletonId));
         fight.game().runHeadless(600);
 
@@ -105,7 +105,7 @@ class DungeonCombatTest {
         var skeletonId = fight.skeleton().getId();
 
         // Only a move order — never an AttackObject.
-        fight.game().postCommand(new GameMessage.MoveTo(fight.game().getLocalPlayerIndex(),
+        fight.game().postCommand(new CombatOrder.MoveTo(fight.game().getLocalPlayerIndex(),
                 List.of(fight.hero().getId()), fight.skeleton().getPosition()));
         fight.game().runHeadless(600);
 
@@ -130,7 +130,7 @@ class DungeonCombatTest {
         var fight = fight(60f, 150f, 180f, 150f);
         var destination = new Coord3D(320f, 150f, 0f);
 
-        fight.game().postCommand(new GameMessage.MoveTo(fight.game().getLocalPlayerIndex(),
+        fight.game().postCommand(new CombatOrder.MoveTo(fight.game().getLocalPlayerIndex(),
                 List.of(fight.hero().getId()), destination));
         fight.game().runHeadless(500);
 
@@ -148,7 +148,7 @@ class DungeonCombatTest {
         var fight = fight(60f, 150f, 180f, 150f);
         var skeletonId = fight.skeleton().getId();
 
-        fight.game().postCommand(new GameMessage.MoveTo(fight.game().getLocalPlayerIndex(),
+        fight.game().postCommand(new CombatOrder.MoveTo(fight.game().getLocalPlayerIndex(),
                 List.of(fight.hero().getId()), new Coord3D(220f, 150f, 0f)));
         fight.game().runHeadless(900);
 
@@ -206,13 +206,13 @@ class DungeonCombatTest {
         int player = game.getLocalPlayerIndex();
 
         // Get him walking east, so he has a heading to reverse.
-        game.postCommand(new GameMessage.MoveTo(player, List.of(hero.getId()),
+        game.postCommand(new CombatOrder.MoveTo(player, List.of(hero.getId()),
                 new Coord3D(260f, 150f, 0f)));
         game.runHeadless(40);
         float turnedAtX = hero.getPosition().x();
 
         // Now straight back the way he came: a 180° reversal.
-        game.postCommand(new GameMessage.MoveTo(player, List.of(hero.getId()),
+        game.postCommand(new CombatOrder.MoveTo(player, List.of(hero.getId()),
                 new Coord3D(120f, 150f, 0f)));
 
         float widestSwing = 0f;

@@ -12,7 +12,7 @@ import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.dungeon.ai.Orders;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.game.DukeGame;
-import uz.dukeengine.rts.module.WeaponUpdate;
+import uz.dukeengine.combat.module.WeaponUpdate;
 
 /**
  * The fourth button: stand where you are, and fight whatever comes to you.
@@ -72,7 +72,7 @@ class GuardOrderTest {
             return hero.getPosition().x();
         }
 
-        void order(uz.dukeengine.rts.message.GameMessage order) {
+        void order(uz.dukeengine.combat.message.CombatOrder order) {
             game.postCommand(order);
         }
 
@@ -105,7 +105,7 @@ class GuardOrderTest {
     @Test
     void defendStopsAWalk() {
         var field = field(null);
-        field.order(new uz.dukeengine.rts.message.GameMessage.MoveTo(
+        field.order(new uz.dukeengine.combat.message.CombatOrder.MoveTo(
                 field.game().getLocalPlayerIndex(), field.him(),
                 new Coord3D(350f, 150f, 0f)));
         field.game().runHeadless(10);
@@ -132,7 +132,7 @@ class GuardOrderTest {
     @Test
     void defendEndsAChase() {
         var field = field(260f);
-        field.order(new uz.dukeengine.rts.message.GameMessage.AttackObject(
+        field.order(new uz.dukeengine.combat.message.CombatOrder.AttackObject(
                 field.game().getLocalPlayerIndex(), field.him(),
                 creature(field.game(), "Skeleton").getId()));
         field.game().runHeadless(10);
@@ -182,7 +182,7 @@ class GuardOrderTest {
     void killingWhatHeWasSentAtLeavesHimDefending() {
         var field = field(260f);
         var quarry = creature(field.game(), "Skeleton");
-        field.order(new uz.dukeengine.rts.message.GameMessage.AttackObject(
+        field.order(new uz.dukeengine.combat.message.CombatOrder.AttackObject(
                 field.game().getLocalPlayerIndex(), field.him(), quarry.getId()));
 
         field.game().runHeadless(600);
@@ -209,7 +209,7 @@ class GuardOrderTest {
     @Test
     void comingToRestHeIsDefending() {
         var field = field(220f);
-        field.order(new uz.dukeengine.rts.message.GameMessage.MoveTo(
+        field.order(new uz.dukeengine.combat.message.CombatOrder.MoveTo(
                 field.game().getLocalPlayerIndex(), field.him(),
                 new Coord3D(180f, 150f, 0f)));
 

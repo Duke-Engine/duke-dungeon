@@ -23,8 +23,8 @@ import uz.dukeengine.dungeon.gen.GeneratedDungeon;
 import uz.dukeengine.dungeon.skill.Skill;
 import uz.dukeengine.dungeon.skill.SkillBook;
 import uz.dukeengine.game.DukeGame;
-import uz.dukeengine.rts.message.GameMessage;
-import uz.dukeengine.rts.module.WeaponUpdate;
+import uz.dukeengine.combat.message.CombatOrder;
+import uz.dukeengine.combat.module.WeaponUpdate;
 
 /**
  * While the keep's gate stands, nothing that hurts or mends crosses it: a creature within the keep's walls and one
@@ -126,7 +126,7 @@ class SealTest {
         }
 
         void attack(GameObject who, GameObject what) {
-            game().postCommand(new GameMessage.AttackObject(game().getLocalPlayerIndex(), List.of(who.getId()),
+            game().postCommand(new CombatOrder.AttackObject(game().getLocalPlayerIndex(), List.of(who.getId()),
                     what.getId()));
         }
 

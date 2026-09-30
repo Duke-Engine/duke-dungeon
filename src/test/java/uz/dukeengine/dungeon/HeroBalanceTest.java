@@ -14,8 +14,8 @@ import uz.dukeengine.dungeon.level.HeroProgress;
 import uz.dukeengine.dungeon.loot.LootBag;
 import uz.dukeengine.game.DukeGame;
 import uz.dukeengine.game.GamePlayer;
-import uz.dukeengine.rts.message.GameMessage;
-import uz.dukeengine.rts.module.ExperienceModule;
+import uz.dukeengine.combat.message.CombatOrder;
+import uz.dukeengine.combat.module.ExperienceModule;
 
 /**
  * The three heroes in a plain fight, on the clock.
@@ -138,7 +138,7 @@ class HeroBalanceTest {
         game.runHeadless(1);
         var skeleton = find(game, "Skeleton");
         assertNotNull(skeleton, "the skeleton should still be standing when he is sent at it");
-        game.postCommand(new GameMessage.AttackObject(game.getLocalPlayerIndex(),
+        game.postCommand(new CombatOrder.AttackObject(game.getLocalPlayerIndex(),
                 List.of(fight.hero().getId()), skeleton.getId()));
         int frames = 0;
         while (frames < 60 * SECOND && find(game, "Skeleton") != null) {

@@ -13,6 +13,7 @@ import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.dungeon.Dungeon;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.game.DukeGame;
+import uz.dukeengine.rts.player.RtsPlayer;
 
 /**
  * What a dead monster leaves, and what picking it up is worth.
@@ -337,7 +338,7 @@ class LootTest {
         var game = session.game();
         game.runHeadless(1);
         var hero = find(game, "Rogue");
-        var player = game.getLogic().getRtsPlayer(game.getLocalPlayerIndex());
+        var player = RtsPlayer.of(game.getLogic(), game.getLocalPlayerIndex());
         float plain = player.getWeaponDamageBonus();
         var blade = new Loot("Blade", "Blade", "", LootKind.ATTACK, 25, 10, 1);
         session.progress().getLoot().take(blade, 0, 30);
@@ -391,7 +392,7 @@ class LootTest {
         var session = Dungeon.newSession(21L);
         var game = session.game();
         game.runHeadless(1);
-        var player = game.getLogic().getRtsPlayer(game.getLocalPlayerIndex());
+        var player = RtsPlayer.of(game.getLogic(), game.getLocalPlayerIndex());
         float plain = player.getWeaponDamageBonus();
 
         session.progress().getLoot().take(
@@ -497,7 +498,7 @@ class LootTest {
         var game = session.game();
         game.runHeadless(2);
         var hero = find(game, "Rogue");
-        var player = game.getLogic().getRtsPlayer(game.getLocalPlayerIndex());
+        var player = RtsPlayer.of(game.getLogic(), game.getLocalPlayerIndex());
         float health = hero.getBody().getMaxHealth();
         float blow = player.getWeaponDamageBonus();
         session.progress().getLoot().take(key(), 0, 30);

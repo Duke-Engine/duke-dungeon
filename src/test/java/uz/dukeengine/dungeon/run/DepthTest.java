@@ -94,7 +94,7 @@ class DepthTest {
             if (prey == null) {
                 break;
             }
-            game.postCommand(new uz.dukeengine.rts.message.GameMessage.AttackObject(
+            game.postCommand(new uz.dukeengine.combat.message.CombatOrder.AttackObject(
                     game.getLocalPlayerIndex(), java.util.List.of(hero.getId()), prey.getId()));
             game.runHeadless(120);
         }

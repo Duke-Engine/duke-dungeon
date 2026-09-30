@@ -13,7 +13,7 @@ Constraints that hold for all of them:
   client has. The dungeon derives all of it from the floor's seed on every machine.
 - **Data in, no game knowledge.** The engine is told cells, models, positions and names; biomes are the game's word.
 
-## Status (2026-09-30)
+## Status (2026-10-01)
 
 Every engine request the game makes is kept in this one file, and only here. The owner pushes the engine to GitHub
 and runs them himself in a cloud session; each section below stands on its own for that.
@@ -21,10 +21,10 @@ and runs them himself in a cloud session; each section below stands on its own f
 | Request | What | Status |
 |---|---|---|
 | E1–E7 | resolution, wall lists, large maps, per-cell looks, scenery, finer blocking, a creature's own level | landed in 0.7.0 (unreleased) |
-| E8 | the engine split into `combat`, `rts`, `rpg` and their clients | proposal approved with the owner's changes; to be done in the owner's cloud session |
+| E8 | the engine split into `combat`, `rts`, `rpg` and their clients | steps 1–2 landed in 0.8.0 (the `combat` module, the runtime of no kind; the game follows at 1b82edf3); step 3 (`rpg`) and step 4 (the clients) waiting |
 | E9 | an aura's picture follows its status | landed, 1bb64fa8 |
-| E10 | one seamless world, ~900 × 900 cells, any size by design | waiting — after E8 |
-| E11 | an untextured model keeps its own colour | waiting (small) |
+| E10 | one seamless world, ~900 × 900 cells, any size by design | landed in 0.8.0 (4236489b); the game takes its parts when it builds the open world |
+| E11 | an untextured model keeps its own colour | landed, d7204414; the key's `Tint` is gone |
 | E12 | a Layer block may say `Renews` (E9's option reachable from data) | waiting (small) |
 | E13 | an armed thing-aim's press marked as the game's own order, not an attack | waiting (small) |
 
@@ -33,15 +33,13 @@ game builds against the local engine.
 
 **For a session given this whole file** (a cloud session working on github.com/Duke-Engine/duke-engine):
 
-1. **E1–E7 and E9 are done** — they are here for their history. Do not redo them.
-2. **E11 is small** and can be done now, on its own.
-3. **E8 is yours.** Its class-by-class proposal, which the owner approved with the changes in its *Decided* paragraph,
-   is the owner's page https://claude.ai/artifact/Sx1NpP81xmiqmLUny7Qakt (version 2); ask him to paste it if you
-   cannot open it. Its step 3 (rpg) lifts the game's own packages, and the game's newest code is not on GitHub yet:
-   duke-dungeon's master on GitHub is 24 commits behind the owner's, and its stun-lifesteal-summons and key-to-the-keep
-   branches are still being built on his machine. That step waits for them — ask him when.
-4. **E10 comes after E8.** Its section below stands on its own.
-5. Every change is announced to the game as the landings above were: the engine version, the API, what the game must
+1. **E1–E7, E9, E10, E11 and E8's steps 1–2 are done** — they are here for their history. Do not redo them.
+2. **E12 and E13 are small** and can be done now, each on its own.
+3. **E8's step 3 (rpg)** lifts the game's own packages, and the game's newest code is not on GitHub yet: its
+   stun-lifesteal-summons, key-to-the-keep and monsters-grow pieces are on the owner's master only, and the keep's seal
+   and the auras are still being built. That step waits for them — ask him when. Step 4 (the clients) comes after it.
+   The class-by-class proposal is the owner's page https://claude.ai/artifact/Sx1NpP81xmiqmLUny7Qakt (version 2).
+4. Every change is announced to the game as the landings above were: the engine version, the API, what the game must
    change (for E8, the old-to-new package map of each step).
 
 ---
@@ -217,6 +215,11 @@ are rewritten for the new layering. Order: combat → a neutral runtime → rpg 
 land) → the clients. Open: where the loot drop tables live (combat, or a `loot` module of their own) and whether they
 move to core's `LogicRandom`.
 
+**Landed**, steps 1–2 (0.8.0, merged as ca0f9bd4 and 65f86e89; the old-to-new map is the CHANGELOG's 0.8.0 "What to
+change"): the `combat` module with the weapons, statuses, experience, pursuit and errands; move, attack and stop as
+`CombatOrder`, a word order as `combat.message.GameOrder`; the views in `core.view`; the runtime of no kind, the RTS's
+own API on `RtsFlavour` and a side as `RtsPlayer.of(logic, index)`. The game followed with imports and one call.
+
 ## E9 — An aura's picture follows its status (2026-09-30, small)
 
 The dungeon's stun plays an AURA effect (`Stunned`, two layers) on whoever it stuns, its seconds set to the stun's.
@@ -326,6 +329,15 @@ data in, no game knowledge.
 When it lands: the engine version, the records and entry points a game uses to hand over a world, what it must
 provide, and any limit that remains — as the E7 and E9 landings were told.
 
+**Landed** in 0.8.0 (merged as 4236489b; its CHANGELOG's "One seamless world" is the full account). Each part is the
+game's to take, and a game that takes none plays as before: things asleep far from every waker (`Sleep`,
+`GameLogic.setSleep`, `DukeGame.sleep`); routes by sectors (`Sectored`, `GameLogic.setRouteSectors`); sight kept in
+chunks, stone that stops it (`GameLogic.setSightHiddenByStone`) and a side's memory saved with the game
+(`getSightMemory`, `setSightMemory`); the ground built round the camera (`Visuals.streamGround`), the minimap round the
+hero (`Visuals.minimapSpan`), a haze at the ground's edge (`Visuals.haze`) and the whole world as a picture
+(`Duke3D.worldPicture`). The next limits it names: the grid kept whole in memory (~11 bytes a cell), a world handed
+over whole, positions past ~100,000 units. The dungeon's floors take none of it yet; Last Hero's open world will.
+
 ## E11 — An untextured model keeps its own colour (2026-09-30, small)
 
 The keep's key (`key_crown.glb`) is one material, "silver mat": a `baseColorFactor` of about 0.24 grey, rough 0.16,
@@ -340,6 +352,9 @@ the key lies near-white, and its silver is lost. Textured models (the gate, the 
 
 Done when: a glb with only a base colour and no texture draws in that colour under a white tint, and every textured
 model draws as before. Until then the game writes the colour as the look's `Tint` (key.duke).
+
+**Landed** as d7204414 (0.8.0): an untextured glTF piece is drawn in its `BaseColor` (or `Color` when unlit), the tint
+multiplying it; a thing carried in a hand the same. The game dropped the key's `Tint`.
 
 ## E12 — A Layer block may say `Renews` (2026-09-30, small)
 
