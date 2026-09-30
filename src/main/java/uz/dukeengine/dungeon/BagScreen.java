@@ -203,7 +203,7 @@ final class BagScreen implements Painter, CanvasInput {
         }
     }
 
-    /** Name, what it gives, and how to take it. */
+    /** Name, what it gives if it gives anything, and how to take it. */
     private List<String> lines(Loot item) {
         var said = new java.util.ArrayList<String>();
         said.add(LootBag.nameOf(item));
@@ -231,8 +231,8 @@ final class BagScreen implements Painter, CanvasInput {
     }
 
     /**
-     * A card of {@code lines}: the first a name, the second what it gives, the last a hint. Beside {@code (x, y)} —
-     * to its left when {@code leftOf}, as a slot's is — and kept on the screen.
+     * A card of {@code lines}: the first a name, the last a hint, and between them what it gives, if anything. Beside
+     * {@code (x, y)} — to its left when {@code leftOf}, as a slot's is — and kept on the screen.
      */
     private void tip(Canvas canvas, List<String> lines, float x, float y, boolean leftOf) {
         var look = settings.menu();

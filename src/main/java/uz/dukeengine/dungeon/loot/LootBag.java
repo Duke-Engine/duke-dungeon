@@ -70,7 +70,8 @@ public final class LootBag {
      *
      * <p>Where it makes up a set — the bag already holding one fewer than a join of the same thing at the same level
      * — the set becomes one of the next level in the first of their slots, and that may make up a set of its own in
-     * turn. Such a thing needs no room: it takes some away.
+     * turn. Such a thing needs no room: it takes some away. A thing that does not join — a key, see
+     * {@link Loot#joins} — never makes up a set, however many there are, and takes a slot of its own.
      */
     public boolean take(Loot item, int frame, int noteFrames) {
         var coming = item;

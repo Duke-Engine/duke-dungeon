@@ -12,13 +12,14 @@ package uz.dukeengine.dungeon.loot;
  *
  * <p><b>Three alike are one of the next level.</b> A thing is found at the first level; three of the same thing at
  * the same level in one bag become one of the next, worth the three of them together — its figure and its extra
- * — and at the second level the extra begins. See {@link #joined}.
+ * — and at the second level the extra begins. See {@link #joined}. All but a key, which never joins: see
+ * {@link #joins}.
  *
  * @param id         what the block is headed by; never seen by the player
  * @param name       what it is called when he picks it up and when the pointer rests on
  *                   it, in the game's own language
  * @param icon       the picture his bag draws it with, a path from the resource root
- * @param kind       which figure it moves
+ * @param kind       which figure it moves; a {@code KEY} moves none
  * @param value      percent for {@code ATTACK} and {@code ARMOUR}, flat health or mana
  *                   for {@code HEALTH} and {@code MANA}, whole points for
  *                   {@code ATTRIBUTE} — at this level

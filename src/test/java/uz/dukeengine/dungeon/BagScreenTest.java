@@ -216,6 +216,30 @@ class BagScreenTest {
         assertNotNull(find(game, "Chest"), "and on the floor");
     }
 
+    /** A key gives nothing, so the pointer on it says what it is and how to take it, with no empty row for a figure. */
+    @Test
+    void aKeyInTheBagIsSaidWithoutAnEmptyRowForAFigure() {
+        var session = Dungeon.newSession(21L);
+        var game = session.game();
+        game.runHeadless(2);
+        var key = SETTINGS.loot().stream().filter(item -> item.kind() == LootKind.KEY).findFirst().orElseThrow();
+        session.progress().getLoot().take(key, 0, 30);
+        var bag = bagOver(game);
+        bag.show(session);
+        var drawn = new Drawn();
+
+        bag.paint(drawn);
+        var picture = drawn.picture(key.icon());
+        assertNotNull(picture, "the key is drawn in its slot: " + drawn.pictures);
+
+        bag.take(new uz.dukeengine.client3d.CanvasInput.Pointer(picture.middleX(), picture.middleY()));
+        drawn.clear();
+        bag.paint(drawn);
+        assertTrue(drawn.text.contains(key.name()) && drawn.text.contains(SETTINGS.lootDrops().takeHint()),
+                "the pointer on it says what it is and how to take it: " + drawn.text);
+        assertTrue(drawn.text.stream().noneMatch(String::isEmpty), "and leaves no row empty: " + drawn.text);
+    }
+
     /** The pointer on a thing lying on the floor, with his hero in hand, says what it gives and how to take it. */
     @Test
     void aThingOnTheFloorSaysWhatItGives() {

@@ -5,7 +5,7 @@ package uz.dukeengine.dungeon.loot;
  *
  * <p>The figures a hero is made of: what he hits for, how much of him there is, how
  * much of a blow gets through, what he casts out of — and the attributes those figures
- * are worked out from.
+ * are worked out from. Besides those, the key to the boss's keep, which is none of them.
  *
  * <p>Which items exist, what they are called and what each is worth is written in
  * {@code data/world/world.duke}. This is the part that needs Java.

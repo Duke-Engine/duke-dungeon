@@ -242,6 +242,18 @@ class LootTest {
         assertEquals(4, bag.getFound().size(), "two of the first level, one of the second and a blade join nothing");
     }
 
+    /** What a thing does when used and what it lies as are its own: joining it or pricing it anew keeps both. */
+    @Test
+    void whatAThingDoesAndLiesAsSurvivesJoiningAndAnotherWorth() {
+        var charm = new Loot("Charm", "Charm", "", LootKind.ATTACK, 10, 10, 1, "", LootExtra.NONE, 0, 0, 1,
+                ItemUse.UNLOCK, "Key");
+
+        assertEquals(ItemUse.UNLOCK, charm.joined(3).use(), "joined, it does what it did");
+        assertEquals("Key", charm.joined(3).liesAs("Chest"), "and lies as what it lay as");
+        assertEquals(ItemUse.UNLOCK, charm.worth(5).use(), "worth another figure, it does what it did");
+        assertEquals("Key", charm.worth(5).liesAs("Chest"), "and lies as what it lay as");
+    }
+
     // ---- in the game ----
 
     private static GameObject find(DukeGame game, String template) {
@@ -523,7 +535,9 @@ class LootTest {
         var data = uz.dukeengine.dungeon.content.Content.data();
         assertTrue(data.contains(shipped), "the shipped key is no longer written this way");
 
-        assertThrows(IllegalArgumentException.class,
+        var refused = assertThrows(IllegalArgumentException.class,
                 () -> DungeonSettings.parse(data.replace(shipped, shipped.replace("Weight = 0", "Weight = 5"))));
+        assertTrue(refused.getMessage().contains("LootItem Key") && refused.getMessage().contains("Weight"),
+                refused.getMessage());
     }
 }
