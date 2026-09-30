@@ -673,6 +673,13 @@ public final class DungeonSettings {
             require(sayable(item.name()),
                     "an item's DisplayName may not contain ',' or '|': " + item.id());
         }
+        for (var item : loot) {
+            require(item.kind() != LootKind.KEY || item.weight() == 0,
+                    "LootItem " + item.id() + " is a KEY, which is given and never found: its Weight is 0");
+        }
+        require(map.keep().sizes().isEmpty()
+                        || loot.stream().anyMatch(item -> item.use() == uz.dukeengine.dungeon.loot.ItemUse.UNLOCK),
+                "a Keep's gate opens only to a key, and no LootItem has Use = UNLOCK");
         for (var moment : moments) {
             require(!moment.effect().isBlank(), "Moment " + moment.name() + " plays no Effect");
             require(moment.scale() > 0f, "Moment " + moment.name() + " has to be drawn at some size");

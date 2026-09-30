@@ -32,5 +32,11 @@ public enum LootKind {
      * attribute that is, so an item for an attribute the file adds later is a block and
      * no Java.
      */
-    ATTRIBUTE
+    ATTRIBUTE,
+
+    /**
+     * None of his figures: the key to the boss's keep, which opens its gate and gives him nothing. It never joins
+     * with another, and it is given rather than found — see {@code run/Mission}.
+     */
+    KEY
 }

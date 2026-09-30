@@ -38,6 +38,10 @@ class BagScreenTest {
         for (var item : SETTINGS.loot()) {
             assertNotNull(BagScreen.class.getResource("/" + item.icon()), item.id() + " draws " + item.icon());
             var said = BagScreen.bonusOf(item, SETTINGS);
+            if (item.kind() == LootKind.KEY) {
+                assertEquals("", said, "a key gives nothing, and says nothing of it");
+                continue;
+            }
             assertTrue(said.startsWith("+" + item.value()) && !said.contains("null"), item.id() + ": " + said);
         }
         assertTrue(SETTINGS.loot().stream().anyMatch(item -> item.kind() == LootKind.ATTRIBUTE),

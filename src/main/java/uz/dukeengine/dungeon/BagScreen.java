@@ -131,19 +131,20 @@ final class BagScreen implements Painter, CanvasInput {
         }
     }
 
-    /** What a thing gives, as the pointer says it: {@code +8% Zarba}, {@code +3 Kuch}. */
+    /** What a thing gives, as the pointer says it: {@code +8% Zarba}, {@code +3 Kuch} — and of a key, nothing. */
     static String bonusOf(Loot item, DungeonSettings settings) {
         var hud = settings.hud();
-        return "+" + item.value() + switch (item.kind()) {
-            case ATTACK -> "% " + hud.attackWord();
-            case ARMOUR -> "% " + hud.armourWord();
-            case HEALTH -> " " + hud.healthWord();
-            case MANA -> " " + hud.manaWord();
+        return switch (item.kind()) {
+            case ATTACK -> "+" + item.value() + "% " + hud.attackWord();
+            case ARMOUR -> "+" + item.value() + "% " + hud.armourWord();
+            case HEALTH -> "+" + item.value() + " " + hud.healthWord();
+            case MANA -> "+" + item.value() + " " + hud.manaWord();
             case ATTRIBUTE -> {
                 var rules = settings.attributeRules();
                 int at = rules.indexOf(item.attribute());
-                yield " " + (at < 0 ? item.attribute() : rules.attributes().get(at).word());
+                yield "+" + item.value() + " " + (at < 0 ? item.attribute() : rules.attributes().get(at).word());
             }
+            case KEY -> ""; // it opens a gate, and gives him nothing
         };
     }
 
@@ -206,7 +207,10 @@ final class BagScreen implements Painter, CanvasInput {
     private List<String> lines(Loot item) {
         var said = new java.util.ArrayList<String>();
         said.add(LootBag.nameOf(item));
-        said.add(bonusOf(item, settings));
+        var bonus = bonusOf(item, settings);
+        if (!bonus.isEmpty()) {
+            said.add(bonus);
+        }
         var extra = extraOf(item, settings);
         if (!extra.isEmpty()) {
             said.add(extra);

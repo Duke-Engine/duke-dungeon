@@ -1,5 +1,6 @@
 package uz.dukeengine.dungeon.world;
 
+import uz.dukeengine.dungeon.loot.ItemUse;
 import uz.dukeengine.dungeon.loot.Loot;
 import uz.dukeengine.dungeon.loot.LootExtra;
 import uz.dukeengine.dungeon.loot.LootKind;
@@ -13,17 +14,20 @@ import uz.dukeengine.dungeon.loot.LootKind;
  *     block uses for it
  * @param extra       what it gives beside its figure once three of it are joined into the second level
  * @param extraValue  how much of that the second level brings; every level after is three of the one before
+ * @param use         what a left click on it in the bag does; {@code NONE}, the default, for a thing that only
+ *     counts while it is carried
+ * @param liesAs      the template it lies on the floor as; blank for the chest everything else lies in
  */
 public record LootItem(String name, String displayName, String icon, LootKind kind, int value, int weight,
-        int minDepth, String attribute, LootExtra extra, int extraValue) {
+        int minDepth, String attribute, LootExtra extra, int extraValue, ItemUse use, String liesAs) {
 
     /** What a block leaves out. */
     public static final LootItem DEFAULTS = new LootItem("", "", "", LootKind.ATTACK, 0, 10, 1, "", LootExtra.NONE,
-            0);
+            0, ItemUse.NONE, "");
 
     /** The thing as it is found: at the first level, with its extra still to come. */
     public Loot loot() {
         return new Loot(name, displayName == null || displayName.isBlank() ? name : displayName, icon, kind, value,
-                weight, minDepth, attribute, extra, 0, extraValue, 1);
+                weight, minDepth, attribute, extra, 0, extraValue, 1, use, liesAs);
     }
 }

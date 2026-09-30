@@ -141,7 +141,7 @@ public final class ItemErrand extends UpdateModule implements Errand {
         }
         var put = bag.remove(slot);
         if (put != null) {
-            GroundItem.lay(world, rules.template(), put, hero.getPosition(), rules.floorOwner());
+            GroundItem.lay(world, put.liesAs(rules.template()), put, hero.getPosition(), rules.floorOwner());
         }
     }
 

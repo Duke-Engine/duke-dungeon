@@ -75,7 +75,7 @@ public final class LootBag {
     public boolean take(Loot item, int frame, int noteFrames) {
         var coming = item;
         int freed = -1;
-        while (join >= 2 && coming.level() < topLevel) {
+        while (join >= 2 && coming.level() < topLevel && coming.joins()) {
             var alike = new ArrayList<Integer>();
             for (int at = 0; at < slots.length && alike.size() < join - 1; at++) {
                 if (coming.sameAs(slots[at])) {
@@ -134,6 +134,11 @@ public final class LootBag {
     /** Whether the next thing picked up would have nowhere to go. */
     public boolean isFull() {
         return Arrays.stream(slots).allMatch(item -> item != null);
+    }
+
+    /** Whether he carries anything of {@code kind}: the key, say. */
+    public boolean holds(LootKind kind) {
+        return Arrays.stream(slots).anyMatch(item -> item != null && item.kind() == kind);
     }
 
     /** Say something on the panel for a while — what he found, or why he left it lying. */

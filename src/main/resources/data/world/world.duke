@@ -315,10 +315,11 @@ End
 ; The kinds a thing may be are what a hero is made of: ATTACK (percent of his
 ; blow), HEALTH (flat maximum health), ARMOUR (percent taken off what reaches
 ; him), MANA (flat maximum mana) and ATTRIBUTE (whole points of the attribute its
-; Attribute line names -- see Attribute). What the dungeon leaves today is
-; attributes alone. An Extra is HEALTH_REGEN or MANA_REGEN (whole points a
-; second, on top of what comes back on its own) or ATTACK_SPEED (percent quicker
-; between blows).
+; Attribute line names -- see Attribute) -- and KEY, which is none of them: the
+; key to the boss's keep, last below, given rather than found. What the dungeon
+; leaves at random is attributes alone. An Extra is HEALTH_REGEN or MANA_REGEN
+; (whole points a second, on top of what comes back on its own) or ATTACK_SPEED
+; (percent quicker between blows).
 ;
 ; Which monster leaves what is drawn from the run's own seed and the monster's
 ; own id -- so the same seed drops the same things off the same monsters, whatever
@@ -398,4 +399,22 @@ LootItem
   Weight = 10
   Extra = MANA_REGEN
   ExtraValue = 2
+End
+
+; The key to the boss's keep: given, never found. Nothing drops it at random --
+; its Weight is 0 -- and the last monster a floor put outside its keep leaves it
+; where it fell (see run/Mission). It gives nothing and never joins with
+; another. Its Use is what a left click on it in the bag does: UNLOCK, and the
+; next click is on the thing he takes it to -- given to the keep's gate it opens
+; it and is gone. It lies on the floor as its own thing, the Key in
+; data/props/key.duke, rather than in a chest: LiesAs.
+LootItem
+  Name = Key
+  DisplayName = Kalit
+  Icon = icons/items/key_crown.png
+  Kind = KEY
+  Use = UNLOCK
+  LiesAs = Key
+  Value = 0
+  Weight = 0
 End

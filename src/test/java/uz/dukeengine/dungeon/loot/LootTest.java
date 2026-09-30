@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
@@ -176,7 +177,7 @@ class LootTest {
     // ---- three alike ----
 
     private static final Loot GAUNTLET = new Loot("Gauntlet", "Gauntlet", "", LootKind.ATTRIBUTE, 3, 10, 1,
-            "Strength", LootExtra.HEALTH_REGEN, 0, 2, 1);
+            "Strength", LootExtra.HEALTH_REGEN, 0, 2, 1, ItemUse.NONE, "");
 
     @Test
     void threeAlikeJoinIntoOneOfTheNextLevel() {
@@ -433,11 +434,12 @@ class LootTest {
         assertEquals(1f, quick.rateOfFireMultiplier(), 0.0001f);
     }
 
-    /** What the dungeon leaves today: the hero's three attributes, three points each, each with an extra to come. */
+    /** What the dungeon leaves at random: the hero's three attributes, three points each, each with an extra to come. */
     @Test
     void theDungeonLeavesTheThreeAttributes() {
-        assertEquals(List.of("Gauntlet", "Boots", "Tome"), SHIPPED.loot().stream().map(Loot::id).toList());
-        for (var item : SHIPPED.loot()) {
+        var found = SHIPPED.loot().stream().filter(item -> item.weight() > 0).toList();
+        assertEquals(List.of("Gauntlet", "Boots", "Tome"), found.stream().map(Loot::id).toList());
+        for (var item : found) {
             assertEquals(LootKind.ATTRIBUTE, item.kind(), item.id());
             assertEquals(3, item.value(), item.id());
             assertTrue(item.extra() != LootExtra.NONE && item.extraStep() > 0, item.id() + " has an extra to come");
@@ -451,7 +453,77 @@ class LootTest {
         assertEquals("Chest", SHIPPED.lootDrops().template());
         for (var item : SHIPPED.loot()) {
             assertFalse(item.name().isBlank(), item.id() + " has nothing to say for itself");
-            assertTrue(item.value() > 0, item.id() + " is worth nothing");
+            assertTrue(item.value() > 0 || item.kind() == LootKind.KEY, item.id() + " is worth nothing");
         }
+    }
+
+    private static Loot key() {
+        return SHIPPED.loot().stream().filter(item -> item.kind() == LootKind.KEY).findFirst().orElseThrow();
+    }
+
+    /** The shipped key: given, never found, used on a gate, lying as a key rather than in a chest. */
+    @Test
+    void theKeyIsAThingThatMayBeUsed() {
+        var key = key();
+        assertEquals("Key", key.id());
+        assertEquals(ItemUse.UNLOCK, key.use());
+        assertEquals("Key", key.liesAs("Chest"), "it lies as itself");
+        assertEquals("Chest", SHIPPED.loot().getFirst().liesAs("Chest"), "and everything else in a chest");
+        assertEquals(ItemUse.NONE, SHIPPED.loot().getFirst().use(), "which only counts while it is carried");
+    }
+
+    /** Carrying it changes nothing about him: the same health, the same blow, nothing coming back quicker. */
+    @Test
+    void theKeyGivesNothing() {
+        var bag = new LootBag();
+        bag.take(key(), 0, 0);
+        assertEquals(0, bag.attackPercent() + bag.health() + bag.mana() + bag.armourPercent() + bag.healthRegen()
+                + bag.manaRegen() + bag.attackSpeedPercent(), "a figure from a key");
+        assertTrue(bag.holds(LootKind.KEY));
+
+        var session = Dungeon.newSession(21L);
+        var game = session.game();
+        game.runHeadless(2);
+        var hero = find(game, "Rogue");
+        var player = game.getLogic().getRtsPlayer(game.getLocalPlayerIndex());
+        float health = hero.getBody().getMaxHealth();
+        float blow = player.getWeaponDamageBonus();
+        session.progress().getLoot().take(key(), 0, 30);
+        game.runHeadless(2);
+        assertEquals(health, hero.getBody().getMaxHealth(), 0.0001f, "his health");
+        assertEquals(blow, player.getWeaponDamageBonus(), 0.0001f, "his blow");
+    }
+
+    /** Three keys are three keys: a key never joins into a higher one. */
+    @Test
+    void keysNeverJoin() {
+        var bag = new LootBag();
+        for (int n = 0; n < LootBag.JOIN; n++) {
+            assertTrue(bag.take(key(), 0, 0));
+        }
+        assertEquals(List.of(key(), key(), key()), bag.getFound());
+    }
+
+    /** Nothing leaves one at random, however often things drop. */
+    @Test
+    void theKeyIsNeverDrawnAsADrop() {
+        assertEquals(0, key().weight());
+        var table = new LootTable(SHIPPED.loot(), 7L, 100, 100, 0);
+        for (int id = 0; id < 2000; id++) {
+            var drop = table.dropFor(id, 1 + id % 4, id % 10 == 0);
+            assertNotNull(drop);
+            assertTrue(drop.kind() != LootKind.KEY, "monster " + id + " dropped the key");
+        }
+    }
+
+    /** And a file that would let one drop at random is refused: a key is given, never found. */
+    @Test
+    void aKeyThatWouldDropIsRefused() {
+        var shipped = "  Kind = KEY\n  Use = UNLOCK\n  LiesAs = Key\n  Value = 0\n  Weight = 0\n";
+        var data = uz.dukeengine.dungeon.content.Content.data();
+        assertTrue(data.contains(shipped), "the shipped key is no longer written this way");
+
+        assertThrows(IllegalArgumentException.class,
+                () -> DungeonSettings.parse(data.replace(shipped, shipped.replace("Weight = 0", "Weight = 5"))));
     }
 }

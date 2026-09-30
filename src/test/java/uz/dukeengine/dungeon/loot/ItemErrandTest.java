@@ -149,6 +149,24 @@ class ItemErrandTest {
         assertEquals(room.floorOwner(), chest.getPlayerIndex(), "the dungeon's, and nobody's hero's");
     }
 
+    /** A thing that names what it lies as lies as that: the key goes down as a key, not into a chest. */
+    @Test
+    void theKeyPutDownLiesAsAKey() {
+        var room = room(100f);
+        var bag = new LootBag();
+        var key = SETTINGS.loot().stream().filter(item -> item.kind() == LootKind.KEY).findFirst().orElseThrow();
+        bag.take(key, 0, 0);
+
+        assertTrue(ItemErrand.drop(room.hero(), 0, new Coord3D(250f, 150f, 0f), bag, room.rules()));
+        room.game().runHeadless(300);
+
+        assertTrue(room.chests().isEmpty(), "not in a chest");
+        var lying = room.game().getLogic().getObjects().stream()
+                .filter(object -> object.getTemplate().name().equals("Key")).findFirst().orElse(null);
+        assertNotNull(lying, "it does not lie as a key");
+        assertEquals(key, lying.findModule(GroundItem.class).getHolding());
+    }
+
     /** Sent to put a thing down past a wall he cannot get round, he puts it down as near as he got. */
     @Test
     void aPlaceHeCannotReachHasItPutDownWhereHeGotTo() {
