@@ -14,9 +14,10 @@ import uz.dukeengine.core.data.DataException;
 import uz.dukeengine.core.math.Coord3D;
 import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.dungeon.Dungeon;
-import uz.dukeengine.dungeon.combat.DepthBonus;
+import uz.dukeengine.dungeon.combat.LevelBonus;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.dungeon.content.ShippedBlock;
+import uz.dukeengine.dungeon.run.Spawner;
 import uz.dukeengine.dungeon.skill.Skill;
 import uz.dukeengine.dungeon.skill.SkillBook;
 import uz.dukeengine.dungeon.skill.Summoned;
@@ -334,31 +335,30 @@ class MonsterSummoningTest {
         }
     }
 
-    /** Found as deep as what called it up, so it hits as hard as one placed there would. */
+    /** Called up at its caller's level, read as the rift opens, so it is what one placed there would be. */
     @Test
-    void whatItCallsUpWasFoundAsDeepAsItsCaller() {
+    void whatItCallsUpStandsAtItsCallersLevel() {
         var circle = circle(summoningWith("[Skeleton = 2]", 4, 3000, 0, 60));
         var before = new HashSet<Integer>();
         risings(circle.game(), oneSummoning()).forEach(one -> before.add(one.id()));
-        assertEquals(2, before.size(), "the first casting, before it was found any deeper");
-        circle.summoner().addModule(new DepthBonus(circle.summoner(), 1.6f, 1.9f));
+        assertEquals(2, before.size(), "the first casting, before it stood any higher");
+        Spawner.scale(circle.summoner(), 8, SETTINGS);
 
         var after = risings(circle.game(), 60 + oneSummoning()).stream()
                 .filter(one -> !before.contains(one.id())).toList();
 
-        assertEquals(2, after.size(), "a second casting, once it was: " + after);
+        assertEquals(2, after.size(), "a second casting, once it did: " + after);
         var world = circle.game().getLogic();
         for (var one : after) {
             var bonus = world.findObject(new uz.dukeengine.core.thing.ObjectId(one.id()))
-                    .findModule(DepthBonus.class);
-            assertTrue(bonus != null, "called up without its caller's depth");
-            assertEquals(1.6f, bonus.damageMultiplier(), 0.001f);
-            assertEquals(1.9f, bonus.healthMultiplier(), 0.001f);
+                    .findModule(LevelBonus.class);
+            assertEquals(8, bonus.level(), "called up at another level than its caller's");
+            assertEquals(SETTINGS.damageAtLevel(8), bonus.damageMultiplier(), 0.001f);
+            assertEquals(SETTINGS.healthAtLevel(8), bonus.healthMultiplier(), 0.001f);
         }
         for (int id : before) {
-            assertTrue(world.findObject(new uz.dukeengine.core.thing.ObjectId(id))
-                    .findModule(DepthBonus.class) == null,
-                    "the first two were called up before the depth was on it");
+            assertEquals(1, LevelBonus.levelOf(world.findObject(new uz.dukeengine.core.thing.ObjectId(id))),
+                    "the first two were called up before it stood any higher");
         }
     }
 

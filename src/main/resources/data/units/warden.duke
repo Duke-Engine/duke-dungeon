@@ -6,10 +6,11 @@
 ; are four rather than one: a descent with no bottom asks only how much further,
 ; and four named things to get past is a route with an end on it.
 ;
-; They climb, and the depth multiplier climbs under them (BossHealthPercentPerDepth
-; and its neighbours), so what is written here is the shape of the fight rather
-; than its difficulty -- the Warden is met at depth 1 where the multiplier is 1,
-; and the Champion at depth 4 where it is 2.2.
+; They climb, and their level climbs under them -- two above the chamber before
+; each one's keep, see the level lines in the Descent block of generation.duke --
+; so what is written here is the shape of the fight rather than its difficulty:
+; the Warden is met at level 10, with 1.9 times the health written here, and the
+; Champion at 35, with 4.4 times.
 ;
 ; Each is one of the pack's four skeletons, worn large. The pack ships one
 ; texture, so what tells them apart is the model, the size and the tint.

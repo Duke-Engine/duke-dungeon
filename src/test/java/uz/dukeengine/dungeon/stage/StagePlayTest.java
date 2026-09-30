@@ -9,6 +9,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.dungeon.Dungeon;
+import uz.dukeengine.dungeon.content.Content;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.dungeon.gen.DungeonGenerator;
 import uz.dukeengine.dungeon.run.DungeonRun;
@@ -31,9 +32,21 @@ class StagePlayTest {
 
     private static final DungeonSettings SETTINGS = DungeonSettings.load();
 
+    /**
+     * The shipped files with no keep. A stage is cut without one (see {@code MapWriter}) and keeps no word of one,
+     * and a keep is where a floor's way ends -- so what each monster on it stands at: the floor a stage is held
+     * against is drawn without one too.
+     */
+    private static final DungeonSettings KEEPLESS =
+            DungeonSettings.parse(Content.data().replace("    Sizes = [15, 13, 11, 9]\n", ""));
+
     private static Stage frozen(long seed) {
+        return frozen(seed, SETTINGS);
+    }
+
+    private static Stage frozen(long seed, DungeonSettings settings) {
         var stage = new Stage("test", "Test", "", 1, 1, seed,
-                DungeonGenerator.generate(seed, SETTINGS, 1));
+                DungeonGenerator.generate(seed, settings, 1));
         // Through the file rather than straight from the generator: the claim is
         // about what survives being written down, not about what is in memory.
         return StageFile.read(StageFile.write(stage), "test");
@@ -63,8 +76,9 @@ class StagePlayTest {
     @Test
     void aStagePlaysExactlyLikeTheDungeonItWasCutFrom() {
         long seed = 4242L;
-        var generated = Dungeon.newSession(seed, SETTINGS).game();
-        var staged = Dungeon.newStageSession(frozen(seed), SETTINGS).game();
+        assertTrue(DungeonGenerator.generate(seed, KEEPLESS, 1).keep() == null, "the premise: no keep was drawn");
+        var generated = Dungeon.newSession(seed, KEEPLESS).game();
+        var staged = Dungeon.newStageSession(frozen(seed, KEEPLESS), KEEPLESS).game();
 
         generated.runHeadless(100);
         staged.runHeadless(100);

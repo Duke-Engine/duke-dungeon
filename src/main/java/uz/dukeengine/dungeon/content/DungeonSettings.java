@@ -616,6 +616,9 @@ public final class DungeonSettings {
         require(descent.tierGrowthPercent() >= 0 && descent.bossLevelsAbove() >= 0,
                 "TierGrowthPercent and BossLevelsAbove cannot step a monster's level back down");
         require(descent.maxMonsterLevel() >= 1, "MaxMonsterLevel is at least the first level");
+        require(descent.healthPercentPerLevel() >= 0 && descent.damagePercentPerLevel() >= 0
+                        && descent.experiencePercentPerLevel() >= 0,
+                "a level cannot take a monster's health, its blow or its worth away");
         require(map.generation().corridorWidth() >= 1, "a corridor narrower than one cell is a wall");
         require(map.generation().maxRoomSpacing() > map.generation().maxRoomSize(), "rooms could never reach one another");
         require(map.propsPerRoom().min() >= 0, "a room cannot hold fewer than no things");
@@ -1220,39 +1223,36 @@ public final class DungeonSettings {
         return available;
     }
 
-    /** What a monster's health, damage or numbers are multiplied by at this depth. */
-    public float monsterHealthAt(int depth) {
-        return scaled(map.descent().monsterHealthPercentPerDepth(), depth);
-    }
-
-    public float monsterDamageAt(int depth) {
-        return scaled(map.descent().monsterDamagePercentPerDepth(), depth);
-    }
-
+    /** What a room's count of monsters is multiplied by at this depth: who lives in a place, and how many, is its own. */
     public float monsterCountAt(int depth) {
         return scaled(map.descent().monsterCountPercentPerDepth(), depth);
     }
 
-    public float bossHealthAt(int depth) {
-        return scaled(map.descent().bossHealthPercentPerDepth(), depth);
+    /**
+     * What a monster's health is multiplied by at this level -- and its blow, its skills' damage and a mending's heal
+     * by {@link #damageAtLevel}, and what killing it is worth by {@link #experienceAtLevel}: alike for every monster and
+     * boss, and a level-1 monster is its block exactly.
+     */
+    public float healthAtLevel(int level) {
+        return scaled(map.descent().healthPercentPerLevel(), level);
     }
 
-    public float bossDamageAt(int depth) {
-        return scaled(map.descent().bossDamagePercentPerDepth(), depth);
+    public float damageAtLevel(int level) {
+        return scaled(map.descent().damagePercentPerLevel(), level);
     }
 
-    public float experienceAt(int depth) {
-        return scaled(map.descent().experiencePercentPerDepth(), depth);
+    public float experienceAtLevel(int level) {
+        return scaled(map.descent().experiencePercentPerLevel(), level);
     }
 
     /**
-     * Linear growth from the first depth: {@code 1 + (depth - 1) * percent / 100}.
+     * Linear growth from the first depth or level: {@code 1 + (n - 1) * percent / 100}.
      *
-     * <p>Computed from the depth in one step rather than compounded, so the tenth
+     * <p>Computed from the number in one step rather than compounded, so the tenth
      * floor is the same whether you arrived by playing or by asking.
      */
-    private static float scaled(int percentPerDepth, int depth) {
-        return 1f + Math.max(0, depth - 1) * percentPerDepth / 100f;
+    private static float scaled(int percentPerStep, int n) {
+        return 1f + Math.max(0, n - 1) * percentPerStep / 100f;
     }
 
     // ---- a monster's level ----

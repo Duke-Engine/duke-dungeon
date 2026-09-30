@@ -8,8 +8,9 @@ import uz.dukeengine.core.module.UpdateModule;
 import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.core.thing.ObjectId;
 import uz.dukeengine.core.thing.World;
-import uz.dukeengine.dungeon.combat.DepthBonus;
-import uz.dukeengine.dungeon.level.GrowableBody;
+import uz.dukeengine.dungeon.combat.LevelBonus;
+import uz.dukeengine.dungeon.content.DungeonSettings;
+import uz.dukeengine.dungeon.run.Spawner;
 import uz.dukeengine.rts.module.ExperienceModule;
 
 /**
@@ -21,9 +22,9 @@ import uz.dukeengine.rts.module.ExperienceModule;
  * fog hides both.
  *
  * <p>What climbs out is marked as called up ({@link Summoned}): it falls down again when
- * its time is out, it is worth the share of experience the skill says, it was found as
- * deep as its caller, and it counts against its caller's {@code MaxSummoned} for as long
- * as it stands.
+ * its time is out, it stands at its caller's level, it is worth the share of experience
+ * the skill says of what its kind is worth there, and it counts against its caller's
+ * {@code MaxSummoned} for as long as it stands.
  */
 @ModuleGroup({ModuleGroups.COMBAT, ModuleGroups.EFFECT})
 public final class SummoningUpdate extends UpdateModule {
@@ -32,25 +33,27 @@ public final class SummoningUpdate extends UpdateModule {
     public record Data() implements ModuleData {
     }
 
+    /** What a level is worth, for the one step that makes what rises its caller's level. */
+    private final DungeonSettings settings;
     private ObjectId caller;
     private String creature;
     private int lasts;
     private int experiencePercent;
-    private float damageBonus = 1f;
-    private float healthBonus = 1f;
+    private int level = 1;
     private int opensIn;
     private boolean opened;
 
-    public SummoningUpdate(GameObject owner, ModuleData ignored) {
+    public SummoningUpdate(GameObject owner, DungeonSettings settings) {
         super(owner);
+        this.settings = settings;
     }
 
     /**
      * Open it: in {@code frames} a {@code creature} climbs out, for {@code lasts} frames,
      * worth {@code experiencePercent} of its own kind.
      *
-     * <p>How deep its caller was found is read now rather than when it rises, as every
-     * shot here is settled when it is thrown: the caller may be dead by then.
+     * <p>Its caller's level is read now rather than when it rises, as every shot here is
+     * settled when it is thrown: the caller may be dead by then.
      */
     public void open(GameObject from, String creature, int lasts, int experiencePercent,
             int frames) {
@@ -58,11 +61,7 @@ public final class SummoningUpdate extends UpdateModule {
         this.creature = creature;
         this.lasts = lasts;
         this.experiencePercent = experiencePercent;
-        var depth = from.findModule(DepthBonus.class);
-        if (depth != null) {
-            this.damageBonus = depth.damageMultiplier();
-            this.healthBonus = depth.healthMultiplier();
-        }
+        this.level = LevelBonus.levelOf(from);
         this.opensIn = Math.max(1, frames);
         this.opened = true;
     }
@@ -89,13 +88,9 @@ public final class SummoningUpdate extends UpdateModule {
         }
         var risen = world.spawn(template, rift.getPosition(), rift.getPlayerIndex());
         risen.addModule(new Summoned(risen, lasts));
-        // Its depth, the way the spawner gives it to anything placed on the floor.
-        if (risen.getBody() instanceof GrowableBody body && healthBonus > 1f) {
-            body.growMaxHealth(body.getMaxHealth() * (healthBonus - 1f));
-        }
-        if (damageBonus != 1f || healthBonus != 1f) {
-            risen.addModule(new DepthBonus(risen, damageBonus, healthBonus));
-        }
+        // Its caller's level, by the one step that makes anything placed on the floor its
+        // level -- and then its share of what that level makes it worth.
+        Spawner.scale(risen, level, settings);
         var worth = risen.findModule(ExperienceModule.class);
         if (worth != null && experiencePercent != 100) {
             risen.replaceModule(worth, new ExperienceModule(risen, new ExperienceModule.Data(

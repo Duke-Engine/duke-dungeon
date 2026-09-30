@@ -163,8 +163,8 @@ public enum SkillEffect {
      * storey or on somebody; see {@link Summoning}. Each is a thing in the world, as a
      * meteor's mark is, and its creature climbs out of it {@code WindUpFrames} later,
      * the kinds taking the rifts in the order written. What climbs out lasts
-     * {@code DurationFrames} and then falls down, is worth {@code SummonExperiencePercent}
-     * of its own kind, and hits as hard as the depth made its caller hit.
+     * {@code DurationFrames} and then falls down, stands at its caller's level, and is
+     * worth {@code SummonExperiencePercent} of what its own kind is worth there.
      *
      * <p>No more than {@code MaxSummoned} of one caster's stand at once, rifts counted.
      * A cast that would open none is refused with its cooldown unspent.

@@ -8,12 +8,22 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
+import uz.dukeengine.core.data.DataException;
+import uz.dukeengine.core.math.Coord3D;
+import uz.dukeengine.core.thing.GameObject;
+import uz.dukeengine.dungeon.Dungeon;
+import uz.dukeengine.dungeon.combat.LevelBonus;
 import uz.dukeengine.dungeon.content.Content;
 import uz.dukeengine.dungeon.content.DungeonSettings;
+import uz.dukeengine.dungeon.content.ShippedBlock;
 import uz.dukeengine.dungeon.gen.DungeonGenerator;
 import uz.dukeengine.dungeon.gen.GeneratedDungeon;
+import uz.dukeengine.dungeon.skill.SkillBook;
+import uz.dukeengine.dungeon.skill.Summoned;
 import uz.dukeengine.dungeon.stage.StageCheck;
 import uz.dukeengine.dungeon.stage.Stages;
+import uz.dukeengine.game.DukeGame;
+import uz.dukeengine.rts.module.ExperienceModule;
 
 /**
  * A monster's level: where it is met, and what the level makes of it.
@@ -208,6 +218,246 @@ class MonsterLevelTest {
         var deep = Stages.load("deep", SETTINGS);
         for (int level : Spawner.levelsOf(deep.floor(), SETTINGS, deep.difficulty())) {
             assertEquals(SETTINGS.maxMonsterLevel(), level, "the deep stage plays at the cap throughout");
+        }
+    }
+
+    // ---- what a level gives ----
+
+    private static final String MAGE = "SkeletonMage";
+    private static final String HEALER = "SkeletonHealer";
+    private static final String SUMMONER = "SkeletonSummoner";
+
+    /** An open room forty cells by thirty, stone only round its edge. */
+    private static String room() {
+        var text = new StringBuilder();
+        for (int y = 0; y < 30; y++) {
+            for (int x = 0; x < 40; x++) {
+                text.append(x == 0 || y == 0 || x == 39 || y == 29 ? '#' : '.');
+            }
+            text.append('\n');
+        }
+        return text.toString();
+    }
+
+    private static GameObject creature(DukeGame game, String template) {
+        return game.getLogic().getObjects().stream()
+                .filter(object -> object.getTemplate().name().equals(template))
+                .findFirst().orElse(null);
+    }
+
+    /** One {@code kind}, alone in a room with nobody to notice: as its block builds it, and no level put on it. */
+    private static GameObject alone(String kind) {
+        var arena = Dungeon.world(room(), SETTINGS);
+        arena.game().spawn(kind, arena.dungeon(), 150f, 150f);
+        arena.game().runHeadless(1);
+        return creature(arena.game(), kind);
+    }
+
+    private static int worthOf(GameObject creature) {
+        return creature.findModule(ExperienceModule.class).getExperienceValue();
+    }
+
+    /** A number the shipped block of {@code unit} writes once. */
+    private static float shipped(String unit, String key) {
+        return Float.parseFloat(ShippedBlock.of(unit).value(key));
+    }
+
+    /** The shipped units with the Rogue's bow reaching nothing: whatever he loses, the monster took. */
+    private static String unarmedRogue() {
+        var rogue = ShippedBlock.of("Rogue");
+        return Content.units().replace(rogue.text(), rogue.with("AttackRange", 0).text());
+    }
+
+    /** The shipped files with {@code kind} noticing nobody: it does only what a test does for it. */
+    private static DungeonSettings unseeing(String kind) {
+        return DungeonSettings.parse(ShippedBlock.of(kind).with("SenseRadius", 1).with("ChaseRadius", 1)
+                .with("AlertRadius", 0).text());
+    }
+
+    /** A level-1 monster is its block exactly: its own health, its own blow, its own worth. */
+    @Test
+    void aLevelOneMonsterIsItsBlockExactly() {
+        var mage = alone(MAGE);
+        float health = mage.getBody().getMaxHealth();
+        int worth = worthOf(mage);
+
+        Spawner.scale(mage, 1, SETTINGS);
+
+        assertEquals(health, mage.getBody().getMaxHealth(), 0.001f, "its health");
+        assertEquals(worth, worthOf(mage), "its worth");
+        var bonus = mage.findModule(LevelBonus.class);
+        assertEquals(1, bonus.level(), "and it carries its level, the first");
+        assertEquals(1f, bonus.damageMultiplier(), 0.001f, "its blow");
+    }
+
+    /** At level 8 it has 1.7 times its health, all of it standing, hits 1.35 times as hard, and is worth 1.35 times. */
+    @Test
+    void atLevelEightItIsTougherHitsHarderAndIsWorthMore() {
+        var mage = alone(MAGE);
+        float health = mage.getBody().getMaxHealth();
+        int worth = worthOf(mage);
+
+        Spawner.scale(mage, 8, SETTINGS);
+
+        assertEquals(health * 1.7f, mage.getBody().getMaxHealth(), 0.01f, "its health");
+        assertEquals(mage.getBody().getMaxHealth(), mage.getBody().getHealth(), 0.01f, "all of it standing");
+        assertEquals(Math.round(worth * 1.35f), worthOf(mage), "its worth");
+        assertEquals(8, mage.findModule(LevelBonus.class).level());
+        assertEquals(1.35f, mage.findModule(LevelBonus.class).damageMultiplier(), 0.001f, "its blow");
+    }
+
+    /** Its blow, landed for real: a level-8 skeleton's takes 1.35 times its block's off a Rogue who does not answer. */
+    @Test
+    void itsBlowLandsItsLevelsShareHarder() {
+        var arena = Dungeon.world(room(), SETTINGS, unarmedRogue());
+        var game = arena.game();
+        game.spawn("Rogue", arena.hero(), 150f, 150f);
+        game.spawn("Skeleton", arena.dungeon(), 162f, 150f);
+        game.runHeadless(1);
+        arena.orders().hold(arena.hero().getIndex(), true);
+        var hero = creature(game, "Rogue");
+        Spawner.scale(creature(game, "Skeleton"), 8, SETTINGS);
+        float before = hero.getBody().getHealth();
+
+        for (int frame = 0; frame < 90 && hero.getBody().getHealth() == before; frame++) {
+            game.runHeadless(1);
+        }
+
+        assertEquals(shipped("Skeleton", "Damage") * 1.35f, before - hero.getBody().getHealth(), 0.01f);
+    }
+
+    /** Its skills' damage the same share: the fire mage's fireball, thrown by hand at level 1 and at level 8. */
+    @Test
+    void itsSkillsHitItsLevelsShareHarder() {
+        float plain = aFireballFrom(1);
+
+        assertTrue(plain > 0f, "the premise: the fireball reached him");
+        assertEquals(plain * 1.35f, aFireballFrom(8), 0.01f);
+    }
+
+    /** What the fire mage's fireball, thrown by hand from {@code level}, takes off a Rogue it never noticed. */
+    private static float aFireballFrom(int level) {
+        var arena = Dungeon.world(room(), unseeing(MAGE), unarmedRogue());
+        var game = arena.game();
+        game.spawn("Rogue", arena.hero(), 150f, 150f);
+        game.spawn(MAGE, arena.dungeon(), 200f, 150f);
+        game.runHeadless(1);
+        arena.orders().hold(arena.hero().getIndex(), true);
+        var mage = creature(game, MAGE);
+        var hero = creature(game, "Rogue");
+        Spawner.scale(mage, level, SETTINGS);
+        float before = hero.getBody().getHealth();
+
+        assertTrue(mage.findModule(SkillBook.class).cast('Q', 1, null, hero.getPosition()), "the premise: it threw");
+        game.runHeadless(30);
+        return before - hero.getBody().getHealth();
+    }
+
+    /** And a mending's: the healer's light, called down by hand at level 1 and at level 8. */
+    @Test
+    void itsMendingMendsItsLevelsShareMore() {
+        float plain = aMendingFrom(1);
+
+        assertTrue(plain > 0f, "the premise: the light landed");
+        assertEquals(plain * 1.35f, aMendingFrom(8), 0.01f);
+    }
+
+    /** What the healer's light, called down by hand from {@code level}, gives back to a skeleton left at 10. */
+    private static float aMendingFrom(int level) {
+        var arena = Dungeon.world(room(), SETTINGS);
+        var game = arena.game();
+        game.spawn(HEALER, arena.dungeon(), 150f, 150f);
+        game.spawn("Skeleton", arena.dungeon(), 180f, 150f);
+        game.runHeadless(1);
+        var healer = creature(game, HEALER);
+        var patient = creature(game, "Skeleton");
+        Spawner.scale(healer, level, SETTINGS);
+        patient.getBody().setHealth(10f);
+
+        assertTrue(healer.findModule(SkillBook.class).cast('Q', 1, patient.getId(), null), "the premise: it mended");
+        game.runHeadless(40);
+        return patient.getBody().getHealth() - 10f;
+    }
+
+    /**
+     * What rises from a rift stands at its caller's level, read when the rift opens: its figures, and its share of
+     * what its kind is worth at that level.
+     */
+    @Test
+    void whatRisesStandsAtItsCallersLevel() {
+        var settings = DungeonSettings.parse(ShippedBlock.of(SUMMONER).with("SummonExperiencePercent", 50).text());
+        var arena = Dungeon.world(room(), settings);
+        var game = arena.game();
+        game.spawn(SUMMONER, arena.dungeon(), 200f, 150f);
+        game.runHeadless(1);
+        var summoner = creature(game, SUMMONER);
+        Spawner.scale(summoner, 8, SETTINGS);
+
+        assertTrue(summoner.findModule(SkillBook.class).cast('Q', 1, null, new Coord3D(150f, 150f, 0f)),
+                "the premise: it opened its rifts");
+        game.runHeadless(30);
+
+        var risen = game.getLogic().getObjects().stream()
+                .filter(object -> object.findModule(Summoned.class) != null).toList();
+        assertEquals(4, risen.size(), "the premise: two swordsmen and two archers rose");
+        for (var one : risen) {
+            var kind = one.getTemplate().name();
+            assertEquals(8, one.findModule(LevelBonus.class).level(), kind + "'s level");
+            assertEquals(1.35f, one.findModule(LevelBonus.class).damageMultiplier(), 0.001f, kind + "'s blow");
+            assertEquals(shipped(kind, "MaxHealth") * 1.7f, one.getBody().getMaxHealth(), 0.01f, kind + "'s health");
+            assertEquals(Math.round(shipped(kind, "ExperienceValue") * 1.35f) * 50 / 100, worthOf(one),
+                    kind + "'s worth: half of what its kind is worth at 8");
+        }
+    }
+
+    /** The card shows its own blow: its weapon's figure times its own level's share -- not the floor's. */
+    @Test
+    void theCardShowsItsOwnBlow() {
+        var skeleton = alone("Skeleton");
+        Spawner.scale(skeleton, 8, SETTINGS);
+
+        var line = HeroStatus.creature(skeleton, 4, 4, SETTINGS, "", false);
+
+        assertTrue(line.contains("|stat=" + SETTINGS.hud().attackWord() + ","
+                + Math.round(shipped("Skeleton", "Damage") * 1.35f) + ","), line);
+    }
+
+    /** Placed for real: the first floor's boss stands at 10 with 1.9 times its health, and every monster at 1 to 8. */
+    @Test
+    void aPlacedFloorStandsAtItsLevels() {
+        var session = Dungeon.newSession(11L);
+        session.game().runHeadless(1);
+        var boss = SETTINGS.bossKindAt(1);
+
+        int monsters = 0;
+        for (var object : session.game().getLogic().getObjects()) {
+            var name = object.getTemplate().name();
+            if (SETTINGS.monster(name) == null) {
+                continue; // a hero, a prop, a shot
+            }
+            var bonus = object.findModule(LevelBonus.class);
+            assertNotNull(bonus, name + " was placed without its level");
+            if (name.equals(boss)) {
+                assertEquals(10, bonus.level(), "the boss");
+                assertEquals(shipped(boss, "MaxHealth") * 1.9f, object.getBody().getMaxHealth(), 0.01f);
+            } else {
+                monsters++;
+                assertTrue(bonus.level() >= 1 && bonus.level() <= 8, name + " at " + bonus.level());
+            }
+        }
+        assertTrue(monsters > 0, "the premise: the floor holds monsters");
+    }
+
+    /** What a level gives replaces what a depth gave: a file still writing a per-depth line of it is refused. */
+    @Test
+    void aPerDepthLineOfHealthDamageOrExperienceIsRefused() {
+        for (var gone : new String[] {"MonsterHealthPercentPerDepth", "MonsterDamagePercentPerDepth",
+                "BossHealthPercentPerDepth", "BossDamagePercentPerDepth", "ExperiencePercentPerDepth"}) {
+            var data = dataWith("    MonsterCountPercentPerDepth = 20\n",
+                    "    MonsterCountPercentPerDepth = 20\n    " + gone + " = 25\n");
+
+            var refused = assertThrows(DataException.class, () -> DungeonSettings.parse(data));
+            assertTrue(refused.getMessage().contains(gone), refused.getMessage());
         }
     }
 }

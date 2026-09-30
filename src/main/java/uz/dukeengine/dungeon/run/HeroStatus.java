@@ -4,6 +4,7 @@ import uz.dukeengine.core.module.MoveUpdate;
 import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.core.thing.ThingTemplate;
 import uz.dukeengine.dungeon.ai.Doing;
+import uz.dukeengine.dungeon.combat.LevelBonus;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.dungeon.level.Attribute;
 import uz.dukeengine.dungeon.level.AttributeRules;
@@ -141,7 +142,7 @@ final class HeroStatus {
      *
      * <p>Worked out here rather than read off the creature because the engine's
      * weapon and locomotor do not hand their numbers back — the same reason the
-     * hero's three are worked out — and because what a floor multiplies a monster
+     * hero's three are worked out — and because what its level multiplies a monster
      * by is this game's arithmetic. See {@code Spawner.scale}.
      */
     static String creature(GameObject creature, int depth, int lastDepth,
@@ -167,7 +168,9 @@ final class HeroStatus {
             line.append("|face=").append(settings.hud().monsterFace());
         }
         var pictures = settings.hud().statIcons();
-        float damage = weaponDamage(creature.getTemplate()) * settings.monsterDamageAt(depth);
+        // Its weapon's figure and what its own level makes of it -- a boss's as a skeleton's.
+        var level = creature.findModule(LevelBonus.class);
+        float damage = weaponDamage(creature.getTemplate()) * (level == null ? 1f : level.damageMultiplier());
         if (damage > 0f) {
             stat(line, settings.hud().attackWord(), Math.round(damage), Math.round(damage),
                     pictures.get(0));

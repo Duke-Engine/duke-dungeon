@@ -159,8 +159,8 @@ public final class Dungeon {
                     ScriptModule.registerScript(factory, HeroBrain.Data.class, () -> new HeroBrain(settings, orders));
                     ScriptModule.registerScript(factory, MonsterBrain.Data.class, () -> new MonsterBrain(settings));
                     // Hero and monsters alike need a body that can grow: levels
-                    // raise his, depth raises theirs, and the engine's fixes its
-                    // maximum when the unit is built.
+                    // raise his and theirs, and the engine's fixes its maximum
+                    // when the unit is built.
                     //
                     // A hero's is built with his first level's strength already in it,
                     // and so are his legs and his weapon below: the creature file holds
@@ -207,8 +207,10 @@ public final class Dungeon {
                     // The meteor's mark turned round: holy light lying where it will
                     // land, and mending whoever it came down for when it does.
                     factory.register(MendingUpdate.Data.class, MendingUpdate::new);
-                    // And a rift, which something of the dungeon's own climbs out of.
-                    factory.register(SummoningUpdate.Data.class, SummoningUpdate::new);
+                    // And a rift, which something of the dungeon's own climbs out of -- at its
+                    // caller's level, which is what the settings say a level is worth.
+                    factory.register(SummoningUpdate.Data.class,
+                            (owner, data) -> new SummoningUpdate(owner, settings));
                     // A monster's blow lands where it stands, as it always did.
                     // This is only how the brain finds out that it struck.
                     factory.register(Swing.Data.class, Swing::new);

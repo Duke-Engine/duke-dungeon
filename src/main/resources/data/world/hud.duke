@@ -238,15 +238,16 @@ UnitBar
   ; "<health up to>:<what one mark is worth>", and a rung written with * covers
   ; everything above -- so one open rung is one lot for every creature there is.
   ;
-  ; ★ FIFTY, MEASURED AGAINST WHAT THE GAME ACTUALLY MAKES. A hero wears about
-  ; four marks at his first level and up to twenty-nine at his fifteenth (1484
-  ; health, the most anything in the game has), a skeleton two, a runner's
-  ; thirty one block and no marks. Twenty-nine on the longest bar are about five
-  ; of the design's pixels apart -- seven and a half on a big screen, where the
-  ; bar is drawn half as big again. Twenty-five a mark would have put them under
-  ; three apart, where marks read as texture. DungeonUnitBarTest loads this file
-  ; and holds all of that.
-  Segments = [*:50]
+  ; ★ A HUNDRED AND TWENTY, MEASURED AGAINST WHAT THE GAME ACTUALLY MAKES. The
+  ; most health anything has is a boss at the level cap -- the Champion at 50 on
+  ; the deep stage, 3540 -- and it wears twenty-nine marks on the longest bar,
+  ; about five of the design's pixels apart: seven and a half on a big screen,
+  ; where the bar is drawn half as big again. A hero wears three to eight at his
+  ; first level and up to twelve at his fifteenth, a skeleton one. A hundred a
+  ; mark would put that boss's under four and a half apart, where marks read as
+  ; texture -- and fifty, before monsters had levels, under two and a half.
+  ; DungeonUnitBarTest loads this file and holds all of that.
+  Segments = [*:120]
 
   ; ---- how long ----
   ;

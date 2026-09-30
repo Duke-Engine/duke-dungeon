@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import uz.dukeengine.core.math.Coord3D;
 import uz.dukeengine.core.thing.GameObject;
-import uz.dukeengine.dungeon.combat.DepthBonus;
+import uz.dukeengine.dungeon.combat.LevelBonus;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.dungeon.gen.GeneratedDungeon;
 import uz.dukeengine.dungeon.level.GrowableBody;
@@ -16,19 +16,20 @@ import uz.dukeengine.game.GamePlayer;
 import uz.dukeengine.rts.module.ExperienceModule;
 
 /**
- * Puts a generated floor into the world, and makes its inhabitants as dangerous
- * as their depth says they should be.
+ * Puts a generated floor into the world, and makes each of its inhabitants as
+ * dangerous as its level says it should be.
  *
  * <p>Shared by the first floor and every one after it, because they are the same
  * act: the only difference between the dungeon a run opens on and the one that
  * follows a dead boss is the number. Two copies of this would drift, and the one
  * that drifted would be the deeper floors nobody tests as often.
  *
- * <p>Depth is applied to the individual, not to the template. The same Runner
- * appears on every floor — a template says what a thing is, and this says where
- * it was found. All three effects use seams the engine already offers rather than
- * new engine features: a growable body for health, a damage modifier module for
- * damage, and a replaced experience module for what killing it is worth.
+ * <p>A level is applied to the individual, not to the template. The same Runner
+ * appears on every floor and at every level — a template says what a thing is,
+ * and this says where it was found. All three effects use seams the engine already
+ * offers rather than new engine features: a growable body for health, a damage
+ * modifier module for damage, and a replaced experience module for what killing it
+ * is worth.
  */
 public final class Spawner {
 
@@ -40,8 +41,9 @@ public final class Spawner {
     }
 
     /**
-     * Lay out a floor: each player's hero at the way in, its monsters scaled to {@code depth}, the boss in its keep
-     * — or the furthest room, where none fits — and, from {@code drops}, what the inhabitants leave behind.
+     * Lay out a floor: each player's hero at the way in, each monster at its level along the way -- {@code depth} is
+     * the place's tier -- the boss at its own in its keep — or the furthest room, where none fits — and, from
+     * {@code drops}, what the inhabitants leave behind.
      *
      * <p>The heroes are told rather than looked up, because once a player may choose there is no single answer in
      * the file to look up: {@code DefaultHero} is who plays when nobody was asked, and a menu is somebody being
@@ -49,7 +51,7 @@ public final class Spawner {
      * Where the run names something to stand at the way in — the fountain — it stands there and they round it.
      *
      * <p>What they leave behind is hung on each monster as it is placed rather than written into its creature
-     * block, beside the depth bonus and for the same reason: a template says what a thing is, and what it leaves
+     * block, beside its level and for the same reason: a template says what a thing is, and what it leaves
      * depends on where it was met.
      */
     public static Placed place(DukeGame game, List<GamePlayer> heroPlayers, List<String> heroTemplates,
@@ -71,11 +73,12 @@ public final class Spawner {
         }
 
         var monsters = new ArrayList<GameObject>();
-        for (var monster : dungeon.monsters()) {
+        var levels = levelsOf(dungeon, settings, depth);
+        for (int i = 0; i < levels.length; i++) {
+            var monster = dungeon.monsters().get(i);
             var spawned = spawn(game, dungeonPlayer, monster.kind(), at(logic, monster.at()));
             if (spawned != null) {
-                scale(spawned, settings.monsterHealthAt(depth), settings.monsterDamageAt(depth),
-                        settings.experienceAt(depth));
+                scale(spawned, levels[i], settings);
                 dropsFrom(spawned, drops, settings, depth, false);
                 monsters.add(spawned);
             }
@@ -98,8 +101,7 @@ public final class Spawner {
 
         var boss = spawn(game, dungeonPlayer, dungeon.boss().kind(), at(logic, dungeon.boss().at()));
         if (boss != null) {
-            scale(boss, settings.bossHealthAt(depth), settings.bossDamageAt(depth),
-                    settings.experienceAt(depth));
+            scale(boss, settings.bossLevel(depth), settings);
             dropsFrom(boss, drops, settings, depth, true);
         }
         if (fountain != null) {
@@ -322,23 +324,23 @@ public final class Spawner {
     }
 
     /**
-     * Make one monster worth its depth.
+     * Make one creature its level -- a monster placed on the floor, its boss, or whatever rises from a rift: its
+     * health grown, a {@link LevelBonus} saying the level and what it gives, and its worth set. The one step for all
+     * of them, so a creature that rises is made exactly as one placed there would be.
      *
-     * <p>Each multiplier is computed from the depth in one step rather than
-     * compounded floor by floor, so the tenth floor is the same whether it was
-     * reached by playing or asked for directly.
+     * <p>Each multiplier is computed from the level in one step rather than
+     * compounded level by level, so a level is the same however it was reached.
      */
-    private static void scale(GameObject monster, float health, float damage, float experience) {
+    public static void scale(GameObject monster, int level, DungeonSettings settings) {
+        float health = settings.healthAtLevel(level);
         if (monster.getBody() instanceof GrowableBody body && health > 1f) {
             body.growMaxHealth(body.getMaxHealth() * (health - 1f));
         }
-        if (damage != 1f || health != 1f) {
-            // The health figure rides along for whatever it calls up.
-            monster.addModule(new DepthBonus(monster, damage, health));
-        }
+        monster.addModule(new LevelBonus(monster, level, settings.damageAtLevel(level), health));
+        float experience = settings.experienceAtLevel(level);
         // What killing it is worth is fixed by its template, and the template is
-        // the same on every floor — so the module is swapped for one that says a
-        // deeper number, in the place the old one held.
+        // the same at every level — so the module is swapped for one that says a
+        // bigger number, in the place the old one held.
         //
         // The replacement carries no ranks, which is not a loss: monsters here are
         // written with `ExperienceRequired = 0 0 0`, meaning they count experience

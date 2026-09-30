@@ -157,19 +157,10 @@ ProceduralMap
     BossGuards = [SkeletonHealer = 2, SkeletonSummoner = 2]
     BossGuardRing = 2
 
-    ; Percentages are of the creature's base value, added per depth beyond the
-    ; first: at depth 3 with 25%, a monster has 1 + 2 x 0.25 = 1.5x health.
-    MonsterHealthPercentPerDepth = 25
-    MonsterDamagePercentPerDepth = 15
+    ; How many more monsters a room holds per depth beyond the first: at depth 3,
+    ; with 20%, 1 + 2 x 0.2 = 1.4 times as many. Who lives in a place, and how
+    ; many, is the place's; how strong each one is, its level's -- below.
     MonsterCountPercentPerDepth = 20
-
-    ; The boss climbs faster than its underlings — it is meant to be the wall.
-    BossHealthPercentPerDepth = 40
-    BossDamagePercentPerDepth = 25
-
-    ; Experience is worth more the deeper it was earned, so levelling roughly keeps
-    ; pace with what it is levelling against.
-    ExperiencePercentPerDepth = 30
 
     ; ---- the level of what lives here ----
     ;
@@ -193,5 +184,16 @@ ProceduralMap
     TierGrowthPercent = 60
     BossLevelsAbove = 2
     MaxMonsterLevel = 50
+
+    ; What a level past the first is worth, to monster and boss alike: a tenth
+    ; more health; a twentieth more to its blow, its skills' damage and a
+    ; mending's heal; and a twentieth more for killing it. A level-1 monster is
+    ; its block exactly; at 8 it has 1.7 times its health and hits 1.35 times as
+    ; hard, and the boss at 35, 4.4 and 2.7 times. Experience climbs slowly on
+    ; purpose: a level-8 monster is worth 1.35 times its kind, so the hero levels
+    ; a little faster than he used to while what he fights climbs faster still.
+    HealthPercentPerLevel = 10
+    DamagePercentPerLevel = 5
+    ExperiencePercentPerLevel = 5
   End
 End

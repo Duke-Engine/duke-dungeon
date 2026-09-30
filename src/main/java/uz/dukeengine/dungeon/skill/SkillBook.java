@@ -14,8 +14,8 @@ import uz.dukeengine.core.thing.ObjectId;
 import uz.dukeengine.core.thing.ObjectStatus;
 import uz.dukeengine.core.thing.World;
 import uz.dukeengine.dungeon.ai.Facing;
-import uz.dukeengine.dungeon.combat.DepthBonus;
 import uz.dukeengine.dungeon.combat.FallingUpdate;
+import uz.dukeengine.dungeon.combat.LevelBonus;
 import uz.dukeengine.dungeon.combat.Shot;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.rts.event.WeaponFired;
@@ -757,21 +757,21 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Wea
     }
 
     /**
-     * What a skill hits for: its own figure at this level, the ultimate's window if
-     * one is open, and how much harder it hits for how deep it was found. Only a
-     * monster is ever found anywhere, so a hero's figure is untouched by that last.
+     * What a skill hits for: its own figure at this rank, the ultimate's window if
+     * one is open, and how much harder its caster's level makes it. Only a monster
+     * carries a level of its own, so a hero's figure is untouched by that last.
      */
     private float damageOf(Skill skill, int level) {
-        return skill.damageAt(level) * damageMultiplier() * depthOf(getOwner());
+        return skill.damageAt(level) * damageMultiplier() * bonusOf(getOwner());
     }
 
     /**
-     * The depth's bonus, read here as well as by the weapon. A skill deals its own
+     * Its level's bonus, read here as well as by the weapon. A skill deals its own
      * damage rather than going through a weapon, so without asking it would hit as
-     * hard on the fourth floor as on the first.
+     * hard at the thirtieth level as at the first.
      */
-    private static float depthOf(GameObject owner) {
-        var bonus = owner.findModule(DepthBonus.class);
+    private static float bonusOf(GameObject owner) {
+        var bonus = owner.findModule(LevelBonus.class);
         return bonus == null ? 1f : bonus.damageMultiplier();
     }
 
@@ -1005,7 +1005,7 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Wea
      * be the two of them disagreeing about the rule. See {@link Mending}.
      *
      * <p>Worth what it was worth when it was called for, as every shot here is, and
-     * grown by the depth as the healer's blows are.
+     * grown by its level as the healer's blows are.
      *
      * @return whether it was called down; false leaves the cooldown unspent
      */
@@ -1027,7 +1027,7 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Wea
             light.markDestroyed();
             return false; // the template exists but is not a light that mends
         }
-        mending.callDown(patient, skill.heal() * depthOf(owner), skill.windUpFrames());
+        mending.callDown(patient, skill.heal() * bonusOf(owner), skill.windUpFrames());
         Facing.turnToward(owner, patient);
         world.post(new WeaponFired(world.getFrame(), owner.getId(), null,
                 owner.getPosition(), spot));

@@ -8,7 +8,9 @@ Monster
   End
   VisionRange = 58
   Modules = [
-    ActiveBody
+    ; Grown by its level where it is placed, as every monster's body is -- see
+    ; the level lines in the Descent block of generation.duke.
+    GrowableBody
       MaxHealth = 60
     End,
     MoveUpdate

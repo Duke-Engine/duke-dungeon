@@ -11,7 +11,7 @@ import uz.dukeengine.core.math.Coord3D;
 import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.core.thing.World;
 import uz.dukeengine.dungeon.Dungeon;
-import uz.dukeengine.dungeon.combat.DepthBonus;
+import uz.dukeengine.dungeon.combat.LevelBonus;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.game.DukeGame;
 
@@ -334,25 +334,26 @@ class MonsterSkillTest {
 
     // ---- how hard, and how reliably ----
 
-    /** Found deeper, it hits harder: the depth's bonus reaches its skill as well as its weapon. */
+    /** With a level's bonus it hits harder: the bonus reaches its skill as well as its weapon. */
     @Test
-    void aCasterFoundDeeperHitsHarder() {
+    void aCasterWithALevelsBonusHitsHarder() {
         float plain = aBlowFrom(1f);
-        float deep = aBlowFrom(2f);
+        float twice = aBlowFrom(2f);
 
         assertTrue(plain > 0f, "the fireball never reached him");
-        assertEquals(plain * 2f, deep, 0.05f, "twice the bonus should be twice the blow");
+        assertEquals(plain * 2f, twice, 0.05f, "twice the bonus should be twice the blow");
     }
 
     /**
-     * What one fireball takes off the hero, from a caster carrying this bonus. The one it
-     * throws the moment it sees him leaves before the bonus is put on, so it is the next
-     * one, a cooldown later, that is measured.
+     * What one fireball takes off the hero, from a caster carrying this bonus -- at the first
+     * level, so nothing a higher one would open is open. The one it throws the moment it sees
+     * him leaves before the bonus is put on, so it is the next one, a cooldown later, that is
+     * measured.
      */
     private static float aBlowFrom(float bonus) {
         var fight = fight(standingStill(), room(NO_WALL), 240f, 200f);
         if (bonus != 1f) {
-            fight.mage().addModule(new DepthBonus(fight.mage(), bonus));
+            fight.mage().addModule(new LevelBonus(fight.mage(), 1, bonus, 1f));
         }
         int cooldown = SETTINGS.skillsFor(MAGE).get(0).cooldownFrames();
         fight.game().runHeadless(cooldown / 2);

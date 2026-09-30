@@ -15,7 +15,7 @@ import uz.dukeengine.rts.module.RtsModuleGroups;
  * death, the one the renderer watches, is an event and stays an event.
  *
  * <p>Attached when the monster is spawned rather than written into its creature
- * block, beside the depth bonus and for the same reason: what a monster leaves
+ * block, beside its level and for the same reason: what a monster leaves
  * depends on the floor it was found on, and a template says what a thing is, not
  * where it was met.
  */
