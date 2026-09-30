@@ -97,6 +97,40 @@ public final class Main {
         return layer.build();
     }
 
+    /**
+     * One layer, in the client's words: whatever the file said, laid over the client's own
+     * defaults, then modified by the game's own logic.
+     *
+     * <p>A status's picture renews — the stun's count starts again at each stun, so the look
+     * it wears must last to the new end. Named by the Combat block, so no name is compiled in.
+     * Other auras keep the engine's default drop: the knight's Whirlwind is cast again at
+     * each landing and must not be stretched.
+     */
+    static uz.dukeengine.client3d.EffectLayer layerOf(DungeonSettings.EffectLayerArt art, DungeonSettings settings) {
+        var layer = uz.dukeengine.client3d.EffectLayer.builder();
+        art.fields().forEach((field, value) -> {
+            switch (field) {
+                case "type" -> layer.type(value);
+                case "texture" -> layer.texture(value);
+                case "additive" -> layer.additive(Boolean.parseBoolean(value));
+                case "count" -> layer.count(Integer.parseInt(value));
+                case "colourStart" -> layer.colourStart(Integer.parseInt(value));
+                case "colourEnd" -> layer.colourEnd(Integer.parseInt(value));
+                case "lightColour" -> layer.lightColour(Integer.parseInt(value));
+                case "direction" -> layer.direction(value);
+                case "at" -> layer.at(value);
+                case "measure" -> layer.measure(value);
+                case "follows" -> layer.follows(Boolean.parseBoolean(value));
+                default -> number(layer, field, Float.parseFloat(value));
+            }
+        });
+        var stunLook = settings.combat().stunLook();
+        if (!stunLook.isBlank() && art.effect().equals(stunLook)) {
+            layer.renews(true);
+        }
+        return layer.build();
+    }
+
     private static void number(uz.dukeengine.client3d.EffectLayer.Builder layer, String field,
             float value) {
         switch (field) {
@@ -1020,7 +1054,7 @@ public final class Main {
         // order they are laid one over another.
         for (var layer : settings.effectLayers()) {
             visuals.effect(layer.effect(),
-                    recipe -> recipe.layer(layerOf(layer)));
+                    recipe -> recipe.layer(layerOf(layer, settings)));
         }
         for (var look : settings.projectiles()) {
             arrow(visuals, look.name(), look);

@@ -193,10 +193,12 @@ End
 ; ---------------------------------------------------------------------------
 Effect
   Name = Stunned
+  ; Stunned again while it burns, the picture lasts to the new stun's end rather
+  ; than being dropped, as the stun itself starts its count again.
 
   Layers = [
     ; A ring of light turning over his head, as a dazed man's world turns: above a
-    ; hero's twelve units and clear of the mage's hat, and blinking through the
+    ; hero's twelve units and clear of the mage's hat, and fading over the
     ; last sixth of its run, so the player sees the stun about to lift.
     Layer
       Name = Halo
