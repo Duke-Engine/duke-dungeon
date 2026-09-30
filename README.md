@@ -282,8 +282,11 @@ tabaqalarining ochilishi Blender'da animatsiya qilingan (ikki klip o'yin
 nusxasida `art/models/join_clips.pl` bilan bitta `open` klipiga
 birlashtirilgan). Ochilganda darvoza o'rniga shaklsiz `OpenGate` turadi va
 `open` klipini bir marta o'ynab, ochiq qoladi (`PlayOnce`, engine
-`ClipMode.ONCE`). Darvoza o'zi ochilmaydi: uni faqat kalit ochadi. Stage'lar
-qal'asiz kesiladi — stage fayli qal'aning ko'rinishini saqlamaydi.
+`ClipMode.ONCE`). Darvoza o'zi ochilmaydi: uni faqat kalit ochadi. Yopiq
+turganda u qal'a ichini tashqarisidan ajratib turadi (`run/Seal`): zarba, o'q,
+portlash, meteor va davolash undan o'tmaydi (ostona tashqari hisoblanadi);
+ochilgach hammasi avvalgidek yetadi. Stage'lar qal'asiz kesiladi — stage fayli
+qal'aning ko'rinishini saqlamaydi.
 
 Qal'ali qavatning **vazifasi** bor (`run/Mission`), ekranning tepasida
 yoziladi: qal'adan tashqaridagi barcha monstrlarni o'ldirish (hisobi bilan),

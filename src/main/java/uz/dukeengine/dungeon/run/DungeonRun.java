@@ -140,10 +140,14 @@ public final class DungeonRun {
      */
     private volatile String tracker = "";
 
+    /** The keep's shut gate, as everything that hurts or mends asks it: told of each floor as it is laid. */
+    private final Seal seal;
+
     public DungeonRun(GamePlayer heroPlayer, GamePlayer dungeonPlayer, Floors floors,
             DungeonSettings settings, HeroProgress progress,
             LootTable drops, uz.dukeengine.dungeon.ai.Orders orders,
-            SkillRanks learnt) {
+            SkillRanks learnt, Seal seal) {
+        this.seal = seal;
         this.orders = orders;
         this.dungeonPlayer = dungeonPlayer;
         this.floors = floors;
@@ -388,12 +392,14 @@ public final class DungeonRun {
 
     /**
      * What a floor just laid asks of the party: that no hero bring a key from the floor above, its mission, if it has
-     * a keep, and of every hero that he leave the key where he falls, so a party never loses the way on with him.
+     * a keep, and of every hero that he leave the key where he falls, so a party never loses the way on with him. And
+     * its keep and gate, or none, for the seal to keep shut.
      *
      * <p>A key belongs to the floor it was found on: one carried down would open this floor's gate unearned, and have
      * the tracker say "give it" of a key that is still lying.
      */
     private void onTheFloor(DukeGame game, GeneratedDungeon floor, Spawner.Placed placed) {
+        seal.floor(floor.keep(), placed.gate());
         for (int i = 0; i < seats.size(); i++) {
             var bag = seats.get(i).progress.getLoot();
             bag.removeAll(LootKind.KEY);

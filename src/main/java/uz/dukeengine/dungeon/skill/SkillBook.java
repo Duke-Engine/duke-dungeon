@@ -18,6 +18,7 @@ import uz.dukeengine.dungeon.combat.FallingUpdate;
 import uz.dukeengine.dungeon.combat.LevelBonus;
 import uz.dukeengine.dungeon.combat.Shot;
 import uz.dukeengine.dungeon.content.DungeonSettings;
+import uz.dukeengine.dungeon.run.Seal;
 import uz.dukeengine.rts.event.WeaponFired;
 import uz.dukeengine.rts.module.DamageModifier;
 import uz.dukeengine.rts.module.StatusUpdate;
@@ -228,11 +229,15 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Wea
      */
     private final List<ObjectId> summoned = new java.util.ArrayList<>();
 
-    public SkillBook(GameObject owner, List<Skill> skills, DungeonSettings settings) {
+    /** The keep's shut gate, which nothing a skill hurts or mends is found through: see {@link Seal}. */
+    private final Seal seal;
+
+    public SkillBook(GameObject owner, List<Skill> skills, DungeonSettings settings, Seal seal) {
         super(owner);
         this.skills = List.copyOf(skills);
         this.cooldowns = new int[skills.size()];
         this.settings = settings;
+        this.seal = seal;
     }
 
     /**
@@ -787,13 +792,14 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Wea
      * where he stands. Everything the un-aimed path checks, asked of one named
      * thing instead of all of them.
      */
-    private static GameObject aimedAt(GameObject owner, World world, ObjectId at, float range) {
+    private GameObject aimedAt(GameObject owner, World world, ObjectId at, float range) {
         var victim = world.findObject(at);
         if (victim == null || victim.getBody() == null || victim.isEffectivelyDead()) {
             return null;
         }
         if (world.getRelationship(owner.getPlayerIndex(), victim.getPlayerIndex())
-                != Relationship.ENEMIES) {
+                != Relationship.ENEMIES
+                || seal.parts(world, owner.getPosition(), victim.getPosition())) {
             return null;
         }
         return World.reachBetween(owner, victim) <= range ? victim : null;
@@ -835,7 +841,7 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Wea
      * for reproducibility: two equidistant skeletons must not be chosen by
      * whichever the world happens to list first.
      */
-    private static GameObject nearestEnemy(GameObject owner, World world, float range) {
+    private GameObject nearestEnemy(GameObject owner, World world, float range) {
         GameObject best = null;
         float bestReach = Float.MAX_VALUE;
         for (var candidate : enemiesWithin(owner, world, range)) {
@@ -849,19 +855,24 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Wea
         return best;
     }
 
-    private static List<GameObject> enemiesWithin(GameObject owner, World world, float radius) {
+    private List<GameObject> enemiesWithin(GameObject owner, World world, float radius) {
         return enemiesWithin(owner, world, owner.getPosition(), radius);
     }
 
-    /** The same, round a spot the player chose rather than round the caster. */
-    private static List<GameObject> enemiesWithin(GameObject owner, World world, Coord3D centre,
+    /**
+     * The same, round a spot the player chose rather than round the caster -- and only on the caster's side of the
+     * keep's shut gate, wherever the spot is: dropped into the court from outside, it catches nobody in it.
+     */
+    private List<GameObject> enemiesWithin(GameObject owner, World world, Coord3D centre,
             float radius) {
         int player = owner.getPlayerIndex();
+        var side = owner.getPosition();
         return world.objectsInRange(centre, radius, candidate ->
                 candidate.getBody() != null
                         && !candidate.isEffectivelyDead()
                         && world.getRelationship(player, candidate.getPlayerIndex())
-                                == Relationship.ENEMIES);
+                                == Relationship.ENEMIES
+                        && !seal.parts(world, side, candidate.getPosition()));
     }
 
     /**
@@ -911,12 +922,12 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Wea
      * not slow. Better that than the game deciding what a creature is made of
      * behind its own file's back.
      */
-    private static void chill(GameObject owner, World world, float radius, int frames) {
+    private void chill(GameObject owner, World world, float radius, int frames) {
         chill(owner, world, owner.getPosition(), radius, frames);
     }
 
     /** The same, round a spot he chose rather than round himself. */
-    private static void chill(GameObject owner, World world, Coord3D centre, float radius,
+    private void chill(GameObject owner, World world, Coord3D centre, float radius,
             int frames) {
         if (frames <= 0) {
             return;
@@ -1014,7 +1025,7 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Wea
     private boolean mend(GameObject owner, World world, Skill skill, ObjectId at) {
         var patient = at == null ? null : world.findObject(at);
         if (!skill.hasProjectile()
-                || !Mending.canMend(owner, patient, skill.range(), skill.healBelowPercent())) {
+                || !Mending.canMend(owner, patient, skill.range(), skill.healBelowPercent(), seal)) {
             return false;
         }
         var thing = world.findTemplate(skill.projectile());

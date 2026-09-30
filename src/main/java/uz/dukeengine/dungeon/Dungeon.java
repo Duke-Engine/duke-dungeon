@@ -31,6 +31,7 @@ import uz.dukeengine.dungeon.skill.SkillBook;
 import uz.dukeengine.dungeon.skill.Skills;
 import uz.dukeengine.dungeon.run.DungeonRun;
 import uz.dukeengine.dungeon.run.Floors;
+import uz.dukeengine.dungeon.run.Seal;
 import uz.dukeengine.dungeon.stage.Stage;
 import uz.dukeengine.game.DukeGame;
 import uz.dukeengine.game.GamePlayer;
@@ -93,8 +94,11 @@ public final class Dungeon {
      * @param orders the standing orders the hero has been given -- held here
      *               because the command that sets one and the brain that obeys it
      *               have no other way to reach each other. See {@link Orders}
+     * @param seal   the keep's shut gate, as every blow, shot and mending asks it: told of each floor by the run that
+     *               lays it, and of none in a world nobody lays one in. See {@link Seal}
      */
-    public record Arena(DukeGame game, GamePlayer hero, GamePlayer dungeon, Orders orders, java.util.List<GamePlayer> heroes) {
+    public record Arena(DukeGame game, GamePlayer hero, GamePlayer dungeon, Orders orders,
+            java.util.List<GamePlayer> heroes, Seal seal) {
     }
 
     /** A game, the run loop that keeps it going, and the hero's progression. */
@@ -147,6 +151,7 @@ public final class Dungeon {
     public static Arena world(String asciiMap, String levelMap, DungeonSettings settings,
             String creaturesIni, java.util.List<LootBag> bagsBySeat) {
         var orders = new Orders();
+        var seal = new Seal();
         var heroes = new java.util.ArrayList<GamePlayer>();
         // No subtitle here: what this world is called depends on why it was built,
         // and only the caller knows — an endless descent, or one named stage. See
@@ -157,7 +162,8 @@ public final class Dungeon {
                     // class, so the editor completes it, opens it and flags a typo. Which creature a
                     // MonsterBrain is the brain of is the block it was put on -- see MonsterBrain.onStart.
                     ScriptModule.registerScript(factory, HeroBrain.Data.class, () -> new HeroBrain(settings, orders));
-                    ScriptModule.registerScript(factory, MonsterBrain.Data.class, () -> new MonsterBrain(settings));
+                    ScriptModule.registerScript(factory, MonsterBrain.Data.class,
+                            () -> new MonsterBrain(settings, seal));
                     // Hero and monsters alike need a body that can grow: levels
                     // raise his and theirs, and the engine's fixes its maximum
                     // when the unit is built.
@@ -188,7 +194,7 @@ public final class Dungeon {
                     // Which skills a unit has is the Skill blocks written inside its own:
                     // the SkillBook block says only that it has some.
                     factory.register(SkillBook.Data.class, (owner, data) -> new SkillBook(owner,
-                            settings.skillsFor(owner.getTemplate().name()), settings));
+                            settings.skillsFor(owner.getTemplate().name()), settings, seal));
                     // An archer's shots become things in the world. The engine's
                     // weapon still aims and reloads; these two decide what
                     // happens between letting go and landing.
@@ -197,11 +203,11 @@ public final class Dungeon {
                     factory.register(EyesOnly.Data.class, (owner, data) -> new EyesOnly(owner, settings));
                     // And what a creature a shot stuns wears while it stands dazed -- see ArrowUpdate.stun.
                     factory.register(ArrowUpdate.Data.class,
-                            (owner, data) -> new ArrowUpdate(owner, settings.combat().stunLook()));
+                            (owner, data) -> new ArrowUpdate(owner, settings.combat().stunLook(), seal));
                     // A blast with a pause in the middle. The mark it leaves is a
                     // thing in the world like the arrow above, so the client draws
                     // the warning without being told anything special.
-                    factory.register(FallingUpdate.Data.class, FallingUpdate::new);
+                    factory.register(FallingUpdate.Data.class, (owner, data) -> new FallingUpdate(owner, seal));
                     // The meteor's mark turned round: holy light lying where it will
                     // land, and mending whoever it came down for when it does.
                     factory.register(MendingUpdate.Data.class, MendingUpdate::new);
@@ -210,8 +216,9 @@ public final class Dungeon {
                     factory.register(SummoningUpdate.Data.class,
                             (owner, data) -> new SummoningUpdate(owner, settings));
                     // A monster's blow lands where it stands, as it always did.
-                    // This is only how the brain finds out that it struck.
-                    factory.register(Swing.Data.class, Swing::new);
+                    // This is how the brain finds out that it struck -- and where
+                    // the keep's shut gate takes a blow struck through it.
+                    factory.register(Swing.Data.class, (owner, data) -> new Swing(owner, seal));
                     // What a dead monster leaves lying about. The chest is a
                     // creature like any other -- it is in the world, so the client
                     // draws it without being told anything special.
@@ -247,7 +254,7 @@ public final class Dungeon {
             }
         }
         game.localPlayer(heroes.getFirst());
-        return new Arena(game, heroes.getFirst(), dungeonPlayer, orders, java.util.List.copyOf(heroes));
+        return new Arena(game, heroes.getFirst(), dungeonPlayer, orders, java.util.List.copyOf(heroes), seal);
     }
 
     /**
@@ -383,7 +390,7 @@ public final class Dungeon {
         var drops = new LootTable(settings.loot(), seed, settings.lootDrops().dropPercent(),
                 settings.lootDrops().bossDropPercent(), settings.lootDrops().valuePercentPerDepth());
         var run = new DungeonRun(arena.hero(), arena.dungeon(), floors, settings, progresses.getFirst(),
-                drops, arena.orders(), learnts.getFirst());
+                drops, arena.orders(), learnts.getFirst(), arena.seal());
         for (int seat = 1; seat < heroes; seat++) {
             run.seat(arena.heroes().get(seat), progresses.get(seat), learnts.get(seat));
         }
