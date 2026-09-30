@@ -102,15 +102,43 @@ class KeepSettingsTest {
 
     /**
      * The gate opens only to a key, and a key is what the floor lays: a file with a keep and no item of Kind = KEY
-     * would build a floor with nothing to open its gate with — whatever else has Use = UNLOCK.
+     * would build a floor with nothing to open its gate with. The key here is an ordinary thing, with no Use either,
+     * so that it is the keep that is refused and not an item.
      */
     @Test
     void aKeepWithNoKeyToLayIsRefused() {
-        var data = Content.data().replace("  Kind = KEY\n", "  Kind = ATTACK\n");
+        var data = Content.data().replace("  Kind = KEY\n  Use = UNLOCK\n", "  Kind = ATTACK\n");
 
         var refused = assertThrows(IllegalArgumentException.class, () -> DungeonSettings.parse(data));
         assertTrue(refused.getMessage().contains("Keep") && refused.getMessage().contains("Kind = KEY"),
                 refused.getMessage());
+    }
+
+    /**
+     * Only a key opens the gate. What clears the bags at each floor, what the tracker looks for, what the floor lays
+     * and what never joins all ask an item's Kind, and only the opening asks its Use: a thing that is not a key and
+     * has Use = UNLOCK would open a gate and be none of those, so it is refused naming it — the keep's own key
+     * standing right beside it, and whether or not the file builds a keep.
+     */
+    @Test
+    void aThingThatOpensTheGateAndIsNotAKeyIsRefusedNamingIt() {
+        var crowbar = """
+                LootItem
+                  Name = Crowbar
+                  Icon = icons/stats/stat_strength.png
+                  Kind = ATTACK
+                  Use = UNLOCK
+                  Value = 5
+                  Weight = 10
+                End
+                """;
+        var noKeep = Content.data().replaceFirst("(?s)  Keep = Keep\\n.*?\\n  End\\n", "");
+
+        for (var data : new String[] {Content.data() + crowbar, noKeep + crowbar}) {
+            var refused = assertThrows(IllegalArgumentException.class, () -> DungeonSettings.parse(data));
+            assertTrue(refused.getMessage().contains("LootItem Crowbar") && refused.getMessage().contains("UNLOCK")
+                    && refused.getMessage().contains("KEY"), refused.getMessage());
+        }
     }
 
     /** And with no keep there is no gate for a key to open, so the same file, with no key at all, is read. */
@@ -126,7 +154,7 @@ class KeepSettingsTest {
                 || item.use() == ItemUse.UNLOCK), "and no key to open it");
     }
 
-    /** The shipped files keep both rules: the descent builds a keep, and it has a key that opens its gate. */
+    /** The shipped files keep the rules: the descent builds a keep, and its key is what opens its gate, and only it. */
     @Test
     void theShippedFilesGiveTheKeepAKeyThatOpens() {
         var settings = DungeonSettings.load();
@@ -135,6 +163,8 @@ class KeepSettingsTest {
         assertFalse(settings.keep().sizes().isEmpty(), "the premise: the descent builds a keep");
         assertFalse(keys.isEmpty(), "a keep with no key to lay");
         assertTrue(keys.stream().allMatch(key -> key.use() == ItemUse.UNLOCK), "a key that opens nothing");
+        assertTrue(settings.loot().stream().filter(item -> item.use() == ItemUse.UNLOCK)
+                .allMatch(item -> item.kind() == LootKind.KEY), "a thing that opens the gate and is not a key");
     }
 
     /** Drawn in the Keep theme, and a Look naming no theme is refused — by the link or by the check, either way. */

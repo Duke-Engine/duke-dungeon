@@ -293,7 +293,10 @@ o'ldirish. Kalit (`world.duke` dagi `Kind = KEY`, `Use = UNLOCK` li
 kalitga chap tugma, keyin darvozaga bosilsa, qahramon borib kalitni darvozaga
 beradi. Darvozaga o'ng tugma bosilsa, qahramon borib, kaliti bor-yo'qligini
 boshi ustidagi pufakchada aytadi. Kalitni ko'targan qahramon yiqilsa, kalit
-o'sha joyda qoladi.
+o'sha joyda qoladi. Kalit o'zi topilgan qavatga tegishli: qavat tugagach u
+keyingi qavatga o'tmaydi, shu yerda qoladi; fayl o'qilganda darvozani ocha
+olmaydigan kalit (`Use = UNLOCK` siz `KEY`), `KEY` bo'lmagan narsadagi
+`UNLOCK` va kalitsiz qal'a rad etiladi.
 
 ## Stage rejimi — o'zgarmaydigan xarita
 
