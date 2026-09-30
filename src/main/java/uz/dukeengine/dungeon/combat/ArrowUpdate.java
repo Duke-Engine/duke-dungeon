@@ -78,6 +78,11 @@ public final class ArrowUpdate extends UpdateModule {
     private int stunFrames;
 
     /**
+     * What whoever this stuns wears while dazed: the Combat block's {@code StunLook}; blank for nothing.
+     */
+    private final String stunLook;
+
+    /**
      * How high over the ground it flies: as high as it was when it left the bow, and over whatever ground it crosses —
      * so a shot rises over a hill and dips into a hollow rather than going straight through the one and over the
      * other. The ground's height is the simulation's own, so every machine flies it alike, and it lands where it is
@@ -85,8 +90,9 @@ public final class ArrowUpdate extends UpdateModule {
      */
     private float flight;
 
-    public ArrowUpdate(GameObject owner, ModuleData ignored) {
+    public ArrowUpdate(GameObject owner, String stunLook) {
         super(owner);
+        this.stunLook = stunLook == null ? "" : stunLook;
     }
 
     /** Send it after something, carrying what the weapon decided it was worth. */
@@ -226,7 +232,7 @@ public final class ArrowUpdate extends UpdateModule {
      */
     private void strike(World world, GameObject victim) {
         victim.getBody().damage(damage, damageType);
-        stun(victim);
+        stun(world, victim);
         splash(world, victim);
         if (victim.isEffectivelyDead()) {
             var archer = world.findObject(shooter);
@@ -261,7 +267,7 @@ public final class ArrowUpdate extends UpdateModule {
                         && world.getRelationship(side, candidate.getPlayerIndex())
                                 == Relationship.ENEMIES)) {
             caught.getBody().damage(damage, damageType);
-            stun(caught);
+            stun(world, caught);
         }
     }
 
@@ -269,15 +275,20 @@ public final class ArrowUpdate extends UpdateModule {
      * Leave whoever this hurt standing dazed, if it was thrown to: the engine's own {@code DISABLED} for
      * {@link #stunFrames}, set on the creature's own timers -- so its legs and its weapon stand still under it, its
      * skills refuse (see {@code SkillBook.cast}), it wears off by itself whoever threw it, and a second stun starts
-     * the count again rather than adding to it.
+     * the count again rather than adding to it. And the stars over its head, riding it for as long: the client is
+     * told how long by {@code Main.measureLooks}.
      *
      * <p>A creature whose file never asked for a {@code StatusUpdate} is not stunned, as it is not slowed: better
      * that than the game deciding what a creature is made of behind its own file's back.
      */
-    private void stun(GameObject hurt) {
+    private void stun(World world, GameObject hurt) {
         var timers = stunFrames <= 0 || hurt.isEffectivelyDead() ? null : hurt.findModule(StatusUpdate.class);
-        if (timers != null) {
-            timers.apply(ObjectStatus.DISABLED, stunFrames);
+        if (timers == null) {
+            return;
+        }
+        timers.apply(ObjectStatus.DISABLED, stunFrames);
+        if (!stunLook.isBlank()) {
+            world.effect(stunLook, hurt);
         }
     }
 }

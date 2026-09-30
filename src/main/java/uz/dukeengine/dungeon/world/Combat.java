@@ -1,5 +1,8 @@
 package uz.dukeengine.dungeon.world;
 
+import uz.dukeengine.core.content.Effect;
+import uz.dukeengine.core.data.Link;
+
 /**
  * How the creatures of every kind fight and move, where no one kind's block has a say.
  *
@@ -16,13 +19,15 @@ package uz.dukeengine.dungeon.world;
  * @param arrowTemplate      the creature an archer's shot becomes once it is in the air
  * @param arrowSpeed         how fast it travels, in world units per second
  * @param arrowMuzzleOffset  how far in front of an archer his arrow appears — the bow, not his chest
+ * @param stunLook           what a stunned creature wears while it stands dazed: an {@code Effect} played on it
+ *     by whatever stunned it, lasting as long as the longest {@code StunFrames} any skill has. Blank for nothing
  */
 public record Combat(float skeletonSenseRadius, float skeletonChaseRadius, int skeletonRepathFrames,
         float closeDistance, int heroRepathFrames, float wayAheadProbe, float retreatTurnDegrees,
         int retreatTurns, float summonTurnDegrees, int summonTurns, String arrowTemplate, float arrowSpeed,
-        float arrowMuzzleOffset) {
+        float arrowMuzzleOffset, @Link(Effect.class) String stunLook) {
 
     /** What a block leaves out. */
     public static final Combat DEFAULTS = new Combat(90f, 150f, 10, 4f, 10, 5f, 30f, 3, 45f, 4, "Arrow",
-            260f, 5f);
+            260f, 5f, "");
 }

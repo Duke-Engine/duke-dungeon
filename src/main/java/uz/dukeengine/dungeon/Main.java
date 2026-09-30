@@ -153,6 +153,10 @@ public final class Main {
      * How far: its radius. And a projectile's effect is given its skill's numbers
      * too -- a meteor's falling mark takes the same wind-up to come down, and a
      * fireball's blast is as wide as the skill that threw it.
+     *
+     * <p>And the stars over a stunned head last as long as the longest stun any skill
+     * gives: the look is the Combat block's, one for every stun, played on whoever
+     * was stunned rather than where a skill went off.
      */
     static void measureLooks(uz.dukeengine.client3d.Visuals visuals, DungeonSettings settings) {
         float perSecond = uz.dukeengine.core.GameConstants.LOGICFRAMES_PER_SECOND;
@@ -178,6 +182,13 @@ public final class Main {
                     visuals.effectSeconds(carried, skill.windUpFrames() / perSecond);
                 }
             }
+        }
+        int longestStun = 0;
+        for (var skill : settings.skills()) {
+            longestStun = Math.max(longestStun, skill.stunFrames());
+        }
+        if (longestStun > 0 && !settings.combat().stunLook().isBlank()) {
+            visuals.effectSeconds(settings.combat().stunLook(), longestStun / perSecond);
         }
     }
 

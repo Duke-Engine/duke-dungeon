@@ -8,6 +8,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import uz.dukeengine.client3d.EffectLayer;
+import uz.dukeengine.client3d.Visuals;
+import uz.dukeengine.core.GameConstants;
+import uz.dukeengine.core.event.EffectPlayed;
 import uz.dukeengine.core.module.ModuleData;
 import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.core.thing.ObjectStatus;
@@ -16,6 +20,7 @@ import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.dungeon.content.Hero;
 import uz.dukeengine.dungeon.content.Monster;
 import uz.dukeengine.dungeon.content.ShippedBlock;
+import uz.dukeengine.dungeon.skill.Skill;
 import uz.dukeengine.dungeon.skill.SkillBook;
 import uz.dukeengine.game.DukeGame;
 import uz.dukeengine.rts.module.StatusUpdate;
@@ -203,5 +208,40 @@ class StunTest {
 
         var refused = assertThrows(IllegalArgumentException.class, () -> DungeonSettings.parse(data));
         assertTrue(refused.getMessage().contains("StunFrames"), refused.getMessage());
+    }
+
+    // ---- the stars ----
+
+    /** Stars on whoever it stunned: the Combat block's look, played riding him on the frame it landed. */
+    @Test
+    void theStarsArePlayedOnWhoeverItStunned() {
+        var fight = fireMage(SETTINGS, 200f, 150f, 250f, 150f);
+        var hero = fight.heroes().getFirst();
+
+        assertTrue(untilStunned(fight.game(), hero, 150), "nothing it threw stunned him");
+        var played = fight.game().getSnapshot().events().stream()
+                .filter(EffectPlayed.class::isInstance).map(EffectPlayed.class::cast).toList();
+        assertTrue(played.stream().anyMatch(effect -> effect.name().equals(SETTINGS.combat().stunLook())
+                        && hero.getId().equals(effect.riding())),
+                "no " + SETTINGS.combat().stunLook() + " riding him the frame he was stunned: " + played);
+    }
+
+    /** They last as long as the longest stun any skill gives, and no layer of them says how long for itself. */
+    @Test
+    void theStarsLastAsLongAsTheLongestStun() {
+        var visuals = Visuals.create();
+        Main.measureLooks(visuals, SETTINGS);
+        int longest = SETTINGS.skills().stream().mapToInt(Skill::stunFrames).max().orElse(0);
+        assertTrue(longest > 0, "the premise: something stuns");
+
+        assertEquals(longest / (float) GameConstants.LOGICFRAMES_PER_SECOND,
+                visuals.getEffectSeconds(SETTINGS.combat().stunLook()), 0.001f);
+        var layers = SETTINGS.effectLayers().stream()
+                .filter(art -> art.effect().equals(SETTINGS.combat().stunLook())).map(Main::layerOf).toList();
+        assertFalse(layers.isEmpty(), "the look a stun is worn in is drawn by nothing");
+        for (var layer : layers) {
+            assertEquals(EffectLayer.AURA, layer.type(), "a stun is worn, and goes where he goes");
+            assertEquals(0f, layer.seconds(), 0.001f, "a layer that says how long it lasts no longer follows the stun");
+        }
     }
 }

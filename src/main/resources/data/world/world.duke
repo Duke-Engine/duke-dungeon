@@ -176,6 +176,63 @@ Combat
   ; of his chest; the bow is held out ahead, and ahead is where he is facing —
   ; he turns to shoot, so his heading is the line of the shot.
   ArrowMuzzleOffset = 5
+
+  ; What a stunned creature wears while it stands dazed -- see the Effect below,
+  ; and StunFrames on the fire mage's fireball. Blank, and a stun is not drawn.
+  StunLook = Stunned
+End
+
+; ---------------------------------------------------------------------------
+; Stars over a stunned head, for as long as the stun: whatever stuns plays it on
+; whoever it stunned (see ArrowUpdate), and Combat's StunLook above names it.
+;
+; No layer says how long it lasts. The client is told the longest StunFrames any
+; skill has (Main.measureLooks), so the number is written once, on the skill, and
+; the picture follows it -- as the frost on whoever a nova caught follows its
+; SlowFrames.
+; ---------------------------------------------------------------------------
+Effect
+  Name = Stunned
+
+  Layers = [
+    ; A ring of light turning over his head, as a dazed man's world turns: above a
+    ; hero's twelve units and clear of the mage's hat, and blinking through the
+    ; last sixth of its run, so the player sees the stun about to lift.
+    Layer
+      Name = Halo
+      Type = AURA
+      Texture = kit/effects/particles/twirl_02.png
+      Blend = Additive
+      Count = 1
+      Size = [8, 8]
+      Colour = [0xFFF4B0, 0xFFD24A]
+      Alpha = [0.6, 0.6]
+      FadeIn = 0.05
+      FadeOut = 0.15
+      Spin = 240
+      Height = 15
+      TurnJitter = 0
+    End,
+
+    ; And the stars on it: a few at a time, each gone in half a second, so the
+    ; ring is always being drawn again round wherever he stands.
+    Layer
+      Name = Stars
+      Type = AURA
+      Texture = kit/effects/particles/star_04.png
+      Blend = Additive
+      Count = 6
+      Rate = 10
+      Radius = 4
+      Life = [0.4, 0.6]
+      Size = [2.4, 1.2]
+      Colour = [0xFFFBE0, 0xFFC830]
+      Speed = [0, 0]
+      Direction = NONE
+      Spin = 180
+      Height = 15
+    End
+  ]
 End
 
 Progression

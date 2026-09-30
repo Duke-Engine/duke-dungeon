@@ -197,7 +197,9 @@ public final class Dungeon {
                     factory.register(Bow.Data.class, (owner, data) -> new Bow(owner, data, settings));
                     // Stone stops his shots as well as his eyes.
                     factory.register(EyesOnly.Data.class, (owner, data) -> new EyesOnly(owner, settings));
-                    factory.register(ArrowUpdate.Data.class, ArrowUpdate::new);
+                    // And what a creature a shot stuns wears while it stands dazed -- see ArrowUpdate.stun.
+                    factory.register(ArrowUpdate.Data.class,
+                            (owner, data) -> new ArrowUpdate(owner, settings.combat().stunLook()));
                     // A blast with a pause in the middle. The mark it leaves is a
                     // thing in the world like the arrow above, so the client draws
                     // the warning without being told anything special.
