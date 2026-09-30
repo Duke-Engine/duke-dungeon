@@ -241,11 +241,20 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
      */
     private final List<ObjectId> summoned = new java.util.ArrayList<>();
 
+    /**
+     * How far round it an aura may be lent from: the widest {@code Radius} any aura in the files has, and nothing for a
+     * hero's book -- none of his side may bear one -- or where no file gives an aura. See {@link #auraOn}.
+     */
+    private final float auraReach;
+
     public SkillBook(GameObject owner, List<Skill> skills, DungeonSettings settings) {
         super(owner);
         this.skills = List.copyOf(skills);
         this.cooldowns = new int[skills.size()];
         this.settings = settings;
+        this.auraReach = settings.monster(owner.getTemplate().name()) == null ? 0f
+                : settings.skills().stream().filter(skill -> skill.effect().isAura())
+                        .map(Skill::radius).reduce(0f, Math::max);
     }
 
     /**
@@ -1181,9 +1190,55 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
         }
     }
 
+    /**
+     * How much harder its blows and its skills land: an {@code EMPOWER} while it lasts, and the strongest
+     * {@code DAMAGE_AURA} it stands in -- see {@link #auraOn}. The engine's weapon multiplies it into each blow, and
+     * {@link #damageOf} into each skill; a mending is not damage and does not ask.
+     */
     @Override
     public float damageMultiplier() {
-        return boostFrames > 0 ? 1f + boostPercent / 100f : 1f;
+        float empowered = boostFrames > 0 ? 1f + boostPercent / 100f : 1f;
+        return empowered * (1f + auraOn(getOwner(), SkillEffect.DAMAGE_AURA) / 100f);
+    }
+
+    /**
+     * The strongest aura of {@code kind} on {@code creature}, 0 for none: the largest worth among the bearers of that
+     * kind on its side, living, whose level has opened it, within whose {@code Radius} it stands, middle to middle, and
+     * in whose plain sight -- the bearer itself among them. Nothing for a creature that carries no book, as one without
+     * a {@code StatusUpdate} is not stunned.
+     *
+     * <p>Asked where the figure is used, never pushed to the creature, so it holds exactly while the creature stands in
+     * reach and ends the moment it steps out or its bearer falls: nothing kept, nothing to go stale. A maximum of whole
+     * numbers, the same in any order, behind a sight line walked on integers.
+     *
+     * <p>ponytail: a pass over the floor's objects out to the widest aura, and a sight line for each bearer in reach,
+     * at every asking; a cache by frame if a crowded floor ever shows it.
+     */
+    public static int auraOn(GameObject creature, SkillEffect kind) {
+        var book = creature == null ? null : creature.findModule(SkillBook.class);
+        var world = creature == null ? null : creature.getWorld();
+        if (book == null || world == null || book.auraReach <= 0f) {
+            return 0;
+        }
+        var here = creature.getPosition();
+        int strongest = 0;
+        for (var bearer : world.objectsInRange(here, book.auraReach,
+                one -> one.getPlayerIndex() == creature.getPlayerIndex() && !one.isEffectivelyDead())) {
+            var theirs = bearer.findModule(SkillBook.class);
+            if (theirs == null) {
+                continue;
+            }
+            for (var skill : theirs.skills) {
+                int worth = skill.boostPercent();
+                if (skill.effect() == kind && worth > strongest
+                        && LevelBonus.levelOf(bearer) >= skill.levelForRank(1)
+                        && here.distance(bearer.getPosition()) <= skill.radius()
+                        && SightLine.clear(bearer, creature)) {
+                    strongest = worth;
+                }
+            }
+        }
+        return strongest;
     }
 
     /**

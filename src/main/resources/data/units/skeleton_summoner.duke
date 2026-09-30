@@ -1,7 +1,8 @@
 ; The purple one, and it brings more of them. Frail and slow like the other two, with a
 ; mote of dark for its ordinary shot; its skills open rifts that swordsmen and archers
-; climb out of, and make the sturdiest of its own strike faster -- see Monster
-; SkeletonSummoner and the Q and W skills of the SkeletonSummoner below.
+; climb out of, and make the sturdiest of its own strike faster, and everyone of its own
+; round it hits harder -- see Monster SkeletonSummoner and the Q, W and E skills of the
+; SkeletonSummoner below.
 Monster
   Name = SkeletonSummoner
   DisplayName = Skeleton Summoner
@@ -138,6 +139,19 @@ Monster
       ManaCost = 25
       MaxRank = 1
       Name = Shiddat
+    End,
+    Skill
+      Key = E
+      ; Everyone of its own round it -- itself, and what it calls up -- hits half as hard
+      ; again: every blow and every skill, within its Radius and in its plain sight.
+      ; Never cast: it holds while it stands. Two summoners lend the stronger, never
+      ; both.
+      Effect = DAMAGE_AURA
+      BoostPercent = 50
+      ; A room round it, and the ones fighting him from its band.
+      Radius = 60
+      MaxRank = 1
+      Name = Qudrat
     End
   ]
 End

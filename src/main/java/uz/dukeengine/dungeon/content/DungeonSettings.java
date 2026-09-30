@@ -772,6 +772,10 @@ public final class DungeonSettings {
                     skill.heroTemplate() + "'s Skill " + skill.key() + " is a " + skill.effect()
                             + ", never cast: a Damage, ManaCost, WindUpFrames, Projectile or Look on it is read by"
                             + " nothing");
+            // An aura lends what it is worth as far as its Radius and no further: without one it reaches nobody.
+            require(!skill.effect().isAura() || skill.radius() > 0f,
+                    skill.heroTemplate() + "'s Skill " + skill.key() + " is a " + skill.effect()
+                            + " and reaches nobody: it needs a Radius");
             switch (skill.effect()){
                 case HEAL -> {
                     var name = skill.heroTemplate() + "'s Skill " + skill.key();
@@ -802,6 +806,9 @@ public final class DungeonSettings {
                 case LIFESTEAL -> require(skill.boostPercent() >= 1 && skill.boostPercent() <= 100,
                         skill.heroTemplate() + "'s Skill " + skill.key() + "'s BoostPercent is the share of every"
                                 + " blow it drinks, from 1 to 100");
+                case DAMAGE_AURA -> require(skill.boostPercent() >= 1,
+                        skill.heroTemplate() + "'s Skill " + skill.key() + "'s BoostPercent is what it adds to every"
+                                + " blow round it, at least 1");
             }
         }
     }

@@ -458,7 +458,8 @@ class DungeonSettingsTest {
                 case AREA_DAMAGE, SUMMON -> skill.radius();
                 case HASTE -> skill.range();
                 case EMPOWER, GUARD -> 1f; // his own width; the look says how wide
-                case LIFESTEAL -> 1f; // never cast, so no ring is ever drawn: a stand-in to keep the switch whole
+                // Never cast, so no ring is ever drawn: a stand-in to keep the switch whole.
+                case LIFESTEAL, DAMAGE_AURA -> 1f;
             };
             assertTrue(reach > 0f, skill.heroTemplate() + "'s " + skill.key() + " is a "
                     + skill.effect() + " and has nothing to draw a ring from");

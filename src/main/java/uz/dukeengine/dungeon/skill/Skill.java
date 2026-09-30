@@ -29,7 +29,8 @@ import uz.dukeengine.dungeon.content.Projectile;
  * @param effect        what it does
  * @param damage        damage at the first level ({@code STRIKE}, {@code AREA_DAMAGE})
  * @param damagePerLevel  damage added per level past the first
- * @param radius        how far {@code AREA_DAMAGE} reaches around the caster
+ * @param radius        how far {@code AREA_DAMAGE} reaches around the caster, and an
+ *     aura round its bearer, middle to middle
  * @param range         how far {@code STRIKE} can find a victim, and a {@code HASTE}
  *     the one it hastens, middle to middle
  * @param distance      how far {@code DASH} carries the caster
@@ -42,10 +43,10 @@ import uz.dukeengine.dungeon.content.Projectile;
  *     PICTURE is the one the player trusts
  * @param boostPercent  what this skill is worth in percent — damage added by
  *     {@code EMPOWER}, damage avoided by {@code GUARD}, the share of every blow
- *     a {@code LIFESTEAL} gives back as health, and how much faster a {@code HASTE}
- *     makes a weapon fire. One field because it is one question ("how much is it
- *     worth?") asked of mirrored effects and of a passive that is worth a share of
- *     what its bearer does
+ *     a {@code LIFESTEAL} gives back as health, how much faster a {@code HASTE}
+ *     makes a weapon fire, and what a {@code DAMAGE_AURA} adds to every blow round
+ *     it. One field because it is one question ("how much is it worth?") asked of
+ *     mirrored effects and of passives that are worth a share of what is done
  * @param boostPerLevel that percentage's growth per level
  * @param durationFrames how long it lasts: {@code EMPOWER}'s extra damage,
  *     {@code GUARD}'s protection, a {@code HASTE}, or how long an
