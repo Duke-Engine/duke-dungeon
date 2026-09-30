@@ -192,9 +192,9 @@ public final class ItemErrand extends UpdateModule implements Errand {
             // As near as he can get. A place he could not reach is where he got to, and a thing lying there that he
             // cannot reach stays where it is, and he says so -- but a thing with a shape is walked up to rather than
             // onto, and its edge is there.
-            // ponytail: a way shut only by bodies (a pack standing where the road runs) ends it here too, at once;
-            // standing and looking again every HeroRepathFrames until StuckFrames is the upgrade, if he should carry
-            // on by himself once the fight is over.
+            // ponytail: a way shut only by bodies (a pack standing where the road runs) ends it here too, at once.
+            // Waiting it out -- standing, looking again every HeroRepathFrames -- is the upgrade, but it wants a
+            // better measure of getting nowhere than a cell: tried, a hero then went round in a loop wider than one.
             if (there != null && !atItsEdge(hero, there)) {
                 over = true;
                 bag.say(rules.noWayWord(), world.getFrame(), rules.noteFrames());
