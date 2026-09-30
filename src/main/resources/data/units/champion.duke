@@ -1,7 +1,8 @@
 Monster
   Name = Champion
-  ; The last one, and the numbers the single boss used to have: at depth 4 the
-  ; multiplier makes this 1320 health and 42 damage. Beat it and the run is over.
+  ; The last one, and the numbers the single boss used to have: at level 35,
+  ; where the fourth floor's boss stands, its level's bonus makes this 2640
+  ; health and about 65 damage. Beat it and the run is over.
   DisplayName = Champion
   KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
   Geometry = Cylinder

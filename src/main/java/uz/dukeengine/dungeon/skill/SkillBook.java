@@ -14,8 +14,8 @@ import uz.dukeengine.core.thing.ObjectId;
 import uz.dukeengine.core.thing.ObjectStatus;
 import uz.dukeengine.core.thing.World;
 import uz.dukeengine.dungeon.ai.Facing;
-import uz.dukeengine.dungeon.combat.DepthBonus;
 import uz.dukeengine.dungeon.combat.FallingUpdate;
+import uz.dukeengine.dungeon.combat.LevelBonus;
 import uz.dukeengine.dungeon.combat.Shot;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.rts.event.WeaponFired;
@@ -201,10 +201,9 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Wea
     /**
      * Whether this creature pays for what it casts.
      *
-     * <p>Off unless something turns it on, which is the answer for every monster
-     * in the game. A skeleton mage held to a mana pool is a skeleton mage the
-     * player cannot see the pool of, so what it buys is a balance problem nobody
-     * can read -- see {@code UsesMana} in the file.
+     * <p>Off unless it is given a pool: a hero by what he is made of, and a monster
+     * whose kind names one where it is placed -- the three casting mages, see
+     * {@code Spawner.scale}. Every other monster casts free.
      */
     private boolean usesMana;
 
@@ -242,7 +241,8 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Wea
      * <p>Pushed in from outside rather than read here, exactly as his armour and
      * his weapon bonus are: what a level is worth is {@link uz.dukeengine.dungeon.level.Levelling}'s
      * arithmetic, and this module has no idea what level its owner is. See
-     * {@code HeroProgress}, which is the one place that knows.
+     * {@code HeroProgress}, which knows it for a hero, and {@code Spawner.scale},
+     * which knows it for a monster: the two places that size a pool.
      *
      * <p>A pool that GROWS keeps whatever was in it and gains the difference, so
      * levelling up is a gift rather than a refill -- the same rule the body
@@ -251,9 +251,11 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Wea
      * <p>A pool created from nothing gains nothing, and that is the difference
      * between capacity and contents. Whoever made the creature decides whether he
      * starts full: a hero does, on a new run and on every floor after it, and
-     * {@code HeroProgress} is where that is said. Filling here instead would mean
-     * a creature could never be given a pool it was not also handed the contents
-     * of, which is a decision this module is in no position to make.
+     * {@code HeroProgress} is where that is said; a monster is met rested, and
+     * {@code Spawner.scale} fills it where it is placed or rises. Filling here
+     * instead would mean a creature could never be given a pool it was not also
+     * handed the contents of, which is a decision this module is in no position to
+     * make.
      */
     public void poolOf(int max, int tenthsPerSecond) {
         int was = maxMana;
@@ -757,21 +759,21 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Wea
     }
 
     /**
-     * What a skill hits for: its own figure at this level, the ultimate's window if
-     * one is open, and how much harder it hits for how deep it was found. Only a
-     * monster is ever found anywhere, so a hero's figure is untouched by that last.
+     * What a skill hits for: its own figure at this rank, the ultimate's window if
+     * one is open, and how much harder its caster's level makes it. Only a monster
+     * carries a level of its own, so a hero's figure is untouched by that last.
      */
-    private float damageOf(Skill skill, int level) {
-        return skill.damageAt(level) * damageMultiplier() * depthOf(getOwner());
+    private float damageOf(Skill skill, int rank) {
+        return skill.damageAt(rank) * damageMultiplier() * bonusOf(getOwner());
     }
 
     /**
-     * The depth's bonus, read here as well as by the weapon. A skill deals its own
+     * Its level's bonus, read here as well as by the weapon. A skill deals its own
      * damage rather than going through a weapon, so without asking it would hit as
-     * hard on the fourth floor as on the first.
+     * hard at the thirtieth level as at the first.
      */
-    private static float depthOf(GameObject owner) {
-        var bonus = owner.findModule(DepthBonus.class);
+    private static float bonusOf(GameObject owner) {
+        var bonus = owner.findModule(LevelBonus.class);
         return bonus == null ? 1f : bonus.damageMultiplier();
     }
 
@@ -1005,7 +1007,7 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Wea
      * be the two of them disagreeing about the rule. See {@link Mending}.
      *
      * <p>Worth what it was worth when it was called for, as every shot here is, and
-     * grown by the depth as the healer's blows are.
+     * grown by its level as the healer's blows are.
      *
      * @return whether it was called down; false leaves the cooldown unspent
      */
@@ -1027,7 +1029,7 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Wea
             light.markDestroyed();
             return false; // the template exists but is not a light that mends
         }
-        mending.callDown(patient, skill.heal() * depthOf(owner), skill.windUpFrames());
+        mending.callDown(patient, skill.heal() * bonusOf(owner), skill.windUpFrames());
         Facing.turnToward(owner, patient);
         world.post(new WeaponFired(world.getFrame(), owner.getId(), null,
                 owner.getPosition(), spot));

@@ -139,7 +139,8 @@ class LifestealTest {
     @Test
     void anOrdinaryShotIsDrunkFromOnceWhereItLands() {
         var change = lostAndGained(duel(drinkingMage(), "SkeletonMage", 50f, 0.25f), 150);
-        float fireball = SETTINGS.skillsFor("SkeletonMage").getFirst().damage();
+        float fireball = SETTINGS.skillsFor("SkeletonMage").stream().filter(skill -> skill.key() == 'Q')
+                .findFirst().orElseThrow().damage();
 
         assertTrue(change[0] > fireball,
                 "the premise: in five seconds its ordinary fire struck him as well as its fireball");
@@ -233,7 +234,8 @@ class LifestealTest {
         assertFalse(book.cast(key, 1, null, duel.hero().getPosition()), "it was cast");
         assertEquals(0, book.cooldownOf(key), "and the cast that never went off started its cooldown");
         for (var boss : bosses()) {
-            assertFalse(SETTINGS.monster(boss).hasSkill(), boss + "'s brain has a skill to cast");
+            assertTrue(SETTINGS.skillsFor(boss).stream().allMatch(skill -> skill.effect().isPassive()),
+                    boss + "'s brain has a skill to cast");
         }
     }
 

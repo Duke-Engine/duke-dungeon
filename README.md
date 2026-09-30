@@ -356,10 +356,17 @@ tabidagi **Save Preview**.
 
 `Stage.difficulty` — **o'sha bosqich qaysi chuqurlikda o'ynalishi**, yorliq emas.
 Yangi mexanizm yasalmadi: qavatni xavfli qiladigan hamma narsa allaqachon
-`depth` bo'yicha yozilgan va sozlangan — `monsterHealthAt`, `monsterDamageAt`,
-`monsterCountAt`, qaysi turlar umuman paydo bo'lgani (`MinDepth`), va
-`bossKindAt`. Shuning uchun "qiyinchilik 7" ning ma'nosi bor: tushishning
-7-qavati qanday bo'lsa, shunday — borib tekshirsa bo'ladi.
+chuqurlik bo'yicha yozilgan va sozlangan. Maxluqning **darajasi** chuqurlikdan
+(bugun u joyning *tier*'i) daraja qoidasi bilan olinadi — `wayInLevel`,
+`beforeBossLevel`, `bossLevel`, `levelAlong`, `generation.duke` dagi
+`Descent` qatorlaridan; sog'lig'i, zarbasi va qiymati esa har daraja uchun
+foizlardan (`HealthPercentPerLevel`, `DamagePercentPerLevel`,
+`ExperiencePercentPerLevel` — `healthAtLevel`, `damageAtLevel`,
+`experienceAtLevel`). Ular avvalgi `monsterHealthAt` va `monsterDamageAt`
+o'rnini egalladi. Chuqurlikning o'zi esa hamon `monsterCountAt`, qaysi turlar
+umuman paydo bo'lgani (`MinDepth`) va `bossKindAt` ni belgilaydi. Shuning
+uchun "qiyinchilik 7" ning ma'nosi bor: tushishning 7-qavati qanday bo'lsa,
+shunday — borib tekshirsa bo'ladi.
 
 Tushish `Bosses` ro'yxati tugaganda tugaydi (hozir 4 qavat). Bosqich esa
 **undan chuqurroq** qurilishi mumkin — bu bosqich yasashning asosiy

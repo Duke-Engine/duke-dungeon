@@ -1,8 +1,11 @@
 package uz.dukeengine.dungeon.ai;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.HashSet;
@@ -11,8 +14,12 @@ import uz.dukeengine.core.math.Coord3D;
 import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.core.thing.World;
 import uz.dukeengine.dungeon.Dungeon;
-import uz.dukeengine.dungeon.combat.DepthBonus;
+import uz.dukeengine.dungeon.combat.LevelBonus;
 import uz.dukeengine.dungeon.content.DungeonSettings;
+import uz.dukeengine.dungeon.content.ShippedBlock;
+import uz.dukeengine.dungeon.run.Spawner;
+import uz.dukeengine.dungeon.skill.Skill;
+import uz.dukeengine.dungeon.skill.SkillBook;
 import uz.dukeengine.game.DukeGame;
 
 /**
@@ -123,8 +130,16 @@ class MonsterSkillTest {
                 """.formatted(distance, band));
     }
 
+    /**
+     * Its fireball, its Q: its meteor is written before it and opens at level 6. One test fights at 6, where the meteor
+     * is cast first; every other fights below it, where the fireball is the one it casts.
+     */
+    private static Skill theFireball() {
+        return SETTINGS.skillsFor(MAGE).stream().filter(skill -> skill.key() == 'Q').findFirst().orElseThrow();
+    }
+
     private static String fireball() {
-        return SETTINGS.skillsFor(MAGE).get(0).projectile();
+        return theFireball().projectile();
     }
 
     /** Every fireball that leaves it over the next frames, each counted once. */
@@ -201,7 +216,7 @@ class MonsterSkillTest {
     @Test
     void itWaitsForItsCooldownBetweenThrows() {
         var fight = fight(standingStill(), room(NO_WALL), 240f, 200f);
-        int cooldown = SETTINGS.skillsFor(MAGE).get(0).cooldownFrames();
+        int cooldown = theFireball().cooldownFrames();
         int frames = cooldown * 3;
         // The one it threw the moment it saw him lands first, and is not counted here.
         fight.game().runHeadless(cooldown / 2);
@@ -216,7 +231,7 @@ class MonsterSkillTest {
     @Test
     void betweenItsFireballsItThrowsItsOrdinaryFire() {
         var fight = fight(standingStill(), room(NO_WALL), 240f, 200f);
-        int cooldown = SETTINGS.skillsFor(MAGE).get(0).cooldownFrames();
+        int cooldown = theFireball().cooldownFrames();
 
         var thrown = leaving(fight.game(), cooldown * 2, fireball(), ORDINARY_FIRE);
 
@@ -326,35 +341,37 @@ class MonsterSkillTest {
         assertTrue(wide > 72f, "with 80 to 100 it settled at " + wide);
     }
 
+    /** Where it settles holding {@code band}, casting at him from anywhere its fireball reaches. */
     private static float settledGap(String band) {
-        var fight = fight(keeping(band, "20, 120"), room(NO_WALL), 215f, 200f);
+        var fight = fight(keeping(band, "20, 70"), room(NO_WALL), 215f, 200f);
         fight.game().runHeadless(600);
         return fight.gap();
     }
 
     // ---- how hard, and how reliably ----
 
-    /** Found deeper, it hits harder: the depth's bonus reaches its skill as well as its weapon. */
+    /** With a level's bonus it hits harder: the bonus reaches its skill as well as its weapon. */
     @Test
-    void aCasterFoundDeeperHitsHarder() {
+    void aCasterWithALevelsBonusHitsHarder() {
         float plain = aBlowFrom(1f);
-        float deep = aBlowFrom(2f);
+        float twice = aBlowFrom(2f);
 
         assertTrue(plain > 0f, "the fireball never reached him");
-        assertEquals(plain * 2f, deep, 0.05f, "twice the bonus should be twice the blow");
+        assertEquals(plain * 2f, twice, 0.05f, "twice the bonus should be twice the blow");
     }
 
     /**
-     * What one fireball takes off the hero, from a caster carrying this bonus. The one it
-     * throws the moment it sees him leaves before the bonus is put on, so it is the next
-     * one, a cooldown later, that is measured.
+     * What one fireball takes off the hero, from a caster carrying this bonus -- at the first
+     * level, so nothing a higher one would open is open. The one it throws the moment it sees
+     * him leaves before the bonus is put on, so it is the next one, a cooldown later, that is
+     * measured.
      */
     private static float aBlowFrom(float bonus) {
         var fight = fight(standingStill(), room(NO_WALL), 240f, 200f);
         if (bonus != 1f) {
-            fight.mage().addModule(new DepthBonus(fight.mage(), bonus));
+            fight.mage().addModule(new LevelBonus(fight.mage(), 1, bonus, 1f));
         }
-        int cooldown = SETTINGS.skillsFor(MAGE).get(0).cooldownFrames();
+        int cooldown = theFireball().cooldownFrames();
         fight.game().runHeadless(cooldown / 2);
         float health = fight.hero().getBody().getHealth();
         fight.game().runHeadless(cooldown);
@@ -375,5 +392,143 @@ class MonsterSkillTest {
             line.append(fight.game().getLogic().checksum()).append('|');
         }
         return line.toString();
+    }
+
+    // ---- which of its skills ----
+
+    /** What the fire mage's added skill throws in these fights: a shadow spark, which nothing else in the room does. */
+    private static final String SPARK = "ShadowSpark";
+
+    /**
+     * The shipped files with the fire mage given more skills, written after its fireball -- where a block that re-tunes
+     * a unit puts the skills it adds, behind the ones its shipped block writes.
+     */
+    private static DungeonSettings withSkillsAfterItsFireball(String... skills) {
+        var mage = ShippedBlock.of(MAGE);
+        var text = mage.text().replace("    End\n  ]\nEnd\n", "    End,\n" + String.join(",\n", skills) + "\n  ]\nEnd\n");
+        assertNotEquals(mage.text(), text, "the premise: the fire mage was given more skills");
+        return DungeonSettings.parse(text);
+    }
+
+    /** A skill on {@code key} throwing a shadow spark, costing {@code cost} and waiting for level {@code opensAt}. */
+    private static String spark(char key, int cost, int opensAt) {
+        return """
+                    Skill
+                      Key = %s
+                      Effect = SKILLSHOT
+                      Damage = 5
+                      Range = 70
+                      ProjectileSpeed = 120
+                      Projectile = %s
+                      CooldownFrames = 300
+                      ManaCost = %d
+                      LevelPerRank = %d
+                      MaxRank = 1
+                    End""".formatted(key, SPARK, cost, opensAt);
+    }
+
+    /**
+     * The fire mage made {@code level} where it stands -- by the spawner's own step, before anybody is there to cast
+     * at -- and then a Rogue holding his ground inside its band.
+     */
+    private static Fight atLevel(DungeonSettings settings, int level) {
+        var arena = Dungeon.world(room(NO_WALL), settings);
+        var game = arena.game();
+        game.spawn(MAGE, arena.dungeon(), 200f, ROW);
+        game.runHeadless(1);
+        var mage = creature(game, MAGE);
+        Spawner.scale(mage, level, settings);
+        arena.orders().hold(arena.hero().getIndex(), true);
+        game.spawn("Rogue", arena.hero(), 240f, ROW);
+        return new Fight(game, creature(game, "Rogue"), mage);
+    }
+
+    /**
+     * Of its skills it casts the first, in the order its block writes them, that is open, ready and affordable -- and
+     * then nothing at all until the gesture is over: the next skill, and its ordinary fire, a swing's frames later.
+     */
+    @Test
+    void itCastsTheFirstOpenReadySkillInFileOrderAndNothingUntilTheGestureEnds() {
+        var settings = withSkillsAfterItsFireball(spark('W', 0, 0));
+        int swing = settings.monster(MAGE).swingFrames();
+
+        var thrown = leaving(atLevel(settings, 1).game(), 90, SPARK, fireball(), ORDINARY_FIRE);
+
+        assertFalse(thrown.get(fireball()).isEmpty(), "the skill written first was never cast: " + thrown);
+        int first = thrown.get(fireball()).getFirst();
+        assertFalse(thrown.get(SPARK).isEmpty(), "and once its gesture was over, the next never went: " + thrown);
+        assertTrue(thrown.get(SPARK).getFirst() > first, "the one written second went first: " + thrown);
+        for (var shot : new String[] {SPARK, ORDINARY_FIRE}) {
+            assertTrue(thrown.get(shot).stream().allMatch(frame -> frame < first || frame >= first + swing),
+                    shot + " left inside the gesture of the cast on frame " + first + ": " + thrown);
+        }
+    }
+
+    /** A skill waits for the level its first rank does, as a hero's does: below it never cast, from it cast. */
+    @Test
+    void aSkillOpensAtTheLevelItsFirstRankWaitsFor() {
+        var settings = withSkillsAfterItsFireball(spark('W', 0, 6));
+
+        var below = leaving(atLevel(settings, 5).game(), 400, SPARK, fireball());
+        assertTrue(below.get(SPARK).isEmpty(), "cast below the level it waits for: " + below);
+        assertFalse(below.get(fireball()).isEmpty(), "the premise: it cast its fireball: " + below);
+
+        var from = leaving(atLevel(settings, 6).game(), 90, SPARK);
+        assertFalse(from.get(SPARK).isEmpty(), "never cast at the level it waits for: " + from);
+    }
+
+    /**
+     * A skill it cannot pay for is refused before anything is spent, and the next one is cast: with less in its pool
+     * than its fireball costs, it throws the spark written after it.
+     */
+    @Test
+    void aSkillItCannotPayForPassesToTheNext() {
+        var fight = atLevel(withSkillsAfterItsFireball(spark('W', 5, 0)), 1);
+        var book = fight.mage().findModule(SkillBook.class);
+        book.resize(book.skillOn('Q').manaAt(1) - 1, 0);
+
+        var thrown = leaving(fight.game(), 60, SPARK, fireball());
+
+        assertTrue(thrown.get(fireball()).isEmpty(), "it threw what it could not pay for: " + thrown);
+        assertTrue(book.isReady('Q'), "and what it could not pay for spent its cooldown");
+        assertFalse(thrown.get(SPARK).isEmpty(), "and nothing else was cast in its place: " + thrown);
+    }
+
+    /** A passive is never cast, wherever it is written: the brain passes over it to the next. */
+    @Test
+    void aPassiveIsNeverCastAndTheNextIs() {
+        var fight = atLevel(withSkillsAfterItsFireball(
+                "    Skill\n      Key = W\n      Effect = LIFESTEAL\n      BoostPercent = 25\n    End",
+                spark('E', 0, 0)), 1);
+
+        var thrown = leaving(fight.game(), 60, fireball(), SPARK);
+
+        assertFalse(thrown.get(fireball()).isEmpty() || thrown.get(SPARK).isEmpty(),
+                "the passive between the fireball and the spark stopped its casting: " + thrown);
+        assertEquals(0, fight.mage().findModule(SkillBook.class).cooldownOf('W'), "and the passive was cast");
+    }
+
+    /**
+     * A cast its book declines passes to its next skill, that frame: a W whose shot does not fly -- a mending light
+     * -- is refused every time with its cooldown unspent, and the spark written after it is thrown in its place.
+     */
+    @Test
+    void aCastItsBookDeclinesPassesToTheNextSkill() {
+        var fight = atLevel(withSkillsAfterItsFireball(
+                spark('W', 0, 0).replace("Projectile = " + SPARK, "Projectile = MendingLight"), spark('E', 0, 0)), 1);
+
+        var thrown = leaving(fight.game(), 60, SPARK);
+
+        assertTrue(fight.mage().findModule(SkillBook.class).isReady('W'), "the premise: its book never let the W go");
+        assertFalse(thrown.get(SPARK).isEmpty(), "and nothing went in its place: " + thrown);
+    }
+
+    /** A skill aimed at him has to reach the far end of its band: a Range short of it is refused when the file is read. */
+    @Test
+    void anAimedSkillThatFallsShortOfItsBandIsRefused() {
+        var data = ShippedBlock.of(MAGE).with("SkillDistance", "[20, 80]").text();
+
+        var refused = assertThrows(IllegalArgumentException.class, () -> DungeonSettings.parse(data));
+        assertTrue(refused.getMessage().contains("Range"), refused.getMessage());
     }
 }

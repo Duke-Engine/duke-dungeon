@@ -4,8 +4,8 @@
 ; A unit's file is the whole of it: its template (modules and stats), what it does,
 ; how it looks, its portrait and its skills. A HERO's health, speed and blow there
 ; are what his attributes are added to — see the Attribute blocks in
-; data/world/world.duke. Monsters carry GrowableBody, because depth raises their health
-; after they are built; props carry no Body at all, which is why nothing targets them.
+; data/world/world.duke. Monsters carry GrowableBody, because their level raises their
+; health after they are built; props carry no Body at all, which is why nothing targets them.
 ;
 ; The order is not tidiness. Monster kinds are drawn in it, heroes are offered in
 ; it, skills are read in it and maps are listed in it, so a file moved up this list
@@ -78,6 +78,7 @@ Game
     data/projectiles/shadow_spark.duke,
     data/projectiles/summoning_rift.duke,
     data/projectiles/meteor_mark.duke,
+    data/projectiles/skull_meteor_mark.duke,
 
     ; The effects, from the kit: its starter set, by what each one is. A block of this
     ; game's own with the Name of one of them, in a file listed after these, is

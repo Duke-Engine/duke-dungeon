@@ -161,18 +161,46 @@ ProceduralMap
     BossGuards = [SkeletonHealer = 2, SkeletonSummoner = 2]
     BossGuardRing = 2
 
-    ; Percentages are of the creature's base value, added per depth beyond the
-    ; first: at depth 3 with 25%, a monster has 1 + 2 x 0.25 = 1.5x health.
-    MonsterHealthPercentPerDepth = 25
-    MonsterDamagePercentPerDepth = 15
+    ; How many more monsters a room holds per depth beyond the first: at depth 3,
+    ; with 20%, 1 + 2 x 0.2 = 1.4 times as many. Who lives in a place, and how
+    ; many, is the place's; how strong each one is, its level's -- below.
     MonsterCountPercentPerDepth = 20
 
-    ; The boss climbs faster than its underlings — it is meant to be the wall.
-    BossHealthPercentPerDepth = 40
-    BossDamagePercentPerDepth = 25
+    ; ---- the level of what lives here ----
+    ;
+    ; Every monster stands at a level of its own. A place has a tier -- how hard
+    ; it is: today a floor's depth, which is what a stage's Difficulty means --
+    ; and the tier gives two ends: the way in, and the chamber before the boss's
+    ; (the one the keep's road leaves from; the boss itself where there is no
+    ; keep). A monster between them has the way in's level and its share of the
+    ; climb -- the steps walked from the way in to it over the steps to that
+    ; chamber's middle -- rounded once. Past that chamber, its far side, the
+    ; road, the court and the guard in it all stand at its level; the boss
+    ; BossLevelsAbove over it; and what rises from a rift at its caller's.
+    ;
+    ; The first tier runs from WayInLevel to BeforeBossLevel. Each tier past it
+    ; starts where the one before closed and ends TierGrowthPercent higher, worked
+    ; out in one step: 1-8, 8-13, 13-20, 20-33, the boss two above each. Nothing
+    ; stands above MaxMonsterLevel: the deep stage, at Difficulty 8, would play
+    ; 134 to 215, and plays 50 throughout.
+    WayInLevel = 1
+    BeforeBossLevel = 8
+    TierGrowthPercent = 60
+    BossLevelsAbove = 2
+    MaxMonsterLevel = 50
 
-    ; Experience is worth more the deeper it was earned, so levelling roughly keeps
-    ; pace with what it is levelling against.
-    ExperiencePercentPerDepth = 30
+    ; What a level past the first is worth, to monster and boss alike: a tenth
+    ; more health; a twentieth more to its blow, its skills' damage and a
+    ; mending's heal; and a twentieth more for killing it. A level-1 monster is
+    ; its block exactly; at 8 it has 1.7 times its health and hits 1.35 times as
+    ; hard, and the boss at 35, 4.4 and 2.7 times. Experience climbs slowly on
+    ; purpose: a level-8 monster is worth 1.35 times its kind, so the hero levels
+    ; a little faster than he used to while what he fights climbs faster still.
+    HealthPercentPerLevel = 10
+    DamagePercentPerLevel = 5
+    ExperiencePercentPerLevel = 5
+    ; And a tenth more to a caster's pool and to how fast it comes back, in whole
+    ; points and tenths -- see MaxMana and ManaRegen on the three mages.
+    ManaPercentPerLevel = 10
   End
 End

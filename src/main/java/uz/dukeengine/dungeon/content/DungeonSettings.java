@@ -304,11 +304,6 @@ public final class DungeonSettings {
             settings.fillInMissingLoot();
             settings.fillInMissingAttributes();
             settings.fillInMissingAnimationSets();
-            // A block that re-tunes a monster and says nothing of its skill keeps the shipped
-            // one, as every other skill is kept -- and so keeps casting it, if it is one that is cast.
-            settings.monsters.replaceAll(kind -> kind.hasSkill() ? kind : settings.skillsFor(kind.name())
-                    .stream().filter(skill -> !skill.effect().isPassive()).findFirst()
-                    .map(skill -> kind.casting(skill.key())).orElse(kind));
         }
         settings.validate();
         return settings;
@@ -326,11 +321,14 @@ public final class DungeonSettings {
                     monsters.add(monster.kind());
                     own(monster.name(), monster.portrait(), monster.skills());
                     requireBook("Monster " + monster.name(), monster.modules(), monster.skills());
+                    requireOneSkillPerKey("Monster " + monster.name(), monster.skills());
+                    requirePool(monster);
                 }
                 case Hero hero -> {
                     heroes.add(hero);
                     own(hero.name(), hero.portrait(), hero.skills());
                     requireBook("Hero " + hero.name(), hero.modules(), hero.skills());
+                    requireOneSkillPerKey("Hero " + hero.name(), hero.skills());
                 }
                 case Projectile projectile -> projectiles.add(projectile);
                 case Prop prop -> props.add(prop);
@@ -409,6 +407,34 @@ public final class DungeonSettings {
         require(itsSkills.isEmpty() || modules.isEmpty()
                         || modules.stream().anyMatch(SkillBook.Data.class::isInstance),
                 who + " has Skills and no SkillBook among its Modules: nothing would carry them");
+    }
+
+    /**
+     * A unit's skills are found by their key: the book casts, recharges and charges "the skill on Q", and a monster's
+     * brain asks it the same. So a second skill on a key the unit already has would be found by nobody -- a skill
+     * written in the file that nothing casts, and nothing would say so. A key is the upper case of what is written, as
+     * {@link Skill#ownedBy} makes it.
+     *
+     * <p>Asked where the record is read, of the skills its own block writes, as a book and a pool are.
+     */
+    private static void requireOneSkillPerKey(String who, List<Skill> itsSkills) {
+        var keys = new java.util.HashSet<Character>();
+        for (var skill : itsSkills) {
+            char key = Character.toUpperCase(skill.key());
+            require(keys.add(key), who + " has two skills on the key " + key
+                    + ": a skill is found by its key, so the second would never be cast");
+        }
+    }
+
+    /**
+     * A monster whose skills cost mana names the pool it pays from: without one it casts free, and the cost would be a
+     * number nothing read. Asked of the skills its own block writes, where the record is read, as a book is: a block
+     * that re-tunes a monster and writes no skills says nothing of what they cost.
+     */
+    private static void requirePool(Monster monster) {
+        require(monster.maxMana() > 0 || monster.skills().stream().allMatch(skill -> skill.manaAt(1) == 0),
+                "Monster " + monster.name() + " has a skill that costs mana and names no pool to pay it from:"
+                        + " give it a MaxMana");
     }
 
     /**
@@ -583,20 +609,27 @@ public final class DungeonSettings {
                 "SummonTurnDegrees times SummonTurns has to stay within a half turn");
         for (var kind : monsters) {
             var name = "Monster " + kind.name();
-            if (kind.hasSkill()) {
-                var skill = skillsFor(kind.name()).stream()
-                        .filter(one -> one.key() == kind.skillKey()).findFirst().orElse(null);
-                require(skill != null, name + " casts " + kind.skillKey() + ", and no Skill inside it"
-                        + " says what that is");
-                // A mending is cast on its own side, so how far off HE is means nothing to it.
-                require(skill.effect() == SkillEffect.HEAL
-                                || kind.skillNearest() >= 0f && kind.skillFurthest() > kind.skillNearest(),
-                        name + " has to cast across some distance: SkillDistance nearest furthest");
+            for (var skill : skillsFor(kind.name())) {
+                // A passive is never cast, and a mending is cast on its own side, so how far off HE
+                // is means nothing to either. Everything else is cast at him, from one band.
+                if (skill.effect().isPassive() || skill.effect() == SkillEffect.HEAL) {
+                    continue;
+                }
+                require(kind.skillNearest() >= 0f && kind.skillFurthest() > kind.skillNearest(),
+                        name + " has to cast its Skill " + skill.key()
+                                + " across some distance: SkillDistance nearest furthest");
+                // And what is aimed at him has to reach the band's far end, or it falls short from there.
+                // What goes off round the caster itself -- a summoning's rifts -- is aimed at nothing.
+                require(skill.effect().aim() == SkillEffect.Aim.SELF || skill.range() >= kind.skillFurthest(),
+                        name + "'s Skill " + skill.key() + " reaches " + skill.range() + ", short of the "
+                                + kind.skillFurthest() + " its SkillDistance casts from: give it a Range of at"
+                                + " least that");
             }
             require(kind.keepFurthest() == 0f
                             || kind.keepNearest() >= 0f && kind.keepFurthest() > kind.keepNearest(),
                     name + "'s KeepDistance has to be a band, nearest then furthest");
             require(kind.maxPerRoom() >= 0, name + "'s MaxPerRoom cannot be negative");
+            require(kind.maxMana() >= 0 && kind.manaRegen() >= 0, name + "'s MaxMana and ManaRegen cannot be negative");
             requireLinked(kind.look().animations(), name);
         }
         for (var hero : heroes) {
@@ -616,6 +649,17 @@ public final class DungeonSettings {
             require(guard.getValue() >= 1, "BossGuards has to put at least one " + guard.getKey() + " there");
         }
         require(map.descent().bossGuardRing() >= 1, "BossGuardRing has to stand the guard off the boss's own cell");
+        var descent = map.descent();
+        require(descent.wayInLevel() >= 1 && descent.beforeBossLevel() >= descent.wayInLevel(),
+                "a monster's level starts at WayInLevel, at least 1, and climbs to BeforeBossLevel, no lower");
+        require(descent.tierGrowthPercent() >= 0 && descent.bossLevelsAbove() >= 0,
+                "TierGrowthPercent and BossLevelsAbove cannot step a monster's level back down");
+        require(descent.maxMonsterLevel() >= 1, "MaxMonsterLevel is at least the first level");
+        require(descent.healthPercentPerLevel() >= 0 && descent.damagePercentPerLevel() >= 0
+                        && descent.experiencePercentPerLevel() >= 0 && descent.manaPercentPerLevel() >= 0,
+                "a level cannot take a monster's health, its blow, its worth or its mana away");
+        // A creature's words cross to the client joined by ',', inside a line split on '|'.
+        require(sayable(unitBar.levelWord()), "the UnitBar's LevelWord may not contain ',' or '|'");
         require(map.generation().corridorWidth() >= 1, "a corridor narrower than one cell is a wall");
         require(map.generation().maxRoomSpacing() > map.generation().maxRoomSize(), "rooms could never reach one another");
         require(map.propsPerRoom().min() >= 0, "a room cannot hold fewer than no things");
@@ -1236,38 +1280,94 @@ public final class DungeonSettings {
         return available;
     }
 
-    /** What a monster's health, damage or numbers are multiplied by at this depth. */
-    public float monsterHealthAt(int depth) {
-        return scaled(map.descent().monsterHealthPercentPerDepth(), depth);
-    }
-
-    public float monsterDamageAt(int depth) {
-        return scaled(map.descent().monsterDamagePercentPerDepth(), depth);
-    }
-
+    /** What a room's count of monsters is multiplied by at this depth: who lives in a place, and how many, is its own. */
     public float monsterCountAt(int depth) {
         return scaled(map.descent().monsterCountPercentPerDepth(), depth);
     }
 
-    public float bossHealthAt(int depth) {
-        return scaled(map.descent().bossHealthPercentPerDepth(), depth);
+    /**
+     * What a monster's health is multiplied by at this level -- and its blow, its skills' damage and a mending's heal
+     * by {@link #damageAtLevel}, and what killing it is worth by {@link #experienceAtLevel}: alike for every monster and
+     * boss, and a level-1 monster is its block exactly.
+     */
+    public float healthAtLevel(int level) {
+        return scaled(map.descent().healthPercentPerLevel(), level);
     }
 
-    public float bossDamageAt(int depth) {
-        return scaled(map.descent().bossDamagePercentPerDepth(), depth);
+    public float damageAtLevel(int level) {
+        return scaled(map.descent().damagePercentPerLevel(), level);
     }
 
-    public float experienceAt(int depth) {
-        return scaled(map.descent().experiencePercentPerDepth(), depth);
+    public float experienceAtLevel(int level) {
+        return scaled(map.descent().experiencePercentPerLevel(), level);
     }
 
     /**
-     * Linear growth from the first depth: {@code 1 + (depth - 1) * percent / 100}.
+     * A monster's pool at this level, or its trickle in tenths of a point a second: {@code base} and
+     * {@code ManaPercentPerLevel} of it a level past the first, in whole numbers, as everything mana is.
+     */
+    public int manaAtLevel(int base, int level) {
+        return base + base * Math.max(0, level - 1) * map.descent().manaPercentPerLevel() / 100;
+    }
+
+    /**
+     * Linear growth from the first depth or level: {@code 1 + (n - 1) * percent / 100}.
      *
-     * <p>Computed from the depth in one step rather than compounded, so the tenth
+     * <p>Computed from the number in one step rather than compounded, so the tenth
      * floor is the same whether you arrived by playing or by asking.
      */
-    private static float scaled(int percentPerDepth, int depth) {
-        return 1f + Math.max(0, depth - 1) * percentPerDepth / 100f;
+    private static float scaled(int percentPerStep, int n) {
+        return 1f + Math.max(0, n - 1) * percentPerStep / 100f;
+    }
+
+    // ---- a monster's level ----
+
+    /** The highest level anything down here stands at, its boss included: {@code MaxMonsterLevel}. */
+    public int maxMonsterLevel() {
+        return map.descent().maxMonsterLevel();
+    }
+
+    /**
+     * The level of the chamber before the boss's, in a place of this tier: {@code BeforeBossLevel} on the first, grown
+     * by {@code TierGrowthPercent} a tier past it -- worked out in one step, never compounded tier by tier, so the
+     * fourth is the same reached by playing or asked for -- rounded once, and never above the cap.
+     *
+     * <p>A tier is how hard a place is: today a floor's depth, which is what a stage's {@code Difficulty} already
+     * means. The rule is handed the tier and knows nothing else of floors.
+     */
+    public int beforeBossLevel(int tier) {
+        var descent = map.descent();
+        double grown = descent.beforeBossLevel()
+                * StrictMath.pow(1 + descent.tierGrowthPercent() / 100.0, Math.max(0, tier - 1));
+        return (int) Math.min(descent.maxMonsterLevel(), Math.round(grown));
+    }
+
+    /**
+     * The level at the way in: {@code WayInLevel} on the first tier, and on every later one where the tier before
+     * closed -- so a descent never steps back down, as an open world's regions run 1-8, 8-13, 13-20.
+     */
+    public int wayInLevel(int tier) {
+        return tier <= 1 ? Math.min(map.descent().wayInLevel(), map.descent().maxMonsterLevel())
+                : beforeBossLevel(tier - 1);
+    }
+
+    /** The boss's: {@code BossLevelsAbove} over the chamber before its own, and never above the cap either. */
+    public int bossLevel(int tier) {
+        return Math.min(beforeBossLevel(tier) + map.descent().bossLevelsAbove(), map.descent().maxMonsterLevel());
+    }
+
+    /**
+     * A monster's level {@code walked} steps along a way {@code way} steps long, from the way in to the middle of the
+     * chamber before the boss's: the way in's level and its share of the climb to that chamber's -- the share never
+     * above the whole of it, so everything past that chamber stands at its level -- rounded once. A monster no step
+     * reaches, and a way of no steps, count as the whole way.
+     */
+    public int levelAlong(int tier, int walked, int way) {
+        int in = wayInLevel(tier);
+        int end = beforeBossLevel(tier);
+        if (walked < 0 || way <= 0 || walked >= way) {
+            return end;
+        }
+        return in + (int) Math.round((end - in) * (double) walked / way);
     }
 }

@@ -238,25 +238,26 @@ UnitBar
   ; "<health up to>:<what one mark is worth>", and a rung written with * covers
   ; everything above -- so one open rung is one lot for every creature there is.
   ;
-  ; ★ FIFTY, MEASURED AGAINST WHAT THE GAME ACTUALLY MAKES. A hero wears about
-  ; four marks at his first level and up to twenty-nine at his fifteenth (1484
-  ; health, the most anything in the game has), a skeleton two, a runner's
-  ; thirty one block and no marks. Twenty-nine on the longest bar are about five
-  ; of the design's pixels apart -- seven and a half on a big screen, where the
-  ; bar is drawn half as big again. Twenty-five a mark would have put them under
-  ; three apart, where marks read as texture. DungeonUnitBarTest loads this file
-  ; and holds all of that.
-  Segments = [*:50]
+  ; ★ A HUNDRED AND TWENTY, MEASURED AGAINST WHAT THE GAME ACTUALLY MAKES. The
+  ; most health anything has is a boss at the level cap -- the Champion at 50 on
+  ; the deep stage, 3540 -- and it wears twenty-nine marks on the longest bar,
+  ; about five of the design's pixels apart: seven and a half on a big screen,
+  ; where the bar is drawn half as big again. A hero wears three to eight at his
+  ; first level and up to twelve at his fifteenth, a skeleton one. A hundred a
+  ; mark would put that boss's under four and a half apart, where marks read as
+  ; texture -- and fifty, before monsters had levels, under two and a half.
+  ; DungeonUnitBarTest loads this file and holds all of that.
+  Segments = [*:120]
 
   ; ---- how long ----
   ;
   ; The two anchors, in health, and the two lengths, in interface pixels. Between
-  ; them the bar grows LOGARITHMICALLY, not proportionally: the range above is
-  ; forty-six-fold, and a proportional bar spends nine tenths of it inside its
-  ; first quarter-inch -- every monster in the game a stub, and only the boss
-  ; visibly longer. The eye compares two bars as a ratio, so the curve is the one
-  ; that matches. Doubling a creature's health moves its bar the same distance
-  ; wherever it started.
+  ; them the bar grows LOGARITHMICALLY, not proportionally: the range above runs
+  ; from 30 to 3540 health, a hundred-and-eighteen-fold, and a proportional bar
+  ; spends nine tenths of it inside its first quarter-inch -- every monster in
+  ; the game a stub, and only the boss visibly longer. The eye compares two bars
+  ; as a ratio, so the curve is the one that matches. Doubling a creature's
+  ; health moves its bar the same distance wherever it started.
   ;
   ; Outside the anchors it is flat, which is also the answer to "what about a
   ; creature nobody planned for": the weakest thing still has something to look
@@ -294,10 +295,13 @@ UnitBar
   ; ---- the medallion at the near end ----
   ;
   ; The level, in a disc, with the experience ring around it. The number is on
-  ; EVERYBODY: a monster's level is the depth it is fought at -- which is exactly
-  ; what it is scaled by, see MonsterHealthPercentPerDepth, and what a stage's
-  ; difficulty means, see Stage -- so the disc answers "how hard is this one"
-  ; with the same number the simulation used to make it hard.
+  ; EVERYBODY: the hero's is his own, and a monster's is the level it was placed
+  ; at -- exactly what its health, its blow and its worth were grown by, see the
+  ; level lines in the Descent block of generation.duke -- so the disc answers
+  ; "how hard is this one" with the same number the simulation used to make it
+  ; hard. The monster holds it in a word, LevelWord and the number -- level:8 --
+  ; set where it is placed or rises. A creature holding none shows the floor's
+  ; depth.
   ;
   ; The RING is only on the hero, because he is the only thing in the game that
   ; earns experience. An empty ring on a skeleton would be a promise that it
@@ -306,6 +310,7 @@ UnitBar
   RingEdge = 2
   RingGap = 5
   Arc = 3
+  LevelWord = level:
 
   ; ---- colours ----
   ;

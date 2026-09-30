@@ -9,16 +9,20 @@ import java.util.List;
  * @param segments the segment table, coarsest last, or empty for a game that draws no bars. Empty
  *     is the meaningful default and the rest are not: without a table there is nothing to divide
  *     a bar into, so the client draws none at all rather than inventing lots of its own
+ * @param levelWord what a creature's own level is held in, a word on it -- {@code level:} for
+ *     {@code level:8}, set where it is placed (see {@code Spawner.scale}) -- and shown in its
+ *     medallion. Blank, and every creature but the hero shows the floor's depth
  */
 public record UnitBar(List<BarStep> segments, int shortestAt, int longestAt, float shortest, float longest,
         float height, float manaHeight, float gap, float lift, float ring, float ringEdge, float ringGap,
         float arc, int enemy, int friend, int mana, int trough, int tick, int ringFace, int ringRim,
-        int bossRim, int lettering, float nameSize, float bossNameSize, float countSize, float levelSize) {
+        int bossRim, int lettering, float nameSize, float bossNameSize, float countSize, float levelSize,
+        String levelWord) {
 
     /** What a block leaves out. */
     public static final UnitBar DEFAULTS = new UnitBar(List.of(), 30, 1400, 80f, 220f, 13f, 6f, 2f, 1.4f, 26f,
             2f, 4f, 3f, 0xA8322B, 0x8FC4AE, 0x3E6FA8, 0x16130F, 0x0A0806, 0x16130F, 0x8FC4AE, 0xE8A33D,
-            0xD9CFBA, 11f, 15f, 10f, 12f);
+            0xD9CFBA, 11f, 15f, 10f, 12f, "");
 
     /**
      * One rung of the segment table, written {@code upTo:worth} — {@code *} for the rung with no

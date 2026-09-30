@@ -39,11 +39,11 @@ class DungeonUnitBarTest {
     }
 
     /**
-     * What a template's body is worth before any depth has been applied to it.
+     * What a template's body is worth before any level has been applied to it.
      *
      * <p>★ IT IS A {@code GrowableBody}, NOT THE ENGINE'S OWN. Every creature in
      * this game has one, because every creature's maximum moves — the hero's with
-     * his levels, a monster's with the depth it was spawned at — and the engine
+     * his levels, a monster's with the level it was placed at — and the engine
      * fixes its own body's maximum when the unit is built. Matching only
      * {@link uz.dukeengine.core.module.ActiveBody.Data} therefore found nothing, in
      * silence, and the whole of what this test measured was the two fixture
@@ -76,21 +76,15 @@ class DungeonUnitBarTest {
         game.runHeadless(1); // boots the world, which is what loads the real files
         var factory = game.getLogic().getThingFactory();
         var sizes = new ArrayList<float[]>();
-        int floors = Math.max(1, SETTINGS.finalDepth());
 
+        // Every monster at every level one can stand at, up to the cap -- the bosses among them, on the one rule:
+        // the fourth floor's boss at 35, and the deep stage's at 50, the widest bar the game makes.
         for (var kind : SETTINGS.monsters()) {
             float base = baseHealth(factory.findTemplate(kind.name()));
             assertTrue(base > 0f, kind.name() + " has no body in the shipped files");
-            for (int depth = Math.max(1, kind.minDepth()); depth <= floors; depth++) {
-                sizes.add(new float[] {base * SETTINGS.monsterHealthAt(depth), depth});
+            for (int level = 1; level <= SETTINGS.maxMonsterLevel(); level++) {
+                sizes.add(new float[] {base * SETTINGS.healthAtLevel(level), level});
             }
-        }
-        // The boss of a floor climbs faster than its underlings, and is the one
-        // creature the table is most likely to be short at the top for.
-        for (int depth = 1; depth <= floors; depth++) {
-            float base = baseHealth(factory.findTemplate(SETTINGS.bossKindAt(depth)));
-            assertTrue(base > 0f, "the boss of depth " + depth + " has no body");
-            sizes.add(new float[] {base * SETTINGS.bossHealthAt(depth), depth});
         }
         // And the hero, who is the bar the player looks at most: at the bottom
         // and at the top of what levelling can add to him.
@@ -104,7 +98,7 @@ class DungeonUnitBarTest {
                 sizes.add(new float[] {uz.dukeengine.dungeon.level.HeroFigures.of(
                         uz.dukeengine.dungeon.level.HeroBase.of(template), hero.maxMana(),
                         hero.attributes(), SETTINGS.attributeRules(), level,
-                        uz.dukeengine.dungeon.level.HeroFigures.Found.NOTHING).maxHealth(), 1});
+                        uz.dukeengine.dungeon.level.HeroFigures.Found.NOTHING).maxHealth(), level});
             }
         }
         return sizes;
@@ -113,8 +107,8 @@ class DungeonUnitBarTest {
     /**
      * One lot for everyone: a mark on a skeleton is worth what a mark on the Champion is.
      *
-     * <p>Asked of every creature the game makes — monsters at every depth they can be met, each floor's boss on its
-     * own steeper curve, and both ends of what a hero grows into — and of the whole range past them, so a rung added
+     * <p>Asked of every creature the game makes — every monster and boss at every level one can stand at, and both
+     * ends of what a hero grows into — and of the whole range past them, so a rung added
      * to the table later fails here before anybody has looked at a bar.
      */
     @Test
@@ -122,7 +116,7 @@ class DungeonUnitBarTest {
         var look = look();
         int lot = look.valueFor(1f);
         for (var size : everySizeTheGameMakes()) {
-            assertEquals(lot, look.valueFor(size[0]), Math.round(size[0]) + " health at depth " + (int) size[1]
+            assertEquals(lot, look.valueFor(size[0]), Math.round(size[0]) + " health at level " + (int) size[1]
                     + " is marked in lots of " + look.valueFor(size[0]) + ", where everything else is " + lot);
         }
         for (int health = 1; health <= 20_000; health += 13) {
@@ -158,13 +152,23 @@ class DungeonUnitBarTest {
             }
             float apart = look.widthFor(health) / look.segmentsFor(health);
             if (apart < CLOSEST) {
-                wrong.add(Math.round(health) + " health at depth " + (int) size[1] + " wears "
+                wrong.add(Math.round(health) + " health at level " + (int) size[1] + " wears "
                         + look.segmentsFor(health) + " marks " + apart + " apart");
             }
         }
         if (!wrong.isEmpty()) {
             fail("these bars read as texture:\n  " + String.join("\n  ", wrong));
         }
+    }
+
+    /**
+     * A monster's medallion shows its own level: the file names the word it is held in -- {@code level:8} -- and the
+     * look the client is handed reads it. The hero keeps his own, and a creature holding none shows the depth.
+     */
+    @Test
+    void theMedallionReadsACreaturesOwnLevel() {
+        assertEquals("level:", SETTINGS.unitBar().levelWord());
+        assertEquals(SETTINGS.unitBar().levelWord(), look().levelWord());
     }
 
     /** The file says enough for the client to draw anything at all. */

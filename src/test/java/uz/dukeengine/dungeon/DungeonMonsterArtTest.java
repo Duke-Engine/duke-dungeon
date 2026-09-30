@@ -312,10 +312,10 @@ class DungeonMonsterArtTest {
         }
     }
 
-    /** Whether its own skill throws something across the room. */
+    /** Whether a skill of its own that is cast at all throws something across the room. */
     private static boolean castsSomethingThatFlies(uz.dukeengine.dungeon.content.MonsterKind kind) {
-        return kind.hasSkill() && SETTINGS.skillsFor(kind.name()).stream()
-                .anyMatch(skill -> skill.key() == kind.skillKey() && skill.hasProjectile());
+        return SETTINGS.skillsFor(kind.name()).stream()
+                .anyMatch(skill -> !skill.effect().isPassive() && skill.hasProjectile());
     }
 
     /** Whether the template of this name carries a launcher. */

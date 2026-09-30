@@ -33,15 +33,16 @@ package uz.dukeengine.dungeon.content;
  * @param scale        drawn size relative to its geometry, when drawn as a shape
  * @param look         the model, skin and animations to draw it with — empty when
  *                     this kind has no art, and then it falls back to a shape
- * @param skillKey     which of its own skills it decides to cast, by key: the first
- *                     {@code Skill} inside its block that is cast at all -- a passive
- *                     holds without one. Zero for a thing with no skill to cast
- * @param skillNearest the nearest it casts from, surface to surface
- * @param skillFurthest and the furthest
+ * @param skillNearest the nearest it casts any skill at him from, surface to surface
+ * @param skillFurthest and the furthest. Which skill it casts is its brain's to choose,
+ *                     among its {@code SkillBook}'s in the order written -- see
+ *                     {@code MonsterBrain}
  * @param keepNearest  the nearest it lets him come before it backs away
  * @param keepFurthest and the furthest it lets him get before it comes after him.
  *                     Zero for a thing that closes to {@code closeDistance} instead
  * @param maxPerRoom   how many of it one room may hold, or zero for no limit
+ * @param maxMana      the pool its skills are paid from at its first level, in whole points; zero casts free
+ * @param manaRegen    how fast that comes back at its first level, in tenths of a point a second
  */
 public record MonsterKind(
         String name,
@@ -56,27 +57,16 @@ public record MonsterKind(
         int colour,
         float scale,
         MonsterLook look,
-        char skillKey,
         float skillNearest,
         float skillFurthest,
         float keepNearest,
         float keepFurthest,
-        int maxPerRoom) {
+        int maxPerRoom,
+        int maxMana,
+        int manaRegen) {
 
     public java.awt.Color awtColour() {
         return new java.awt.Color(colour);
-    }
-
-    /** Whether it has a skill of its own to decide about. */
-    public boolean hasSkill() {
-        return skillKey != 0;
-    }
-
-    /** The same kind, casting the skill on this key. */
-    public MonsterKind casting(char key) {
-        return new MonsterKind(name, senseRadius, chaseRadius, closeDistance, alertRadius, repathFrames,
-                swingFrames, minDepth, weight, colour, scale, look, key, skillNearest, skillFurthest,
-                keepNearest, keepFurthest, maxPerRoom);
     }
 
     /** Whether it holds a band of distance from him rather than closing to fight. */

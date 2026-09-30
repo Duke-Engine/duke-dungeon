@@ -312,7 +312,9 @@ public final class Main {
                 settings.unitBar().ringRim(), settings.unitBar().bossRim(),
                 settings.unitBar().lettering(),
                 settings.unitBar().nameSize(), settings.unitBar().bossNameSize(),
-                settings.unitBar().countSize(), settings.unitBar().levelSize());
+                settings.unitBar().countSize(), settings.unitBar().levelSize())
+                // A monster's medallion shows its own level, held in a word on it; see Spawner.scale.
+                .withLevelWord(settings.unitBar().levelWord());
     }
 
     /**

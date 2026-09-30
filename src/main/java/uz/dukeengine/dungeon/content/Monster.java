@@ -28,11 +28,15 @@ import uz.dukeengine.dungeon.skill.Skill;
  * <p>The behaviour is the simulation's and the look is not: {@link #kind()} and {@link #look()}
  * hand each out apart, so nothing the game decides can come to depend on something drawn.
  *
- * @param skillDistance the nearest and the furthest it casts its skill from, surface to surface
+ * @param skillDistance the nearest and the furthest it casts any skill at him from, surface to surface: one band,
+ *                      whichever skill, and every skill aimed at him reaches its far end
  * @param keepDistance  the band it holds around him: nearer and it backs away, further and it
  *                      comes. None, and it closes to {@code closeDistance} like everything else
  * @param maxPerRoom    how many of it one room may hold, or zero for no limit
  * @param skills        what it casts, each a {@code Skill} block in its {@code Skills = [ … ]}
+ * @param maxMana       the pool its skills are paid from, in whole points, as a hero's {@code MaxMana} -- grown by
+ *                      its level where it is placed, and full then. None, and it casts free
+ * @param manaRegen     how fast the pool comes back, in tenths of a point a second, as a hero's {@code ManaRegen}
  */
 public record Monster(@Group("Identity") String name, String displayName, Set<Kind> kindOf,
         @Group("Body") float visionRange, Geometry geometry,
@@ -43,7 +47,8 @@ public record Monster(@Group("Identity") String name, String displayName, Set<Ki
         @Group("Look") String model, String texture, float modelScale, int tint, float facing,
         @Group("Animation") @Link(AnimationSet.class) String animations, @Clip String idle, @Clip String walk,
         @Clip String attack, @Clip String hurt, @Clip String death, @Group("Look") @Link(Effect.class) String effect,
-        Held held, @Group("Skills") PortraitArt portrait, List<Skill> skills) implements Solid, Sighted, Classified, Titled, Drawn {
+        Held held, @Group("Skills") PortraitArt portrait, List<Skill> skills, int maxMana, int manaRegen)
+        implements Solid, Sighted, Classified, Titled, Drawn {
 
     /** Two distances, the nearer first: {@code [20, 60]}. */
     public record Band(float nearest, float furthest) {
@@ -56,7 +61,7 @@ public record Monster(@Group("Identity") String name, String displayName, Set<Ki
             Band.NONE, Band.NONE, 0,
             null, null, 1f, 0xFFFFFF, 90f, null,
             null, null, null, null, null, null, Held.NOTHING,
-            null, List.of());
+            null, List.of(), 0, 0);
 
     public Monster {
         displayName = displayName == null ? "" : displayName;
@@ -72,26 +77,14 @@ public record Monster(@Group("Identity") String name, String displayName, Set<Ki
     /** What it does, which the simulation reads. */
     public MonsterKind kind() {
         return new MonsterKind(name, senseRadius, chaseRadius, closeDistance, alertRadius, repathFrames,
-                swingFrames, minDepth, weight, colour, scale, look(), skillKey(), skillDistance.nearest(),
-                skillDistance.furthest(), keepDistance.nearest(), keepDistance.furthest(), maxPerRoom);
+                swingFrames, minDepth, weight, colour, scale, look(), skillDistance.nearest(),
+                skillDistance.furthest(), keepDistance.nearest(), keepDistance.furthest(), maxPerRoom,
+                maxMana, manaRegen);
     }
 
     /** What it is drawn as, which nothing in the simulation may read. */
     public MonsterLook look() {
         return new MonsterLook(model, texture, modelScale, tint, facing, animations, List.of(), idle, walk, attack,
                 hurt, death, held, effect);
-    }
-
-    /**
-     * The key of the skill it casts: the first of its own, written inside it, that is cast at all -- a passive holds
-     * without being cast (see {@code SkillEffect.isPassive}) -- or none.
-     */
-    public char skillKey() {
-        for (var skill : skills) {
-            if (!skill.effect().isPassive()) {
-                return Character.toUpperCase(skill.key());
-            }
-        }
-        return 0;
     }
 }

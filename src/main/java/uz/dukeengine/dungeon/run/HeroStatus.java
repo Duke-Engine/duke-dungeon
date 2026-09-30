@@ -4,6 +4,7 @@ import uz.dukeengine.core.module.MoveUpdate;
 import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.core.thing.ThingTemplate;
 import uz.dukeengine.dungeon.ai.Doing;
+import uz.dukeengine.dungeon.combat.LevelBonus;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.dungeon.level.Attribute;
 import uz.dukeengine.dungeon.level.AttributeRules;
@@ -141,7 +142,7 @@ final class HeroStatus {
      *
      * <p>Worked out here rather than read off the creature because the engine's
      * weapon and locomotor do not hand their numbers back — the same reason the
-     * hero's three are worked out — and because what a floor multiplies a monster
+     * hero's three are worked out — and because what its level multiplies a monster
      * by is this game's arithmetic. See {@code Spawner.scale}.
      */
     static String creature(GameObject creature, int depth, int lastDepth,
@@ -167,7 +168,9 @@ final class HeroStatus {
             line.append("|face=").append(settings.hud().monsterFace());
         }
         var pictures = settings.hud().statIcons();
-        float damage = weaponDamage(creature.getTemplate()) * settings.monsterDamageAt(depth);
+        // Its weapon's figure and what its own level makes of it -- a boss's as a skeleton's.
+        var level = creature.findModule(LevelBonus.class);
+        float damage = weaponDamage(creature.getTemplate()) * (level == null ? 1f : level.damageMultiplier());
         if (damage > 0f) {
             stat(line, settings.hud().attackWord(), Math.round(damage), Math.round(damage),
                     pictures.get(0));
@@ -210,15 +213,16 @@ final class HeroStatus {
      * four facts is really per creature:
      *
      * <ul>
-     * <li>the level is the DEPTH — one number for the whole floor. A monster is
-     *     scaled by it (see {@code Spawner.scale}) and a stage's difficulty is
-     *     defined as it (see {@code Stage}), so it is not a stand-in for a level,
-     *     it <em>is</em> the level
+     * <li>a monster's level is its own, and rides the creature rather than this
+     *     line: a word on it, {@code level:8}, set where it is placed (see
+     *     {@code Spawner.scale}) and carried with its other words. What is sent
+     *     here is the DEPTH, one number for the whole floor, which the medallion
+     *     shows on a creature holding no level of its own
      * <li>the boss is one id
      * <li>the name belongs to the TEMPLATE, so it is a dictionary of about a
      *     dozen rather than one entry a creature
-     * <li>and mana belongs to a {@code SkillBook}'s pool, which in this game only a
-     *     hero draws from — a monster's skills cost it nothing — so it is one entry
+     * <li>and the bar's mana is the hero's alone — the casting mages pay from pools
+     *     of their own, and nobody is shown them — so it is one entry
      * </ul>
      *
      * <p>The ring around the hero's medallion is his experience, and only his:

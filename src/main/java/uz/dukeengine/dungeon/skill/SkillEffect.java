@@ -163,8 +163,8 @@ public enum SkillEffect {
      * storey or on somebody; see {@link Summoning}. Each is a thing in the world, as a
      * meteor's mark is, and its creature climbs out of it {@code WindUpFrames} later,
      * the kinds taking the rifts in the order written. What climbs out lasts
-     * {@code DurationFrames} and then falls down, is worth {@code SummonExperiencePercent}
-     * of its own kind, and hits as hard as the depth made its caller hit.
+     * {@code DurationFrames} and then falls down, stands at its caller's level, and is
+     * worth {@code SummonExperiencePercent} of what its own kind is worth there.
      *
      * <p>No more than {@code MaxSummoned} of one caster's stand at once, rifts counted.
      * A cast that would open none is refused with its cooldown unspent.
@@ -236,9 +236,9 @@ public enum SkillEffect {
      * Said once, on the constant -- {@code LIFESTEAL(Aim.SELF, true)} -- so that a
      * passive cannot be half declared.
      *
-     * <p>{@link SkillBook#cast} refuses one with its cooldown untouched, and a monster
-     * casts the first of its skills that is not one (see {@code Monster.skillKey}), so
-     * a creature whose only skill is a passive casts nothing. What a passive does is
+     * <p>{@link SkillBook#cast} refuses one with its cooldown untouched, and a monster's
+     * brain passes over one wherever it is written (see {@code MonsterBrain}), so a
+     * creature whose only skill is a passive casts nothing. What a passive does is
      * heard where the thing it changes happens -- a lifesteal where a blow lands --
      * rather than when a key is pressed.
      *

@@ -84,6 +84,12 @@ Monster
   Attack = Ranged_Magic_Shoot
   Idle = Ranged_Magic_Spellcasting_Long
 
+  ; What it opens its rifts out of, in the hero's words and units, as the Skeleton
+  ; Mage's: enough to call up its four at its cooldown through a fight of a minute
+  ; or more.
+  MaxMana = 80
+  ManaRegen = 25
+
   Skills = [
     Skill
       Key = Q
@@ -109,6 +115,7 @@ Monster
       Projectile = SummoningRift
       ; Twelve seconds between castings.
       CooldownFrames = 360
+      ManaCost = 40
       MaxRank = 1
       Name = Chaqiruv
     End

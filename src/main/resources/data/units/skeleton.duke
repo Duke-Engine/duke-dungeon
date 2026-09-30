@@ -8,7 +8,9 @@ Monster
   End
   VisionRange = 58
   Modules = [
-    ActiveBody
+    ; Grown by its level where it is placed, as every monster's body is -- see
+    ; the level lines in the Descent block of generation.duke.
+    GrowableBody
       MaxHealth = 60
     End,
     MoveUpdate
@@ -63,11 +65,16 @@ Monster
 ; rather than as a queue of duels. Stone stops the shout, so it does not empty
 ; the next room through the wall. Zero for anything that should fight alone.
 ;
-; A monster may also cast a skill of its own: the first of its Skills = [ … ], a
-; Skill block each, as a hero's are, and its Modules need a SkillBook.
-; SkillDistance is the nearest and furthest
-; it casts from, and it only ever casts at something it can see, with the skill
-; ready -- except a HEAL, which is cast on its own side and needs no SkillDistance.
+; A monster may also cast skills of its own: its Skills = [ … ], a Skill block
+; each, as a hero's are, and its Modules need a SkillBook. Each frame it casts
+; the first of them, in the order they are written, that its level has opened
+; (the level its first rank waits for: LevelPerRank), that is ready and that it
+; can pay for from its MaxMana pool. SkillDistance is the nearest and furthest
+; it casts from, and it only ever casts at something it can see; a skill aimed
+; at him must have a Range that reaches the far end of that band, or the file is
+; refused when it is read. Two exceptions: a HEAL is cast on its own side and
+; needs no SkillDistance, and what goes off round the caster -- a summoning --
+; aims at nothing, so its Range is not held to the band.
 ; KeepDistance is the band it holds instead of closing: nearer and it backs away,
 ; further and it comes. MaxPerRoom keeps one kind from filling a room on its own;
 ; zero is no limit.

@@ -107,6 +107,17 @@ Sound
   Files = [audio/sfx/descend.ogg]
 End
 
+; A Skeleton Mage calling its meteor down: the Mage's own call (skill.R), softer,
+; because it is the same thing happening to the other side -- heard as its mark
+; lands on the floor, a second and a half before the rock does.
+Sound
+  Name = spawned.SkullMeteorMark
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.6
+  Files = [audio/sfx/skill_empower.ogg]
+End
+
 ; ---- the skills, by the key that casts them -------------------------------
 
 Sound

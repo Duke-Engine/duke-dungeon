@@ -4,30 +4,34 @@ import java.util.ArrayList;
 import java.util.List;
 import uz.dukeengine.core.math.Coord3D;
 import uz.dukeengine.core.thing.GameObject;
-import uz.dukeengine.dungeon.combat.DepthBonus;
+import uz.dukeengine.dungeon.combat.LevelBonus;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.dungeon.gen.GeneratedDungeon;
 import uz.dukeengine.dungeon.level.GrowableBody;
 import uz.dukeengine.dungeon.loot.LootDrop;
 import uz.dukeengine.dungeon.loot.LootTable;
+import uz.dukeengine.dungeon.skill.SkillBook;
+import uz.dukeengine.dungeon.stage.StageCheck;
 import uz.dukeengine.game.DukeGame;
 import uz.dukeengine.game.GamePlayer;
 import uz.dukeengine.rts.module.ExperienceModule;
 
 /**
- * Puts a generated floor into the world, and makes its inhabitants as dangerous
- * as their depth says they should be.
+ * Puts a generated floor into the world, and makes each of its inhabitants as
+ * dangerous as its level says it should be.
  *
  * <p>Shared by the first floor and every one after it, because they are the same
  * act: the only difference between the dungeon a run opens on and the one that
  * follows a dead boss is the number. Two copies of this would drift, and the one
  * that drifted would be the deeper floors nobody tests as often.
  *
- * <p>Depth is applied to the individual, not to the template. The same Runner
- * appears on every floor — a template says what a thing is, and this says where
- * it was found. All three effects use seams the engine already offers rather than
- * new engine features: a growable body for health, a damage modifier module for
- * damage, and a replaced experience module for what killing it is worth.
+ * <p>A level is applied to the individual, not to the template. The same Runner
+ * appears on every floor and at every level — a template says what a thing is,
+ * and this says where it was found. Every effect uses seams the engine already
+ * offers rather than new engine features: a growable body for health, a damage
+ * modifier module for damage and for the level itself, a replaced experience
+ * module for what killing it is worth, the skill book's own pool for what it casts
+ * out of, and a word held on the creature for the level its bar shows.
  */
 public final class Spawner {
 
@@ -42,8 +46,9 @@ public final class Spawner {
     }
 
     /**
-     * Lay out a floor: each player's hero at the way in, its monsters scaled to {@code depth}, the boss in its keep
-     * — or the furthest room, where none fits — and, from {@code drops}, what the inhabitants leave behind.
+     * Lay out a floor: each player's hero at the way in, each monster at its level along the way -- {@code depth} is
+     * the place's tier -- the boss at its own in its keep — or the furthest room, where none fits — and, from
+     * {@code drops}, what the inhabitants leave behind.
      *
      * <p>The heroes are told rather than looked up, because once a player may choose there is no single answer in
      * the file to look up: {@code DefaultHero} is who plays when nobody was asked, and a menu is somebody being
@@ -51,7 +56,7 @@ public final class Spawner {
      * Where the run names something to stand at the way in — the fountain — it stands there and they round it.
      *
      * <p>What they leave behind is hung on each monster as it is placed rather than written into its creature
-     * block, beside the depth bonus and for the same reason: a template says what a thing is, and what it leaves
+     * block, beside its level and for the same reason: a template says what a thing is, and what it leaves
      * depends on where it was met.
      */
     public static Placed place(DukeGame game, List<GamePlayer> heroPlayers, List<String> heroTemplates,
@@ -73,11 +78,12 @@ public final class Spawner {
         }
 
         var monsters = new ArrayList<GameObject>();
-        for (var monster : dungeon.monsters()) {
+        var levels = levelsOf(dungeon, settings, depth);
+        for (int i = 0; i < levels.length; i++) {
+            var monster = dungeon.monsters().get(i);
             var spawned = spawn(game, dungeonPlayer, monster.kind(), at(logic, monster.at()));
             if (spawned != null) {
-                scale(spawned, settings.monsterHealthAt(depth), settings.monsterDamageAt(depth),
-                        settings.experienceAt(depth));
+                scale(spawned, levels[i], settings);
                 dropsFrom(spawned, drops, settings, depth, false);
                 monsters.add(spawned);
             }
@@ -102,14 +108,40 @@ public final class Spawner {
 
         var boss = spawn(game, dungeonPlayer, dungeon.boss().kind(), at(logic, dungeon.boss().at()));
         if (boss != null) {
-            scale(boss, settings.bossHealthAt(depth), settings.bossDamageAt(depth),
-                    settings.experienceAt(depth));
+            scale(boss, settings.bossLevel(depth), settings);
             dropsFrom(boss, drops, settings, depth, true);
         }
         if (fountain != null) {
             spawn(game, dungeonPlayer, standing, at(logic, fountain));
         }
         return new Placed(java.util.Collections.unmodifiableList(heroes), boss, List.copyOf(monsters), gate);
+    }
+
+    /**
+     * The level each of a floor's monsters stands at, in the order the floor lists them, in a place of {@code tier}:
+     * its share of the way from the way in to the middle of the chamber before the boss's -- the one the keep's road
+     * leaves from, or the boss's own place where there is no keep -- by the steps the floor is walked in (see
+     * {@link StageCheck#walk}). Everything past that chamber stands at its level, and so does whatever stands in the
+     * keep -- the guard in its court -- by where it stands and not by the steps to it: the keep's road can meet that
+     * chamber from any side, so its court can be fewer steps from the way in than the chamber's middle.
+     */
+    static int[] levelsOf(GeneratedDungeon dungeon, DungeonSettings settings, int tier) {
+        var walk = StageCheck.walk(dungeon);
+        var keep = dungeon.keep();
+        int way = -1;
+        if (keep != null) {
+            var chamber = dungeon.rooms().get(keep.chamber());
+            way = walk.to(chamber.centerCellX(), chamber.centerCellY());
+        } else if (dungeon.boss() != null && dungeon.boss().at() != null) {
+            way = walk.to(dungeon.boss().at().cellX(), dungeon.boss().at().cellY());
+        }
+        var levels = new int[dungeon.monsters().size()];
+        for (int i = 0; i < levels.length; i++) {
+            var at = dungeon.monsters().get(i).at();
+            levels[i] = keep != null && keep.holds(at.cellX(), at.cellY()) ? settings.beforeBossLevel(tier)
+                    : settings.levelAlong(tier, walk.to(at.cellX(), at.cellY()), way);
+        }
+        return levels;
     }
 
     /** How many steps from the way in a fountain may stand, looking for room enough round it. */
@@ -326,23 +358,36 @@ public final class Spawner {
     }
 
     /**
-     * Make one monster worth its depth.
+     * Make one creature its level -- a monster placed on the floor, its boss, or whatever rises from a rift: its
+     * health grown, a {@link LevelBonus} saying the level and what it gives, its worth set, its pool -- if its kind
+     * names one -- sized and filled, and the word its bar reads the level from ({@code level:8}; the {@code UnitBar}'s
+     * {@code LevelWord}). The one step for all of them, so a creature that rises is made exactly as one placed there
+     * would be.
      *
-     * <p>Each multiplier is computed from the depth in one step rather than
-     * compounded floor by floor, so the tenth floor is the same whether it was
-     * reached by playing or asked for directly.
+     * <p>Each multiplier is computed from the level in one step rather than
+     * compounded level by level, so a level is the same however it was reached.
      */
-    private static void scale(GameObject monster, float health, float damage, float experience) {
+    public static void scale(GameObject monster, int level, DungeonSettings settings) {
+        float health = settings.healthAtLevel(level);
         if (monster.getBody() instanceof GrowableBody body && health > 1f) {
             body.growMaxHealth(body.getMaxHealth() * (health - 1f));
         }
-        if (damage != 1f || health != 1f) {
-            // The health figure rides along for whatever it calls up.
-            monster.addModule(new DepthBonus(monster, damage, health));
+        monster.addModule(new LevelBonus(monster, level, settings.damageAtLevel(level), health));
+        if (!settings.unitBar().levelWord().isBlank()) {
+            monster.setCondition(settings.unitBar().levelWord() + level);
         }
+        // What it casts out of, grown by its level and full: a monster is met rested. A kind that names no pool is
+        // given none, and casts free.
+        var book = monster.findModule(SkillBook.class);
+        var kind = settings.monster(monster.getTemplate().name());
+        if (book != null && kind != null && kind.maxMana() > 0) {
+            book.poolOf(settings.manaAtLevel(kind.maxMana(), level), settings.manaAtLevel(kind.manaRegen(), level));
+            book.fillMana();
+        }
+        float experience = settings.experienceAtLevel(level);
         // What killing it is worth is fixed by its template, and the template is
-        // the same on every floor — so the module is swapped for one that says a
-        // deeper number, in the place the old one held.
+        // the same at every level — so the module is swapped for one that says a
+        // bigger number, in the place the old one held.
         //
         // The replacement carries no ranks, which is not a loss: monsters here are
         // written with `ExperienceRequired = 0 0 0`, meaning they count experience
