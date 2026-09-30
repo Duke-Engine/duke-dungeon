@@ -10,8 +10,10 @@ import uz.dukeengine.core.module.UpdateModule;
 import uz.dukeengine.core.player.Relationship;
 import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.core.thing.ObjectId;
+import uz.dukeengine.core.thing.ObjectStatus;
 import uz.dukeengine.core.thing.World;
 import uz.dukeengine.rts.module.ExperienceModule;
+import uz.dukeengine.rts.module.StatusUpdate;
 
 /**
  * An arrow in the air: it chases what it was loosed at, and hurts it on arrival.
@@ -69,6 +71,13 @@ public final class ArrowUpdate extends UpdateModule {
     private float blastRadius;
 
     /**
+     * How long whoever this hurts stands dazed after, in frames, or zero for a shot that only hurts: the one it
+     * struck and everyone its burst caught alike. Carried from the skill that threw it, as the damage is -- the fire
+     * mage's fireball stuns, and its ordinary fire does not.
+     */
+    private int stunFrames;
+
+    /**
      * How high over the ground it flies: as high as it was when it left the bow, and over whatever ground it crosses —
      * so a shot rises over a hill and dips into a hollow rather than going straight through the one and over the
      * other. The ground's height is the simulation's own, so every machine flies it alike, and it lands where it is
@@ -101,8 +110,9 @@ public final class ArrowUpdate extends UpdateModule {
      * hit.
      */
     void looseAlong(GameObject from, Coord3D towards, float carrying, DamageType type,
-            float speed, float distance, float blast) {
+            float speed, float distance, float blast, int stun) {
         this.blastRadius = blast;
+        this.stunFrames = stun;
         this.shooter = from.getId();
         this.target = null;
         this.damage = carrying;
@@ -216,6 +226,7 @@ public final class ArrowUpdate extends UpdateModule {
      */
     private void strike(World world, GameObject victim) {
         victim.getBody().damage(damage, damageType);
+        stun(victim);
         splash(world, victim);
         if (victim.isEffectivelyDead()) {
             var archer = world.findObject(shooter);
@@ -250,6 +261,23 @@ public final class ArrowUpdate extends UpdateModule {
                         && world.getRelationship(side, candidate.getPlayerIndex())
                                 == Relationship.ENEMIES)) {
             caught.getBody().damage(damage, damageType);
+            stun(caught);
+        }
+    }
+
+    /**
+     * Leave whoever this hurt standing dazed, if it was thrown to: the engine's own {@code DISABLED} for
+     * {@link #stunFrames}, set on the creature's own timers -- so its legs and its weapon stand still under it, its
+     * skills refuse (see {@code SkillBook.cast}), it wears off by itself whoever threw it, and a second stun starts
+     * the count again rather than adding to it.
+     *
+     * <p>A creature whose file never asked for a {@code StatusUpdate} is not stunned, as it is not slowed: better
+     * that than the game deciding what a creature is made of behind its own file's back.
+     */
+    private void stun(GameObject hurt) {
+        var timers = stunFrames <= 0 || hurt.isEffectivelyDead() ? null : hurt.findModule(StatusUpdate.class);
+        if (timers != null) {
+            timers.apply(ObjectStatus.DISABLED, stunFrames);
         }
     }
 }

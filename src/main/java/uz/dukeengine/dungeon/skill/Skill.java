@@ -97,6 +97,11 @@ import uz.dukeengine.dungeon.content.Projectile;
  *     more than there is room for
  * @param summonExperiencePercent what killing one is worth, as a share of its own kind:
  *     a thing that was never placed on the floor should not be a well to draw from
+ * @param stunFrames    how long whoever a {@code SKILLSHOT} hurts stands dazed after —
+ *     the one it struck and everyone its burst caught — or zero for a shot that only
+ *     hurts. The engine's own {@code DISABLED}, worn on the victim's own timers: its
+ *     legs and its weapon stand still under it and its skills refuse. The fire mage's
+ *     fireball has one and its ordinary fire does not
  */
 public record Skill(
         String heroTemplate,
@@ -133,7 +138,8 @@ public record Skill(
         @Link(Monster.class) String summons,
         int summonCount,
         int maxSummoned,
-        int summonExperiencePercent) {
+        int summonExperiencePercent,
+        int stunFrames) {
 
     /**
      * A cooldown can shorten with level but never vanish: a skill castable every
@@ -146,7 +152,7 @@ public record Skill(
      * ranks deep, whose owner is the block it is written in.
      */
     static final Skill DEFAULTS = new Skill(null, '\0', SkillEffect.STRIKE, 0f, 0f, 0f, 0f, 0f, 0f,
-            0, 0, 0, 0, 0, 90, 0, 4, 0, 0, 0, 0, "", "", "", "", 0f, "", "", 0f, 0f, 0, "", 0, 0, 0);
+            0, 0, 0, 0, 0, 90, 0, 4, 0, 0, 0, 0, "", "", "", "", 0f, "", "", 0f, 0f, 0, "", 0, 0, 0, 0);
 
     /** This skill as {@code owner}'s, its key the one a player presses. */
     public Skill ownedBy(String owner) {
@@ -155,7 +161,7 @@ public record Skill(
                 cooldownFrames, cooldownPerLevel, maxRank, levelPerRank, windUpFrames, manaCost,
                 manaCostPerLevel, projectile, icon, look, castAnim, castSeconds, name, blurb,
                 projectileSpeed, heal, healBelowPercent, summons, summonCount, maxSummoned,
-                summonExperiencePercent);
+                summonExperiencePercent, stunFrames);
     }
 
     /** Levels earned past the first — what every growth figure is multiplied by. */

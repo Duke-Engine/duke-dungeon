@@ -597,10 +597,12 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Wea
                 Facing.turnToward(owner, towards);
                 // Radius is the burst where it lands, and zero leaves it an arrow:
                 // both fly the same way and stop at the first body, and one of them
-                // takes the rest of the room with it.
+                // takes the rest of the room with it. StunFrames is how long whoever
+                // it hurts stands dazed after, and zero leaves them free.
                 if (!Shot.looseAlong(owner, towards, damageOf(skill, level), DamageType.NORMAL,
                         skill.projectile(), speedOf(skill),
-                        settings.combat().arrowMuzzleOffset(), skill.range(), skill.radius())) {
+                        settings.combat().arrowMuzzleOffset(), skill.range(), skill.radius(),
+                        skill.stunFrames())) {
                     return false; // no arrow to throw; the cooldown is not spent
                 }
                 world.post(new WeaponFired(world.getFrame(), owner.getId(), null,

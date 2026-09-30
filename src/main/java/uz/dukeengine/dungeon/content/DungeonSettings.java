@@ -676,6 +676,12 @@ public final class DungeonSettings {
             // the line is split on those two characters.
             require(sayable(skill.icon()),
                     "a skill's Icon may not contain ',' or '|': " + skill.key());
+            // A stun rides what a skillshot throws, and nothing else a skill does carries
+            // one: written on any other, it would be a number nothing read.
+            require(skill.stunFrames() == 0
+                            || skill.stunFrames() > 0 && skill.effect() == SkillEffect.SKILLSHOT,
+                    skill.heroTemplate() + "'s Skill " + skill.key() + " has StunFrames = " + skill.stunFrames()
+                            + ": only a SKILLSHOT stuns, and for no fewer than no frames");
             switch (skill.effect()){
                 case HEAL -> {
                     var name = skill.heroTemplate() + "'s Skill " + skill.key();

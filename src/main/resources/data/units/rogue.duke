@@ -327,6 +327,8 @@ Hero
   ;                 it hits whoever is standing in the way. It CAN miss, which is
   ;                 the whole point: it rewards reading where a monster is going
   ;                 instead of clicking on it. Radius is how wide the shot is.
+  ;                 Name a StunFrames and whoever it hurts -- the one it struck and
+  ;                 everyone its burst caught -- stands dazed that long after.
   ;   DASH          travel Distance along your facing, toward a spot. Name a Damage
   ;                 and it hurts whoever you went THROUGH, within Radius of the line
   ;                 you travelled -- a charge instead of a sprint. It does not shove

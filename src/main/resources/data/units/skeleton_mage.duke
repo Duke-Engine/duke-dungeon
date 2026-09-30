@@ -121,6 +121,11 @@ Monster
       HitWidth = 6
       ProjectileSpeed = 120
       Projectile = SkullFireball
+      ; And whoever it hurts -- the one it struck and everyone its burst caught --
+      ; stands dazed for a second: no step, no blow, no cast. Its ordinary fire
+      ; stuns nothing: a stun on every shot of something that throws every two
+      ; seconds would hold him still for most of a fight.
+      StunFrames = 30
       ; Six seconds between fireballs, with its ordinary fire in between.
       CooldownFrames = 180
       MaxRank = 1
