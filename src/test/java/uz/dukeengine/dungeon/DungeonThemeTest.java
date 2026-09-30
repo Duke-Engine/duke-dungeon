@@ -213,7 +213,9 @@ class DungeonThemeTest {
         assertEquals(2, ((uz.dukeengine.core.map.Subdivided) record).navigationCellsPerCell());
     }
 
-    /** The keep is worked stone whatever biome it stands in — its wall, its court, its stair — and the road is not. */
+    /**
+     * The keep is worked stone whatever biome it stands in — its wall, its court, its threshold — and the road is not.
+     */
     @Test
     void theKeepIsDrawnInStoneWhateverBiomeItStandsIn() {
         var session = Dungeon.newSession(11L);
@@ -229,12 +231,12 @@ class DungeonThemeTest {
         for (var step : new int[][] {{1, 0}, {-1, 0}, {0, 1}, {0, -1}}) {
             int x = gate[0] + step[0];
             int y = gate[1] + step[1];
-            if (keep.isStair(x, y)) {
-                assertEquals(stone, looked.lookAt(x, y), "its stair");
+            if (keep.isThreshold(x, y)) {
+                assertEquals(stone, looked.lookAt(x, y), "its threshold");
                 int roadX = x + step[0];
                 int roadY = y + step[1];
                 assertEquals(SHIPPED.themes().dressedAs(floor.biomes().at(roadX, roadY), 11L, 1).asStatus(),
-                        looked.lookAt(roadX, roadY), "the road below the stair is the ground's");
+                        looked.lookAt(roadX, roadY), "the road beyond the threshold is the ground's");
             }
         }
     }

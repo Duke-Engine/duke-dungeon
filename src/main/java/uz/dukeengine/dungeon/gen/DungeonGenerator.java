@@ -16,7 +16,7 @@ import uz.dukeengine.dungeon.world.Theme;
  * Draws a floor from a seed: chambers of rock or glades of wood grown where the rooms are placed, joined by
  * tunnels that wander, laid over hills — with the hero in the first and the monsters scattered through the rest.
  *
- * <p>The floor ends in the boss's {@link Keep}: a walled court a storey up, built in solid rock once the rest is
+ * <p>The floor ends in the boss's {@link Keep}: a walled court on the ground, built in solid rock once the rest is
  * carved, so it cuts nothing off; the last of the rooms, and the boss's.
  *
  * <p>The one property that matters more than any other is that <b>every chamber can be reached</b> — a skeleton
@@ -136,10 +136,8 @@ public final class DungeonGenerator {
                         terrainOfRooms(biomes, chambers.size()).stream().map(Theme.Terrain::level).toList());
         var scenery = biomes == null ? List.<GeneratedDungeon.Piece>of()
                 : Scenery.scatter(seed, cave, biomes, rooms.getFirst());
-        var storeys = new ArrayList<>(Collections.nCopies(chambers.size(), 0));
-        if (keep != null) {
-            storeys.set(bossRoom, 1);
-        }
+        // Every chamber on the ground, the keep's court among them: how high each stands is the relief's.
+        var storeys = Collections.nCopies(chambers.size(), 0);
         return new GeneratedDungeon(cave.walls(), cave.levels(), hero, monsters, boss, bossRoom,
                 List.copyOf(chambers), List.copyOf(joined), List.copyOf(storeys), List.copyOf(props),
                 relief, 0f, biomes, scenery, keep);

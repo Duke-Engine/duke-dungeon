@@ -132,14 +132,14 @@ final class Cave {
     }
 
     /**
-     * The same map in storeys: all of the floor on the one, because the ground's height is the relief's now — but for
-     * a keep's court and doorway, a storey up, and the stair to them.
+     * The same map in storeys: all of the floor on the one, the keep's court among it, because the ground's height is
+     * the relief's now.
      */
     String levels() {
         var text = new StringBuilder(height * (width + 1));
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
-                text.append(cells[y][x] == STONE ? STONE : keep == null ? '0' : keep.storeyAt(x, y));
+                text.append(cells[y][x] == STONE ? STONE : '0');
             }
             text.append('\n');
         }
@@ -508,18 +508,18 @@ final class Cave {
     }
 
     /**
-     * Build {@code keep} into the carved floor: its ring of wall, its court and doorway, the stair before the doorway,
-     * and a straight road from beyond the stair to the middle of the chamber it hangs off in {@code rooms}. All of it
-     * kept, the ring rock: a built thing is not worn. The road never touches the ring — it leaves the gate's side
-     * outward, the side having been chosen for that, and a straight line leaving a square outward never meets it
-     * again.
+     * Build {@code keep} into the carved floor: its ring of wall, its court and doorway, the threshold before the
+     * doorway, and a straight road from beyond the threshold to the middle of the chamber it hangs off in
+     * {@code rooms}. All of it kept, the ring rock: a built thing is not worn. The road never touches the ring — it
+     * leaves the gate's side outward, the side having been chosen for that, and a straight line leaving a square
+     * outward never meets it again.
      */
     void raise(Keep keep, List<Room> rooms) {
         this.keep = keep;
         var walls = keep.walls();
         for (int y = walls.y() - 1; y <= walls.y() + walls.h(); y++) {
             for (int x = walls.x() - 1; x <= walls.x() + walls.w(); x++) {
-                if (keep.isCourt(x, y) || keep.isDoorway(x, y) || keep.isStair(x, y)) {
+                if (keep.isCourt(x, y) || keep.isDoorway(x, y) || keep.isThreshold(x, y)) {
                     keep(x, y);
                 } else if (keep.holds(x, y)) {
                     cells[y][x] = STONE;

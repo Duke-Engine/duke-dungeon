@@ -7,13 +7,13 @@ import uz.dukeengine.dungeon.gen.GeneratedDungeon.Link;
 import uz.dukeengine.dungeon.gen.GeneratedDungeon.Room;
 
 /**
- * The boss's keep: a square court a storey above the floor, walled round, at the far end of it — a gate in the middle
- * of the side it is approached from, a stair up to the gate, and a straight road from the stair to the chamber it
- * hangs off.
+ * The boss's keep: a square court on the ground, walled round, at the far end of the floor — a gate in the middle of
+ * the side it is approached from, a threshold of the keep's stone before the gate, and a straight road from the
+ * threshold to the chamber it hangs off.
  *
  * <p>Built in solid rock once the cave is carved (see {@link #site}), so it takes no floor from anything and cuts no
- * tunnel: whatever was connected stays connected, and the only way into the court is up the stair and through the
- * gate. Whole numbers and a fixed order throughout, and no dice: a seed names one keep.
+ * tunnel: whatever was connected stays connected, and the only way into the court is over the threshold and through
+ * the gate. Whole numbers and a fixed order throughout, and no dice: a seed names one keep.
  *
  * @param walls   the square it stands in, its ring of wall included — odd across, so the court and the doorway each
  *     have a middle cell
@@ -75,22 +75,24 @@ public record Keep(Room walls, Side side, int chamber) {
         return x > walls.x() && y > walls.y() && x < walls.x() + size() - 1 && y < walls.y() + size() - 1;
     }
 
-    /** Whether a cell is the stair: a step out from the doorway. */
-    public boolean isStair(int x, int y) {
+    /**
+     * Whether a cell is the threshold: floor a step out from the doorway and as wide as it, drawn in the keep's
+     * stone — where the stair stood while the court was a storey up.
+     */
+    public boolean isThreshold(int x, int y) {
         return isDoorway(x - side.dx, y - side.dy);
     }
 
-    /** Whether a cell belongs to the keep — its square or its stair: what is drawn as the keep, and strewn with nothing. */
+    /**
+     * Whether a cell belongs to the keep — its square or its threshold: what is drawn as the keep, and strewn with
+     * nothing.
+     */
     public boolean holds(int x, int y) {
-        return x >= walls.x() && y >= walls.y() && x < walls.x() + size() && y < walls.y() + size() || isStair(x, y);
+        return x >= walls.x() && y >= walls.y() && x < walls.x() + size() && y < walls.y() + size()
+                || isThreshold(x, y);
     }
 
-    /** The storey a floor cell stands on, as the level map writes it: court and doorway one up, the stair a stair. */
-    char storeyAt(int x, int y) {
-        return isCourt(x, y) || isDoorway(x, y) ? '1' : isStair(x, y) ? '/' : '0';
-    }
-
-    /** Where the road leaves from: beyond the stair's middle, two cells out from the gate. */
+    /** Where the road leaves from: beyond the threshold's middle, two cells out from the gate. */
     int[] roadStart() {
         var gate = gate();
         return new int[] {gate[0] + 2 * side.dx, gate[1] + 2 * side.dy};

@@ -13,7 +13,7 @@ import uz.dukeengine.dungeon.gen.GeneratedDungeon.Link;
 import uz.dukeengine.dungeon.gen.GeneratedDungeon.Room;
 import uz.dukeengine.dungeon.world.Theme;
 
-/** The keep's cells — wall, doorway, stair, court — and the rule for where one goes. */
+/** The keep's cells — wall, doorway, threshold, court — and the rule for where one goes. */
 class KeepShapeTest {
 
     /** Nine across at (10, 10), its gate in the north wall. */
@@ -29,32 +29,29 @@ class KeepShapeTest {
     }
 
     @Test
-    void itsStairIsTheStepOutsideItsDoorwayAndItsRoadLeavesBeyondIt() {
+    void itsThresholdIsTheStepOutsideItsDoorwayAndItsRoadLeavesBeyondIt() {
         for (int x = 13; x <= 15; x++) {
-            assertTrue(NORTH.isStair(x, 9), "cell " + x + ",9");
+            assertTrue(NORTH.isThreshold(x, 9), "cell " + x + ",9");
         }
-        assertFalse(NORTH.isStair(12, 9), "beside the stair is the ground outside");
-        assertFalse(NORTH.isStair(14, 11), "inside the doorway is the court");
+        assertFalse(NORTH.isThreshold(12, 9), "beside the threshold is the ground outside");
+        assertFalse(NORTH.isThreshold(14, 11), "inside the doorway is the court");
         assertArrayEquals(new int[] {14, 8}, NORTH.roadStart());
     }
 
     @Test
-    void itsCourtIsInsideItsRingAStoreyUp() {
+    void itsCourtIsInsideItsRing() {
         assertTrue(NORTH.isCourt(11, 11));
         assertTrue(NORTH.isCourt(17, 17));
         assertFalse(NORTH.isCourt(10, 14), "the ring is wall");
         assertFalse(NORTH.isCourt(18, 14));
-        assertEquals('1', NORTH.storeyAt(14, 14));
-        assertEquals('1', NORTH.storeyAt(14, 10), "the doorway is level with the court");
-        assertEquals('/', NORTH.storeyAt(14, 9));
-        assertEquals('0', NORTH.storeyAt(14, 8));
+        assertFalse(NORTH.isCourt(14, 10), "the doorway is in the ring, not the court");
     }
 
     @Test
-    void itHoldsItsSquareAndItsStairAndNothingElse() {
+    void itHoldsItsSquareAndItsThresholdAndNothingElse() {
         assertTrue(NORTH.holds(10, 10), "a corner of its wall");
         assertTrue(NORTH.holds(18, 18));
-        assertTrue(NORTH.holds(14, 9), "its stair");
+        assertTrue(NORTH.holds(14, 9), "its threshold");
         assertFalse(NORTH.holds(12, 9));
         assertFalse(NORTH.holds(14, 8), "the road is the floor's");
         assertFalse(NORTH.holds(19, 14));
@@ -66,7 +63,7 @@ class KeepShapeTest {
 
         assertArrayEquals(new int[] {10, 14}, west.gate());
         assertTrue(west.isDoorway(10, 13) && west.isDoorway(10, 15));
-        assertTrue(west.isStair(9, 14));
+        assertTrue(west.isThreshold(9, 14));
         assertArrayEquals(new int[] {8, 14}, west.roadStart());
         assertEquals((float) (StrictMath.PI / 2), west.facing());
         assertEquals(0f, NORTH.facing());
@@ -214,16 +211,16 @@ class KeepShapeTest {
         assertArrayEquals(new int[] {18, 14}, east.gate(), "EAST gate on the right wall middle");
         assertTrue(east.isDoorway(18, 13) && east.isDoorway(18, 14) && east.isDoorway(18, 15),
                 "EAST doorway runs along x=18");
-        assertTrue(east.isStair(19, 14), "EAST stair is x=19");
-        assertArrayEquals(new int[] {20, 14}, east.roadStart(), "EAST road starts beyond the stair");
+        assertTrue(east.isThreshold(19, 14), "EAST threshold is x=19");
+        assertArrayEquals(new int[] {20, 14}, east.roadStart(), "EAST road starts beyond the threshold");
         assertEquals((float) (StrictMath.PI / 2), east.facing(), "EAST facing is a quarter turn");
 
         var south = new Keep(new Room(10, 10, 9, 9), Keep.Side.SOUTH, 0);
         assertArrayEquals(new int[] {14, 18}, south.gate(), "SOUTH gate on the bottom wall middle");
         assertTrue(south.isDoorway(13, 18) && south.isDoorway(14, 18) && south.isDoorway(15, 18),
                 "SOUTH doorway runs along y=18");
-        assertTrue(south.isStair(14, 19), "SOUTH stair is y=19");
-        assertArrayEquals(new int[] {14, 20}, south.roadStart(), "SOUTH road starts beyond the stair");
+        assertTrue(south.isThreshold(14, 19), "SOUTH threshold is y=19");
+        assertArrayEquals(new int[] {14, 20}, south.roadStart(), "SOUTH road starts beyond the threshold");
         assertEquals(0f, south.facing(), "SOUTH facing is the same as NORTH");
     }
 }

@@ -112,13 +112,14 @@ ProceduralMap
 
   ; ---- the boss's keep ----
   ;
-  ; Every floor of the descent ends in one: a square court a storey above the
-  ; ground, walled round, its gate in the middle of the side a straight road and
-  ; a stair come up to. Built in solid rock beside the deepest chamber with room
-  ; for it, so it cuts nothing off -- see gen/Keep and
-  ; docs/plan/2026-09-30-boss-keep.md. The boss waits in its middle and its
-  ; guard round it. Stages are cut without one. Leave the block out and the boss
-  ; waits in the furthest chamber, open, as it always did.
+  ; Every floor of the descent ends in one: a square court on the ground, walled
+  ; round a storey high, its gate in the middle of the side a straight road comes
+  ; up to, over a threshold of the keep's stone. Built in solid rock beside the
+  ; deepest chamber with room for it, so it cuts nothing off -- see gen/Keep,
+  ; docs/plan/2026-09-30-boss-keep.md and docs/plan/2026-09-30-key-to-the-keep.md.
+  ; The boss waits in its middle and its guard round it. Stages are cut without
+  ; one. Leave the block out and the boss waits in the furthest chamber, open, as
+  ; it always did.
   Keep = Keep
     ; Across, walls included, largest first: the larger ones are tried only
     ; beside the deepest chambers, the last beside any. Odd, so the boss and the

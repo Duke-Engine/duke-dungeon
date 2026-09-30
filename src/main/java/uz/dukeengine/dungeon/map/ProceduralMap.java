@@ -87,7 +87,7 @@ public record ProceduralMap(String name, Layout generation, @Link(Theme.class) L
     }
 
     /**
-     * The boss's keep: a walled court a storey up at the far end of each floor of the descent, its gate in the
+     * The boss's keep: a walled court on the ground at the far end of each floor of the descent, its gate in the
      * middle of the side it is approached from — see {@code gen/Keep}.
      *
      * @param sizes how many cells across it may be, walls included, tried largest first; odd, so the boss and the
