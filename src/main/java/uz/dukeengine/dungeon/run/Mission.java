@@ -110,9 +110,18 @@ public final class Mission {
         }
     }
 
+    /**
+     * Lay the key on the floor at {@code at}. Where that cannot be done — the template it lies as is one nobody has
+     * made, or one that holds nothing — the key would lie nowhere and the gate never open, so it is said, loudly and
+     * naming the template, rather than left as a floor that cannot be finished.
+     */
     private void lay(World world, Coord3D at) {
+        var template = key.liesAs(chest);
+        if (GroundItem.lay(world, template, key, at, floorOwner) == null) {
+            throw new IllegalStateException("the floor's key cannot be laid: '" + template
+                    + "' is not a template of a thing that lies holding an item");
+        }
         keyLaid = true;
-        GroundItem.lay(world, key.liesAs(chest), key, at, floorOwner);
     }
 
     /** Where the party stands in it now: the key not laid yet, lying, carried, or given and the gate open. */

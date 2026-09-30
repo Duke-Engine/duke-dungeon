@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
@@ -71,6 +72,27 @@ class MissionTest {
                 "    MinSkeletonsPerRoom = 0\n    MaxSkeletonsPerRoom = 0\n"));
     }
 
+    /** The shipped game but for one word: its key is told to lie as a thing no file has made. */
+    private static DungeonSettings keyLyingAsNothing() {
+        var data = Content.data();
+        var shipped = "  LiesAs = Key\n";
+        assertTrue(data.contains(shipped), "the shipped key no longer says how it lies");
+        return DungeonSettings.parse(data.replace(shipped, "  LiesAs = NoSuchThing\n"));
+    }
+
+    /** What lies on the floor, each thing as what it holds: a chest's item, the key on the ground. */
+    private static List<Loot> lying(DukeGame game) {
+        return game.getLogic().getObjects().stream()
+                .map(object -> object.findModule(GroundItem.class))
+                .filter(thing -> thing != null && thing.getHolding() != null)
+                .map(GroundItem::getHolding)
+                .toList();
+    }
+
+    private static long keysLying(DukeGame game) {
+        return lying(game).stream().filter(item -> item.kind() == LootKind.KEY).count();
+    }
+
     @Test
     void itCountsTheMonstersTheFloorPutOutsideTheKeep() {
         var floor = DungeonGenerator.generate(SEED, SETTINGS, 1);
@@ -106,6 +128,30 @@ class MissionTest {
         assertNotNull(key, "the last of them left no key");
         assertTrue(key.getPosition().distance(last) < 2f, "where it fell: " + key.getPosition() + ", not " + last);
         assertEquals(key(), key.findModule(GroundItem.class).getHolding(), "lying as a chest lies, holding the key");
+    }
+
+    /**
+     * The last two of them falling in one frame — one splash — leave one key between them, not one each: a count of
+     * the deaths reaches all of them once, where a count of those still standing would find none left at either.
+     */
+    @Test
+    void theLastTwoFallingInOneFrameLeaveOneKey() {
+        var session = opened(SETTINGS);
+        var game = session.game();
+        var own = outside(session);
+        for (var monster : own.subList(0, own.size() - 2)) {
+            game.getLogic().destroyObject(monster);
+            game.runHeadless(1);
+        }
+        assertEquals(0, keysLying(game), "a key while two of them stand");
+
+        game.getLogic().destroyObject(own.get(own.size() - 2));
+        game.getLogic().destroyObject(own.getLast());
+        game.runHeadless(1);
+
+        assertEquals(1, keysLying(game), "one key for the last two");
+        assertEquals(own.size(), session.run().getMission().killed());
+        assertEquals(Mission.Step.TAKE, session.run().getStep());
     }
 
     /**
@@ -204,6 +250,58 @@ class MissionTest {
         assertNotNull(key, "it is nowhere");
         assertTrue(key.getPosition().distance(where) < 2f, "where he fell: " + key.getPosition());
         assertEquals(key(), key.findModule(GroundItem.class).getHolding());
+    }
+
+    /** A fallen hero leaves the key and nothing else: the rest of what he carries is his, for when he stands again. */
+    @Test
+    void aHeroWhoFallsKeepsWhatElseHeCarries() {
+        var session = opened(SETTINGS);
+        var game = session.game();
+        var bag = session.progress().getLoot();
+        var other = SETTINGS.loot().stream().filter(item -> item.kind() != LootKind.KEY).findFirst().orElseThrow();
+        bag.take(other, 0, 0);
+        bag.take(key(), 0, 0);
+
+        game.getLogic().destroyObject(find(game, "Rogue"));
+        game.runHeadless(1);
+
+        assertEquals(List.of(other), bag.getFound(), "the rest of it is still his");
+        assertEquals(List.of(key()), lying(game), "and only the key lies where he fell");
+    }
+
+    /** A key that cannot be laid is not lost with the hero who carries it: it stays in his bag, for when he stands. */
+    @Test
+    void aKeyThatCannotBeLaidStaysInTheBagOfTheHeroWhoFell() {
+        var settings = keyLyingAsNothing();
+        var session = opened(settings);
+        var game = session.game();
+        var bag = session.progress().getLoot();
+        bag.take(settings.loot().stream().filter(item -> item.kind() == LootKind.KEY).findFirst().orElseThrow(), 0, 0);
+
+        game.getLogic().destroyObject(find(game, "Rogue"));
+        game.runHeadless(1);
+
+        assertTrue(bag.holds(LootKind.KEY), "it left his bag and lies nowhere");
+        assertEquals(0, keysLying(game));
+    }
+
+    /**
+     * A floor whose key cannot be laid says so when its last monster falls, naming the template, rather than goes on
+     * to a key that lies nowhere and a gate that never opens.
+     */
+    @Test
+    void aKeyThatCannotBeLaidIsSaidLoudlyWhenTheLastOfThemFalls() {
+        var session = opened(keyLyingAsNothing());
+        var game = session.game();
+        var own = outside(session);
+        for (var monster : own.subList(0, own.size() - 1)) {
+            game.getLogic().destroyObject(monster);
+            game.runHeadless(1);
+        }
+        game.getLogic().destroyObject(own.getLast());
+
+        var thrown = assertThrows(IllegalStateException.class, () -> game.runHeadless(1));
+        assertTrue(thrown.getMessage().contains("NoSuchThing"), "it names the template: " + thrown.getMessage());
     }
 
     /** The tracker's words are the owner's, as the spec writes them. */

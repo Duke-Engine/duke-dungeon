@@ -12,7 +12,8 @@ import uz.dukeengine.rts.module.RtsModuleGroups;
  *
  * <p>Hung on the engine's {@link DieModule} seam, as a monster's {@link LootDrop} is and for the same reason: it runs
  * once he has left the world, and what it lays lies where he fell. Everything else in his bag stays his, for when he
- * stands again.
+ * stands again — and so does a key that cannot be laid, one whose template nobody has made: it is laid first, and
+ * leaves his bag only once something lies where it fell, so it is never lost between the bag and the floor.
  */
 @ModuleGroup(RtsModuleGroups.ECONOMY)
 public final class KeyDrop extends Module implements DieModule {
@@ -41,9 +42,9 @@ public final class KeyDrop extends Module implements DieModule {
         }
         for (int slot = 0; slot < bag.slots().size(); slot++) {
             var item = bag.at(slot);
-            if (item != null && item.kind() == LootKind.KEY) {
+            if (item != null && item.kind() == LootKind.KEY
+                    && GroundItem.lay(world, item.liesAs(chest), item, hero.getPosition(), floorOwner) != null) {
                 bag.remove(slot);
-                GroundItem.lay(world, item.liesAs(chest), item, hero.getPosition(), floorOwner);
             }
         }
     }
