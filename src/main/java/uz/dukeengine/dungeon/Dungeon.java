@@ -8,6 +8,7 @@ import uz.dukeengine.dungeon.combat.ArrowUpdate;
 import uz.dukeengine.dungeon.combat.FallingUpdate;
 import uz.dukeengine.dungeon.combat.Bow;
 import uz.dukeengine.dungeon.combat.EyesOnly;
+import uz.dukeengine.dungeon.combat.Lifesteal;
 import uz.dukeengine.dungeon.combat.Swing;
 import uz.dukeengine.dungeon.content.Content;
 import uz.dukeengine.dungeon.content.DungeonSettings;
@@ -212,6 +213,8 @@ public final class Dungeon {
                     // A monster's blow lands where it stands, as it always did.
                     // This is only how the brain finds out that it struck.
                     factory.register(Swing.Data.class, Swing::new);
+                    // And a boss drinks from the blows it lands. See Lifesteal.
+                    factory.register(Lifesteal.Data.class, Lifesteal::new);
                     // What a dead monster leaves lying about. The chest is a
                     // creature like any other -- it is in the world, so the client
                     // draws it without being told anything special.

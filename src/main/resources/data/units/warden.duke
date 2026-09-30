@@ -43,6 +43,13 @@ Monster
     ; instead of walking off mid-blow. It launches nothing -- see Swing.
     Swing
     End,
+    ; It drinks from its blows, as every boss does: a quarter of what each one
+    ; deals comes back to it as health, never above its maximum -- a swing where
+    ; it lands, a shot where it arrives. A long fight with a boss is lost faster
+    ; than its bar says. See Lifesteal.
+    Lifesteal
+      Percent = 25
+    End,
     ; Timers for the statuses it is wearing -- the engine's own, and today that
     ; means SLOWED. MoveUpdate already halves the step of anything wearing it, and
     ; StatusUpdate already counts it down and takes it off, so a monster that

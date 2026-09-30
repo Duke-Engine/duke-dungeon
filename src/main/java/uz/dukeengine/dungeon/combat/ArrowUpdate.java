@@ -233,9 +233,12 @@ public final class ArrowUpdate extends UpdateModule {
     private void strike(World world, GameObject victim) {
         victim.getBody().damage(damage, damageType);
         stun(world, victim);
-        splash(world, victim);
+        // Every blow it lands, this one and each its burst deals, its archer drinks from if he
+        // does -- see Lifesteal.
+        var archer = world.findObject(shooter);
+        Lifesteal.drink(archer, damage);
+        splash(world, victim, archer);
         if (victim.isEffectivelyDead()) {
-            var archer = world.findObject(shooter);
             var earned = victim.findModule(ExperienceModule.class);
             var his = archer == null ? null : archer.findModule(ExperienceModule.class);
             if (his != null && earned != null) {
@@ -254,7 +257,7 @@ public final class ArrowUpdate extends UpdateModule {
      * rule a player can hold in his head -- a falloff would be a second number to
      * explain and nothing on screen could show it.
      */
-    private void splash(World world, GameObject struck) {
+    private void splash(World world, GameObject struck, GameObject archer) {
         if (blastRadius <= 0f) {
             return;
         }
@@ -267,6 +270,7 @@ public final class ArrowUpdate extends UpdateModule {
                         && world.getRelationship(side, candidate.getPlayerIndex())
                                 == Relationship.ENEMIES)) {
             caught.getBody().damage(damage, damageType);
+            Lifesteal.drink(archer, damage);
             stun(world, caught);
         }
     }
