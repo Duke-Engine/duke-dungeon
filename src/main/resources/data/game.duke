@@ -116,6 +116,7 @@ Game
     data/props/chest.duke,
     data/props/fountain.duke,
     data/props/gate.duke,
+    data/props/key.duke,
 
     data/sounds/sfx.duke,
     data/sounds/ui.duke,

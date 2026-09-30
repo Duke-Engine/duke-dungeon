@@ -232,7 +232,7 @@ class DungeonTilesTest {
     void everyPictureIsSquareAndTheSizeItsSheetWasCutAt() throws java.io.IOException {
         int checked = 0;
         for (var folder : new String[][] {{"icons/skills/", "256"}, {"icons/commands/", "128"},
-            {"icons/stats/", "64"}}) {
+            {"icons/stats/", "64"}, {"icons/items/", "64"}}) {
             for (var name : shipped(folder[0])) {
                 var image = javax.imageio.ImageIO.read(
                         DungeonTilesTest.class.getClassLoader().getResource(folder[0] + name));

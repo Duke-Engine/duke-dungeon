@@ -100,6 +100,8 @@ public final class DungeonSettings {
     private final List<Cursor> cursors = new java.util.ArrayList<>();
     private final List<Skin> skins = new java.util.ArrayList<>();
     private final List<Theme> themes = new java.util.ArrayList<>();
+    /** How things look outside any theme — in every theme that does not dress them. */
+    private final List<Theme.ThemeMonster> looks = new java.util.ArrayList<>();
     /** What units move by, each linked by name from the units that use it. */
     private final List<AnimationSet> animationSets = new java.util.ArrayList<>();
 
@@ -339,6 +341,7 @@ public final class DungeonSettings {
                 case Cursor cursor -> cursors.add(cursor);
                 case Skin skin -> skins.add(skin);
                 case Theme theme -> themes.add(theme);
+                case Theme.ThemeMonster look -> looks.add(look);
                 case AnimationSet set -> animationSets.add(set);
                 case HeavyShot shot -> heavyShot = once(shot, once);
                 case Combat block -> combat = once(block, once);
@@ -583,6 +586,9 @@ public final class DungeonSettings {
             for (var themed : theme.monsters()) {
                 requireLinked(themed.animations(), "Theme " + theme.name() + "'s " + themed.name());
             }
+        }
+        for (var look : looks) {
+            requireLinked(look.animations(), "ThemeMonster " + look.name());
         }
         for (var guard : map.descent().bossGuards().entrySet()) {
             require(monster(guard.getKey()) != null,
@@ -934,6 +940,14 @@ public final class DungeonSettings {
             themes.stream().filter(theme -> theme.name().equals(name)).findFirst().ifPresent(named::add);
         }
         return new Biomes(named, map.biomeSize(), map.climatePerDepth());
+    }
+
+    /**
+     * How things look outside any theme, and so in every theme that does not dress them: the keep's key, one look
+     * named once rather than a copy in every biome. See the ThemeMonster in {@code data/props/key.duke}.
+     */
+    public List<Theme.ThemeMonster> looks() {
+        return List.copyOf(looks);
     }
 
     /** The boss's keep, as the map asks for it — see {@link ProceduralMap.Keep}. */
