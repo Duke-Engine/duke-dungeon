@@ -117,18 +117,32 @@ class KeepShapeTest {
         assertNull(Keep.site(cave, rooms, links, List.of(15, 9), 30));
     }
 
-    /** Larger sizes beside one-tunnel-short-of-deepest beat smaller beside the deepest. */
+    /** Larger sizes are tried first beside the deepest chamber. */
     @Test
     void largerSizeFirstBesideTheDeepest() {
-        // Rooms swapped: chamber 0 is deepest, chamber 1 is one tunnel away
+        var rooms = List.of(new Room(3, 10, 9, 9), new Room(20, 10, 9, 9));
+        var links = List.of(new Link(0, 1));
+        var cave = twoRoomCave(1);
+
+        var keep = Keep.site(cave, rooms, links, List.of(11, 9), 30);
+
+        assertNotNull(keep, "an 11-cell keep fits in the same rock");
+        assertEquals(11, keep.size(), "phase 1 returns the larger size");
+        assertEquals(1, keep.chamber(), "an 11 fits beside either chamber; the deepest is tried first");
+    }
+
+    /** A larger keep one tunnel short of the deepest beats a smaller one beside the deepest. */
+    @Test
+    void aLargerKeepOneTunnelShortBeatsASmallerOneBesideTheDeepest() {
+        // With Link(0, 1): chamber 1 is the deepest, chamber 0 is one tunnel short
         var rooms = List.of(new Room(20, 10, 9, 9), new Room(3, 10, 9, 9));
         var links = List.of(new Link(0, 1));
-        var cave = Cave.carve(new DeterministicRng(1), 60, 30, rooms, links, 0, 2, 12, Theme.Terrain.DEFAULTS);
+        var cave = Cave.carve(new DeterministicRng(1), 60, 30, rooms, links, 1, 2, 12, Theme.Terrain.DEFAULTS);
 
         var keep = Keep.site(cave, rooms, links, List.of(11, 9), 12);
 
         assertNotNull(keep, "an 11-cell keep fits in solid rock");
-        assertEquals(11, keep.size(), "the 11 beside one-tunnel-short beats 9 beside the deepest");
+        assertEquals(11, keep.size(), "the 11 beside chamber 0 (one-tunnel-short) beats 9 beside chamber 1 (deepest)");
         assertEquals(0, keep.chamber(), "beside chamber 0, which is one tunnel from the deepest");
     }
 
