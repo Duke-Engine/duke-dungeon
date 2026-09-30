@@ -389,8 +389,9 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Wea
 
     /**
      * Cast the skill on {@code key} at a hero of {@code level}. Returns false and
-     * does nothing if there is no such skill, it is still recharging, or the level
-     * has not unlocked it — an ultimate refuses rather than fires weakly.
+     * does nothing if there is no such skill, it is still recharging, he is
+     * stunned, or the level has not unlocked it — an ultimate refuses rather than
+     * fires weakly.
      */
     public boolean cast(char key, int level) {
         return cast(key, level, null, null);
@@ -412,6 +413,15 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Wea
     public boolean cast(char key, int level, ObjectId at, Coord3D towards) {
         int slot = slotOf(key);
         if (slot < 0 || cooldowns[slot] > 0) {
+            return false;
+        }
+        if (getOwner().hasStatus(ObjectStatus.DISABLED)) {
+            // Stunned -- the engine's DISABLED, which his legs and his weapon
+            // already stand still under. Refused before anything happens, as a
+            // cast he cannot pay for is: no cooldown started, nothing taken. What
+            // he cast before it goes on (a drawn shot still leaves, a whirlwind
+            // still turns), and whatever chooses for him goes on choosing; he
+            // only cannot act.
             return false;
         }
         var skill = skills.get(slot);

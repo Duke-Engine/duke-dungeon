@@ -71,6 +71,9 @@ Hero
     End,
     HeroBrain
     End,
+    ; Timers for the statuses he wears, as the archer's -- a stun, so far.
+    StatusUpdate
+    End,
     ; Q, W, E and R -- Fireball, Frost Nova, Blink and Meteor. Which four is in
     ; the Skill blocks further down, as it is for the other two.
     SkillBook

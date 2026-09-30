@@ -83,6 +83,12 @@ Hero
     ; Walks to whatever he is told to attack — see HeroBrain.
     HeroBrain
     End,
+    ; Timers for the statuses he wears, as every monster carries -- a stun, so
+    ; far: the engine's DISABLED, for as long as whatever stunned him says. His
+    ; legs and his bow stand still under it and his skills refuse (SkillBook.cast);
+    ; this counts it down and takes it off.
+    StatusUpdate
+    End,
     ; Q, W, E and R. Which four they are is not written here: this line says he has
     ; skills, and the Skill blocks at the end of this file say which. A second
     ; hero gets the same line and his own blocks.

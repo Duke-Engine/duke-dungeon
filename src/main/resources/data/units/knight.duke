@@ -78,6 +78,9 @@ Hero
     ; Walks to whatever he is told to attack — see HeroBrain, which both heroes use.
     HeroBrain
     End,
+    ; Timers for the statuses he wears, as the archer's -- a stun, so far.
+    StatusUpdate
+    End,
     ; Q, W, E and R. Which four is in the Skill blocks at the end of this file,
     ; exactly as the archer's are in his: this line only says that he has skills.
     SkillBook
