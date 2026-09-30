@@ -78,7 +78,7 @@ class GateTest {
     private static ItemErrand.Rules rules(Dungeon.Arena arena, float reach) {
         var drops = SETTINGS.lootDrops();
         return new ItemErrand.Rules(reach, 100_000, drops.template(), arena.dungeon().getIndex(), drops.fullWord(),
-                drops.noUseWord());
+                drops.noUseWord(), drops.noWayWord(), drops.stuckFrames());
     }
 
     private static Loot key() {

@@ -520,7 +520,8 @@ public final class Dungeon {
     private static uz.dukeengine.dungeon.loot.ItemErrand.Rules errandRules(DungeonSettings settings, Arena arena) {
         var drops = settings.lootDrops();
         return new uz.dukeengine.dungeon.loot.ItemErrand.Rules(drops.pickupRange(), drops.noteFrames(),
-                drops.template(), arena.dungeon().getIndex(), drops.fullWord(), drops.noUseWord());
+                drops.template(), arena.dungeon().getIndex(), drops.fullWord(), drops.noUseWord(), drops.noWayWord(),
+                drops.stuckFrames());
     }
 
     /** Whatever errand that player's hero is on, called off: he has been told something else. */

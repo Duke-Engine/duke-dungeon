@@ -27,6 +27,21 @@ class ItemErrandTest {
     private static final Loot BLADE = new Loot("Blade", "Blade", "", LootKind.ATTACK, 8, 10, 1);
     private static final Loot SHIELD = new Loot("Shield", "Shield", "", LootKind.ARMOUR, 4, 10, 1);
 
+    /** How long he stands getting nowhere before he gives an errand up, here: four seconds, so a test need not wait. */
+    private static final int STUCK = 120;
+
+    /** One cell of floor between two walls, thirty cells long. */
+    private static String corridor() {
+        var text = new StringBuilder();
+        for (int y = 0; y < 3; y++) {
+            for (int x = 0; x < 30; x++) {
+                text.append(y == 1 && x > 0 && x < 29 ? '.' : '#');
+            }
+            text.append('\n');
+        }
+        return text.toString();
+    }
+
     private static String room() {
         var text = new StringBuilder();
         for (int y = 0; y < 30; y++) {
@@ -42,7 +57,7 @@ class ItemErrandTest {
 
         ItemErrand.Rules rules() {
             return new ItemErrand.Rules(SETTINGS.lootDrops().pickupRange(), 100_000, "Chest", floorOwner, "Full",
-                    "No use");
+                    "No use", "No way", STUCK);
         }
 
         /** A chest holding {@code item} at {@code x}, as a monster would have left it. */
@@ -195,6 +210,35 @@ class ItemErrandTest {
         assertEquals(1, room.chests().size());
         assertTrue(room.chests().getFirst().getPosition().x() < 230f, "on his side of the wall: "
                 + room.chests().getFirst().getPosition());
+    }
+
+    /**
+     * A body in his way that never goes does not keep him on the errand for ever. His friend stands in a corridor one
+     * cell wide with the thing past him: his brain stands him behind the friend until the way opens, and nothing asks
+     * a friend aside. Once he has stood getting nowhere for as long as the rules say, he gives it up and says why, and
+     * the thing stays where it lies.
+     */
+    @Test
+    void aBodyThatNeverGoesHasHimGiveItUpAndSayWhy() {
+        var arena = Dungeon.world(corridor(), null, SETTINGS, uz.dukeengine.dungeon.content.Content.units(),
+                List.of(new LootBag(), new LootBag()));
+        var game = arena.game();
+        game.spawn("Rogue", arena.heroes().get(0), 25f, 15f);
+        game.spawn("Knight", arena.heroes().get(1), 70f, 15f); // his friend, standing in the way
+        game.runHeadless(1);
+        var hero = game.getLogic().getObjects().stream()
+                .filter(object -> object.getTemplate().name().equals("Rogue")).findFirst().orElseThrow();
+        var room = new Room(game, hero, arena.dungeon().getIndex());
+        var chest = GroundItem.lay(game.getLogic(), "Chest", BLADE, new Coord3D(250f, 15f, 0f), room.floorOwner());
+        var bag = new LootBag();
+
+        assertTrue(ItemErrand.pickUp(hero, chest, bag, room.rules()));
+        game.runHeadless(STUCK + 90);
+
+        assertEquals("No way", bag.noteAt(game.getLogic().getFrame()), "he is still waiting behind his friend");
+        assertTrue(hero.findModule(ItemErrand.class).isOver(), "with the errand open");
+        assertEquals(BLADE, chest.findModule(GroundItem.class).getHolding(), "and the thing stays where it lies");
+        assertTrue(hero.getPosition().x() < 70f, "he got past his friend after all: " + hero.getPosition());
     }
 
     @Test

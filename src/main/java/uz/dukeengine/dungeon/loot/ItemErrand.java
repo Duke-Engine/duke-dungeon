@@ -6,6 +6,7 @@ import uz.dukeengine.core.module.MoveUpdate;
 import uz.dukeengine.core.module.UpdateModule;
 import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.core.thing.ObjectId;
+import uz.dukeengine.core.thing.World;
 import uz.dukeengine.dungeon.run.GateUpdate;
 import uz.dukeengine.rts.module.Errand;
 import uz.dukeengine.rts.module.RtsModuleGroups;
@@ -19,12 +20,14 @@ import uz.dukeengine.rts.module.WeaponUpdate;
  * <p>An errand in the engine's sense — a module on him while it lasts — so any order the player gives him after it,
  * a walk, an attack, a stop, gives it up as it gives up every errand. A walk somewhere else it notices for itself,
  * since a skill that moves him does not go through the engine's door: his legs going anywhere but here is the
- * errand over. Legs that got as near as they could without getting here leave a thing he was sent for lying, and
- * put a thing he was sending down where they stopped. A thing with a shape — the gate — is walked up to rather than
- * onto: as near as he can get to it, its edge is there.
+ * errand over. Legs that got as near as they could without getting here leave a thing he was sent for lying, and he
+ * says so, and put a thing he was sending down where they stopped. A thing with a shape — the gate — is walked up to
+ * rather than onto: as near as he can get to it, its edge is there. And he is never on it for ever: stood getting
+ * nowhere for as long as the rules say, he gives it up the same way.
  *
  * <p>Deterministic: sent by an order, on every machine on the same frame; checked on a frame boundary; near enough
- * is a sum of squares, and how far a shape reaches is the engine's own figure, the same on every machine.
+ * is a sum of squares, how far a shape reaches is the engine's own figure, and how long he has stood is counted in
+ * frames — the same on every machine.
  */
 @ModuleGroup(RtsModuleGroups.ECONOMY)
 public final class ItemErrand extends UpdateModule implements Errand {
@@ -32,15 +35,17 @@ public final class ItemErrand extends UpdateModule implements Errand {
     /**
      * What every errand of a game shares.
      *
-     * @param reach      how near he has to be for a thing to change hands
-     * @param noteFrames how long what he says is said, in logic frames
-     * @param template   what a thing he puts down lies in, when it names nothing of its own
-     * @param floorOwner whose a thing on the floor is: the dungeon's, so it is nobody's hero to select
-     * @param fullWord   what he says when his bag has no room for what he was sent for
-     * @param noUseWord  what he says when he was sent to use a thing on something it does nothing to
+     * @param reach       how near he has to be for a thing to change hands
+     * @param noteFrames  how long what he says is said, in logic frames
+     * @param template    what a thing he puts down lies in, when it names nothing of its own
+     * @param floorOwner  whose a thing on the floor is: the dungeon's, so it is nobody's hero to select
+     * @param fullWord    what he says when his bag has no room for what he was sent for
+     * @param noUseWord   what he says when he was sent to use a thing on something it does nothing to
+     * @param noWayWord   what he says when he gives up on getting to a thing
+     * @param stuckFrames how long he stands getting nowhere before he gives it up, in logic frames
      */
     public record Rules(float reach, int noteFrames, String template, int floorOwner, String fullWord,
-            String noUseWord) {
+            String noUseWord, String noWayWord, int stuckFrames) {
     }
 
     /** What he was sent to do when he gets there. */
@@ -68,6 +73,9 @@ public final class ItemErrand extends UpdateModule implements Errand {
     private final int slot;
     /** Done or given up: nothing more to do until the next order takes it off him. */
     private boolean over;
+    /** The spot he has stood within a cell of, and the frame he first stood there: see {@link #gettingNowhere}. */
+    private Coord3D stoodAt;
+    private int stoodSince;
 
     private ItemErrand(GameObject hero, LootBag bag, Rules rules, Act act, Coord3D goal, ObjectId thing, int slot) {
         super(hero);
@@ -164,7 +172,7 @@ public final class ItemErrand extends UpdateModule implements Errand {
         }
         if (!near(hero, rules.reach())) {
             boolean stopped = legs != null && !legs.isMoving();
-            boolean asNearAsHeCan = stopped && legs.stoppedShort();
+            boolean asNearAsHeCan = gettingNowhere(hero, world) || stopped && legs.stoppedShort();
             // A walk his brain took up again (HeroBrain.mindTheWayOnHisErrand) is to the place, and ends on the block
             // beside a thing with a shape: not short of anything, and at its edge. Still a walk with a goal -- one his
             // brain stopped for a body in the way has none, and he is not there until it takes him on.
@@ -174,10 +182,11 @@ public final class ItemErrand extends UpdateModule implements Errand {
                 return;
             }
             // As near as he could get. A place he could not reach is where he got to, and a thing lying there that
-            // he could not reach stays where it is -- but a thing with a shape is walked up to rather than onto, and
-            // its edge is there.
+            // he could not reach stays where it is, and he says so -- but a thing with a shape is walked up to rather
+            // than onto, and its edge is there.
             if (there != null && !atItsEdge) {
                 over = true;
+                bag.say(rules.noWayWord(), world.getFrame(), rules.noteFrames());
                 return;
             }
         }
@@ -224,10 +233,33 @@ public final class ItemErrand extends UpdateModule implements Errand {
         }
     }
 
+    /**
+     * Whether he has stood getting nowhere for as long as the rules say: within a cell of one spot, short of it.
+     *
+     * <p>However that came about, it is not going to end by itself: his brain standing him behind a body that neither
+     * goes nor falls -- a friend in a corridor, a thing that mends faster than he hurts it -- or his legs planning
+     * round two bodies that hold him between them, one and then the other, for as long as anyone lets them. Asked
+     * every frame he is short of it, so a step of a cell anywhere starts the count again: a long way round is not
+     * getting nowhere, and a fight he stands in is -- once it has lasted that long.
+     */
+    private boolean gettingNowhere(GameObject hero, World world) {
+        var at = hero.getPosition();
+        if (stoodAt == null || !within(at, stoodAt, world.cellSize())) {
+            stoodAt = at;
+            stoodSince = world.getFrame();
+            return false;
+        }
+        return world.getFrame() - stoodSince >= rules.stuckFrames();
+    }
+
     /** Whether he stands within {@code reach} of it, across the floor: how high either is does not come into it. */
     private boolean near(GameObject hero, float reach) {
-        float dx = hero.getPosition().x() - goal.x();
-        float dy = hero.getPosition().y() - goal.y();
+        return within(hero.getPosition(), goal, reach);
+    }
+
+    private static boolean within(Coord3D a, Coord3D b, float reach) {
+        float dx = a.x() - b.x();
+        float dy = a.y() - b.y();
         return dx * dx + dy * dy <= reach * reach;
     }
 

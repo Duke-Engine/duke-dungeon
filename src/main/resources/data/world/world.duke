@@ -431,6 +431,13 @@ LootDrops
   ; What he says when he is sent to use a thing on something it does nothing
   ; to: the key on anything but the keep's gate. He keeps it.
   NoUseWord = Bu kalit faqat boss darvozasini ochadi
+  ; How long he stands getting nowhere on an errand -- within a cell of one
+  ; spot, short of where he was sent: a body in his way that neither goes nor
+  ; falls, a way that stays shut -- before he gives it up, in logic frames
+  ; (30 = one second). Long enough for the fight in front of him to be over.
+  StuckFrames = 900
+  ; What he says when he gives up an errand to a thing he cannot get to.
+  NoWayWord = U yerga yetib bora olmadim
 End
 
 ; Icon is the picture his bag draws it with, a path from the resource root.

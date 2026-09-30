@@ -554,4 +554,18 @@ class LootTest {
             assertTrue(refused.getMessage().contains("NoUseWord"), refused.getMessage());
         }
     }
+
+    /** And what he says when he gives up on getting to a thing goes down the same line. */
+    @Test
+    void aNoWayWordTheStatusLineCouldNotCarryIsRefused() {
+        var shipped = "  NoWayWord = U yerga yetib bora olmadim\n";
+        var data = uz.dukeengine.dungeon.content.Content.data();
+        assertTrue(data.contains(shipped), "the shipped word is no longer written this way");
+
+        for (var word : new String[] {"U yerga, yetib bora olmadim", "U yerga | yetib bora olmadim"}) {
+            var refused = assertThrows(IllegalArgumentException.class,
+                    () -> DungeonSettings.parse(data.replace(shipped, "  NoWayWord = " + word + "\n")));
+            assertTrue(refused.getMessage().contains("NoWayWord"), refused.getMessage());
+        }
+    }
 }

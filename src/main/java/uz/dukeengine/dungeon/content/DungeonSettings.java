@@ -734,6 +734,8 @@ public final class DungeonSettings {
         require(lootDrops.topLevel() >= 1 && lootDrops.topLevel() <= 3, "TopLevel is 1 to 3");
         require(sayable(lootDrops.fullWord()), "FullWord may not contain ',' or '|'");
         require(sayable(lootDrops.noUseWord()), "NoUseWord may not contain ',' or '|'");
+        require(sayable(lootDrops.noWayWord()), "NoWayWord may not contain ',' or '|'");
+        require(lootDrops.stuckFrames() > 0, "StuckFrames: a hero who gives up before he has stood still never goes");
         for (var item : loot) {
             require(sayable(item.name()),
                     "an item's DisplayName may not contain ',' or '|': " + item.id());
