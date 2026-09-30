@@ -1278,10 +1278,14 @@ class GateTest {
                 .findFirst().orElse(null);
     }
 
-    /** The hall with the gate in its doorway, turned along the wall — which runs down the map's y. */
+    /**
+     * The hall with the gate in its doorway, turned along the wall — which runs down the map's y. A frame first:
+     * before the world starts, a spawn is only booked for its first frame.
+     */
     private static Dungeon.Arena withAGate() {
         var arena = Dungeon.world(hall(), SETTINGS);
         arena.game().spawn("Gate", arena.dungeon(), DOORWAY.x(), DOORWAY.y());
+        arena.game().runHeadless(1);
         find(arena.game(), "Gate").setOrientation((float) (StrictMath.PI / 2));
         return arena;
     }
