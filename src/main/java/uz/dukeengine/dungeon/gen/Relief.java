@@ -62,6 +62,13 @@ final class Relief {
         smooth(steps, columns, rows);
         smooth(steps, columns, rows);
         limit(steps, columns, rows, floor.slope());
+        var keep = cave.keep();
+        if (keep != null) {
+            // Built level: set down at the lowest ground within two cells of it, and the ground round it eased down
+            // to meet it by the same slope. Nothing near it is lower, so it is never lowered again.
+            flatten(steps, columns, rows, keep.walls());
+            limit(steps, columns, rows, floor.slope());
+        }
         int lowest = java.util.Arrays.stream(steps).min().orElse(0);
         for (int i = 0; i < steps.length; i++) {
             steps[i] -= lowest;
@@ -186,5 +193,27 @@ final class Relief {
             return true;
         }
         return false;
+    }
+
+    /**
+     * Every corner of {@code square} and of the ring of cells round it — the keep, and its stair — set to the lowest
+     * corner within two cells of that ring.
+     */
+    private static void flatten(int[] steps, int columns, int rows, Room square) {
+        int left = square.x() - 1;
+        int top = square.y() - 1;
+        int right = square.x() + square.w() + 1;
+        int bottom = square.y() + square.h() + 1;
+        int lowest = Integer.MAX_VALUE;
+        for (int y = Math.max(0, top - 2); y <= Math.min(rows - 1, bottom + 2); y++) {
+            for (int x = Math.max(0, left - 2); x <= Math.min(columns - 1, right + 2); x++) {
+                lowest = Math.min(lowest, steps[y * columns + x]);
+            }
+        }
+        for (int y = top; y <= bottom; y++) {
+            for (int x = left; x <= right; x++) {
+                steps[y * columns + x] = lowest;
+            }
+        }
     }
 }

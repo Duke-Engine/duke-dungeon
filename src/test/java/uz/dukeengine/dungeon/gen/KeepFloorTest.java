@@ -159,6 +159,30 @@ class KeepFloorTest {
         assertEquals(floor(7L).keep(), floor(7L).keep());
     }
 
+    /** Its square and the ring round it — its stair among them — at one height, and no cliff anywhere. */
+    @Test
+    void itStandsLevelAndNoGroundRoundItIsACliff() {
+        for (long seed = 0; seed < SEEDS; seed++) {
+            var floor = floor(seed);
+            var relief = floor.relief();
+            if (relief == null) {
+                continue;
+            }
+            var walls = floor.keep().walls();
+            int level = relief.at(walls.x() - 1, walls.y() - 1);
+            for (int y = walls.y() - 1; y <= walls.y() + walls.h() + 1; y++) {
+                for (int x = walls.x() - 1; x <= walls.x() + walls.w() + 1; x++) {
+                    assertEquals(level, relief.at(x, y), "seed " + seed + ": its ground at corner " + x + "," + y);
+                }
+            }
+            for (int y = 0; y < relief.rows() - 1; y++) {
+                for (int x = 0; x < relief.columns() - 1; x++) {
+                    assertFalse(relief.isCliff(x, y), "seed " + seed + " has a cliff at " + x + "," + y);
+                }
+            }
+        }
+    }
+
     /** Every cell the way in walks to by the engine's step rule, with the doorway shut or not. */
     private static boolean[][] reached(GeneratedDungeon floor, boolean shut) {
         var grid = MapLoader.fromText(floor.asciiMap());
