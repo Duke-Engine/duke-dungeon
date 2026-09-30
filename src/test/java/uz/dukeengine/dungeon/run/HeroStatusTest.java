@@ -475,8 +475,8 @@ class HeroStatusTest {
      *
      * <p>{@code depth=} is already there and is {@code III / IV} — finished words
      * for the corner of the panel, which is the rule for everything the client
-     * draws as lettering. The medallion over a monster needs it as a figure it can
-     * count with, since a monster's level IS the depth it is fought at.
+     * draws as lettering. The medallion over a creature holding no level of its
+     * own needs it as a figure it can count with.
      */
     @Test
     void theFloorIsSentAsAFigureAsWellAsAsWords() {

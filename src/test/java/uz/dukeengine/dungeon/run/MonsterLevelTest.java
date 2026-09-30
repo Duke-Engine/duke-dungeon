@@ -2,11 +2,13 @@ package uz.dukeengine.dungeon.run;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import uz.dukeengine.core.data.DataException;
 import uz.dukeengine.core.math.Coord3D;
@@ -458,6 +460,53 @@ class MonsterLevelTest {
 
             var refused = assertThrows(DataException.class, () -> DungeonSettings.parse(data));
             assertTrue(refused.getMessage().contains(gone), refused.getMessage());
+        }
+    }
+
+    // ---- on the bar ----
+
+    /** The words a creature holds that begin as the bar's level word does. */
+    private static List<String> levelWords(GameObject creature) {
+        return creature.getConditions().stream()
+                .filter(word -> word.startsWith(SETTINGS.unitBar().levelWord())).toList();
+    }
+
+    /** Every monster placed on a floor, and its boss, carries exactly one level word: its own. */
+    @Test
+    void everyPlacedMonsterWearsItsOwnLevel() {
+        var session = Dungeon.newSession(11L);
+        session.game().runHeadless(1);
+
+        int worn = 0;
+        for (var object : session.game().getLogic().getObjects()) {
+            if (SETTINGS.monster(object.getTemplate().name()) != null) {
+                worn++;
+                assertEquals(List.of(SETTINGS.unitBar().levelWord() + LevelBonus.levelOf(object)), levelWords(object),
+                        object.getTemplate().name());
+            }
+        }
+        assertTrue(worn > 1, "the premise: the floor holds its monsters and its boss");
+    }
+
+    /** And whatever rises from a rift wears its caller's. */
+    @Test
+    void whatRisesWearsItsCallersLevel() {
+        var arena = Dungeon.world(room(), SETTINGS);
+        var game = arena.game();
+        game.spawn(SUMMONER, arena.dungeon(), 200f, 150f);
+        game.runHeadless(1);
+        var summoner = creature(game, SUMMONER);
+        Spawner.scale(summoner, 8, SETTINGS);
+
+        assertTrue(summoner.findModule(SkillBook.class).cast('Q', 1, null, new Coord3D(150f, 150f, 0f)),
+                "the premise: it opened its rifts");
+        game.runHeadless(30);
+
+        var risen = game.getLogic().getObjects().stream()
+                .filter(object -> object.findModule(Summoned.class) != null).toList();
+        assertFalse(risen.isEmpty(), "the premise: something rose");
+        for (var one : risen) {
+            assertEquals(List.of(SETTINGS.unitBar().levelWord() + 8), levelWords(one), one.getTemplate().name());
         }
     }
 }

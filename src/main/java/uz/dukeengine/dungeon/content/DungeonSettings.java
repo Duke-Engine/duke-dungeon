@@ -619,6 +619,8 @@ public final class DungeonSettings {
         require(descent.healthPercentPerLevel() >= 0 && descent.damagePercentPerLevel() >= 0
                         && descent.experiencePercentPerLevel() >= 0,
                 "a level cannot take a monster's health, its blow or its worth away");
+        // A creature's words cross to the client joined by ',', inside a line split on '|'.
+        require(sayable(unitBar.levelWord()), "the UnitBar's LevelWord may not contain ',' or '|'");
         require(map.generation().corridorWidth() >= 1, "a corridor narrower than one cell is a wall");
         require(map.generation().maxRoomSpacing() > map.generation().maxRoomSize(), "rooms could never reach one another");
         require(map.propsPerRoom().min() >= 0, "a room cannot hold fewer than no things");

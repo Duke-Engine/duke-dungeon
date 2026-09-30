@@ -325,8 +325,9 @@ public final class Spawner {
 
     /**
      * Make one creature its level -- a monster placed on the floor, its boss, or whatever rises from a rift: its
-     * health grown, a {@link LevelBonus} saying the level and what it gives, and its worth set. The one step for all
-     * of them, so a creature that rises is made exactly as one placed there would be.
+     * health grown, a {@link LevelBonus} saying the level and what it gives, its worth set, and the word its bar reads
+     * the level from ({@code level:8}; the {@code UnitBar}'s {@code LevelWord}). The one step for all of them, so a
+     * creature that rises is made exactly as one placed there would be.
      *
      * <p>Each multiplier is computed from the level in one step rather than
      * compounded level by level, so a level is the same however it was reached.
@@ -337,6 +338,9 @@ public final class Spawner {
             body.growMaxHealth(body.getMaxHealth() * (health - 1f));
         }
         monster.addModule(new LevelBonus(monster, level, settings.damageAtLevel(level), health));
+        if (!settings.unitBar().levelWord().isBlank()) {
+            monster.setCondition(settings.unitBar().levelWord() + level);
+        }
         float experience = settings.experienceAtLevel(level);
         // What killing it is worth is fixed by its template, and the template is
         // the same at every level — so the module is swapped for one that says a

@@ -161,6 +161,16 @@ class DungeonUnitBarTest {
         }
     }
 
+    /**
+     * A monster's medallion shows its own level: the file names the word it is held in -- {@code level:8} -- and the
+     * look the client is handed reads it. The hero keeps his own, and a creature holding none shows the depth.
+     */
+    @Test
+    void theMedallionReadsACreaturesOwnLevel() {
+        assertEquals("level:", SETTINGS.unitBar().levelWord());
+        assertEquals(SETTINGS.unitBar().levelWord(), look().levelWord());
+    }
+
     /** The file says enough for the client to draw anything at all. */
     @Test
     void theFileSaysEnoughToDrawWith() {

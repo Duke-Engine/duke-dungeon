@@ -213,10 +213,11 @@ final class HeroStatus {
      * four facts is really per creature:
      *
      * <ul>
-     * <li>the level is the DEPTH — one number for the whole floor. A monster is
-     *     scaled by it (see {@code Spawner.scale}) and a stage's difficulty is
-     *     defined as it (see {@code Stage}), so it is not a stand-in for a level,
-     *     it <em>is</em> the level
+     * <li>a monster's level is its own, and rides the creature rather than this
+     *     line: a word on it, {@code level:8}, set where it is placed (see
+     *     {@code Spawner.scale}) and carried with its other words. What is sent
+     *     here is the DEPTH, one number for the whole floor, which the medallion
+     *     shows on a creature holding no level of its own
      * <li>the boss is one id
      * <li>the name belongs to the TEMPLATE, so it is a dictionary of about a
      *     dozen rather than one entry a creature
