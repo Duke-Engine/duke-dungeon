@@ -112,6 +112,11 @@ final class Cave {
         return x >= 0 && y >= 0 && x < width && y < height && cells[y][x] == FLOOR;
     }
 
+    /** Whether a cell is rock: not floor, and not a grove's ground either. */
+    boolean isStone(int x, int y) {
+        return x >= 0 && y >= 0 && x < width && y < height && cells[y][x] == STONE;
+    }
+
     /** The map as {@code MapLoader} reads it: {@code #} is rock, {@code .} is floor — a grove's ground among it. */
     String walls() {
         var text = new StringBuilder(height * (width + 1));
