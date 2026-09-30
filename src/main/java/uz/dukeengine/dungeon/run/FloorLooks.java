@@ -6,6 +6,7 @@ import uz.dukeengine.core.map.Looked;
 import uz.dukeengine.core.map.Subdivided;
 import uz.dukeengine.dungeon.gen.BiomeMap;
 import uz.dukeengine.dungeon.gen.GeneratedDungeon;
+import uz.dukeengine.dungeon.gen.Keep;
 
 /**
  * What a floor that mixes biomes is, beyond its grid: every cell in its biome's look — the tone this floor draws for
@@ -19,12 +20,17 @@ import uz.dukeengine.dungeon.gen.GeneratedDungeon;
  * @param looks one per biome, in {@link BiomeMap#biomes()}'s order; null for a biome that has no tone to wear,
  *     which the client draws in the floor's own look
  * @param navigationCellsPerCell how many cells a side the floor is walked at for each one it is drawn at
+ * @param keep     the boss's keep, drawn in {@code keepLook} whatever biome it stands in; null for none
+ * @param keepLook the look the keep is drawn in, by the name the client registered it under; null for the biome's
  */
 record FloorLooks(String name, BiomeMap biomes, List<String> looks, List<GeneratedDungeon.Piece> scenery,
-        int navigationCellsPerCell) implements Looked, Dressed, Subdivided {
+        int navigationCellsPerCell, Keep keep, String keepLook) implements Looked, Dressed, Subdivided {
 
     @Override
     public String lookAt(int cx, int cy) {
+        if (keep != null && keepLook != null && keep.holds(cx, cy)) {
+            return keepLook;
+        }
         return looks.get(biomes.indexAt(cx, cy));
     }
 }

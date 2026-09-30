@@ -196,10 +196,12 @@ class DungeonThemeTest {
         var record = session.game().getMapRecord();
         assertTrue(record instanceof uz.dukeengine.core.map.Looked, "the client was told nothing per cell: " + record);
         var looked = (uz.dukeengine.core.map.Looked) record;
+        var stone = SHIPPED.themes().dressedAs(SHIPPED.themes().themeNamed(SHIPPED.keep().look()), 11L, 1).asStatus();
         for (int i = 0; i < floor.rooms().size(); i++) {
             var middle = floor.rooms().get(i);
-            assertEquals(SHIPPED.themes().dressedAs(floor.biomes().ofRoom(i), 11L, 1).asStatus(),
-                    looked.lookAt(middle.centerCellX(), middle.centerCellY()), "chamber " + i);
+            var wears = floor.keep() != null && i == floor.bossRoom() ? stone
+                    : SHIPPED.themes().dressedAs(floor.biomes().ofRoom(i), 11L, 1).asStatus();
+            assertEquals(wears, looked.lookAt(middle.centerCellX(), middle.centerCellY()), "chamber " + i);
         }
         var status = session.game().getSnapshot().status();
         assertTrue(status.contains("|look=" + looked.lookAt(floor.rooms().get(0).centerCellX(),
@@ -208,6 +210,32 @@ class DungeonThemeTest {
         assertEquals(floor.scenery(), ((uz.dukeengine.core.map.Dressed) record).scenery());
         // And how finely it is walked: the world's two, so a grove's trunks leave a body room between them.
         assertEquals(2, ((uz.dukeengine.core.map.Subdivided) record).navigationCellsPerCell());
+    }
+
+    /** The keep is worked stone whatever biome it stands in — its wall, its court, its stair — and the road is not. */
+    @Test
+    void theKeepIsDrawnInStoneWhateverBiomeItStandsIn() {
+        var session = Dungeon.newSession(11L);
+        session.game().runHeadless(2);
+        var floor = DungeonGenerator.generate(11L, SHIPPED, 1);
+        var looked = (uz.dukeengine.core.map.Looked) session.game().getMapRecord();
+        var keep = floor.keep();
+        var stone = SHIPPED.themes().dressedAs(SHIPPED.themes().themeNamed(SHIPPED.keep().look()), 11L, 1).asStatus();
+
+        var gate = keep.gate();
+        assertEquals(stone, looked.lookAt(gate[0], gate[1]), "the wall its gate is in");
+        assertEquals(stone, looked.lookAt(keep.walls().centerCellX(), keep.walls().centerCellY()), "its court");
+        for (var step : new int[][] {{1, 0}, {-1, 0}, {0, 1}, {0, -1}}) {
+            int x = gate[0] + step[0];
+            int y = gate[1] + step[1];
+            if (keep.isStair(x, y)) {
+                assertEquals(stone, looked.lookAt(x, y), "its stair");
+                int roadX = x + step[0];
+                int roadY = y + step[1];
+                assertEquals(SHIPPED.themes().dressedAs(floor.biomes().at(roadX, roadY), 11L, 1).asStatus(),
+                        looked.lookAt(roadX, roadY), "the road below the stair is the ground's");
+            }
+        }
     }
 
     /**

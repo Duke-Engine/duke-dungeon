@@ -323,8 +323,9 @@ public final class DungeonRun {
             var chosen = themes.dressedAs(biome, floors.seed(), depth);
             looks.add(chosen == null ? null : chosen.asStatus());
         }
+        var stone = themes.dressedAs(themes.themeNamed(settings.keep().look()), floors.seed(), depth);
         return new FloorLooks("descent", floor.biomes(), looks, floor.scenery(),
-                settings.world().navigationCellsPerCell());
+                settings.world().navigationCellsPerCell(), floor.keep(), stone == null ? null : stone.asStatus());
     }
 
     /**

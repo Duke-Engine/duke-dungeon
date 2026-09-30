@@ -603,6 +603,8 @@ public final class DungeonSettings {
         }
         require(map.keep().sizes().isEmpty() || !map.keep().gate().isBlank(),
                 "a Keep needs a Gate: something has to stand in its doorway");
+        require(map.keep().look().isBlank() || themes.stream().anyMatch(theme -> theme.name().equals(map.keep().look())),
+                "the Keep's Look names no theme: " + map.keep().look());
         require(world.levelHeight() >= 0f, "LevelHeight cannot be negative");
         require(world.navigationCellsPerCell() >= 1 && world.navigationCellsPerCell() <= 4,
                 "NavigationCellsPerCell is 1 to 4: finer than a quarter of a cell costs sixteen times the walking");

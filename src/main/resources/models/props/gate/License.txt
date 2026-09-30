@@ -1,0 +1,9 @@
+Old Driveway Gate: two old pillars, two gate lights and an iron gate.
+
+By animatedheaven -- https://www.cgtrader.com/designers/animatedheaven
+Licence: may be used commercially, with credit.
+
+Supplied by the owner as gate.glb: converted from the author's OBJ with its
+textures (2048 x 2048, diffuse and normal) packed inside, and the two leaves
+animated opening in Blender, a clip each. The game's copy has the two clips
+joined into one, "open", by art/models/join_clips.pl.

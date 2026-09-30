@@ -39,6 +39,7 @@ Game
     data/world/themes/autumn.duke,
     data/world/themes/deadland.duke,
     data/world/themes/mine.duke,
+    data/world/themes/keep.duke,
 
     ; How a floor is drawn when nobody drew it: the endless descent's own recipe.
     ; The maps drawn once are NOT listed here — each is a folder of its own under

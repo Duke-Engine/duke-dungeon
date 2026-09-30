@@ -390,6 +390,10 @@ public final class Main {
                     .effect(art.effect())
                     .die(art.death());
             carry(unit, art.held());
+            if (themed.playOnce() != null) {
+                // Once, from its first frame, and held on its last: a gate swinging open as it appears.
+                unit.clip(java.util.Set.of(), themed.playOnce(), Visuals.ClipMode.ONCE, Visuals.ClipStart.FIRST, null);
+            }
             // Borrowed only when the file says so. A themed creature usually comes
             // with a model of its own, and a model of its own carries its own
             // clips -- copying them onto it from a second copy of the same file

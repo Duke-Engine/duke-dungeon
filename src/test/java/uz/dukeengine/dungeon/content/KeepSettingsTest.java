@@ -43,4 +43,13 @@ class KeepSettingsTest {
 
         assertThrows(IllegalArgumentException.class, () -> DungeonSettings.parse(data));
     }
+
+    /** Drawn in the Keep theme, and a Look naming no theme is refused — by the link or by the check, either way. */
+    @Test
+    void itIsDrawnInATheme() {
+        assertEquals("Keep", DungeonSettings.load().keep().look());
+        var data = Content.data().replace("    Look = Keep\n", "    Look = Castle\n");
+
+        assertThrows(RuntimeException.class, () -> DungeonSettings.parse(data));
+    }
 }

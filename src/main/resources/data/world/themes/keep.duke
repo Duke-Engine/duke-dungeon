@@ -1,0 +1,80 @@
+; The boss's keep: worked stone, whatever biome it was built in. Not a biome and
+; no depth's theme -- neither Biomes nor Themes lists it -- only what the keep's
+; own cells are drawn as, as generation.duke's Keep block says.
+;
+; A masonry kit: the dungeon's own pieces as the dungeon was built before its
+; caverns were bounded by rock. The wall is a surface, one course a storey, so
+; the ring round the court is a wall from both sides and the stair climbs to a
+; doorway in it. The numbers are that kit's, measured once and held by
+; DungeonTilesTest.
+Theme
+  Name = Keep
+  TileSize = 4
+  WallHeight = 4
+  ; The slab is a unit thick and centred on its own origin: pushed back half a
+  ; unit, its face lands on the boundary.
+  WallShift = -0.5
+  Stairs = models/tiles/dungeon/stairs.gltf
+  ; The top of the wall is a floor tile: cooler and darker, stone in shade.
+  CapTint = 0xA8A8B4
+  StoreyShadePercent = 108
+  FogTint = 0x07060A
+  Tones = [
+    Tone
+      Name = Stone
+      Floor = models/tiles/dungeon/floor.gltf
+      Wall = models/tiles/dungeon/wall.gltf
+    End
+  ]
+  Monsters = [
+    ; What stands in the court is the caverns' stone.
+    ThemeMonster
+      Name = Pillar
+      Model = models/props/dungeon/pillar.gltf
+      ModelScale = 2.5
+    End,
+    ThemeMonster
+      Name = Statue
+      Model = models/props/dungeon/pillar_decorated.gltf
+      ModelScale = 2.5
+    End,
+    ThemeMonster
+      Name = Barrel
+      Model = models/props/dungeon/barrel.gltf
+      ModelScale = 3.0
+    End,
+    ; What the boss leaves behind lies in its court.
+    ThemeMonster
+      Name = Chest
+      Model = models/props/dungeon/chest.gltf
+      ModelScale = 5.0
+    End,
+    ThemeMonster
+      Name = Fountain
+      Model = models/props/fountain/fountain.glb
+      ModelScale = 7.5
+      Effect = FountainWater
+    End,
+    ; animatedheaven's Old Driveway Gate: two pillars with the iron between
+    ; them, 106 across and 70 tall as modelled. At 0.37 the iron fills the
+    ; doorway's 30 and the pillars stand in the wall either side of it. Its
+    ; width runs along the model's own x, which is the way the gate faces --
+    ; along its wall -- so it needs no turn of its own. Shut, it plays nothing
+    ; and stands as the model rests: closed.
+    ThemeMonster
+      Name = Gate
+      Model = models/props/gate/gate.glb
+      ModelScale = 0.37
+      Facing = 0
+    End,
+    ; And open: the same gate, its two leaves swinging open as it appears --
+    ; the owner's clip, played once and held on its last frame.
+    ThemeMonster
+      Name = OpenGate
+      Model = models/props/gate/gate.glb
+      ModelScale = 0.37
+      Facing = 0
+      PlayOnce = open
+    End
+  ]
+End

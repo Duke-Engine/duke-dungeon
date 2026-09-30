@@ -444,7 +444,7 @@ class DungeonTilesTest {
                 assertNotNull(model, art.look().model() + " is named but not shipped");
                 var clips = clipsOf(model);
                 for (var wanted : new String[] {art.look().idle(), art.look().walk(),
-                    art.look().attack(), art.death()}) {
+                    art.look().attack(), art.death(), art.playOnce()}) {
                     if (wanted == null) {
                         continue;
                     }

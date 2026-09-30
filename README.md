@@ -263,6 +263,27 @@ chuqurlik bo'yicha bitta temada bo'ladi. Stage'lar (`newMap`) doim bitta temada
 kesiladi — stage fayli biom xaritasini saqlamaydi. `MapPicture` har mintaqani
 biom rangiga bo'yaydi.
 
+### Boss qal'asi
+
+Har qavat oxirida boss **qal'ada** turadi (`gen/Keep`): toshning ichiga
+qurilgan kvadrat hovli, bir qavat baland (`levelMap` da `1`), atrofi devor —
+qaysi biomda bo'lmasin, tosh plitadan (`data/world/themes/keep.duke`).
+Darvoza yaqinlashish tomonidagi devorning o'rtasida (3 katak), oldida zina
+(`/`), zinadan kameragacha to'g'ri yo'l. Qal'a eng chuqur kamera yonidagi
+butunlay tosh joyga quriladi, shuning uchun hech qanday yo'lni kesmaydi; tekis
+turadi, atrofidagi yer unga qiyalik bilan tushadi.
+
+O'lchami `generation.duke` dagi `Keep` blokida: `Sizes = [15, 13, 11, 9]` —
+kattalari faqat eng chuqur kameralar yonida sinab ko'riladi. Darvoza —
+`data/props/gate.duke`, modeli animatedheaven'ning "Old Driveway Gate"i,
+tabaqalarining ochilishi Blender'da animatsiya qilingan (ikki klip o'yin
+nusxasida `art/models/join_clips.pl` bilan bitta `open` klipiga
+birlashtirilgan). Ochilganda darvoza o'rniga shaklsiz `OpenGate` turadi va
+`open` klipini bir marta o'ynab, ochiq qoladi (`PlayOnce`, engine
+`ClipMode.ONCE`). Hozircha qahramon yaqinlashganda ochiladi; keyingi qadamda
+kalit bilan ochiladi. Stage'lar qal'asiz kesiladi — stage fayli qal'aning
+ko'rinishini saqlamaydi.
+
 ## Stage rejimi — o'zgarmaydigan xarita
 
 O'yinning ikkinchi turi. Roguelike tushishi har run'da yangi qavat chizadi va

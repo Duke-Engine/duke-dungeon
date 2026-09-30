@@ -126,6 +126,8 @@ ProceduralMap
     Sizes = [15, 13, 11, 9]
     ; What stands in its doorway until it is opened: data/props/gate.duke.
     Gate = Gate
+    ; What it is drawn as, whatever biome it stands in: data/world/themes/keep.duke.
+    Look = Keep
   End
 
   Descent = Descent

@@ -267,14 +267,17 @@ public record Theme(
      *     them. Usually none: a model of its own carries its own clips, and copying them onto it from a
      *     second copy of the same file rebinds the tracks to the wrong skeleton
      * @param death      what it plays when it falls
+     * @param playOnce   what it plays once from its first frame and holds on its last, in place of any idle: a gate
+     *     swinging open as it appears. None for a thing that plays its roles
      */
     public record ThemeMonster(String name, String model, String texture, float modelScale, int tint, float facing,
             @Link(AnimationSet.class) String animations, @Clip String idle, @Clip String walk, @Clip String attack,
-            @Clip String hurt, @Clip String death, @Link(Effect.class) String effect, Held held) {
+            @Clip String hurt, @Clip String death, @Link(Effect.class) String effect, Held held,
+            @Clip String playOnce) {
 
         /** What a block leaves out. */
         public static final ThemeMonster DEFAULTS = new ThemeMonster("", null, null, 1f, 0xFFFFFF, 90f, null,
-                null, null, null, null, null, null, Held.NOTHING);
+                null, null, null, null, null, null, Held.NOTHING, null);
 
         /** What it is drawn as, which is a monster's look and nothing else. */
         public MonsterLook look() {
