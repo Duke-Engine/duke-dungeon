@@ -78,6 +78,7 @@ Game
     data/projectiles/shadow_spark.duke,
     data/projectiles/summoning_rift.duke,
     data/projectiles/meteor_mark.duke,
+    data/projectiles/skull_meteor_mark.duke,
 
     ; The effects, from the kit: its starter set, by what each one is. A block of this
     ; game's own with the Name of one of them, in a file listed after these, is

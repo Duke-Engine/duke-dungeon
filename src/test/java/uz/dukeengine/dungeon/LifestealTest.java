@@ -139,7 +139,8 @@ class LifestealTest {
     @Test
     void anOrdinaryShotIsDrunkFromOnceWhereItLands() {
         var change = lostAndGained(duel(drinkingMage(), "SkeletonMage", 50f, 0.25f), 150);
-        float fireball = SETTINGS.skillsFor("SkeletonMage").getFirst().damage();
+        float fireball = SETTINGS.skillsFor("SkeletonMage").stream().filter(skill -> skill.key() == 'Q')
+                .findFirst().orElseThrow().damage();
 
         assertTrue(change[0] > fireball,
                 "the premise: in five seconds its ordinary fire struck him as well as its fireball");

@@ -18,6 +18,7 @@ import uz.dukeengine.dungeon.combat.LevelBonus;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.dungeon.content.ShippedBlock;
 import uz.dukeengine.dungeon.run.Spawner;
+import uz.dukeengine.dungeon.skill.Skill;
 import uz.dukeengine.dungeon.skill.SkillBook;
 import uz.dukeengine.game.DukeGame;
 
@@ -129,8 +130,13 @@ class MonsterSkillTest {
                 """.formatted(distance, band));
     }
 
+    /** Its fireball, its Q: its meteor is written before it, and is not open at the first level these fight at. */
+    private static Skill theFireball() {
+        return SETTINGS.skillsFor(MAGE).stream().filter(skill -> skill.key() == 'Q').findFirst().orElseThrow();
+    }
+
     private static String fireball() {
-        return SETTINGS.skillsFor(MAGE).get(0).projectile();
+        return theFireball().projectile();
     }
 
     /** Every fireball that leaves it over the next frames, each counted once. */
@@ -207,7 +213,7 @@ class MonsterSkillTest {
     @Test
     void itWaitsForItsCooldownBetweenThrows() {
         var fight = fight(standingStill(), room(NO_WALL), 240f, 200f);
-        int cooldown = SETTINGS.skillsFor(MAGE).get(0).cooldownFrames();
+        int cooldown = theFireball().cooldownFrames();
         int frames = cooldown * 3;
         // The one it threw the moment it saw him lands first, and is not counted here.
         fight.game().runHeadless(cooldown / 2);
@@ -222,7 +228,7 @@ class MonsterSkillTest {
     @Test
     void betweenItsFireballsItThrowsItsOrdinaryFire() {
         var fight = fight(standingStill(), room(NO_WALL), 240f, 200f);
-        int cooldown = SETTINGS.skillsFor(MAGE).get(0).cooldownFrames();
+        int cooldown = theFireball().cooldownFrames();
 
         var thrown = leaving(fight.game(), cooldown * 2, fireball(), ORDINARY_FIRE);
 
@@ -362,7 +368,7 @@ class MonsterSkillTest {
         if (bonus != 1f) {
             fight.mage().addModule(new LevelBonus(fight.mage(), 1, bonus, 1f));
         }
-        int cooldown = SETTINGS.skillsFor(MAGE).get(0).cooldownFrames();
+        int cooldown = theFireball().cooldownFrames();
         fight.game().runHeadless(cooldown / 2);
         float health = fight.hero().getBody().getHealth();
         fight.game().runHeadless(cooldown);

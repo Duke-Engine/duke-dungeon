@@ -1,7 +1,8 @@
 ; The one that casts. Frail, slow, and dangerous only at a distance: between its
 ; fireballs it throws the Revenant's small fire, and the fireball is a skill its
 ; brain decides to throw -- see Monster SkeletonMage and Skill
-; SkeletonMage Q below.
+; SkeletonMage Q below. From its sixth level it calls a meteor down on him too,
+; its R.
 Monster
   Name = SkeletonMage
   DisplayName = Skeleton Mage
@@ -96,26 +97,57 @@ Monster
   Idle = Ranged_Magic_Spellcasting_Long
 
   ; ---------------------------------------------------------------------------
-  ; A monster's own skill.
+  ; A monster's own skills.
   ;
   ; Headed by the creature's name exactly as a hero's are, and cast by its brain
-  ; rather than a key -- see Skill, SkillDistance and KeepDistance on its
-  ; Monster block. It has one rank: what makes it hit harder further down is its
-  ; level, as for its weapon. ProjectileSpeed is how fast what it throws travels;
-  ; unsaid, it would be the hero's HeavySpeed. It says 120, which is what
-  ; HeavySpeed is today, and stays 120 if that moves.
+  ; rather than a key -- the first, in the order written, that its level has
+  ; opened, that is ready and that it can pay for: see SkillDistance and
+  ; KeepDistance on its Monster block. Each has one rank: what makes it hit
+  ; harder further down is its level, as for its weapon. ProjectileSpeed is how
+  ; fast what it throws travels; unsaid, it would be the hero's HeavySpeed. It
+  ; says 120, which is what HeavySpeed is today, and stays 120 if that moves.
   ;
-  ; And it pays for it, as a hero does, out of a pool in the same words and
+  ; And it pays for them, as a hero does, out of a pool in the same words and
   ; units: MaxMana in points, ManaRegen in tenths of a point a second -- each a
   ; tenth more a level past the first (ManaPercentPerLevel in generation.duke),
-  ; and full when it is placed. Enough to throw at its cooldown through a fight
-  ; of a minute or more, and longer the higher it stands. Nobody sees the pool:
-  ; the bar's mana is the hero's alone.
+  ; and full when it is placed. Enough to throw at its cooldowns through a fight
+  ; of a minute or more, its meteor included, and longer the higher it stands.
+  ; Nobody sees the pool: the bar's mana is the hero's alone.
   ; ---------------------------------------------------------------------------
   MaxMana = 60
   ManaRegen = 30
 
   Skills = [
+    Skill
+      ; Its ultimate: the Mage's own meteor, from the other side -- a mark on the
+      ; floor where he stands, and the blast a second and a half later. It waits
+      ; for its sixth level as a hero's ultimate waits for his (LevelPerRank is the
+      ; level its one rank opens at), so on the first floor only the fire mages
+      ; nearest the keep call it down, and deeper every one does. Written first,
+      ; so it is the one its brain casts whenever it is open, ready and paid for;
+      ; while it recharges, or its pool is short of it, the fireball follows.
+      Key = R
+      Effect = METEOR
+      ; A hero at the middle of the mark walks out of its 30 in the second and a
+      ; half it lies there. The Mage's own is 160 across 44: this is the
+      ; monster's, and its level is what makes it hit harder.
+      Damage = 90
+      Radius = 30
+      Range = 70
+      WindUpFrames = 45
+      ; Its own mark, violet as its fireball is -- data/projectiles/
+      ; skull_meteor_mark.duke. Not the Mage's MeteorMark: a mark is drawn as wide
+      ; as the skill that throws it, and his is wider.
+      Projectile = SkullMeteorMark
+      ; Twenty seconds between meteors, and most of its pool: a stunning fireball
+      ; under a falling meteor is a hard pair, and its cooldown and its cost keep
+      ; it rare.
+      CooldownFrames = 600
+      ManaCost = 50
+      MaxRank = 1
+      LevelPerRank = 6
+      Name = Meteor
+    End,
     Skill
       Key = Q
       ; Its fireball: the Mage's own Q, from something that does not want to be near

@@ -38,6 +38,11 @@ class StunTest {
     private static final DungeonSettings SETTINGS = DungeonSettings.load();
     private static final String FIRE_MAGE = "SkeletonMage";
 
+    /** The fire mage's fireball under {@code settings}: its Q, written after its meteor. */
+    private static Skill fireballOf(DungeonSettings settings) {
+        return settings.skillsFor(FIRE_MAGE).stream().filter(skill -> skill.key() == 'Q').findFirst().orElseThrow();
+    }
+
     /** An open room forty cells by thirty, stone only round its edge. */
     private static String room() {
         var text = new StringBuilder();
@@ -144,7 +149,7 @@ class StunTest {
     /** As shipped: its fireball stuns for a second. */
     @Test
     void theFireMagesFireballStunsForASecond() {
-        assertEquals(30, SETTINGS.skillsFor(FIRE_MAGE).getFirst().stunFrames());
+        assertEquals(30, fireballOf(SETTINGS).stunFrames());
     }
 
     /**
@@ -155,7 +160,7 @@ class StunTest {
     void itStunsWhatItStrikesForExactlyItsFrames() {
         var fight = fireMage(SETTINGS, 200f, 150f, 250f, 150f);
         var hero = fight.heroes().getFirst();
-        int frames = SETTINGS.skillsFor(FIRE_MAGE).getFirst().stunFrames();
+        int frames = fireballOf(SETTINGS).stunFrames();
 
         assertTrue(untilStunned(fight.game(), hero, 150), "nothing it threw in five seconds stunned him");
         int stunned = 1;
@@ -187,7 +192,7 @@ class StunTest {
         var settings = DungeonSettings.parse(data);
         var fight = fireMage(settings, 200f, 150f, 250f, 150f);
         var hero = fight.heroes().getFirst();
-        var fireball = settings.skillsFor(FIRE_MAGE).getFirst().projectile();
+        var fireball = fireballOf(settings).projectile();
 
         boolean thrown = false;
         for (int frame = 0; frame < 150; frame++) {

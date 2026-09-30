@@ -1,0 +1,305 @@
+; The mark the Skeleton Mage's meteor leaves on the floor while it falls -- the
+; Mage's MeteorMark again, from the other side, and a thing in the world for the
+; same reasons. How long it marks the ground and how hard it lands are the
+; skill's: see the R skill of the SkeletonMage.
+;
+; Its own and not the Mage's, because the client measures a mark by the skill
+; that throws it (Main.measureLooks): his blast is 44 across and this one 30, and
+; one mark shared by the two would be drawn the width of whichever was read last.
+Projectile
+  Name = SkullMeteorMark
+  DisplayName = Meteor
+  VisionRange = 0
+  Modules = [
+    FallingUpdate
+    End
+  ]
+
+
+; On the floor rather than at shot height, violet as its fireball is.
+  Height = 1
+  Tint = 0xB04AFF
+  Effect = SkullMeteor
+  EffectOffset = 0
+End
+
+; ---------------------------------------------------------------------------
+; The kit's Meteor, layer for layer, burning violet instead of gold -- the colours
+; of the Skeleton Mage's fireball (the kit's DarkFireball), so a player can tell
+; at a glance whose sky is falling on him. The mark glows on the floor for the
+; second and a half the rock falls, and bursts where it lands; how long and how
+; wide are the skill's, handed over by Main.measureLooks. Its blast is 30 across
+; where his is 44, so what it throws, how big it flashes and how far it lights
+; are drawn to that smaller blast -- 30/44 of his, as its fireball's are drawn
+; to its own -- and nothing it throws flies past where its damage stops.
+; ---------------------------------------------------------------------------
+Effect
+  Name = SkullMeteor
+  ShakeSeconds = 0.26
+  ShakePower = 1.8
+
+  Layers = [
+    Layer
+      Name = Rock
+      Type = AURA
+      Texture = kit/effects/particles/fire_02.png
+      Blend = Additive
+      Cover = 0.55
+      Count = 24
+      Rate = 50
+      Life = [0.15, 0.25]
+      Size = [10.91, 6.82]
+      Colour = [0xF040FF, 0x8B00E0]
+      Alpha = [1, 0]
+      Radius = 1.36
+      Spin = 120
+      Fall = 160
+    End,
+
+    Layer
+      Name = Heart
+      Type = AURA
+      Texture = kit/effects/particles/circle_05.png
+      Blend = Additive
+      Cover = 0.3
+      Count = 6
+      Rate = 30
+      Life = [0.12, 0.2]
+      Size = [9.55, 6.82]
+      Colour = [0xFFB8FB, 0xDF30FF]
+      Alpha = [1, 0.6]
+      Fall = 160
+    End,
+
+    Layer
+      Name = Flames
+      Type = TRAIL
+      Texture = kit/effects/particles/fire_01.png
+      Blend = Additive
+      Cover = 0.45
+      Count = 56
+      Rate = 80
+      Life = [0.3, 0.5]
+      Size = [9.55, 3.41]
+      SizeEase = 2
+      SizeJitter = 0.3
+      Colour = [0xF047FF, 0x43008A]
+      ColourEase = 1.5
+      Alpha = [1, 0]
+      Speed = [1.36, 4.09]
+      Direction = UP
+      Spread = 30
+      Drag = 2
+      Spin = 80
+      Fall = 160
+    End,
+
+    Layer
+      Name = Wake
+      Type = TRAIL
+      Texture = kit/effects/particles/smoke_05.png
+      Blend = Alpha
+      Count = 28
+      Rate = 22
+      Life = [0.8, 1.2]
+      Size = [5.45, 12.27]
+      Colour = [0x554A5A, 0x37303A]
+      Alpha = [0.55, 0]
+      Speed = [0.68, 2.73]
+      Direction = UP
+      Spin = 20
+      Fall = 160
+    End,
+
+    Layer
+      Name = Glow
+      Type = LIGHT
+      LightColour = 0xC228FF
+      LightPower = 3.5
+      LightRadius = 68.18
+      Fall = 160
+    End,
+
+    Layer
+      Name = Scorch
+      Type = MARK
+      Measure = Reach
+      Texture = kit/effects/particles/scorch_03.png
+      Blend = Alpha
+      Count = 1
+      Seconds = 4
+      Size = [3.4, 3.4]
+      Colour = [0x17101A, 0x17101A]
+      Alpha = [0.6, 0.6]
+      FadeOut = 0.35
+      Height = 0.3
+    End,
+
+    Layer
+      Name = Dust
+      Type = RING
+      Measure = Reach
+      Texture = kit/effects/particles/smoke_10.png
+      Blend = Alpha
+      Delay = 0.03
+      Count = 1
+      Life = [0.9, 0.9]
+      Size = [0.45, 4.324]
+      SizeEase = 2.4
+      Colour = [0x85688A, 0x55445A]
+      Alpha = [0.6, 0]
+      FadeOut = 0.6
+      Spin = 15
+      Height = 0.6
+    End,
+
+    Layer
+      Name = Wave
+      Type = RING
+      Measure = Reach
+      Texture = kit/effects/particles/circle_03.png
+      Blend = Additive
+      Cover = 0.2
+      Count = 1
+      Life = [0.5, 0.5]
+      Size = [0.25, 2.807]
+      SizeEase = 3.2
+      Colour = [0xF560FF, 0x9A10FF]
+      Alpha = [1, 0]
+      FadeOut = 0.55
+      Height = 0.5
+      TurnJitter = 0
+    End,
+
+    Layer
+      Name = Smoke
+      Type = BURST
+      Measure = Reach
+      Texture = kit/effects/particles/smoke_08.png
+      Blend = Alpha
+      Delay = 0.12
+      Count = 16
+      Radius = 0.4
+      Life = [1.0, 1.6]
+      Size = [0.35, 0.7]
+      SizeEase = 2
+      SizeJitter = 0.35
+      Colour = [0x756A7A, 0x47404A]
+      Alpha = [0.4, 0]
+      FadeIn = 0.1
+      Speed = [4.09, 9.55]
+      Direction = OUT
+      Spread = 55
+      Drag = 1.8
+      Gravity = -4
+      Spin = 18
+      Height = 4
+    End,
+
+    Layer
+      Name = Debris
+      Type = BURST
+      Texture = kit/effects/particles/dirt_02.png
+      Blend = Alpha
+      Count = 20
+      Life = [0.7, 1.1]
+      Size = [3.41, 2.05]
+      SizeJitter = 0.5
+      Colour = [0x5A4A3C, 0x3A2E24]
+      Alpha = [1, 0.9]
+      FadeOut = 0.25
+      Speed = [17.05, 34.09]
+      Direction = UP
+      Spread = 60
+      Gravity = 120
+      Drag = 0.5
+      Spin = 240
+      Height = 2
+    End,
+
+    Layer
+      Name = Fire
+      Type = BURST
+      Measure = Reach
+      Texture = kit/effects/particles/fire_02.png
+      Blend = Additive
+      Cover = 0.4
+      Count = 36
+      Radius = 0.42
+      Life = [0.45, 0.8]
+      Size = [0.3, 0.42]
+      SizeEase = 2.5
+      SizeJitter = 0.3
+      Colour = [0xFC4AFF, 0x9A10FF]
+      Alpha = [0.8, 0]
+      FadeOut = 0.5
+      Speed = [20.45, 34.09]
+      Direction = OUT
+      Spread = 40
+      Drag = 3
+      Gravity = -8
+      Spin = 50
+      Height = 3
+    End,
+
+    Layer
+      Name = Core
+      Type = IMPACT
+      Measure = Reach
+      Texture = kit/effects/particles/circle_05.png
+      Blend = Additive
+      Count = 1
+      Life = [0.45, 0.45]
+      Size = [0.6, 2.8]
+      SizeEase = 2.5
+      Colour = [0xF070FF, 0xAA10FF]
+      Alpha = [0.7, 0]
+      FadeOut = 0.7
+      Height = 3
+    End,
+
+    Layer
+      Name = Sparks
+      Type = BURST
+      Texture = kit/effects/particles/star_04.png
+      Blend = Additive
+      Count = 44
+      Life = [0.4, 0.8]
+      Size = [1.5, 0.2]
+      Stretch = 0.05
+      Colour = [0xFFB0F4, 0xBA10FF]
+      Speed = [34.09, 75]
+      Direction = OUT
+      Spread = 55
+      Drag = 2.5
+      Gravity = 60
+      Height = 3
+    End,
+
+    Layer
+      Name = Flash
+      Type = IMPACT
+      Texture = kit/effects/particles/star_09.png
+      Blend = Additive
+      Count = 1
+      Life = [0.25, 0.25]
+      Size = [16.36, 47.73]
+      SizeEase = 3
+      Colour = [0xFFD8FB, 0xEA50FF]
+      Alpha = [1, 0]
+      FadeOut = 0.6
+      Height = 4
+      TurnJitter = 0
+    End,
+
+    Layer
+      Name = Blast
+      Type = LIGHT
+      Seconds = 0.7
+      LightColour = 0xCF30FF
+      LightPower = 3
+      LightRadius = 88.64
+      FadeOut = 0.9
+    End
+  ]
+End
