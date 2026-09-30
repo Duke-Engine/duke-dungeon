@@ -182,11 +182,9 @@ public final class Dungeon {
                     // And the water at the way in, mending whoever stands near it. See FountainUpdate.
                     factory.register(uz.dukeengine.dungeon.level.FountainUpdate.Data.class,
                             uz.dukeengine.dungeon.level.FountainUpdate::new);
-                    // The keep's gate, opened by a hero walking up to it. See GateUpdate.
-                    var heroNames = settings.heroes().stream().map(hero -> hero.name())
-                            .collect(java.util.stream.Collectors.toUnmodifiableSet());
+                    // The keep's gate, which only the key given to it opens. See GateUpdate.
                     factory.register(uz.dukeengine.dungeon.run.GateUpdate.Data.class,
-                            (owner, data) -> new uz.dukeengine.dungeon.run.GateUpdate(owner, data, heroNames));
+                            uz.dukeengine.dungeon.run.GateUpdate::new);
                     // Which skills a unit has is the Skill blocks written inside its own:
                     // the SkillBook block says only that it has some.
                     factory.register(SkillBook.Data.class, (owner, data) -> new SkillBook(owner,

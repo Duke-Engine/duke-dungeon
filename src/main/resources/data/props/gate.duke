@@ -1,16 +1,14 @@
-; The gate of the boss's keep: it stands across the keep's doorway, at the top
-; of the stair, and nothing walks through it until it is opened -- see gen/Keep
-; and run/GateUpdate.
+; The gate of the boss's keep: it stands across the keep's doorway, and nothing
+; walks through it until it is opened -- see gen/Keep and run/GateUpdate.
 ;
 ;   - no Body, so nothing ever shoots at it
 ;   - a Box as long as the doorway (three cells, 30 units) and thin across it;
 ;     the spawner turns it along the wall it stands in
 ;   - STRUCTURE, so it is drawn as a thing standing on the floor; SELECTABLE, so
-;     the pointer finds it -- the key will be aimed at it
+;     the pointer finds it -- a click on it sends a hero up to it
 ;
-; For now a hero walking up to it opens it: the key that will open it instead is
-; the next piece of work. What it looks like is the Keep theme's
-; (data/world/themes/keep.duke).
+; Nothing opens it but the key given to it: a hero walking up to it leaves it
+; shut. What it looks like is the Keep theme's (data/world/themes/keep.duke).
 Object
   Name = Gate
   DisplayName = Darvoza
@@ -23,11 +21,6 @@ Object
   End
   Modules = [
     GateUpdate
-      ; From its middle, in world units: a hero on the stair, or on the road
-      ; just below it.
-      Reach = 25
-      ; A third of a second.
-      EveryFrames = 10
       ; What stands in its place once it is open, turned as it was.
       Opens = OpenGate
     End

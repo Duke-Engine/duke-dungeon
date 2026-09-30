@@ -14,7 +14,10 @@ import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.dungeon.gen.DungeonGenerator;
 import uz.dukeengine.game.DukeGame;
 
-/** The keep's gate: across its doorway nothing passes, a hero walking up opens it, and the floor turns it true. */
+/**
+ * The keep's gate: across its doorway nothing passes, a hero walking up to it leaves it shut, only its open() opens it,
+ * and the floor turns it true.
+ */
 class GateTest {
 
     private static final DungeonSettings SETTINGS = DungeonSettings.load();
@@ -79,8 +82,9 @@ class GateTest {
         assertNotNull(find(arena.game(), "Gate"), "it opened for a skeleton");
     }
 
+    /** A hero walking up to it, and standing at it, leaves it shut: only the key opens it now. */
     @Test
-    void aHeroWalkingUpToItOpensItAndWalksOnThrough() {
+    void aHeroWalkingUpToItLeavesItShut() {
         var arena = withAGate();
         var game = arena.game();
         game.spawn("Rogue", arena.hero(), 120f, 155f);
@@ -89,7 +93,25 @@ class GateTest {
         hero.getLocomotor().moveTo(new Coord3D(300f, 155f, 0f));
         game.runHeadless(150);
 
-        assertNull(find(game, "Gate"), "he stood at it and it stayed shut");
+        assertNotNull(find(game, "Gate"), "it opened for him");
+        assertNull(find(game, "OpenGate"), "and something stands where it stood");
+        assertTrue(shut(game, DOORWAY.x(), DOORWAY.y()), "the doorway is open");
+        assertTrue(hero.getPosition().x() < DOORWAY.x(), "and he is still on his side of it: " + hero.getPosition());
+    }
+
+    /** Opened, the same gate stands open where it stood, turned as it was, and he walks on through. */
+    @Test
+    void openedItStandsOpenWhereItStoodAndHeWalksOnThrough() {
+        var arena = withAGate();
+        var game = arena.game();
+        game.spawn("Rogue", arena.hero(), 120f, 155f);
+        game.runHeadless(2);
+        var hero = find(game, "Rogue");
+
+        find(game, "Gate").findModule(GateUpdate.class).open();
+        game.runHeadless(2);
+
+        assertNull(find(game, "Gate"), "it stayed shut");
         var open = find(game, "OpenGate");
         assertNotNull(open, "nothing stands where it stood");
         assertEquals(DOORWAY.x(), open.getPosition().x(), 0.01f);
@@ -97,22 +119,8 @@ class GateTest {
         assertEquals((float) (StrictMath.PI / 2), open.getOrientation(), 1e-6f, "turned as the gate was");
         assertFalse(shut(game, DOORWAY.x(), DOORWAY.y()), "and the doorway open, the open gate in nobody's way");
         hero.getLocomotor().moveTo(new Coord3D(300f, 155f, 0f));
-        game.runHeadless(200);
+        game.runHeadless(250);
         assertTrue(hero.getPosition().x() > 260f, "and he walked on through: " + hero.getPosition());
-    }
-
-    /** A hero far from it leaves it shut: it looks on its own frames, finds nobody in reach, and stays as it was. */
-    @Test
-    void aHeroFarFromItLeavesItShut() {
-        var arena = withAGate();
-        var game = arena.game();
-        game.spawn("Rogue", arena.hero(), 60f, 155f);
-        game.runHeadless(60);
-
-        assertNotNull(find(game, "Rogue"), "he is not in the hall");
-        assertNotNull(find(game, "Gate"), "it opened with nobody at it");
-        assertNull(find(game, "OpenGate"), "and something stands where it stood");
-        assertTrue(shut(game, DOORWAY.x(), DOORWAY.y()), "the doorway is open");
     }
 
     /** On a floor of the descent, it stands across its keep's doorway, every cell of it shut. */
