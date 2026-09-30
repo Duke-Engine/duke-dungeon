@@ -692,8 +692,10 @@ public final class DungeonSettings {
                 }
                 case SUMMON -> {
                     var name = skill.heroTemplate() + "'s Skill " + skill.key();
-                    require(!skill.summons().isBlank() && skill.summonCount() >= 1 && skill.maxSummoned() >= 1,
-                            name + " calls up nothing: it needs Summons, a SummonCount and a MaxSummoned");
+                    require(!skill.summons().isEmpty() && skill.maxSummoned() >= 1
+                                    && skill.summons().values().stream().allMatch(count -> count >= 1),
+                            name + " calls up nothing: it needs Summons = [Kind = count, ...], each at least one,"
+                                    + " and a MaxSummoned");
                     require(skill.radius() > 0f && skill.durationFrames() > 0,
                             name + " needs a Radius to call them up at and DurationFrames for them to last");
                     require(skill.summonExperiencePercent() >= 0 && skill.summonExperiencePercent() <= 100,

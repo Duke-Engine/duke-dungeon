@@ -155,13 +155,15 @@ public enum SkillEffect {
     /**
      * Call up creatures of your own round you, for a while.
      *
-     * <p>{@code SummonCount} rifts open {@code Radius} away, toward where it was aimed
-     * first and then turned aside in a fixed order, on open floor the caster can see --
-     * never in stone, on another storey or on somebody; see {@link Summoning}. Each is a
-     * thing in the world, as a meteor's mark is, and a {@code Summons} climbs out of it
-     * {@code WindUpFrames} later. What climbs out lasts {@code DurationFrames} and then
-     * falls down, is worth {@code SummonExperiencePercent} of its own kind, and hits as
-     * hard as the depth made its caller hit.
+     * <p>A rift opens for every creature {@code Summons} names -- two for
+     * {@code [Skeleton = 2]}, four for {@code [Skeleton = 2, Stalker = 2]} --
+     * {@code Radius} away, toward where it was aimed first and then turned aside in a
+     * fixed order, on open floor the caster can see -- never in stone, on another
+     * storey or on somebody; see {@link Summoning}. Each is a thing in the world, as a
+     * meteor's mark is, and its creature climbs out of it {@code WindUpFrames} later,
+     * the kinds taking the rifts in the order written. What climbs out lasts
+     * {@code DurationFrames} and then falls down, is worth {@code SummonExperiencePercent}
+     * of its own kind, and hits as hard as the depth made its caller hit.
      *
      * <p>No more than {@code MaxSummoned} of one caster's stand at once, rifts counted.
      * A cast that would open none is refused with its cooldown unspent.

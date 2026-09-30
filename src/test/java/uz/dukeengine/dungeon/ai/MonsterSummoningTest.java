@@ -2,12 +2,15 @@ package uz.dukeengine.dungeon.ai;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
+import uz.dukeengine.core.data.DataException;
 import uz.dukeengine.core.math.Coord3D;
 import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.dungeon.Dungeon;
@@ -22,8 +25,8 @@ import uz.dukeengine.game.DukeGame;
 import uz.dukeengine.rts.module.ExperienceModule;
 
 /**
- * A monster that calls up more of them: how many, where, for how long, what they are
- * worth, and never past its ceiling.
+ * A monster that calls up more of them: which, how many, where, for how long, what they
+ * are worth, and never past its ceiling.
  *
  * <p>Fought through the seam the dungeon is built on, with a hero standing inside the
  * summoner's band who picks no fights -- so what it calls up walks over and hits a man
@@ -33,6 +36,9 @@ class MonsterSummoningTest {
 
     private static final DungeonSettings SETTINGS = DungeonSettings.load();
     private static final String SUMMONER = "SkeletonSummoner";
+    /** What the shipped summoner calls up first, and second. */
+    private static final String SWORDSMAN = "Skeleton";
+    private static final String ARCHER = "Stalker";
     private static final float CELL = 10f;
     private static final float ROW = 205f;
 
@@ -99,10 +105,10 @@ class MonsterSummoningTest {
         return SETTINGS.skillsFor(SUMMONER).get(0);
     }
 
-    /** The shipped summoner, with its summoning's numbers changed. */
-    private static DungeonSettings summoningWith(int count, int most, int lasts, int percent,
+    /** The shipped summoner, with its summoning's numbers changed: {@code summons} as the file writes it. */
+    private static DungeonSettings summoningWith(String summons, int most, int lasts, int percent,
             int cooldown) {
-        return DungeonSettings.parse(ShippedBlock.of(SUMMONER).with("SummonCount", count)
+        return DungeonSettings.parse(ShippedBlock.of(SUMMONER).with("Summons", summons)
                 .with("MaxSummoned", most).with("DurationFrames", lasts)
                 .with("SummonExperiencePercent", percent).with("CooldownFrames", cooldown).text());
     }
@@ -132,6 +138,12 @@ class MonsterSummoningTest {
         return found;
     }
 
+    /** The kind of each thing it called up, in the order they rose. */
+    private static List<String> kindsOf(DukeGame game, List<Rising> risen) {
+        return risen.stream().map(one -> game.getLogic()
+                .findObject(new uz.dukeengine.core.thing.ObjectId(one.id())).getTemplate().name()).toList();
+    }
+
     /** What it called up that is standing now. */
     private static long standing(DukeGame game) {
         return game.getLogic().getObjects().stream()
@@ -142,18 +154,25 @@ class MonsterSummoningTest {
 
     // ---- how many, and where ----
 
+    /** As shipped: two swordsmen and then two archers a cast, and four of its own at most. */
     @Test
-    void itCallsUpItsCountRoundItselfTowardHimFirst() {
+    void theShippedSummonerCallsUpTwoSwordsmenAndTwoArchers() {
+        assertEquals(List.of(Map.entry(SWORDSMAN, 2), Map.entry(ARCHER, 2)),
+                List.copyOf(summoning().summons().entrySet()));
+        assertEquals(4, summoning().maxSummoned());
+    }
+
+    /** One cast calls up every kind it names, as many of each, the first kind first, round itself toward him. */
+    @Test
+    void itCallsUpEachKindItNamesRoundItselfTowardHimFirst() {
         var circle = circle(SETTINGS);
         var from = circle.summoner().getPosition();
 
         var risen = risings(circle.game(), oneSummoning());
 
-        assertEquals(summoning().summonCount(), risen.size(), "one casting: " + risen);
+        assertEquals(List.of(SWORDSMAN, SWORDSMAN, ARCHER, ARCHER), kindsOf(circle.game(), risen),
+                "one casting: " + risen);
         for (var one : risen) {
-            assertEquals(summoning().summons(),
-                    circle.game().getLogic().findObject(new uz.dukeengine.core.thing.ObjectId(one.id()))
-                            .getTemplate().name());
             float away = (float) Math.hypot(one.at().x() - from.x(), one.at().y() - from.y());
             assertEquals(summoning().radius(), away, 0.5f, "each rises its Radius from it");
         }
@@ -163,15 +182,18 @@ class MonsterSummoningTest {
     /** How many a cast calls up is the file's to say. */
     @Test
     void howManyRiseIsTheFiles() {
-        var three = circle(summoningWith(3, 6, 600, 0, 3000));
+        var three = circle(summoningWith("[Skeleton = 3]", 6, 600, 0, 3000));
 
         assertEquals(3, risings(three.game(), oneSummoning()).size());
     }
 
-    /** Quick to cast and slow to fall down, so the only thing that stops it is its ceiling. */
+    /**
+     * Quick to cast and slow to fall down, so the only thing that stops it is its ceiling -- which a cast asking
+     * five reaches at once, calling up the first four of them.
+     */
     @Test
     void itNeverHasMoreStandingThanItsCeiling() {
-        var circle = circle(summoningWith(2, 4, 3000, 0, 60));
+        var circle = circle(summoningWith("[Skeleton = 3, Stalker = 2]", 4, 3000, 0, 60));
         long most = 0;
 
         for (int frame = 0; frame < 300; frame++) {
@@ -190,7 +212,7 @@ class MonsterSummoningTest {
     /** In a corridor one cell wide most of the circle round it is rock, and none rise in it. */
     @Test
     void nothingRisesInStoneOrOutOfItsSight() {
-        var circle = circle(summoningWith(4, 4, 3000, 0, 3000), corridor(), at(14), at(10));
+        var circle = circle(summoningWith("[Skeleton = 4]", 4, 3000, 0, 3000), corridor(), at(14), at(10));
         var from = circle.summoner().getPosition();
         var world = circle.game().getLogic();
 
@@ -202,6 +224,17 @@ class MonsterSummoningTest {
             assertFalse(world.isGroundBlocked(one.at()), "one rose in stone at " + one.at());
             assertTrue(SightLine.clear(world, from, one.at()), "one rose out of its sight at " + one.at());
         }
+    }
+
+    /** Where the floor has room for fewer than a cast asks, as many rise as fit, the kinds written first. */
+    @Test
+    void whereFewerFitTheKindsWrittenFirstRise() {
+        var circle = circle(SETTINGS, corridor(), at(14), at(10));
+
+        var risen = risings(circle.game(), oneSummoning());
+
+        assertEquals(List.of(SWORDSMAN, SWORDSMAN), kindsOf(circle.game(), risen),
+                "the corridor has room for two, and the swordsmen are written first: " + risen);
     }
 
     /** Shut in rock there is nowhere to open a rift at all. */
@@ -248,7 +281,7 @@ class MonsterSummoningTest {
     @Test
     void whatItCallsUpFallsDownWhenItsTimeIsOut() {
         int lasts = 90;
-        var circle = circle(summoningWith(2, 4, lasts, 0, 3000));
+        var circle = circle(summoningWith("[Skeleton = 2]", 4, lasts, 0, 3000));
         var risen = risings(circle.game(), oneSummoning());
         assertEquals(2, risen.size());
         var world = circle.game().getLogic();
@@ -270,16 +303,16 @@ class MonsterSummoningTest {
     @Test
     void whatItCallsUpIsWorthTheShareTheFileSays() {
         for (int percent : new int[] {summoning().summonExperiencePercent(), 50}) {
-            var arena = Dungeon.world(room(), summoningWith(2, 4, 3000, percent, 3000));
+            var arena = Dungeon.world(room(), summoningWith("[Skeleton = 2]", 4, 3000, percent, 3000));
             var game = arena.game();
             game.spawn("Rogue", arena.hero(), 150f, ROW);
             game.spawn(SUMMONER, arena.dungeon(), 200f, ROW);
             // One placed on the floor rather than called up, far off in a corner: what its
             // own kind is worth.
-            game.spawn(summoning().summons(), arena.dungeon(), at(55), at(35));
+            game.spawn(SWORDSMAN, arena.dungeon(), at(55), at(35));
             game.runHeadless(1);
             arena.orders().hold(arena.hero().getIndex(), true);
-            int whole = first(game, summoning().summons())
+            int whole = first(game, SWORDSMAN)
                     .findModule(ExperienceModule.class).getExperienceValue();
 
             var risen = risings(game, oneSummoning());
@@ -297,7 +330,7 @@ class MonsterSummoningTest {
     /** Found as deep as what called it up, so it hits as hard as one placed there would. */
     @Test
     void whatItCallsUpWasFoundAsDeepAsItsCaller() {
-        var circle = circle(summoningWith(2, 4, 3000, 0, 60));
+        var circle = circle(summoningWith("[Skeleton = 2]", 4, 3000, 0, 60));
         var before = new HashSet<Integer>();
         risings(circle.game(), oneSummoning()).forEach(one -> before.add(one.id()));
         assertEquals(2, before.size(), "the first casting, before it was found any deeper");
@@ -330,7 +363,7 @@ class MonsterSummoningTest {
     }
 
     private static String playedOut() {
-        var circle = circle(summoningWith(2, 4, 200, 0, 120));
+        var circle = circle(summoningWith("[Skeleton = 2, Stalker = 2]", 4, 200, 0, 120));
         var line = new StringBuilder();
         for (var one : risings(circle.game(), 240)) {
             line.append(one.frame()).append('@').append(one.at()).append(';');
@@ -340,5 +373,16 @@ class MonsterSummoningTest {
             line.append(circle.game().getLogic().checksum()).append('|');
         }
         return line.toString();
+    }
+
+    // ---- the old way of writing it ----
+
+    /** One kind and a SummonCount beside it, as the file used to say: refused, and told the new way. */
+    @Test
+    void theOldSingleSummonsIsRefusedNamingTheNewForm() {
+        var old = ShippedBlock.dataWith(SUMMONER, "Summons", SWORDSMAN);
+
+        var refused = assertThrows(DataException.class, () -> DungeonSettings.parse(old));
+        assertTrue(refused.getMessage().contains("Summons = ["), refused.getMessage());
     }
 }

@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 
@@ -29,12 +30,12 @@ class SkillRanksTest {
 
     private static Skill ordinary(char key) {
         return new Skill("Hero", key, SkillEffect.AREA_DAMAGE, 10f, 1f, 10f, 10f, 0f, 0f,
-                0, 0, 0, 0, 0, 60, 0, 4, 0, 0, 0, 0, "", "", "", "", 0f, "", "", 0f, 0f, 0, "", 0, 0, 0, 0);
+                0, 0, 0, 0, 0, 60, 0, 4, 0, 0, 0, 0, "", "", "", "", 0f, "", "", 0f, 0f, 0, Map.of(), 0, 0, 0);
     }
 
     private static Skill ultimate(char key) {
         return new Skill("Hero", key, SkillEffect.EMPOWER, 0f, 0f, 0f, 0f, 0f, 0f,
-                50, 5, 120, 0, 0, 600, 0, 3, 4, 0, 0, 0, "", "", "", "", 0f, "", "", 0f, 0f, 0, "", 0, 0, 0, 0);
+                50, 5, 120, 0, 0, 600, 0, 3, 4, 0, 0, 0, "", "", "", "", 0f, "", "", 0f, 0f, 0, Map.of(), 0, 0, 0);
     }
 
     // ---- a point a level ----

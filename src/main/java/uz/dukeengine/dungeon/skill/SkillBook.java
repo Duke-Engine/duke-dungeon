@@ -1029,21 +1029,36 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Wea
     }
 
     /**
-     * Open rifts for what it calls up: as many as there is room for under its ceiling,
-     * and floor round it to open them on. See {@link Summoning} for where.
+     * Open rifts for what it calls up: every kind its {@code Summons} names, as many of
+     * each as it says -- as many as there is room for under its ceiling, and floor round
+     * it to open them on. See {@link Summoning} for where.
+     *
+     * <p>The kinds take the rifts in the order the file wrote them, so where there is
+     * room for fewer than the cast asks, the first kinds are the ones that rise: two
+     * swordsmen before two archers.
      *
      * @return whether one opened at all; false leaves the cooldown unspent
      */
     private boolean summon(GameObject owner, World world, Skill skill, Coord3D towards) {
-        int room = Math.min(skill.summonCount(), skill.maxSummoned() - summonedStanding());
-        var creature = world.findTemplate(skill.summons());
+        var rising = new java.util.ArrayList<String>();
+        float body = 0f;
+        for (var kind : skill.summons().entrySet()) {
+            var creature = world.findTemplate(kind.getKey());
+            if (creature == null) {
+                continue;
+            }
+            for (int one = 0; one < kind.getValue(); one++) {
+                rising.add(kind.getKey());
+            }
+            body = Math.max(body, uz.dukeengine.core.thing.Solid.of(creature).footprintRadius());
+        }
+        int room = Math.min(rising.size(), skill.maxSummoned() - summonedStanding());
         var rift = skill.hasProjectile() ? world.findTemplate(skill.projectile()) : null;
-        if (room <= 0 || creature == null || rift == null) {
+        if (room <= 0 || rift == null) {
             return false;
         }
-        // Two that rise together stand a body apart, the body being what rises.
-        float apart = 2f * uz.dukeengine.core.thing.Solid.of(creature).footprintRadius();
-        var spots = Summoning.spots(world, owner, towards, skill.radius(), room, apart,
+        // Two that rise together stand a body apart -- the widest body of what rises.
+        var spots = Summoning.spots(world, owner, towards, skill.radius(), room, 2f * body,
                 settings.combat().summonTurnDegrees(), settings.combat().summonTurns());
         int opened = 0;
         for (var spot : spots) {
@@ -1053,7 +1068,7 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Wea
                 opening.markDestroyed(); // the template exists but is not a rift
                 continue;
             }
-            summoning.open(owner, skill.summons(), skill.durationFrames(),
+            summoning.open(owner, rising.get(opened), skill.durationFrames(),
                     skill.summonExperiencePercent(), skill.windUpFrames());
             summoned.add(opening.getId());
             opened++;

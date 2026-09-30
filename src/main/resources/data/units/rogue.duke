@@ -341,11 +341,12 @@ Hero
   ;   HEAL          a monster's, so far: call the Projectile down on one of your own
   ;                 below HealBelowPercent of his health, within Range and in plain
   ;                 sight, and it gives back Heal when it lands, WindUpFrames later.
-  ;   SUMMON        a monster's, so far: open SummonCount of the Projectile round you,
-  ;                 Radius away and toward where you point first, and a Summons climbs
-  ;                 out of each WindUpFrames later. They last DurationFrames, are worth
-  ;                 SummonExperiencePercent of their own kind, and no more than
-  ;                 MaxSummoned of one caster's stand at once.
+  ;   SUMMON        a monster's, so far: open a Projectile round you for every creature
+  ;                 Summons names -- [Skeleton = 2, Stalker = 2] is four, the swordsmen
+  ;                 first -- Radius away and toward where you point first, and each
+  ;                 climbs out of its own WindUpFrames later. They last DurationFrames,
+  ;                 are worth SummonExperiencePercent of their own kind, and no more
+  ;                 than MaxSummoned of one caster's stand at once.
   ;
   ; Each one already knows what the player must point at, so binding its key and
   ; drawing its ring both follow from the effect and neither is written twice.

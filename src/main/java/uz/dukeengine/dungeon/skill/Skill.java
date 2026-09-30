@@ -1,5 +1,6 @@
 package uz.dukeengine.dungeon.skill;
 
+import java.util.Map;
 import uz.dukeengine.core.data.Clip;
 import uz.dukeengine.core.data.Link;
 import uz.dukeengine.core.content.Effect;
@@ -91,8 +92,10 @@ import uz.dukeengine.dungeon.content.Projectile;
  * @param heal          how much health a {@code HEAL} gives back when it lands
  * @param healBelowPercent a {@code HEAL} is only for someone below this share of his
  *     own health, so a whole skeleton is never mended and a cooldown never wasted
- * @param summons       the creature a {@code SUMMON} calls up
- * @param summonCount   how many of it one cast calls up
+ * @param summons       what a {@code SUMMON} calls up, each kind and how many of it, in
+ *     the order written: {@code [Skeleton = 2, Stalker = 2]} is two swordsmen and two
+ *     archers a cast, and where the floor has room for fewer, the swordsmen are the
+ *     ones that rise. One cast calls up the whole of it
  * @param maxSummoned   how many of one caster's may stand at once; a cast calls up no
  *     more than there is room for
  * @param summonExperiencePercent what killing one is worth, as a share of its own kind:
@@ -135,8 +138,7 @@ public record Skill(
         float projectileSpeed,
         float heal,
         int healBelowPercent,
-        @Link(Monster.class) String summons,
-        int summonCount,
+        @Link(Monster.class) Map<String, Integer> summons,
         int maxSummoned,
         int summonExperiencePercent,
         int stunFrames) {
@@ -152,7 +154,7 @@ public record Skill(
      * ranks deep, whose owner is the block it is written in.
      */
     static final Skill DEFAULTS = new Skill(null, '\0', SkillEffect.STRIKE, 0f, 0f, 0f, 0f, 0f, 0f,
-            0, 0, 0, 0, 0, 90, 0, 4, 0, 0, 0, 0, "", "", "", "", 0f, "", "", 0f, 0f, 0, "", 0, 0, 0, 0);
+            0, 0, 0, 0, 0, 90, 0, 4, 0, 0, 0, 0, "", "", "", "", 0f, "", "", 0f, 0f, 0, Map.of(), 0, 0, 0);
 
     /** This skill as {@code owner}'s, its key the one a player presses. */
     public Skill ownedBy(String owner) {
@@ -160,7 +162,7 @@ public record Skill(
                 distance, hitWidth, boostPercent, boostPerLevel, durationFrames, tickFrames, slowFrames,
                 cooldownFrames, cooldownPerLevel, maxRank, levelPerRank, windUpFrames, manaCost,
                 manaCostPerLevel, projectile, icon, look, castAnim, castSeconds, name, blurb,
-                projectileSpeed, heal, healBelowPercent, summons, summonCount, maxSummoned,
+                projectileSpeed, heal, healBelowPercent, summons, maxSummoned,
                 summonExperiencePercent, stunFrames);
     }
 
