@@ -27,6 +27,7 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E11 | an untextured model keeps its own colour | waiting (small) |
 | E12 | a Layer block may say `Renews` (E9's option reachable from data) | waiting (small) |
 | E13 | an armed thing-aim's press marked as the game's own order, not an attack | waiting (small) |
+| E14 | a walk that stops short says so, and a way shut by bodies still goes as near as they let it | waiting (small) |
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
 game builds against the local engine.
@@ -34,7 +35,7 @@ game builds against the local engine.
 **For a session given this whole file** (a cloud session working on github.com/Duke-Engine/duke-engine):
 
 1. **E1–E7 and E9 are done** — they are here for their history. Do not redo them.
-2. **E11 is small** and can be done now, on its own.
+2. **E11 and E14 are small** and can be done now, each on its own.
 3. **E8 is yours.** Its class-by-class proposal, which the owner approved with the changes in its *Decided* paragraph,
    is the owner's page https://claude.ai/artifact/Sx1NpP81xmiqmLUny7Qakt (version 2); ask him to paste it if you
    cannot open it. Its step 3 (rpg) lifts the game's own packages, and the game's newest code is not on GitHub yet:
@@ -368,6 +369,50 @@ fight it — where a right click on the same gate (a context order, `game.contex
   staying the default so an ability aimed at an enemy is marked as today.
 
 Done when: a use aim pressed on the gate flashes the context colour; an attack ability aimed at an enemy looks as now.
+
+## E14 — A walk that stops short says so, and a way shut by bodies still goes as near as they let it (2026-10-01, small)
+
+A hero sent from the way in to the keep's gate with one order, on the first floor of 40 seeds, did not get there on
+13 (the game's probe, 2026-10-01). Three of the causes were the game's and are fixed there; the rest are the
+locomotor's and the pathfinder's, and any caller that waits on a walk meets them. Lines are from the 0.7.0 working
+tree of 2026-10-01.
+
+1. **A goal in no zone ignores what the bodies leave open.** `Pathfinder.findPathOrNearest` (~319-335): a goal whose
+   cell is in another zone, or in none — a gate, a building, the usual end of a walk *up to* a thing — sends the
+   search to the mover's zone's nearest cell to it with `orNearest = false`, costed by the traffic. Where a still
+   enemy stands on that cell, or across every way to it (the traffic closes both), both searches come back empty and
+   the route is `Path.partial(List.of())`, "nowhere nearer than where it stands", though open ground much nearer the
+   goal can be walked to. On seed 0 a hero 660 from the gate was told so at once, because a healer stood on its
+   threshold.
+   - Asked: the search there finds the nearest it can (`orNearest = true`, or the nearest cell it reached), as the
+     connected branch does.
+2. **A re-plan round a body that finds nowhere leaves the mover neither arrived nor short.** `MoveUpdate.update` →
+   `giveWay` → `sortOutTheHold` → `planAgainRound` → `planRoute` (~1039-1049), and `planRoundWhatStopsIt`: when the
+   route round the movers it is stuck behind has no waypoints, `update` returns (~752, "planned again and has nowhere
+   to go") with the mover not moving, its goal kept, `stoppedShort()` false and `isGoalReachable()` false. Nothing
+   calls `routeWalked` or `nowhereNearer`, so whoever waits on `stoppedShort()` waits for ever — and the goal is lost
+   later to `standStill`'s `moveTo(position)` or to new legs. Seeds 4, 9 and 24 stood like that until the end.
+   - Asked: a re-plan that leaves it standing short of its goal is stopped short, as a route given that leads
+     nowhere nearer already is.
+3. **Held between two still bodies, it re-plans between them for ever.** `planAgainRound` sets `round` to this frame's
+   holders only: the route round A runs into B, the route round B into A, `round` goes {A}, {B}, {A} — so the
+   pass-through rule (`round.equals(roundLast)`, ~487) never fires, and each re-plan resets the progress count
+   (`planRoute` → `resetProgress`), so the stuck check never fires either. On seed 8: 79 routes in 4700 frames,
+   walking on the spot.
+   - Asked: the movers it plans round add up while it makes no headway (or going back and forth between the same
+     ones counts as the same set), so that it passes through or stops short.
+4. **Also seen:** a route through a gap between two round still things narrower than the body (a statue and a pillar
+   14 apart, a hero 8 wide: the cell centres on both sides have room, the gap between them has not) — the locomotor
+   refuses the step, circles, gives up after two seconds, and a fresh route from there plans the same gap. Worth a
+   look when (1)–(3) are done.
+
+Done when: sent at a building whose nearest open cell a still enemy stands on, a mover walks up beside that enemy;
+after a re-plan round a body that finds no way, `stoppedShort()` is true; a mover held between two still movers
+passes through them or stops short within the stuck limit.
+
+Until then the game copes in `ItemErrand`: legs that stopped short of a thing, or stand as (2) leaves them, are taken
+up again from where he stands by a walk to the place (which goes through the connected branch), and an errand is
+given up — the hero saying `NoWayWord` — when he has stood within a cell of one spot for `StuckFrames`.
 
 ---
 

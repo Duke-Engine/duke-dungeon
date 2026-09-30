@@ -20,10 +20,11 @@ import uz.dukeengine.rts.module.WeaponUpdate;
  * <p>An errand in the engine's sense — a module on him while it lasts — so any order the player gives him after it,
  * a walk, an attack, a stop, gives it up as it gives up every errand. A walk somewhere else it notices for itself,
  * since a skill that moves him does not go through the engine's door: his legs going anywhere but here is the
- * errand over. Legs that got as near as they could without getting here leave a thing he was sent for lying, and he
- * says so, and put a thing he was sending down where they stopped. A thing with a shape — the gate — is walked up to
- * rather than onto: as near as he can get to it, its edge is there. And he is never on it for ever: stood getting
- * nowhere for as long as the rules say, he gives it up the same way.
+ * errand over. Legs that stopped short of it are where he was, not how near he can get, and he looks again from
+ * there; legs that find no way nearer from where he stands have got as near as they could, and leave a thing he was
+ * sent for lying, and he says so, or put a thing he was sending down where they stopped. A thing with a shape — the
+ * gate — is walked up to rather than onto: as near as he can get to it, its edge is there. And he is never on it for
+ * ever: stood getting nowhere for as long as the rules say, he gives it up the same way.
  *
  * <p>Deterministic: sent by an order, on every machine on the same frame; checked on a frame boundary; near enough
  * is a sum of squares, how far a shape reaches is the engine's own figure, and how long he has stood is counted in
@@ -171,20 +172,30 @@ public final class ItemErrand extends UpdateModule implements Errand {
             return;
         }
         if (!near(hero, rules.reach())) {
-            boolean stopped = legs != null && !legs.isMoving();
-            boolean asNearAsHeCan = gettingNowhere(hero, world) || stopped && legs.stoppedShort();
-            // A walk his brain took up again (HeroBrain.mindTheWayOnHisErrand) is to the place, and ends on the block
-            // beside a thing with a shape: not short of anything, and at its edge. Still a walk with a goal -- one his
-            // brain stopped for a body in the way has none, and he is not there until it takes him on.
-            boolean atItsEdge = going != null && stopped && there != null
-                    && near(hero, rules.reach() + there.getGeometry().footprintRadius());
-            if (!asNearAsHeCan && !atItsEdge) {
-                return;
+            if (!gettingNowhere(hero, world)) {
+                if (legs == null || legs.isMoving() || going == null && !legs.stoppedShort()) {
+                    // On his way -- or stopped by his brain for a body in the way, with no goal: he is not there until
+                    // it takes him on (HeroBrain.mindTheWayOnHisErrand).
+                    return;
+                }
+                if (!atItsEdge(hero, there) && !arrived(legs, going)) {
+                    // His legs stopped short of it -- a leg they gave up on, a route that ran out at a body, a way
+                    // round one that came back with nowhere in it -- and where they stopped is where he was, not how
+                    // near he can get. He looks again from there, by the walk his brain takes a walk up again with:
+                    // to the place, which ends on the block beside a thing with a shape.
+                    legs.moveTo(goal);
+                    if (legs.isMoving()) {
+                        return;
+                    }
+                }
             }
-            // As near as he could get. A place he could not reach is where he got to, and a thing lying there that
-            // he could not reach stays where it is, and he says so -- but a thing with a shape is walked up to rather
-            // than onto, and its edge is there.
-            if (there != null && !atItsEdge) {
+            // As near as he can get. A place he could not reach is where he got to, and a thing lying there that he
+            // cannot reach stays where it is, and he says so -- but a thing with a shape is walked up to rather than
+            // onto, and its edge is there.
+            // ponytail: a way shut only by bodies (a pack standing where the road runs) ends it here too, at once;
+            // standing and looking again every HeroRepathFrames until StuckFrames is the upgrade, if he should carry
+            // on by himself once the fight is over.
+            if (there != null && !atItsEdge(hero, there)) {
                 over = true;
                 bag.say(rules.noWayWord(), world.getFrame(), rules.noteFrames());
                 return;
@@ -250,6 +261,24 @@ public final class ItemErrand extends UpdateModule implements Errand {
             return false;
         }
         return world.getFrame() - stoodSince >= rules.stuckFrames();
+    }
+
+    /**
+     * Whether he stands at the edge of a thing with a shape: a walk taken up again is to the place (see above), and ends
+     * on the block beside such a thing, not short of anything and at its edge. Asked once his legs have stopped of
+     * themselves: a hero his brain has stopped for a body in the way is not there however near he stands, until he has
+     * stood getting nowhere as long as the rules allow.
+     */
+    private boolean atItsEdge(GameObject hero, GameObject there) {
+        return there != null && near(hero, rules.reach() + there.getGeometry().footprintRadius());
+    }
+
+    /**
+     * Whether his legs walked where they were going and that was the end of it: as near as the ground would let them,
+     * which is an answer, where legs that stopped short are not one.
+     */
+    private static boolean arrived(MoveUpdate legs, Coord3D going) {
+        return going != null && !legs.stoppedShort() && legs.isGoalReachable();
     }
 
     /** Whether he stands within {@code reach} of it, across the floor: how high either is does not come into it. */

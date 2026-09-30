@@ -56,7 +56,11 @@ class GateTest {
      * before the world starts, a spawn is only booked for its first frame.
      */
     private static Dungeon.Arena withAGate() {
-        var arena = Dungeon.world(hall(), SETTINGS);
+        return withAGate(SETTINGS);
+    }
+
+    private static Dungeon.Arena withAGate(DungeonSettings settings) {
+        var arena = Dungeon.world(hall(), settings);
         arena.game().spawn("Gate", arena.dungeon(), DOORWAY.x(), DOORWAY.y());
         arena.game().runHeadless(1);
         find(arena.game(), "Gate").setOrientation((float) (StrictMath.PI / 2));
@@ -222,6 +226,38 @@ class GateTest {
         game.runHeadless(150);
 
         assertEquals("Boss xonasi uchun kalit topishim kerak", bag.noteAt(game.getLogic().getFrame()));
+    }
+
+    /** Deaf, so a skeleton standing on the threshold is only a body in the way. */
+    private static final DungeonSettings DEAF = DungeonSettings.parse("""
+            Monster
+              Name = Skeleton
+              SenseRadius = 1
+              ChaseRadius = 1
+              CloseDistance = 4
+            End
+            """);
+
+    /**
+     * A body standing still on the threshold, where his road to the gate ends, does not end the errand where he set
+     * out. Sent at the gate itself, his legs aim at the one spot beside it that the body stands on, find no way nearer
+     * than where he is, and stop there: stopped short is where he was, not how near he can get. He looks again from
+     * there, as his brain takes a walk up again -- to a place beside the gate he may stand in -- walks up and says it.
+     */
+    @Test
+    void sentUpToItWithABodyOnItsThresholdHeLooksAgainAndGetsThere() {
+        var arena = withAGate(DEAF);
+        var game = arena.game();
+        game.spawn("Skeleton", arena.dungeon(), 197.5f, 157.5f);
+        game.spawn("Rogue", arena.hero(), 120f, 155f);
+        game.runHeadless(10); // time for the skeleton to hold the ground it stands on
+        var bag = new LootBag();
+
+        assertTrue(ItemErrand.toTheGate(find(game, "Rogue"), find(game, "Gate"), bag, rules(arena)));
+        game.runHeadless(150);
+
+        assertEquals("Boss xonasi uchun kalit topishim kerak", bag.noteAt(game.getLogic().getFrame()),
+                "he gave it up where he set out: " + find(game, "Rogue").getPosition());
     }
 
     /** Given the key, the gate opens — the owner's swing — and the key is gone from his bag. */
