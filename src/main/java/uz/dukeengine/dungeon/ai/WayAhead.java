@@ -96,7 +96,7 @@ final class WayAhead {
             return null;
         }
         var ahead = spotAt(mover, heading, probe);
-        if (!occupied(world, mover, ahead, quarry)) {
+        if (!aBodyIn(world, mover, ahead, quarry)) {
             return null; // clear road
         }
         // A whole body-width to the side, because that is what getting past
@@ -114,7 +114,7 @@ final class WayAhead {
             // gap to squeeze through either. Stone counts too, and only here --
             // ahead of it a wall means the route turns at that wall, and the turn
             // is the step.
-            if (!occupied(world, mover, side, null) && !world.isGroundBlocked(side)) {
+            if (world.findBlocker(mover, side) == null && !world.isGroundBlocked(side)) {
                 return null; // there is room beside it, so it can be walked round
             }
         }
@@ -122,7 +122,7 @@ final class WayAhead {
     }
 
     /**
-     * Whether a body stands in that spot.
+     * Whether a body that could get out of the way stands in that spot.
      *
      * <p>Asked of the world with the mover's own size taken into account, so it is
      * the gap between their surfaces rather than between their middles.
@@ -132,11 +132,17 @@ final class WayAhead {
      * calling that an obstruction would stop it a probe's length short of the
      * hero, outside its own fighting distance, for ever. Arriving is not being
      * blocked; how near it wants to get is {@code CloseDistance}'s business.
+     *
+     * <p><b>Nor does a thing that never moves.</b> A statue, a pillar, the fountain,
+     * the gate: ground, as stone is, which the route already turns at — the engine
+     * lays them into the grid for exactly that. Standing for one to step aside is
+     * standing for good, which is what a hero sent from the way in did when his road
+     * grazed the statue beside the fountain, his errand open all the while.
      */
-    private static boolean occupied(World world, GameObject mover, Coord3D spot,
+    private static boolean aBodyIn(World world, GameObject mover, Coord3D spot,
             GameObject quarry) {
         var body = world.findBlocker(mover, spot);
-        return body != null && body != quarry;
+        return body != null && body != quarry && body.isMobile();
     }
 
     private static Coord3D spotAt(GameObject mover, float heading, float probe) {

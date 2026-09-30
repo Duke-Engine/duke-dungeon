@@ -200,6 +200,30 @@ class WedgedTest {
                         + queue.hero().getPosition());
     }
 
+    /**
+     * A thing that never moves is part of the ground, not a body in the way: he walks past it, as past a wall, rather
+     * than stand waiting for it to step aside.
+     *
+     * <p>The way in of the descent's first floor on seed 26 has a statue beside its fountain, and the road north runs
+     * between the two, grazing the statue. From there the statue is a hair in front of him with the fountain at his
+     * side, which for a body would be a reason to stand; a statue never steps aside, and he stood there for good, 16
+     * units from where he set out.
+     */
+    @Test
+    void aThingThatNeverMovesIsWalkedPastRatherThanWaitedFor() {
+        var game = Dungeon.newSession(26L, DungeonSettings.load()).game();
+        game.runHeadless(2);
+        var hero = creature(game, "Rogue", 0);
+        var setOut = hero.getPosition();
+
+        game.postCommand(new GameMessage.MoveTo(game.getLocalPlayerIndex(), List.of(hero.getId()),
+                new Coord3D(547.5f, 267.5f, 0f)));
+        game.runHeadless(80); // long enough to be well past it, and short of whatever the floor has further on
+
+        assertTrue(hero.getPosition().distance(setOut) > 40f,
+                "he stood waiting for the statue to step aside, at " + hero.getPosition());
+    }
+
     // ---- the same fault from the monsters' side, which is where it survived ----
 
     /**
