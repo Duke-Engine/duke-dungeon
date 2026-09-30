@@ -145,8 +145,9 @@ public final class ItemErrand extends UpdateModule implements Errand {
             boolean stopped = legs != null && !legs.isMoving();
             boolean asNearAsHeCan = stopped && legs.stoppedShort();
             // A walk his brain took up again (HeroBrain.mindTheWayOnHisErrand) is to the place, and ends on the block
-            // beside a thing with a shape: not short of anything, and at its edge.
-            boolean atItsEdge = stopped && there != null
+            // beside a thing with a shape: not short of anything, and at its edge. Still a walk with a goal -- one his
+            // brain stopped for a body in the way has none, and he is not there until it takes him on.
+            boolean atItsEdge = going != null && stopped && there != null
                     && near(hero, rules.reach() + there.getGeometry().footprintRadius());
             if (!asNearAsHeCan && !atItsEdge) {
                 return;

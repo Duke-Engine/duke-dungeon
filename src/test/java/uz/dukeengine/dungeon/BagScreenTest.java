@@ -3,6 +3,7 @@ package uz.dukeengine.dungeon;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
@@ -306,7 +307,8 @@ class BagScreenTest {
 
     /**
      * A click on the keep's gate is an order of the game's own, as a click on a chest is — so the ring round it
-     * flashes yellow — and the order sends the hero up to it.
+     * flashes yellow, and the pointer over it is the cursor of the order's name — and the order sends the hero up to
+     * it. A click on a monster is no such order.
      */
     @Test
     void aClickOnTheGateSendsHimUpToIt() {
@@ -318,11 +320,22 @@ class BagScreenTest {
         var hero = find(game, "Rogue");
         var gate = find(game, "Gate");
         assertNotNull(gate, "the floor's keep has no gate");
+        var monster = game.getLogic().getObjects().stream()
+                .filter(object -> object.getPlayerIndex() != hero.getPlayerIndex()
+                        && object.findModule(uz.dukeengine.rts.module.WeaponUpdate.class) != null)
+                .findFirst().orElseThrow();
 
         game.setSelection(List.of(hero.getId().value()));
+        game.setPointedAt(monster.getId().value());
+        game.runHeadless(2);
+        assertNull(game.getSnapshot().contextOrder(), "a click on a monster is no walk up to a gate");
+
         game.setPointedAt(gate.getId().value());
         game.runHeadless(2);
         assertEquals(uz.dukeengine.dungeon.party.PartyOrders.TO_THE_GATE, game.getSnapshot().contextOrder());
+        assertTrue(SETTINGS.cursors().stream()
+                .anyMatch(pointer -> pointer.name().equals(uz.dukeengine.dungeon.party.PartyOrders.TO_THE_GATE)),
+                "no cursor has the order's name, so the pointer over the gate stays the plain one");
 
         // What the client sends for that click.
         game.postCommand(new uz.dukeengine.rts.message.GameMessage.GameOrder(hero.getPlayerIndex(),

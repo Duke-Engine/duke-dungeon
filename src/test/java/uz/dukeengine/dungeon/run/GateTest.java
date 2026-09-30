@@ -69,9 +69,13 @@ class GateTest {
 
     /** What an errand here shares: the shipped reach, and a note that lasts, so what he says can be read. */
     private static ItemErrand.Rules rules(Dungeon.Arena arena) {
+        return rules(arena, SETTINGS.lootDrops().pickupRange());
+    }
+
+    /** The same with a reach of its own, for a test that must not turn on how far the shipped one happens to reach. */
+    private static ItemErrand.Rules rules(Dungeon.Arena arena, float reach) {
         var drops = SETTINGS.lootDrops();
-        return new ItemErrand.Rules(drops.pickupRange(), 100_000, drops.template(), arena.dungeon().getIndex(),
-                drops.fullWord());
+        return new ItemErrand.Rules(reach, 100_000, drops.template(), arena.dungeon().getIndex(), drops.fullWord());
     }
 
     private static Loot key() {
@@ -156,7 +160,10 @@ class GateTest {
     /**
      * A walk his brain takes up again — once a body in the way has let him by, see HeroBrain.mindTheWayOnHisErrand —
      * is a walk to the place, and ends on the free block beside the gate: where it was sent it could not go, and it
-     * is not short of anything either. That block is just outside the reach, and he says it from there all the same.
+     * is not short of anything either. That block is outside the reach, and he says it from there all the same.
+     *
+     * <p>Stands in for that resume: the test moves his legs itself, as the brain would, rather than wait for a body
+     * to stand in his way; and it has a reach of its own, so the block is outside it whatever the shipped one is.
      */
     @Test
     void sentUpToItAWalkTakenUpAgainEndsBesideItAndHeSaysItThere() {
@@ -166,18 +173,52 @@ class GateTest {
         game.runHeadless(2);
         var hero = find(game, "Rogue");
         var bag = new LootBag();
+        float reach = 12f;
 
-        assertTrue(ItemErrand.toTheGate(hero, find(game, "Gate"), bag, rules(arena)));
+        assertTrue(ItemErrand.toTheGate(hero, find(game, "Gate"), bag, rules(arena, reach)));
         game.runHeadless(5);
         hero.getLocomotor().moveTo(DOORWAY);
         game.runHeadless(150);
 
         float dx = hero.getPosition().x() - DOORWAY.x();
         float dy = hero.getPosition().y() - DOORWAY.y();
-        assertTrue(Math.sqrt(dx * dx + dy * dy) > SETTINGS.lootDrops().pickupRange(),
+        assertTrue(Math.sqrt(dx * dx + dy * dy) > reach,
                 "he is beyond the reach, or this is not the walk that ends there: " + hero.getPosition());
         assertEquals("Boss xonasi uchun kalit topishim kerak", bag.noteAt(game.getLogic().getFrame()));
         assertNotNull(find(game, "Gate"), "and it is still shut");
+    }
+
+    /**
+     * A hero his brain has stopped on the way — for a body in the doorway, say — is not there yet, however near the
+     * gate he stands: he says it when he gets there, once the brain takes him on again.
+     */
+    @Test
+    void sentUpToItAHeroStoppedOnTheWayIsNotThereYet() {
+        var arena = withAGate();
+        var game = arena.game();
+        game.spawn("Rogue", arena.hero(), 150f, 155f);
+        game.runHeadless(2);
+        var hero = find(game, "Rogue");
+        var gate = find(game, "Gate");
+        var bag = new LootBag();
+        float reach = SETTINGS.lootDrops().pickupRange();
+
+        assertTrue(ItemErrand.toTheGate(hero, gate, bag, rules(arena)));
+        game.runHeadless(30);
+        hero.getLocomotor().stop();
+        game.runHeadless(30);
+
+        float dx = hero.getPosition().x() - DOORWAY.x();
+        float dy = hero.getPosition().y() - DOORWAY.y();
+        float apart = (float) Math.sqrt(dx * dx + dy * dy);
+        assertTrue(apart > reach && apart <= reach + gate.getGeometry().footprintRadius(),
+                "he is stopped where a hero at its edge would be, or this tells nothing: " + hero.getPosition());
+        assertEquals("", bag.noteAt(game.getLogic().getFrame()), "he said it from where he was stopped");
+
+        hero.getLocomotor().moveTo(DOORWAY);
+        game.runHeadless(150);
+
+        assertEquals("Boss xonasi uchun kalit topishim kerak", bag.noteAt(game.getLogic().getFrame()));
     }
 
     /** Opened, the same gate stands open where it stood, turned as it was, and he walks on through. */

@@ -203,6 +203,8 @@ class ItemErrandTest {
 
         assertFalse(ItemErrand.drop(room.hero(), 0, new Coord3D(200f, 150f, 0f), bag, room.rules()));
         assertFalse(ItemErrand.pickUp(room.hero(), room.hero(), bag, room.rules()), "he holds nothing to take");
+        assertFalse(ItemErrand.toTheGate(room.hero(), room.chestAt(200f, BLADE), bag, room.rules()),
+                "a chest is no gate to go up to");
         assertNull(room.hero().findModule(ItemErrand.class));
     }
 }
