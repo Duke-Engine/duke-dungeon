@@ -226,7 +226,8 @@ class StunTest {
                 "no " + SETTINGS.combat().stunLook() + " riding him the frame he was stunned: " + played);
     }
 
-    /** They last as long as the longest stun any skill gives, and no layer of them says how long for itself. */
+    /** They last as long as the longest stun any skill gives, and no layer of them says how
+     * long for itself. The stun's layers renew with each stun; other AURA layers do not. */
     @Test
     void theStarsLastAsLongAsTheLongestStun() {
         var visuals = Visuals.create();
@@ -237,22 +238,40 @@ class StunTest {
         assertEquals(longest / (float) GameConstants.LOGICFRAMES_PER_SECOND,
                 visuals.getEffectSeconds(SETTINGS.combat().stunLook()), 0.001f);
         var layers = SETTINGS.effectLayers().stream()
-                .filter(art -> art.effect().equals(SETTINGS.combat().stunLook())).map(art -> Main.layerOf(art, SETTINGS)).toList();
+                .filter(art -> art.effect().equals(SETTINGS.combat().stunLook()))
+                .map(art -> Main.layerOf(art, SETTINGS)).toList();
         assertFalse(layers.isEmpty(), "the look a stun is worn in is drawn by nothing");
         for (var layer : layers) {
             assertEquals(EffectLayer.AURA, layer.type(), "a stun is worn, and goes where he goes");
             assertEquals(0f, layer.seconds(), 0.001f, "a layer that says how long it lasts no longer follows the stun");
             assertTrue(layer.renews(), "stunned again while it burns, the picture must last to the new stun's end");
         }
-        // Other auras keep the engine's default: another effect's AURA layer must not renew
-        var otherAura = SETTINGS.effectLayers().stream()
+        // Other auras keep the engine's default: they do not renew
+        var otherAuras = SETTINGS.effectLayers().stream()
                 .filter(art -> !art.effect().equals(SETTINGS.combat().stunLook()))
                 .map(art -> Main.layerOf(art, SETTINGS))
                 .filter(layer -> layer.type().equals(EffectLayer.AURA))
-                .findFirst();
-        if (otherAura.isPresent()) {
-            assertFalse(otherAura.get().renews(),
-                    "other auras do not renew; the stun alone does");
+                .toList();
+        assertTrue(!otherAuras.isEmpty(), "the premise: there are other shipped AURA layers");
+        for (var layer : otherAuras) {
+            assertFalse(layer.renews(), "other auras do not renew; the stun alone does");
+        }
+        // The rule follows the data, not the name: re-point StunLook and see renewal move
+        var swapped = Content.data().replace(
+                "StunLook = " + SETTINGS.combat().stunLook(),
+                "StunLook = Arrival");
+        var swappedSettings = DungeonSettings.parse(swapped);
+        var arrivalLayers = swappedSettings.effectLayers().stream()
+                .filter(art -> art.effect().equals("Arrival"))
+                .map(art -> Main.layerOf(art, swappedSettings)).toList();
+        if (!arrivalLayers.isEmpty()) {
+            assertTrue(arrivalLayers.stream().allMatch(EffectLayer::renews),
+                    "when StunLook points to Arrival, Arrival's layers renew");
+            var stunLayers = swappedSettings.effectLayers().stream()
+                    .filter(art -> art.effect().equals("Stunned"))
+                    .map(art -> Main.layerOf(art, swappedSettings)).toList();
+            assertTrue(stunLayers.stream().noneMatch(EffectLayer::renews),
+                    "and Stunned's layers do not");
         }
     }
 }

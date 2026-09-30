@@ -193,8 +193,9 @@ End
 ; ---------------------------------------------------------------------------
 Effect
   Name = Stunned
-  ; Stunned again while it burns, the picture lasts to the new stun's end rather
-  ; than being dropped, as the stun itself starts its count again.
+  ; The game's own rule on Combat's StunLook (Main.layerOf): a Layer block cannot say
+  ; Renews, so stunned again while it burns, the picture lasts to the new stun's end
+  ; rather than being dropped, as the stun itself starts its count again.
 
   Layers = [
     ; A ring of light turning over his head, as a dazed man's world turns: above a

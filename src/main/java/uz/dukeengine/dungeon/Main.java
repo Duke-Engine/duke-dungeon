@@ -76,7 +76,8 @@ public final class Main {
      * down once, in {@code EffectLayer.Builder}. Package-private so the game's own
      * test can ask what a block in the file turns into on screen.
      */
-    static uz.dukeengine.client3d.EffectLayer layerOf(DungeonSettings.EffectLayerArt art) {
+    private static uz.dukeengine.client3d.EffectLayer.Builder builderOf(
+            DungeonSettings.EffectLayerArt art) {
         var layer = uz.dukeengine.client3d.EffectLayer.builder();
         art.fields().forEach((field, value) -> {
             switch (field) {
@@ -94,7 +95,11 @@ public final class Main {
                 default -> number(layer, field, Float.parseFloat(value));
             }
         });
-        return layer.build();
+        return layer;
+    }
+
+    static uz.dukeengine.client3d.EffectLayer layerOf(DungeonSettings.EffectLayerArt art) {
+        return builderOf(art).build();
     }
 
     /**
@@ -105,30 +110,13 @@ public final class Main {
      * it wears must last to the new end. Named by the Combat block, so no name is compiled in.
      * Other auras keep the engine's default drop: the knight's Whirlwind is cast again at
      * each landing and must not be stretched.
+     *
+     * @see #layerOf(DungeonSettings.EffectLayerArt)
      */
-    static uz.dukeengine.client3d.EffectLayer layerOf(DungeonSettings.EffectLayerArt art, DungeonSettings settings) {
-        var layer = uz.dukeengine.client3d.EffectLayer.builder();
-        art.fields().forEach((field, value) -> {
-            switch (field) {
-                case "type" -> layer.type(value);
-                case "texture" -> layer.texture(value);
-                case "additive" -> layer.additive(Boolean.parseBoolean(value));
-                case "count" -> layer.count(Integer.parseInt(value));
-                case "colourStart" -> layer.colourStart(Integer.parseInt(value));
-                case "colourEnd" -> layer.colourEnd(Integer.parseInt(value));
-                case "lightColour" -> layer.lightColour(Integer.parseInt(value));
-                case "direction" -> layer.direction(value);
-                case "at" -> layer.at(value);
-                case "measure" -> layer.measure(value);
-                case "follows" -> layer.follows(Boolean.parseBoolean(value));
-                default -> number(layer, field, Float.parseFloat(value));
-            }
-        });
+    static uz.dukeengine.client3d.EffectLayer layerOf(DungeonSettings.EffectLayerArt art,
+            DungeonSettings settings) {
         var stunLook = settings.combat().stunLook();
-        if (!stunLook.isBlank() && art.effect().equals(stunLook)) {
-            layer.renews(true);
-        }
-        return layer.build();
+        return builderOf(art).renews(!stunLook.isBlank() && art.effect().equals(stunLook)).build();
     }
 
     private static void number(uz.dukeengine.client3d.EffectLayer.Builder layer, String field,

@@ -31,7 +31,7 @@ class DungeonEffectLayerTest {
 
     /** What the file's layers turn into, exactly as Main hands them over. */
     private static EffectLayer drawn(DungeonSettings.EffectLayerArt art) {
-        return Main.layerOf(art);
+        return Main.layerOf(art, SETTINGS);
     }
 
     /**
