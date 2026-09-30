@@ -36,6 +36,15 @@ class KeepSettingsTest {
         assertTrue(refused.getMessage().contains("14"), refused.getMessage());
     }
 
+    /** The boss in the middle and a mage at each corner, a cell in from each wall: seven across at least. */
+    @Test
+    void aKeepTooSmallForItsGuardIsRefused() {
+        var data = Content.data().replace("    Sizes = [15, 13, 11, 9]\n", "    Sizes = [15, 5]\n");
+
+        var refused = assertThrows(IllegalArgumentException.class, () -> DungeonSettings.parse(data));
+        assertTrue(refused.getMessage().endsWith(": 5"), refused.getMessage());
+    }
+
     /** Largest first: the order is the preference, so a list that rises would build the smallest keep every time. */
     @Test
     void sizesNotLargestFirstAreRefused() {

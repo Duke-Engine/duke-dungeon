@@ -73,13 +73,44 @@ class KeepFloorTest {
     @Test
     void theGuardStandsInTheCourt() {
         int depth = SETTINGS.finalDepth();
-        int guards = SETTINGS.bossGuardsAt(depth).stream().mapToInt(guard -> guard.count()).sum();
+        int guards = SETTINGS.bossGuards().stream().mapToInt(guard -> guard.count()).sum();
         for (long seed = 0; seed < 40; seed++) {
             var floor = DungeonGenerator.generate(seed, SETTINGS, depth);
             var keep = floor.keep();
             assertEquals(guards, floor.monsters().stream()
                     .filter(monster -> keep.isCourt(monster.at().cellX(), monster.at().cellY())).count(),
                     "seed " + seed);
+        }
+    }
+
+    /**
+     * The boss's four mages stand at the court's corners, a cell in from each wall, on every floor: the guard in the
+     * file's order, so the healers stand at one diagonal and the summoners at the other.
+     */
+    @Test
+    void theGuardStandsAtTheCourtsCornersOnEveryFloor() {
+        var named = new java.util.ArrayList<String>();
+        for (var guard : SETTINGS.bossGuards()) {
+            for (int n = 0; n < guard.count(); n++) {
+                named.add(guard.kind());
+            }
+        }
+        assertEquals(List.of("SkeletonHealer", "SkeletonHealer", "SkeletonSummoner", "SkeletonSummoner"), named,
+                "the shipped file's guard, in its order");
+        for (int depth = 1; depth <= SETTINGS.finalDepth(); depth++) {
+            for (long seed = 0; seed < 20; seed++) {
+                var floor = DungeonGenerator.generate(seed, SETTINGS, depth);
+                var keep = floor.keep();
+                var wanted = new java.util.ArrayList<GeneratedDungeon.Monster>();
+                for (int i = 0; i < named.size(); i++) {
+                    var corner = keep.corners().get(i);
+                    wanted.add(new GeneratedDungeon.Monster(named.get(i), Placement.atCell(corner[0], corner[1])));
+                }
+                assertEquals(wanted, floor.monsters().stream()
+                                .filter(monster -> keep.isCourt(monster.at().cellX(), monster.at().cellY()))
+                                .toList(),
+                        "seed " + seed + " at depth " + depth);
+            }
         }
     }
 

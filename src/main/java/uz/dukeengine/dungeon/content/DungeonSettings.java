@@ -233,16 +233,13 @@ public final class DungeonSettings {
     }
 
     /**
-     * Who stands with the boss at this depth: each guard the file names whose kind is
-     * deep enough to have appeared at all -- so a shallow boss still waits alone.
+     * Who stands with the boss, on every floor: each guard the file names, in the order it names them. MinDepth is
+     * for the rooms the draw fills, and keeps no guard away.
      */
-    public java.util.List<BossGuard> bossGuardsAt(int depth) {
+    public java.util.List<BossGuard> bossGuards() {
         var here = new java.util.ArrayList<BossGuard>();
         for (var guard : map.descent().bossGuards().entrySet()) {
-            var kind = monster(guard.getKey());
-            if (kind != null && kind.minDepth() <= depth) {
-                here.add(new BossGuard(guard.getKey(), guard.getValue()));
-            }
+            here.add(new BossGuard(guard.getKey(), guard.getValue()));
         }
         return here;
     }
@@ -596,8 +593,8 @@ public final class DungeonSettings {
         require(map.propsPerRoom().max() >= map.propsPerRoom().min(),
                 "MaxPerRoom must not be below MinPerRoom");
         for (int size : map.keep().sizes()) {
-            require(size >= 5 && size % 2 == 1, "a Keep is odd and at least 5 across, so its court and its doorway"
-                    + " have middle cells: " + size);
+            require(size >= 7 && size % 2 == 1, "a Keep is odd and at least 7 across, so its court and its doorway"
+                    + " have middle cells and its guard corners apart from the boss's: " + size);
             require(size + 4 <= Math.min(map.generation().mapWidth(), map.generation().mapHeight()),
                     "a Keep " + size + " across cannot stand on the map with rock round it");
         }

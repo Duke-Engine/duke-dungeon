@@ -57,6 +57,21 @@ class KeepShapeTest {
         assertFalse(NORTH.holds(19, 14));
     }
 
+    /** The boss's first four guards: the court's corners, a cell in from each wall, one diagonal and then the other. */
+    @Test
+    void itsGuardStandsAtTheCourtsCornersACellInFromEachWall() {
+        var corners = NORTH.corners();
+
+        assertArrayEquals(new int[] {12, 12}, corners.get(0));
+        assertArrayEquals(new int[] {16, 16}, corners.get(1), "the first two on one diagonal");
+        assertArrayEquals(new int[] {16, 12}, corners.get(2));
+        assertArrayEquals(new int[] {12, 16}, corners.get(3), "the other two on the other");
+        for (var corner : corners) {
+            assertTrue(NORTH.isCourt(corner[0] - 1, corner[1] - 1) && NORTH.isCourt(corner[0] + 1, corner[1] + 1),
+                    "a cell in from the wall, not against it: " + corner[0] + "," + corner[1]);
+        }
+    }
+
     @Test
     void aGateInAWallRunningDownTheMapFacesAQuarterTurn() {
         var west = new Keep(new Room(10, 10, 9, 9), Keep.Side.WEST, 0);

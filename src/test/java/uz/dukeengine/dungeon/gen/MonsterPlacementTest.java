@@ -119,7 +119,7 @@ class MonsterPlacementTest {
     void deeperDownTheBossRoomHoldsTheGuardTheFileNames() {
         int depth = SETTINGS.finalDepth();
         var named = new java.util.HashMap<String, Integer>();
-        for (var guard : SETTINGS.bossGuardsAt(depth)) {
+        for (var guard : SETTINGS.bossGuards()) {
             named.merge(guard.kind(), guard.count(), Integer::sum);
         }
         assertFalse(named.isEmpty(), "the shipped file puts nobody with the last boss");
@@ -172,6 +172,75 @@ class MonsterPlacementTest {
             assertEquals(without.asciiMap(), with.asciiMap(), "seed " + seed);
             assertEquals(without.monsters(), with.monsters().stream()
                     .filter(monster -> !inRoom(monster.at(), room)).toList(), "seed " + seed);
+        }
+    }
+
+    /**
+     * MinDepth is for the rooms the draw fills: the file's guard stands with every boss, however shallow its floor —
+     * asked of the deepest kind the rooms draw, whatever the unit files say that is today.
+     */
+    @Test
+    void aGuardStandsWithTheBossWhateverItsMinDepth() {
+        var deepest = SETTINGS.monsters().stream().filter(kind -> kind.weight() > 0)
+                .max(java.util.Comparator.comparingInt(kind -> kind.minDepth())).orElseThrow();
+        assertTrue(deepest.minDepth() > 1, "every kind is met on the first floor, so this proves nothing");
+        var guarded = guardedBy(deepest.name() + " = 4");
+        for (long seed = 0; seed <= 10; seed++) {
+            var floor = DungeonGenerator.generate(seed, guarded, 1);
+            var room = floor.rooms().get(floor.bossRoom());
+
+            assertEquals(4, floor.monsters().stream()
+                    .filter(monster -> inRoom(monster.at(), room) && monster.kind().equals(deepest.name())).count(),
+                    "seed " + seed + ": " + deepest.name() + " is not a floor deep enough to stand with the boss");
+        }
+    }
+
+    /** A guard beyond the fourth stands on the ring round the boss, inside the court, where every guard used to. */
+    @Test
+    void aGuardBeyondTheFourthStandsOnTheRingRoundTheBoss() {
+        var five = guardedBy("SkeletonHealer = 2, SkeletonSummoner = 2, Runner = 1");
+        for (long seed = 0; seed <= 20; seed++) {
+            var floor = DungeonGenerator.generate(seed, five, 1);
+            var keep = floor.keep();
+            var runner = floor.monsters().stream()
+                    .filter(monster -> keep.isCourt(monster.at().cellX(), monster.at().cellY())
+                            && monster.kind().equals("Runner"))
+                    .findFirst().orElseThrow();
+            int out = Math.max(Math.abs(runner.at().cellX() - floor.boss().at().cellX()),
+                    Math.abs(runner.at().cellY() - floor.boss().at().cellY()));
+
+            assertEquals(five.bossGuardRing(), out, "seed " + seed + ": " + runner.at());
+            for (var corner : keep.corners()) {
+                assertFalse(runner.at().equals(GeneratedDungeon.Placement.atCell(corner[0], corner[1])),
+                        "seed " + seed + ": it stands on a corner a mage already has");
+            }
+        }
+    }
+
+    /**
+     * In a keep nine across, the smallest the shipped file builds, the ring round the boss has its corners where the
+     * court's are, and the four mages stand on them: a fifth guard passes them by, and no two stand on one cell. The
+     * keep is made nine across here because the shipped sizes seldom give one.
+     */
+    @Test
+    void aGuardBeyondTheFourthPassesByTheMagesCornersInAKeepNineAcross() {
+        var data = uz.dukeengine.dungeon.content.Content.data()
+                .replace("    Sizes = [15, 13, 11, 9]\n", "    Sizes = [9]\n")
+                .replace("    BossGuards = [SkeletonHealer = 2, SkeletonSummoner = 2]\n",
+                        "    BossGuards = [SkeletonHealer = 2, SkeletonSummoner = 2, Runner = 1]\n");
+        var nine = DungeonSettings.parse(data);
+        for (long seed = 0; seed <= 20; seed++) {
+            var floor = DungeonGenerator.generate(seed, nine, 1);
+            var keep = floor.keep();
+            var cells = new HashSet<Long>();
+            for (var monster : floor.monsters()) {
+                if (keep.isCourt(monster.at().cellX(), monster.at().cellY())) {
+                    assertTrue(cells.add(cellOf(monster.at())), "seed " + seed + ": two on one cell");
+                }
+            }
+
+            assertEquals(9, keep.size(), "seed " + seed);
+            assertEquals(5, cells.size(), "seed " + seed + ": four mages and a runner in the court");
         }
     }
 

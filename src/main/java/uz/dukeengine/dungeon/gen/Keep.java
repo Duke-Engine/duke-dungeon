@@ -76,6 +76,17 @@ public record Keep(Room walls, Side side, int chamber) {
     }
 
     /**
+     * Where the boss's first four guards stand: the court's corners, a cell in from each wall — one diagonal and then
+     * the other, the order the ring round the boss takes its own corners in, so the first two named share a diagonal.
+     */
+    public List<int[]> corners() {
+        int near = 2;
+        int far = size() - 3;
+        return List.of(new int[] {walls.x() + near, walls.y() + near}, new int[] {walls.x() + far, walls.y() + far},
+                new int[] {walls.x() + far, walls.y() + near}, new int[] {walls.x() + near, walls.y() + far});
+    }
+
+    /**
      * Whether a cell is the threshold: floor a step out from the doorway and as wide as it, drawn in the keep's
      * stone — where the stair stood while the court was a storey up.
      */
