@@ -1,5 +1,6 @@
 package uz.dukeengine.dungeon.content;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -207,6 +208,35 @@ class DungeonSettingsTest {
     }
 
     /**
+     * A unit whose block lists what it is built from and gives it skills has to list the SkillBook that carries them --
+     * a hero's as much as a monster's (see {@code LifestealTest} for the bosses'). Without one the skills are words in
+     * a file: nothing casts them, nothing drinks from them, and nothing says so. So the file is refused, naming him.
+     */
+    @Test
+    void aHeroWhoseSkillsHaveNoBookIsRefused() {
+        var rogue = ShippedBlock.of("Rogue");
+        var bookless = rogue.text().replace("    SkillBook\n    End,\n", "");
+        assertNotEquals(rogue.text(), bookless, "the premise: his SkillBook was taken out");
+
+        var refused = assertThrows(IllegalArgumentException.class,
+                () -> DungeonSettings.parse(Content.data().replace(rogue.text(), bookless)));
+        assertTrue(refused.getMessage().contains("Rogue") && refused.getMessage().contains("SkillBook"),
+                refused.getMessage());
+    }
+
+    /**
+     * ...but a block that lists no Modules at all says nothing of what its unit is built from: it is a re-tuning of
+     * one built elsewhere -- a map's own blocks, a test's -- and keeps whatever book that one has.
+     */
+    @Test
+    void aBlockThatListsNoModulesIsAReTuningAndIsLeftAlone() {
+        assertDoesNotThrow(() -> DungeonSettings.parse(
+                "Hero\n  Name = Rogue\n  Skills = [\n    Skill\n      Key = Q\n      Effect = DASH\n"
+                        + "      Distance = 40\n    End\n  ]\nEnd\n"),
+                "a re-tuning of his Q was refused for the book it leaves to him");
+    }
+
+    /**
      * The hero stops inside his own reach, not at the edge of it.
      *
      * <p>{@code CloseDistance} is his: each monster carries its own further down
@@ -404,7 +434,8 @@ class DungeonSettingsTest {
                 case DASH, BLINK -> skill.distance();
                 case METEOR -> skill.range();
                 case AREA_DAMAGE, SUMMON -> skill.radius();
-                case EMPOWER, GUARD, LIFESTEAL -> 1f; // his own width; the look says how wide
+                case EMPOWER, GUARD -> 1f; // his own width; the look says how wide
+                case LIFESTEAL -> 1f; // never cast, so no ring is ever drawn: a stand-in to keep the switch whole
             };
             assertTrue(reach > 0f, skill.heroTemplate() + "'s " + skill.key() + " is a "
                     + skill.effect() + " and has nothing to draw a ring from");

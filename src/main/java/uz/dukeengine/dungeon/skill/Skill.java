@@ -40,8 +40,10 @@ import uz.dukeengine.dungeon.content.Projectile;
  *     worked out from the speed because the two are free to disagree and the
  *     PICTURE is the one the player trusts
  * @param boostPercent  what this skill is worth in percent — damage added by
- *     {@code EMPOWER}, damage avoided by {@code GUARD}. One field because it is
- *     one question ("how much is it worth?") asked of two mirrored effects
+ *     {@code EMPOWER}, damage avoided by {@code GUARD}, and the share of every blow
+ *     a {@code LIFESTEAL} gives back as health. One field because it is one
+ *     question ("how much is it worth?") asked of two mirrored effects and of a
+ *     passive that is worth a share of what its bearer does
  * @param boostPerLevel that percentage's growth per level
  * @param durationFrames how long it lasts: {@code EMPOWER}'s extra damage,
  *     {@code GUARD}'s protection, or how long an {@code AREA_DAMAGE} goes on

@@ -9,10 +9,12 @@ import uz.dukeengine.client3d.OrderMark;
 import uz.dukeengine.client3d.HitNumbers;
 import uz.dukeengine.client3d.MenuStyle;
 import uz.dukeengine.client3d.PanelLook;
+import uz.dukeengine.core.module.ModuleData;
 import uz.dukeengine.core.thing.ThingTemplateLoader;
 import uz.dukeengine.dungeon.loot.Loot;
 import uz.dukeengine.dungeon.loot.LootKind;
 import uz.dukeengine.dungeon.skill.Skill;
+import uz.dukeengine.dungeon.skill.SkillBook;
 import uz.dukeengine.dungeon.skill.SkillEffect;
 import uz.dukeengine.dungeon.level.Attribute;
 import uz.dukeengine.dungeon.level.AttributeRules;
@@ -321,10 +323,12 @@ public final class DungeonSettings {
                 case Monster monster -> {
                     monsters.add(monster.kind());
                     own(monster.name(), monster.portrait(), monster.skills());
+                    requireBook("Monster " + monster.name(), monster.modules(), monster.skills());
                 }
                 case Hero hero -> {
                     heroes.add(hero);
                     own(hero.name(), hero.portrait(), hero.skills());
+                    requireBook("Hero " + hero.name(), hero.modules(), hero.skills());
                 }
                 case Projectile projectile -> projectiles.add(projectile);
                 case Prop prop -> props.add(prop);
@@ -387,6 +391,21 @@ public final class DungeonSettings {
         for (var skill : itsSkills) {
             skills.add(skill.ownedBy(unit));
         }
+    }
+
+    /**
+     * A unit whose block lists what it is built from and gives it skills has to list the {@code SkillBook} that
+     * carries them: nothing else does, so without one a boss's lifesteal, a mage's fireball and a hero's four keys
+     * would be words in a file, and nothing would say so.
+     *
+     * <p>Asked where the record is read, since {@link #validate()} keeps a monster's kind and not its modules. And a
+     * block that lists no {@code Modules} at all is let be: it is a re-tuning of a unit built elsewhere -- a map's own
+     * blocks, a test's -- and says nothing of a book that unit already has.
+     */
+    private static void requireBook(String who, List<ModuleData> modules, List<Skill> itsSkills) {
+        require(itsSkills.isEmpty() || modules.isEmpty()
+                        || modules.stream().anyMatch(SkillBook.Data.class::isInstance),
+                who + " has Skills and no SkillBook among its Modules: nothing would carry them");
     }
 
     /**
@@ -683,6 +702,12 @@ public final class DungeonSettings {
                             || skill.stunFrames() > 0 && skill.effect() == SkillEffect.SKILLSHOT,
                     skill.heroTemplate() + "'s Skill " + skill.key() + " has StunFrames = " + skill.stunFrames()
                             + ": only a SKILLSHOT stuns, and for no fewer than no frames");
+            // Passives are monsters' for now: a hero's slots, aims, rings and tips know nothing of a skill that is
+            // not cast. Asked first, so that a hero's is refused for that and not for what else it has.
+            require(!skill.effect().isPassive()
+                            || heroes.stream().noneMatch(hero -> hero.name().equals(skill.heroTemplate())),
+                    skill.heroTemplate() + "'s Skill " + skill.key() + " is a " + skill.effect()
+                            + ", never cast: only a monster may have one, for now -- a hero's bar has no place for it");
             // A passive is never cast, so what only a cast reads would be a number nothing read.
             require(!skill.effect().isPassive() || skill.damage() == 0f && skill.manaCost() == 0
                             && skill.windUpFrames() == 0 && !skill.hasProjectile() && !skill.hasLook(),

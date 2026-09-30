@@ -179,10 +179,11 @@ public enum SkillEffect {
      * and a kill is no special case.
      *
      * <p>Never cast: it holds for as long as its bearer lives -- see
-     * {@link #isPassive}. It is told of each blow by the two places a blow lands in
-     * this game; see {@link SkillBook#drink}. Every boss has it.
+     * {@link #isPassive}. It is told of each blow by the two places a boss's blow
+     * lands today, and a boss's first damaging skill that lands anywhere else has to
+     * tell it too; see {@link SkillBook#drink}. Every boss has it.
      */
-    LIFESTEAL(Aim.SELF);
+    LIFESTEAL(Aim.SELF, true);
 
     /** What a player has to click before the cast can go through. */
     public enum Aim {
@@ -213,9 +214,16 @@ public enum SkillEffect {
     }
 
     private final Aim aim;
+    private final boolean passive;
 
     SkillEffect(Aim aim) {
+        this(aim, false);
+    }
+
+    /** @param passive whether it is never cast -- see {@link #isPassive} */
+    SkillEffect(Aim aim, boolean passive) {
         this.aim = aim;
+        this.passive = passive;
     }
 
     /** What has to be pointed at for this effect to be cast. */
@@ -225,14 +233,19 @@ public enum SkillEffect {
 
     /**
      * Whether it is never cast, and holds instead for as long as its bearer lives.
+     * Said once, on the constant -- {@code LIFESTEAL(Aim.SELF, true)} -- so that a
+     * passive cannot be half declared.
      *
      * <p>{@link SkillBook#cast} refuses one with its cooldown untouched, and a monster
      * casts the first of its skills that is not one (see {@code Monster.skillKey}), so
      * a creature whose only skill is a passive casts nothing. What a passive does is
      * heard where the thing it changes happens -- a lifesteal where a blow lands --
      * rather than when a key is pressed.
+     *
+     * <p>Monsters' for now: a hero's slots, aims, rings and tips know nothing of a
+     * skill that is not cast, and a file that gives one to a hero is refused.
      */
     public boolean isPassive() {
-        return this == LIFESTEAL;
+        return passive;
     }
 }

@@ -1140,11 +1140,13 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Wea
      * its skills gives it back its share, as health, never above its maximum. Nobody,
      * the dead, and a creature with no such skill get nothing.
      *
-     * <p>Told rather than listening, by the two places a blow lands in this game: a
+     * <p>Told rather than listening, by the two places a boss's blow lands today: a
      * swing where the striker stands, which {@code Swing} hears the moment before the
      * weapon lands it, and a shot when it arrives and each its burst catches, in
-     * {@code ArrowUpdate}. The figure is what the blow was worth, not what the victim
-     * had left: a kill is no special case.
+     * {@code ArrowUpdate}. A boss's first damaging skill that lands anywhere else -- an
+     * area blow, a strike with no shot -- has to call this where its damage lands, or
+     * that blow is not drunk from. The figure is what the blow was worth, not what the
+     * victim had left: a kill is no special case.
      *
      * <p>Deterministic: its skills in the order the file wrote them, one
      * multiplication of the blow's own figure by a whole percentage each, on the
@@ -1157,8 +1159,9 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Wea
         }
         for (var skill : book.skills) {
             if (skill.effect() == SkillEffect.LIFESTEAL) {
-                // ponytail: at its first rank, which is a monster's only one; a hero who
-                // drinks reads his rank from SkillRanks, as a cast is handed it.
+                // ponytail: at its first rank, which is a monster's only one; a hero may not
+                // drink yet (see DungeonSettings.validate), and one who does will read his rank
+                // from SkillRanks, as a cast is handed it.
                 striker.getBody().heal(dealt * skill.boostAt(1) / 100f);
             }
         }

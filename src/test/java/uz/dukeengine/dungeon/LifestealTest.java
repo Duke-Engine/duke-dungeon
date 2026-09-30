@@ -180,6 +180,28 @@ class LifestealTest {
     }
 
     /**
+     * Only a LIFESTEAL drinks. BoostPercent is the field an EMPOWER and a GUARD keep their worth in too, and the
+     * Rogue's R is an EMPOWER of 80: told of a blow, a wounded Rogue gets nothing back.
+     */
+    @Test
+    void aBoostPercentThatIsNotALifestealDrinksNothing() {
+        var arena = Dungeon.world(room(), SETTINGS, units());
+        var game = arena.game();
+        game.spawn("Rogue", arena.hero(), 150f, 150f);
+        game.runHeadless(1);
+        var rogue = creature(game, "Rogue");
+        assertTrue(rogue.findModule(SkillBook.class).getSkills().stream()
+                        .anyMatch(skill -> skill.effect() != SkillEffect.LIFESTEAL && skill.boostPercent() > 0),
+                "the premise: a skill of his has a BoostPercent to be mistaken for a share");
+        rogue.getBody().setHealth(rogue.getBody().getMaxHealth() / 2f);
+        float wounded = rogue.getBody().getHealth();
+
+        SkillBook.drink(rogue, 40f);
+
+        assertEquals(wounded, rogue.getBody().getHealth(), 0.001f, "a skill that is not a LIFESTEAL gave health back");
+    }
+
+    /**
      * Never cast: its key does nothing and spends nothing, and a boss whose one skill it is has nothing its brain
      * casts -- it holds for as long as the boss stands.
      */
@@ -217,6 +239,26 @@ class LifestealTest {
         assertEquals(bosses(), drinkers);
     }
 
+    /**
+     * A boss drinks through the SkillBook its Skills sit in, and each has its own line for it: take that line out
+     * of any one's block and the file is refused, naming the boss, rather than loaded with a boss that quietly
+     * never drinks.
+     */
+    @Test
+    void aBossWithoutItsBookIsRefused() {
+        for (var boss : bosses()) {
+            var block = ShippedBlock.of(boss);
+            var bookless = block.text().replace("    SkillBook\n    End,\n", "");
+            assertNotEquals(block.text(), bookless, "the premise: " + boss + "'s SkillBook was taken out");
+
+            var refused = assertThrows(IllegalArgumentException.class,
+                    () -> DungeonSettings.parse(Content.data().replace(block.text(), bookless)),
+                    boss + " was loaded without its SkillBook");
+            assertTrue(refused.getMessage().contains(boss) && refused.getMessage().contains("SkillBook"),
+                    refused.getMessage());
+        }
+    }
+
     /** A share is some of the blow and no more than all of it: anything else is refused at load. */
     @Test
     void aShareOutOfRangeIsRefused() {
@@ -236,5 +278,23 @@ class LifestealTest {
 
         var refused = assertThrows(IllegalArgumentException.class, () -> DungeonSettings.parse(data));
         assertTrue(refused.getMessage().contains("never cast"), refused.getMessage());
+    }
+
+    /**
+     * Passives are monsters' for now: a hero's slots, aims, rings and tips have no place for a skill that is not
+     * cast, so one written on a hero -- the Rogue's R made a LIFESTEAL, say -- is refused. It is the message that is
+     * checked: the Rogue's R also has a ManaCost and a Look, which a passive may not, so without this rule it would be
+     * refused all the same, by the next one.
+     */
+    @Test
+    void aHeroMayNotHaveOne() {
+        var rogue = ShippedBlock.of("Rogue");
+        var drinker = rogue.text().replace("      Effect = EMPOWER\n", "      Effect = LIFESTEAL\n");
+        assertNotEquals(rogue.text(), drinker, "the premise: the Rogue's R was made a LIFESTEAL");
+
+        var refused = assertThrows(IllegalArgumentException.class,
+                () -> DungeonSettings.parse(Content.data().replace(rogue.text(), drinker)));
+        assertTrue(refused.getMessage().contains("Rogue") && refused.getMessage().contains("only a monster"),
+                refused.getMessage());
     }
 }
