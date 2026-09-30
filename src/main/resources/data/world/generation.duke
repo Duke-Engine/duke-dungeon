@@ -122,8 +122,9 @@ ProceduralMap
   ; it always did.
   Keep = Keep
     ; Across, walls included, largest first: the larger ones are tried only
-    ; beside the deepest chambers, the last beside any. Odd, so the boss and the
-    ; gate each have a middle cell.
+    ; beside the deepest chambers, the last beside any. Odd and at least 7, so
+    ; the boss and the gate each have a middle cell and the four guard corners
+    ; stand clear of the boss.
     Sizes = [15, 13, 11, 9]
     ; What stands in its doorway until it is opened: data/props/gate.duke.
     Gate = Gate

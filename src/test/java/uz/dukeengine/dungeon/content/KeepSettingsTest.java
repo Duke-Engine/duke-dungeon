@@ -45,6 +45,14 @@ class KeepSettingsTest {
         assertTrue(refused.getMessage().endsWith(": 5"), refused.getMessage());
     }
 
+    /** Seven across is the least that keeps the four corners off the boss, and it is enough. */
+    @Test
+    void aKeepSevenAcrossIsAccepted() {
+        var data = Content.data().replace("    Sizes = [15, 13, 11, 9]\n", "    Sizes = [15, 7]\n");
+
+        assertEquals(List.of(15, 7), DungeonSettings.parse(data).keep().sizes());
+    }
+
     /** Largest first: the order is the preference, so a list that rises would build the smallest keep every time. */
     @Test
     void sizesNotLargestFirstAreRefused() {

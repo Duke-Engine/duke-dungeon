@@ -72,6 +72,21 @@ class KeepShapeTest {
         }
     }
 
+    /**
+     * The same in a keep fifteen across, its walls from (10, 20): the far corners follow the size, and x is told from
+     * y — neither of which the nine-across keep at (10, 10) can show.
+     */
+    @Test
+    void itsCornersFollowItsSizeInAKeepFifteenAcross() {
+        var wide = new Keep(new Room(10, 20, 15, 15), Keep.Side.NORTH, 0);
+        var corners = wide.corners();
+
+        assertArrayEquals(new int[] {12, 22}, corners.get(0));
+        assertArrayEquals(new int[] {22, 32}, corners.get(1), "far walls at 24 and 34: a cell in is 22 and 32");
+        assertArrayEquals(new int[] {22, 22}, corners.get(2));
+        assertArrayEquals(new int[] {12, 32}, corners.get(3));
+    }
+
     @Test
     void aGateInAWallRunningDownTheMapFacesAQuarterTurn() {
         var west = new Keep(new Room(10, 10, 9, 9), Keep.Side.WEST, 0);

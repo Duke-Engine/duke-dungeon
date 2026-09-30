@@ -244,7 +244,10 @@ public final class DungeonSettings {
         return here;
     }
 
-    /** How many cells out from the boss its guard stands; see {@code DungeonGenerator}. */
+    /**
+     * How many cells out from the boss the guard on the ring round it stands: any past the fourth in a keep, and every
+     * guard on a floor with no keep; see {@code DungeonGenerator}.
+     */
     public int bossGuardRing() {
         return map.descent().bossGuardRing();
     }

@@ -2,6 +2,7 @@ package uz.dukeengine.dungeon.gen;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.HashSet;
@@ -242,6 +243,40 @@ class MonsterPlacementTest {
             assertEquals(9, keep.size(), "seed " + seed);
             assertEquals(5, cells.size(), "seed " + seed + ": four mages and a runner in the court");
         }
+    }
+
+    /**
+     * A floor with no keep has no court to hold the corners, so its guard stands on the ring round the boss as every
+     * guard used to: the ring's four corners BossGuardRing cells out, in the ring's order — north-west, south-east,
+     * north-east, south-west. A chamber is a rough ellipse, and where a corner of the ring is rock its guard passes on
+     * to the next cell, so only the chambers with floor at all four are asked, and most are.
+     */
+    @Test
+    void aFloorWithNoKeepStandsItsGuardOnTheRingRoundTheBoss() {
+        int out = SETTINGS.bossGuardRing();
+        var ring = java.util.List.of(new int[] {-out, -out}, new int[] {out, out}, new int[] {out, -out},
+                new int[] {-out, out});
+        int asked = 0;
+        for (long seed = 0; seed < 20; seed++) {
+            var stage = DungeonGenerator.generate(seed, SETTINGS, 1,
+                    Layout.sized(SETTINGS, SETTINGS.mapWidth(), SETTINGS.mapHeight(), SETTINGS.maxRooms()));
+            assertNull(stage.keep(), "seed " + seed);
+            int bx = stage.boss().at().cellX();
+            int by = stage.boss().at().cellY();
+            var cells = stage.asciiMap().strip().split("\n");
+            if (ring.stream().anyMatch(corner -> cells[by + corner[1]].charAt(bx + corner[0]) != '.')) {
+                continue;
+            }
+            asked++;
+            var room = stage.rooms().get(stage.bossRoom());
+
+            assertEquals(ring.stream()
+                            .map(corner -> GeneratedDungeon.Placement.atCell(bx + corner[0], by + corner[1])).toList(),
+                    stage.monsters().stream().filter(monster -> inRoom(monster.at(), room))
+                            .map(GeneratedDungeon.Monster::at).toList(),
+                    "seed " + seed + ": its guard, in the room with the boss");
+        }
+        assertTrue(asked >= 10, "only " + asked + " of 20 chambers had floor at all four corners: too few to ask");
     }
 
     /** The shipped files with the boss guarded by this one line, or by nobody at all. */

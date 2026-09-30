@@ -70,7 +70,8 @@ public record ProceduralMap(String name, Layout generation, @Link(Theme.class) L
      * @param bosses        one per floor, in order, and the list is also how many floors there are:
      *     kill the last and the run is won. Empty is a descent with no bottom
      * @param bossGuards    who stands with the boss, and how many of each — in the order written
-     * @param bossGuardRing how many cells out from the boss its guard stands
+     * @param bossGuardRing how many cells out from the boss the guard on the ring round it stands: any past the fourth
+     *     in a keep, and every guard on a floor with no keep
      */
     public record Descent(@Link(Monster.class) List<String> bosses,
             @Link(Monster.class) Map<String, Integer> bossGuards, int bossGuardRing,
