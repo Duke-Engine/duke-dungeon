@@ -215,6 +215,9 @@ class WedgedTest {
         game.runHeadless(2);
         var hero = creature(game, "Rogue", 0);
         var setOut = hero.getPosition();
+        assertTrue(game.getLogic().getObjects().stream().anyMatch(thing -> thing.getTemplate().name().equals("Statue")
+                        && thing.getPosition().distance(setOut) < 25f),
+                "the floor no longer puts a statue by the way in, so this tells nothing");
 
         game.postCommand(new GameMessage.MoveTo(game.getLocalPlayerIndex(), List.of(hero.getId()),
                 new Coord3D(547.5f, 267.5f, 0f)));
