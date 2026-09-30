@@ -79,10 +79,11 @@ Building and releasing the game was plainly allowed; whether a public git tree
 counts as handing the files out was a judgement call rather than a rule, and the
 kind of question that does not get easier by being left. They are gone too.
 
-Every model in the tree is CC0, out of one maker's packs, but two: the fountain,
-which is CC BY 3.0, and the keep's gate, which may be used commercially with
-credit — each has its row in the table above. Every clip in `animations/` is CC0
-but one. **That one is a Mixamo animation and it went in with its eyes open** —
+Every model in the tree is CC0, out of one maker's packs, but three: the fountain,
+which is CC BY 3.0, the keep's gate, which may be used commercially with credit,
+and the keep's key, whose maker is not named and whose terms are not known — each
+has its row in the table above. Every clip in `animations/` is CC0 but one.
+**That one is a Mixamo animation and it went in with its eyes open** —
 the mage's two-handed cast, added later and knowingly, which puts the question
 this section settled back on the page. It is set out in full below rather than
 folded away here, because a decision reversed deserves as plain a statement as
@@ -90,7 +91,10 @@ the decision did.
 
 Two other things are open and are of a different kind: three pieces of music have
 licences nobody has looked up, and the icons are a generator's output whose terms
-are not the same sort of thing as a licence. Both are at the end of this page.
+are not the same sort of thing as a licence. Both are at the end of this page. A
+third, of the music's kind, is the keep's key: it came out of the owner's own asset
+folder with no maker named, and its row in the table says it is to be asked of the
+owner before a release.
 
 ### The icons that came before
 
