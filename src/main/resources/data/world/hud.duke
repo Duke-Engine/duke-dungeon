@@ -252,12 +252,12 @@ UnitBar
   ; ---- how long ----
   ;
   ; The two anchors, in health, and the two lengths, in interface pixels. Between
-  ; them the bar grows LOGARITHMICALLY, not proportionally: the range above is
-  ; forty-six-fold, and a proportional bar spends nine tenths of it inside its
-  ; first quarter-inch -- every monster in the game a stub, and only the boss
-  ; visibly longer. The eye compares two bars as a ratio, so the curve is the one
-  ; that matches. Doubling a creature's health moves its bar the same distance
-  ; wherever it started.
+  ; them the bar grows LOGARITHMICALLY, not proportionally: the range above runs
+  ; from 30 to 3540 health, a hundred-and-eighteen-fold, and a proportional bar
+  ; spends nine tenths of it inside its first quarter-inch -- every monster in
+  ; the game a stub, and only the boss visibly longer. The eye compares two bars
+  ; as a ratio, so the curve is the one that matches. Doubling a creature's
+  ; health moves its bar the same distance wherever it started.
   ;
   ; Outside the anchors it is flat, which is also the answer to "what about a
   ; creature nobody planned for": the weakest thing still has something to look

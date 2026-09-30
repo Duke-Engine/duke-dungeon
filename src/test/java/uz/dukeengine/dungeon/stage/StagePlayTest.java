@@ -27,6 +27,10 @@ import uz.dukeengine.game.DukeGame;
  * right. The engine's checksum is what the network uses to prove two machines are
  * playing the same game — so a stage session and a generated session agreeing on
  * it after a hundred frames is the same proof, turned on a file instead of a peer.
+ * It holds for a floor drawn without a keep, the only kind a stage is cut from: a
+ * keep is where a generated floor's way ends, and what level each monster stands
+ * at follows the way, so a floor with one would not play like the stage cut from
+ * it.
  */
 class StagePlayTest {
 

@@ -507,6 +507,18 @@ class MonsterLevelTest {
         }
     }
 
+    /** A level gives and never takes: a per-level line that takes health, blow or worth away is refused when read. */
+    @Test
+    void aPerLevelLineThatTakesSomethingAwayIsRefused() {
+        for (var wrong : new String[][] {
+                {"    HealthPercentPerLevel = 10\n", "    HealthPercentPerLevel = -10\n"},
+                {"    DamagePercentPerLevel = 5\n", "    DamagePercentPerLevel = -5\n"},
+                {"    ExperiencePercentPerLevel = 5\n", "    ExperiencePercentPerLevel = -5\n"}}) {
+            var data = dataWith(wrong[0], wrong[1]);
+            assertThrows(IllegalArgumentException.class, () -> DungeonSettings.parse(data), wrong[1].strip());
+        }
+    }
+
     // ---- on the bar ----
 
     /** The words a creature holds that begin as the bar's level word does. */

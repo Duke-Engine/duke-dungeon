@@ -19,7 +19,8 @@ import uz.dukeengine.game.DukeGame;
  * meant it could say anything and be wrong. Now it is the depth, so it has a
  * meaning anybody can go and check: difficulty seven is what the seventh floor of
  * the descent is, and every piece of arithmetic that makes a floor dangerous is
- * already written against depth and already tuned.
+ * already written against the tier — today the depth — and already tuned: each
+ * monster's level is read off it, and what a level is worth is the file's.
  *
  * <p>That is also what lets a stage be <em>harder than this game gets on its own</em>.
  * The descent stops at its last boss; a stage can be built below that, which is

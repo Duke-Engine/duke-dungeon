@@ -760,8 +760,8 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Wea
      * one is open, and how much harder its caster's level makes it. Only a monster
      * carries a level of its own, so a hero's figure is untouched by that last.
      */
-    private float damageOf(Skill skill, int level) {
-        return skill.damageAt(level) * damageMultiplier() * bonusOf(getOwner());
+    private float damageOf(Skill skill, int rank) {
+        return skill.damageAt(rank) * damageMultiplier() * bonusOf(getOwner());
     }
 
     /**
