@@ -6,15 +6,21 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 import uz.dukeengine.client3d.Visuals;
 import uz.dukeengine.core.GameConstants;
 import uz.dukeengine.core.thing.GameObject;
+import uz.dukeengine.dungeon.combat.LevelBonus;
+import uz.dukeengine.dungeon.content.Content;
 import uz.dukeengine.dungeon.content.DungeonSettings;
+import uz.dukeengine.dungeon.content.ShippedBlock;
 import uz.dukeengine.dungeon.run.Spawner;
 import uz.dukeengine.dungeon.skill.Skill;
+import uz.dukeengine.dungeon.skill.SkillBook;
 import uz.dukeengine.dungeon.skill.SkillEffect;
 import uz.dukeengine.game.DukeGame;
 
@@ -24,12 +30,14 @@ import uz.dukeengine.game.DukeGame;
  * recharges.
  *
  * <p>Fought in an open room against a Rogue holding his ground inside its band, the mage made its level by the
- * spawner's own step before he is there to cast at.
+ * spawner's own step before he is there to cast at. What it does when it lands is asked of a meteor cast by hand,
+ * at a Rogue who cannot answer, so nothing its brain does moves the figure read.
  */
 class SkullMeteorTest {
 
     private static final DungeonSettings SETTINGS = DungeonSettings.load();
     private static final String MAGE = "SkeletonMage";
+    private static final String HEALER = "SkeletonHealer";
     private static final String MARK = "SkullMeteorMark";
 
     private static Skill meteor() {
@@ -74,15 +82,19 @@ class SkullMeteorTest {
         return new Fight(game, creature(game, "Rogue"), mage);
     }
 
-    /** The frame each new one of {@code template} appeared on, over the next frames. */
-    private static List<Integer> appearing(DukeGame game, int frames, String template) {
+    /** The frame each new one of these templates appeared on, over the next frames. */
+    private static Map<String, List<Integer>> appearing(DukeGame game, int frames, String... templates) {
+        var when = new HashMap<String, List<Integer>>();
+        for (var template : templates) {
+            when.put(template, new ArrayList<>());
+        }
         var seen = new HashSet<Integer>();
-        var when = new ArrayList<Integer>();
         for (int frame = 0; frame < frames; frame++) {
             game.runHeadless(1);
             for (var object : game.getLogic().getObjects()) {
-                if (object.getTemplate().name().equals(template) && seen.add(object.getId().value())) {
-                    when.add(game.getLogic().getFrame());
+                var list = when.get(object.getTemplate().name());
+                if (list != null && seen.add(object.getId().value())) {
+                    list.add(game.getLogic().getFrame());
                 }
             }
         }
@@ -140,14 +152,22 @@ class SkullMeteorTest {
 
     // ---- in a fight ----
 
-    /** Below its sixth level it is never cast: full, and with him inside its band for as long as its cooldown. */
+    /**
+     * Below its sixth level it is never cast: full, and with him inside its band for as long as its cooldown -- and it
+     * fought, throwing its fireball in the meteor's place, so the silence is the level's and not a mage that did
+     * nothing.
+     */
     @Test
     void belowItsSixthLevelItIsNeverCast() {
         var fight = atLevel(5);
 
-        assertTrue(fight.mage().findModule(uz.dukeengine.dungeon.skill.SkillBook.class).getMana()
-                >= meteor().manaCost(), "the premise: it could pay for one");
-        assertEquals(List.of(), appearing(fight.game(), meteor().cooldownFrames(), MARK));
+        assertTrue(fight.mage().findModule(SkillBook.class).getMana() >= meteor().manaCost(),
+                "the premise: it could pay for one");
+        var ball = fireball().projectile();
+        var thrown = appearing(fight.game(), meteor().cooldownFrames(), MARK, ball);
+
+        assertFalse(thrown.get(ball).isEmpty(), "the premise: it fought, and threw its fireball: " + thrown);
+        assertEquals(List.of(), thrown.get(MARK), "and never the meteor");
     }
 
     /** From its sixth level it is cast at where he stands, and what marks the floor is its own mark. */
@@ -194,5 +214,58 @@ class SkullMeteorTest {
         assertFalse(fireballs.isEmpty(), "and no fireball while it recharged");
         assertTrue(fireballs.getFirst() >= marks.getFirst() + swing,
                 "the fireball left inside the meteor's gesture: " + marks + " then " + fireballs);
+    }
+
+    // ---- when it lands ----
+
+    /** The shipped units with the Rogue's bow reaching nothing: whatever he loses, the meteor took. */
+    private static String unarmedRogue() {
+        var rogue = ShippedBlock.of("Rogue");
+        return Content.units().replace(rogue.text(), rogue.with("AttackRange", 0).text());
+    }
+
+    /** The shipped files with the fire mage and the healer noticing nobody: they do only what a test does for them. */
+    private static DungeonSettings unseeing() {
+        var text = new StringBuilder();
+        for (var kind : new String[] {MAGE, HEALER}) {
+            text.append(ShippedBlock.of(kind).with("SenseRadius", 1).with("ChaseRadius", 1).with("AlertRadius", 0)
+                    .text());
+        }
+        return DungeonSettings.parse(text.toString());
+    }
+
+    /**
+     * Left to land, it hurts whoever stands at the mark by the figure its level makes of it -- a sixth level hits a
+     * quarter harder, so 90 is 112.5 -- and spares what stands beside him on its own side: a level-6 fire mage's meteor
+     * cast by hand at a Rogue who cannot answer, with a healer of its own standing in the circle.
+     */
+    @Test
+    void theMeteorLandsItsLevelsShareHarderAndSparesItsOwnSide() {
+        var arena = Dungeon.world(room(), unseeing(), unarmedRogue());
+        var game = arena.game();
+        game.spawn("Rogue", arena.hero(), 150f, 150f);
+        game.spawn(MAGE, arena.dungeon(), 200f, 150f);
+        game.spawn(HEALER, arena.dungeon(), 150f, 168f);
+        game.runHeadless(1);
+        arena.orders().hold(arena.hero().getIndex(), true);
+        var hero = creature(game, "Rogue");
+        var mage = creature(game, MAGE);
+        var bystander = creature(game, HEALER);
+        Spawner.scale(mage, 6, SETTINGS);
+        float multiplier = mage.findModule(LevelBonus.class).damageMultiplier();
+        float heroBefore = hero.getBody().getHealth();
+        float bystanderBefore = bystander.getBody().getHealth();
+        float apart = (float) Math.hypot(hero.getPosition().x() - bystander.getPosition().x(),
+                hero.getPosition().y() - bystander.getPosition().y());
+
+        assertEquals(1.25f, multiplier, 0.001f, "the premise: a sixth level hits a quarter harder");
+        assertTrue(apart < meteor().radius(),
+                "the premise: the healer stands inside the circle, " + apart + " from its middle");
+        assertTrue(mage.findModule(SkillBook.class).cast('R', 1, null, hero.getPosition()),
+                "the premise: it called the meteor down");
+        game.runHeadless(meteor().windUpFrames() + 5);
+
+        assertEquals(90f * multiplier, heroBefore - hero.getBody().getHealth(), 0.01f, "what landed on him");
+        assertEquals(bystanderBefore, bystander.getBody().getHealth(), 0.001f, "what landed on its own side");
     }
 }

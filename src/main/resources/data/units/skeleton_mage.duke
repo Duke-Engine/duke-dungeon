@@ -128,9 +128,9 @@ Monster
       ; while it recharges, or its pool is short of it, the fireball follows.
       Key = R
       Effect = METEOR
-      ; A hero at the middle of the mark walks out of its 30 in the second and a
-      ; half it lies there. The Mage's own is 160 across 44: this is the
-      ; monster's, and its level is what makes it hit harder.
+      ; A hero at the middle of the mark walks out of its radius, 30, in the second
+      ; and a half it lies there. The Mage's own is 160 over a radius of 44: this is
+      ; the monster's, and its level is what makes it hit harder.
       Damage = 90
       Radius = 30
       Range = 70

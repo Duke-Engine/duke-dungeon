@@ -130,7 +130,10 @@ class MonsterSkillTest {
                 """.formatted(distance, band));
     }
 
-    /** Its fireball, its Q: its meteor is written before it, and is not open at the first level these fight at. */
+    /**
+     * Its fireball, its Q: its meteor is written before it and opens at level 6. One test fights at 6, where the meteor
+     * is cast first; every other fights below it, where the fireball is the one it casts.
+     */
     private static Skill theFireball() {
         return SETTINGS.skillsFor(MAGE).stream().filter(skill -> skill.key() == 'Q').findFirst().orElseThrow();
     }
