@@ -9,6 +9,7 @@ import java.util.Map;
 import uz.dukeengine.core.pathfind.MapLoader;
 import uz.dukeengine.core.pathfind.PathGrid;
 import uz.dukeengine.dungeon.content.DungeonSettings;
+import uz.dukeengine.dungeon.gen.GeneratedDungeon;
 import uz.dukeengine.dungeon.gen.GeneratedDungeon.Placement;
 
 /**
@@ -49,9 +50,7 @@ public final class StageCheck {
 
         PathGrid grid;
         try {
-            grid = MapLoader.fromText(floor.asciiMap());
-            MapLoader.levels(grid, floor.levelMap());
-            grid.setRelief(floor.relief());
+            grid = groundOf(floor);
         } catch (RuntimeException e) {
             problems.add("the map itself cannot be read: " + e.getMessage());
             return List.copyOf(problems);
@@ -145,7 +144,7 @@ public final class StageCheck {
     private static List<String> unreachable(PathGrid grid, Placement entrance, Stage stage) {
         var problems = new ArrayList<String>();
         var floor = stage.floor();
-        var reached = reachable(grid, entrance.cellX(), entrance.cellY());
+        var reached = steps(grid, entrance.cellX(), entrance.cellY());
 
         for (int i = 0; i < floor.rooms().size(); i++) {
             var room = floor.rooms().get(i);
@@ -169,34 +168,74 @@ public final class StageCheck {
         return problems;
     }
 
-    /** Every cell the engine would let the hero walk to, starting from the way in. */
-    private static boolean[] reachable(PathGrid grid, int fromX, int fromY) {
-        var reached = new boolean[grid.getWidth() * grid.getHeight()];
+    /**
+     * A floor walked from its way in, counting the steps: how far along the way each cell is. The walk
+     * {@link #problems} makes to find what is walled off, and the one a monster's level is read off -- see
+     * {@code Spawner.levelsOf}.
+     *
+     * @param width how many cells a row of {@code steps} is: the map's width
+     * @param steps how many steps each cell is from the way in, row by row; {@code -1} where no step reaches
+     */
+    public record Walk(int width, int[] steps) {
+
+        /** How many steps the cell is from the way in: {@code -1} where no step reaches it, and off the map. */
+        public int to(int x, int y) {
+            int at = y * width + x;
+            return x < 0 || y < 0 || x >= width || at >= steps.length ? -1 : steps[at];
+        }
+    }
+
+    /**
+     * {@code floor} walked from its way in over its own ground -- its stone, its storeys and its relief, and nothing
+     * that stands on it, so a shut gate hides nothing behind it. Nothing is reached on a floor with no way in.
+     */
+    public static Walk walk(GeneratedDungeon floor) {
+        var grid = groundOf(floor);
+        var in = floor.hero();
+        return new Walk(grid.getWidth(), in == null ? steps(grid, -1, -1) : steps(grid, in.cellX(), in.cellY()));
+    }
+
+    /** The floor's own ground as the engine walks it: its stone, its storeys and its relief. */
+    private static PathGrid groundOf(GeneratedDungeon floor) {
+        var grid = MapLoader.fromText(floor.asciiMap());
+        MapLoader.levels(grid, floor.levelMap());
+        grid.setRelief(floor.relief());
+        return grid;
+    }
+
+    /**
+     * How many steps from the way in the engine would let the hero walk to each cell, by its own rule for a step and
+     * four ways from a cell in a fixed order; {@code -1} where no step reaches. Whole numbers, no dice.
+     */
+    private static int[] steps(PathGrid grid, int fromX, int fromY) {
+        var steps = new int[grid.getWidth() * grid.getHeight()];
+        java.util.Arrays.fill(steps, -1);
         if (grid.isBlocked(fromX, fromY)) {
-            return reached;
+            return steps;
         }
         var queue = new ArrayDeque<int[]>();
-        reached[fromY * grid.getWidth() + fromX] = true;
+        steps[fromY * grid.getWidth() + fromX] = 0;
         queue.add(new int[] {fromX, fromY});
-        int[][] steps = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+        int[][] ways = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
         while (!queue.isEmpty()) {
             var here = queue.poll();
-            for (var step : steps) {
-                int x = here[0] + step[0];
-                int y = here[1] + step[1];
-                if (!grid.inBounds(x, y) || reached[y * grid.getWidth() + x]
+            int next = steps[here[1] * grid.getWidth() + here[0]] + 1;
+            for (var way : ways) {
+                int x = here[0] + way[0];
+                int y = here[1] + way[1];
+                if (!grid.inBounds(x, y) || steps[y * grid.getWidth() + x] >= 0
                         || !grid.canStep(here[0], here[1], x, y)) {
                     continue;
                 }
-                reached[y * grid.getWidth() + x] = true;
+                steps[y * grid.getWidth() + x] = next;
                 queue.add(new int[] {x, y});
             }
         }
-        return reached;
+        return steps;
     }
 
-    private static boolean at(PathGrid grid, boolean[] reached, int cx, int cy) {
-        return grid.inBounds(cx, cy) && reached[cy * grid.getWidth() + cx];
+    private static boolean at(PathGrid grid, int[] reached, int cx, int cy) {
+        return grid.inBounds(cx, cy) && reached[cy * grid.getWidth() + cx] >= 0;
     }
 
     /**

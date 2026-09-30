@@ -10,6 +10,7 @@ import uz.dukeengine.dungeon.gen.GeneratedDungeon;
 import uz.dukeengine.dungeon.level.GrowableBody;
 import uz.dukeengine.dungeon.loot.LootDrop;
 import uz.dukeengine.dungeon.loot.LootTable;
+import uz.dukeengine.dungeon.stage.StageCheck;
 import uz.dukeengine.game.DukeGame;
 import uz.dukeengine.game.GamePlayer;
 import uz.dukeengine.rts.module.ExperienceModule;
@@ -105,6 +106,30 @@ public final class Spawner {
             spawn(game, dungeonPlayer, standing, at(logic, fountain));
         }
         return new Placed(java.util.Collections.unmodifiableList(heroes), boss, List.copyOf(monsters));
+    }
+
+    /**
+     * The level each of a floor's monsters stands at, in the order the floor lists them, in a place of {@code tier}:
+     * its share of the way from the way in to the middle of the chamber before the boss's -- the one the keep's road
+     * leaves from, or the boss's own place where there is no keep -- by the steps the floor is walked in (see
+     * {@link StageCheck#walk}). Everything past that chamber, the keep's court and its guard included, stands at its
+     * level.
+     */
+    static int[] levelsOf(GeneratedDungeon dungeon, DungeonSettings settings, int tier) {
+        var walk = StageCheck.walk(dungeon);
+        int way = -1;
+        if (dungeon.keep() != null) {
+            var chamber = dungeon.rooms().get(dungeon.keep().chamber());
+            way = walk.to(chamber.centerCellX(), chamber.centerCellY());
+        } else if (dungeon.boss() != null && dungeon.boss().at() != null) {
+            way = walk.to(dungeon.boss().at().cellX(), dungeon.boss().at().cellY());
+        }
+        var levels = new int[dungeon.monsters().size()];
+        for (int i = 0; i < levels.length; i++) {
+            var at = dungeon.monsters().get(i).at();
+            levels[i] = settings.levelAlong(tier, walk.to(at.cellX(), at.cellY()), way);
+        }
+        return levels;
     }
 
     /** How many steps from the way in a fountain may stand, looking for room enough round it. */

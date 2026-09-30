@@ -1,13 +1,18 @@
 package uz.dukeengine.dungeon.run;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 import uz.dukeengine.dungeon.content.Content;
 import uz.dukeengine.dungeon.content.DungeonSettings;
+import uz.dukeengine.dungeon.gen.DungeonGenerator;
+import uz.dukeengine.dungeon.gen.GeneratedDungeon;
+import uz.dukeengine.dungeon.stage.StageCheck;
 import uz.dukeengine.dungeon.stage.Stages;
 
 /**
@@ -103,6 +108,106 @@ class MonsterLevelTest {
                 {"    MaxMonsterLevel = 50\n", "    MaxMonsterLevel = 0\n"}}) {
             var data = dataWith(wrong[0], wrong[1]);
             assertThrows(IllegalArgumentException.class, () -> DungeonSettings.parse(data), wrong[1].strip());
+        }
+    }
+
+    // ---- along the way ----
+
+    /** The first floor of the descent drawn from {@code seed}. */
+    private static GeneratedDungeon firstFloor(long seed) {
+        return DungeonGenerator.generate(seed, SETTINGS, 1);
+    }
+
+    /** How many steps from the way in a monster stands. */
+    private static int stepsTo(StageCheck.Walk walk, GeneratedDungeon.Monster monster) {
+        return walk.to(monster.at().cellX(), monster.at().cellY());
+    }
+
+    /** Whether a monster stands inside a chamber's footprint. */
+    private static boolean inside(GeneratedDungeon.Room room, GeneratedDungeon.Monster monster) {
+        int x = monster.at().cellX();
+        int y = monster.at().cellY();
+        return x >= room.x() && y >= room.y() && x < room.x() + room.w() && y < room.y() + room.h();
+    }
+
+    /** Further along is never lower: of two monsters, the one more steps from the way in stands at least as high. */
+    @Test
+    void aMonsterFurtherAlongIsNeverBelowOneNearer() {
+        for (long seed = 1; seed <= 6; seed++) {
+            var floor = firstFloor(seed);
+            var walk = StageCheck.walk(floor);
+            var levels = Spawner.levelsOf(floor, SETTINGS, 1);
+            var monsters = floor.monsters();
+            for (int a = 0; a < levels.length; a++) {
+                assertTrue(stepsTo(walk, monsters.get(a)) >= 0, "the premise: every monster can be walked to");
+                for (int b = 0; b < levels.length; b++) {
+                    if (stepsTo(walk, monsters.get(a)) > stepsTo(walk, monsters.get(b))) {
+                        assertTrue(levels[a] >= levels[b], "seed " + seed + ": " + stepsTo(walk, monsters.get(a))
+                                + " steps in at " + levels[a] + ", " + stepsTo(walk, monsters.get(b)) + " at "
+                                + levels[b]);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * The climb ends in the chamber the keep's road leaves from: every monster in it stands at 7 or 8, and everything
+     * past it -- the guard in the court -- at 8.
+     */
+    @Test
+    void theChamberBeforeTheKeepIsNearlyAtTheTopAndItsCourtAtIt() {
+        int inChamber = 0;
+        int inCourt = 0;
+        for (long seed = 1; seed <= 6; seed++) {
+            var floor = firstFloor(seed);
+            var keep = floor.keep();
+            assertNotNull(keep, "the premise: seed " + seed + "'s first floor has its keep");
+            var chamber = floor.rooms().get(keep.chamber());
+            var levels = Spawner.levelsOf(floor, SETTINGS, 1);
+            for (int i = 0; i < levels.length; i++) {
+                var monster = floor.monsters().get(i);
+                if (keep.isCourt(monster.at().cellX(), monster.at().cellY())) {
+                    inCourt++;
+                    assertEquals(8, levels[i], "seed " + seed + ": a " + monster.kind() + " in the court");
+                } else if (inside(chamber, monster)) {
+                    inChamber++;
+                    assertTrue(levels[i] == 7 || levels[i] == 8,
+                            "seed " + seed + ": a " + monster.kind() + " before the keep at " + levels[i]);
+                }
+            }
+        }
+        assertTrue(inChamber > 0, "the premise: some chamber before a keep held a monster");
+        assertTrue(inCourt > 0, "the premise: some court held its guard");
+    }
+
+    /** One seed gives every monster the same level twice: the walk and the rule know no dice and no clock. */
+    @Test
+    void oneSeedGivesEveryMonsterTheSameLevelTwice() {
+        assertArrayEquals(Spawner.levelsOf(firstFloor(7L), SETTINGS, 1), Spawner.levelsOf(firstFloor(7L), SETTINGS, 1));
+    }
+
+    /**
+     * A stage has no keep: its way ends at its boss, and it is played at its Difficulty -- the first stage climbing
+     * toward its boss from the way in, and the deep one at the cap throughout.
+     */
+    @Test
+    void aStagesWayEndsAtItsBoss() {
+        var stage = Stages.load("first", SETTINGS);
+        var floor = stage.floor();
+        var walk = StageCheck.walk(floor);
+        int toTheBoss = walk.to(floor.boss().at().cellX(), floor.boss().at().cellY());
+        var levels = Spawner.levelsOf(floor, SETTINGS, stage.difficulty());
+
+        assertTrue(toTheBoss > 0, "the premise: the boss can be walked to");
+        for (int i = 0; i < levels.length; i++) {
+            int steps = stepsTo(walk, floor.monsters().get(i));
+            assertEquals(SETTINGS.levelAlong(stage.difficulty(), steps, toTheBoss), levels[i],
+                    "a " + floor.monsters().get(i).kind() + " " + steps + " steps in, of " + toTheBoss);
+        }
+        var deep = Stages.load("deep", SETTINGS);
+        for (int level : Spawner.levelsOf(deep.floor(), SETTINGS, deep.difficulty())) {
+            assertEquals(SETTINGS.maxMonsterLevel(), level, "the deep stage plays at the cap throughout");
         }
     }
 }
