@@ -776,6 +776,10 @@ public final class DungeonSettings {
             require(!skill.effect().isAura() || skill.radius() > 0f,
                     skill.heroTemplate() + "'s Skill " + skill.key() + " is a " + skill.effect()
                             + " and reaches nobody: it needs a Radius");
+            // What a mana aura lends, and nothing else reads: written on any other skill, a number nothing read.
+            require(skill.manaRegen() == 0 || skill.effect() == SkillEffect.MANA_AURA,
+                    skill.heroTemplate() + "'s Skill " + skill.key() + " has ManaRegen = " + skill.manaRegen()
+                            + ": only a MANA_AURA lends mana");
             switch (skill.effect()){
                 case HEAL -> {
                     var name = skill.heroTemplate() + "'s Skill " + skill.key();
@@ -809,6 +813,9 @@ public final class DungeonSettings {
                 case DAMAGE_AURA -> require(skill.boostPercent() >= 1,
                         skill.heroTemplate() + "'s Skill " + skill.key() + "'s BoostPercent is what it adds to every"
                                 + " blow round it, at least 1");
+                case MANA_AURA -> require(skill.manaRegen() >= 1,
+                        skill.heroTemplate() + "'s Skill " + skill.key() + "'s ManaRegen is what it adds to every"
+                                + " pool round it, in tenths of a point a second, at least 1");
             }
         }
     }

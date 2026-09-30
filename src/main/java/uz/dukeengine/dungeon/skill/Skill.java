@@ -110,6 +110,9 @@ import uz.dukeengine.dungeon.content.Projectile;
  *     hurts. The engine's own {@code DISABLED}, worn on the victim's own timers: its
  *     legs and its weapon stand still under it and its skills refuse. The fire mage's
  *     fireball has one and its ordinary fire does not
+ * @param manaRegen     what a {@code MANA_AURA} adds to every pool of its own round it,
+ *     in tenths of a point a second -- the heroes' word and unit for a trickle. Read by
+ *     nothing else, and refused on anything else
  */
 public record Skill(
         String heroTemplate,
@@ -146,7 +149,8 @@ public record Skill(
         @Link(Monster.class) Map<String, Integer> summons,
         int maxSummoned,
         int summonExperiencePercent,
-        int stunFrames) {
+        int stunFrames,
+        int manaRegen) {
 
     /**
      * A cooldown can shorten with level but never vanish: a skill castable every
@@ -159,7 +163,7 @@ public record Skill(
      * ranks deep, whose owner is the block it is written in.
      */
     static final Skill DEFAULTS = new Skill(null, '\0', SkillEffect.STRIKE, 0f, 0f, 0f, 0f, 0f, 0f,
-            0, 0, 0, 0, 0, 90, 0, 4, 0, 0, 0, 0, "", "", "", "", 0f, "", "", 0f, 0f, 0, Map.of(), 0, 0, 0);
+            0, 0, 0, 0, 0, 90, 0, 4, 0, 0, 0, 0, "", "", "", "", 0f, "", "", 0f, 0f, 0, Map.of(), 0, 0, 0, 0);
 
     /** This skill as {@code owner}'s, its key the one a player presses. */
     public Skill ownedBy(String owner) {
@@ -168,7 +172,7 @@ public record Skill(
                 cooldownFrames, cooldownPerLevel, maxRank, levelPerRank, windUpFrames, manaCost,
                 manaCostPerLevel, projectile, icon, look, castAnim, castSeconds, name, blurb,
                 projectileSpeed, heal, healBelowPercent, summons, maxSummoned,
-                summonExperiencePercent, stunFrames);
+                summonExperiencePercent, stunFrames, manaRegen);
     }
 
     /** Levels earned past the first — what every growth figure is multiplied by. */

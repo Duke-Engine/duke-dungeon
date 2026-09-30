@@ -205,7 +205,14 @@ public enum SkillEffect {
      *
      * <p>An aura: never cast, and lent to everyone it reaches rather than to its bearer alone -- see {@link #isAura}.
      */
-    DAMAGE_AURA(Aim.SELF, true);
+    DAMAGE_AURA(Aim.SELF, true),
+
+    /**
+     * Everyone of your own round you refills faster: {@code ManaRegen}, in tenths of a point a second as a pool's own
+     * trickle is, added to it -- a pool with none of its own still fills at the aura's. A creature with no pool gets
+     * nothing: the aura fills pools, it makes none. An aura -- see {@link #isAura}.
+     */
+    MANA_AURA(Aim.SELF, true);
 
     /** What a player has to click before the cast can go through. */
     public enum Aim {
@@ -282,6 +289,6 @@ public enum SkillEffect {
      * each where its own figure is used. Its figures are the skill's own and do not grow with its bearer's level.
      */
     public boolean isAura() {
-        return this == DAMAGE_AURA;
+        return this == DAMAGE_AURA || this == MANA_AURA;
     }
 }

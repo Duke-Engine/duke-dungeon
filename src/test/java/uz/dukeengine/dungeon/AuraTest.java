@@ -36,6 +36,7 @@ class AuraTest {
     private static final DungeonSettings SETTINGS = DungeonSettings.load();
     private static final String SUMMONER = "SkeletonSummoner";
     private static final String MAGE = "SkeletonMage";
+    private static final String HEALER = "SkeletonHealer";
     private static final int NO_WALL = -1;
 
     /** An open room forty cells by thirty; with a wall down one column, and a doorway at its far end. */
@@ -211,6 +212,70 @@ class AuraTest {
         assertEquals(0, SkillBook.auraOn(first(game, "Rogue"), SkillEffect.DAMAGE_AURA));
     }
 
+    // ---- mana ----
+
+    /** Its pool at the first level, with nothing in it: what comes back over the next frames is only the trickle. */
+    private static SkillBook emptied(GameObject caster) {
+        Spawner.scale(caster, 1, SETTINGS);
+        var book = bookOf(caster);
+        int most = book.getMaxMana();
+        int tenths = book.getManaRegen();
+        book.resize(0, 0);
+        book.resize(most, tenths);
+        return book;
+    }
+
+    /** What an emptied pool of each of {@code refilling} holds two seconds on: the trickle, in whole points. */
+    private static List<Integer> twoSecondsOf(Room room, int... refilling) {
+        var books = java.util.Arrays.stream(refilling).mapToObj(at -> emptied(room.get(at))).toList();
+        room.game().runHeadless(60);
+        return books.stream().map(SkillBook::getMana).toList();
+    }
+
+    /** A healer alone refills seven and a half a second: its own two and a half, and its aura's five. */
+    @Test
+    void aHealerAloneRefillsSevenAndAHalfASecond() {
+        var alone = room(SETTINGS, NO_WALL, one(HEALER, 100f, 150f));
+
+        assertEquals(List.of(15), twoSecondsOf(alone, 0));
+    }
+
+    /**
+     * A fire mage beside it refills eight a second, its own three and the aura's five; out of its reach, three; and
+     * with no trickle of its own, beside it, the aura's five.
+     */
+    @Test
+    void aFireMageBesideItRefillsEightAndOutOfItsReachThree() {
+        var beside = room(SETTINGS, NO_WALL, one(HEALER, 100f, 150f), one(MAGE, 160f, 150f));
+        assertEquals(List.of(16), twoSecondsOf(beside, 1), "60 from it");
+
+        var apart = room(SETTINGS, NO_WALL, one(HEALER, 100f, 150f), one(MAGE, 161f, 150f));
+        assertEquals(List.of(6), twoSecondsOf(apart, 1), "61 from it");
+
+        var dry = room(SETTINGS, NO_WALL, one(HEALER, 100f, 150f), one(MAGE, 130f, 150f));
+        var book = emptied(dry.get(1));
+        book.resize(book.getMaxMana(), 0);
+        dry.game().runHeadless(60);
+        assertEquals(10, book.getMana(), "no trickle of its own, 30 from it");
+    }
+
+    /** Two healers, and still five more, not ten: the strongest of a kind, never the sum -- each of them as much. */
+    @Test
+    void twoHealersStillFiveMore() {
+        var two = room(SETTINGS, NO_WALL, one(HEALER, 100f, 150f), one(HEALER, 160f, 150f), one(MAGE, 130f, 150f));
+
+        assertEquals(List.of(15, 15, 16), twoSecondsOf(two, 0, 1, 2));
+    }
+
+    /** The aura fills pools, it makes none: a Skeleton beside a healer has no pool, and is given none. */
+    @Test
+    void aSkeletonBesideAHealerIsGivenNoPool() {
+        var room = room(SETTINGS, NO_WALL, one(HEALER, 100f, 150f), one("Skeleton", 130f, 150f));
+        room.game().runHeadless(60);
+
+        assertEquals(List.of(0, 0), List.of(bookOf(room.get(1)).getMaxMana(), bookOf(room.get(1)).getMana()));
+    }
+
     // ---- reach ----
 
     /**
@@ -301,6 +366,43 @@ class AuraTest {
             var refused = assertThrows(IllegalArgumentException.class, () -> DungeonSettings.parse(text), wrong[2]);
             assertTrue(refused.getMessage().contains(wrong[2]), refused.getMessage());
         }
+    }
+
+    /**
+     * A mana aura needs a ManaRegen of at least 1; and a ManaRegen on any other skill is read by nothing, and refused,
+     * as StunFrames off a skillshot is -- each saying so.
+     */
+    @Test
+    void aManaRegenOnlyAManaAuraReadsIsRefusedElsewhere() {
+        var healer = ShippedBlock.of(HEALER).text();
+        var none = healer.replace("      ManaRegen = 50\n", "      ManaRegen = 0\n");
+        assertNotEquals(healer, none, "the premise: the healer's aura was given no ManaRegen");
+        var summoner = ShippedBlock.of(SUMMONER).text();
+        var misplaced = summoner.replace("      Effect = HASTE\n", "      Effect = HASTE\n      ManaRegen = 50\n");
+        assertNotEquals(summoner, misplaced, "the premise: the summoner's haste was given a ManaRegen");
+
+        for (var text : new String[] {none, misplaced}) {
+            var refused = assertThrows(IllegalArgumentException.class, () -> DungeonSettings.parse(text));
+            assertTrue(refused.getMessage().contains("ManaRegen"), refused.getMessage());
+        }
+    }
+
+    /**
+     * As shipped: the healer's W, written after its mending -- five points a second more to every pool of its own
+     * within 60 of it, never cast.
+     */
+    @Test
+    void asShippedTheHealersMana() {
+        var skills = SETTINGS.skillsFor(HEALER);
+        var mana = skills.get(1);
+
+        assertEquals(List.of(SkillEffect.HEAL, SkillEffect.MANA_AURA), skills.stream().map(Skill::effect).toList());
+        assertEquals('W', mana.key());
+        assertTrue(mana.effect().isPassive() && mana.effect().isAura());
+        assertEquals(50, mana.manaRegen(), "in tenths of a point a second");
+        assertEquals(60f, mana.radius(), 0.001f);
+        assertEquals(1, mana.maxRank());
+        assertEquals("Sehr buloqi", mana.name());
     }
 
     /**

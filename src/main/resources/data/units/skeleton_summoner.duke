@@ -87,7 +87,8 @@ Monster
 
   ; What it opens its rifts and hastens out of, in the hero's words and units, as the
   ; Skeleton Mage's: enough to call up its four at its cooldown through a fight of a
-  ; minute or more, and to hasten as its trickle allows.
+  ; minute or more, and to hasten as its trickle allows -- or, beside a healer, whose
+  ; aura fills it three times as fast, both at their cooldowns.
   MaxMana = 80
   ManaRegen = 25
 

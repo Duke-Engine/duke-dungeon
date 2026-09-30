@@ -1,7 +1,8 @@
 ; The green one, and it fights for the others. Frail and slow like the Skeleton Mage,
-; with a spark of light for its ordinary shot, and its skill is holy light called down
-; on whichever of its own is worst hurt -- see Monster SkeletonHealer and
-; the Q skill of the SkeletonHealer below.
+; with a spark of light for its ordinary shot; its skills are holy light called down
+; on whichever of its own is worst hurt, and every pool of its own round it filling
+; faster -- see Monster SkeletonHealer and the Q and W skills of the SkeletonHealer
+; below.
 Monster
   Name = SkeletonHealer
   DisplayName = Skeleton Healer
@@ -112,6 +113,19 @@ Monster
       ManaCost = 25
       MaxRank = 1
       Name = Muqaddas nur
+    End,
+    Skill
+      Key = W
+      ; Every pool of its own round it -- its own, a summoner's, a fire mage's -- fills
+      ; five points a second faster, within its Radius and in its plain sight: in tenths
+      ; of a point a second, as a pool's own trickle. A creature with no pool is given
+      ; none. Never cast: it holds while it stands. Two healers lend the stronger.
+      Effect = MANA_AURA
+      ManaRegen = 50
+      ; A room round it, and the ones fighting him from its band.
+      Radius = 60
+      MaxRank = 1
+      Name = Sehr buloqi
     End
   ]
 End

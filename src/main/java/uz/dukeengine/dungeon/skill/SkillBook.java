@@ -1202,10 +1202,11 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
     }
 
     /**
-     * The strongest aura of {@code kind} on {@code creature}, 0 for none: the largest worth among the bearers of that
-     * kind on its side, living, whose level has opened it, within whose {@code Radius} it stands, middle to middle, and
-     * in whose plain sight -- the bearer itself among them. Nothing for a creature that carries no book, as one without
-     * a {@code StatusUpdate} is not stunned.
+     * The strongest aura of {@code kind} on {@code creature}, 0 for none: the largest worth -- a {@code BoostPercent},
+     * or a {@code MANA_AURA}'s tenths of a point a second -- among the bearers of that kind on its side, living, whose
+     * level has opened it, within whose {@code Radius} it stands, middle to middle, and in whose plain sight -- the
+     * bearer itself among them. Nothing for a creature that carries no book, as one without a {@code StatusUpdate} is
+     * not stunned.
      *
      * <p>Asked where the figure is used, never pushed to the creature, so it holds exactly while the creature stands in
      * reach and ends the moment it steps out or its bearer falls: nothing kept, nothing to go stale. A maximum of whole
@@ -1229,7 +1230,7 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
                 continue;
             }
             for (var skill : theirs.skills) {
-                int worth = skill.boostPercent();
+                int worth = kind == SkillEffect.MANA_AURA ? skill.manaRegen() : skill.boostPercent();
                 if (skill.effect() == kind && worth > strongest
                         && LevelBonus.levelOf(bearer) >= skill.levelForRank(1)
                         && here.distance(bearer.getPosition()) <= skill.radius()
@@ -1321,14 +1322,20 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
      * <p>See the note on {@link #manaCarry} for why it is not a float. In short:
      * a second's worth of frames of the rate is exactly the rate, and no rounding
      * is carried from one second into the next.
+     *
+     * <p>The rate is its own and the strongest {@code MANA_AURA} it stands in, asked
+     * each frame the pool is not full -- see {@link #auraOn}. A pool with no trickle
+     * of its own still fills at the aura's; no pool at all is given nothing.
      */
     private void regenerate() {
-        if (!usesMana || manaTenthsPerSecond <= 0 || mana >= maxMana) {
+        int tenths = !usesMana || mana >= maxMana ? 0
+                : manaTenthsPerSecond + auraOn(getOwner(), SkillEffect.MANA_AURA);
+        if (tenths <= 0) {
             manaCarry = 0;
             return;
         }
         int aSecond = TENTHS * uz.dukeengine.core.GameConstants.LOGICFRAMES_PER_SECOND;
-        manaCarry += manaTenthsPerSecond;
+        manaCarry += tenths;
         while (manaCarry >= aSecond && mana < maxMana) {
             manaCarry -= aSecond;
             mana++;
