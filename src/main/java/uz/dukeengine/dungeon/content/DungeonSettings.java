@@ -778,6 +778,12 @@ public final class DungeonSettings {
             require(!skill.effect().isAura() || skill.hasLook() == (skill.tickFrames() > 0),
                     skill.heroTemplate() + "'s Skill " + skill.key() + " is a " + skill.effect() + ", worn every"
                             + " TickFrames as its Look: the two come together, or neither does");
+            // An aura holds while its bearer lives, and its Look is measured two of its beats -- a DurationFrames would
+            // be read first, and lay the rings more than two deep.
+            require(!skill.effect().isAura() || skill.durationFrames() == 0,
+                    skill.heroTemplate() + "'s Skill " + skill.key() + " is a " + skill.effect() + " and has"
+                            + " DurationFrames = " + skill.durationFrames() + ": it holds while its bearer lives, and"
+                            + " its Look lasts two TickFrames");
             // An aura lends what it is worth as far as its Radius and no further: without one it reaches nobody.
             require(!skill.effect().isAura() || skill.radius() > 0f,
                     skill.heroTemplate() + "'s Skill " + skill.key() + " is a " + skill.effect()

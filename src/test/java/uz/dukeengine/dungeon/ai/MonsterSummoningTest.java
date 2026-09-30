@@ -120,7 +120,11 @@ class MonsterSummoningTest {
      */
     private static ShippedBlock summoningAlone() {
         var block = ShippedBlock.of(SUMMONER).text();
-        return new ShippedBlock(block.substring(0, block.indexOf("    End,\n    Skill\n")) + "    End\n  ]\nEnd\n");
+        var haste = "    End,\n    Skill\n      Key = W\n";
+        int cut = block.indexOf(haste);
+        assertTrue(cut > 0, "the premise: the haste follows the summoning, written as \""
+                + haste.replace("\n", "\\n") + "\" in the summoner's block");
+        return new ShippedBlock(block.substring(0, cut) + "    End\n  ]\nEnd\n");
     }
 
     /** Long enough for it to finish a throw it had started and for its rifts to land. */

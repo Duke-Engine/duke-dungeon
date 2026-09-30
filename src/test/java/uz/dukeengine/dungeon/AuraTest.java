@@ -8,11 +8,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import uz.dukeengine.client3d.EffectLayer;
 import uz.dukeengine.client3d.SkillRange;
 import uz.dukeengine.client3d.Visuals;
+import uz.dukeengine.combat.module.StatusUpdate;
 import uz.dukeengine.core.GameConstants;
 import uz.dukeengine.core.event.EffectPlayed;
 import uz.dukeengine.core.math.Coord3D;
@@ -29,7 +31,6 @@ import uz.dukeengine.dungeon.skill.SkillBook;
 import uz.dukeengine.dungeon.skill.SkillEffect;
 import uz.dukeengine.dungeon.skill.Summoned;
 import uz.dukeengine.game.DukeGame;
-import uz.dukeengine.combat.module.StatusUpdate;
 
 /**
  * The mages' auras: what each lends everyone of its own round it -- the living of its side that carry a book, within
@@ -236,7 +237,7 @@ class AuraTest {
 
     /** What an emptied pool of each of {@code refilling} holds two seconds on: the trickle, in whole points. */
     private static List<Integer> twoSecondsOf(Room room, int... refilling) {
-        var books = java.util.Arrays.stream(refilling).mapToObj(at -> emptied(room.get(at))).toList();
+        var books = Arrays.stream(refilling).mapToObj(at -> emptied(room.get(at))).toList();
         room.game().runHeadless(60);
         return books.stream().map(SkillBook::getMana).toList();
     }
@@ -276,10 +277,15 @@ class AuraTest {
         assertEquals(List.of(15, 15, 16), twoSecondsOf(two, 0, 1, 2));
     }
 
-    /** The aura fills pools, it makes none: a Skeleton beside a healer has no pool, and is given none. */
+    /**
+     * The aura fills pools, it makes none: a Skeleton beside a healer -- its kind names no pool, and the spawner gave
+     * it none -- is reached by the aura, and is still given none.
+     */
     @Test
     void aSkeletonBesideAHealerIsGivenNoPool() {
         var room = room(SETTINGS, NO_WALL, one(HEALER, 100f, 150f), one("Skeleton", 130f, 150f));
+        Spawner.scale(room.get(1), 1, SETTINGS);
+        assertEquals(50, SkillBook.auraOn(room.get(1), SkillEffect.MANA_AURA), "the premise: the aura reaches it");
         room.game().runHeadless(60);
 
         assertEquals(List.of(0, 0), List.of(bookOf(room.get(1)).getMaxMana(), bookOf(room.get(1)).getMana()));
@@ -403,7 +409,8 @@ class AuraTest {
         float its = mage.getBody().getHealth();
         var meteor = SETTINGS.skillsFor(MAGE).getFirst();
 
-        assertTrue(bookOf(mage).cast('R', 1, null, hero.getPosition()), "the premise: it called the meteor down");
+        assertTrue(bookOf(mage).cast(meteor.key(), 1, null, hero.getPosition()),
+                "the premise: it called the meteor down");
         game.runHeadless(meteor.windUpFrames() + 5);
 
         assertEquals(112.5f, his - hero.getBody().getHealth(), 0.01f, "the premise: what landed on him");
@@ -577,6 +584,31 @@ class AuraTest {
         assertEquals(0, SkillBook.auraOn(room.get(1), SkillEffect.DAMAGE_AURA));
     }
 
+    /**
+     * A summoner lends its own side and no other: a Skeleton of the hero's side -- a monster of another player, whose
+     * own book reaches as far as any monster's -- 36 from it and in its plain sight hits as hard as it ever did, where
+     * one of the summoner's own, 30 from it, hits half as hard again.
+     */
+    @Test
+    void aMonsterOfAnotherSideIsNotLent() {
+        var arena = Dungeon.world(room(NO_WALL), SETTINGS);
+        var game = arena.game();
+        game.spawn(SUMMONER, arena.dungeon(), 100f, 150f);
+        game.spawn("Skeleton", arena.dungeon(), 130f, 150f);
+        game.spawn("Skeleton", arena.hero(), 130f, 170f);
+        game.runHeadless(1);
+        var room = new Room(game, game.getLogic().getObjects().stream().filter(object -> object.getBody() != null)
+                .toList());
+        var own = room.get(1);
+        var rival = room.get(2);
+
+        assertEquals(arena.dungeon().getIndex(), own.getPlayerIndex(), "the premise: one is the summoner's own");
+        assertEquals(arena.hero().getIndex(), rival.getPlayerIndex(), "the premise: and one is of another side");
+        assertEquals(1.5f, might(own), 0.0001f, "the premise: it lends to its own, 30 from it");
+        assertEquals(1f, might(rival), 0.0001f, "a rival's, 36 from it");
+        assertEquals(0, SkillBook.auraOn(rival, SkillEffect.DAMAGE_AURA));
+    }
+
     /** An aura its bearer's level has not opened lends nothing, and lends from the level that opens it. */
     @Test
     void anAuraItsBearersLevelHasNotOpenedLendsNothing() {
@@ -649,6 +681,26 @@ class AuraTest {
         assertTrue(refused.getMessage().contains("never cast"), refused.getMessage());
     }
 
+    /**
+     * An aura holds while its bearer lives, and its look is measured two of its beats: a DurationFrames on one would
+     * lay its rings more than two deep, and break the steady ring they stand as -- so the file is refused, saying so,
+     * of each of the three.
+     */
+    @Test
+    void anAuraThatSaysHowLongItLastsIsRefused() {
+        for (var aura : new String[][] {{SUMMONER, "DAMAGE_AURA"}, {HEALER, "MANA_AURA"},
+                {REVENANT, "LIFESTEAL_AURA"}}) {
+            var block = ShippedBlock.of(aura[0]).text();
+            var lasting = block.replace("      Effect = " + aura[1] + "\n",
+                    "      Effect = " + aura[1] + "\n      DurationFrames = 600\n");
+            assertNotEquals(block, lasting, "the premise: the " + aura[1] + " was given a DurationFrames");
+
+            var refused = assertThrows(IllegalArgumentException.class, () -> DungeonSettings.parse(lasting), aura[1]);
+            assertTrue(refused.getMessage().contains("DurationFrames"), refused.getMessage());
+            assertTrue(refused.getMessage().contains(aura[1]), refused.getMessage());
+        }
+    }
+
     /** A lifesteal aura's BoostPercent is a share of every blow, from 1 to 100, as a lifesteal's is: else refused. */
     @Test
     void aLifestealAurasShareOutOfRangeIsRefused() {
@@ -677,13 +729,19 @@ class AuraTest {
         assertEquals("Qon aurasi", drink.name());
     }
 
-    /** Two worlds fought through the same frames, the three mages and their own in them, read the same checksum. */
+    /**
+     * Two worlds fought through the same frames, the three mages and their own in them, read the same checksum each
+     * second through -- and not the one checksum every time, which would pass for any two worlds.
+     */
     @Test
     void twoWorldsFoughtAlikeReadTheSameChecksum() {
-        assertEquals(checksums(), checksums());
+        var sums = checksums();
+
+        assertEquals(sums, checksums());
+        assertTrue(sums.stream().distinct().count() > 1, "the premise: the fight moved the world on: " + sums);
     }
 
-    private static String checksums() {
+    private static List<Long> checksums() {
         var arena = Dungeon.world(room(NO_WALL), SETTINGS);
         var game = arena.game();
         game.spawn("Rogue", arena.hero(), 150f, 150f);
@@ -691,12 +749,12 @@ class AuraTest {
                 one(MAGE, 220f, 150f), one("Skeleton", 175f, 140f), one("Brute", 175f, 160f)}) {
             game.spawn(one.kind(), arena.dungeon(), one.x(), one.y());
         }
-        var line = new StringBuilder();
+        var sums = new ArrayList<Long>();
         for (int i = 0; i < 12; i++) {
             game.runHeadless(30);
-            line.append(game.getLogic().checksum()).append('|');
+            sums.add(game.getLogic().checksum());
         }
-        return line.toString();
+        return sums;
     }
 
     /**

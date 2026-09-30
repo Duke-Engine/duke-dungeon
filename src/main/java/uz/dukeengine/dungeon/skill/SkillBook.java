@@ -1237,7 +1237,7 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
             for (var skill : theirs.skills) {
                 int worth = kind == SkillEffect.MANA_AURA ? skill.manaRegen() : skill.boostPercent();
                 if (skill.effect() == kind && worth > strongest
-                        && LevelBonus.levelOf(bearer) >= skill.levelForRank(1)
+                        && LevelBonus.rankOf(bearer, skill) > 0
                         && here.distance(bearer.getPosition()) <= skill.radius()
                         && SightLine.clear(bearer, creature)) {
                     strongest = worth;
@@ -1393,7 +1393,7 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
             int beat = skill.tickFrames();
             if (skill.effect().isAura() && skill.hasLook() && beat > 0
                     && world.getFrame() % beat == Math.floorMod(owner.getId().value(), beat)
-                    && LevelBonus.levelOf(owner) >= skill.levelForRank(1)) {
+                    && LevelBonus.rankOf(owner, skill) > 0) {
                 world.effect(skill.look(), owner);
             }
         }

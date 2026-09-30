@@ -171,6 +171,20 @@ class HasteTest {
         assertEquals(outOfIt.get(0), outOfIt.hastened(), "one Brute a step past its Range, one behind stone");
     }
 
+    /**
+     * Itself when nothing sturdier stands near: a Runner beside it, of its level and thirty at its fullest to its
+     * forty, is in its reach and its plain sight and is passed over -- the summoner is among those it picks from.
+     */
+    @Test
+    void itHastensItselfOverAWeakerOneBesideIt() {
+        var room = room(SETTINGS, NO_WALL, one(SUMMONER, 100f, 150f), one("Runner", 130f, 150f));
+        assertTrue(room.get(1).getBody().getMaxHealth() < room.get(0).getBody().getMaxHealth(),
+                "the premise: the Runner has less health at its fullest");
+
+        assertTrue(room.castsItsHaste(), "the premise: it cast its haste");
+        assertEquals(room.get(0), room.hastened(), "itself, and not the Runner 30 away");
+    }
+
     /** Alone, it hastens itself -- and so it does with a Range of 0, a Brute beside it. */
     @Test
     void aloneOrWithNoRangeItHastensItself() {

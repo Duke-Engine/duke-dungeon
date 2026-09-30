@@ -55,7 +55,7 @@ Monster
   ; two, and whenever he is inside its SkillDistance and in plain sight it opens rifts
   ; round itself that skeletons and stalkers climb out of -- toward him first. They last a
   ; while, fall down again, and are worth nothing: kill the summoner, not what it
-  ; calls up. Its rifts open, it makes the sturdiest of its own near it strike faster.
+  ; calls up. After its rifts open, it makes the sturdiest of its own near it strike faster.
   SenseRadius = 64
   ChaseRadius = 120
   ; Unused: it holds the band below rather than closing.

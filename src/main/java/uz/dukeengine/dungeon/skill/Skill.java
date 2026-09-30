@@ -43,10 +43,11 @@ import uz.dukeengine.dungeon.content.Projectile;
  *     PICTURE is the one the player trusts
  * @param boostPercent  what this skill is worth in percent — damage added by
  *     {@code EMPOWER}, damage avoided by {@code GUARD}, the share of every blow
- *     a {@code LIFESTEAL} gives back as health, how much faster a {@code HASTE}
- *     makes a weapon fire, and what a {@code DAMAGE_AURA} adds to every blow round
- *     it. One field because it is one question ("how much is it worth?") asked of
- *     mirrored effects and of passives that are worth a share of what is done
+ *     a {@code LIFESTEAL} or a {@code LIFESTEAL_AURA} gives back as health, how
+ *     much faster a {@code HASTE} makes a weapon fire, and what a
+ *     {@code DAMAGE_AURA} adds to every blow round it. One field because it is one
+ *     question ("how much is it worth?") asked of mirrored effects and of
+ *     passives that are worth a share of what is done
  * @param boostPerLevel that percentage's growth per level
  * @param durationFrames how long it lasts: {@code EMPOWER}'s extra damage,
  *     {@code GUARD}'s protection, a {@code HASTE}, or how long an
@@ -54,7 +55,8 @@ import uz.dukeengine.dungeon.content.Projectile;
  * @param tickFrames    how often a lasting {@code AREA_DAMAGE} lands, in frames.
  *     Zero lands it once, which is what every skill written before there was a
  *     whirlwind does — so the damage figure means "per landing" either way and no
- *     existing skill changed by a hair
+ *     existing skill changed by a hair. For an aura it is the beat its {@code Look}
+ *     is worn at, and the look lasts two beats
  * @param slowFrames    how long whoever is caught by an area blast drags
  *     his feet afterwards, or zero for a blast that only hurts. One number rather
  *     than a third effect, because a frost nova IS the area blast with one more
@@ -86,7 +88,8 @@ import uz.dukeengine.dungeon.content.Projectile;
  *     this one looks like going off -- the ring across the floor, the knock to
  *     the camera -- or empty for a skill that is drawn by nothing but whatever it
  *     throws. Named rather than described, so two skills may share a look and a
- *     fifth skill is a fifth block of INI
+ *     fifth skill is a fifth block of INI. An aura's is worn rather than gone off:
+ *     played on its bearer every {@code TickFrames}, and lasting two of them
  * @param icon          the picture the panel draws in this skill's slot, as a file
  *     beside the other art, or empty for the letter the key is called. Which
  *     drawing goes with which skill is a matter for the file: a fifth skill should
@@ -239,7 +242,8 @@ public record Skill(
      *
      * <p>Both halves are required and that is the point: a duration with no tick
      * would be a skill that lasts and never lands, and a tick with no duration a
-     * skill that lands for ever.
+     * skill that lands for ever. An aura is neither: its tick is the beat its look
+     * is worn at, and it has no duration.
      */
     public boolean lasts() {
         return durationFrames > 0 && tickFrames > 0;

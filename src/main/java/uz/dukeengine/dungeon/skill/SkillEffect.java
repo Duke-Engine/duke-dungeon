@@ -188,9 +188,9 @@ public enum SkillEffect {
     /**
      * Drink from your own blows: every blow its bearer lands gives it back
      * {@code BoostPercent} of what the blow was worth, as health, never above its
-     * maximum -- a swing where it lands, a shot where it arrives, and each its burst
-     * catches. What the blow was worth is its own figure, before the victim's armour,
-     * and a kill is no special case.
+     * maximum -- a swing where it lands, a shot where it arrives, each its burst
+     * catches, and each a meteor's blast hurts. What the blow was worth is its own
+     * figure, before the victim's armour, and a kill is no special case.
      *
      * <p>Never cast: it holds for as long as its bearer lives -- see
      * {@link #isPassive}. It is told of each blow by the places a monster's blow
