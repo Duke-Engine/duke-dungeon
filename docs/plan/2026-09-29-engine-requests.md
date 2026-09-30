@@ -13,6 +13,36 @@ Constraints that hold for all of them:
   client has. The dungeon derives all of it from the floor's seed on every machine.
 - **Data in, no game knowledge.** The engine is told cells, models, positions and names; biomes are the game's word.
 
+## Status (2026-09-30)
+
+Every engine request the game makes is kept in this one file, and only here. The owner pushes the engine to GitHub
+and runs them himself in a cloud session; each section below stands on its own for that.
+
+| Request | What | Status |
+|---|---|---|
+| E1–E7 | resolution, wall lists, large maps, per-cell looks, scenery, finer blocking, a creature's own level | landed in 0.7.0 (unreleased) |
+| E8 | the engine split into `combat`, `rts`, `rpg` and their clients | proposal approved with the owner's changes; to be done in the owner's cloud session |
+| E9 | an aura's picture follows its status | landed, 1bb64fa8 |
+| E10 | one seamless world, ~900 × 900 cells, any size by design | waiting — after E8 |
+| E11 | an untextured model keeps its own colour | waiting (small) |
+| E12 | a Layer block may say `Renews` (E9's option reachable from data) | waiting (small) |
+
+Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
+game builds against the local engine.
+
+**For a session given this whole file** (a cloud session working on github.com/Duke-Engine/duke-engine):
+
+1. **E1–E7 and E9 are done** — they are here for their history. Do not redo them.
+2. **E11 is small** and can be done now, on its own.
+3. **E8 is yours.** Its class-by-class proposal, which the owner approved with the changes in its *Decided* paragraph,
+   is the owner's page https://claude.ai/artifact/Sx1NpP81xmiqmLUny7Qakt (version 2); ask him to paste it if you
+   cannot open it. Its step 3 (rpg) lifts the game's own packages, and the game's newest code is not on GitHub yet:
+   duke-dungeon's master on GitHub is 24 commits behind the owner's, and its stun-lifesteal-summons and key-to-the-keep
+   branches are still being built on his machine. That step waits for them — ask him when.
+4. **E10 comes after E8.** Its section below stands on its own.
+5. Every change is announced to the game as the landings above were: the engine version, the API, what the game must
+   change (for E8, the old-to-new package map of each step).
+
 ---
 
 ## E1 — Resolution: apply the Size setting live, open at the screen's own size (small, first)
@@ -136,6 +166,193 @@ through `withLevelWord`, and sets `GameObject.setCondition("level:7")` on each c
 the words are sorted and the first that starts with the prefix wins). The hero keeps `heroLevel`; a creature with no
 such word, or one that is not a number, shows the depth; a game naming no prefix changes nothing. The prefix matches
 exactly, case included.
+
+## E8 — RTS and RPG as two modules over one shared combat layer (2026-09-30, architecture: boundary now, moves later)
+
+The owner's decision: duke-dungeon becomes **Last Hero**, a single-hero RPG in one open world, while duke-generals stays
+an RTS. RPG systems (skills with mana and ranks, stuns, auras, lifesteal, items, missions) should not weigh on the RTS,
+nor production and economy on the RPG. What both use lives once, beneath them — as the reference does it: Generals
+sends a rank, an upgrade and a battle plan through one `WeaponBonus` table, and its stun is an expiring status (EMP,
+hacking), not a hero's skill. The owner's boundary:
+
+```
+core   — world, things, modules, pathfinding, map, network, replay (as now)
+combat — weapons and their bonuses, statuses (stun, slow, root), experience   ← shared by both
+───────────────────────────┬──────────────────────────────────────────────
+rts                        │ rpg
+production, economy,       │ hero levels, skills, auras, lifesteal,
+construction, command card │ inventory, missions, dialogue,
+                           │ single-hero control
+client: one 3D client + the RTS panels │ the RPG panels (bag, skill cards, mission tracker, bubbles)
+```
+
+- **combat, shared:** `Weapon*`, `WeaponBonus`, `RateOfFireModifier`, `DamageModifier`, `StatusUpdate` (DISABLED is the
+  stun, HELD the root), `ExperienceModule`'s data ladders, `AutoHealUpdate`, shots, and the aura as a mechanism (BFME's
+  leadership is an RTS aura too). Effects live here once; what grants them differs by side.
+- **rts:** production, construction, supply and power, docking, harvesting, turrets, crushing, special powers a player
+  buys, the command card.
+- **rpg:** hero progression; the skill book (mana, cooldowns, ranks opened by level, the ways a skill lands — strike,
+  skillshot, area, summon, …); passives and auras granted by skills and items; lifesteal; the bag and items (kinds,
+  joining, uses such as unlocking a gate); mission steps; lines said in a bubble; and single-hero control — selecting
+  anything shows it, orders always go to one's own hero, with no reselecting.
+- **client:** one 3D client, with each side's panels shipped beside its module (today `HeroPanel`, `HeroPortrait` and
+  the skill card sit in `client3d`).
+- **What the game offers:** the RPG half already runs in duke-dungeon's own code — `skill/` (SkillBook, SkillEffect),
+  `loot/` (LootBag, items, errands), `level/` (hero progress, attack speed), `combat/` (Swing, ArrowUpdate, Lifesteal),
+  `run/Mission` (arriving with the key-to-the-keep piece) — a working seed to lift into the rpg module, generalised
+  away from the dungeon's settings.
+- **Order:** the boundary first — which packages and modules, what moves where — agreed with the owner; then the moves
+  when the engine is ready, each announced with the engine version and the new packages, so the game follows in one
+  step. Until then the game keeps building against today's packages and writes new RPG code along this boundary.
+
+Done when: duke-generals builds and plays without the rpg module; duke-dungeon's RPG systems live in the engine's rpg
+module and the game keeps only data and its own content (generation, biomes, the world, the story).
+
+**Decided** (the engine session's proposal, the owner's answers, 2026-09-30): modules `combat`, `rpg`, `rts-client-3d`
+and `rpg-client-3d`; the snapshot's view records move into `core`; a small shared move/attack/stop set in `combat`;
+pursuit and engaging (`PursueUpdate`, `Engaging`, `GuardRules`) move into `combat` too; no 0.7.0 release — each step
+lands on master with an old-to-new package map, and 0.8.0 ships the whole split; the engine's CLAUDE.md module rules
+are rewritten for the new layering. Order: combat → a neutral runtime → rpg (after the dungeon's stun and keep branches
+land) → the clients. Open: where the loot drop tables live (combat, or a `loot` module of their own) and whether they
+move to core's `LogicRandom`.
+
+## E9 — An aura's picture follows its status (2026-09-30, small)
+
+The dungeon's stun plays an AURA effect (`Stunned`, two layers) on whoever it stuns, its seconds set to the stun's.
+Two ways the picture and the status part (`LayeredEffects`, lines from 8531470e):
+
+- A second cast of an aura already burning on the same unit is dropped (~413-421, `alreadyBurning` ~950-957, pinned by
+  `LayeredEffectsTest` ~308-323), while `StatusUpdate.apply` restarts the status: a hero stunned again within the
+  stars' life loses them before the second stun ends. Asked: a re-cast of a burning aura extends it to the new end.
+- A continuous layer riding a unit keeps feeding until span + its longest life (`untilFor` ~495-510; `feed` stops at
+  span only when nobody is followed, ~819-826), so the stars go on being made ~0.6 s after the stun is over. Asked: a
+  followed continuous layer stops feeding at its span, as an unfollowed one does. (The shipped frost's `Caught` layer
+  has the same overrun.)
+
+Done when: a hero stunned twice 0.5 s apart wears the stars until the second stun ends, and none are made after it.
+
+**Landed** as 1bb64fa8 (0.7.0, unreleased): `EffectLayer.Builder.renews(boolean)`, AURA layers only, default false (the
+knight's Whirlwind keeps the drop). A renewing aura cast again on a unit it burns on moves its end to the new cast's
+end and feeds again. A continuous layer riding a unit now stops being made at its span, no opt-in. The game adds
+`case "renews"` to `Main.layerOf` and `Renews = true` on the `Stunned` layers.
+
+## E10 — One seamless world (2026-09-30, big — after E8)
+
+A request from the game duke-dungeon, which is becoming **Last Hero**: a single-hero RPG whose whole campaign happens in
+one open world, with no loading between its regions. This section stands on its own: what the game needs, what the
+engine already has, the rules the engine keeps, and when the work is done. The engine decides how.
+
+### Before starting
+
+- **Work from the engine's newest commits.** The local checkout (`C:\Users\abdur\IdeaProjects\duke-engine`) was 27
+  commits ahead of `origin/master` on 2026-09-30 — all of 0.7.0's large-map work, E7 and E9 among them. A session
+  started from GitHub without them starts from an older engine.
+- **E10 comes after E8,** the split of the engine into `combat`, `rts` and `rpg`: start from the engine as E8 left it.
+  The world's work belongs in `core` (map, partition, pathfinding, things) and the client's drawing, beneath both sides.
+
+### What the game wants
+
+- **One world of about 900 × 900 cells** (a cell is 10 world units, so about 9,000 × 9,000 units). A hero walks about
+  2.4 cells a second: some six minutes straight across, much longer along its roads. It holds the whole campaign — the
+  last free kingdom (a city with castles), a desert, mountains, several conquered kingdoms and the villain's seat.
+- **Size is only a number.** The owner wants the engine to carry a world of any size the game draws, so the design is
+  chunks all the way down, and a frame's cost follows what is near the hero, never the world's area. The stress cases
+  are 1,024 × 1,024 and 4,096 × 4,096 (about 41,000 units across, where a float position still has a few thousandths of
+  a unit to spare). Up to that the whole cell grid may stay in memory. Beyond it — cells streamed from disk, positions
+  past about 100,000 units needing a moving origin, a world generated as it is walked — is not asked now, but nothing
+  in the design should rule it out: say where its next limit lies and what lifting it would take.
+- **Seamless:** after the first seconds of a load, walking anywhere never shows a loading screen or a stall.
+- **The game hands the world over as data,** as it hands a floor today (`DukeGame.applyMapTerrain`, a `Looked` record
+  for per-cell looks, a `Dressed` record for scenery). The regions, biomes and kingdoms are the game's words; the engine
+  is told cells, looks, heights, models and positions.
+
+### What the engine already has (0.7.0, unreleased)
+
+From the changelog: a route search reuses its arrays; the fog recomputes only where the open cells changed and redraws
+only near them, `Fog.texelsPerCell` sizes its picture to the map; the minimap is one texture repainted where knowledge
+changed; a kit's floor is gathered into chunks of 16 × 16 cells, one geometry per material per chunk, bent by the relief
+in place, and dark chunks are left out; per-cell looks (`Looked`, `lookAt`); scenery outside the simulation
+(`Dressed`, `MapScenery`, footprints kept by true distance, `PathGrid.clearOfCircles`). That work targeted 160 × 120.
+A world thirty times its area needs the next step.
+
+### What is asked
+
+1. **Drawing streamed by chunk.** Only chunks within the view of the camera are built and kept: floor, lids, rock
+   faces, scenery, their materials. A chunk's geometry is made when it comes near and dropped when it is far, built
+   off the frame's budget (another thread, or a few chunks a frame), so crossing a chunk's edge never costs a frame.
+   What lies beyond the drawn distance is hidden well (haze, fog, or a cheap stand-in — the engine's choice). Shadows,
+   streams, weather and effects keep working.
+2. **A world's cells kept compactly.** The whole grid may stay in memory up to the stress sizes — 810,000 cells is a
+   few megabytes as bytes — but no object per cell, and no per-cell work per frame anywhere (fog, minimap, looks,
+   relief).
+3. **Things far from every hero asleep.** A thing no hero is near does no work a frame — no brain, no step, no weapon,
+   no status timer — and keeps its state. It wakes when a hero comes near, on the same frame on every machine: sleeping
+   and waking are decided from simulation state alone (for example distance in cells to the nearest hero, checked at a
+   fixed cadence in a fixed order). A frame's cost follows what is awake, not what exists; the spatial index is sized
+   for the world.
+4. **Routes across the world.** A route between any two points is found in bounded time (a hierarchy — routes between
+   chunk portals, then local search — or whatever the engine prefers), the same on every machine. The small maps of
+   today keep their routes to the bit, or the change says where they differ and why.
+5. **Fog and maps for the whole world.** What the player knows is kept for every cell; the fog's picture is made only
+   near the camera. The minimap shows the part of the world around the hero; a whole-world view, zoomed out, can be
+   drawn from the same knowledge (a picture the game can show, at least).
+6. **Precision:** positions up to about 41,000 units draw and move without visible jitter (camera-relative drawing if
+   the float range makes it necessary).
+7. **Room for saving.** The world's changes — things killed, opened, taken, what the player knows, the heroes — must be
+   possible to write and read back. Saving itself is a later request; this one only must not make it impossible (no
+   simulation state that lives only in the client).
+
+### Rules the engine keeps
+
+The three at the top of this file: maps that do not use this draw and play exactly as today (duke-generals, the
+dungeon's floors and its fixed stages); lock-step (drawing may use threads, the simulation may not depend on them);
+data in, no game knowledge.
+
+### Done when
+
+- A generated 900 × 900 world with several looks, relief, scenery, fog and the minimap — and a 1,024 × 1,024 stress
+  world — lets a hero walk from one corner to the other at 60 fps on an RTX 3070 laptop at 2560 × 1600, with no frame
+  over 33 ms at chunk edges and no loading pause after the first seconds.
+- A 4,096 × 4,096 world loads in about the same time and walks at about the same frame cost as the 1,024 one: nothing
+  a frame grows with the world's area.
+- 5,000 monsters spread over the world cost no work a frame except those near a hero, and a sleeping one wakes when a
+  hero comes near, on the same frame on two machines in lock-step.
+- A route from one corner of the world to the other is found in bounded time, the same on every machine.
+- duke-generals, the dungeon's floors and its stages look and play as before.
+
+### Tell the game
+
+When it lands: the engine version, the records and entry points a game uses to hand over a world, what it must
+provide, and any limit that remains — as the E7 and E9 landings were told.
+
+## E11 — An untextured model keeps its own colour (2026-09-30, small)
+
+The keep's key (`key_crown.glb`) is one material, "silver mat": a `baseColorFactor` of about 0.24 grey, rough 0.16,
+and no texture. The client dresses every creature's and thing's model anew (`DukeRtsApp.dressModel` → 
+`creatureMaterial(colours, tint)`, lines from 8531470e ~6414-6438, 6647-6658): `colours` is the look's texture or the
+loader's first texture (`skinOf` ~6560-6570), and with neither the diffuse is the look's `Tint`, white by default — so
+the key lies near-white, and its silver is lost. Textured models (the gate, the fountain) are not affected.
+
+- With no texture from the look or the model, keep the loader's own base colour (glTF `baseColorFactor`) as the
+  colour the tint multiplies, as a texture is kept today.
+- A look that names a `Tint` still tints it; a model with a texture draws exactly as now.
+
+Done when: a glb with only a base colour and no texture draws in that colour under a white tint, and every textured
+model draws as before. Until then the game writes the colour as the look's `Tint` (key.duke).
+
+## E12 — A Layer block may say `Renews` (2026-09-30, small)
+
+E9 gave `EffectLayer.Builder.renews(boolean)` (AURA layers: cast again on a unit it still burns on, the aura lasts to
+the new end instead of being dropped), but the data record a game's Effect blocks are read into,
+`uz.dukeengine.core.content.Layer`, has `Follows` and no `Renews`: a file that writes `Renews = true` in a Layer block
+is refused at load (`DataException`), so no game can ask for it in data.
+
+- `Layer` gains `Boolean renews`, read from `Renews = true|false`, and its `fields()` hands it on as `"renews"`, as it
+  does `"follows"`. Unsaid, nothing changes.
+
+Done when: a Layer block with `Renews = true` loads and reaches the builder as renewing; one without it does not.
+Until then the game asks the client itself to renew the one look a status wears — the Combat block's `StunLook`
+(`Main.layerOf(art, settings)`); with this landed, that becomes `Renews = true` on the `Stunned` layers in data.
 
 ---
 
