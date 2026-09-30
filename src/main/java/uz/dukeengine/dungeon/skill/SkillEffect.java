@@ -10,8 +10,9 @@ package uz.dukeengine.dungeon.skill;
  *
  * <p>These are the shapes a dungeon hero needs: hit one thing hard, hit
  * everything near you, drop something on a spot, fire something down a line, be
- * somewhere else, be briefly stronger, be briefly harder to kill -- and two that
- * no hero has and a monster does: mend one of your own, and call up more of them.
+ * somewhere else, be briefly stronger, be briefly harder to kill -- and three that
+ * no hero has and a monster does: mend one of your own, call up more of them, and
+ * make one of them strike faster.
  * And one that is never cast at all: drink from your own blows -- see
  * {@link #isPassive}. A new shape is
  * a constant here and one branch in {@link SkillBook}; a new <em>skill</em> is
@@ -170,6 +171,18 @@ public enum SkillEffect {
      * A cast that would open none is refused with its cooldown unspent.
      */
     SUMMON(Aim.SELF),
+
+    /**
+     * Make one of your own strike faster, for a while.
+     *
+     * <p>The sturdiest of the caster's own side near it -- the highest level, then the most health at its fullest,
+     * then the nearer, then the one the world made first -- that lives, carries a {@code SkillBook}, and stands within
+     * {@code Range} of the caster, middle to middle, and in its plain sight; the caster itself when nothing sturdier
+     * stands near. Every wait of that one's weapon is divided by 1 + {@code BoostPercent}/100 and cut to whole frames,
+     * the engine's rule for a rate of fire, for {@code DurationFrames}; a second haste while it burns starts it again
+     * at the newer figures. Aimed at nothing, so never refused for want of someone to hasten.
+     */
+    HASTE(Aim.SELF),
 
     /**
      * Drink from your own blows: every blow its bearer lands gives it back

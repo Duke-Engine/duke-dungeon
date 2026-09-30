@@ -109,9 +109,18 @@ class MonsterSummoningTest {
     /** The shipped summoner, with its summoning's numbers changed: {@code summons} as the file writes it. */
     private static DungeonSettings summoningWith(String summons, int most, int lasts, int percent,
             int cooldown) {
-        return DungeonSettings.parse(ShippedBlock.of(SUMMONER).with("Summons", summons)
+        return DungeonSettings.parse(summoningAlone().with("Summons", summons)
                 .with("MaxSummoned", most).with("DurationFrames", lasts)
                 .with("SummonExperiencePercent", percent).with("CooldownFrames", cooldown).text());
+    }
+
+    /**
+     * The shipped summoner with its summoning the only skill it has: the skills written after it -- its haste -- set
+     * lines of the same names, and these tests are the summoning's.
+     */
+    private static ShippedBlock summoningAlone() {
+        var block = ShippedBlock.of(SUMMONER).text();
+        return new ShippedBlock(block.substring(0, block.indexOf("    End,\n    Skill\n")) + "    End\n  ]\nEnd\n");
     }
 
     /** Long enough for it to finish a throw it had started and for its rifts to land. */

@@ -1,7 +1,7 @@
 ; The purple one, and it brings more of them. Frail and slow like the other two, with a
-; mote of dark for its ordinary shot, and its skill opens rifts that swordsmen and
-; archers climb out of -- see Monster SkeletonSummoner and the Q skill of the
-; SkeletonSummoner below.
+; mote of dark for its ordinary shot; its skills open rifts that swordsmen and archers
+; climb out of, and make the sturdiest of its own strike faster -- see Monster
+; SkeletonSummoner and the Q and W skills of the SkeletonSummoner below.
 Monster
   Name = SkeletonSummoner
   DisplayName = Skeleton Summoner
@@ -54,7 +54,7 @@ Monster
   ; two, and whenever he is inside its SkillDistance and in plain sight it opens rifts
   ; round itself that skeletons and stalkers climb out of -- toward him first. They last a
   ; while, fall down again, and are worth nothing: kill the summoner, not what it
-  ; calls up.
+  ; calls up. Its rifts open, it makes the sturdiest of its own near it strike faster.
   SenseRadius = 64
   ChaseRadius = 120
   ; Unused: it holds the band below rather than closing.
@@ -84,9 +84,9 @@ Monster
   Attack = Ranged_Magic_Shoot
   Idle = Ranged_Magic_Spellcasting_Long
 
-  ; What it opens its rifts out of, in the hero's words and units, as the Skeleton
-  ; Mage's: enough to call up its four at its cooldown through a fight of a minute
-  ; or more.
+  ; What it opens its rifts and hastens out of, in the hero's words and units, as the
+  ; Skeleton Mage's: enough to call up its four at its cooldown through a fight of a
+  ; minute or more, and to hasten as its trickle allows.
   MaxMana = 80
   ManaRegen = 25
 
@@ -118,6 +118,26 @@ Monster
       ManaCost = 40
       MaxRank = 1
       Name = Chaqiruv
+    End,
+    Skill
+      Key = W
+      ; One of its own made to strike faster: the sturdiest near it -- the highest level,
+      ; then the most health, then the nearer -- or itself, when nothing sturdier stands
+      ; near. Cast as its summoning is, whenever he is inside its SkillDistance and in
+      ; plain sight: after the summoning in a fight, and never in an empty room.
+      Effect = HASTE
+      ; Three quarters again as fast -- every wait of its weapon divided by 1.75 -- for
+      ; five seconds. A second haste while it burns starts the five seconds again.
+      BoostPercent = 75
+      DurationFrames = 150
+      ; How far from it the one it hastens may stand: past its band, to the ones
+      ; fighting him.
+      Range = 60
+      ; The summoning's twelve seconds between castings.
+      CooldownFrames = 360
+      ManaCost = 25
+      MaxRank = 1
+      Name = Shiddat
     End
   ]
 End

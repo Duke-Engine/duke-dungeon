@@ -30,7 +30,8 @@ import uz.dukeengine.dungeon.content.Projectile;
  * @param damage        damage at the first level ({@code STRIKE}, {@code AREA_DAMAGE})
  * @param damagePerLevel  damage added per level past the first
  * @param radius        how far {@code AREA_DAMAGE} reaches around the caster
- * @param range         how far {@code STRIKE} can find a victim
+ * @param range         how far {@code STRIKE} can find a victim, and a {@code HASTE}
+ *     the one it hastens, middle to middle
  * @param distance      how far {@code DASH} carries the caster
  * @param hitWidth      how wide the thing a {@code SKILLSHOT} sends is, across
  *     the line of flight. Nothing in the simulation reads it -- an arrow hits
@@ -40,14 +41,15 @@ import uz.dukeengine.dungeon.content.Projectile;
  *     worked out from the speed because the two are free to disagree and the
  *     PICTURE is the one the player trusts
  * @param boostPercent  what this skill is worth in percent — damage added by
- *     {@code EMPOWER}, damage avoided by {@code GUARD}, and the share of every blow
- *     a {@code LIFESTEAL} gives back as health. One field because it is one
- *     question ("how much is it worth?") asked of two mirrored effects and of a
- *     passive that is worth a share of what its bearer does
+ *     {@code EMPOWER}, damage avoided by {@code GUARD}, the share of every blow
+ *     a {@code LIFESTEAL} gives back as health, and how much faster a {@code HASTE}
+ *     makes a weapon fire. One field because it is one question ("how much is it
+ *     worth?") asked of mirrored effects and of a passive that is worth a share of
+ *     what its bearer does
  * @param boostPerLevel that percentage's growth per level
  * @param durationFrames how long it lasts: {@code EMPOWER}'s extra damage,
- *     {@code GUARD}'s protection, or how long an {@code AREA_DAMAGE} goes on
- *     landing. Zero for a skill that happens and is over
+ *     {@code GUARD}'s protection, a {@code HASTE}, or how long an
+ *     {@code AREA_DAMAGE} goes on landing. Zero for a skill that happens and is over
  * @param tickFrames    how often a lasting {@code AREA_DAMAGE} lands, in frames.
  *     Zero lands it once, which is what every skill written before there was a
  *     whirlwind does — so the damage figure means "per landing" either way and no

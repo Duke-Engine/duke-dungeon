@@ -456,6 +456,7 @@ class DungeonSettingsTest {
                 case DASH, BLINK -> skill.distance();
                 case METEOR -> skill.range();
                 case AREA_DAMAGE, SUMMON -> skill.radius();
+                case HASTE -> skill.range();
                 case EMPOWER, GUARD -> 1f; // his own width; the look says how wide
                 case LIFESTEAL -> 1f; // never cast, so no ring is ever drawn: a stand-in to keep the switch whole
             };

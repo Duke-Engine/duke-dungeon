@@ -796,6 +796,9 @@ public final class DungeonSettings {
                             name + "'s SummonExperiencePercent is a share, from 0 to 100");
                     require(skill.hasProjectile(), name + " has no rift to open: name it in Projectile");
                 }
+                case HASTE -> require(skill.boostPercent() >= 1 && skill.durationFrames() > 0,
+                        skill.heroTemplate() + "'s Skill " + skill.key() + " hastens nobody: it needs a BoostPercent"
+                                + " of at least 1 and DurationFrames for it to last");
                 case LIFESTEAL -> require(skill.boostPercent() >= 1 && skill.boostPercent() <= 100,
                         skill.heroTemplate() + "'s Skill " + skill.key() + "'s BoostPercent is the share of every"
                                 + " blow it drinks, from 1 to 100");

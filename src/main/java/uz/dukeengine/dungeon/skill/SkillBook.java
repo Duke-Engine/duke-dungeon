@@ -14,12 +14,14 @@ import uz.dukeengine.core.thing.ObjectId;
 import uz.dukeengine.core.thing.ObjectStatus;
 import uz.dukeengine.core.thing.World;
 import uz.dukeengine.dungeon.ai.Facing;
+import uz.dukeengine.dungeon.ai.SightLine;
 import uz.dukeengine.dungeon.combat.FallingUpdate;
 import uz.dukeengine.dungeon.combat.LevelBonus;
 import uz.dukeengine.dungeon.combat.Shot;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.combat.event.WeaponFired;
 import uz.dukeengine.combat.module.DamageModifier;
+import uz.dukeengine.combat.module.RateOfFireModifier;
 import uz.dukeengine.combat.module.StatusUpdate;
 import uz.dukeengine.combat.module.WeaponHold;
 import uz.dukeengine.combat.module.WeaponUpdate;
@@ -39,14 +41,18 @@ import uz.dukeengine.combat.module.WeaponUpdate;
  * directly rather than attaching a buff module while {@code EMPOWER} lasts.
  * Attaching and detaching a module mid-frame is exactly what the engine's module
  * list refuses (rightly — it would silently skip whatever came next), and a flag
- * that expires is the same thing without the trap.
+ * that expires is the same thing without the trap. A {@code HASTE} is held the
+ * same way, in the hastened's own book, which is a {@link RateOfFireModifier} for
+ * it -- the seam a hero's boots ride through {@code AttackSpeed} -- and every
+ * monster carries one from birth.
  *
  * <p>Determinism: cooldowns are frames counted down, never seconds; the victim of
- * a {@code STRIKE} is the nearest enemy with ties broken by object id; a
+ * a {@code STRIKE} is the nearest enemy with ties broken by object id, and the one
+ * a {@code HASTE} is for the sturdiest near, down to the object id; a
  * {@code DASH} walks with {@link StrictMath}. Nothing here asks the clock.
  */
 @ModuleGroup({ModuleGroups.COMBAT, ModuleGroups.MOVEMENT, ModuleGroups.EFFECT, ModuleGroups.BODY})
-public final class SkillBook extends UpdateModule implements DamageModifier, WeaponHold {
+public final class SkillBook extends UpdateModule implements DamageModifier, RateOfFireModifier, WeaponHold {
 
     /** It reads no fields; the block only says the unit has one. */
     public record Data() implements ModuleData {
@@ -71,6 +77,13 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Wea
     /** Frames of {@code GUARD} left, and how much of a blow it turns aside. */
     private int guardFrames;
     private int guardPercent;
+
+    /**
+     * Frames of a {@code HASTE} left on this one -- whoever cast it -- and how much faster its weapon fires while it
+     * lasts. Counted down here as {@code EMPOWER}'s are; a second haste starts them again at its own figures.
+     */
+    private int hasteFrames;
+    private int hastePercent;
 
     /**
      * An {@code AREA_DAMAGE} that has not finished happening.
@@ -358,6 +371,11 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Wea
     /** Frames of extra damage left, for anything that wants to draw it. */
     public int getBoostFrames() {
         return boostFrames;
+    }
+
+    /** Frames of haste left on it, whoever cast it; 0 when none burns. */
+    public int getHasteFrames() {
+        return hasteFrames;
     }
 
     /** The frame he last committed to a skill, or a long time ago if he never has. */
@@ -653,6 +671,18 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Wea
                     return false; // no room left, or no floor to open a rift on
                 }
             }
+            case HASTE -> {
+                // The sturdiest of its own near it, or itself -- never nobody. Held in the hastened's own book and
+                // counted down there, as EMPOWER is in its caster's: a second haste starts it again, never stacks.
+                var hastened = sturdiestNear(owner, world, skill.range());
+                var its = hastened.findModule(SkillBook.class);
+                its.hasteFrames = skill.durationFrames();
+                its.hastePercent = skill.boostAt(level);
+                // It turns to the one it hastens and is seen casting, as a mending is.
+                Facing.turnToward(owner, hastened);
+                world.post(new WeaponFired(world.getFrame(), owner.getId(), null,
+                        owner.getPosition(), hastened.getPosition()));
+            }
             case DASH -> {
                 if (towards != null) {
                     // Face where he was sent before he goes, so the model and the
@@ -847,6 +877,25 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Wea
             }
         }
         return best;
+    }
+
+    /**
+     * Whom a haste is for: of {@code caster}'s own side, living, carrying a book, within {@code range} of it, middle to
+     * middle, and in its plain sight -- itself always among them -- the one of the highest level, then the most health
+     * at its fullest, then the nearer, then the one the world made first. Sturdiest rather than hardest-hitting:
+     * health is on every body, and a blow's worth is not. A total order ending in the object id, so every machine
+     * picks the same one.
+     */
+    private static GameObject sturdiestNear(GameObject caster, World world, float range) {
+        var here = caster.getPosition();
+        var sturdier = java.util.Comparator.<GameObject>comparingInt(LevelBonus::levelOf)
+                .thenComparingDouble(one -> one.getBody().getMaxHealth())
+                .thenComparingDouble(one -> -here.distance(one.getPosition()))
+                .thenComparingInt(one -> -one.getId().value());
+        return world.objectsInRange(here, range, one -> one.getPlayerIndex() == caster.getPlayerIndex()
+                        && one.getBody() != null && !one.isEffectivelyDead()
+                        && one.findModule(SkillBook.class) != null && SightLine.clear(caster, one))
+                .stream().max(sturdier).orElse(caster);
     }
 
     private static List<GameObject> enemiesWithin(GameObject owner, World world, float radius) {
@@ -1138,6 +1187,15 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Wea
     }
 
     /**
+     * How much faster its weapon fires while a {@code HASTE} burns on it: the engine divides every wait by this and
+     * cuts it to whole frames -- 30 frames at 1.75 are 17. Read at each shot; 1 when none burns.
+     */
+    @Override
+    public float rateOfFireMultiplier() {
+        return hasteFrames > 0 ? 1f + hastePercent / 100f : 1f;
+    }
+
+    /**
      * {@code striker} landed a blow worth {@code dealt}: every {@code LIFESTEAL} among
      * its skills gives it back its share, as health, never above its maximum. Nobody,
      * the dead, and a creature with no such skill get nothing.
@@ -1235,6 +1293,9 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Wea
         }
         if (guardFrames > 0) {
             guardFrames--;
+        }
+        if (hasteFrames > 0) {
+            hasteFrames--;
         }
         turnTheWhirlwind();
         if (drawing != null && --loosesIn <= 0) {
