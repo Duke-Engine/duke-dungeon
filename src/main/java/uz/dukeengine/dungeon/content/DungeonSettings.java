@@ -319,12 +319,14 @@ public final class DungeonSettings {
                     monsters.add(monster.kind());
                     own(monster.name(), monster.portrait(), monster.skills());
                     requireBook("Monster " + monster.name(), monster.modules(), monster.skills());
+                    requireOneSkillPerKey("Monster " + monster.name(), monster.skills());
                     requirePool(monster);
                 }
                 case Hero hero -> {
                     heroes.add(hero);
                     own(hero.name(), hero.portrait(), hero.skills());
                     requireBook("Hero " + hero.name(), hero.modules(), hero.skills());
+                    requireOneSkillPerKey("Hero " + hero.name(), hero.skills());
                 }
                 case Projectile projectile -> projectiles.add(projectile);
                 case Prop prop -> props.add(prop);
@@ -402,6 +404,23 @@ public final class DungeonSettings {
         require(itsSkills.isEmpty() || modules.isEmpty()
                         || modules.stream().anyMatch(SkillBook.Data.class::isInstance),
                 who + " has Skills and no SkillBook among its Modules: nothing would carry them");
+    }
+
+    /**
+     * A unit's skills are found by their key: the book casts, recharges and charges "the skill on Q", and a monster's
+     * brain asks it the same. So a second skill on a key the unit already has would be found by nobody -- a skill
+     * written in the file that nothing casts, and nothing would say so. A key is the upper case of what is written, as
+     * {@link Skill#ownedBy} makes it.
+     *
+     * <p>Asked where the record is read, of the skills its own block writes, as a book and a pool are.
+     */
+    private static void requireOneSkillPerKey(String who, List<Skill> itsSkills) {
+        var keys = new java.util.HashSet<Character>();
+        for (var skill : itsSkills) {
+            char key = Character.toUpperCase(skill.key());
+            require(keys.add(key), who + " has two skills on the key " + key
+                    + ": a skill is found by its key, so the second would never be cast");
+        }
     }
 
     /**

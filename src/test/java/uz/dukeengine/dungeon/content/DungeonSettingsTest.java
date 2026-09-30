@@ -237,6 +237,28 @@ class DungeonSettingsTest {
     }
 
     /**
+     * A unit's skills are found by their key -- the book casts, recharges and charges "the skill on Q", and a monster's
+     * brain asks it the same -- so a second skill on a key the unit already has would be found by nobody: it would stand
+     * in the file and do nothing, and nothing would say so. The file is refused, naming the unit and the key: a
+     * monster's and a hero's alike, and a key written in the other case is no other key.
+     */
+    @Test
+    void aUnitWithTwoSkillsOnOneKeyIsRefused() {
+        for (var clash : new String[][] {
+                {"SkeletonMage", "      Key = Q\n", "      Key = R\n", "Monster SkeletonMage", "key R"},
+                {"Rogue", "      Key = W\n", "      Key = q\n", "Hero Rogue", "key Q"}}) {
+            var unit = ShippedBlock.of(clash[0]);
+            var clashing = unit.text().replace(clash[1], clash[2]);
+            assertNotEquals(unit.text(), clashing, "the premise: " + clash[0] + " was given two skills on one key");
+
+            var refused = assertThrows(IllegalArgumentException.class,
+                    () -> DungeonSettings.parse(Content.data().replace(unit.text(), clashing)), clash[0]);
+            assertTrue(refused.getMessage().contains(clash[3]) && refused.getMessage().contains(clash[4]),
+                    refused.getMessage());
+        }
+    }
+
+    /**
      * The hero stops inside his own reach, not at the edge of it.
      *
      * <p>{@code CloseDistance} is his: each monster carries its own further down

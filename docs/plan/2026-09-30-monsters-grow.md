@@ -103,6 +103,11 @@ Per level past the first, alike for every monster and boss, from the `Descent` b
   passes to the next skill that frame. One cast per gesture: nothing else leaves it until `SwingFrames` after the last.
 - **One band per monster:** `SkillDistance` is where it casts at him from, whichever skill; a skill aimed at him must
   reach the band's far end (`Range` at least its furthest, checked when the file is read), so none falls short.
+  Self-aimed skills — a summoning, which opens its rifts round its caster — are aimed at nothing and exempt from the
+  `Range` rule; a mending, cast on its own side, and a passive, never cast, need no band at all.
+- **One skill to a key:** the book and the brain find a skill by its key, so a unit with two skills on one key would
+  have one nothing casts; the file is refused, naming the unit and the key (checked when the file is read, for a hero's
+  block as for a monster's).
 - `Monster.skillKey`, `MonsterKind.skillKey` and `ITS_ONLY_RANK` give way to the book's skills in file order and the
   rank the level gives; the settings' checks ask of each skill.
 
@@ -149,7 +154,8 @@ choice in file order, with no dice and no hash order; every name and number from
 - **Mana:** a pool grown by its level and full when placed, trickling back; a cast it cannot pay for refused with
   nothing spent, and the next skill cast; no pool, free; a cost with no pool refused when the file is read.
 - **Skills:** the first open, ready, affordable skill in file order is cast, then nothing until the gesture ends; a
-  passive never; an aimed skill whose `Range` falls short of the band refused when the file is read.
+  passive never; an aimed skill whose `Range` falls short of the band refused when the file is read, and so are two
+  skills on one key.
 - **The meteor:** below level 6 never cast, whatever its mana and wherever he stands; from 6 cast at where he stands,
   its mark a `SkullMeteorMark`; while it recharges, the fireball follows.
 - **The shipped data:** the level lines and their numbers, no per-depth health, damage or experience; the three pools
