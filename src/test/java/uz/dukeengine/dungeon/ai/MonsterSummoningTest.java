@@ -144,12 +144,17 @@ class MonsterSummoningTest {
                 .findObject(new uz.dukeengine.core.thing.ObjectId(one.id())).getTemplate().name()).toList();
     }
 
-    /** What it called up that is standing now. */
-    private static long standing(DukeGame game) {
+    /** The kind of each thing it called up that is standing now, in the order they rose. */
+    private static List<String> standingKinds(DukeGame game) {
         return game.getLogic().getObjects().stream()
                 .filter(object -> object.findModule(Summoned.class) != null
                         && !object.isDestroyed() && !object.isEffectivelyDead())
-                .count();
+                .map(object -> object.getTemplate().name()).toList();
+    }
+
+    /** What it called up that is standing now. */
+    private static long standing(DukeGame game) {
+        return standingKinds(game).size();
     }
 
     // ---- how many, and where ----
@@ -204,6 +209,8 @@ class MonsterSummoningTest {
         }
 
         assertEquals(4, most, "it should have reached its ceiling");
+        assertEquals(List.of(SWORDSMAN, SWORDSMAN, SWORDSMAN, ARCHER), standingKinds(circle.game()),
+                "a cast asking five, cut at four, calls up the first four written");
         var book = circle.summoner().findModule(SkillBook.class);
         assertEquals(4, book.summonedStanding());
         assertTrue(book.isReady(summoning().key()), "and a cast it could not make spent no cooldown");
@@ -375,9 +382,35 @@ class MonsterSummoningTest {
         return line.toString();
     }
 
+    // ---- what a file may say ----
+
+    /**
+     * The shipped summoner with this {@code Summons} and this {@code MaxSummoned}, everything else as shipped,
+     * is refused when its file is read, and the message says {@code saying}.
+     */
+    private static void assertRefused(String summons, int most, String saying) {
+        var refused = assertThrows(IllegalArgumentException.class,
+                () -> summoningWith(summons, most, 600, 0, 360), summons + " with a ceiling of " + most);
+        assertTrue(refused.getMessage().contains(saying), refused.getMessage());
+    }
+
+    /** Asking for nothing -- a count of none, no kinds at all, no room to stand in -- is refused, and says so. */
+    @Test
+    void aSummoningThatCallsUpNothingIsRefused() {
+        assertRefused("[Skeleton = 0]", 4, "calls up nothing");
+        assertRefused("[]", 4, "calls up nothing");
+        assertRefused("[Skeleton = 2]", 0, "calls up nothing");
+    }
+
+    /** A kind no Monster block describes is refused, and the message names it: a typo is not a smaller cast. */
+    @Test
+    void aKindNoMonsterBlockDescribesIsRefusedNamingIt() {
+        assertRefused("[Skeleton = 2, Stalkr = 2]", 4, "calls up Stalkr, and no Monster block describes it");
+    }
+
     // ---- the old way of writing it ----
 
-    /** One kind and a SummonCount beside it, as the file used to say: refused, and told the new way. */
+    /** A single kind after Summons, as the file used to write it: refused, and the message names the new form. */
     @Test
     void theOldSingleSummonsIsRefusedNamingTheNewForm() {
         var old = ShippedBlock.dataWith(SUMMONER, "Summons", SWORDSMAN);

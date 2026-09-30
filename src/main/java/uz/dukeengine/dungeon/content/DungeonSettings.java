@@ -696,6 +696,10 @@ public final class DungeonSettings {
                                     && skill.summons().values().stream().allMatch(count -> count >= 1),
                             name + " calls up nothing: it needs Summons = [Kind = count, ...], each at least one,"
                                     + " and a MaxSummoned");
+                    for (var kind : skill.summons().keySet()) {
+                        require(monster(kind) != null,
+                                name + " calls up " + kind + ", and no Monster block describes it");
+                    }
                     require(skill.radius() > 0f && skill.durationFrames() > 0,
                             name + " needs a Radius to call them up at and DurationFrames for them to last");
                     require(skill.summonExperiencePercent() >= 0 && skill.summonExperiencePercent() <= 100,
