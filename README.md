@@ -284,8 +284,10 @@ birlashtirilgan). Ochilganda darvoza o'rniga shaklsiz `OpenGate` turadi va
 `open` klipini bir marta o'ynab, ochiq qoladi (`PlayOnce`, engine
 `ClipMode.ONCE`). Darvoza o'zi ochilmaydi: uni faqat kalit ochadi. Yopiq
 turganda u qal'a ichini tashqarisidan ajratib turadi (`run/Seal`): zarba, o'q,
-portlash, meteor va davolash undan o'tmaydi (ostona tashqari hisoblanadi);
-ochilgach hammasi avvalgidek yetadi. Stage'lar qal'asiz kesiladi — stage fayli
+portlash, meteor va davolash undan o'tmaydi (ostona tashqari hisoblanadi),
+otilish va siljish undan oshib o'tmaydi (mahorat rad etiladi, hech narsa
+sarflanmaydi), chaqiruvchi esa uning narigi tomonida yoriq ochmaydi; ochilgach
+hammasi avvalgidek yetadi. Stage'lar qal'asiz kesiladi — stage fayli
 qal'aning ko'rinishini saqlamaydi.
 
 Qal'ali qavatning **vazifasi** bor (`run/Mission`), ekranning tepasida

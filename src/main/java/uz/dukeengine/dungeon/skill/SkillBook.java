@@ -229,7 +229,10 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Wea
      */
     private final List<ObjectId> summoned = new java.util.ArrayList<>();
 
-    /** The keep's shut gate, which nothing a skill hurts or mends is found through: see {@link Seal}. */
+    /**
+     * The keep's shut gate, which nothing a skill hurts or mends is found through, and which no dash, blink or rift
+     * crosses: see {@link Seal}.
+     */
     private final Seal seal;
 
     public SkillBook(GameObject owner, List<Skill> skills, DungeonSettings settings, Seal seal) {
@@ -627,8 +630,10 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Wea
                 }
                 var landing = somewhereHeCanStand(owner, world,
                         withinReach(owner, towards, skill.distance()));
-                if (landing == null) {
-                    return false; // nowhere along that line is floor; the cast is not spent
+                if (landing == null || seal.parts(world, owner.getPosition(), landing)) {
+                    // Nowhere along that line is floor, or where it comes down is over
+                    // the keep's shut gate; the cast is not spent.
+                    return false;
                 }
                 var leaving = owner.getPosition();
                 Facing.turnToward(owner, landing);
@@ -659,13 +664,22 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Wea
                 }
             }
             case DASH -> {
+                float facing = owner.getOrientation();
                 if (towards != null) {
                     // Face where he was sent before he goes, so the model and the
                     // travel agree — and so the next thing he does looks that way.
                     Facing.turnToward(owner, towards);
                 }
                 var from = owner.getPosition();
-                owner.setPosition(dashEnd(owner, world, reachOf(skill, owner, towards)));
+                var end = dashEnd(owner, world, reachOf(skill, owner, towards));
+                if (seal.parts(world, from, end)) {
+                    // It comes down over the keep's shut gate: refused, as a blink into
+                    // a pillar is -- nothing spent, and not so much as turned. No charge
+                    // crossing it, the trample below only ever finds his own side.
+                    owner.setOrientation(facing);
+                    return false;
+                }
+                owner.setPosition(end);
                 // A charge hurts what it goes through; a sprint does not. Which of
                 // the two it is, is a number in the file rather than a second
                 // effect here — so the archer's sprint is untouched by having said
@@ -1078,7 +1092,7 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Wea
         }
         // Two that rise together stand a body apart -- the widest body of what rises.
         var spots = Summoning.spots(world, owner, towards, skill.radius(), room, 2f * body,
-                settings.combat().summonTurnDegrees(), settings.combat().summonTurns());
+                settings.combat().summonTurnDegrees(), settings.combat().summonTurns(), seal);
         int opened = 0;
         for (var spot : spots) {
             var opening = world.spawn(rift, spot, owner.getPlayerIndex());

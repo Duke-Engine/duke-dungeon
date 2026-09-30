@@ -9,8 +9,9 @@ import uz.dukeengine.dungeon.gen.Keep;
 
 /**
  * The keep's shut gate, as a rule: while it stands, nothing that hurts or mends passes between the keep and the rest
- * of the floor. Every blow, shot, burst, falling meteor and mending asks {@link #parts} rather than saying the rule
- * again.
+ * of the floor, and nobody goes over it. Every blow, shot, burst, falling meteor and mending asks {@link #parts} rather
+ * than saying the rule again, and so does every dash, blink and rift — refused, or not opened, where it would come
+ * down on the other side.
  *
  * <p>Within the keep is its square — the court, and the ring of wall with the doorway the gate stands in. The threshold
  * is outside, with the rest of the floor: a hero on it is on the gate's far side from the boss. Nobody stands in the

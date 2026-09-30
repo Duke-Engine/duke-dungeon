@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import uz.dukeengine.core.math.Coord3D;
+import uz.dukeengine.core.pathfind.PathGrid;
 import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.core.thing.ObjectStatus;
 import uz.dukeengine.dungeon.Dungeon;
@@ -28,8 +29,8 @@ import uz.dukeengine.combat.module.WeaponUpdate;
 
 /**
  * While the keep's gate stands, nothing that hurts or mends crosses it: a creature within the keep's walls and one
- * outside them cannot reach each other by blow, shot, burst, falling meteor or mending — and once it is open,
- * everything reaches as before.
+ * outside them cannot reach each other by blow, shot, burst, falling meteor or mending, nor go over it by dash or
+ * blink, nor call anything up on its far side — and once it is open, everything reaches as before.
  *
  * <p>Real fights on a floor of the descent with nobody in its chambers — the boss and its guard in the keep — each of
  * them stood where the fight needs them, and the hero on the threshold or the road before it. A fight that asks
@@ -140,10 +141,14 @@ class SealTest {
     }
 
     private static Floor floor(String hero) {
+        return floor(hero, SEED);
+    }
+
+    private static Floor floor(String hero, long seed) {
         var settings = keepOnly(hero);
-        var session = Dungeon.newSession(SEED, settings);
+        var session = Dungeon.newSession(seed, settings);
         session.game().runHeadless(2);
-        var dungeon = DungeonGenerator.generate(SEED, settings, 1);
+        var dungeon = DungeonGenerator.generate(seed, settings, 1);
         var keep = dungeon.keep();
         assertNotNull(keep, "the floor has no keep, so there is nothing to seal");
         var gate = keep.gate();
@@ -163,6 +168,13 @@ class SealTest {
 
     private static Skill skillOf(String hero, char key) {
         return SETTINGS.skillsFor(hero).stream().filter(skill -> skill.key() == key).findFirst().orElseThrow();
+    }
+
+    /** The cell {@code thing} stands in. */
+    private static int[] cellOf(GameObject thing) {
+        var at = thing.getPosition();
+        return new int[] {(int) Math.floor(at.x() / PathGrid.DEFAULT_CELL_SIZE),
+                (int) Math.floor(at.y() / PathGrid.DEFAULT_CELL_SIZE)};
     }
 
     /**
@@ -486,6 +498,106 @@ class SealTest {
             } else {
                 assertTrue(called.isEmpty(), "the healer called its light down through the shut gate");
                 assertEquals(had, most, 0.01f, "the boss was mended through the shut gate");
+            }
+        }
+    }
+
+    // ---- what goes over it ----
+
+    @Test
+    void theRoguesSprintNeverCarriesHimOverTheShutGate() {
+        overTheGate("Rogue", 'E');
+    }
+
+    @Test
+    void theKnightsChargeNeverCarriesHimOverTheShutGate() {
+        overTheGate("Knight", 'W');
+    }
+
+    @Test
+    void theMagesBlinkNeverCarriesHimOverTheShutGate() {
+        overTheGate("Mage", 'E');
+    }
+
+    /**
+     * On ten floors of the descent, {@code hero} on the threshold's middle casts the skill on {@code key} deep into the
+     * court: while the gate stands it is refused, as a landing in stone is — nothing spent and nothing moved — and
+     * once it is open it carries him into the court.
+     */
+    private static void overTheGate(String hero, char key) {
+        for (long seed = 21; seed <= 30; seed++) {
+            var floor = floor(hero, seed);
+            var keep = floor.dungeon().keep();
+            var him = floor.hero();
+            var book = floor.book();
+            var deep = floor.cell(-6, 0); // farther in than any of the three carries
+            floor.hold();
+            var stood = floor.put(him, 1, 0).getPosition();
+            float facing = him.getOrientation();
+            int mana = book.getMana();
+
+            boolean went = book.cast(key, 1, null, deep);
+
+            var landed = cellOf(him);
+            assertFalse(keep.isCourt(landed[0], landed[1]),
+                    "seed " + seed + ": his " + key + " carried him over the shut gate into the court");
+            assertFalse(went, "seed " + seed + ": his " + key + " went off with its landing over the shut gate");
+            assertTrue(stood.equals(him.getPosition()) && facing == him.getOrientation(),
+                    "seed " + seed + ": the refused " + key + " moved or turned him");
+            assertTrue(book.isReady(key) && book.getMana() == mana,
+                    "seed " + seed + ": the refused " + key + " was paid for");
+
+            floor.open();
+            floor.put(him, 1, 0);
+            assertTrue(book.cast(key, 1, null, deep), "seed " + seed + ": the gate open, his " + key + " was refused");
+            landed = cellOf(him);
+            assertTrue(keep.isCourt(landed[0], landed[1]),
+                    "seed " + seed + ": the gate open, his " + key + " did not carry him into the court");
+        }
+    }
+
+    /**
+     * A summoner a step behind the gate, the hero in plain sight on the road before it, opens its rifts on its own side
+     * of the shut gate and none outside it — and once it is open, it opens one toward him, outside.
+     */
+    @Test
+    void aSummonerBehindTheShutGateOpensNoRiftOutsideIt() {
+        for (boolean opened : new boolean[] {false, true}) {
+            var floor = floor("Rogue");
+            var keep = floor.dungeon().keep();
+            var summoner = floor.guards().stream()
+                    .filter(guard -> guard.getTemplate().name().equals("SkeletonSummoner")).findFirst().orElseThrow();
+            floor.remove(floor.guards().stream().filter(guard -> guard != summoner).toList());
+            floor.hold();
+            floor.put(floor.hero(), 3, 0);
+            // Pressed near the gate: from here a rift sixteen out toward him rises clear of it, on the threshold.
+            var behind = floor.put(summoner, -1, 0).getPosition();
+            summoner.setPosition(new Coord3D(behind.x() + 3 * floor.outX(), behind.y() + 3 * floor.outY(), behind.z()));
+            if (opened) {
+                floor.open();
+            }
+            var rift = SETTINGS.skillsFor("SkeletonSummoner").getFirst().projectile();
+
+            var rifts = new HashSet<Integer>();
+            var outside = new HashSet<Integer>();
+            for (int frame = 0; frame < A_WHILE; frame++) {
+                floor.game().runHeadless(1);
+                for (var object : floor.game().getLogic().getObjects()) {
+                    if (object.getTemplate().name().equals(rift)) {
+                        rifts.add(object.getId().value());
+                        var at = cellOf(object);
+                        if (!keep.within(at[0], at[1])) {
+                            outside.add(object.getId().value());
+                        }
+                    }
+                }
+            }
+
+            if (opened) {
+                assertFalse(outside.isEmpty(), "the gate open, it opened no rift outside, so this proves nothing");
+            } else {
+                assertFalse(rifts.isEmpty(), "it opened no rift at all, so this proves nothing");
+                assertTrue(outside.isEmpty(), "the summoner opened a rift outside the shut gate");
             }
         }
     }

@@ -17,6 +17,7 @@ import uz.dukeengine.dungeon.Dungeon;
 import uz.dukeengine.dungeon.combat.LevelBonus;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.dungeon.content.ShippedBlock;
+import uz.dukeengine.dungeon.run.Seal;
 import uz.dukeengine.dungeon.run.Spawner;
 import uz.dukeengine.dungeon.skill.Skill;
 import uz.dukeengine.dungeon.skill.SkillBook;
@@ -254,7 +255,8 @@ class MonsterSummoningTest {
         game.runHeadless(1);
 
         var spots = Summoning.spots(game.getLogic(), first(game, SUMMONER), null,
-                summoning().radius(), 4, 8f, SETTINGS.combat().summonTurnDegrees(), SETTINGS.combat().summonTurns());
+                summoning().radius(), 4, 8f, SETTINGS.combat().summonTurnDegrees(), SETTINGS.combat().summonTurns(),
+                new Seal());
 
         assertTrue(spots.isEmpty(), "spots found in solid rock: " + spots);
     }
