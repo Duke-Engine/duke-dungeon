@@ -153,6 +153,7 @@ class BagScreenTest {
         var drawn = new Drawn();
         bag.paint(drawn);
         assertTrue(drawn.text.contains(SETTINGS.hud().itemsWord()), "drawn while frames come");
+        assertTrue(drawn.text.contains(session.run().getTracker()), "with the mission's step over the world");
 
         now.addAndGet(600_000_000L); // six tenths of a second, and not a frame
         drawn.clear();
@@ -163,6 +164,7 @@ class BagScreenTest {
         drawn.clear();
         bag.paint(drawn);
         assertTrue(drawn.text.contains(SETTINGS.hud().itemsWord()), "and back with the next frame");
+        assertTrue(drawn.text.contains(session.run().getTracker()), "the step with it");
     }
 
     private static uz.dukeengine.core.thing.GameObject find(uz.dukeengine.game.DukeGame game, String template) {

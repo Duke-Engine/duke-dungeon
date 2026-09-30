@@ -184,6 +184,8 @@ final class BagScreen implements Painter, CanvasInput {
         if (!shown) {
             return;
         }
+        // The floor's mission at the top, and what the heroes say over their heads -- under the bag and its cards.
+        MissionScreen.paint(canvas, match, settings);
         if (heldIn != match) {
             held = -1; // a match that is over took what was in hand with it
         }
