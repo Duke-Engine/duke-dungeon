@@ -249,6 +249,81 @@ class BagScreenTest {
                 "he is not on his way to the gate with it");
     }
 
+    /**
+     * What a click takes in hand: the left button only a thing that does something, to use — with no word beside it
+     * about the floor — and the right button any thing, to put down; and each says what is in hand now, whatever was
+     * in it before. A thing in hand is drawn a second time, beside the pointer, as well as in its own slot.
+     */
+    @Test
+    void theLeftButtonTakesInHandOnlyAThingThatDoesSomethingAndTheRightOneAnyThing() {
+        var session = Dungeon.newSession(21L);
+        var game = session.game();
+        game.runHeadless(2);
+        var gauntlet = SETTINGS.loot().stream().filter(item -> item.id().equals("Gauntlet")).findFirst().orElseThrow();
+        var key = SETTINGS.loot().stream().filter(item -> item.kind() == LootKind.KEY).findFirst().orElseThrow();
+        session.progress().getLoot().take(gauntlet, 0, 30);
+        session.progress().getLoot().take(key, 0, 30);
+        var bag = bagOver(game);
+        bag.show(session);
+        var drawn = new Drawn();
+        bag.paint(drawn);
+        var onGauntlet = drawn.picture(gauntlet.icon());
+        var onKey = drawn.picture(key.icon());
+        assertNotNull(onGauntlet, "the gauntlet is drawn in its slot: " + drawn.pictures);
+        assertNotNull(onKey, "the key is drawn in its slot: " + drawn.pictures);
+
+        assertTrue(bag.take(new uz.dukeengine.client3d.CanvasInput.Button(onGauntlet.middleX(), onGauntlet.middleY(),
+                uz.dukeengine.client3d.CanvasInput.Mouse.LEFT, true, false)), "a left click on the bag is the bag's");
+        drawn.clear();
+        bag.paint(drawn);
+        assertEquals(1, drawn.pictures.stream().filter(it -> it.path().equals(gauntlet.icon())).count(),
+                "it does nothing, so it is not taken in hand: " + drawn.pictures);
+        assertTrue(drawn.text.contains(SETTINGS.lootDrops().takeHint()), "only pointed at: " + drawn.text);
+
+        bag.take(new uz.dukeengine.client3d.CanvasInput.Button(onKey.middleX(), onKey.middleY(),
+                uz.dukeengine.client3d.CanvasInput.Mouse.LEFT, true, false));
+        drawn.clear();
+        bag.paint(drawn);
+        assertEquals(2, drawn.pictures.stream().filter(it -> it.path().equals(key.icon())).count(),
+                "the key is in hand, drawn beside the pointer as well as in its slot: " + drawn.pictures);
+        assertFalse(drawn.text.contains(SETTINGS.lootDrops().dropHint()), "to be used, not put down");
+
+        bag.take(new uz.dukeengine.client3d.CanvasInput.Button(onGauntlet.middleX(), onGauntlet.middleY(),
+                uz.dukeengine.client3d.CanvasInput.Mouse.RIGHT, true, false));
+        drawn.clear();
+        bag.paint(drawn);
+        assertEquals(2, drawn.pictures.stream().filter(it -> it.path().equals(gauntlet.icon())).count(),
+                "a right click takes any thing in hand: " + drawn.pictures);
+        assertTrue(drawn.text.contains(SETTINGS.lootDrops().dropHint()), "and this one is to be put down");
+    }
+
+    /**
+     * The use aim pressed on a thing is an order of the game's own, as a drop is: the form the wire and the replay
+     * carry, so every machine of a party hears it — with the thing it was pressed on and the slot it names. Pressed on
+     * no thing, it is no order at all.
+     */
+    @Test
+    void theUseAimPressedOnAThingIsAnOrderEveryMachineHears() {
+        var session = Dungeon.newSession(21L);
+        var game = session.game();
+        var heard = new java.util.ArrayList<uz.dukeengine.rts.message.GameMessage.GameOrder>();
+        game.onOrder(heard::add); // before the world starts, as the game's own is
+        bagOver(game).show(session);
+        game.runHeadless(2);
+        var gate = find(game, "Gate");
+        var expected = uz.dukeengine.dungeon.party.PartyOrders.of(
+                new uz.dukeengine.dungeon.loot.UseItem(game.getLocalPlayerIndex(), 2, gate.getId()));
+
+        game.pressCommand("use:2", null, 0f, -1);
+        game.runHeadless(2);
+        assertTrue(heard.stream().noneMatch(order -> order.word().equals(expected.word())),
+                "pressed on no thing: " + heard);
+
+        game.pressCommand("use:2", null, 0f, gate.getId().value());
+        game.runHeadless(2);
+        assertEquals(List.of(expected), heard.stream().filter(order -> order.word().equals(expected.word())).toList());
+    }
+
     /** A key gives nothing, so the pointer on it says what it is and how to take it, with no empty row for a figure. */
     @Test
     void aKeyInTheBagIsSaidWithoutAnEmptyRowForAFigure() {

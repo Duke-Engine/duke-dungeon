@@ -16,6 +16,8 @@ import uz.dukeengine.dungeon.loot.ItemErrand;
 import uz.dukeengine.dungeon.loot.Loot;
 import uz.dukeengine.dungeon.loot.LootBag;
 import uz.dukeengine.dungeon.loot.LootKind;
+import uz.dukeengine.dungeon.loot.UseItem;
+import uz.dukeengine.dungeon.party.PartyOrders;
 import uz.dukeengine.game.DukeGame;
 
 /**
@@ -257,6 +259,100 @@ class GateTest {
 
         assertEquals(key(), bag.at(0), "he gave it to a pillar");
         assertEquals("Bu kalit faqat boss darvozasini ochadi", bag.noteAt(game.getLogic().getFrame()));
+        assertNotNull(find(game, "Gate"), "and the gate is as it was");
+    }
+
+    /**
+     * He arrives as a hero sent up to look does: a walk his brain takes up again ends on the free block beside the
+     * gate, outside the reach, and he gives it the key from there all the same. Stands in for that resume as
+     * sentUpToItAWalkTakenUpAgainEndsBesideItAndHeSaysItThere does, with a reach of its own.
+     */
+    @Test
+    void usingTheKeyAWalkTakenUpAgainEndsBesideItAndItOpensFromThere() {
+        var arena = withAGate();
+        var game = arena.game();
+        game.spawn("Rogue", arena.hero(), 120f, 155f);
+        game.runHeadless(2);
+        var hero = find(game, "Rogue");
+        var bag = new LootBag();
+        bag.take(key(), 0, 0);
+        float reach = 12f;
+
+        assertTrue(ItemErrand.use(hero, 0, find(game, "Gate"), bag, rules(arena, reach)));
+        game.runHeadless(5);
+        hero.getLocomotor().moveTo(DOORWAY);
+        game.runHeadless(150);
+
+        float dx = hero.getPosition().x() - DOORWAY.x();
+        float dy = hero.getPosition().y() - DOORWAY.y();
+        assertTrue(Math.sqrt(dx * dx + dy * dy) > reach,
+                "he is beyond the reach, or this is not the walk that ends there: " + hero.getPosition());
+        assertNull(find(game, "Gate"), "it stayed shut: he was not counted as there");
+        assertFalse(bag.holds(LootKind.KEY), "and the key is still his");
+    }
+
+    /** He takes it there: a moment after he is sent, from across the hall, it is still his and the gate still shut. */
+    @Test
+    void theKeyIsUsedWhereHeTakesItAndNotFromAcrossTheHall() {
+        var arena = withAGate();
+        var game = arena.game();
+        game.spawn("Rogue", arena.hero(), 120f, 155f);
+        game.runHeadless(2);
+        var bag = new LootBag();
+        bag.take(key(), 0, 0);
+
+        assertTrue(ItemErrand.use(find(game, "Rogue"), 0, find(game, "Gate"), bag, rules(arena)));
+        game.runHeadless(10);
+
+        assertNotNull(find(game, "Gate"), "it opened from across the hall");
+        assertTrue(bag.holds(LootKind.KEY), "and the key is his still");
+        game.runHeadless(150);
+        assertNull(find(game, "Gate"), "and once he is there it opens");
+    }
+
+    /**
+     * The whole road on a real floor, with the game's own rules: the order the bag's aim sends is obeyed, the key goes
+     * to the gate, the gate opens and the key is gone from his bag. Placed at the gate rather than walked there, since
+     * this is about the order and not the pathfinder.
+     */
+    @Test
+    void theOrderGivesTheFloorsGateTheKeyFromHisBagAndItOpens() {
+        var session = Dungeon.newSession(21L, SETTINGS);
+        var game = session.game();
+        game.runHeadless(2);
+        var bag = session.progress().getLoot();
+        var gauntlet = SETTINGS.loot().stream().filter(item -> item.id().equals("Gauntlet")).findFirst().orElseThrow();
+        bag.take(gauntlet, 0, 0);
+        bag.take(key(), 0, 0); // the slot after it, so it is the slot the order names that counts
+        var gate = find(game, "Gate");
+        find(game, "Rogue").setPosition(gate.getPosition());
+
+        game.postCommand(PartyOrders.of(new UseItem(game.getLocalPlayerIndex(), 1, gate.getId())));
+        game.runHeadless(5);
+
+        assertNull(find(game, "Gate"), "the key did not open it");
+        assertNotNull(find(game, "OpenGate"), "and nothing stands where it stood");
+        assertFalse(bag.holds(LootKind.KEY), "the key stayed in his bag");
+        assertEquals(gauntlet, bag.at(0), "and what he carried beside it went with it");
+    }
+
+    /**
+     * And with the game's own words: the key sent to anything but the gate — himself, for a thing that is there to be
+     * sent to — stays in his bag, and what he says is what the file says.
+     */
+    @Test
+    void theOrderOnAnythingElseKeepsTheKeyAndHeSaysTheFilesWord() {
+        var session = Dungeon.newSession(21L, SETTINGS);
+        var game = session.game();
+        game.runHeadless(2);
+        var bag = session.progress().getLoot();
+        bag.take(key(), 0, 0);
+
+        game.postCommand(PartyOrders.of(new UseItem(game.getLocalPlayerIndex(), 0, find(game, "Rogue").getId())));
+        game.runHeadless(5);
+
+        assertEquals(SETTINGS.lootDrops().noUseWord(), bag.noteAt(game.getLogic().getFrame()));
+        assertEquals(key(), bag.at(0), "he kept it");
         assertNotNull(find(game, "Gate"), "and the gate is as it was");
     }
 

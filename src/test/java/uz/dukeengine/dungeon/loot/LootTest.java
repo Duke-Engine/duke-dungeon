@@ -540,4 +540,18 @@ class LootTest {
         assertTrue(refused.getMessage().contains("LootItem Key") && refused.getMessage().contains("Weight"),
                 refused.getMessage());
     }
+
+    /** What he says of a thing the key does nothing to goes down the status line, which splits on ',' and '|'. */
+    @Test
+    void aNoUseWordTheStatusLineCouldNotCarryIsRefused() {
+        var shipped = "  NoUseWord = Bu kalit faqat boss darvozasini ochadi\n";
+        var data = uz.dukeengine.dungeon.content.Content.data();
+        assertTrue(data.contains(shipped), "the shipped word is no longer written this way");
+
+        for (var word : new String[] {"Bu kalit, faqat darvozani ochadi", "Bu kalit | faqat darvozani ochadi"}) {
+            var refused = assertThrows(IllegalArgumentException.class,
+                    () -> DungeonSettings.parse(data.replace(shipped, "  NoUseWord = " + word + "\n")));
+            assertTrue(refused.getMessage().contains("NoUseWord"), refused.getMessage());
+        }
+    }
 }

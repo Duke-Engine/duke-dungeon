@@ -208,4 +208,23 @@ class ItemErrandTest {
                 "a chest is no gate to go up to");
         assertNull(room.hero().findModule(ItemErrand.class));
     }
+
+    /** Nothing in the slot, nothing in it that does anything, or nothing to use it on: no errand, and he stays. */
+    @Test
+    void aSlotWithNothingToUseOrNothingToUseItOnIsNoErrand() {
+        var room = room(100f);
+        var chest = room.chestAt(200f, SHIELD);
+        var key = SETTINGS.loot().stream().filter(item -> item.kind() == LootKind.KEY).findFirst().orElseThrow();
+        var bag = new LootBag();
+        bag.take(BLADE, 0, 0);
+        bag.take(key, 0, 0);
+
+        assertFalse(ItemErrand.use(room.hero(), 2, chest, bag, room.rules()), "an empty slot");
+        assertFalse(ItemErrand.use(room.hero(), 0, chest, bag, room.rules()), "a blade does nothing when used");
+        assertFalse(ItemErrand.use(room.hero(), 1, null, bag, room.rules()), "the key on nothing");
+        assertFalse(ItemErrand.use(room.hero(), 1, chest, null, room.rules()), "and with no bag");
+        assertFalse(ItemErrand.use(null, 1, chest, bag, room.rules()), "by nobody");
+        assertNull(room.hero().findModule(ItemErrand.class));
+        assertTrue(ItemErrand.use(room.hero(), 1, chest, bag, room.rules()), "the key on a chest is an errand");
+    }
 }

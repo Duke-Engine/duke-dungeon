@@ -100,8 +100,8 @@ final class BagScreen implements Painter, CanvasInput {
 
     /**
      * The match now being played, told before it starts: a click on a thing lying on the floor is a pickup in it, a
-     * click on the keep's gate is the walk up to it, and a place the drop aim was given becomes the order to put the
-     * thing down there.
+     * click on the keep's gate is the walk up to it, a place the drop aim was given becomes the order to put the
+     * thing down there, and a thing the use aim was given becomes the order to take it there.
      */
     void show(Dungeon.Session match) {
         var game = match.game();
