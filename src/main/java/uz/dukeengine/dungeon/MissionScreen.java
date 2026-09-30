@@ -11,9 +11,10 @@ import uz.dukeengine.dungeon.content.DungeonSettings;
  *
  * <p>Drawn on the game's own canvas with the bag, on the window's thread, and only reading: the tracker's words are
  * the run's, written whole on the simulation's thread every frame ({@code DungeonRun.getTracker}) and blank once the
- * run is lost or won, when nothing is drawn but the banner; a hero's are his bag's note ({@code LootBag.say}) — what
- * he makes of the gate, why he kept the key, that the bag is full, what he just picked up — and where he is on the
- * screen is where the client put his bar this frame ({@link Canvas#barOf}).
+ * run is lost or won, or the boss has fallen and the floor is closing, when nothing is drawn but the banner; a hero's
+ * are his bag's note ({@code LootBag.say}) — what he makes of the gate, why he kept the key, that the bag is full,
+ * what he just picked up — and where he is on the screen is where the client put his bar this frame
+ * ({@link Canvas#barOf}): a bar off the window has no bubble.
  */
 final class MissionScreen {
 
@@ -33,10 +34,19 @@ final class MissionScreen {
             var progress = heroes.contains(unit.templateName()) ? match.run().progressOf(unit.playerIndex()) : null;
             var said = progress == null ? "" : progress.getLoot().noteAt(snapshot.frame());
             var bar = said.isEmpty() ? null : canvas.barOf(unit.id());
-            if (bar != null) {
+            if (bar != null && seen(canvas, bar)) {
                 bubble(canvas, said, bar, look);
             }
         }
+    }
+
+    /**
+     * Whether the hero whose bar this is can be seen. The client places a bar, shown or not, until the thing it is over
+     * is well past the left, right or top edge of the window, so one may stand wholly beyond the side edges or with its
+     * top above the window: what he says is not said there.
+     */
+    private static boolean seen(Canvas canvas, Canvas.Box bar) {
+        return bar.x() + bar.width() >= 0f && bar.x() <= canvas.width() && bar.y() >= 0f;
     }
 
     /** The step, on a slab of stone at the top of the window, in the middle. */
@@ -53,7 +63,10 @@ final class MissionScreen {
         canvas.drawText(font, words, left + pad, top + pad / 2f, 0xFF000000 | look.torchColour());
     }
 
-    /** His words over his bar, the bubble's tail pointing down at it, kept on the screen. */
+    /**
+     * His words over his bar, the bubble's tail pointing down at it, kept on the screen: sideways by the window's
+     * edges, and, for a bar with no room above it, lowered from the top edge over the bar.
+     */
     private static void bubble(Canvas canvas, String words, Canvas.Box bar, MenuStyle look) {
         var font = Canvas.Font.of("Georgia", Math.clamp(Math.round(canvas.height() * 0.018f), 12, 22));
         var size = canvas.measure(font, words);
@@ -62,7 +75,7 @@ final class MissionScreen {
         float high = size.lineHeight() + pad;
         float middle = bar.x() + bar.width() / 2f;
         float left = Math.clamp(middle - wide / 2f, 4f, Math.max(4f, canvas.width() - wide - 4f));
-        float top = bar.y() - high - pad;
+        float top = Math.max(4f, bar.y() - high - pad);
         canvas.fillRect(left, top, wide, high, 0xF0000000 | look.stoneDeepColour());
         canvas.openRect(left, top, wide, high, 1.5f, 0xFF000000 | look.stoneEdgeColour());
         canvas.fillTriangle(middle - pad, top + high, middle + pad, top + high, middle, top + high + pad,

@@ -22,7 +22,8 @@ import java.util.List;
  * changes, and {@link #noteAt}, whose words and frame are one value — so it never sees either half-changed.
  *
  * <p>It also carries the words for the last thing he found, because something has
- * to say so and the run loop is what writes the line the panel reads.
+ * to say so and the run loop is what writes the line the panel reads. The same words, for the same frames, are what
+ * the window says in a bubble over his head.
  */
 public final class LootBag {
 
@@ -145,7 +146,10 @@ public final class LootBag {
         return Arrays.stream(slots).anyMatch(item -> item != null && item.kind() == kind);
     }
 
-    /** Say something on the panel for a while — what he found, or why he left it lying. */
+    /**
+     * Say something for a while, on the panel and in a bubble over his head — what he found, why he left it lying,
+     * what he makes of the gate. It is said for {@code noteFrames} frames from {@code frame}.
+     */
     public void say(String words, int frame, int noteFrames) {
         note = new Note(words, frame + noteFrames);
     }

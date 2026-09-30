@@ -350,7 +350,8 @@ LootDrops
   ; Nothing is worth more for being found deeper: what joins has to be alike, and
   ; a deeper floor's gauntlet worth four would never make three with two worth three.
   ValuePercentPerDepth = 0
-  ; How long the panel says what he found, in logic frames (30 = one second).
+  ; How long what he says is said -- what he found, why he left it lying, what he makes of
+  ; the gate -- on the panel and in the bubble over his head, in logic frames (30 = one second).
   NoteFrames = 90
   ; How many things his bag holds. A full bag leaves the next one lying -- unless
   ; it is the third of a set, which joins as it comes in.

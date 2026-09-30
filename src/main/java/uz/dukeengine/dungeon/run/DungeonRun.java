@@ -134,7 +134,8 @@ public final class DungeonRun {
     private Mission.Step step = Mission.Step.KILL;
     /**
      * The tracker's words for it, read by the window: written whole, on the simulation's thread, every frame the floor
-     * is played — and blank from the frame the run is lost or won until the next floor is laid.
+     * is played — and blank from the frame the run is lost or won, or the boss falls and the floor waits to close,
+     * until the next floor is laid.
      */
     private volatile String tracker = "";
 
@@ -400,11 +401,15 @@ public final class DungeonRun {
         track(game);
     }
 
-    /** Where the mission stands this frame, and the tracker's words for it. */
+    /**
+     * Where the mission stands this frame, and the tracker's words for it — none while the boss has fallen and the
+     * floor waits to close: the banner has the screen, and there is nothing left to tell him to do.
+     */
     private void track(DukeGame game) {
         step = mission == null ? Mission.Step.KILL
                 : mission.step(game.getLogic(), seats.stream().map(seat -> seat.progress.getLoot()).toList());
-        tracker = mission == null ? settings.run().killBossWord() : mission.words(settings.run(), step);
+        var words = mission == null ? settings.run().killBossWord() : mission.words(settings.run(), step);
+        tracker = descendAtFrame > 0 ? "" : words;
     }
 
     /** Called every logic frame on the simulation thread. */
@@ -680,7 +685,7 @@ public final class DungeonRun {
 
     /**
      * The mission's step in words, as the tracker at the top of the window says it — from any thread — or blank
-     * while a run that was lost or won waits to start again.
+     * while a run that was lost or won waits to start again, or the floor waits to close behind its fallen boss.
      */
     public String getTracker() {
         return tracker;
