@@ -217,6 +217,38 @@ class BagScreenTest {
         assertNotNull(find(game, "Chest"), "and on the floor");
     }
 
+    /**
+     * A thing that does something is used, not only put down: a left click on it in the bag takes it in hand, and
+     * the thing the next click is on is where he takes it — here the keep's gate.
+     */
+    @Test
+    void aLeftClickOnTheKeyTakesItToTheThingClickedNext() {
+        var session = Dungeon.newSession(21L);
+        var game = session.game();
+        game.runHeadless(2);
+        var key = SETTINGS.loot().stream().filter(item -> item.kind() == LootKind.KEY).findFirst().orElseThrow();
+        session.progress().getLoot().take(key, 0, 30);
+        var bag = bagOver(game);
+        bag.show(session);
+        var drawn = new Drawn();
+        bag.paint(drawn);
+        var picture = drawn.picture(key.icon());
+        assertNotNull(picture, "the key is drawn in its slot: " + drawn.pictures);
+
+        assertTrue(bag.take(new uz.dukeengine.client3d.CanvasInput.Button(picture.middleX(), picture.middleY(),
+                uz.dukeengine.client3d.CanvasInput.Mouse.LEFT, true, false)), "a left click on it is the bag's");
+        drawn.clear();
+        bag.paint(drawn);
+        assertFalse(drawn.text.contains(SETTINGS.lootDrops().dropHint()), "in hand to be used, not put down");
+
+        // Where the client's aim was pressed: on the gate.
+        var gate = find(game, "Gate");
+        game.pressCommand("use:0", null, 0f, gate.getId().value());
+        game.runHeadless(2);
+        assertNotNull(find(game, "Rogue").findModule(uz.dukeengine.dungeon.loot.ItemErrand.class),
+                "he is not on his way to the gate with it");
+    }
+
     /** A key gives nothing, so the pointer on it says what it is and how to take it, with no empty row for a figure. */
     @Test
     void aKeyInTheBagIsSaidWithoutAnEmptyRowForAFigure() {

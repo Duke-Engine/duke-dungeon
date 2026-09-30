@@ -41,7 +41,8 @@ class ItemErrandTest {
     private record Room(DukeGame game, GameObject hero, int floorOwner) {
 
         ItemErrand.Rules rules() {
-            return new ItemErrand.Rules(SETTINGS.lootDrops().pickupRange(), 100_000, "Chest", floorOwner, "Full");
+            return new ItemErrand.Rules(SETTINGS.lootDrops().pickupRange(), 100_000, "Chest", floorOwner, "Full",
+                    "No use");
         }
 
         /** A chest holding {@code item} at {@code x}, as a monster would have left it. */

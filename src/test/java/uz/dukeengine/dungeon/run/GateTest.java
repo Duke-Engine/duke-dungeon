@@ -75,7 +75,8 @@ class GateTest {
     /** The same with a reach of its own, for a test that must not turn on how far the shipped one happens to reach. */
     private static ItemErrand.Rules rules(Dungeon.Arena arena, float reach) {
         var drops = SETTINGS.lootDrops();
-        return new ItemErrand.Rules(reach, 100_000, drops.template(), arena.dungeon().getIndex(), drops.fullWord());
+        return new ItemErrand.Rules(reach, 100_000, drops.template(), arena.dungeon().getIndex(), drops.fullWord(),
+                drops.noUseWord());
     }
 
     private static Loot key() {
@@ -219,6 +220,44 @@ class GateTest {
         game.runHeadless(150);
 
         assertEquals("Boss xonasi uchun kalit topishim kerak", bag.noteAt(game.getLogic().getFrame()));
+    }
+
+    /** Given the key, the gate opens — the owner's swing — and the key is gone from his bag. */
+    @Test
+    void usingTheKeyOnItOpensItAndTheKeyIsGone() {
+        var arena = withAGate();
+        var game = arena.game();
+        game.spawn("Rogue", arena.hero(), 120f, 155f);
+        game.runHeadless(2);
+        var bag = new LootBag();
+        bag.take(key(), 0, 0);
+
+        assertTrue(ItemErrand.use(find(game, "Rogue"), 0, find(game, "Gate"), bag, rules(arena)));
+        game.runHeadless(150);
+
+        assertNull(find(game, "Gate"), "the key did not open it");
+        assertNotNull(find(game, "OpenGate"), "and nothing stands where it stood");
+        assertNull(bag.at(0), "the key stayed in his bag");
+        assertFalse(bag.holds(LootKind.KEY));
+    }
+
+    /** Used on anything else it does nothing: he says so, and keeps it. */
+    @Test
+    void usingTheKeyOnAnythingElseKeepsItAndSaysSo() {
+        var arena = withAGate();
+        var game = arena.game();
+        game.spawn("Rogue", arena.hero(), 120f, 155f);
+        game.spawn("Pillar", arena.dungeon(), 120f, 100f);
+        game.runHeadless(2);
+        var bag = new LootBag();
+        bag.take(key(), 0, 0);
+
+        assertTrue(ItemErrand.use(find(game, "Rogue"), 0, find(game, "Pillar"), bag, rules(arena)));
+        game.runHeadless(150);
+
+        assertEquals(key(), bag.at(0), "he gave it to a pillar");
+        assertEquals("Bu kalit faqat boss darvozasini ochadi", bag.noteAt(game.getLogic().getFrame()));
+        assertNotNull(find(game, "Gate"), "and the gate is as it was");
     }
 
     /** Opened, the same gate stands open where it stood, turned as it was, and he walks on through. */

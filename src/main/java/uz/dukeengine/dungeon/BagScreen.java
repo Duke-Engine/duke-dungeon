@@ -5,11 +5,14 @@ import uz.dukeengine.client3d.Canvas;
 import uz.dukeengine.client3d.CanvasInput;
 import uz.dukeengine.client3d.Duke3D;
 import uz.dukeengine.client3d.Painter;
+import uz.dukeengine.core.thing.ObjectId;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.dungeon.loot.DropItem;
 import uz.dukeengine.dungeon.loot.GroundItem;
+import uz.dukeengine.dungeon.loot.ItemUse;
 import uz.dukeengine.dungeon.loot.Loot;
 import uz.dukeengine.dungeon.loot.LootBag;
+import uz.dukeengine.dungeon.loot.UseItem;
 import uz.dukeengine.dungeon.party.PartyOrders;
 import uz.dukeengine.dungeon.run.GateUpdate;
 import uz.dukeengine.game.view.CommandButton;
@@ -18,12 +21,14 @@ import uz.dukeengine.game.view.WorldSnapshot;
 /**
  * The hero's bag as the player handles it: its slots on a slab of stone at the right of the window, what a thing
  * gives when the pointer rests on it — in the bag or lying on the floor — and a thing taken in hand with the right
- * button and put down on the floor with the left.
+ * button and put down on the floor with the left; or, a thing that does something, taken in hand with the left and
+ * used on the thing the next click is on.
  *
  * <p>Nothing here touches the world. Picking up is the click the client already sends on a thing the game names a
  * word for ({@link PartyOrders#PICK_UP}), and so is going up to the keep's gate ({@link PartyOrders#TO_THE_GATE});
- * putting down is the client's aim at the ground, whose place comes back as a {@link DropItem} order — so both go
- * down the road every order goes, to every machine of a party.
+ * putting down is the client's aim at the ground, whose place comes back as a {@link DropItem} order, and using a
+ * thing is its aim at a thing, whose id comes back as a {@link UseItem} order — so all of them go down the road
+ * every order goes, to every machine of a party.
  *
  * <p>On the window's thread, but for what is handed to the match and run on the simulation's: the rule that names
  * the pickup, and a look after every frame at what lies on the floor. Both only read, and change nothing. What the
@@ -33,6 +38,8 @@ final class BagScreen implements Painter, CanvasInput {
 
     /** The id of the aim that puts {@code slot} down. */
     private static final String DROP = "drop:";
+    /** The id of the aim that takes {@code slot} to a thing, to be used on it. */
+    private static final String USE = "use:";
     /** The pointer while a thing is in hand — a Cursor block of that name. */
     private static final String HOLDING = "Drop";
     /** How long the world may stand still before the bag is taken for a menu over it, and put away. */
@@ -58,6 +65,8 @@ final class BagScreen implements Painter, CanvasInput {
     private int held = -1;
     private int aims;
     private Dungeon.Session heldIn;
+    /** Whether the thing in hand is to be used rather than put down: no word beside it about the floor. */
+    private boolean using;
     /** Whether the left button went down on the bag, so its letting go stays with it. */
     private boolean pressedHere;
 
@@ -106,9 +115,14 @@ final class BagScreen implements Painter, CanvasInput {
         });
         game.onTick(ticked -> lying = lyingIn(ticked));
         game.onCommandPressed(press -> {
-            int at = slotOf(press.id());
-            if (at >= 0 && press.place() != null) {
-                game.postCommand(PartyOrders.of(new DropItem(game.getLocalPlayerIndex(), at, press.place())));
+            int put = slotOf(DROP, press.id());
+            if (put >= 0 && press.place() != null) {
+                game.postCommand(PartyOrders.of(new DropItem(game.getLocalPlayerIndex(), put, press.place())));
+            }
+            int used = slotOf(USE, press.id());
+            if (used >= 0 && press.target() >= 0) {
+                game.postCommand(PartyOrders.of(new UseItem(game.getLocalPlayerIndex(), used,
+                        new ObjectId(press.target()))));
             }
         });
         session = match;
@@ -128,11 +142,16 @@ final class BagScreen implements Painter, CanvasInput {
 
     /** The slot a drop aim's id names, or -1 for an id that is not one. */
     static int slotOf(String id) {
-        if (id == null || !id.startsWith(DROP)) {
+        return slotOf(DROP, id);
+    }
+
+    /** The slot an aim's id names after {@code kind} — a drop's or a use's — or -1 for an id that is not one. */
+    private static int slotOf(String kind, String id) {
+        if (id == null || !id.startsWith(kind)) {
             return -1;
         }
         try {
-            return Integer.parseInt(id.substring(DROP.length()));
+            return Integer.parseInt(id.substring(kind.length()));
         } catch (NumberFormatException e) {
             return -1;
         }
@@ -201,7 +220,9 @@ final class BagScreen implements Painter, CanvasInput {
             float size = slot * 0.7f;
             canvas.drawImage(Canvas.Image.of(inHand.icon()), mouseX + 10, mouseY + 10, mouseX + 10 + size,
                     mouseY + 10 + size, 0xD0FFFFFF, Canvas.Blend.ALPHA);
-            tip(canvas, List.of(settings.lootDrops().dropHint()), mouseX + 14, mouseY + 14 + size, false);
+            if (!using) {
+                tip(canvas, List.of(settings.lootDrops().dropHint()), mouseX + 14, mouseY + 14 + size, false);
+            }
         } else if (over >= 0 && slots.get(over) != null) {
             var item = slots.get(over);
             tip(canvas, lines(item), slotX(over) - gap, slotY(over), true);
@@ -365,7 +386,10 @@ final class BagScreen implements Painter, CanvasInput {
         }
     }
 
-    /** A button on the bag stays on the bag; the right one on a thing in it takes that thing in hand. */
+    /**
+     * A button on the bag stays on the bag; the right one on a thing in it takes that thing in hand to put down, and
+     * the left one on a thing that does something takes it in hand to use.
+     */
     private boolean click(Button button) {
         if (button.button() == Mouse.LEFT && !button.down()) {
             boolean mine = pressedHere;
@@ -375,30 +399,42 @@ final class BagScreen implements Painter, CanvasInput {
         if (!onTheBag(button.x(), button.y())) {
             return false;
         }
+        var match = session;
+        int at = slotAt(button.x(), button.y());
+        var bag = match == null ? null : bagOf(match);
+        var item = bag == null || at < 0 ? null : bag.slots().get(at);
         if (button.button() == Mouse.LEFT) {
             pressedHere = true;
+            if (item != null && item.use() != ItemUse.NONE) {
+                hold(match, at, item, USE, CommandButton.Aim.UNIT);
+            }
             return true;
         }
         if (button.button() != Mouse.RIGHT || !button.down()) {
             return button.button() != Mouse.RIGHT;
         }
-        var match = session;
-        int at = slotAt(button.x(), button.y());
-        var bag = match == null ? null : bagOf(match);
-        var item = bag == null || at < 0 ? null : bag.slots().get(at);
         if (item == null) {
             // Nothing to take. With a thing in hand, the client's own second thoughts let go of it.
             return held < 0;
         }
-        int aim = ++aims;
+        hold(match, at, item, DROP, CommandButton.Aim.GROUND);
+        return true;
+    }
+
+    /**
+     * Take the thing in {@code at} in hand: to be put down where the next click on the ground is, or — a thing that
+     * does something — taken to the thing the next click is on. The client arms the aim, and says when it is over.
+     */
+    private void hold(Dungeon.Session match, int at, Loot item, String kind, CommandButton.Aim aim) {
+        int armed = ++aims;
         held = at;
         heldIn = match;
-        duke.aim(new CommandButton(DROP + at, item.icon(), item.name(), null, true, CommandButton.Aim.GROUND, null),
-                0f, HOLDING, outcome -> {
-                    if (aims == aim) {
+        using = aim == CommandButton.Aim.UNIT;
+        duke.aim(new CommandButton(kind + at, item.icon(), item.name(), null, true, aim, null), 0f, HOLDING,
+                outcome -> {
+                    if (aims == armed) {
                         held = -1;
                     }
                 });
-        return true;
     }
 }

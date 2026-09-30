@@ -12,8 +12,9 @@ import uz.dukeengine.rts.module.RtsModuleGroups;
 import uz.dukeengine.rts.module.WeaponUpdate;
 
 /**
- * A hero sent to pick a thing up off the floor, to put one of his down, or up to the keep's gate: he walks there, and
- * when he is near enough it is done — the thing changes hands, or he says what he makes of the gate.
+ * A hero sent to pick a thing up off the floor, to put one of his down, to use one of his on a thing, or up to the
+ * keep's gate: he walks there, and when he is near enough it is done — the thing changes hands, is used, or he says
+ * what he makes of the gate.
  *
  * <p>An errand in the engine's sense — a module on him while it lasts — so any order the player gives him after it,
  * a walk, an attack, a stop, gives it up as it gives up every errand. A walk somewhere else it notices for itself,
@@ -36,8 +37,10 @@ public final class ItemErrand extends UpdateModule implements Errand {
      * @param template   what a thing he puts down lies in, when it names nothing of its own
      * @param floorOwner whose a thing on the floor is: the dungeon's, so it is nobody's hero to select
      * @param fullWord   what he says when his bag has no room for what he was sent for
+     * @param noUseWord  what he says when he was sent to use a thing on something it does nothing to
      */
-    public record Rules(float reach, int noteFrames, String template, int floorOwner, String fullWord) {
+    public record Rules(float reach, int noteFrames, String template, int floorOwner, String fullWord,
+            String noUseWord) {
     }
 
     /** What he was sent to do when he gets there. */
@@ -46,6 +49,8 @@ public final class ItemErrand extends UpdateModule implements Errand {
         TAKE,
         /** Put what is in a slot of his down. */
         PUT,
+        /** Use what is in a slot of his on a thing. */
+        USE,
         /** Say what he makes of the keep's gate. */
         LOOK
     }
@@ -54,9 +59,12 @@ public final class ItemErrand extends UpdateModule implements Errand {
     private final Rules rules;
     private final Act act;
     private final Coord3D goal;
-    /** What he was sent to: the thing to take, or the gate to look at; null when he was sent to put one down. */
+    /**
+     * What he was sent to: the thing to take, to use one of his on, or the gate to look at; null when he was sent to
+     * put one down.
+     */
     private final ObjectId thing;
-    /** The slot he is putting down; -1 otherwise. */
+    /** The slot he is putting down or using; -1 otherwise. */
     private final int slot;
     /** Done or given up: nothing more to do until the next order takes it off him. */
     private boolean over;
@@ -99,6 +107,19 @@ public final class ItemErrand extends UpdateModule implements Errand {
             return false;
         }
         send(hero, new ItemErrand(hero, bag, rules, Act.LOOK, gate.getPosition(), gate.getId(), -1));
+        return true;
+    }
+
+    /**
+     * Send {@code hero} to take what is in {@code slot} of {@code bag} to {@code thing} and use it there; false for a
+     * slot with nothing in it that can be used, or nothing to use it on.
+     */
+    public static boolean use(GameObject hero, int slot, GameObject thing, LootBag bag, Rules rules) {
+        var item = bag == null ? null : bag.at(slot);
+        if (hero == null || thing == null || item == null || item.use() == ItemUse.NONE) {
+            return false;
+        }
+        send(hero, new ItemErrand(hero, bag, rules, Act.USE, thing.getPosition(), thing.getId(), slot));
         return true;
     }
 
@@ -179,6 +200,19 @@ public final class ItemErrand extends UpdateModule implements Errand {
                 var put = bag.remove(slot);
                 if (put != null) {
                     GroundItem.lay(world, put.liesAs(rules.template()), put, hero.getPosition(), rules.floorOwner());
+                }
+            }
+            case USE -> {
+                var item = bag.at(slot);
+                if (item == null || item.use() != ItemUse.UNLOCK) {
+                    return; // nothing in hand that opens anything, any more
+                }
+                var gate = there.findModule(GateUpdate.class);
+                if (gate == null) {
+                    bag.say(rules.noUseWord(), frame, rules.noteFrames()); // it opens the gate and nothing else
+                } else {
+                    bag.remove(slot);
+                    gate.open();
                 }
             }
             case LOOK -> {

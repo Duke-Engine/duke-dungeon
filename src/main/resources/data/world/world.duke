@@ -355,6 +355,9 @@ LootDrops
   HealthRegenWord = Jon/s
   ManaRegenWord = Mana/s
   AttackSpeedWord = Hujum tezligi
+  ; What he says when he is sent to use a thing on something it does nothing
+  ; to: the key on anything but the keep's gate. He keeps it.
+  NoUseWord = Bu kalit faqat boss darvozasini ochadi
 End
 
 ; Icon is the picture his bag draws it with, a path from the resource root.

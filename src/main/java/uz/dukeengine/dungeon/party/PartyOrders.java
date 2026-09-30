@@ -6,6 +6,7 @@ import uz.dukeengine.dungeon.ai.AttackMove;
 import uz.dukeengine.dungeon.ai.HoldGround;
 import uz.dukeengine.dungeon.loot.DropItem;
 import uz.dukeengine.dungeon.loot.PickUp;
+import uz.dukeengine.dungeon.loot.UseItem;
 import uz.dukeengine.dungeon.run.ToTheGate;
 import uz.dukeengine.dungeon.run.Watching;
 import uz.dukeengine.dungeon.skill.CastSkill;
@@ -42,6 +43,7 @@ public final class PartyOrders {
      * by the engine as the word the game named, and the pointer over the gate is the cursor of that name.
      */
     public static final String TO_THE_GATE = "ToTheGate";
+    static final String USE = "use";
 
     private PartyOrders() {
     }
@@ -61,6 +63,7 @@ public final class PartyOrders {
             case PickUp pick -> new GameOrder(pick.playerIndex(), PICK_UP, List.of(), null, pick.item(), 0);
             case DropItem drop -> new GameOrder(drop.playerIndex(), DROP, List.of(), drop.place(), null, drop.slot());
             case ToTheGate gate -> new GameOrder(gate.playerIndex(), TO_THE_GATE, List.of(), null, gate.gate(), 0);
+            case UseItem use -> new GameOrder(use.playerIndex(), USE, List.of(), null, use.target(), use.slot());
             default -> throw new IllegalArgumentException("not one of this game's orders: " + command);
         };
     }
@@ -84,6 +87,8 @@ public final class PartyOrders {
             case DROP -> order.place() == null ? null
                     : new DropItem(order.playerIndex(), (int) order.number(), order.place());
             case TO_THE_GATE -> order.target() == null ? null : new ToTheGate(order.playerIndex(), order.target());
+            case USE -> order.target() == null ? null
+                    : new UseItem(order.playerIndex(), (int) order.number(), order.target());
             default -> null;
         };
     }

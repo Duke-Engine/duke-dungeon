@@ -669,6 +669,7 @@ public final class DungeonSettings {
         require(lootDrops.joinCount() >= 2, "JoinCount: it takes at least two alike to join");
         require(lootDrops.topLevel() >= 1 && lootDrops.topLevel() <= 3, "TopLevel is 1 to 3");
         require(sayable(lootDrops.fullWord()), "FullWord may not contain ',' or '|'");
+        require(sayable(lootDrops.noUseWord()), "NoUseWord may not contain ',' or '|'");
         for (var item : loot) {
             require(sayable(item.name()),
                     "an item's DisplayName may not contain ',' or '|': " + item.id());

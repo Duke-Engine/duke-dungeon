@@ -453,6 +453,16 @@ public final class Dungeon {
                         arena.orders().attackMove(gate.playerIndex(), null);
                     }
                 }
+                // Sent to use a thing of his on another: the key on the gate. See ItemErrand.
+                case uz.dukeengine.dungeon.loot.UseItem use -> {
+                    var progress = run.progressOf(use.playerIndex());
+                    if (progress != null && uz.dukeengine.dungeon.loot.ItemErrand.use(
+                            Skills.heroOf(game.getLogic(), use.playerIndex()), use.slot(),
+                            game.getLogic().findObject(use.target()), progress.getLoot(),
+                            errandRules(settings, arena))) {
+                        arena.orders().attackMove(use.playerIndex(), null);
+                    }
+                }
                 // ★ The three plain orders call it off, and they CANNOT be heard
                 // here: this handler is `onOtherCommand`, the engine's door for
                 // commands it does not recognise, so a MoveTo is applied by rts
@@ -506,7 +516,7 @@ public final class Dungeon {
     private static uz.dukeengine.dungeon.loot.ItemErrand.Rules errandRules(DungeonSettings settings, Arena arena) {
         var drops = settings.lootDrops();
         return new uz.dukeengine.dungeon.loot.ItemErrand.Rules(drops.pickupRange(), drops.noteFrames(),
-                drops.template(), arena.dungeon().getIndex(), drops.fullWord());
+                drops.template(), arena.dungeon().getIndex(), drops.fullWord(), drops.noUseWord());
     }
 
     /** Whatever errand that player's hero is on, called off: he has been told something else. */

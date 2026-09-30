@@ -13,6 +13,7 @@ import uz.dukeengine.dungeon.ai.AttackMove;
 import uz.dukeengine.dungeon.ai.HoldGround;
 import uz.dukeengine.dungeon.loot.DropItem;
 import uz.dukeengine.dungeon.loot.PickUp;
+import uz.dukeengine.dungeon.loot.UseItem;
 import uz.dukeengine.dungeon.run.ToTheGate;
 import uz.dukeengine.dungeon.run.Watching;
 import uz.dukeengine.dungeon.skill.CastSkill;
@@ -36,7 +37,8 @@ class PartyOrdersTest {
             new ChooseHero(2, "Knight"),
             new PickUp(3, new ObjectId(88)),
             new DropItem(2, 5, new Coord3D(31.75f, 402.5f, 0f)),
-            new ToTheGate(1, new ObjectId(64)));
+            new ToTheGate(1, new ObjectId(64)),
+            new UseItem(2, 3, new ObjectId(64)));
 
     @Test
     void anOrderIsTheCommandItCarries() {
@@ -67,5 +69,7 @@ class PartyOrdersTest {
                 "a thing put down nowhere");
         assertNull(PartyOrders.commandOf(new GameOrder(2, PartyOrders.TO_THE_GATE, List.of(), null, null, 0)),
                 "a walk up to no gate");
+        assertNull(PartyOrders.commandOf(new GameOrder(2, PartyOrders.USE, List.of(), null, null, 3)),
+                "a thing used on nothing");
     }
 }

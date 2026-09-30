@@ -19,12 +19,16 @@ package uz.dukeengine.dungeon.world;
  * @param healthRegenWord      what a thing's health a second is called when the pointer rests on it
  * @param manaRegenWord        and its mana a second
  * @param attackSpeedWord      and its quicker blows
+ * @param noUseWord            what he says when he was sent to use a thing on something it does nothing to — the key
+ *     on anything but the keep's gate
  */
 public record LootDrops(String template, int dropPercent, int bossDropPercent, float pickupRange,
         int valuePercentPerDepth, int noteFrames, int slots, String fullWord, String takeHint, String dropHint,
-        int joinCount, int topLevel, String healthRegenWord, String manaRegenWord, String attackSpeedWord) {
+        int joinCount, int topLevel, String healthRegenWord, String manaRegenWord, String attackSpeedWord,
+        String noUseWord) {
 
     /** What a block leaves out. */
     public static final LootDrops DEFAULTS = new LootDrops("", 20, 100, 14f, 20, 90, 6, "The bag is full",
-            "Right button: take", "Left button: put it down", 3, 3, "Health/s", "Mana/s", "Attack speed");
+            "Right button: take", "Left button: put it down", 3, 3, "Health/s", "Mana/s", "Attack speed",
+            "It does nothing here");
 }
