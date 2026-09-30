@@ -1,16 +1,23 @@
 package uz.dukeengine.dungeon;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import uz.dukeengine.client3d.EffectLayer;
 import uz.dukeengine.client3d.SkillRange;
+import uz.dukeengine.client3d.Visuals;
+import uz.dukeengine.core.GameConstants;
+import uz.dukeengine.core.event.EffectPlayed;
 import uz.dukeengine.core.math.Coord3D;
 import uz.dukeengine.core.thing.GameObject;
+import uz.dukeengine.core.thing.ObjectId;
 import uz.dukeengine.core.thing.ObjectStatus;
 import uz.dukeengine.dungeon.content.Content;
 import uz.dukeengine.dungeon.content.DungeonSettings;
@@ -403,6 +410,111 @@ class AuraTest {
         assertEquals(11.25f, mage.getBody().getHealth() - its, 0.01f, "a tenth of it back");
     }
 
+    // ---- worn ----
+
+    /** One aura's look played: which, on whom, on what frame. */
+    private record Worn(String look, ObjectId on, int frame) {
+    }
+
+    /**
+     * Every aura's look played over the next {@code frames}, in the order played -- watched through nobody's fog, since
+     * a room with no hero in it is a room nobody sees.
+     */
+    private static List<Worn> worn(DukeGame game, int frames) {
+        var looks = SETTINGS.skills().stream().filter(skill -> skill.effect().isAura()).map(Skill::look).toList();
+        game.watch();
+        var worn = new ArrayList<Worn>();
+        for (int frame = 0; frame < frames; frame++) {
+            game.runHeadless(1);
+            for (var event : game.getSnapshot().events()) {
+                if (event instanceof EffectPlayed played && looks.contains(played.name())) {
+                    worn.add(new Worn(played.name(), played.riding(), played.frame()));
+                }
+            }
+        }
+        return worn;
+    }
+
+    /** Its aura, as shipped. */
+    private static Skill auraOf(GameObject bearer) {
+        return SETTINGS.skillsFor(bearer.getTemplate().name()).stream().filter(skill -> skill.effect().isAura())
+                .findFirst().orElseThrow();
+    }
+
+    /**
+     * Each bearer wears its aura's look every TickFrames, on the frames its object id falls on, as a brain's re-plans
+     * are: a summoner its might, a healer its mana, a Revenant its drink -- and nothing on those they reach.
+     */
+    @Test
+    void eachBearerWearsItsLookEveryTickOnTheFramesItsIdFallsOn() {
+        var room = room(SETTINGS, NO_WALL, one(SUMMONER, 60f, 150f), one(HEALER, 180f, 150f),
+                one(REVENANT, 300f, 150f), one("Skeleton", 90f, 150f));
+        var worn = worn(room.game(), 90);
+
+        assertEquals(List.of("MightAura", "ManaAura", "BloodAura"),
+                room.ones().subList(0, 3).stream().map(bearer -> auraOf(bearer).look()).toList());
+        for (var bearer : room.ones().subList(0, 3)) {
+            var aura = auraOf(bearer);
+            var its = worn.stream().filter(one -> bearer.getId().equals(one.on())).toList();
+            assertEquals(List.of(aura.look(), aura.look(), aura.look()), its.stream().map(Worn::look).toList(),
+                    "three beats in three seconds: " + its);
+            for (var one : its) {
+                assertEquals(Math.floorMod(bearer.getId().value(), aura.tickFrames()),
+                        one.frame() % aura.tickFrames(), "on the frames its id falls on: " + its);
+            }
+        }
+        assertEquals(9, worn.size(), "and on nobody else: " + worn);
+    }
+
+    /** A bearer fallen wears it no more; and an aura is worn from the level that opens it, never before. */
+    @Test
+    void aFallenOrUnopenedAuraIsNotWorn() {
+        var fallen = room(SETTINGS, NO_WALL, one(SUMMONER, 100f, 150f));
+        assertFalse(worn(fallen.game(), 30).isEmpty(), "the premise: standing, it wears its might");
+        var body = fallen.get(0).getBody();
+        body.damage(body.getHealth() + 1f);
+        assertEquals(List.of(), worn(fallen.game(), 60), "fallen");
+
+        var data = Content.data().replace("      Effect = DAMAGE_AURA\n",
+                "      Effect = DAMAGE_AURA\n      LevelPerRank = 6\n");
+        assertNotEquals(Content.data(), data, "the premise: the summoner's might waits for its sixth level");
+        var settings = DungeonSettings.parse(data);
+        var waiting = room(settings, NO_WALL, one(SUMMONER, 100f, 150f));
+        assertEquals(List.of(), worn(waiting.game(), 60), "at its first level");
+        Spawner.scale(waiting.get(0), 6, settings);
+        assertFalse(worn(waiting.game(), 30).isEmpty(), "at its sixth");
+    }
+
+    /**
+     * Each look is measured two of its bearer's ticks, as wide as its Radius, and renews as a state does: a ring lying
+     * on the floor that follows its bearer, fading in over its first half and out over its second -- so the one laid a
+     * tick later takes over as it goes, and the two stand as one steady ring.
+     */
+    @Test
+    void eachRingIsMeasuredTwoTicksAtItsRadiusAndTakenOverByTheNext() {
+        var visuals = Visuals.create();
+        Main.measureLooks(visuals, SETTINGS);
+        var auras = SETTINGS.skills().stream().filter(skill -> skill.effect().isAura()).toList();
+        assertEquals(3, auras.size(), "the premise: three auras");
+
+        for (var aura : auras) {
+            assertEquals(2f * aura.tickFrames() / GameConstants.LOGICFRAMES_PER_SECOND,
+                    visuals.getEffectSeconds(aura.look()), 0.001f, aura.look() + ": two ticks");
+            assertEquals(aura.radius(), visuals.getEffectReach(aura.look()), 0.001f, aura.look() + ": its Radius");
+            var layers = SETTINGS.effectLayers().stream().filter(art -> art.effect().equals(aura.look()))
+                    .map(art -> Main.layerOf(art, SETTINGS)).toList();
+            assertFalse(layers.isEmpty(), aura.look() + " is drawn in layers");
+            for (var layer : layers) {
+                assertEquals(EffectLayer.MARK, layer.type(), aura.look() + " lies on the floor");
+                assertTrue(layer.follows(), aura.look() + " follows its bearer");
+                assertEquals(EffectLayer.REACH, layer.measure(), aura.look() + " is measured in its reach");
+                assertEquals(0.5f, layer.fadeIn(), 0.001f, aura.look());
+                assertEquals(0.5f, layer.fadeOut(), 0.001f, aura.look());
+                assertTrue(layer.renews(), aura.look() + " renews, worn as a state");
+            }
+        }
+    }
+
     // ---- reach ----
 
     /**
@@ -512,6 +624,29 @@ class AuraTest {
             var refused = assertThrows(IllegalArgumentException.class, () -> DungeonSettings.parse(text));
             assertTrue(refused.getMessage().contains("ManaRegen"), refused.getMessage());
         }
+    }
+
+    /**
+     * An aura is worn at the beat it names: its Look and its TickFrames come together or not at all, else the file is
+     * refused. A lifesteal is not worn, and still may not say what it looks like.
+     */
+    @Test
+    void anAurasLookAndItsBeatComeTogether() {
+        var block = ShippedBlock.of(SUMMONER).text();
+        for (var line : new String[] {"      Look = MightAura\n", "      TickFrames = 30\n"}) {
+            var text = block.replace(line, "");
+            assertNotEquals(block, text, "the premise: " + line.strip() + " was taken off its might");
+
+            var refused = assertThrows(IllegalArgumentException.class, () -> DungeonSettings.parse(text), line);
+            assertTrue(refused.getMessage().contains("TickFrames"), refused.getMessage());
+        }
+
+        var warden = ShippedBlock.of("Warden").text();
+        var drawn = warden.replace("      Effect = LIFESTEAL\n",
+                "      Effect = LIFESTEAL\n      Look = BloodAura\n      TickFrames = 30\n");
+        assertNotEquals(warden, drawn, "the premise: the Warden's lifesteal was given a look");
+        var refused = assertThrows(IllegalArgumentException.class, () -> DungeonSettings.parse(drawn));
+        assertTrue(refused.getMessage().contains("never cast"), refused.getMessage());
     }
 
     /** A lifesteal aura's BoostPercent is a share of every blow, from 1 to 100, as a lifesteal's is: else refused. */

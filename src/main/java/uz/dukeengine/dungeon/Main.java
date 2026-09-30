@@ -73,10 +73,11 @@ public final class Main {
      * defaults, then modified by the game's own logic.
      *
      * <p>Only what was said, because the defaults are the client's and are written down once,
-     * in {@code EffectLayer.Builder}. A status's picture renews — the stun's count starts again
-     * at each stun, so the look it wears must last to the new end. Named by the Combat block, so
-     * no name is compiled in. Other auras keep the engine's default drop: the knight's
-     * Whirlwind is cast again at each landing and must not be stretched.
+     * in {@code EffectLayer.Builder}. A look worn as a state renews — the stun's count starts
+     * again at each stun, a second haste starts the haste again, and an aura is played on its
+     * bearer again at every beat — so it must last to the new end: see {@link #wornAsAState}.
+     * Named by the files, so no name is compiled in. Other auras keep the engine's default
+     * drop: the knight's Whirlwind is cast again at each landing and must not be stretched.
      *
      * <p>Package-private so the game's own test can ask what a block in the file turns into on
      * screen.
@@ -100,8 +101,14 @@ public final class Main {
                 default -> number(layer, field, Float.parseFloat(value));
             }
         });
-        var stunLook = settings.combat().stunLook();
-        return layer.renews(!stunLook.isBlank() && art.effect().equals(stunLook)).build();
+        return layer.renews(wornAsAState(art.effect(), settings)).build();
+    }
+
+    /** Whether a look is worn as a state: the Combat block's {@code StunLook}, and every haste's and aura's. */
+    private static boolean wornAsAState(String look, DungeonSettings settings) {
+        return look.equals(settings.combat().stunLook()) || settings.skills().stream().anyMatch(skill ->
+                skill.look().equals(look) && (skill.effect() == uz.dukeengine.dungeon.skill.SkillEffect.HASTE
+                        || skill.effect().isAura()));
     }
 
     private static void number(uz.dukeengine.client3d.EffectLayer.Builder layer, String field,
@@ -154,9 +161,11 @@ public final class Main {
      * 1.5 seconds beside a comment asking whoever changed WindUpFrames to remember
      * to change it too. Now there is one number and the picture follows it.
      *
-     * <p>How long: a skill that lasts gives its duration; one that is aimed and then
-     * lands gives its wind-up, which is how long the ground is marked; one that
-     * slows what it caught gives the slow, which is how long they wear the frost.
+     * <p>How long: a skill that lasts gives its duration; an aura, two of the beats its
+     * bearer wears it at, so the one played at each beat takes over from the last; one
+     * that is aimed and then lands gives its wind-up, which is how long the ground is
+     * marked; one that slows what it caught gives the slow, which is how long they wear
+     * the frost.
      * How far: its radius. And a projectile's effect is given its skill's numbers
      * too -- a meteor's falling mark takes the same wind-up to come down, and a
      * fireball's blast is as wide as the skill that threw it.
@@ -175,6 +184,7 @@ public final class Main {
             var carried = skill.hasProjectile() ? carriedBy.get(skill.projectile()) : null;
             if (skill.hasLook()) {
                 int frames = skill.durationFrames() > 0 ? skill.durationFrames()
+                        : skill.effect().isAura() ? 2 * skill.tickFrames()
                         : skill.windUpFrames() > 0 ? skill.windUpFrames()
                         : skill.slowFrames();
                 if (frames > 0) {

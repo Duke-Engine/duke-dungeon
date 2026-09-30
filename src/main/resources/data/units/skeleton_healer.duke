@@ -124,8 +124,38 @@ Monster
       ManaRegen = 50
       ; A room round it, and the ones fighting him from its band.
       Radius = 60
+      ; Worn: a faint ring as wide as its Radius, played on it every second -- see the
+      ; Effect ManaAura, below.
+      Look = ManaAura
+      TickFrames = 30
       MaxRank = 1
       Name = Sehr buloqi
+    End
+  ]
+End
+
+; ---------------------------------------------------------------------------
+; A healer's mana, worn: the summoner's MightAura in the healer's own green -- the same
+; ring on the floor as wide as its Radius, played on it every TickFrames and lasting two.
+; ---------------------------------------------------------------------------
+Effect
+  Name = ManaAura
+
+  Layers = [
+    Layer
+      Name = Ring
+      Type = MARK
+      Measure = Reach
+      Follows = Yes
+      Texture = kit/effects/particles/circle_02.png
+      Blend = Additive
+      Count = 1
+      Size = [3.56, 3.56]
+      Colour = [0x8FDC6A, 0x8FDC6A]
+      Alpha = [0.3, 0.3]
+      FadeIn = 0.5
+      FadeOut = 0.5
+      Height = 0.3
     End
   ]
 End

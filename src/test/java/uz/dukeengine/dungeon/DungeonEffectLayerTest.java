@@ -468,6 +468,31 @@ class DungeonEffectLayerTest {
         }
     }
 
+    /**
+     * Each aura's ring lies where its reach ends: measured in the aura's reach, and its texture's brightest line on its
+     * Radius -- so what stands inside the ring is what it lends to, as a blast's edge is where its damage stops.
+     */
+    @Test
+    void eachAurasRingLiesWhereItsReachEnds() throws java.io.IOException {
+        var visuals = Visuals.create();
+        Main.measureLooks(visuals, SETTINGS);
+        int rings = 0;
+        for (var aura : SETTINGS.skills().stream().filter(skill -> skill.effect().isAura()).toList()) {
+            assertEquals(aura.radius(), visuals.getEffectReach(aura.look()), 0.001f, aura.look());
+            for (var art : SETTINGS.effectLayers()) {
+                var layer = drawn(art);
+                if (!art.effect().equals(aura.look()) || !EffectLayer.MARK.equals(layer.type())) {
+                    continue;
+                }
+                assertEquals(EffectLayer.REACH, layer.measure(), art.name() + " is not measured in reach");
+                float edge = layer.sizeEnd() * brightestRadius(layer.texture()) / 2f;
+                assertEquals(1f, edge, 0.05f, aura.look() + " " + art.name() + " lies at " + edge + " of its Radius");
+                rings++;
+            }
+        }
+        assertEquals(3, rings, "a ring for each of the three auras");
+    }
+
     /** How far across the floor a particle of this layer can be carried. */
     private static float thrownAtMost(EffectLayer layer) {
         float speed = Math.max(Math.abs(layer.speedMin()), Math.abs(layer.speedMax()));

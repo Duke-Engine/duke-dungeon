@@ -766,12 +766,18 @@ public final class DungeonSettings {
                             || heroes.stream().noneMatch(hero -> hero.name().equals(skill.heroTemplate())),
                     skill.heroTemplate() + "'s Skill " + skill.key() + " is a " + skill.effect()
                             + ", never cast: only a monster may have one, for now -- a hero's bar has no place for it");
-            // A passive is never cast, so what only a cast reads would be a number nothing read.
+            // A passive is never cast, so what only a cast reads would be a number nothing read -- but an aura is worn,
+            // and may say what it looks like: its bearer plays it on itself.
             require(!skill.effect().isPassive() || skill.damage() == 0f && skill.manaCost() == 0
-                            && skill.windUpFrames() == 0 && !skill.hasProjectile() && !skill.hasLook(),
+                            && skill.windUpFrames() == 0 && !skill.hasProjectile()
+                            && (!skill.hasLook() || skill.effect().isAura()),
                     skill.heroTemplate() + "'s Skill " + skill.key() + " is a " + skill.effect()
                             + ", never cast: a Damage, ManaCost, WindUpFrames, Projectile or Look on it is read by"
-                            + " nothing");
+                            + " nothing -- only an aura is worn, and may name a Look");
+            // And worn at the beat it names: an aura's Look and its TickFrames come together, or neither does.
+            require(!skill.effect().isAura() || skill.hasLook() == (skill.tickFrames() > 0),
+                    skill.heroTemplate() + "'s Skill " + skill.key() + " is a " + skill.effect() + ", worn every"
+                            + " TickFrames as its Look: the two come together, or neither does");
             // An aura lends what it is worth as far as its Radius and no further: without one it reaches nobody.
             require(!skill.effect().isAura() || skill.radius() > 0f,
                     skill.heroTemplate() + "'s Skill " + skill.key() + " is a " + skill.effect()

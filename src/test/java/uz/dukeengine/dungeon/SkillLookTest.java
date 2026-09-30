@@ -275,13 +275,19 @@ class SkillLookTest {
                 "a floor played differently once the skills were drawn with nothing");
     }
 
-    /** The same file with every skill's Look line cut out of it. */
+    /**
+     * The same file with every skill's Look line cut out of it -- and an aura's TickFrames, written under its Look: the
+     * beat it is worn at, which nothing else reads, and which a file may not name without the look it beats.
+     */
     private static String withoutTheLooks(String file) {
         var kept = new StringBuilder();
+        boolean underALook = false;
         for (var line : file.split("\n", -1)) {
-            if (!line.trim().startsWith("Look = ")) {
+            boolean look = line.trim().startsWith("Look = ");
+            if (!look && !(underALook && line.trim().startsWith("TickFrames = "))) {
                 kept.append(line).append('\n');
             }
+            underALook = look;
         }
         return kept.toString();
     }

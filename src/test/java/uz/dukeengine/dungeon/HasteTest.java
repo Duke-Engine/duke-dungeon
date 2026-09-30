@@ -9,7 +9,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import uz.dukeengine.client3d.EffectLayer;
 import uz.dukeengine.client3d.SkillRange;
+import uz.dukeengine.client3d.Visuals;
+import uz.dukeengine.core.event.EffectPlayed;
 import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.core.thing.ObjectStatus;
 import uz.dukeengine.dungeon.content.Content;
@@ -300,6 +303,35 @@ class HasteTest {
         assertFalse(poor.castsItsHaste(), "cast with 24 for a cost of 25");
         assertEquals(24, bookOf(poor.get(0)).getMana(), "and something was taken");
         assertTrue(bookOf(poor.get(0)).isReady('W'), "and its cooldown was started");
+    }
+
+    // ---- seen ----
+
+    /**
+     * The one it hastens wears Hasted, played on it the moment it is hastened, for the haste's five seconds -- and a
+     * second haste carries it on to the new end: its layers renew.
+     */
+    @Test
+    void theHastenedWearsHastedForAsLongAsTheHaste() {
+        var room = room(SETTINGS, NO_WALL, one(SUMMONER, 100f, 150f), one("Brute", 100f, 180f));
+
+        assertTrue(room.castsItsHaste(), "the premise: it cast its haste");
+        var worn = room.game().getLogic().drainEvents().stream().filter(EffectPlayed.class::isInstance)
+                .map(EffectPlayed.class::cast).filter(played -> played.name().equals(haste().look()))
+                .map(EffectPlayed::riding).toList();
+
+        assertEquals("Hasted", haste().look());
+        assertEquals(List.of(room.get(1).getId()), worn, "worn by the Brute, and by nobody else");
+        var visuals = Visuals.create();
+        Main.measureLooks(visuals, SETTINGS);
+        assertEquals(5f, visuals.getEffectSeconds("Hasted"), 0.001f, "for five seconds");
+        var layers = SETTINGS.effectLayers().stream().filter(art -> art.effect().equals("Hasted"))
+                .map(art -> Main.layerOf(art, SETTINGS)).toList();
+        assertFalse(layers.isEmpty(), "the premise: Hasted is drawn in layers");
+        for (var layer : layers) {
+            assertEquals(EffectLayer.AURA, layer.type(), "worn, and going where it goes");
+            assertTrue(layer.renews(), "a second haste carries it on to the new end");
+        }
     }
 
     // ---- when ----

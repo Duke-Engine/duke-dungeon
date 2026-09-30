@@ -112,8 +112,38 @@ Monster
       BoostPercent = 10
       ; A room round it, and the ones fighting beside it.
       Radius = 60
+      ; Worn: a faint ring as wide as its Radius, played on it every second -- see the
+      ; Effect BloodAura, below.
+      Look = BloodAura
+      TickFrames = 30
       MaxRank = 1
       Name = Qon aurasi
+    End
+  ]
+End
+
+; ---------------------------------------------------------------------------
+; A Revenant's drink, worn: the summoner's MightAura in the Revenant's own blue -- the same
+; ring on the floor as wide as its Radius, played on it every TickFrames and lasting two.
+; ---------------------------------------------------------------------------
+Effect
+  Name = BloodAura
+
+  Layers = [
+    Layer
+      Name = Ring
+      Type = MARK
+      Measure = Reach
+      Follows = Yes
+      Texture = kit/effects/particles/circle_02.png
+      Blend = Additive
+      Count = 1
+      Size = [3.56, 3.56]
+      Colour = [0x6FA8FF, 0x6FA8FF]
+      Alpha = [0.3, 0.3]
+      FadeIn = 0.5
+      FadeOut = 0.5
+      Height = 0.3
     End
   ]
 End

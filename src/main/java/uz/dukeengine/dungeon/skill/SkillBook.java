@@ -687,10 +687,15 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
                 var its = hastened.findModule(SkillBook.class);
                 its.hasteFrames = skill.durationFrames();
                 its.hastePercent = skill.boostAt(level);
-                // It turns to the one it hastens and is seen casting, as a mending is.
+                // It turns to the one it hastens and is seen casting, as a mending is; and the one it hastens wears
+                // the haste's look for as long as it lasts -- Main.measureLooks gives the look its DurationFrames,
+                // and Main.layerOf carries it on to a second haste's end.
                 Facing.turnToward(owner, hastened);
                 world.post(new WeaponFired(world.getFrame(), owner.getId(), null,
                         owner.getPosition(), hastened.getPosition()));
+                if (skill.hasLook()) {
+                    world.effect(skill.look(), hastened);
+                }
             }
             case DASH -> {
                 if (towards != null) {
@@ -1365,9 +1370,32 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
         if (hasteFrames > 0) {
             hasteFrames--;
         }
+        wearTheAuras();
         turnTheWhirlwind();
         if (drawing != null && --loosesIn <= 0) {
             looseTheDrawnShot();
+        }
+    }
+
+    /**
+     * Its auras are worn: each its level has opened and that says what it looks like is played on it every
+     * {@code TickFrames} -- on the frames its object id falls on, as a brain's re-plans are, so a roomful are not all
+     * played on one frame -- for as long as it lives, stunned or not. {@code Main.measureLooks} makes each last two
+     * ticks, so it rides its bearer while it stands and is gone within two of its fall. An event: out of the checksum.
+     */
+    private void wearTheAuras() {
+        var owner = getOwner();
+        var world = owner.getWorld();
+        if (world == null || owner.isEffectivelyDead()) {
+            return;
+        }
+        for (var skill : skills) {
+            int beat = skill.tickFrames();
+            if (skill.effect().isAura() && skill.hasLook() && beat > 0
+                    && world.getFrame() % beat == Math.floorMod(owner.getId().value(), beat)
+                    && LevelBonus.levelOf(owner) >= skill.levelForRank(1)) {
+                world.effect(skill.look(), owner);
+            }
         }
     }
 
