@@ -42,7 +42,8 @@ class PropsTest {
     void roomsHaveThingsInThem() {
         int total = 0;
         for (long seed = 0; seed <= SEEDS; seed++) {
-            total += generate(seed).props().size();
+            // Furniture, not the keep's gate: every floor has one, and counted here it would pass this on its own.
+            total += generate(seed).props().stream().filter(p -> !p.kind().equals(SETTINGS.keep().gate())).count();
         }
         assertTrue(total > SEEDS, "only " + total + " props over " + (SEEDS + 1) + " floors");
     }
