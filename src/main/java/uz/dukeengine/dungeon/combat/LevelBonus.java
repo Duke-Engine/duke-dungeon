@@ -4,6 +4,7 @@ import uz.dukeengine.core.module.Module;
 import uz.dukeengine.core.module.ModuleGroup;
 import uz.dukeengine.core.module.ModuleGroups;
 import uz.dukeengine.core.thing.GameObject;
+import uz.dukeengine.dungeon.skill.Skill;
 import uz.dukeengine.rts.module.DamageModifier;
 import uz.dukeengine.rts.module.RtsModuleGroups;
 
@@ -18,8 +19,9 @@ import uz.dukeengine.rts.module.RtsModuleGroups;
  * <p>Rides the engine's {@link DamageModifier} seam for its weapon's blow, which is exactly the case that seam was
  * opened for: a bonus belonging to one unit rather than to its whole side, from a module the engine has never heard
  * of. Read by its skills too, which deal their own damage rather than going through the weapon (see
- * {@code SkillBook}); by the rifts it opens, so what climbs out stands at its level (see {@code SummoningUpdate}); and
- * by the card that shows what it hits for.
+ * {@code SkillBook}); by the rifts it opens, so what climbs out stands at its level (see {@code SummoningUpdate}); by
+ * its brain, for which of its skills its level has opened (see {@link #rankOf}); and by the card that shows what it
+ * hits for.
  */
 @ModuleGroup({ModuleGroups.COMBAT, RtsModuleGroups.PROGRESSION})
 public final class LevelBonus extends Module implements DamageModifier {
@@ -39,6 +41,15 @@ public final class LevelBonus extends Module implements DamageModifier {
     public static int levelOf(GameObject creature) {
         var bonus = creature == null ? null : creature.findModule(LevelBonus.class);
         return bonus == null ? 1 : bonus.level;
+    }
+
+    /**
+     * The rank {@code creature} holds of {@code skill}: 1 once its level has opened the skill's first rank -- the level
+     * a hero's waits for, see {@link Skill#levelForRank} -- and 0 before. Never more: what makes a creature hit harder
+     * is its level's bonus, not a second rank, as for its weapon.
+     */
+    public static int rankOf(GameObject creature, Skill skill) {
+        return levelOf(creature) >= skill.levelForRank(1) ? 1 : 0;
     }
 
     public int level() {

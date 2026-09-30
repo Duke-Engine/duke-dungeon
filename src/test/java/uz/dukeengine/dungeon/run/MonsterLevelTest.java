@@ -465,6 +465,32 @@ class MonsterLevelTest {
     }
 
     /**
+     * The rank a creature holds of a skill is 1 once its level has opened the skill's first rank -- the level a hero's
+     * waits for -- and 0 before, and never more: the fire mage's fireball is open from the first level, its meteor
+     * from the sixth.
+     */
+    @Test
+    void aCreatureHoldsRankOneOfASkillOnceItsLevelHasOpenedIt() {
+        var skills = SETTINGS.skillsFor(MAGE);
+        var fireball = skills.stream().filter(skill -> skill.key() == 'Q').findFirst().orElseThrow();
+        var meteor = skills.stream().filter(skill -> skill.key() == 'R').findFirst().orElseThrow();
+        assertEquals(1, fireball.levelForRank(1), "the premise: the fireball is open from the first level");
+        assertEquals(6, meteor.levelForRank(1), "and the meteor from the sixth");
+
+        var bare = alone(MAGE);
+        assertEquals(1, LevelBonus.rankOf(bare, fireball),
+                "a creature with no level is the first: the fireball's rank");
+        assertEquals(0, LevelBonus.rankOf(bare, meteor), "and not yet the meteor's");
+        for (int level : new int[] {5, 6, 35}) {
+            var mage = alone(MAGE);
+            Spawner.scale(mage, level, SETTINGS);
+
+            assertEquals(1, LevelBonus.rankOf(mage, fireball), "the fireball at level " + level);
+            assertEquals(level >= 6 ? 1 : 0, LevelBonus.rankOf(mage, meteor), "the meteor at level " + level);
+        }
+    }
+
+    /**
      * What rises from a rift stands at its caller's level, read when the rift opens: its figures, and its share of
      * what its kind is worth at that level.
      */

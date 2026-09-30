@@ -213,17 +213,17 @@ public final class MonsterBrain extends UnitScript {
      *
      * <p>A monster holds rank 1 of every skill its level has opened -- the level its
      * first rank waits for, as a hero's does (see {@link Skill#levelForRank}) -- and
-     * rank 0, which the book refuses, of the rest. It never ranks past 1: what makes it
-     * hit harder is its level's bonus, as for its weapon.
+     * rank 0, which the book refuses, of the rest: see {@link LevelBonus#rankOf}. It
+     * never ranks past 1: what makes it hit harder is its level's bonus, as for its
+     * weapon.
      */
     private void castAt(GameObject hero) {
         var book = unit().findModule(SkillBook.class);
         if (book == null || midBlow() || midCast()) {
             return;
         }
-        int level = LevelBonus.levelOf(unit());
         for (var skill : book.getSkills()) {
-            int rank = level >= skill.levelForRank(1) ? 1 : 0;
+            int rank = LevelBonus.rankOf(unit(), skill);
             if (rank == 0 || skill.effect().isPassive() || !book.isReady(skill.key())
                     || !book.canAfford(skill.key(), rank)) {
                 continue;
