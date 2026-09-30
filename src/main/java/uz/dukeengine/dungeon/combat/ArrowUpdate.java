@@ -68,6 +68,14 @@ public final class ArrowUpdate extends UpdateModule {
      */
     private float blastRadius;
 
+    /**
+     * How high over the ground it flies: as high as it was when it left the bow, and over whatever ground it crosses —
+     * so a shot rises over a hill and dips into a hollow rather than going straight through the one and over the
+     * other. The ground's height is the simulation's own, so every machine flies it alike, and it lands where it is
+     * drawn.
+     */
+    private float flight;
+
     public ArrowUpdate(GameObject owner, ModuleData ignored) {
         super(owner);
     }
@@ -79,6 +87,7 @@ public final class ArrowUpdate extends UpdateModule {
         this.damage = carrying;
         this.damageType = type;
         this.stepPerFrame = speed * GameConstants.SECONDS_PER_LOGICFRAME;
+        this.flight = heightOverTheGround();
         aimAt(at.getPosition());
     }
 
@@ -100,7 +109,20 @@ public final class ArrowUpdate extends UpdateModule {
         this.damageType = type;
         this.stepPerFrame = speed * GameConstants.SECONDS_PER_LOGICFRAME;
         this.travelLeft = distance;
+        this.flight = heightOverTheGround();
         aimAt(towards);
+    }
+
+    /** How far above the ground under it the shot is now. */
+    private float heightOverTheGround() {
+        var world = getOwner().getWorld();
+        var at = getOwner().getPosition();
+        return world == null ? 0f : at.z() - world.groundHeight(at);
+    }
+
+    /** A point of the flight: that place, at the shot's own height over the ground there. */
+    private Coord3D overTheGround(World world, float x, float y) {
+        return new Coord3D(x, y, world.groundHeight(new Coord3D(x, y, 0f)) + flight);
     }
 
     @Override
@@ -137,8 +159,8 @@ public final class ArrowUpdate extends UpdateModule {
             strike(world, victim);
             return;
         }
-        owner.setPosition(new Coord3D(here.x() + dx / distance * stepPerFrame,
-                here.y() + dy / distance * stepPerFrame, here.z()));
+        owner.setPosition(overTheGround(world, here.x() + dx / distance * stepPerFrame,
+                here.y() + dy / distance * stepPerFrame));
     }
 
     /**
@@ -167,10 +189,9 @@ public final class ArrowUpdate extends UpdateModule {
         }
         float facing = owner.getOrientation();
         var here = owner.getPosition();
-        var next = new Coord3D(
+        var next = overTheGround(world,
                 here.x() + (float) StrictMath.cos(facing) * stepPerFrame,
-                here.y() + (float) StrictMath.sin(facing) * stepPerFrame,
-                here.z());
+                here.y() + (float) StrictMath.sin(facing) * stepPerFrame);
         if (world.isGroundBlocked(next)) {
             owner.markDestroyed(); // spent against a wall
             return;

@@ -78,6 +78,53 @@ class ArrowTest {
                 .count();
     }
 
+    /**
+     * A shot flies over the ground it crosses: at the same height over it the whole way, so it rises over a ridge
+     * between the archer and his mark and comes down the far side, rather than going through it.
+     *
+     * <p>The ridge runs across the arena between them, fifteen units high at its crest and nowhere steep enough to
+     * be a cliff; both stand on the flat either side of it.
+     */
+    @Test
+    void anArrowFliesOverTheGroundItCrosses() {
+        var arena = Dungeon.world(arena(), SETTINGS);
+        var game = arena.game();
+        int columns = 61;
+        int rows = 31;
+        var steps = new int[columns * rows];
+        int[] ridge = {0, 12, 24, 12, 0}; // corners 16 to 20 across: up, the crest at x = 180, down
+        for (int row = 0; row < rows; row++) {
+            for (int at = 0; at < ridge.length; at++) {
+                steps[row * columns + 16 + at] = ridge[at];
+            }
+        }
+        game.getTerrain().setRelief(new uz.dukeengine.core.pathfind.HeightMap(columns, rows, steps));
+        game.spawn("Rogue", arena.hero(), 150f, 150f);
+        game.spawn("Skeleton", arena.dungeon(), 205f, 150f);
+        game.runHeadless(1);
+        game.postCommand(new GameMessage.AttackObject(game.getLocalPlayerIndex(),
+                List.of(creature(game, "Rogue").getId()), creature(game, "Skeleton").getId()));
+
+        var over = new java.util.ArrayList<Float>();
+        float highest = Float.NEGATIVE_INFINITY;
+        for (int frame = 0; frame < 40; frame++) {
+            game.runHeadless(1);
+            for (var arrow : game.getLogic().getObjects()) {
+                if (arrow.getTemplate().name().equals("Arrow")) {
+                    var at = arrow.getPosition();
+                    over.add(at.z() - arrow.getWorld().groundHeight(at));
+                    highest = Math.max(highest, at.z());
+                }
+            }
+        }
+
+        assertFalse(over.isEmpty(), "no arrow ever left the bow");
+        for (float height : over) {
+            assertEquals(over.getFirst(), height, 0.01f, "the arrow's height over the ground changed in flight: " + over);
+        }
+        assertTrue(highest > 10f, "it never rose over the ridge: highest at " + highest);
+    }
+
     /** Firing puts something in the world rather than simply hurting the target. */
     @Test
     void aShotBecomesAnArrow() {
