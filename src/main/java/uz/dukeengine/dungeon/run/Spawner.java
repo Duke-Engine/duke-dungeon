@@ -194,7 +194,8 @@ public final class Spawner {
      * Where {@code count} heroes come in: {@code from}, then the nearest open cells beside it — walked out from it
      * a step at a time over floor of the same storey, so a party never stands on the far side of a wall or up a
      * ledge, and never where a monster, a boss or a prop already does, nor on the cells {@code standing} keeps: a
-     * fountain's, which they gather round.
+     * fountain's, which they gather round. Nor in the keep, whose floor joins the way in's at its threshold and is
+     * walked over like any other.
      */
     static List<GeneratedDungeon.Placement> wayIn(GeneratedDungeon dungeon, int count,
             GeneratedDungeon.Placement from, java.util.Set<Long> standing) {
@@ -213,6 +214,7 @@ public final class Spawner {
         if (dungeon.boss() != null && dungeon.boss().at() != null) {
             taken.add(key(dungeon.boss().at().cellX(), dungeon.boss().at().cellY()));
         }
+        taken.addAll(keepCells(dungeon));
         char storey = storeyAt(rows, from.cellX(), from.cellY());
         // The first where he is let in, or -- a fountain standing there -- on the nearest open floor to it; the rest
         // beside him, so a party comes in together on one side of it rather than round both.
@@ -241,6 +243,28 @@ public final class Spawner {
             }
         }
         return spots;
+    }
+
+    /**
+     * The cells of the floor's keep — its square, court and ring of wall, and the threshold before its gate — or none
+     * for a floor with none. Floor of the same storey as the way in, so a walk out from it reaches them: nothing but
+     * their being taken keeps anybody from standing there.
+     */
+    private static java.util.Set<Long> keepCells(GeneratedDungeon dungeon) {
+        var cells = new java.util.HashSet<Long>();
+        var keep = dungeon.keep();
+        if (keep != null) {
+            var walls = keep.walls();
+            // A cell further out every way takes in the threshold, which lies a step from the doorway.
+            for (int y = walls.y() - 1; y <= walls.y() + walls.h(); y++) {
+                for (int x = walls.x() - 1; x <= walls.x() + walls.w(); x++) {
+                    if (keep.holds(x, y)) {
+                        cells.add(key(x, y));
+                    }
+                }
+            }
+        }
+        return cells;
     }
 
     /** {@code from} if nothing keeps it, or else the nearest cell of its storey nothing does; {@code null} for none. */
