@@ -62,8 +62,9 @@ Monster
   AlertRadius = 70
   RepathFrames = 10
   SwingFrames = 20
-  ; From the third floor, where there is enough in a room worth mending.
-  MinDepth = 3
+  ; From the first floor, as every mage is. It is the one to kill first there too,
+  ; and it stands with every boss: see BossGuards in the Descent block of generation.duke.
+  MinDepth = 1
   Weight = 8
   ; One to a room: two would mend each other for as long as the fight lasted.
   MaxPerRoom = 1

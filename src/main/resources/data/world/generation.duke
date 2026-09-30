@@ -147,9 +147,10 @@ ProceduralMap
 
     ; ---- who stands with them ----
     ;
-    ; A kind and how many of it. A kind not yet at its MinDepth stays away, so the
-    ; first two bosses still wait alone and the last two have the green and the purple
-    ; mages about them: two to mend the boss and two to fill the room while they do.
+    ; A kind and how many of it. A kind not yet at its MinDepth stays away. The healer
+    ; and the summoner are both at MinDepth 1, so no floor is without them: their guard
+    ; stands with every boss, the first floor's included, and that is meant -- the green
+    ; and the purple mages, two to mend the boss and two to fill the room while they do.
     ; They stand on a square ring BossGuardRing cells out from the boss, corners first,
     ; and further out if the room has no floor there. MaxPerRoom is for rooms the draw
     ; fills and does not apply here. Leave BossGuards out and every boss waits alone.

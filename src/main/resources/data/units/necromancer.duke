@@ -32,7 +32,7 @@ Monster
     ; on this one. See Projectile GreaterFireball.
     Bow
       Projectile = GreaterFireball
-      Speed = 105
+      Speed = 210
       ; Out at the end of a staff held by something twenty units tall.
       MuzzleOffset = 12
     End,

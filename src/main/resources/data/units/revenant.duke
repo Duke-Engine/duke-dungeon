@@ -26,8 +26,9 @@ Monster
     ; A small one, and small on purpose -- this is its ordinary attack.
     Bow
       Projectile = Fireball
-      ; Slower than a bolt, so it can be seen coming and walked out from under.
-      Speed = 95
+      ; Faster than a bolt (the Stalker's is 150): over its whole reach of 46 in about a
+      ; quarter of a second, so there is little time to see it coming.
+      Speed = 190
       ; Out at the end of the staff, not out of its chest.
       MuzzleOffset = 8
     End,
@@ -77,7 +78,7 @@ Monster
   ; side -- so the staff hung at its feet and the cast was a twitch between two
   ; frames of that. Hands up and forward at 0.89, and the throw reads as a throw.
   Idle = Ranged_Magic_Spellcasting_Long
-  MinDepth = 3
+  MinDepth = 1
   Weight = 12
   Colour = 0x6FA8FF
   Scale = 1.1

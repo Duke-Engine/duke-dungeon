@@ -329,7 +329,7 @@ LootDrops
   Template = Chest
   ; How often an ordinary monster leaves something. Loot that always drops is not
   ; loot, it is a tax on killing things.
-  DropPercent = 30
+  DropPercent = 15
   ; The thing guarding the way down always leaves something. It is the one fight
   ; on the floor the player cannot walk past.
   BossDropPercent = 100

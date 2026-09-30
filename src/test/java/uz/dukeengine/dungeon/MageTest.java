@@ -186,19 +186,20 @@ class MageTest {
     /**
      * And it lands where he points, not round his own feet.
      *
-     * <p>One skeleton at his elbow and one across the room: dropped on the far one, the
-     * one beside him is neither hurt nor slowed, which is the whole difference between
-     * a nova he aims and the one that used to go off round him.
+     * <p>One skeleton at his elbow and one as far off as he can reach: dropped on the far
+     * one, the one beside him is neither hurt nor slowed, which is the whole difference
+     * between a nova he aims and the one that used to go off round him.
      */
     @Test
     void hisFrostNovaLandsWhereHeAimsItAndNotRoundHim() {
-        var arena = arena(165f, 150f, 215f, 150f);
+        float reach = skillOf(MAGE, 'W').range();
+        var arena = arena(165f, 150f, 150f + reach, 150f);
         var beside = arena.skeletons().get(0);
         var aimedAt = arena.skeletons().get(1);
         float besideBefore = beside.getBody().getHealth();
         float aimedBefore = aimedAt.getBody().getHealth();
 
-        assertTrue(arena.book().cast('W', 1, null, new Coord3D(215f, 150f, 0f)));
+        assertTrue(arena.book().cast('W', 1, null, new Coord3D(150f + reach, 150f, 0f)));
 
         assertTrue(aimedAt.hasStatus(ObjectStatus.SLOWED), "what it was dropped on was not slowed");
         assertTrue(aimedAt.getBody().getHealth() < aimedBefore, "nor hurt");
@@ -364,7 +365,8 @@ class MageTest {
     @Test
     void theMeteorIsDrawnWhereItWillLand() {
         var arena = arena();
-        var spot = new Coord3D(220f, 150f, 0f);
+        // Well inside his reach, so it is dropped where it was pointed and not pulled back.
+        var spot = new Coord3D(150f + skillOf(MAGE, 'R').range() / 2f, 150f, 0f);
 
         arena.book().cast('R', 5, null, spot);
 

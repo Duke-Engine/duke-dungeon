@@ -39,7 +39,7 @@ Monster
     ; The Revenant's small fire, which has to get there.
     Bow
       Projectile = Fireball
-      Speed = 95
+      Speed = 190
       MuzzleOffset = 8
     End,
     ; And only at what it can see.
@@ -71,7 +71,7 @@ Monster
   ; How long a throw holds it still -- the fireball or its ordinary fire -- and the
   ; one waits for the other, so each is seen leaving.
   SwingFrames = 20
-  MinDepth = 2
+  MinDepth = 1
   Weight = 10
   ; No more than two to a room, or a room of them is a firing squad.
   MaxPerRoom = 2
@@ -102,14 +102,16 @@ Monster
   ; rather than a key -- see Skill, SkillDistance and KeepDistance on its
   ; Monster block. It pays no mana and has one rank: what makes it hit harder
   ; further down is the depth, as for its weapon. ProjectileSpeed is how fast what it
-  ; throws travels; unsaid, it would be the hero's HeavySpeed.
+  ; throws travels; unsaid, it would be the hero's HeavySpeed. It says 120, which is
+  ; what HeavySpeed is today, and stays 120 if that moves.
   ; ---------------------------------------------------------------------------
 
   Skills = [
     Skill
       Key = Q
       ; Its fireball: the Mage's own Q, from something that does not want to be near
-      ; him. Half as fast as his, so a player who sees it leave the staff can step out
+      ; him. As fast as his: over its whole Range in a little more than half a second,
+      ; so a player who sees it leave the staff has that long at the most to step out
       ; of its line -- and it bursts where it stops, as his does.
       Effect = SKILLSHOT
       ; The one worth stepping out of the way of: its ordinary fire is 6.
@@ -117,7 +119,7 @@ Monster
       Range = 70
       Radius = 16
       HitWidth = 6
-      ProjectileSpeed = 60
+      ProjectileSpeed = 120
       Projectile = SkullFireball
       ; Six seconds between fireballs, with its ordinary fire in between.
       CooldownFrames = 180

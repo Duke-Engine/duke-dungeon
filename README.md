@@ -131,7 +131,7 @@ alohida server.
 
 ## Narsalar — sumka, olish va tashlash
 
-Monstr o'lganda **30%** ehtimol bilan narsa qoldiradi (boss — har doim). Narsa
+Monstr o'lganda **15%** ehtimol bilan narsa qoldiradi (boss — har doim). Narsa
 yerda **sandiq** bo'lib yotadi.
 
 - **Olish:** sandiq ustidan yurish hech narsa bermaydi. Qahramon tanlangan

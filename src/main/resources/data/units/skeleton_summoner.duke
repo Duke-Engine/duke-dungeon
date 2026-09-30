@@ -62,7 +62,7 @@ Monster
   AlertRadius = 70
   RepathFrames = 10
   SwingFrames = 20
-  MinDepth = 3
+  MinDepth = 1
   Weight = 8
   ; One to a room: with its MaxSummoned that is four called-up skeletons a room at most.
   MaxPerRoom = 1

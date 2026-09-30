@@ -86,15 +86,17 @@ class MonsterPlacementTest {
 
     /**
      * The boss stands in the keep at the end of the floor -- or in the furthest room,
-     * where no keep fits -- and on the second floor it stands alone: its room is the
-     * fight that gates the next floor, not somewhere the player wanders into
-     * mid-brawl. Only the guard the file names ever joins it, and not this shallow --
-     * see below.
+     * where no keep fits -- and unless the file names a guard for it, it stands alone:
+     * its room is the fight that gates the next floor, not somewhere the player wanders
+     * into mid-brawl. Only the guard the file names ever joins it, and the shipped file
+     * names one for every floor, so this asks the shipped floors with that line left
+     * out -- see below.
      */
     @Test
     void theBossWaitsAloneInItsRoom() {
+        var nobody = guardedBy("");
         for (long seed = 0; seed <= 60; seed++) {
-            var floor = DungeonGenerator.generate(seed, SETTINGS, 2);
+            var floor = DungeonGenerator.generate(seed, nobody, 2);
 
             assertTrue(floor.bossRoom() > 0, "seed " + seed + ": never the room the hero starts in");
 

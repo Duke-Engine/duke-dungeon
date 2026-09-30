@@ -24,8 +24,8 @@ Hero
   End
   ; The archer's build rather than the knight's: nothing about him takes up
   ; doorway, and the pathfinder steers him round corners the same way.
-  ; Between the archer's 70 and the knight's 52. He needs to see further than he
-  ; can reach -- Meteor is thrown 110 and Fireball 90, and a skill aimed into the
+  ; Between the archer's 70 and the knight's 52. He needs to see as far as he can
+  ; reach -- Fireball is thrown 64 and Meteor 55, and a skill aimed into the
   ; black is a skill aimed at nothing -- but he is not the one who opens fights
   ; across a floor.
   VisionRange = 64
@@ -358,8 +358,8 @@ Hero
 
     Skill
       Key = W
-      ; Frost Nova, dropped where he points -- on a pack before it reaches him, or on
-      ; the ones already at his elbow -- rather than always round his own feet.
+      ; Frost Nova, dropped where he points -- on the ones already at his elbow, or on a
+      ; pack a short way off -- rather than always round his own feet.
       ;
       ; The damage is not the point and the numbers say so -- 40 against Fireball's
       ; 55. SlowFrames is the point: ninety frames is three seconds of everything it
@@ -373,11 +373,12 @@ Hero
       Effect = AREA_AT_SPOT
       Damage = 40
       DamagePerLevel = 7
-      ; How far off he may drop it: past his Fireball's 64 and well short of the
-      ; meteor's 110. Aimed further, it comes down at the edge of that.
-      Range = 80
-      ; As wide as it was round him, so it still catches a pack rather than one.
-      Radius = 40
+      ; How far off he may drop it: short of his Fireball's 64 and the meteor's 55, so
+      ; it is for what is already close. Aimed further, it comes down at the edge of that.
+      Range = 40
+      ; Half as wide as it was round him: it takes the knot it lands on rather than the
+      ; whole pack.
+      Radius = 20
       SlowFrames = 90
       ; Ten seconds. The escape has to be spent rather than leaned on.
       CooldownFrames = 300
@@ -449,7 +450,7 @@ Hero
       Effect = METEOR
       Damage = 160
       DamagePerLevel = 28
-      Range = 110
+      Range = 55
       Radius = 44
       WindUpFrames = 45
       Projectile = MeteorMark
