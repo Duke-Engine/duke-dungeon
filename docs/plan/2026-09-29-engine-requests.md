@@ -26,6 +26,7 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E10 | one seamless world, ~900 × 900 cells, any size by design | waiting — after E8 |
 | E11 | an untextured model keeps its own colour | waiting (small) |
 | E12 | a Layer block may say `Renews` (E9's option reachable from data) | waiting (small) |
+| E13 | an armed thing-aim's press marked as the game's own order, not an attack | waiting (small) |
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
 game builds against the local engine.
@@ -353,6 +354,20 @@ is refused at load (`DataException`), so no game can ask for it in data.
 Done when: a Layer block with `Renews = true` loads and reaches the builder as renewing; one without it does not.
 Until then the game asks the client itself to renew the one look a status wears — the Combat block's `StunLook`
 (`Main.layerOf(art, settings)`); with this landed, that becomes `Renews = true` on the `Stunned` layers in data.
+
+## E13 — A thing-aim's press marked as the game's own order (2026-10-01, small)
+
+The dungeon's key is used by a left click on it in the bag (arming a `CommandButton` with `Aim.UNIT`, id `use:<slot>`)
+and then a click on the keep's gate. The client answers that press (`DukeRtsApp.aimArmedButton`, ~4901-4915 at
+1bb64fa8) with an ATTACK-kind order mark on the gate and the attack acknowledgement — red, as if the hero were sent to
+fight it — where a right click on the same gate (a context order, `game.contextOrder`) flashes the order colour
+(`OrderMark.ContextColour`, yellow).
+
+- An armed button whose press is the game's own order on a thing is marked as a context order is (its colour, its
+  acknowledgement), not as an attack — for example a `CommandButton` saying which mark its press wears, the attack's
+  staying the default so an ability aimed at an enemy is marked as today.
+
+Done when: a use aim pressed on the gate flashes the context colour; an attack ability aimed at an enemy looks as now.
 
 ---
 
