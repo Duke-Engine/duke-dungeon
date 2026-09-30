@@ -6,8 +6,8 @@ import uz.dukeengine.dungeon.gen.GeneratedDungeon.Room;
 import uz.dukeengine.dungeon.world.Theme;
 
 /**
- * The ground under a floor: hills and hollows, the chambers laid level or not as the terrain says, and nowhere
- * steep enough to be a cliff.
+ * The ground under a floor: hills and hollows, the chambers laid level or not as the terrain says, the boss's keep
+ * always level whatever it says, and nowhere steep enough to be a cliff.
  *
  * <p>This is what the storeys were for, done the way the ground itself does it. A chamber stands higher than the
  * one before it because the land rises between them, and the tunnel that joins them is the slope — there is no
@@ -38,6 +38,9 @@ final class Relief {
      * at {@code floor}'s size and height and each corner's then scaled to the rise {@code riseAt} gives it, each
      * chamber levelled as much as {@code levelOf} says, and the whole held to {@code floor}'s slope. One terrain
      * everywhere scales every corner by exactly one, and is the call above.
+     *
+     * <p>Where the cave has a keep it is set level whatever {@code levelOf} says, and the ground round it eased down
+     * to meet it by the same slope.
      */
     static HeightMap of(long seed, Cave cave, List<Room> rooms, Theme.Terrain floor,
             java.util.function.IntBinaryOperator riseAt, List<Integer> levelOf) {

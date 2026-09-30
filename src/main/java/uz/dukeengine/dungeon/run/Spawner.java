@@ -39,8 +39,8 @@ public final class Spawner {
     }
 
     /**
-     * Lay out a floor: each player's hero at the way in, its monsters scaled to {@code depth}, the boss in the
-     * furthest room, and — from {@code drops} — what the inhabitants leave behind.
+     * Lay out a floor: each player's hero at the way in, its monsters scaled to {@code depth}, the boss in its keep
+     * — or the furthest room, where none fits — and, from {@code drops}, what the inhabitants leave behind.
      *
      * <p>The heroes are told rather than looked up, because once a player may choose there is no single answer in
      * the file to look up: {@code DefaultHero} is who plays when nobody was asked, and a menu is somebody being
@@ -83,7 +83,9 @@ public final class Spawner {
         // Whatever stands about in the rooms. Spawned like anything else and then
         // left alone: they have a shape, so the engine bakes them into the
         // navigation grid and bodies stop at them, and no body, so neither brain
-        // will ever pick one as something to hit.
+        // will ever pick one as something to hit. All but the gate, which is
+        // turned: its shape is a box as long as its doorway, which it shuts only
+        // lying along the wall, where every other prop is round, or has no shape.
         for (var prop : dungeon.props()) {
             if (!underIt.contains(key(prop.at().cellX(), prop.at().cellY()))) {
                 var thing = spawn(game, dungeonPlayer, prop.kind(), at(logic, prop.at()));

@@ -41,7 +41,7 @@ class EveryModuleIsGroupedTest {
     void everyModuleIsFiledUnderAGroupThatIsSpelledSomewhere() throws Exception {
         var modules = modules();
 
-        // The engine's two, the RTS library's eleven, the script adapter and the game's fourteen.
+        // The engine's two, the RTS library's eleven, the script adapter and the game's fifteen.
         assertTrue(modules.size() >= 28, "the scan found too few modules to be a scan: " + modules);
         for (var module : modules) {
             var groups = ModuleGroups.of(module);

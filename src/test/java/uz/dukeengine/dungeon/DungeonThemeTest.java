@@ -185,7 +185,8 @@ class DungeonThemeTest {
 
     /**
      * And the client is told what every cell wears: a record beside the floor's grid, naming each chamber's biome in
-     * the tone this floor draws for it — the chamber the heroes stand in naming the status line's own look.
+     * the tone this floor draws for it, and the keep's in the keep's own — the chamber the heroes stand in naming the
+     * status line's own look.
      */
     @Test
     void aMixedFloorTellsTheClientWhatEveryCellWears() {

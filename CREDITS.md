@@ -78,12 +78,14 @@ Building and releasing the game was plainly allowed; whether a public git tree
 counts as handing the files out was a judgement call rather than a rule, and the
 kind of question that does not get easier by being left. They are gone too.
 
-Every model in the tree is CC0, out of one maker's packs, and every clip but one.
-**That one is a Mixamo animation and it went in with its eyes open** — the mage's
-two-handed cast, added later and knowingly, which puts the question this section
-settled back on the page. It is set out in full below rather than folded away
-here, because a decision reversed deserves as plain a statement as the decision
-did.
+Every model in the tree is CC0, out of one maker's packs, but two: the fountain,
+which is CC BY 3.0, and the keep's gate, which may be used commercially with
+credit — each has its row in the table above. Every clip in `animations/` is CC0
+but one. **That one is a Mixamo animation and it went in with its eyes open** —
+the mage's two-handed cast, added later and knowingly, which puts the question
+this section settled back on the page. It is set out in full below rather than
+folded away here, because a decision reversed deserves as plain a statement as
+the decision did.
 
 Two other things are open and are of a different kind: three pieces of music have
 licences nobody has looked up, and the icons are a generator's output whose terms
@@ -144,10 +146,10 @@ weapon calls with no weapon behind them were left where they were.
 
 ### The one animation that is not KayKit's
 
-`magic.glb` is **Mixamo's**, which is Adobe's, and it is the only file in the
-tree that is not CC0. It is the mage's ultimate: the kit has no two-handed cast
-in it, and a man calling a meteor down by waving a staff one-handed is not the
-gesture.
+`magic.glb` is **Mixamo's**, which is Adobe's, and it is the only file in
+`animations/` that is not CC0. It is the mage's ultimate: the kit has no
+two-handed cast in it, and a man calling a meteor down by waving a staff
+one-handed is not the gesture.
 
 **This is the same question the hero and the monsters were removed over**, and it
 is worth saying plainly rather than leaving for somebody to find. Mixamo's terms
@@ -170,6 +172,19 @@ on the mage himself, so the 23 joints are named as the kit names them and the
 client's retargeting matches them one for one. A clip straight off Mixamo's own
 rig arrives as `mixamorig:Hips` and friends and would animate nothing at all —
 `dungeon/art/anim/fbx_to_glb.py` fails loudly rather than exporting one.
+
+### The keep's gate
+
+The gate across the keep's doorway, `models/props/gate/gate.glb`, is **"Old
+Driveway Gate"** by **animatedheaven**
+([CGTrader](https://www.cgtrader.com/designers/animatedheaven)): two stone pillars
+with their lamps, and an iron gate of two leaves between them. The owner got it
+from CGTrader, and its notes say it "can be used commercially with credits" — so
+it is not CC0, and the credit is its row in the table above.
+
+The owner animated the two leaves opening, in Blender, a clip apiece; the game's
+copy has the two joined into one, `open`, by `art/models/join_clips.pl`. The
+`License.txt` beside the file records the same.
 
 ### The music — licences to confirm
 

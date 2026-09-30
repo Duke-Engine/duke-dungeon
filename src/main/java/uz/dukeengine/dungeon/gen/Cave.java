@@ -65,6 +65,9 @@ final class Cave {
     /**
      * The whole floor: chambers, tunnels along {@code links} and a few more for the loops, worn to the terrain's
      * raggedness, cleaned of slits and islands of floor nobody could reach, and given its islands of rock.
+     *
+     * <p>{@code bossRoom} is the furthest chamber, which gets neither loops nor islands: the boss waits in it where no
+     * keep fits, and where one does the boss stands in the keep beyond it, built once all this is carved.
      */
     static Cave carve(DeterministicRng rng, int width, int height, List<Room> rooms, List<Link> links, int bossRoom,
             int corridorWidth, int maxSpacing, Theme.Terrain terrain) {
@@ -307,10 +310,11 @@ final class Cave {
     /**
      * The tunnels beyond the tree: a way round rather than only a way through.
      *
-     * <p>Only between chambers the same number of tunnels from the entrance, or one apart, and never into the boss's
-     * — so no loop is a short cut: a walk still crosses as many chambers to reach the boss as the tree says, and the
-     * floor's end is as far off as it was. The nearest such pairs first, and none longer than a new chamber may sit
-     * from an old one; no dice, so a loop cannot move anything else on the floor.
+     * <p>Only between chambers the same number of tunnels from the entrance, or one apart, and never into the
+     * furthest — the boss waits in it where no keep fits, and beyond it, in the keep, where one does — so no loop is
+     * a short cut: a walk still crosses as many chambers to reach the end as the tree says, and the floor's end is as
+     * far off as it was. The nearest such pairs first, and none longer than a new chamber may sit from an old one;
+     * no dice, so a loop cannot move anything else on the floor.
      */
     static List<Link> loops(List<Room> rooms, List<Link> links, int bossRoom, int maxSpacing, int percent) {
         int wanted = rooms.size() * percent / 100;
@@ -458,9 +462,11 @@ final class Cave {
     /**
      * Rock left standing inside the chambers: a pillar in a cavern, a grove in a glade. A block of one or two cells
      * across, only where floor rings it as wide as a tunnel — so it is always something to walk round and never
-     * something that walls anything off — and never on the tunnels or a chamber's middle. None in the boss's
-     * chamber, which is an arena and wants to be one. In a chamber {@code groveIn} names, the block is a grove
-     * instead: the same cells, left walkable, for trees to stand on.
+     * something that walls anything off — and never on the tunnels or a chamber's middle. None in the furthest
+     * chamber, which is an arena and wants to be one: the boss waits in it where no keep fits, and where one does the
+     * boss stands in the keep beyond it — sited after the carving, so the chamber is carved the same either way. In a
+     * chamber {@code groveIn} names, the block is a grove instead: the same cells, left walkable, for trees to stand
+     * on.
      */
     private void raiseIslands(DeterministicRng rng, List<Room> rooms, int bossRoom, List<Theme.Terrain> ofRoom,
             java.util.function.IntPredicate groveIn) {

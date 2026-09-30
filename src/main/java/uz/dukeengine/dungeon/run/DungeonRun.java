@@ -312,7 +312,8 @@ public final class DungeonRun {
     /**
      * What each cell of {@code floor} is drawn as, for a floor that mixes biomes, or null for one that wears its look
      * whole. Each biome in the tone the depth draws for it — the same draw {@link #lookOf} makes for the biome the
-     * heroes come in to, so the cells round them and the status line name one look.
+     * heroes come in to, so the cells round them and the status line name one look — but for the keep's cells, which
+     * wear the keep's, whatever biome they stand in.
      */
     private FloorLooks looksOf(GeneratedDungeon floor) {
         if (floor.biomes() == null) {

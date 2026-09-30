@@ -662,9 +662,10 @@ class DungeonTilesTest {
      * already on show; where the lid lies at the floor's own height and a tree
      * stands on it, the tint is all you see of it.
      *
-     * <p>No shipped theme stands its walls up now -- the caverns became cliffs on the
-     * ground as the wood is trees on it -- so this guards the next one that does (a
-     * hall of worked stone), and passes empty until then.
+     * <p>Only the Keep's theme stands its walls up now -- worked stone a storey high
+     * round the boss's court; the caverns became cliffs on the ground as the wood is
+     * trees on it -- so this holds that one to tops that are not the floor's colours,
+     * and guards the next that does.
      */
     @Test
     void everyThemeWhoseWallsStandUpTellsTheirTopsFromTheFloor() {
