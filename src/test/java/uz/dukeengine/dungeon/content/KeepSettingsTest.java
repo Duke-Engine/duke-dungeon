@@ -36,6 +36,18 @@ class KeepSettingsTest {
         assertTrue(refused.getMessage().contains("14"), refused.getMessage());
     }
 
+    /** Largest first: the order is the preference, so a list that rises would build the smallest keep every time. */
+    @Test
+    void sizesNotLargestFirstAreRefused() {
+        for (var sizes : new String[] {"[9, 15]", "[15, 15]"}) {
+            var data = Content.data().replace("    Sizes = [15, 13, 11, 9]\n", "    Sizes = " + sizes + "\n");
+
+            var refused = assertThrows(IllegalArgumentException.class, () -> DungeonSettings.parse(data));
+            assertTrue(refused.getMessage().contains("largest first"), refused.getMessage());
+            assertTrue(refused.getMessage().contains(sizes), refused.getMessage());
+        }
+    }
+
     /** Something has to stand in the doorway. */
     @Test
     void aKeepWithNoGateIsRefused() {

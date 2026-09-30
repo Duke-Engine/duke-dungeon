@@ -601,6 +601,11 @@ public final class DungeonSettings {
             require(size + 4 <= Math.min(map.generation().mapWidth(), map.generation().mapHeight()),
                     "a Keep " + size + " across cannot stand on the map with rock round it");
         }
+        var sizes = map.keep().sizes();
+        for (int i = 1; i < sizes.size(); i++) {
+            require(sizes.get(i) < sizes.get(i - 1),
+                    "a Keep's Sizes are tried largest first, each smaller than the one before: " + sizes);
+        }
         require(map.keep().sizes().isEmpty() || !map.keep().gate().isBlank(),
                 "a Keep needs a Gate: something has to stand in its doorway");
         require(map.keep().look().isBlank() || themes.stream().anyMatch(theme -> theme.name().equals(map.keep().look())),

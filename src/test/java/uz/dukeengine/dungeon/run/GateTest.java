@@ -101,6 +101,20 @@ class GateTest {
         assertTrue(hero.getPosition().x() > 260f, "and he walked on through: " + hero.getPosition());
     }
 
+    /** A hero far from it leaves it shut: it looks on its own frames, finds nobody in reach, and stays as it was. */
+    @Test
+    void aHeroFarFromItLeavesItShut() {
+        var arena = withAGate();
+        var game = arena.game();
+        game.spawn("Rogue", arena.hero(), 60f, 155f);
+        game.runHeadless(60);
+
+        assertNotNull(find(game, "Rogue"), "he is not in the hall");
+        assertNotNull(find(game, "Gate"), "it opened with nobody at it");
+        assertNull(find(game, "OpenGate"), "and something stands where it stood");
+        assertTrue(shut(game, DOORWAY.x(), DOORWAY.y()), "the doorway is open");
+    }
+
     /** On a floor of the descent, it stands across its keep's doorway, every cell of it shut. */
     @Test
     void theFloorTurnsItAcrossItsDoorway() {

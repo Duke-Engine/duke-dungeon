@@ -71,14 +71,6 @@ public record GeneratedDungeon(
                 levelHeight, null, List.of(), null);
     }
 
-    /** A floor with no keep. */
-    public GeneratedDungeon(String asciiMap, String levelMap, Placement hero, List<Monster> monsters, Monster boss,
-            int bossRoom, List<Room> rooms, List<Link> links, List<Integer> roomStoreys, List<Prop> props,
-            HeightMap relief, float levelHeight, BiomeMap biomes, List<Piece> scenery) {
-        this(asciiMap, levelMap, hero, monsters, boss, bossRoom, rooms, links, roomStoreys, props, relief,
-                levelHeight, biomes, scenery, null);
-    }
-
     public GeneratedDungeon {
         scenery = scenery == null ? List.of() : List.copyOf(scenery);
     }

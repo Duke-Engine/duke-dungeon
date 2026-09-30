@@ -116,7 +116,14 @@ public final class DungeonGenerator {
         var hero = middleOf(rooms.get(0));
         var monsters = populate(rng, cave, chambers, settings, depth, bossRoom);
         var boss = new Monster(settings.bossKindAt(depth), middleOf(chambers.get(bossRoom)));
-        monsters.addAll(guard(cave, chambers.get(bossRoom), settings, depth));
+        var guarded = chambers.get(bossRoom);
+        if (keep != null) {
+            // The guard is kept to the court: the square the keep is walled in takes in its ring of wall and its
+            // doorway too, and no guard is stood in either. Its middle cell is the same, so it stands where it did.
+            var w = keep.walls();
+            guarded = new Room(w.x() + 1, w.y() + 1, w.w() - 2, w.h() - 2);
+        }
+        monsters.addAll(guard(cave, guarded, settings, depth));
         var props = new ArrayList<>(scatter(rng, cave, chambers, settings, monsters, hero, boss.at()));
         if (keep != null) {
             // In the doorway until it is opened. Spawned as a prop is, and turned across the doorway: see Spawner.
