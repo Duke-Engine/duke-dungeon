@@ -153,6 +153,33 @@ class GateTest {
         assertTrue(bag.holds(LootKind.KEY), "and the key is still his");
     }
 
+    /**
+     * A walk his brain takes up again — once a body in the way has let him by, see HeroBrain.mindTheWayOnHisErrand —
+     * is a walk to the place, and ends on the free block beside the gate: where it was sent it could not go, and it
+     * is not short of anything either. That block is just outside the reach, and he says it from there all the same.
+     */
+    @Test
+    void sentUpToItAWalkTakenUpAgainEndsBesideItAndHeSaysItThere() {
+        var arena = withAGate();
+        var game = arena.game();
+        game.spawn("Rogue", arena.hero(), 120f, 155f);
+        game.runHeadless(2);
+        var hero = find(game, "Rogue");
+        var bag = new LootBag();
+
+        assertTrue(ItemErrand.toTheGate(hero, find(game, "Gate"), bag, rules(arena)));
+        game.runHeadless(5);
+        hero.getLocomotor().moveTo(DOORWAY);
+        game.runHeadless(150);
+
+        float dx = hero.getPosition().x() - DOORWAY.x();
+        float dy = hero.getPosition().y() - DOORWAY.y();
+        assertTrue(Math.sqrt(dx * dx + dy * dy) > SETTINGS.lootDrops().pickupRange(),
+                "he is beyond the reach, or this is not the walk that ends there: " + hero.getPosition());
+        assertEquals("Boss xonasi uchun kalit topishim kerak", bag.noteAt(game.getLogic().getFrame()));
+        assertNotNull(find(game, "Gate"), "and it is still shut");
+    }
+
     /** Opened, the same gate stands open where it stood, turned as it was, and he walks on through. */
     @Test
     void openedItStandsOpenWhereItStoodAndHeWalksOnThrough() {
