@@ -11,8 +11,8 @@ import uz.dukeengine.core.math.Coord3D;
 import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.game.DukeGame;
-import uz.dukeengine.rts.message.GameMessage;
-import uz.dukeengine.rts.module.ExperienceModule;
+import uz.dukeengine.combat.message.CombatOrder;
+import uz.dukeengine.combat.module.ExperienceModule;
 
 /**
  * The hero's shots are real: they leave the bow, cross the distance, and hurt
@@ -54,7 +54,7 @@ class ArrowTest {
         game.runHeadless(1);
         var hero = creature(game, "Rogue");
         var victim = creature(game, "Skeleton");
-        game.postCommand(new GameMessage.AttackObject(game.getLocalPlayerIndex(),
+        game.postCommand(new CombatOrder.AttackObject(game.getLocalPlayerIndex(),
                 List.of(hero.getId()), victim.getId()));
         return new Duel(game, hero, victim);
     }
@@ -102,7 +102,7 @@ class ArrowTest {
         game.spawn("Rogue", arena.hero(), 150f, 150f);
         game.spawn("Skeleton", arena.dungeon(), 205f, 150f);
         game.runHeadless(1);
-        game.postCommand(new GameMessage.AttackObject(game.getLocalPlayerIndex(),
+        game.postCommand(new CombatOrder.AttackObject(game.getLocalPlayerIndex(),
                 List.of(creature(game, "Rogue").getId()), creature(game, "Skeleton").getId()));
 
         var over = new java.util.ArrayList<Float>();
@@ -331,7 +331,7 @@ class ArrowTest {
         var victim = creature(game, "Skeleton");
         var destination = new Coord3D(450f, 150f, 0f);
 
-        game.postCommand(new GameMessage.MoveTo(game.getLocalPlayerIndex(),
+        game.postCommand(new CombatOrder.MoveTo(game.getLocalPlayerIndex(),
                 List.of(hero.getId()), destination));
         game.runHeadless(360);
 
@@ -355,7 +355,7 @@ class ArrowTest {
 
         // Sent to a spot the skeleton is standing within bow-shot of, and then
         // left there long enough for the bow to come up.
-        game.postCommand(new GameMessage.MoveTo(game.getLocalPlayerIndex(),
+        game.postCommand(new CombatOrder.MoveTo(game.getLocalPlayerIndex(),
                 List.of(hero.getId()), new Coord3D(250f, 150f, 0f)));
         game.runHeadless(240);
 
@@ -381,7 +381,7 @@ class ArrowTest {
         var hero = creature(game, "Rogue");
         var victim = creature(game, "Skeleton");
 
-        game.postCommand(new GameMessage.AttackObject(game.getLocalPlayerIndex(),
+        game.postCommand(new CombatOrder.AttackObject(game.getLocalPlayerIndex(),
                 List.of(hero.getId()), victim.getId()));
         game.runHeadless(20);
         assertTrue(hero.getPosition().x() > 155f, "he should have set off toward it");
@@ -389,7 +389,7 @@ class ArrowTest {
         // Well off his line to the skeleton, and inside the arena: the map this
         // test builds is 60 by 30 cells, which is 600 by 300 in world units.
         var away = new Coord3D(150f, 250f, 0f);
-        game.postCommand(new GameMessage.MoveTo(game.getLocalPlayerIndex(),
+        game.postCommand(new CombatOrder.MoveTo(game.getLocalPlayerIndex(),
                 List.of(hero.getId()), away));
         game.runHeadless(500);
 

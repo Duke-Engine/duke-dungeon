@@ -491,9 +491,9 @@ class MageTest {
         return firstLevel(hero).maxHealth();
     }
 
-    private static uz.dukeengine.rts.module.WeaponUpdate.Data weaponOf(String hero) {
+    private static uz.dukeengine.combat.module.WeaponUpdate.Data weaponOf(String hero) {
         for (var entry : templateOf(hero).modules()) {
-            if (entry instanceof uz.dukeengine.rts.module.WeaponUpdate.Data weapon) {
+            if (entry instanceof uz.dukeengine.combat.module.WeaponUpdate.Data weapon) {
                 return weapon;
             }
         }

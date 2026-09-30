@@ -19,8 +19,9 @@ import uz.dukeengine.dungeon.loot.LootBag;
 import uz.dukeengine.dungeon.loot.LootKind;
 import uz.dukeengine.dungeon.skill.SkillBook;
 import uz.dukeengine.game.DukeGame;
-import uz.dukeengine.rts.message.GameMessage;
-import uz.dukeengine.rts.module.ExperienceModule;
+import uz.dukeengine.combat.message.CombatOrder;
+import uz.dukeengine.combat.module.ExperienceModule;
+import uz.dukeengine.rts.player.RtsPlayer;
 
 /**
  * The attributes in the world he is played in: in his body, his weapon, his legs and
@@ -213,7 +214,7 @@ class HeroAttributesTest {
         var it = play("Rogue");
         var body = it.body();
         var goal = new Coord3D(450f, 200f, 0f);
-        it.game().postCommand(new GameMessage.MoveTo(it.game().getLocalPlayerIndex(),
+        it.game().postCommand(new CombatOrder.MoveTo(it.game().getLocalPlayerIndex(),
                 List.of(body.getId()), goal));
         it.game().runHeadless(5);
         var legs = body.findModule(MoveUpdate.class);
@@ -288,18 +289,18 @@ class HeroAttributesTest {
                 }
             }
             if (step % 9 == 4) {
-                game.postCommand(new GameMessage.MoveTo(game.getLocalPlayerIndex(),
+                game.postCommand(new CombatOrder.MoveTo(game.getLocalPlayerIndex(),
                         List.of(hero.getId()), new Coord3D(hero.getPosition().x() + 40f,
                                 hero.getPosition().y(), 0f)));
             } else if (step % 6 == 0) {
                 var prey = nearestMonster(game, hero);
                 if (prey != null) {
-                    game.postCommand(new GameMessage.AttackObject(game.getLocalPlayerIndex(),
+                    game.postCommand(new CombatOrder.AttackObject(game.getLocalPlayerIndex(),
                             List.of(hero.getId()), prey.getId()));
                 }
             }
             var book = hero.findModule(SkillBook.class);
-            var player = game.getLogic().getRtsPlayer(game.getLocalPlayerIndex());
+            var player = RtsPlayer.of(game.getLogic(), game.getLocalPlayerIndex());
             signature.append(frame).append(':').append(game.getLogic().checksum())
                     .append(":H").append(Float.floatToIntBits(hero.getBody().getMaxHealth()))
                     .append(":M").append(book.getMana()).append('/').append(book.getMaxMana())
@@ -316,7 +317,7 @@ class HeroAttributesTest {
     private static float walkedInASecond(Played it) {
         var body = it.body();
         var from = body.getPosition();
-        it.game().postCommand(new GameMessage.MoveTo(it.game().getLocalPlayerIndex(),
+        it.game().postCommand(new CombatOrder.MoveTo(it.game().getLocalPlayerIndex(),
                 List.of(body.getId()), new Coord3D(from.x() + 250f, from.y(), from.z())));
         it.game().runHeadless(3);
         float start = body.getPosition().x();
@@ -340,7 +341,7 @@ class HeroAttributesTest {
     }
 
     private static float bonusOf(Played it) {
-        return it.game().getLogic().getRtsPlayer(it.game().getLocalPlayerIndex())
+        return RtsPlayer.of(it.game().getLogic(), it.game().getLocalPlayerIndex())
                 .getWeaponDamageBonus();
     }
 

@@ -2,7 +2,7 @@ package uz.dukeengine.dungeon.level;
 
 import uz.dukeengine.core.module.MoveUpdate;
 import uz.dukeengine.core.thing.ThingTemplate;
-import uz.dukeengine.rts.module.WeaponUpdate;
+import uz.dukeengine.combat.module.WeaponUpdate;
 
 /**
  * A hero's creature block before his attributes: the health, speed and blow they are

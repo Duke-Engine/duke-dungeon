@@ -25,7 +25,7 @@ import uz.dukeengine.dungeon.skill.Summoned;
 import uz.dukeengine.dungeon.stage.StageCheck;
 import uz.dukeengine.dungeon.stage.Stages;
 import uz.dukeengine.game.DukeGame;
-import uz.dukeengine.rts.module.ExperienceModule;
+import uz.dukeengine.combat.module.ExperienceModule;
 
 /**
  * A monster's level: where it is met, and what the level makes of it.

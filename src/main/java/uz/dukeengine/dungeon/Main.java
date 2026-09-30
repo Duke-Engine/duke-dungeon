@@ -580,7 +580,7 @@ public final class Main {
         }
         float reach = 0f;
         for (var module : template.modules()) {
-            if (module instanceof uz.dukeengine.rts.module.WeaponUpdate.Data weapon) {
+            if (module instanceof uz.dukeengine.combat.module.WeaponUpdate.Data weapon) {
                 reach = Math.max(reach, weapon.attackRange());
             }
         }
@@ -870,14 +870,14 @@ public final class Main {
         // has always done, and the button is there so a player can SEE that the
         // four orders exist rather than because anybody reaches for it.
         keys.onOpenGround('F', (game, spot) -> game.postCommand(
-                new uz.dukeengine.rts.message.GameMessage.MoveTo(
+                new uz.dukeengine.combat.message.CombatOrder.MoveTo(
                         game.getLocalPlayerIndex(), selected(game), spot)));
         // Attack takes either, because it means two related things and a player
         // mid-fight should not have to decide which before he knows what his click
         // will land on: that creature, or fight your way to that spot.
         keys.onUnitOrGround('A',
                 (game, id) -> game.postCommand(
-                        new uz.dukeengine.rts.message.GameMessage.AttackObject(
+                        new uz.dukeengine.combat.message.CombatOrder.AttackObject(
                                 game.getLocalPlayerIndex(), selected(game), new ObjectId(id))),
                 (game, spot) -> game.postCommand(PartyOrders.of(new uz.dukeengine.dungeon.ai.AttackMove(
                         game.getLocalPlayerIndex(), spot))));
@@ -885,7 +885,7 @@ public final class Main {
         // start nothing until told otherwise. Two commands because two things are
         // being said -- the engine's own stop, and this game's "and stay stopped".
         keys.on('S', game -> {
-            game.postCommand(new uz.dukeengine.rts.message.GameMessage.StopMoving(
+            game.postCommand(new uz.dukeengine.combat.message.CombatOrder.StopMoving(
                     game.getLocalPlayerIndex(), selected(game)));
             game.postCommand(PartyOrders.of(new uz.dukeengine.dungeon.ai.HoldGround(
                     game.getLocalPlayerIndex(), true)));
@@ -903,7 +903,7 @@ public final class Main {
         // bar a player could press all game without once seeing it do anything —
         // while its own word said Himoya.
         keys.on('D', game -> {
-            game.postCommand(new uz.dukeengine.rts.message.GameMessage.StopMoving(
+            game.postCommand(new uz.dukeengine.combat.message.CombatOrder.StopMoving(
                     game.getLocalPlayerIndex(), selected(game)));
             game.postCommand(PartyOrders.of(new uz.dukeengine.dungeon.ai.HoldGround(
                     game.getLocalPlayerIndex(), false)));

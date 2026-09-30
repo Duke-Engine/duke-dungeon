@@ -14,7 +14,7 @@ import uz.dukeengine.dungeon.skill.SkillBook;
 import uz.dukeengine.dungeon.stage.StageCheck;
 import uz.dukeengine.game.DukeGame;
 import uz.dukeengine.game.GamePlayer;
-import uz.dukeengine.rts.module.ExperienceModule;
+import uz.dukeengine.combat.module.ExperienceModule;
 
 /**
  * Puts a generated floor into the world, and makes each of its inhabitants as

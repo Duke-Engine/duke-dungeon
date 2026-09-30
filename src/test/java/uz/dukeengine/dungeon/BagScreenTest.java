@@ -309,7 +309,7 @@ class BagScreenTest {
     void theUseAimPressedOnAThingIsAnOrderEveryMachineHears() {
         var session = Dungeon.newSession(21L);
         var game = session.game();
-        var heard = new java.util.ArrayList<uz.dukeengine.rts.message.GameMessage.GameOrder>();
+        var heard = new java.util.ArrayList<uz.dukeengine.combat.message.GameOrder>();
         game.onOrder(heard::add); // before the world starts, as the game's own is
         bagOver(game).show(session);
         game.runHeadless(2);
@@ -488,7 +488,7 @@ class BagScreenTest {
         assertNotNull(gate, "the floor's keep has no gate");
         var monster = game.getLogic().getObjects().stream()
                 .filter(object -> object.getPlayerIndex() != hero.getPlayerIndex()
-                        && object.findModule(uz.dukeengine.rts.module.WeaponUpdate.class) != null)
+                        && object.findModule(uz.dukeengine.combat.module.WeaponUpdate.class) != null)
                 .findFirst().orElseThrow();
 
         game.setSelection(List.of(hero.getId().value()));
@@ -504,7 +504,7 @@ class BagScreenTest {
                 "no cursor has the order's name, so the pointer over the gate stays the plain one");
 
         // What the client sends for that click.
-        game.postCommand(new uz.dukeengine.rts.message.GameMessage.GameOrder(hero.getPlayerIndex(),
+        game.postCommand(new uz.dukeengine.combat.message.GameOrder(hero.getPlayerIndex(),
                 game.getSnapshot().contextOrder(), List.of(hero.getId()), gate.getPosition(), gate.getId(), 0));
         game.runHeadless(2);
         assertNotNull(hero.findModule(uz.dukeengine.dungeon.loot.ItemErrand.class), "he is not on his way to it");

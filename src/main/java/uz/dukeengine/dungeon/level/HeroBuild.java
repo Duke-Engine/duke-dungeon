@@ -1,7 +1,7 @@
 package uz.dukeengine.dungeon.level;
 
 import uz.dukeengine.core.module.MoveUpdate;
-import uz.dukeengine.rts.module.WeaponUpdate;
+import uz.dukeengine.combat.module.WeaponUpdate;
 
 /**
  * A hero built at his first level: his creature block with his attributes already in it.

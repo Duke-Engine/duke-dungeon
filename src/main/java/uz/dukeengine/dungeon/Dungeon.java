@@ -173,8 +173,8 @@ public final class Dungeon {
                     factory.register(uz.dukeengine.core.module.MoveUpdate.Data.class,
                             (owner, data) -> new uz.dukeengine.core.module.MoveUpdate(owner,
                                     HeroBuild.legs(data, attributesOf(settings, owner), rules)));
-                    factory.register(uz.dukeengine.rts.module.WeaponUpdate.Data.class,
-                            (owner, data) -> new uz.dukeengine.rts.module.WeaponUpdate(owner,
+                    factory.register(uz.dukeengine.combat.module.WeaponUpdate.Data.class,
+                            (owner, data) -> new uz.dukeengine.combat.module.WeaponUpdate(owner,
                                     HeroBuild.weapon(data, attributesOf(settings, owner), rules)));
                     // Health coming back on its own, at the rate his block names --
                     // set by HeroProgress, as his mana is.
@@ -527,7 +527,7 @@ public final class Dungeon {
     private static void giveUpErrands(DukeGame game, int playerIndex) {
         var hero = Skills.heroOf(game.getLogic(), playerIndex);
         if (hero != null) {
-            uz.dukeengine.rts.module.Errand.giveUpAll(hero);
+            uz.dukeengine.combat.module.Errand.giveUpAll(hero);
         }
     }
 

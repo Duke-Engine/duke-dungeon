@@ -2,7 +2,7 @@ package uz.dukeengine.dungeon.ai;
 
 import uz.dukeengine.core.module.MoveUpdate;
 import uz.dukeengine.core.thing.GameObject;
-import uz.dukeengine.rts.module.WeaponUpdate;
+import uz.dukeengine.combat.module.WeaponUpdate;
 
 /**
  * What a creature is doing this instant, in the four words the order buttons use.

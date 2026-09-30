@@ -4,7 +4,7 @@ import uz.dukeengine.core.module.Module;
 import uz.dukeengine.core.module.ModuleGroup;
 import uz.dukeengine.core.module.ModuleGroups;
 import uz.dukeengine.core.thing.GameObject;
-import uz.dukeengine.rts.module.RateOfFireModifier;
+import uz.dukeengine.combat.module.RateOfFireModifier;
 
 /**
  * How much quicker his blows come than his weapon's own rate: every wait of it shortened by the engine, which

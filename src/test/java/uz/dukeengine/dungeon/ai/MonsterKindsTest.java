@@ -297,7 +297,7 @@ class MonsterKindsTest {
 
     private static int experienceValueOf(String kind) {
         var fight = fight(kind, 900f);
-        return fight.monster().findModule(uz.dukeengine.rts.module.ExperienceModule.class)
+        return fight.monster().findModule(uz.dukeengine.combat.module.ExperienceModule.class)
                 .getExperienceValue();
     }
 

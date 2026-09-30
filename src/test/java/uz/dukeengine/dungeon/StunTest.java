@@ -23,7 +23,7 @@ import uz.dukeengine.dungeon.content.ShippedBlock;
 import uz.dukeengine.dungeon.skill.Skill;
 import uz.dukeengine.dungeon.skill.SkillBook;
 import uz.dukeengine.game.DukeGame;
-import uz.dukeengine.rts.module.StatusUpdate;
+import uz.dukeengine.combat.module.StatusUpdate;
 
 /**
  * A stun: the engine's own {@code DISABLED}, worn for as long as what stunned it says -- no step, no blow and no

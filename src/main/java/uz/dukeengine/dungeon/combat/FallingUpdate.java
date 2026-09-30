@@ -9,8 +9,8 @@ import uz.dukeengine.core.player.Relationship;
 import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.core.thing.ObjectId;
 import uz.dukeengine.core.thing.World;
-import uz.dukeengine.rts.event.WeaponFired;
-import uz.dukeengine.rts.module.ExperienceModule;
+import uz.dukeengine.combat.event.WeaponFired;
+import uz.dukeengine.combat.module.ExperienceModule;
 
 /**
  * Something on its way down, and the mark it leaves on the floor while it comes.

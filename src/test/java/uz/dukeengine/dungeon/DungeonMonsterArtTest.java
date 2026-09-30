@@ -483,7 +483,7 @@ class DungeonMonsterArtTest {
     private static int reloadFramesOf(String template) {
         var found = templates().findTemplate(template);
         for (var module : found.modules()) {
-            if (module instanceof uz.dukeengine.rts.module.WeaponUpdate.Data weapon) {
+            if (module instanceof uz.dukeengine.combat.module.WeaponUpdate.Data weapon) {
                 return weapon.reloadFrames();
             }
         }
