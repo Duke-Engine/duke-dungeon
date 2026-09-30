@@ -82,6 +82,16 @@ Run
   ; fountain, which mends whoever stands near it -- see data/props/fountain.duke.
   ; A floor with no room for it at the way in goes without. Empty for nothing.
   WayIn = Fountain
+
+  ; What the tracker at the top of the screen says of a floor's mission, a step
+  ; at a time -- see run/Mission. The first counts: %d the monsters the floor
+  ; put outside its keep that are dead, then %d how many it put there. A floor
+  ; with no keep -- a stage, or one where none fitted -- has no mission, and its
+  ; tracker says only the last.
+  ClearWord = Qal'adan tashqaridagi barcha monstrlarni o'ldiring — %d/%d
+  TakeKeyWord = Kalitni oling
+  GiveKeyWord = Kalitni boss darvozasiga bering
+  KillBossWord = Bossni o'ldiring
 End
 
 Moment
@@ -375,10 +385,11 @@ End
 ; The kinds a thing may be are what a hero is made of: ATTACK (percent of his
 ; blow), HEALTH (flat maximum health), ARMOUR (percent taken off what reaches
 ; him), MANA (flat maximum mana) and ATTRIBUTE (whole points of the attribute its
-; Attribute line names -- see Attribute). What the dungeon leaves today is
-; attributes alone. An Extra is HEALTH_REGEN or MANA_REGEN (whole points a
-; second, on top of what comes back on its own) or ATTACK_SPEED (percent quicker
-; between blows).
+; Attribute line names -- see Attribute) -- and KEY, which is none of them: the
+; key to the boss's keep, last below, given rather than found. What the dungeon
+; leaves at random is attributes alone. An Extra is HEALTH_REGEN or MANA_REGEN
+; (whole points a second, on top of what comes back on its own) or ATTACK_SPEED
+; (percent quicker between blows).
 ;
 ; Which monster leaves what is drawn from the run's own seed and the monster's
 ; own id -- so the same seed drops the same things off the same monsters, whatever
@@ -399,7 +410,8 @@ LootDrops
   ; Nothing is worth more for being found deeper: what joins has to be alike, and
   ; a deeper floor's gauntlet worth four would never make three with two worth three.
   ValuePercentPerDepth = 0
-  ; How long the panel says what he found, in logic frames (30 = one second).
+  ; How long what he says is said -- what he found, why he left it lying, what he makes of
+  ; the gate -- on the panel and in the bubble over his head, in logic frames (30 = one second).
   NoteFrames = 90
   ; How many things his bag holds. A full bag leaves the next one lying -- unless
   ; it is the third of a set, which joins as it comes in.
@@ -407,13 +419,18 @@ LootDrops
   JoinCount = 3
   TopLevel = 3
   FullWord = Sumka to'la
-  ; Under a thing the pointer is on, and beside the pointer while one is in hand.
+  ; Under a thing the pointer is on, and beside the pointer while one is in hand. A
+  ; thing in the bag that does something -- the key -- says UseHint under it as well.
   TakeHint = O'ng tugma: olish
   DropHint = Chap tugma: yerga qo'yish
+  UseHint = Chap tugma: ishlatish
   ; What each Extra is called when the pointer rests on a thing that has one.
   HealthRegenWord = Jon/s
   ManaRegenWord = Mana/s
   AttackSpeedWord = Hujum tezligi
+  ; What he says when he is sent to use a thing on something it does nothing
+  ; to: the key on anything but the keep's gate. He keeps it.
+  NoUseWord = Bu kalit faqat boss darvozasini ochadi
 End
 
 ; Icon is the picture his bag draws it with, a path from the resource root.
@@ -458,4 +475,22 @@ LootItem
   Weight = 10
   Extra = MANA_REGEN
   ExtraValue = 2
+End
+
+; The key to the boss's keep: given, never found. Nothing drops it at random --
+; its Weight is 0 -- and the last monster a floor put outside its keep leaves it
+; where it fell (see run/Mission). It gives nothing and never joins with
+; another. Its Use is what a left click on it in the bag does: UNLOCK, and the
+; next click is on the thing he takes it to -- given to the keep's gate it opens
+; it and is gone. It lies on the floor as its own thing, the Key in
+; data/props/key.duke, rather than in a chest: LiesAs.
+LootItem
+  Name = Key
+  DisplayName = Kalit
+  Icon = icons/items/key_crown.png
+  Kind = KEY
+  Use = UNLOCK
+  LiesAs = Key
+  Value = 0
+  Weight = 0
 End

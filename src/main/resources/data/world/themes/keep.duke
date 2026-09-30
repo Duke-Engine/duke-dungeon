@@ -4,9 +4,9 @@
 ;
 ; A masonry kit: the dungeon's own pieces as the dungeon was built before its
 ; caverns were bounded by rock. The wall is a surface, one course a storey, so
-; the ring round the court is a wall from both sides and the stair climbs to a
-; doorway in it. The numbers are that kit's, measured once and held by
-; DungeonTilesTest.
+; the ring round the court is a wall a storey high on both of its faces, the
+; doorway in it and a threshold of this stone before the doorway. The numbers
+; are that kit's, measured once and held by DungeonTilesTest.
 Theme
   Name = Keep
   TileSize = 4

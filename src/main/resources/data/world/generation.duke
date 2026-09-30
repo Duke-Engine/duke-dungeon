@@ -112,17 +112,19 @@ ProceduralMap
 
   ; ---- the boss's keep ----
   ;
-  ; Every floor of the descent ends in one: a square court a storey above the
-  ; ground, walled round, its gate in the middle of the side a straight road and
-  ; a stair come up to. Built in solid rock beside the deepest chamber with room
-  ; for it, so it cuts nothing off -- see gen/Keep and
-  ; docs/plan/2026-09-30-boss-keep.md. The boss waits in its middle and its
-  ; guard round it. Stages are cut without one. Leave the block out and the boss
-  ; waits in the furthest chamber, open, as it always did.
+  ; Every floor of the descent ends in one: a square court on the ground, walled
+  ; round a storey high, its gate in the middle of the side a straight road comes
+  ; up to, over a threshold of the keep's stone. Built in solid rock beside the
+  ; deepest chamber with room for it, so it cuts nothing off -- see gen/Keep,
+  ; docs/plan/2026-09-30-boss-keep.md and docs/plan/2026-09-30-key-to-the-keep.md.
+  ; The boss waits in its middle and its guard round it. Stages are cut without
+  ; one. Leave the block out and the boss waits in the furthest chamber, open, as
+  ; it always did.
   Keep = Keep
     ; Across, walls included, largest first: the larger ones are tried only
-    ; beside the deepest chambers, the last beside any. Odd, so the boss and the
-    ; gate each have a middle cell.
+    ; beside the deepest chambers, the last beside any. Odd and at least 7, so
+    ; the boss and the gate each have a middle cell and the four guard corners
+    ; stand clear of the boss.
     Sizes = [15, 13, 11, 9]
     ; What stands in its doorway until it is opened: data/props/gate.duke.
     Gate = Gate
@@ -147,13 +149,15 @@ ProceduralMap
 
     ; ---- who stands with them ----
     ;
-    ; A kind and how many of it. A kind not yet at its MinDepth stays away. The healer
-    ; and the summoner are both at MinDepth 1, so no floor is without them: their guard
-    ; stands with every boss, the first floor's included, and that is meant -- the green
-    ; and the purple mages, two to mend the boss and two to fill the room while they do.
-    ; They stand on a square ring BossGuardRing cells out from the boss, corners first,
-    ; and further out if the room has no floor there. MaxPerRoom is for rooms the draw
-    ; fills and does not apply here. Leave BossGuards out and every boss waits alone.
+    ; A kind and how many of it, and it stands with every boss, the first floor's
+    ; included, whatever its MinDepth -- MinDepth and MaxPerRoom are for the rooms
+    ; the draw fills. The green and the purple mages: two to mend the boss and two
+    ; to fill the court while they do. The first four stand at the keep's court
+    ; corners, a cell in from each wall, in the order written -- so the healers
+    ; hold one diagonal and the summoners the other. Any more, and every guard on a
+    ; floor with no keep, stand on a square ring BossGuardRing cells out from the
+    ; boss, corners first, and further out if the room has no floor there. Leave
+    ; BossGuards out and every boss waits alone.
     BossGuards = [SkeletonHealer = 2, SkeletonSummoner = 2]
     BossGuardRing = 2
 

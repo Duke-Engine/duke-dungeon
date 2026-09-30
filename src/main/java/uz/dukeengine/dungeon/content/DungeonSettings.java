@@ -102,6 +102,8 @@ public final class DungeonSettings {
     private final List<Cursor> cursors = new java.util.ArrayList<>();
     private final List<Skin> skins = new java.util.ArrayList<>();
     private final List<Theme> themes = new java.util.ArrayList<>();
+    /** How things look outside any theme — in every theme that does not dress them. */
+    private final List<Theme.ThemeMonster> looks = new java.util.ArrayList<>();
     /** What units move by, each linked by name from the units that use it. */
     private final List<AnimationSet> animationSets = new java.util.ArrayList<>();
 
@@ -235,21 +237,21 @@ public final class DungeonSettings {
     }
 
     /**
-     * Who stands with the boss at this depth: each guard the file names whose kind is
-     * deep enough to have appeared at all -- so a shallow boss still waits alone.
+     * Who stands with the boss, on every floor: each guard the file names, in the order it names them. MinDepth is
+     * for the rooms the draw fills, and keeps no guard away.
      */
-    public java.util.List<BossGuard> bossGuardsAt(int depth) {
+    public java.util.List<BossGuard> bossGuards() {
         var here = new java.util.ArrayList<BossGuard>();
         for (var guard : map.descent().bossGuards().entrySet()) {
-            var kind = monster(guard.getKey());
-            if (kind != null && kind.minDepth() <= depth) {
-                here.add(new BossGuard(guard.getKey(), guard.getValue()));
-            }
+            here.add(new BossGuard(guard.getKey(), guard.getValue()));
         }
         return here;
     }
 
-    /** How many cells out from the boss its guard stands; see {@code DungeonGenerator}. */
+    /**
+     * How many cells out from the boss the guard on the ring round it stands: any past the fourth in a keep, and every
+     * guard on a floor with no keep; see {@code DungeonGenerator}.
+     */
     public int bossGuardRing() {
         return map.descent().bossGuardRing();
     }
@@ -344,6 +346,7 @@ public final class DungeonSettings {
                 case Cursor cursor -> cursors.add(cursor);
                 case Skin skin -> skins.add(skin);
                 case Theme theme -> themes.add(theme);
+                case Theme.ThemeMonster look -> looks.add(look);
                 case AnimationSet set -> animationSets.add(set);
                 case HeavyShot shot -> heavyShot = once(shot, once);
                 case Combat block -> combat = once(block, once);
@@ -604,6 +607,9 @@ public final class DungeonSettings {
                 requireLinked(themed.animations(), "Theme " + theme.name() + "'s " + themed.name());
             }
         }
+        for (var look : looks) {
+            requireLinked(look.animations(), "ThemeMonster " + look.name());
+        }
         for (var guard : map.descent().bossGuards().entrySet()) {
             require(monster(guard.getKey()) != null,
                     "BossGuards names " + guard.getKey() + ", and no Monster block describes it");
@@ -616,8 +622,8 @@ public final class DungeonSettings {
         require(map.propsPerRoom().max() >= map.propsPerRoom().min(),
                 "MaxPerRoom must not be below MinPerRoom");
         for (int size : map.keep().sizes()) {
-            require(size >= 5 && size % 2 == 1, "a Keep is odd and at least 5 across, so its court and its doorway"
-                    + " have middle cells: " + size);
+            require(size >= 7 && size % 2 == 1, "a Keep is odd and at least 7 across, so its court and its doorway"
+                    + " have middle cells and its guard corners apart from the boss's: " + size);
             require(size + 4 <= Math.min(map.generation().mapWidth(), map.generation().mapHeight()),
                     "a Keep " + size + " across cannot stand on the map with rock round it");
         }
@@ -683,10 +689,18 @@ public final class DungeonSettings {
         require(lootDrops.joinCount() >= 2, "JoinCount: it takes at least two alike to join");
         require(lootDrops.topLevel() >= 1 && lootDrops.topLevel() <= 3, "TopLevel is 1 to 3");
         require(sayable(lootDrops.fullWord()), "FullWord may not contain ',' or '|'");
+        require(sayable(lootDrops.noUseWord()), "NoUseWord may not contain ',' or '|'");
         for (var item : loot) {
             require(sayable(item.name()),
                     "an item's DisplayName may not contain ',' or '|': " + item.id());
         }
+        for (var item : loot) {
+            require(item.kind() != LootKind.KEY || item.weight() == 0,
+                    "LootItem " + item.id() + " is a KEY, which is given and never found: its Weight is 0");
+        }
+        require(map.keep().sizes().isEmpty()
+                        || loot.stream().anyMatch(item -> item.use() == uz.dukeengine.dungeon.loot.ItemUse.UNLOCK),
+                "a Keep's gate opens only to a key, and no LootItem has Use = UNLOCK");
         for (var moment : moments) {
             require(!moment.effect().isBlank(), "Moment " + moment.name() + " plays no Effect");
             require(moment.scale() > 0f, "Moment " + moment.name() + " has to be drawn at some size");
@@ -981,6 +995,14 @@ public final class DungeonSettings {
             themes.stream().filter(theme -> theme.name().equals(name)).findFirst().ifPresent(named::add);
         }
         return new Biomes(named, map.biomeSize(), map.climatePerDepth());
+    }
+
+    /**
+     * How things look outside any theme, and so in every theme that does not dress them: the keep's key, one look
+     * named once rather than a copy in every biome. See the ThemeMonster in {@code data/props/key.duke}.
+     */
+    public List<Theme.ThemeMonster> looks() {
+        return List.copyOf(looks);
     }
 
     /** The boss's keep, as the map asks for it — see {@link ProceduralMap.Keep}. */

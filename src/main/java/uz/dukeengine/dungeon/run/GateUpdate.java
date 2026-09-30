@@ -1,65 +1,53 @@
 package uz.dukeengine.dungeon.run;
 
-import java.util.Set;
+import uz.dukeengine.core.module.Module;
 import uz.dukeengine.core.module.ModuleData;
 import uz.dukeengine.core.module.ModuleGroup;
 import uz.dukeengine.core.module.ModuleGroups;
-import uz.dukeengine.core.module.UpdateModule;
 import uz.dukeengine.core.thing.GameObject;
 
 /**
- * The gate of the boss's keep: it stands across the doorway, and nothing walks through it until it is opened.
+ * The gate of the boss's keep: it stands across the doorway, and nothing walks through it until it is opened — and
+ * nothing opens it but the key, given to it. A hero walking up to it leaves it shut.
  *
- * <p>For now a hero walking up to it opens it — the key that will open it instead is the next piece of work, and it
- * will call {@link #open} where this does. Opening swaps it for the template its block names: the gate with a shape
- * goes, so the engine lays the navigation grid again without it and the doorway is walked at once, and the same gate
- * with no shape stands in its place, turned as it was, swinging open as it appears.
+ * <p>Opening swaps it for the template its block names: the gate with a shape goes, so the engine lays the navigation
+ * grid again without it and the doorway is walked at once, and the same gate with no shape stands in its place,
+ * turned as it was, swinging open as it appears.
  *
- * <p>Deterministic: looked at on the world's own frame, by whether a living hero stands within its reach.
+ * <p>Deterministic: opened by an errand an order started, on every machine on the same frame.
  */
 @ModuleGroup(ModuleGroups.EFFECT)
-public final class GateUpdate extends UpdateModule {
+public final class GateUpdate extends Module {
 
     /**
-     * @param reach       how near a hero must come to open it, in world units, from its middle
-     * @param everyFrames how often it looks, in logic frames (30 = once a second)
-     * @param opens       the template that stands in its place once it is open; blank, and nothing does
+     * @param opens          the template that stands in its place once it is open; blank, and nothing does
+     * @param withoutKeyWord what a hero sent up to it says there without the key
+     * @param withKeyWord    and with the key in his bag, which is not yet the key given to it
      */
-    public record Data(float reach, int everyFrames, String opens) implements ModuleData {
+    public record Data(String opens, String withoutKeyWord, String withKeyWord) implements ModuleData {
 
         /** What a block leaves out. */
-        static final Data DEFAULTS = new Data(25f, 10, "");
+        static final Data DEFAULTS = new Data("", "", "");
 
         public Data {
             opens = opens == null ? "" : opens;
+            withoutKeyWord = withoutKeyWord == null ? "" : withoutKeyWord;
+            withKeyWord = withKeyWord == null ? "" : withKeyWord;
         }
     }
 
     private final Data data;
-    /** The templates that are heroes: the ones that open it. */
-    private final Set<String> heroes;
     /** Opened already: a second opening, the same frame, would stand a second open gate in the first. */
     private boolean opened;
 
-    public GateUpdate(GameObject owner, Data data, Set<String> heroes) {
+    public GateUpdate(GameObject owner, Data data) {
         super(owner);
         this.data = data;
-        this.heroes = Set.copyOf(heroes);
     }
 
-    @Override
-    public void update() {
-        var owner = getOwner();
-        var world = owner.getWorld();
-        if (opened || world == null || owner.isEffectivelyDead() || data.everyFrames() <= 0
-                || world.getFrame() % data.everyFrames() != 0) {
-            return;
-        }
-        var near = world.objectsInRange(owner.getPosition(), data.reach(), thing -> thing.getBody() != null
-                && !thing.isEffectivelyDead() && heroes.contains(thing.getTemplate().name()));
-        if (!near.isEmpty()) {
-            open();
-        }
+    /** What a hero sent up to it says when he gets there: with the key in his bag, or without it. */
+    public String lineFor(boolean withTheKey) {
+        return withTheKey ? data.withKeyWord() : data.withoutKeyWord();
     }
 
     /**

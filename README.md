@@ -266,10 +266,12 @@ biom rangiga bo'yaydi.
 ### Boss qal'asi
 
 Har qavat oxirida boss **qal'ada** turadi (`gen/Keep`): toshning ichiga
-qurilgan kvadrat hovli, bir qavat baland (`levelMap` da `1`), atrofi devor —
-qaysi biomda bo'lmasin, tosh plitadan (`data/world/themes/keep.duke`).
-Darvoza yaqinlashish tomonidagi devorning o'rtasida (3 katak), oldida zina
-(`/`), zinadan kameragacha to'g'ri yo'l. Qal'a eng chuqur kamera yonidagi
+qurilgan kvadrat hovli, yer sathida (`levelMap` da `0`), atrofi bir qavat
+baland devor — qaysi biomda bo'lmasin, tosh plitadan
+(`data/world/themes/keep.duke`). Darvoza yaqinlashish tomonidagi devorning
+o'rtasida (3 katak), oldida qal'a toshidan ostona (3 katak), ostonadan
+kameragacha to'g'ri yo'l. To'rt mag hovlining burchaklarida, har devordan bir
+katak ichkarida turadi. Qal'a eng chuqur kamera yonidagi
 butunlay tosh joyga quriladi, shuning uchun hech qanday yo'lni kesmaydi; tekis
 turadi, atrofidagi yer unga qiyalik bilan tushadi.
 
@@ -280,9 +282,18 @@ tabaqalarining ochilishi Blender'da animatsiya qilingan (ikki klip o'yin
 nusxasida `art/models/join_clips.pl` bilan bitta `open` klipiga
 birlashtirilgan). Ochilganda darvoza o'rniga shaklsiz `OpenGate` turadi va
 `open` klipini bir marta o'ynab, ochiq qoladi (`PlayOnce`, engine
-`ClipMode.ONCE`). Hozircha qahramon yaqinlashganda ochiladi; keyingi qadamda
-kalit bilan ochiladi. Stage'lar qal'asiz kesiladi — stage fayli qal'aning
-ko'rinishini saqlamaydi.
+`ClipMode.ONCE`). Darvoza o'zi ochilmaydi: uni faqat kalit ochadi. Stage'lar
+qal'asiz kesiladi — stage fayli qal'aning ko'rinishini saqlamaydi.
+
+Qal'ali qavatning **vazifasi** bor (`run/Mission`), ekranning tepasida
+yoziladi: qal'adan tashqaridagi barcha monstrlarni o'ldirish (hisobi bilan),
+oxirgisi yiqilgan joyda qolgan kalitni olish, uni darvozaga berish, bossni
+o'ldirish. Kalit (`world.duke` dagi `Kind = KEY`, `Use = UNLOCK` li
+`LootItem`) hech narsa bermaydi, birlashmaydi va tasodifan tushmaydi. Sumkada
+kalitga chap tugma, keyin darvozaga bosilsa, qahramon borib kalitni darvozaga
+beradi. Darvozaga o'ng tugma bosilsa, qahramon borib, kaliti bor-yo'qligini
+boshi ustidagi pufakchada aytadi. Kalitni ko'targan qahramon yiqilsa, kalit
+o'sha joyda qoladi.
 
 ## Stage rejimi — o'zgarmaydigan xarita
 

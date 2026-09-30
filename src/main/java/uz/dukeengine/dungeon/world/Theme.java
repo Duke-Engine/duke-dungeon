@@ -262,6 +262,9 @@ public record Theme(
      * changes, which is how a skeleton becomes a robot when the floor becomes a spaceship without a
      * single number moving.
      *
+     * <p>Written outside any theme, a ThemeMonster is a thing's look in every theme that does not dress it: one
+     * look named once, as the key's is in {@code data/props/key.duke}; see {@code DungeonSettings.looks()}.
+     *
      * @param name       the creature template it redraws
      * @param animations the {@code AnimationSet} to take clips from, when its own model does not carry
      *     them. Usually none: a model of its own carries its own clips, and copying them onto it from a

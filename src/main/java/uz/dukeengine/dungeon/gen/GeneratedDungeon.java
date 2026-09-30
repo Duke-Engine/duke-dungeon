@@ -42,7 +42,7 @@ import uz.dukeengine.core.pathfind.PathGrid;
  * @param biomes      which biome every cell is, or {@code null} for a floor that wears one theme whole
  * @param scenery     what lies about on the floor for its look alone, each biome's own — none on a floor of one
  *                  theme
- * @param keep        the boss's keep — a walled court a storey up, the last of {@code rooms} and the boss's — or
+ * @param keep        the boss's keep — a walled court on the ground, the last of {@code rooms} and the boss's — or
  *                  {@code null} for a floor with none: a stage, a map that asks for none, or one where none fitted
  */
 public record GeneratedDungeon(

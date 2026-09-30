@@ -199,8 +199,8 @@ final class Relief {
     }
 
     /**
-     * Every corner of {@code square} and of the ring of cells round it — the keep, and its stair — set to the lowest
-     * corner within two cells of that ring.
+     * Every corner of {@code square} and of the ring of cells round it — the keep, and its threshold — set to the
+     * lowest corner within two cells of that ring.
      */
     private static void flatten(int[] steps, int columns, int rows, Room square) {
         int left = square.x() - 1;

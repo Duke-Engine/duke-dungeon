@@ -46,7 +46,7 @@ class KeepFloorTest {
                     "seed " + seed + ": no gate in the doorway");
             // Nobody stands in the way in: the gate is solid, and a body inside it never moves again.
             assertTrue(floor.monsters().stream().noneMatch(m -> keep.isDoorway(m.at().cellX(), m.at().cellY())
-                            || keep.isStair(m.at().cellX(), m.at().cellY())),
+                            || keep.isThreshold(m.at().cellX(), m.at().cellY())),
                     "seed " + seed + ": something stands in the keep's way in");
             // The gate is in the side facing its chamber: stepping out of it goes toward the chamber's middle.
             var chamber = floor.rooms().get(keep.chamber());
@@ -73,7 +73,7 @@ class KeepFloorTest {
     @Test
     void theGuardStandsInTheCourt() {
         int depth = SETTINGS.finalDepth();
-        int guards = SETTINGS.bossGuardsAt(depth).stream().mapToInt(guard -> guard.count()).sum();
+        int guards = SETTINGS.bossGuards().stream().mapToInt(guard -> guard.count()).sum();
         for (long seed = 0; seed < 40; seed++) {
             var floor = DungeonGenerator.generate(seed, SETTINGS, depth);
             var keep = floor.keep();
@@ -83,7 +83,38 @@ class KeepFloorTest {
         }
     }
 
-    /** Up its stair and through its doorway, and no other way: the engine's own step rule over map and storeys. */
+    /**
+     * The boss's four mages stand at the court's corners, a cell in from each wall, on every floor: the guard in the
+     * file's order, so the healers stand at one diagonal and the summoners at the other.
+     */
+    @Test
+    void theGuardStandsAtTheCourtsCornersOnEveryFloor() {
+        var named = new java.util.ArrayList<String>();
+        for (var guard : SETTINGS.bossGuards()) {
+            for (int n = 0; n < guard.count(); n++) {
+                named.add(guard.kind());
+            }
+        }
+        assertEquals(List.of("SkeletonHealer", "SkeletonHealer", "SkeletonSummoner", "SkeletonSummoner"), named,
+                "the shipped file's guard, in its order");
+        for (int depth = 1; depth <= SETTINGS.finalDepth(); depth++) {
+            for (long seed = 0; seed < 20; seed++) {
+                var floor = DungeonGenerator.generate(seed, SETTINGS, depth);
+                var keep = floor.keep();
+                var wanted = new java.util.ArrayList<GeneratedDungeon.Monster>();
+                for (int i = 0; i < named.size(); i++) {
+                    var corner = keep.corners().get(i);
+                    wanted.add(new GeneratedDungeon.Monster(named.get(i), Placement.atCell(corner[0], corner[1])));
+                }
+                assertEquals(wanted, floor.monsters().stream()
+                                .filter(monster -> keep.isCourt(monster.at().cellX(), monster.at().cellY()))
+                                .toList(),
+                        "seed " + seed + " at depth " + depth);
+            }
+        }
+    }
+
+    /** Over its threshold, through its doorway, and no other way: the engine's own step rule over map and storeys. */
     @Test
     void theCourtIsReachedOnlyThroughItsDoorway() {
         for (long seed = 0; seed < SEEDS; seed++) {
@@ -109,27 +140,37 @@ class KeepFloorTest {
         }
     }
 
-    /** Court and doorway a storey up, a stair before the doorway, a ring of wall, and everything else on the ground. */
+    /**
+     * On the ground: every cell of it on storey 0, as every other floor cell is, and no stair anywhere; its ring of
+     * wall whole; and the threshold before its doorway floor, three cells, drawn as the keep.
+     */
     @Test
-    void itStandsAStoreyUpWithAStairToItsDoorway() {
+    void itStandsOnTheGroundWithAThresholdBeforeItsDoorway() {
         for (long seed = 0; seed < SEEDS; seed++) {
             var floor = floor(seed);
             var keep = floor.keep();
             var levels = floor.levelMap().strip().split("\n");
             var cells = floor.asciiMap().strip().split("\n");
+            int threshold = 0;
             for (int y = 0; y < levels.length; y++) {
                 for (int x = 0; x < levels[y].length(); x++) {
                     boolean wall = keep.holds(x, y) && !keep.isCourt(x, y) && !keep.isDoorway(x, y)
-                            && !keep.isStair(x, y);
+                            && !keep.isThreshold(x, y);
                     if (wall) {
                         assertEquals('#', cells[y].charAt(x), "seed " + seed + ": the ring is open at " + x + "," + y);
                     }
-                    char wanted = cells[y].charAt(x) == '#' ? '#'
-                            : keep.isCourt(x, y) || keep.isDoorway(x, y) ? '1' : keep.isStair(x, y) ? '/' : '0';
-                    assertEquals(wanted, levels[y].charAt(x), "seed " + seed + " at " + x + "," + y);
+                    if (keep.isThreshold(x, y)) {
+                        threshold++;
+                        assertEquals('.', cells[y].charAt(x), "seed " + seed + ": its threshold is rock at " + x + ","
+                                + y);
+                        assertTrue(keep.holds(x, y), "seed " + seed + ": its threshold is not drawn as the keep");
+                    }
+                    assertEquals(cells[y].charAt(x) == '#' ? '#' : '0', levels[y].charAt(x),
+                            "seed " + seed + " at " + x + "," + y);
                 }
             }
-            assertEquals(1, floor.roomStoreys().get(floor.bossRoom()));
+            assertEquals(3, threshold, "seed " + seed + ": a threshold as wide as its doorway");
+            assertEquals(0, floor.roomStoreys().get(floor.bossRoom()), "seed " + seed);
         }
     }
 
@@ -159,7 +200,7 @@ class KeepFloorTest {
         assertEquals(floor(7L).keep(), floor(7L).keep());
     }
 
-    /** Its square and the ring round it — its stair among them — at one height, and no cliff anywhere. */
+    /** Its square and the ring round it — its threshold among them — at one height, and no cliff anywhere. */
     @Test
     void itStandsLevelAndNoGroundRoundItIsACliff() {
         for (long seed = 0; seed < SEEDS; seed++) {

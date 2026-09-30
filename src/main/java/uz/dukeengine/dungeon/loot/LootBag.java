@@ -19,10 +19,11 @@ import java.util.List;
  * same thing at the same level join into one of the next, up to the top level: see {@link #take}.
  *
  * <p>Written on the simulation thread only. The window reads {@link #slots()}, a copy taken each time the bag
- * changes, so it never sees one half-changed.
+ * changes, and {@link #noteAt}, whose words and frame are one value — so it never sees either half-changed.
  *
  * <p>It also carries the words for the last thing he found, because something has
- * to say so and the run loop is what writes the line the panel reads.
+ * to say so and the run loop is what writes the line the panel reads. The same words, for the same frames, are what
+ * the window says in a bubble over his head.
  */
 public final class LootBag {
 
@@ -42,9 +43,12 @@ public final class LootBag {
     /** Counts every change, so whoever works figures out of the bag knows when to work them again. */
     private int version;
 
-    /** The words for what he just picked up, and the frame they stop being said. */
-    private String note = "";
-    private int noteUntilFrame;
+    /** What he is saying, and the frame it stops being said: one value, so both are always read together. */
+    private record Note(String words, int untilFrame) {
+    }
+
+    /** What he just picked up, why he left it lying, what he makes of the gate: the window reads it too. */
+    private volatile Note note = new Note("", 0);
 
     public LootBag() {
         this(SLOTS);
@@ -70,12 +74,13 @@ public final class LootBag {
      *
      * <p>Where it makes up a set — the bag already holding one fewer than a join of the same thing at the same level
      * — the set becomes one of the next level in the first of their slots, and that may make up a set of its own in
-     * turn. Such a thing needs no room: it takes some away.
+     * turn. Such a thing needs no room: it takes some away. A thing that does not join — a key, see
+     * {@link Loot#joins} — never makes up a set, however many there are, and takes a slot of its own.
      */
     public boolean take(Loot item, int frame, int noteFrames) {
         var coming = item;
         int freed = -1;
-        while (join >= 2 && coming.level() < topLevel) {
+        while (join >= 2 && coming.level() < topLevel && coming.joins()) {
             var alike = new ArrayList<Integer>();
             for (int at = 0; at < slots.length && alike.size() < join - 1; at++) {
                 if (coming.sameAs(slots[at])) {
@@ -136,10 +141,17 @@ public final class LootBag {
         return Arrays.stream(slots).allMatch(item -> item != null);
     }
 
-    /** Say something on the panel for a while — what he found, or why he left it lying. */
+    /** Whether he carries anything of {@code kind}: the key, say. */
+    public boolean holds(LootKind kind) {
+        return Arrays.stream(slots).anyMatch(item -> item != null && item.kind() == kind);
+    }
+
+    /**
+     * Say something for a while, on the panel and in a bubble over his head — what he found, why he left it lying,
+     * what he makes of the gate. It is said for {@code noteFrames} frames from {@code frame}.
+     */
     public void say(String words, int frame, int noteFrames) {
-        note = words;
-        noteUntilFrame = frame + noteFrames;
+        note = new Note(words, frame + noteFrames);
     }
 
     /** Everything he carries, in slot order. */
@@ -166,14 +178,14 @@ public final class LootBag {
     /** Forget everything: a run has ended. */
     public void clear() {
         Arrays.fill(slots, null);
-        note = "";
-        noteUntilFrame = 0;
+        note = new Note("", 0);
         changed();
     }
 
-    /** What to say about the last thing he picked up, or "" once it has been said. */
+    /** What he is saying at {@code frame}, or "" once it has been said — from any thread. */
     public String noteAt(int frame) {
-        return frame < noteUntilFrame ? note : "";
+        var now = note;
+        return frame < now.untilFrame() ? now.words() : "";
     }
 
     private void changed() {

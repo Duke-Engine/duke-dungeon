@@ -182,11 +182,9 @@ public final class Dungeon {
                     // And the water at the way in, mending whoever stands near it. See FountainUpdate.
                     factory.register(uz.dukeengine.dungeon.level.FountainUpdate.Data.class,
                             uz.dukeengine.dungeon.level.FountainUpdate::new);
-                    // The keep's gate, opened by a hero walking up to it. See GateUpdate.
-                    var heroNames = settings.heroes().stream().map(hero -> hero.name())
-                            .collect(java.util.stream.Collectors.toUnmodifiableSet());
+                    // The keep's gate, which only the key given to it opens. See GateUpdate.
                     factory.register(uz.dukeengine.dungeon.run.GateUpdate.Data.class,
-                            (owner, data) -> new uz.dukeengine.dungeon.run.GateUpdate(owner, data, heroNames));
+                            uz.dukeengine.dungeon.run.GateUpdate::new);
                     // Which skills a unit has is the Skill blocks written inside its own:
                     // the SkillBook block says only that it has some.
                     factory.register(SkillBook.Data.class, (owner, data) -> new SkillBook(owner,
@@ -447,6 +445,26 @@ public final class Dungeon {
                         arena.orders().attackMove(drop.playerIndex(), null);
                     }
                 }
+                // Sent up to the keep's gate: he walks there and says whether he has the key. See ItemErrand.
+                case uz.dukeengine.dungeon.run.ToTheGate gate -> {
+                    var progress = run.progressOf(gate.playerIndex());
+                    if (progress != null && uz.dukeengine.dungeon.loot.ItemErrand.toTheGate(
+                            Skills.heroOf(game.getLogic(), gate.playerIndex()),
+                            game.getLogic().findObject(gate.gate()), progress.getLoot(),
+                            errandRules(settings, arena))) {
+                        arena.orders().attackMove(gate.playerIndex(), null);
+                    }
+                }
+                // Sent to use a thing of his on another: the key on the gate. See ItemErrand.
+                case uz.dukeengine.dungeon.loot.UseItem use -> {
+                    var progress = run.progressOf(use.playerIndex());
+                    if (progress != null && uz.dukeengine.dungeon.loot.ItemErrand.use(
+                            Skills.heroOf(game.getLogic(), use.playerIndex()), use.slot(),
+                            game.getLogic().findObject(use.target()), progress.getLoot(),
+                            errandRules(settings, arena))) {
+                        arena.orders().attackMove(use.playerIndex(), null);
+                    }
+                }
                 // ★ The three plain orders call it off, and they CANNOT be heard
                 // here: this handler is `onOtherCommand`, the engine's door for
                 // commands it does not recognise, so a MoveTo is applied by rts
@@ -500,7 +518,7 @@ public final class Dungeon {
     private static uz.dukeengine.dungeon.loot.ItemErrand.Rules errandRules(DungeonSettings settings, Arena arena) {
         var drops = settings.lootDrops();
         return new uz.dukeengine.dungeon.loot.ItemErrand.Rules(drops.pickupRange(), drops.noteFrames(),
-                drops.template(), arena.dungeon().getIndex(), drops.fullWord());
+                drops.template(), arena.dungeon().getIndex(), drops.fullWord(), drops.noUseWord());
     }
 
     /** Whatever errand that player's hero is on, called off: he has been told something else. */

@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import uz.dukeengine.dungeon.loot.ItemUse;
 
 /** What a map says about the boss's keep, and what it may not say. */
 class KeepSettingsTest {
@@ -36,6 +37,23 @@ class KeepSettingsTest {
         assertTrue(refused.getMessage().contains("14"), refused.getMessage());
     }
 
+    /** The boss in the middle and a mage at each corner, a cell in from each wall: seven across at least. */
+    @Test
+    void aKeepTooSmallForItsGuardIsRefused() {
+        var data = Content.data().replace("    Sizes = [15, 13, 11, 9]\n", "    Sizes = [15, 5]\n");
+
+        var refused = assertThrows(IllegalArgumentException.class, () -> DungeonSettings.parse(data));
+        assertTrue(refused.getMessage().endsWith(": 5"), refused.getMessage());
+    }
+
+    /** Seven across is the least that keeps the four corners off the boss, and it is enough. */
+    @Test
+    void aKeepSevenAcrossIsAccepted() {
+        var data = Content.data().replace("    Sizes = [15, 13, 11, 9]\n", "    Sizes = [15, 7]\n");
+
+        assertEquals(List.of(15, 7), DungeonSettings.parse(data).keep().sizes());
+    }
+
     /** Largest first: the order is the preference, so a list that rises would build the smallest keep every time. */
     @Test
     void sizesNotLargestFirstAreRefused() {
@@ -54,6 +72,28 @@ class KeepSettingsTest {
         var data = Content.data().replace("    Gate = Gate\n", "");
 
         assertThrows(IllegalArgumentException.class, () -> DungeonSettings.parse(data));
+    }
+
+    /** The gate opens only to a key: a file whose keys open nothing would build a floor that can never be finished. */
+    @Test
+    void aKeepWhoseGateNoKeyOpensIsRefused() {
+        var data = Content.data().replace("  Use = UNLOCK\n", "");
+
+        var refused = assertThrows(IllegalArgumentException.class, () -> DungeonSettings.parse(data));
+        assertTrue(refused.getMessage().contains("Keep") && refused.getMessage().contains("UNLOCK"),
+                refused.getMessage());
+    }
+
+    /** And with no keep there is no gate for one to open, so the same file, keyless, is read. */
+    @Test
+    void aMapWithNoKeepNeedsNoKeyToOpenOne() {
+        var data = Content.data().replaceFirst("(?s)  Keep = Keep\\n.*?\\n  End\\n", "")
+                .replace("  Use = UNLOCK\n", "");
+
+        var settings = DungeonSettings.parse(data);
+
+        assertTrue(settings.keep().sizes().isEmpty(), "no keep");
+        assertTrue(settings.loot().stream().noneMatch(item -> item.use() == ItemUse.UNLOCK), "and no key to open it");
     }
 
     /** Drawn in the Keep theme, and a Look naming no theme is refused — by the link or by the check, either way. */

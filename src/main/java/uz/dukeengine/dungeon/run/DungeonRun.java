@@ -8,6 +8,7 @@ import uz.dukeengine.core.thing.ObjectId;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.dungeon.gen.GeneratedDungeon;
 import uz.dukeengine.dungeon.level.HeroProgress;
+import uz.dukeengine.dungeon.loot.KeyDrop;
 import uz.dukeengine.dungeon.loot.LootTable;
 import uz.dukeengine.dungeon.skill.SkillRanks;
 import uz.dukeengine.dungeon.skill.Skills;
@@ -126,6 +127,17 @@ public final class DungeonRun {
 
     /** The first floor, held while a party's heroes are still being said; {@code null} once it is laid. */
     private GeneratedDungeon gathering;
+
+    /** What this floor asks of the party, or {@code null} for a floor with no keep — see {@link Mission}. */
+    private Mission mission;
+    /** Where it stands, worked out every frame the floor is played: the last step on a floor with none. */
+    private Mission.Step step = Mission.Step.KILL;
+    /**
+     * The tracker's words for it, read by the window: written whole, on the simulation's thread, every frame the floor
+     * is played — and blank from the frame the run is lost or won, or the boss falls and the floor waits to close,
+     * until the next floor is laid.
+     */
+    private volatile String tracker = "";
 
     public DungeonRun(GamePlayer heroPlayer, GamePlayer dungeonPlayer, Floors floors,
             DungeonSettings settings, HeroProgress progress,
@@ -370,6 +382,34 @@ public final class DungeonRun {
             seats.get(i).heroId = placed.heroes().get(i) == null ? null : placed.heroes().get(i).getId();
         }
         bossId = placed.boss() == null ? null : placed.boss().getId();
+        onTheFloor(game, floor, placed);
+    }
+
+    /**
+     * What a floor just laid asks of the party: its mission, if it has a keep, and of every hero that he leave the
+     * key where he falls, so a party never loses the way on with him.
+     */
+    private void onTheFloor(DukeGame game, GeneratedDungeon floor, Spawner.Placed placed) {
+        for (int i = 0; i < seats.size(); i++) {
+            var hero = placed.heroes().get(i);
+            if (hero != null) {
+                hero.addModule(new KeyDrop(hero, seats.get(i).progress.getLoot(), settings.lootDrops().template(),
+                        dungeonPlayer.getIndex()));
+            }
+        }
+        mission = Mission.of(game.getLogic(), floor, placed, settings, dungeonPlayer.getIndex());
+        track(game);
+    }
+
+    /**
+     * Where the mission stands this frame, and the tracker's words for it — none while the boss has fallen and the
+     * floor waits to close: the banner has the screen, and there is nothing left to tell him to do.
+     */
+    private void track(DukeGame game) {
+        step = mission == null ? Mission.Step.KILL
+                : mission.step(game.getLogic(), seats.stream().map(seat -> seat.progress.getLoot()).toList());
+        var words = mission == null ? settings.run().killBossWord() : mission.words(settings.run(), step);
+        tracker = descendAtFrame > 0 ? "" : words;
     }
 
     /** Called every logic frame on the simulation thread. */
@@ -402,6 +442,7 @@ public final class DungeonRun {
         if (!standing) {
             state = State.DEAD;
             endedFrame = logic.getFrame();
+            tracker = ""; // the banner has the screen: the next floor says its step when it is laid
             game.setBanner("lost|" + settings.run().diedWord());
             return;
         }
@@ -413,6 +454,7 @@ public final class DungeonRun {
             if (floors.lastDepth() > 0 && depth >= floors.lastDepth()) {
                 state = State.WON;
                 endedFrame = logic.getFrame();
+                tracker = "";
                 game.setBanner("won|" + settings.run().wonWord());
                 return;
             }
@@ -425,6 +467,7 @@ public final class DungeonRun {
             descend(game);
             game.setBanner("");
         }
+        track(game);
         showStatus(game);
     }
 
@@ -585,6 +628,7 @@ public final class DungeonRun {
             }
         }
         bossId = placed.boss() == null ? null : placed.boss().getId();
+        onTheFloor(game, floor, placed);
         look = lookOf(floor);
     }
 
@@ -627,5 +671,23 @@ public final class DungeonRun {
     /** Which floor the hero is on. One at the start of every run.  */
     public int getDepth() {
         return depth;
+    }
+
+    /** What this floor asks of the party, or {@code null} for a floor with no keep. */
+    public Mission getMission() {
+        return mission;
+    }
+
+    /** Where this floor's mission stands: the last step on a floor with none. */
+    public Mission.Step getStep() {
+        return step;
+    }
+
+    /**
+     * The mission's step in words, as the tracker at the top of the window says it — from any thread — or blank
+     * while a run that was lost or won waits to start again, or the floor waits to close behind its fallen boss.
+     */
+    public String getTracker() {
+        return tracker;
     }
 }

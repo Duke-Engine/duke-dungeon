@@ -1,0 +1,38 @@
+; The key to the boss's keep, lying on the floor: where the last monster the
+; floor put outside the keep fell, where a hero carrying it fell, or wherever
+; one put it down -- see run/Mission. It lies as a chest lies and is taken up the
+; same way: a right click on it sends a hero for it.
+;
+;   - no Body, so nothing shoots at it; no Geometry, so it is in nobody's way
+;   - STRUCTURE, so it is drawn as a thing on the floor; SELECTABLE, so the
+;     pointer finds it and says what it is
+;
+; What it holds is the Key among the LootItem blocks of data/world/world.duke.
+Object
+  Name = Key
+  DisplayName = Kalit
+  KindOf = [STRUCTURE, SELECTABLE]
+  VisionRange = 0
+  Modules = [
+    GroundItem
+    End
+  ]
+End
+
+; How it is drawn, in every biome and in the keep alike: one look, named once. A
+; ThemeMonster written outside any theme is what a thing looks like wherever the
+; theme it lies in does not dress it, and no theme dresses the Key. The owner's
+; crown key (art/models/key_crown.glb), set on its own origin and lying on it by
+; art/icons/render_item.py: 1.1 long as modelled, so 6.6 at this size -- a
+; little over half a cell.
+ThemeMonster
+  Name = Key
+  Model = models/props/key/key_crown.glb
+  ModelScale = 6
+  ; The client keeps a model's colour only through a texture, and this model has
+  ; none -- its silver is a colour in the file, which is not read -- so the silver
+  ; is said here. A cool grey, and a little lighter than the picture in the bag:
+  ; the sun lights a plain colour on the floor to about nine tenths of it, and
+  ; nothing on this one catches the light as the picture's highlights do.
+  Tint = 0x9EA3AB
+End

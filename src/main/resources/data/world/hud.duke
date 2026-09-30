@@ -703,6 +703,16 @@ Cursor
   Tint = 0xE8A33D
 End
 
+; And the keep's gate, which a click sends him up to: a lock, until he has
+; given it the key. Held at its middle, as the hands are.
+Cursor
+  Name = ToTheGate
+  Image = ui/cursors/default/lock.png
+  HotX = 15
+  HotY = 15
+  Tint = 0xE8A33D
+End
+
 ; ---------------------------------------------------------------------------
 ; The hero's bar: which blocks it has, in what order, how big its sockets are,
 ; and every colour it is painted in.

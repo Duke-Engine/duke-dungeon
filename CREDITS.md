@@ -43,6 +43,7 @@ written from there.
 | …and more cliffs and spires among the caverns' rocks, bushes among the forest's trees, and the grass, pebbles and stones every biome's floor is strewn with | KayKit | CC0 | `models/tiles/dungeon/{cliff_c,spire_a,spire_b}.gltf`, `models/tiles/forest/{bush_*,grass_*,pebble,stone}.gltf` |
 | Resource Bits — the mine's gold, silver and copper ore, broken stone and timber | KayKit | CC0 | `models/props/mine/` |
 | The keep's gate — "Old Driveway Gate": two stone pillars with their lamps, and an iron gate | **animatedheaven** ([CGTrader](https://www.cgtrader.com/designers/animatedheaven)) | commercial use with credit | `models/props/gate/` |
+| The keep's key — a crown key, lying where the last monster outside the keep fell, and its picture in the bag rendered from it | from the owner's own asset folder, maker not named | **unconfirmed** — to be asked of the owner before a release | `models/props/key/`, `icons/items/key_crown.png` |
 | Fountain — the one at every way in, lifted to stand on its own foot | **Poly by Google** (Google Poly asset `4KKY7CmNe_r`), supplied by the owner | **CC BY 3.0** — attribution required, given here | `models/props/fountain/` |
 | Skeletons — everything that walks the floors, and its blades, axes and staves | KayKit | CC0 | `models/monsters/` |
 | …and its atlas repainted with a green robe and a purple one, for the Skeleton Healer and the Skeleton Summoner | repainted from the original KayKit atlas, supplied by the owner | CC0 (a repaint of a CC0 atlas) | `models/monsters/skeleton_texture_{green,purple}.png` |
@@ -78,10 +79,11 @@ Building and releasing the game was plainly allowed; whether a public git tree
 counts as handing the files out was a judgement call rather than a rule, and the
 kind of question that does not get easier by being left. They are gone too.
 
-Every model in the tree is CC0, out of one maker's packs, but two: the fountain,
-which is CC BY 3.0, and the keep's gate, which may be used commercially with
-credit — each has its row in the table above. Every clip in `animations/` is CC0
-but one. **That one is a Mixamo animation and it went in with its eyes open** —
+Every model in the tree is CC0, out of one maker's packs, but three: the fountain,
+which is CC BY 3.0, the keep's gate, which may be used commercially with credit,
+and the keep's key, whose maker is not named and whose terms are not known — each
+has its row in the table above. Every clip in `animations/` is CC0 but one.
+**That one is a Mixamo animation and it went in with its eyes open** —
 the mage's two-handed cast, added later and knowingly, which puts the question
 this section settled back on the page. It is set out in full below rather than
 folded away here, because a decision reversed deserves as plain a statement as
@@ -89,7 +91,10 @@ the decision did.
 
 Two other things are open and are of a different kind: three pieces of music have
 licences nobody has looked up, and the icons are a generator's output whose terms
-are not the same sort of thing as a licence. Both are at the end of this page.
+are not the same sort of thing as a licence. Both are at the end of this page. A
+third, of the music's kind, is the keep's key: it came out of the owner's own asset
+folder with no maker named, and its row in the table says it is to be asked of the
+owner before a release.
 
 ### The icons that came before
 

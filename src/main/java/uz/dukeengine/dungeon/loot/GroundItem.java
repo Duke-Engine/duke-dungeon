@@ -50,7 +50,7 @@ public final class GroundItem extends Module {
      * Lay {@code item} on the floor at {@code at}, as {@code template}'s thing of {@code playerIndex}'s — a monster's
      * leavings or a hero's — and say what it holds; {@code null} where the template is not one that can hold it.
      */
-    static GameObject lay(uz.dukeengine.core.thing.World world, String template, Loot item,
+    public static GameObject lay(uz.dukeengine.core.thing.World world, String template, Loot item,
             uz.dukeengine.core.math.Coord3D at, int playerIndex) {
         var kind = template == null || template.isBlank() ? null : world.findTemplate(template);
         if (kind == null) {

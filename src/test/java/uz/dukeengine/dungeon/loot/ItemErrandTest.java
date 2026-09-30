@@ -41,7 +41,8 @@ class ItemErrandTest {
     private record Room(DukeGame game, GameObject hero, int floorOwner) {
 
         ItemErrand.Rules rules() {
-            return new ItemErrand.Rules(SETTINGS.lootDrops().pickupRange(), 100_000, "Chest", floorOwner, "Full");
+            return new ItemErrand.Rules(SETTINGS.lootDrops().pickupRange(), 100_000, "Chest", floorOwner, "Full",
+                    "No use");
         }
 
         /** A chest holding {@code item} at {@code x}, as a monster would have left it. */
@@ -149,6 +150,24 @@ class ItemErrandTest {
         assertEquals(room.floorOwner(), chest.getPlayerIndex(), "the dungeon's, and nobody's hero's");
     }
 
+    /** A thing that names what it lies as lies as that: the key goes down as a key, not into a chest. */
+    @Test
+    void theKeyPutDownLiesAsAKey() {
+        var room = room(100f);
+        var bag = new LootBag();
+        var key = SETTINGS.loot().stream().filter(item -> item.kind() == LootKind.KEY).findFirst().orElseThrow();
+        bag.take(key, 0, 0);
+
+        assertTrue(ItemErrand.drop(room.hero(), 0, new Coord3D(250f, 150f, 0f), bag, room.rules()));
+        room.game().runHeadless(300);
+
+        assertTrue(room.chests().isEmpty(), "not in a chest");
+        var lying = room.game().getLogic().getObjects().stream()
+                .filter(object -> object.getTemplate().name().equals("Key")).findFirst().orElse(null);
+        assertNotNull(lying, "it does not lie as a key");
+        assertEquals(key, lying.findModule(GroundItem.class).getHolding());
+    }
+
     /** Sent to put a thing down past a wall he cannot get round, he puts it down as near as he got. */
     @Test
     void aPlaceHeCannotReachHasItPutDownWhereHeGotTo() {
@@ -185,6 +204,27 @@ class ItemErrandTest {
 
         assertFalse(ItemErrand.drop(room.hero(), 0, new Coord3D(200f, 150f, 0f), bag, room.rules()));
         assertFalse(ItemErrand.pickUp(room.hero(), room.hero(), bag, room.rules()), "he holds nothing to take");
+        assertFalse(ItemErrand.toTheGate(room.hero(), room.chestAt(200f, BLADE), bag, room.rules()),
+                "a chest is no gate to go up to");
         assertNull(room.hero().findModule(ItemErrand.class));
+    }
+
+    /** Nothing in the slot, nothing in it that does anything, or nothing to use it on: no errand, and he stays. */
+    @Test
+    void aSlotWithNothingToUseOrNothingToUseItOnIsNoErrand() {
+        var room = room(100f);
+        var chest = room.chestAt(200f, SHIELD);
+        var key = SETTINGS.loot().stream().filter(item -> item.kind() == LootKind.KEY).findFirst().orElseThrow();
+        var bag = new LootBag();
+        bag.take(BLADE, 0, 0);
+        bag.take(key, 0, 0);
+
+        assertFalse(ItemErrand.use(room.hero(), 2, chest, bag, room.rules()), "an empty slot");
+        assertFalse(ItemErrand.use(room.hero(), 0, chest, bag, room.rules()), "a blade does nothing when used");
+        assertFalse(ItemErrand.use(room.hero(), 1, null, bag, room.rules()), "the key on nothing");
+        assertFalse(ItemErrand.use(room.hero(), 1, chest, null, room.rules()), "and with no bag");
+        assertFalse(ItemErrand.use(null, 1, chest, bag, room.rules()), "by nobody");
+        assertNull(room.hero().findModule(ItemErrand.class));
+        assertTrue(ItemErrand.use(room.hero(), 1, chest, bag, room.rules()), "the key on a chest is an errand");
     }
 }

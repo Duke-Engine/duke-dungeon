@@ -16,7 +16,7 @@ import uz.dukeengine.dungeon.world.Theme;
  * Draws a floor from a seed: chambers of rock or glades of wood grown where the rooms are placed, joined by
  * tunnels that wander, laid over hills — with the hero in the first and the monsters scattered through the rest.
  *
- * <p>The floor ends in the boss's {@link Keep}: a walled court a storey up, built in solid rock once the rest is
+ * <p>The floor ends in the boss's {@link Keep}: a walled court on the ground, built in solid rock once the rest is
  * carved, so it cuts nothing off; the last of the rooms, and the boss's.
  *
  * <p>The one property that matters more than any other is that <b>every chamber can be reached</b> — a skeleton
@@ -119,11 +119,11 @@ public final class DungeonGenerator {
         var guarded = chambers.get(bossRoom);
         if (keep != null) {
             // The guard is kept to the court: the square the keep is walled in takes in its ring of wall and its
-            // doorway too, and no guard is stood in either. Its middle cell is the same, so it stands where it did.
+            // doorway too, and no guard is stood in either. Its middle cell is the same, so the ring round the boss is.
             var w = keep.walls();
             guarded = new Room(w.x() + 1, w.y() + 1, w.w() - 2, w.h() - 2);
         }
-        monsters.addAll(guard(cave, guarded, settings, depth));
+        monsters.addAll(guard(cave, guarded, keep, settings));
         var props = new ArrayList<>(scatter(rng, cave, chambers, settings, monsters, hero, boss.at()));
         if (keep != null) {
             // In the doorway until it is opened. Spawned as a prop is, and turned across the doorway: see Spawner.
@@ -136,10 +136,8 @@ public final class DungeonGenerator {
                         terrainOfRooms(biomes, chambers.size()).stream().map(Theme.Terrain::level).toList());
         var scenery = biomes == null ? List.<GeneratedDungeon.Piece>of()
                 : Scenery.scatter(seed, cave, biomes, rooms.getFirst());
-        var storeys = new ArrayList<>(Collections.nCopies(chambers.size(), 0));
-        if (keep != null) {
-            storeys.set(bossRoom, 1);
-        }
+        // Every chamber on the ground, the keep's court among them: how high each stands is the relief's.
+        var storeys = Collections.nCopies(chambers.size(), 0);
         return new GeneratedDungeon(cave.walls(), cave.levels(), hero, monsters, boss, bossRoom,
                 List.copyOf(chambers), List.copyOf(joined), List.copyOf(storeys), List.copyOf(props),
                 relief, 0f, biomes, scenery, keep);
@@ -342,23 +340,32 @@ public final class DungeonGenerator {
     }
 
     /**
-     * Stand the boss's guard round it: the kinds the file names for this depth, each on
-     * the next cell of a square ring round the boss's own.
+     * Stand the boss's guard with it: the kinds the file names, in its order, on every floor.
      *
-     * <p>No dice, so a floor's chambers, fillers and furniture are drawn exactly as they
-     * were before its boss had a guard. The ring is {@code BossGuardRing} cells out --
-     * a boss is wide -- with its corners taken first and then the middles of its sides,
-     * so four stand square round the boss. A cell that is rock or outside the chamber's footprint
-     * is passed over, and when one ring has no floor left the next ring out is tried.
+     * <p>In a keep the first four stand at the court's corners, a cell in from each wall — so with two healers named
+     * before two summoners, the healers hold one diagonal and the summoners the other. Any more, and every guard on a
+     * floor with no keep, stand on the next free cell of a square ring round the boss's own.
+     *
+     * <p>No dice, so a floor's chambers, fillers and furniture are drawn exactly as they were before its boss had a
+     * guard. The ring is {@code BossGuardRing} cells out -- a boss is wide -- with its corners taken first and then the
+     * middles of its sides. A cell that is rock, outside the chamber's footprint or stood on already is passed over, and
+     * when one ring has no floor left the next ring out is tried.
      */
-    private static List<Monster> guard(Cave cave, Room room, DungeonSettings settings, int depth) {
+    private static List<Monster> guard(Cave cave, Room room, Keep keep, DungeonSettings settings) {
         var wanted = new ArrayList<String>();
-        for (var guard : settings.bossGuardsAt(depth)) {
+        for (var guard : settings.bossGuards()) {
             for (int n = 0; n < guard.count(); n++) {
                 wanted.add(guard.kind());
             }
         }
         var guards = new ArrayList<Monster>();
+        if (keep != null) {
+            for (var corner : keep.corners()) {
+                if (guards.size() < wanted.size()) {
+                    guards.add(new Monster(wanted.get(guards.size()), Placement.atCell(corner[0], corner[1])));
+                }
+            }
+        }
         int bx = room.centerCellX();
         int by = room.centerCellY();
         int widest = Math.max(room.w(), room.h());
@@ -367,12 +374,19 @@ public final class DungeonGenerator {
             for (var cell : ringAround(ring)) {
                 int cx = bx + cell[0];
                 int cy = by + cell[1];
-                if (guards.size() < wanted.size() && inside(room, cx, cy) && cave.isFloor(cx, cy)) {
+                if (guards.size() < wanted.size() && inside(room, cx, cy) && cave.isFloor(cx, cy)
+                        && nobodyOn(guards, cx, cy)) {
                     guards.add(new Monster(wanted.get(guards.size()), Placement.atCell(cx, cy)));
                 }
             }
         }
         return guards;
+    }
+
+    /** Whether no guard stands on the cell yet: in a small keep the ring's corners are the court's. */
+    private static boolean nobodyOn(List<Monster> guards, int cx, int cy) {
+        var cell = Placement.atCell(cx, cy);
+        return guards.stream().noneMatch(guard -> guard.at().equals(cell));
     }
 
     /** The cells of the square {@code ring} out: corners, then the middles, then the rest. */

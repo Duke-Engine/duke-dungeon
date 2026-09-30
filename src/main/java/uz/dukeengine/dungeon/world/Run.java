@@ -16,15 +16,27 @@ package uz.dukeengine.dungeon.world;
  *     {@code %d} — a word rather than a string built in Java, like every other word he reads
  * @param wayIn              the template that stands where every floor lets the heroes in, with them round it —
  *     a fountain; empty for nothing
+ * @param clearWord          what the tracker says while the floor's own outside its keep still stand: the first
+ *     {@code %d} how many of them are dead, the second how many there were
+ * @param takeKeyWord        and while the key lies on the floor
+ * @param giveKeyWord        and while a hero carries it
+ * @param killBossWord       and once the gate is open — or on a floor with no keep, all it ever says
  */
 public record Run(int respawnDelayFrames, int descendDelayFrames, int victoryFrames, String defaultHero,
-        String diedWord, String wonWord, String nextDepthWord, String wayIn) {
+        String diedWord, String wonWord, String nextDepthWord, String wayIn, String clearWord, String takeKeyWord,
+        String giveKeyWord, String killBossWord) {
 
     /** What a block leaves out. */
-    public static final Run DEFAULTS = new Run(60, 75, 150, "Rogue", "You died", "You won", "Depth %d", "");
+    public static final Run DEFAULTS = new Run(60, 75, 150, "Rogue", "You died", "You won", "Depth %d", "",
+            "Kill everything outside the keep — %d/%d", "Take the key", "Give the key to the gate", "Kill the boss");
 
     /** What the banner says as he goes down to {@code depth}. */
     public String nextDepthWord(int depth) {
         return nextDepthWord.replace("%d", Integer.toString(depth));
+    }
+
+    /** What the tracker says with {@code killed} of the floor's own outside its keep dead, of {@code of}. */
+    public String clearWord(int killed, int of) {
+        return clearWord.replaceFirst("%d", Integer.toString(killed)).replaceFirst("%d", Integer.toString(of));
     }
 }

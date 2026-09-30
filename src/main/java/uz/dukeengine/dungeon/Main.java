@@ -380,18 +380,21 @@ public final class Main {
                             .tint(tone.tint()));
                     look.fogTint(theme.fogTint());
                     for (var themed : theme.monsters()) {
-                        themedCreature(look, themed, settings);
+                        look.unit(themed.name(), dressed(themed, settings));
                     }
                 });
             }
         }
     }
 
-    /** One creature drawn the way a theme wants it, described from nothing. */
-    private static void themedCreature(Visuals.Theme look, Theme.ThemeMonster themed,
+    /**
+     * What one creature is drawn as, from its ThemeMonster block — in a theme, or outside any — described from
+     * nothing.
+     */
+    private static java.util.function.Consumer<Visuals.UnitVisual> dressed(Theme.ThemeMonster themed,
             DungeonSettings settings) {
         var art = settings.animated(themed.look());
-        look.unit(themed.name(), unit -> {
+        return unit -> {
             unit.colour(art.awtTint());
             if (!art.hasModel()) {
                 return;
@@ -421,7 +424,7 @@ public final class Main {
             for (var library : art.libraries()) {
                 unit.animationsFrom(library);
             }
-        });
+        };
     }
 
     public static void main(String[] args) {
@@ -932,8 +935,10 @@ public final class Main {
      * player has to make in the second before they reach him. Player colour cannot
      * do it: every monster belongs to the same side, so they would all be one
      * shade of red, on screen and on the minimap alike.
+     *
+     * <p>Package-private so a test can ask what a thing is drawn as.
      */
-    private static Visuals looks(DungeonSettings settings) {
+    static Visuals looks(DungeonSettings settings) {
         var visuals = Visuals.create();
         for (var kind : settings.monsters()) {
             var look = settings.lookOf(kind);
@@ -1015,6 +1020,12 @@ public final class Main {
         // a box in torch colour -- which is what a thing worth walking over to
         // has to be, whatever it is eventually modelled as.
         visuals.unit("Chest", unit -> unit.colour(new java.awt.Color(0xE8A33D)).scale(0.5f));
+
+        // And what the files dress outside any theme: drawn so in every theme that does not dress it -- the key,
+        // one look named once rather than a copy in every biome. See the ThemeMonster in data/props/key.duke.
+        for (var look : settings.looks()) {
+            visuals.unit(look.name(), dressed(look, settings));
+        }
 
         // Things in flight are units like any other — they are in the world, so
         // the client draws them without being told anything special, and the

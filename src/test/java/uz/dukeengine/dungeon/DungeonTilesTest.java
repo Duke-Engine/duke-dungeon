@@ -220,19 +220,21 @@ class DungeonTilesTest {
     }
 
     /**
-     * Every picture the panel draws is square, and the size its sheet was cut at.
+     * Every picture the panel draws is square, and the size it was made at: cut from
+     * its sheet, or for a thing in the bag rendered from its model.
      *
      * <p>A slot is square and a picture is stretched to fill it, so one that is
      * not comes out squashed — and there is nothing on screen to say whether the
      * drawing was made that way or the cut went wrong. The sizes are the cutter's
      * own, so this is the other end of {@code IconSheets}: it says what came out,
-     * and this says what the game ships.
+     * and this says what the game ships. The bag's are not cut but rendered, by
+     * {@code art/icons/render_item.py}, at the size of the stats' beside them.
      */
     @Test
     void everyPictureIsSquareAndTheSizeItsSheetWasCutAt() throws java.io.IOException {
         int checked = 0;
         for (var folder : new String[][] {{"icons/skills/", "256"}, {"icons/commands/", "128"},
-            {"icons/stats/", "64"}}) {
+            {"icons/stats/", "64"}, {"icons/items/", "64"}}) {
             for (var name : shipped(folder[0])) {
                 var image = javax.imageio.ImageIO.read(
                         DungeonTilesTest.class.getClassLoader().getResource(folder[0] + name));
@@ -241,15 +243,17 @@ class DungeonTilesTest {
                         folder[0] + name + " is " + image.getWidth() + "x" + image.getHeight()
                                 + ", and a slot is square");
                 assertEquals(Integer.parseInt(folder[1]), image.getWidth(),
-                        folder[0] + name + " was cut at a different size from its sheet");
+                        folder[0] + name + " is not the " + folder[1]
+                                + " every picture in its folder is made at");
                 assertTrue(image.getColorModel().hasAlpha(),
                         folder[0] + name + " carries no transparency, so it is a square"
                                 + " of background sitting in the socket");
                 checked++;
             }
         }
-        assertTrue(checked >= 25,
-                "ten skills, four orders, eight figures and three attributes, found " + checked);
+        assertTrue(checked >= 26,
+                "ten skills, four orders, eight figures, three attributes and one for the bag, found "
+                        + checked);
     }
 
     /** What is actually in one of the game's icon folders. */

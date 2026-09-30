@@ -106,6 +106,7 @@ public final class Content {
             named(Projectile.class), named(Prop.class), named(Effect.class), named(Sound.class),
             named(HeavyShot.class), named(AnimationSet.class), named(Attribute.class), named(LootItem.class),
             named(Moment.class), named(Cursor.class), named(Skin.class), named(Theme.class),
+            named(Theme.ThemeMonster.class),
             named(Combat.class), named(Run.class), named(Progression.class), named(LootDrops.class),
             named(Camera.class), named(Hud.class), named(UnitBar.class), named(StatBlock.class),
             named(SkillRing.class), named(OrderMark.class), named(PanelLook.class), named(HitNumbers.class), named(MenuStyle.class), named(Sun.class),
