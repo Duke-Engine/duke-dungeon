@@ -180,8 +180,9 @@ class MonsterLevelTest {
 
     /**
      * On a floor with a keep the way is the walk to the middle of the chamber the keep's road leaves from, and every
-     * monster stands at its share of it: a floor flattened to the top level, or climbing toward somewhere else, is
-     * neither.
+     * monster outside the keep stands at its share of it: a floor flattened to the top level, or climbing toward
+     * somewhere else, is neither. What stands in the keep is at the top by where it stands, not by its steps: the next
+     * tests.
      */
     @Test
     void onAFloorWithAKeepEachMonsterStandsAtItsShareOfTheWayToItsChamber() {
@@ -199,6 +200,9 @@ class MonsterLevelTest {
                     + " the way in");
             for (int i = 0; i < levels.length; i++) {
                 var monster = floor.monsters().get(i);
+                if (keep.holds(monster.at().cellX(), monster.at().cellY())) {
+                    continue;
+                }
                 assertEquals(SETTINGS.levelAlong(1, stepsTo(walk, monster), way), levels[i], "seed " + seed + ": a "
                         + monster.kind() + " " + stepsTo(walk, monster) + " steps in, of " + way);
                 lowest = Math.min(lowest, levels[i]);
@@ -235,6 +239,41 @@ class MonsterLevelTest {
         }
         assertTrue(inChamber > 0, "the premise: some chamber before a keep held a monster");
         assertTrue(inCourt > 0, "the premise: some court held its guard");
+    }
+
+    /**
+     * The court stands at its chamber's level however the keep's road runs: the road can meet that chamber from any
+     * side, so a court can be fewer steps from the way in than the chamber's middle -- on the first floor of seed 295
+     * the gate is 10 steps in and the middle 29 -- and a guard given its share of the walk there would stand below the
+     * top, in the one place the climb is over.
+     */
+    @Test
+    void aCourtNearerTheWayInThanItsChambersMiddleStandsAtTheChambersLevelStill() {
+        int nearer = 0;
+        for (long seed = 1; seed <= 300; seed++) {
+            var floor = firstFloor(seed);
+            var keep = floor.keep();
+            assertNotNull(keep, "the premise: seed " + seed + "'s first floor has its keep");
+            var chamber = floor.rooms().get(keep.chamber());
+            var walk = StageCheck.walk(floor);
+            int way = walk.to(chamber.centerCellX(), chamber.centerCellY());
+            var levels = Spawner.levelsOf(floor, SETTINGS, 1);
+            boolean early = false;
+            for (int i = 0; i < levels.length; i++) {
+                var monster = floor.monsters().get(i);
+                if (keep.isCourt(monster.at().cellX(), monster.at().cellY())) {
+                    early |= stepsTo(walk, monster) < way;
+                    assertEquals(SETTINGS.beforeBossLevel(1), levels[i], "seed " + seed + ": a " + monster.kind()
+                            + " in the court, " + stepsTo(walk, monster) + " steps in, of " + way
+                            + " to its chamber's middle");
+                }
+            }
+            if (early) {
+                nearer++;
+            }
+        }
+        assertTrue(nearer > 0,
+                "the premise: over the seeds, some court was nearer the way in than its chamber's middle");
     }
 
     /** One seed gives every monster the same level twice: the walk and the rule know no dice and no clock. */

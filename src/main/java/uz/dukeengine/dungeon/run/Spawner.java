@@ -116,14 +116,16 @@ public final class Spawner {
      * The level each of a floor's monsters stands at, in the order the floor lists them, in a place of {@code tier}:
      * its share of the way from the way in to the middle of the chamber before the boss's -- the one the keep's road
      * leaves from, or the boss's own place where there is no keep -- by the steps the floor is walked in (see
-     * {@link StageCheck#walk}). Everything past that chamber, the keep's court and its guard included, stands at its
-     * level.
+     * {@link StageCheck#walk}). Everything past that chamber stands at its level, and so does whatever stands in the
+     * keep -- the guard in its court -- by where it stands and not by the steps to it: the keep's road can meet that
+     * chamber from any side, so its court can be fewer steps from the way in than the chamber's middle.
      */
     static int[] levelsOf(GeneratedDungeon dungeon, DungeonSettings settings, int tier) {
         var walk = StageCheck.walk(dungeon);
+        var keep = dungeon.keep();
         int way = -1;
-        if (dungeon.keep() != null) {
-            var chamber = dungeon.rooms().get(dungeon.keep().chamber());
+        if (keep != null) {
+            var chamber = dungeon.rooms().get(keep.chamber());
             way = walk.to(chamber.centerCellX(), chamber.centerCellY());
         } else if (dungeon.boss() != null && dungeon.boss().at() != null) {
             way = walk.to(dungeon.boss().at().cellX(), dungeon.boss().at().cellY());
@@ -131,7 +133,8 @@ public final class Spawner {
         var levels = new int[dungeon.monsters().size()];
         for (int i = 0; i < levels.length; i++) {
             var at = dungeon.monsters().get(i).at();
-            levels[i] = settings.levelAlong(tier, walk.to(at.cellX(), at.cellY()), way);
+            levels[i] = keep != null && keep.holds(at.cellX(), at.cellY()) ? settings.beforeBossLevel(tier)
+                    : settings.levelAlong(tier, walk.to(at.cellX(), at.cellY()), way);
         }
         return levels;
     }
