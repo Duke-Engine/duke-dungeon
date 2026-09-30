@@ -23,6 +23,11 @@ Object
     GateUpdate
       ; What stands in its place once it is open, turned as it was.
       Opens = OpenGate
+      ; What a hero sent up to it says when he gets there, without the key and
+      ; with it in his bag -- see loot/ItemErrand. Having it is not giving it:
+      ; only the key given to it opens it.
+      WithoutKeyWord = Boss xonasi uchun kalit topishim kerak
+      WithKeyWord = Kalit menda — uni darvozaga berishim kerak
     End
   ]
 End

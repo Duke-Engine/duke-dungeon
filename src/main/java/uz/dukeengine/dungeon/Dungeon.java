@@ -443,6 +443,16 @@ public final class Dungeon {
                         arena.orders().attackMove(drop.playerIndex(), null);
                     }
                 }
+                // Sent up to the keep's gate: he walks there and says whether he has the key. See ItemErrand.
+                case uz.dukeengine.dungeon.run.ToTheGate gate -> {
+                    var progress = run.progressOf(gate.playerIndex());
+                    if (progress != null && uz.dukeengine.dungeon.loot.ItemErrand.toTheGate(
+                            Skills.heroOf(game.getLogic(), gate.playerIndex()),
+                            game.getLogic().findObject(gate.gate()), progress.getLoot(),
+                            errandRules(settings, arena))) {
+                        arena.orders().attackMove(gate.playerIndex(), null);
+                    }
+                }
                 // ★ The three plain orders call it off, and they CANNOT be heard
                 // here: this handler is `onOtherCommand`, the engine's door for
                 // commands it does not recognise, so a MoveTo is applied by rts

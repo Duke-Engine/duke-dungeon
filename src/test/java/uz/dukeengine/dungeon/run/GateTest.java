@@ -12,6 +12,10 @@ import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.dungeon.Dungeon;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.dungeon.gen.DungeonGenerator;
+import uz.dukeengine.dungeon.loot.ItemErrand;
+import uz.dukeengine.dungeon.loot.Loot;
+import uz.dukeengine.dungeon.loot.LootBag;
+import uz.dukeengine.dungeon.loot.LootKind;
 import uz.dukeengine.game.DukeGame;
 
 /**
@@ -63,6 +67,17 @@ class GateTest {
         return grid.isBlocked(grid.toCellX(at), grid.toCellY(at));
     }
 
+    /** What an errand here shares: the shipped reach, and a note that lasts, so what he says can be read. */
+    private static ItemErrand.Rules rules(Dungeon.Arena arena) {
+        var drops = SETTINGS.lootDrops();
+        return new ItemErrand.Rules(drops.pickupRange(), 100_000, drops.template(), arena.dungeon().getIndex(),
+                drops.fullWord());
+    }
+
+    private static Loot key() {
+        return SETTINGS.loot().stream().filter(item -> item.kind() == LootKind.KEY).findFirst().orElseThrow();
+    }
+
     @Test
     void itShutsTheWholeDoorway() {
         var arena = withAGate();
@@ -99,6 +114,43 @@ class GateTest {
         assertTrue(hero.getPosition().x() > DOORWAY.x() - 25f,
                 "he came up to it, within the reach it used to open at: " + hero.getPosition());
         assertTrue(hero.getPosition().x() < DOORWAY.x(), "and he is still on his side of it: " + hero.getPosition());
+    }
+
+    /** Sent up to it without the key, he walks there and says he has to find one — and it stays shut. */
+    @Test
+    void sentUpToItWithoutTheKeyHeSaysHeMustFindIt() {
+        var arena = withAGate();
+        var game = arena.game();
+        game.spawn("Rogue", arena.hero(), 120f, 155f);
+        game.runHeadless(2);
+        var hero = find(game, "Rogue");
+        var gate = find(game, "Gate");
+        var bag = new LootBag();
+
+        assertTrue(ItemErrand.toTheGate(hero, gate, bag, rules(arena)));
+        game.runHeadless(150);
+
+        assertEquals("Boss xonasi uchun kalit topishim kerak", bag.noteAt(game.getLogic().getFrame()));
+        assertTrue(hero.getPosition().x() > 180f, "he said it from where he stood: " + hero.getPosition());
+        assertNotNull(find(game, "Gate"), "and it is still shut");
+    }
+
+    /** With the key in his bag he says he has to give it to the gate — which still does not open by itself. */
+    @Test
+    void sentUpToItWithTheKeyHeSaysHeMustGiveItToTheGate() {
+        var arena = withAGate();
+        var game = arena.game();
+        game.spawn("Rogue", arena.hero(), 120f, 155f);
+        game.runHeadless(2);
+        var bag = new LootBag();
+        bag.take(key(), 0, 0);
+
+        assertTrue(ItemErrand.toTheGate(find(game, "Rogue"), find(game, "Gate"), bag, rules(arena)));
+        game.runHeadless(150);
+
+        assertEquals("Kalit menda — uni darvozaga berishim kerak", bag.noteAt(game.getLogic().getFrame()));
+        assertNotNull(find(game, "Gate"), "it opened without being given the key");
+        assertTrue(bag.holds(LootKind.KEY), "and the key is still his");
     }
 
     /** Opened, the same gate stands open where it stood, turned as it was, and he walks on through. */

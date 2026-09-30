@@ -11,6 +11,7 @@ import uz.dukeengine.dungeon.loot.GroundItem;
 import uz.dukeengine.dungeon.loot.Loot;
 import uz.dukeengine.dungeon.loot.LootBag;
 import uz.dukeengine.dungeon.party.PartyOrders;
+import uz.dukeengine.dungeon.run.GateUpdate;
 import uz.dukeengine.game.view.CommandButton;
 import uz.dukeengine.game.view.WorldSnapshot;
 
@@ -20,8 +21,9 @@ import uz.dukeengine.game.view.WorldSnapshot;
  * button and put down on the floor with the left.
  *
  * <p>Nothing here touches the world. Picking up is the click the client already sends on a thing the game names a
- * word for ({@link PartyOrders#PICK_UP}); putting down is the client's aim at the ground, whose place comes back as
- * a {@link DropItem} order — so both go down the road every order goes, to every machine of a party.
+ * word for ({@link PartyOrders#PICK_UP}), and so is going up to the keep's gate ({@link PartyOrders#TO_THE_GATE});
+ * putting down is the client's aim at the ground, whose place comes back as a {@link DropItem} order — so both go
+ * down the road every order goes, to every machine of a party.
  *
  * <p>On the window's thread, but for what is handed to the match and run on the simulation's: the rule that names
  * the pickup, and a look after every frame at what lies on the floor. Both only read, and change nothing. What the
@@ -95,7 +97,11 @@ final class BagScreen implements Painter, CanvasInput {
         var game = match.game();
         game.contextOrder((selection, target) -> {
             var item = target.findModule(GroundItem.class);
-            return item == null || item.getHolding() == null ? null : PartyOrders.PICK_UP;
+            if (item != null && item.getHolding() != null) {
+                return PartyOrders.PICK_UP;
+            }
+            // And the keep's gate, which he is sent up to: see ItemErrand.
+            return target.findModule(GateUpdate.class) == null ? null : PartyOrders.TO_THE_GATE;
         });
         game.onTick(ticked -> lying = lyingIn(ticked));
         game.onCommandPressed(press -> {

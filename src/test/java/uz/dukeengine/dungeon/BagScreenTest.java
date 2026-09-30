@@ -304,6 +304,33 @@ class BagScreenTest {
         assertFalse(drawn.text.contains(blade.name()), "and nothing once the pointer is off it: " + drawn.text);
     }
 
+    /**
+     * A click on the keep's gate is an order of the game's own, as a click on a chest is — so the ring round it
+     * flashes yellow — and the order sends the hero up to it.
+     */
+    @Test
+    void aClickOnTheGateSendsHimUpToIt() {
+        var session = Dungeon.newSession(21L);
+        var game = session.game();
+        var bag = bagOver(game);
+        bag.show(session);
+        game.runHeadless(2);
+        var hero = find(game, "Rogue");
+        var gate = find(game, "Gate");
+        assertNotNull(gate, "the floor's keep has no gate");
+
+        game.setSelection(List.of(hero.getId().value()));
+        game.setPointedAt(gate.getId().value());
+        game.runHeadless(2);
+        assertEquals(uz.dukeengine.dungeon.party.PartyOrders.TO_THE_GATE, game.getSnapshot().contextOrder());
+
+        // What the client sends for that click.
+        game.postCommand(new uz.dukeengine.rts.message.GameMessage.GameOrder(hero.getPlayerIndex(),
+                game.getSnapshot().contextOrder(), List.of(hero.getId()), gate.getPosition(), gate.getId(), 0));
+        game.runHeadless(2);
+        assertNotNull(hero.findModule(uz.dukeengine.dungeon.loot.ItemErrand.class), "he is not on his way to it");
+    }
+
     /** A click on a chest is answered as an attack is — the ring round it, blinking — but yellow, not the arrowheads. */
     @Test
     void aPickupIsAnsweredWithTheRingInYellow() {

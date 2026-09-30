@@ -20,15 +20,19 @@ import uz.dukeengine.core.thing.GameObject;
 public final class GateUpdate extends Module {
 
     /**
-     * @param opens the template that stands in its place once it is open; blank, and nothing does
+     * @param opens          the template that stands in its place once it is open; blank, and nothing does
+     * @param withoutKeyWord what a hero sent up to it says there without the key
+     * @param withKeyWord    and with the key in his bag, which is not yet the key given to it
      */
-    public record Data(String opens) implements ModuleData {
+    public record Data(String opens, String withoutKeyWord, String withKeyWord) implements ModuleData {
 
         /** What a block leaves out. */
-        static final Data DEFAULTS = new Data("");
+        static final Data DEFAULTS = new Data("", "", "");
 
         public Data {
             opens = opens == null ? "" : opens;
+            withoutKeyWord = withoutKeyWord == null ? "" : withoutKeyWord;
+            withKeyWord = withKeyWord == null ? "" : withKeyWord;
         }
     }
 
@@ -39,6 +43,11 @@ public final class GateUpdate extends Module {
     public GateUpdate(GameObject owner, Data data) {
         super(owner);
         this.data = data;
+    }
+
+    /** What a hero sent up to it says when he gets there: with the key in his bag, or without it. */
+    public String lineFor(boolean withTheKey) {
+        return withTheKey ? data.withKeyWord() : data.withoutKeyWord();
     }
 
     /**

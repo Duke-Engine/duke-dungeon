@@ -6,6 +6,7 @@ import uz.dukeengine.dungeon.ai.AttackMove;
 import uz.dukeengine.dungeon.ai.HoldGround;
 import uz.dukeengine.dungeon.loot.DropItem;
 import uz.dukeengine.dungeon.loot.PickUp;
+import uz.dukeengine.dungeon.run.ToTheGate;
 import uz.dukeengine.dungeon.run.Watching;
 import uz.dukeengine.dungeon.skill.CastSkill;
 import uz.dukeengine.dungeon.skill.UpgradeSkill;
@@ -36,6 +37,11 @@ public final class PartyOrders {
      */
     public static final String PICK_UP = "PickUp";
     static final String DROP = "drop";
+    /**
+     * What a click on the keep's gate gives the hero, as a click on a thing lying on the floor gives a pickup: sent
+     * by the engine as the word the game named, and the pointer over the gate is the cursor of that name.
+     */
+    public static final String TO_THE_GATE = "ToTheGate";
 
     private PartyOrders() {
     }
@@ -54,6 +60,7 @@ public final class PartyOrders {
             case ChooseHero pick -> new GameOrder(pick.playerIndex(), HERO + pick.hero(), List.of(), null, null, 0);
             case PickUp pick -> new GameOrder(pick.playerIndex(), PICK_UP, List.of(), null, pick.item(), 0);
             case DropItem drop -> new GameOrder(drop.playerIndex(), DROP, List.of(), drop.place(), null, drop.slot());
+            case ToTheGate gate -> new GameOrder(gate.playerIndex(), TO_THE_GATE, List.of(), null, gate.gate(), 0);
             default -> throw new IllegalArgumentException("not one of this game's orders: " + command);
         };
     }
@@ -76,6 +83,7 @@ public final class PartyOrders {
             case PICK_UP -> order.target() == null ? null : new PickUp(order.playerIndex(), order.target());
             case DROP -> order.place() == null ? null
                     : new DropItem(order.playerIndex(), (int) order.number(), order.place());
+            case TO_THE_GATE -> order.target() == null ? null : new ToTheGate(order.playerIndex(), order.target());
             default -> null;
         };
     }
