@@ -24,21 +24,23 @@ import uz.dukeengine.dungeon.world.Theme;
  * @param biomeSize     about how many cells across one sweep of climate is — so how big a biome's
  *     region comes out
  * @param climatePerDepth how far the whole floor's climate drifts per floor down, wild then alive
+ * @param keep          the boss's keep at the end of every floor — see {@link Keep}
  */
 public record ProceduralMap(String name, Layout generation, @Link(Theme.class) List<String> themes,
         Themes.WhenExhausted whenExhausted,
         PerRoom propsPerRoom, Descent descent, @Link(Theme.class) List<String> biomes, int biomeSize,
-        Theme.Climate climatePerDepth) {
+        Theme.Climate climatePerDepth, Keep keep) {
 
     /** What a block leaves out. */
     public static final ProceduralMap DEFAULTS = new ProceduralMap("", Layout.DEFAULTS, List.of(),
             Themes.WhenExhausted.REPEAT, new PerRoom(0, 3), Descent.DEFAULTS, List.of(), 40,
-            new Theme.Climate(0, 0));
+            new Theme.Climate(0, 0), Keep.DEFAULTS);
 
     public ProceduralMap {
         themes = themes == null ? List.of() : List.copyOf(themes);
         biomes = biomes == null ? List.of() : List.copyOf(biomes);
         climatePerDepth = climatePerDepth == null ? new Theme.Climate(0, 0) : climatePerDepth;
+        keep = keep == null ? Keep.DEFAULTS : keep;
     }
 
     /**
@@ -81,6 +83,27 @@ public record ProceduralMap(String name, Layout generation, @Link(Theme.class) L
         public Descent {
             bosses = bosses == null ? List.of() : List.copyOf(bosses);
             bossGuards = bossGuards == null ? Map.of() : bossGuards;
+        }
+    }
+
+    /**
+     * The boss's keep: a walled court a storey up at the far end of each floor of the descent, its gate in the
+     * middle of the side it is approached from — see {@code gen/Keep}.
+     *
+     * @param sizes how many cells across it may be, walls included, tried largest first; odd, so the boss and the
+     *     gate each have a middle cell. None, and the boss waits in the furthest chamber, open, as it always did
+     * @param gate  what stands in its doorway until it is opened: a template in {@code data/props/}
+     * @param look  the theme it is drawn in whatever biome it stands in; blank leaves it the biome's
+     */
+    public record Keep(List<Integer> sizes, String gate, @Link(Theme.class) String look) {
+
+        /** What a block leaves out: no keep at all. */
+        public static final Keep DEFAULTS = new Keep(List.of(), "", "");
+
+        public Keep {
+            sizes = sizes == null ? List.of() : List.copyOf(sizes);
+            gate = gate == null ? "" : gate;
+            look = look == null ? "" : look;
         }
     }
 }

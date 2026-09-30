@@ -595,6 +595,14 @@ public final class DungeonSettings {
         require(map.propsPerRoom().min() >= 0, "a room cannot hold fewer than no things");
         require(map.propsPerRoom().max() >= map.propsPerRoom().min(),
                 "MaxPerRoom must not be below MinPerRoom");
+        for (int size : map.keep().sizes()) {
+            require(size >= 5 && size % 2 == 1, "a Keep is odd and at least 5 across, so its court and its doorway"
+                    + " have middle cells: " + size);
+            require(size + 4 <= Math.min(map.generation().mapWidth(), map.generation().mapHeight()),
+                    "a Keep " + size + " across cannot stand on the map with rock round it");
+        }
+        require(map.keep().sizes().isEmpty() || !map.keep().gate().isBlank(),
+                "a Keep needs a Gate: something has to stand in its doorway");
         require(world.levelHeight() >= 0f, "LevelHeight cannot be negative");
         require(world.navigationCellsPerCell() >= 1 && world.navigationCellsPerCell() <= 4,
                 "NavigationCellsPerCell is 1 to 4: finer than a quarter of a cell costs sixteen times the walking");
@@ -919,6 +927,11 @@ public final class DungeonSettings {
             themes.stream().filter(theme -> theme.name().equals(name)).findFirst().ifPresent(named::add);
         }
         return new Biomes(named, map.biomeSize(), map.climatePerDepth());
+    }
+
+    /** The boss's keep, as the map asks for it — see {@link ProceduralMap.Keep}. */
+    public ProceduralMap.Keep keep() {
+        return map.keep();
     }
 
     /** Everything that can be found on a floor, in file order. */

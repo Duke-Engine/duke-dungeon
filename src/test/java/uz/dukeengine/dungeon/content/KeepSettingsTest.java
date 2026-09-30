@@ -1,0 +1,46 @@
+package uz.dukeengine.dungeon.content;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.List;
+import org.junit.jupiter.api.Test;
+
+/** What a map says about the boss's keep, and what it may not say. */
+class KeepSettingsTest {
+
+    /** The shipped descent builds one on every floor, in four sizes, with a gate in it. */
+    @Test
+    void theShippedDescentBuildsAKeepWithAGate() {
+        var keep = DungeonSettings.load().keep();
+
+        assertEquals(List.of(15, 13, 11, 9), keep.sizes());
+        assertEquals("Gate", keep.gate());
+    }
+
+    /** A map that says nothing about a keep builds none. */
+    @Test
+    void aMapThatSaysNothingBuildsNone() {
+        var data = Content.data().replaceFirst("(?s)  Keep = Keep\\n.*?\\n  End\\n", "");
+
+        assertTrue(DungeonSettings.parse(data).keep().sizes().isEmpty());
+    }
+
+    /** Odd, so the boss and the gate each have a middle cell. */
+    @Test
+    void anEvenSizeIsRefusedByNumber() {
+        var data = Content.data().replace("    Sizes = [15, 13, 11, 9]\n", "    Sizes = [15, 14]\n");
+
+        var refused = assertThrows(IllegalArgumentException.class, () -> DungeonSettings.parse(data));
+        assertTrue(refused.getMessage().contains("14"), refused.getMessage());
+    }
+
+    /** Something has to stand in the doorway. */
+    @Test
+    void aKeepWithNoGateIsRefused() {
+        var data = Content.data().replace("    Gate = Gate\n", "");
+
+        assertThrows(IllegalArgumentException.class, () -> DungeonSettings.parse(data));
+    }
+}
