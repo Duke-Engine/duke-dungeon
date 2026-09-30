@@ -193,9 +193,9 @@ public enum SkillEffect {
      * and a kill is no special case.
      *
      * <p>Never cast: it holds for as long as its bearer lives -- see
-     * {@link #isPassive}. It is told of each blow by the two places a boss's blow
-     * lands today, and a boss's first damaging skill that lands anywhere else has to
-     * tell it too; see {@link SkillBook#drink}.
+     * {@link #isPassive}. It is told of each blow by the places a monster's blow
+     * lands today, and a damaging skill that lands anywhere else has to tell it too;
+     * see {@link SkillBook#drink}.
      */
     LIFESTEAL(Aim.SELF, true),
 
@@ -212,7 +212,13 @@ public enum SkillEffect {
      * trickle is, added to it -- a pool with none of its own still fills at the aura's. A creature with no pool gets
      * nothing: the aura fills pools, it makes none. An aura -- see {@link #isAura}.
      */
-    MANA_AURA(Aim.SELF, true);
+    MANA_AURA(Aim.SELF, true),
+
+    /**
+     * Everyone of your own round you drinks from its blows: {@code BoostPercent} of every blow it lands back as
+     * health, added to a {@link #LIFESTEAL} of its own -- see {@link SkillBook#drink}. An aura -- see {@link #isAura}.
+     */
+    LIFESTEAL_AURA(Aim.SELF, true);
 
     /** What a player has to click before the cast can go through. */
     public enum Aim {
@@ -289,6 +295,6 @@ public enum SkillEffect {
      * each where its own figure is used. Its figures are the skill's own and do not grow with its bearer's level.
      */
     public boolean isAura() {
-        return this == DAMAGE_AURA || this == MANA_AURA;
+        return this == DAMAGE_AURA || this == MANA_AURA || this == LIFESTEAL_AURA;
     }
 }

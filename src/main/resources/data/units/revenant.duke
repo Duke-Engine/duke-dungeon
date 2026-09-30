@@ -43,7 +43,7 @@ Monster
     ; instead of walking off mid-blow. It launches nothing -- see Swing.
     Swing
     End,
-    ; Every monster carries one, casting or not: a summoner's haste is held in it.
+    ; What carries its aura, below -- and, as every monster's does, a summoner's haste.
     SkillBook
     End,
     ; Timers for the statuses it is wearing -- the engine's own, and today that
@@ -62,7 +62,8 @@ Monster
 
 
   ; Heals itself (AutoHealUpdate in its template above). Kill it quickly or it undoes
-  ; the fight — a damage check rather than a health check.
+  ; the fight — a damage check rather than a health check. And everyone of its own round
+  ; it drinks from their blows: see its Skill, below.
   ;
   ; And it throws fire, which it did not: a thing in a pointed hat that walks up
   ; and hits you is a skeleton with a hat on. Its ordinary attack is a small
@@ -98,4 +99,21 @@ Monster
   End
   ; It heals itself; the pale wash says so before the health bar does.
   Tint = 0x9FC4FF
+
+  Skills = [
+    Skill
+      Key = Q
+      ; Everyone of its own round it -- itself too -- drinks a tenth of every blow it
+      ; lands, as health: a swing where it lands, a shot where it arrives, a burst and a
+      ; meteor's blast for each they hurt -- added to a boss's own quarter. Within its
+      ; Radius and in its plain sight. Never cast: it holds while it stands. Two
+      ; Revenants lend the stronger, never both.
+      Effect = LIFESTEAL_AURA
+      BoostPercent = 10
+      ; A room round it, and the ones fighting beside it.
+      Radius = 60
+      MaxRank = 1
+      Name = Qon aurasi
+    End
+  ]
 End

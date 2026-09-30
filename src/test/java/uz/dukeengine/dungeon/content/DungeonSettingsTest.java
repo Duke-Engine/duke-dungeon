@@ -459,7 +459,7 @@ class DungeonSettingsTest {
                 case HASTE -> skill.range();
                 case EMPOWER, GUARD -> 1f; // his own width; the look says how wide
                 // Never cast, so no ring is ever drawn: a stand-in to keep the switch whole.
-                case LIFESTEAL, DAMAGE_AURA, MANA_AURA -> 1f;
+                case LIFESTEAL, DAMAGE_AURA, MANA_AURA, LIFESTEAL_AURA -> 1f;
             };
             assertTrue(reach > 0f, skill.heroTemplate() + "'s " + skill.key() + " is a "
                     + skill.effect() + " and has nothing to draw a ring from");

@@ -1253,33 +1253,39 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
 
     /**
      * {@code striker} landed a blow worth {@code dealt}: every {@code LIFESTEAL} among
-     * its skills gives it back its share, as health, never above its maximum. Nobody,
-     * the dead, and a creature with no such skill get nothing.
+     * its skills, and the strongest {@code LIFESTEAL_AURA} it stands in -- see
+     * {@link #auraOn} -- give it back their shares of it, added, as health, never above
+     * its maximum. Nobody, the dead, and a creature with neither get nothing.
      *
-     * <p>Told rather than listening, by the two places a boss's blow lands today: a
+     * <p>Told rather than listening, by the places a monster's blow lands today: a
      * swing where the striker stands, which {@code Swing} hears the moment before the
-     * weapon lands it, and a shot when it arrives and each its burst catches, in
-     * {@code ArrowUpdate}. A boss's first damaging skill that lands anywhere else -- an
-     * area blow, a strike with no shot -- has to call this where its damage lands, or
-     * that blow is not drunk from. The figure is what the blow was worth, not what the
+     * weapon lands it; a shot when it arrives and each its burst catches, in
+     * {@code ArrowUpdate}; and a meteor's blast, for each it hurts, in
+     * {@code FallingUpdate}. A damaging skill that lands anywhere else -- an area
+     * blow, a strike with no shot -- has to call this where its damage lands, or that
+     * blow is not drunk from. The figure is what the blow was worth, not what the
      * victim had left: a kill is no special case.
      *
-     * <p>Deterministic: its skills in the order the file wrote them, one
-     * multiplication of the blow's own figure by a whole percentage each, on the
-     * simulation's frame, and the body's own {@code heal}.
+     * <p>Deterministic: whole percentages added up, its skills in the order the file
+     * wrote them, one multiplication of the blow's own figure, on the simulation's
+     * frame, and the body's own {@code heal}.
      */
     public static void drink(GameObject striker, float dealt) {
         var book = striker == null ? null : striker.findModule(SkillBook.class);
         if (book == null || dealt <= 0f || striker.isEffectivelyDead() || striker.getBody() == null) {
             return;
         }
+        int share = auraOn(striker, SkillEffect.LIFESTEAL_AURA);
         for (var skill : book.skills) {
             if (skill.effect() == SkillEffect.LIFESTEAL) {
                 // ponytail: at its first rank, which is a monster's only one; a hero may not
                 // drink yet (see DungeonSettings.validate), and one who does will read his rank
                 // from SkillRanks, as a cast is handed it.
-                striker.getBody().heal(dealt * skill.boostAt(1) / 100f);
+                share += skill.boostAt(1);
             }
+        }
+        if (share > 0) {
+            striker.getBody().heal(dealt * share / 100f);
         }
     }
 

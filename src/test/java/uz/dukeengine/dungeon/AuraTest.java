@@ -15,6 +15,7 @@ import uz.dukeengine.core.thing.ObjectStatus;
 import uz.dukeengine.dungeon.content.Content;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.dungeon.content.ShippedBlock;
+import uz.dukeengine.dungeon.level.GrowableBody;
 import uz.dukeengine.dungeon.run.Spawner;
 import uz.dukeengine.dungeon.skill.Skill;
 import uz.dukeengine.dungeon.skill.SkillBook;
@@ -37,6 +38,7 @@ class AuraTest {
     private static final String SUMMONER = "SkeletonSummoner";
     private static final String MAGE = "SkeletonMage";
     private static final String HEALER = "SkeletonHealer";
+    private static final String REVENANT = "Revenant";
     private static final int NO_WALL = -1;
 
     /** An open room forty cells by thirty; with a wall down one column, and a doorway at its far end. */
@@ -276,6 +278,131 @@ class AuraTest {
         assertEquals(List.of(0, 0), List.of(bookOf(room.get(1)).getMaxMana(), bookOf(room.get(1)).getMana()));
     }
 
+    // ---- lifesteal ----
+
+    /** The shipped units with the Rogue's bow reaching nothing and the Revenant mending nothing on its own. */
+    private static String drinkingUnits() {
+        var revenant = ShippedBlock.of(REVENANT);
+        return unarmedRogue().replace(revenant.text(), revenant.with("HealPerSecond", 0).text());
+    }
+
+    /** What the Rogue lost and what {@code striker}, left at half, gained over {@code frames} of a fight. */
+    private static float[] lostAndGained(DukeGame game, GameObject hero, GameObject striker, int frames) {
+        striker.getBody().setHealth(striker.getBody().getMaxHealth() / 2f);
+        float his = hero.getBody().getHealth();
+        float its = striker.getBody().getHealth();
+        game.runHeadless(frames);
+        return new float[] {his - hero.getBody().getHealth(), striker.getBody().getHealth() - its};
+    }
+
+    /**
+     * A fight: a Rogue who cannot answer at (150, 150), {@code striker} at {@code (x, 150)} and a Revenant noticing
+     * nobody 50 from it -- or none, for {@code REVENANT} itself.
+     */
+    private static Room fight(String striker, float x) {
+        var arena = Dungeon.world(room(NO_WALL), REVENANT.equals(striker) ? SETTINGS : unseeing(REVENANT),
+                drinkingUnits());
+        var game = arena.game();
+        game.spawn("Rogue", arena.hero(), 150f, 150f);
+        game.spawn(striker, arena.dungeon(), x, 150f);
+        if (!REVENANT.equals(striker)) {
+            game.spawn(REVENANT, arena.dungeon(), x, 100f);
+        }
+        game.runHeadless(1);
+        arena.orders().hold(arena.hero().getIndex(), true);
+        return new Room(game, List.of(first(game, "Rogue"), first(game, striker)));
+    }
+
+    /** A Skeleton beside a Revenant striking for 7 gets back 0.7, and a tenth of every blow after. */
+    @Test
+    void aSkeletonBesideARevenantGetsBackATenth() {
+        var fight = fight("Skeleton", 162f);
+        var skeleton = fight.get(1);
+        skeleton.getBody().setHealth(30f);
+
+        assertEquals(7f, untilStruck(fight.game(), fight.get(0), 150), 0.001f, "the premise: its blow");
+        assertEquals(30.7f, skeleton.getBody().getHealth(), 0.001f, "0.7 back");
+        var change = lostAndGained(fight.game(), fight.get(0), skeleton, 90);
+        assertTrue(change[0] > 0f, "the premise: it went on striking");
+        assertEquals(change[0] / 10f, change[1], 0.001f, "it took " + change[0] + " and got back " + change[1]);
+    }
+
+    /** A Stalker's bolt, where it arrives: a tenth of it. */
+    @Test
+    void aStalkersBoltItsTenth() {
+        var fight = fight("Stalker", 190f);
+        var change = lostAndGained(fight.game(), fight.get(0), fight.get(1), 150);
+
+        assertTrue(change[0] > 0f, "the premise: its bolts reached him");
+        assertEquals(change[0] / 10f, change[1], 0.001f, "it took " + change[0] + " and got back " + change[1]);
+    }
+
+    /** The Revenant is among those its aura reaches: its own fire, a tenth -- its own mending stilled. */
+    @Test
+    void theRevenantDrinksFromItsOwnFire() {
+        var fight = fight(REVENANT, 190f);
+        var change = lostAndGained(fight.game(), fight.get(0), fight.get(1), 150);
+
+        assertTrue(change[0] > 0f, "the premise: its fire reached him");
+        assertEquals(change[0] / 10f, change[1], 0.001f, "it took " + change[0] + " and got back " + change[1]);
+    }
+
+    /** What {@code creature}, left at half, gains from a blow of 20 told to it by hand. */
+    private static float aBlowOfTwentyTo(GameObject creature) {
+        creature.getBody().setHealth(creature.getBody().getMaxHealth() / 2f);
+        float before = creature.getBody().getHealth();
+        SkillBook.drink(creature, 20f);
+        return creature.getBody().getHealth() - before;
+    }
+
+    /** A creature's own lifesteal and the aura add: a Warden beside a Revenant drinks its quarter and the tenth. */
+    @Test
+    void aBossBesideARevenantDrinksItsOwnAndTheAura() {
+        var room = room(SETTINGS, NO_WALL, one(REVENANT, 100f, 150f), one("Warden", 140f, 150f));
+
+        assertEquals(7f, aBlowOfTwentyTo(room.get(1)), 0.001f, "35% of 20");
+    }
+
+    /** Two Revenants, and still a tenth; out of reach, nothing. */
+    @Test
+    void twoRevenantsStillATenthAndOutOfReachNothing() {
+        var two = room(SETTINGS, NO_WALL, one(REVENANT, 100f, 150f), one(REVENANT, 160f, 150f),
+                one("Skeleton", 130f, 150f));
+        assertEquals(2f, aBlowOfTwentyTo(two.get(2)), 0.001f, "two Revenants");
+
+        var apart = room(SETTINGS, NO_WALL, one(REVENANT, 100f, 150f), one("Skeleton", 161f, 150f));
+        assertEquals(0f, aBlowOfTwentyTo(apart.get(1)), 0.001f, "61 from it");
+    }
+
+    /**
+     * The meteor's blast drinks, for each it hurts: a level-6 fire mage beside a Revenant, its meteor cast by hand at a
+     * Rogue who cannot answer, gets back a tenth of the 112.5 that landed on him. It is given room to drink into by its
+     * ceiling raised, its health left where it was: lowered, its brain would take it for a wound and answer it.
+     */
+    @Test
+    void theMeteorsBlastDrinks() {
+        var arena = Dungeon.world(room(NO_WALL), unseeing(MAGE, REVENANT), unarmedRogue());
+        var game = arena.game();
+        game.spawn("Rogue", arena.hero(), 150f, 150f);
+        game.spawn(MAGE, arena.dungeon(), 200f, 150f);
+        game.spawn(REVENANT, arena.dungeon(), 200f, 100f);
+        game.runHeadless(1);
+        arena.orders().hold(arena.hero().getIndex(), true);
+        var hero = first(game, "Rogue");
+        var mage = first(game, MAGE);
+        Spawner.scale(mage, 6, SETTINGS);
+        ((GrowableBody) mage.getBody()).setMaxHealth(mage.getBody().getMaxHealth() * 2f);
+        float his = hero.getBody().getHealth();
+        float its = mage.getBody().getHealth();
+        var meteor = SETTINGS.skillsFor(MAGE).getFirst();
+
+        assertTrue(bookOf(mage).cast('R', 1, null, hero.getPosition()), "the premise: it called the meteor down");
+        game.runHeadless(meteor.windUpFrames() + 5);
+
+        assertEquals(112.5f, his - hero.getBody().getHealth(), 0.01f, "the premise: what landed on him");
+        assertEquals(11.25f, mage.getBody().getHealth() - its, 0.01f, "a tenth of it back");
+    }
+
     // ---- reach ----
 
     /**
@@ -385,6 +512,56 @@ class AuraTest {
             var refused = assertThrows(IllegalArgumentException.class, () -> DungeonSettings.parse(text));
             assertTrue(refused.getMessage().contains("ManaRegen"), refused.getMessage());
         }
+    }
+
+    /** A lifesteal aura's BoostPercent is a share of every blow, from 1 to 100, as a lifesteal's is: else refused. */
+    @Test
+    void aLifestealAurasShareOutOfRangeIsRefused() {
+        for (int share : new int[] {0, 101}) {
+            var refused = assertThrows(IllegalArgumentException.class,
+                    () -> DungeonSettings.parse(ShippedBlock.dataWith(REVENANT, "BoostPercent", share)));
+            assertTrue(refused.getMessage().contains("BoostPercent"), refused.getMessage());
+        }
+    }
+
+    /**
+     * As shipped: the Revenant's Q, the one skill it has -- a tenth of every blow back to everyone of its own within 60
+     * of it, never cast -- carried by the SkillBook every monster has.
+     */
+    @Test
+    void asShippedTheRevenantsDrink() {
+        var skills = SETTINGS.skillsFor(REVENANT);
+        var drink = skills.getFirst();
+
+        assertEquals(List.of(SkillEffect.LIFESTEAL_AURA), skills.stream().map(Skill::effect).toList());
+        assertEquals('Q', drink.key());
+        assertTrue(drink.effect().isPassive() && drink.effect().isAura());
+        assertEquals(10, drink.boostPercent());
+        assertEquals(60f, drink.radius(), 0.001f);
+        assertEquals(1, drink.maxRank());
+        assertEquals("Qon aurasi", drink.name());
+    }
+
+    /** Two worlds fought through the same frames, the three mages and their own in them, read the same checksum. */
+    @Test
+    void twoWorldsFoughtAlikeReadTheSameChecksum() {
+        assertEquals(checksums(), checksums());
+    }
+
+    private static String checksums() {
+        var arena = Dungeon.world(room(NO_WALL), SETTINGS);
+        var game = arena.game();
+        game.spawn("Rogue", arena.hero(), 150f, 150f);
+        for (var one : new One[] {one(SUMMONER, 210f, 130f), one(HEALER, 210f, 170f), one(REVENANT, 200f, 150f),
+                one(MAGE, 220f, 150f), one("Skeleton", 175f, 140f), one("Brute", 175f, 160f)}) {
+            game.spawn(one.kind(), arena.dungeon(), one.x(), one.y());
+        }
+        var line = new StringBuilder();
+        for (int i = 0; i < 12; i++) {
+            game.runHeadless(30);
+            line.append(game.getLogic().checksum()).append('|');
+        }
+        return line.toString();
     }
 
     /**

@@ -822,7 +822,7 @@ public final class Main {
             // None of these is aimed past him: one sharpens his sword, one thickens
             // his skin, and the passives -- never cast -- drink from his blows or
             // lend round him.
-            case EMPOWER, GUARD, LIFESTEAL, DAMAGE_AURA, MANA_AURA ->
+            case EMPOWER, GUARD, LIFESTEAL, DAMAGE_AURA, MANA_AURA, LIFESTEAL_AURA ->
                     uz.dukeengine.client3d.SkillRange.Shape.ON_HIMSELF;
         };
         float reach = switch (skill.effect()) {
@@ -831,7 +831,7 @@ public final class Main {
             case METEOR -> skill.range();
             case AREA_DAMAGE, SUMMON -> skill.radius();
             case HASTE -> skill.range();
-            case EMPOWER, GUARD, LIFESTEAL, DAMAGE_AURA, MANA_AURA -> selfRadius;
+            case EMPOWER, GUARD, LIFESTEAL, DAMAGE_AURA, MANA_AURA, LIFESTEAL_AURA -> selfRadius;
         };
         // What it LEAVES where it lands: a blast's radius, a lane's width. A dash
         // leaves a man, and a circle round a man-sized spot is a second ring saying

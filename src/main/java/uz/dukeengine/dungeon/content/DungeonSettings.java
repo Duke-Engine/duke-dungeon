@@ -807,7 +807,7 @@ public final class DungeonSettings {
                 case HASTE -> require(skill.boostPercent() >= 1 && skill.durationFrames() > 0,
                         skill.heroTemplate() + "'s Skill " + skill.key() + " hastens nobody: it needs a BoostPercent"
                                 + " of at least 1 and DurationFrames for it to last");
-                case LIFESTEAL -> require(skill.boostPercent() >= 1 && skill.boostPercent() <= 100,
+                case LIFESTEAL, LIFESTEAL_AURA -> require(skill.boostPercent() >= 1 && skill.boostPercent() <= 100,
                         skill.heroTemplate() + "'s Skill " + skill.key() + "'s BoostPercent is the share of every"
                                 + " blow it drinks, from 1 to 100");
                 case DAMAGE_AURA -> require(skill.boostPercent() >= 1,
