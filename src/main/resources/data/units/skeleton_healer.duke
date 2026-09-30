@@ -99,7 +99,7 @@ Monster
       ; plain sight of it, and it may not mend itself.
       Effect = HEAL
       ; A third of a Skeleton, a tenth of the Warden: it keeps the rank and file standing
-      ; and only slows a boss. It grows with the depth, as the healer's blows do.
+      ; and only slows a boss. It grows with the healer's level, as its blows do.
       Heal = 30
       HealBelowPercent = 60
       Range = 60

@@ -79,8 +79,9 @@ Per level past the first, alike for every monster and boss, from the `Descent` b
   second), each grown by `ManaPercentPerLevel` a level, in whole numbers. The pool is full when the monster is placed or
   rises (`SkillBook.poolOf`, `fillMana`); its skills' `ManaCost` is paid at rank 1; a cast it cannot pay for is refused
   with nothing spent, as a hero's is.
-- A kind that names no pool casts free, as every monster does today; one whose skills cost mana must name a pool
-  (checked when the file is read).
+- A kind that names no pool casts free, as every monster does today; a `Monster` block that writes skills that cost
+  mana must name a pool (checked when the file is read, per block: a block that re-tunes a kind and writes no skills
+  says nothing of what they cost, so one that leaves out `MaxMana` leaves the kind's shipped skills casting free).
 - The three casting mages get pools (`MaxMana`, `ManaRegen`): `SkeletonMage` 60, 30 (its meteor costs 50, *Olov
   shari* 20); `SkeletonHealer` 50, 25 (*Muqaddas nur* 25); `SkeletonSummoner` 80, 25 (*Chaqiruv* 40) — enough to
   cast at their cooldowns through a fight of a minute or more, the fire mage's meteor included, longer with the level.

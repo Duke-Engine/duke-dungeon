@@ -527,21 +527,36 @@ class MonsterLevelTest {
                 .filter(word -> word.startsWith(SETTINGS.unitBar().levelWord())).toList();
     }
 
-    /** Every monster placed on a floor, and its boss, carries exactly one level word: its own. */
+    /**
+     * Every monster placed on a floor, and its boss, carries exactly one level word: its own -- the boss's the level
+     * its floor's boss stands at -- and the hero, whose level is his own to show, carries none.
+     */
     @Test
-    void everyPlacedMonsterWearsItsOwnLevel() {
+    void everyPlacedMonsterWearsItsOwnLevelAndTheHeroNone() {
         var session = Dungeon.newSession(11L);
         session.game().runHeadless(1);
+        var word = SETTINGS.unitBar().levelWord();
 
         int worn = 0;
+        int bosses = 0;
+        int heroes = 0;
         for (var object : session.game().getLogic().getObjects()) {
-            if (SETTINGS.monster(object.getTemplate().name()) != null) {
+            var name = object.getTemplate().name();
+            if (SETTINGS.monster(name) != null) {
                 worn++;
-                assertEquals(List.of(SETTINGS.unitBar().levelWord() + LevelBonus.levelOf(object)), levelWords(object),
-                        object.getTemplate().name());
+                assertEquals(List.of(word + LevelBonus.levelOf(object)), levelWords(object), name);
+                if (name.equals(SETTINGS.bossKindAt(1))) {
+                    bosses++;
+                    assertEquals(List.of(word + SETTINGS.bossLevel(1)), levelWords(object), "the boss");
+                }
+            } else if (SETTINGS.heroes().stream().anyMatch(hero -> hero.name().equals(name))) {
+                heroes++;
+                assertEquals(List.of(), levelWords(object), "the hero " + name);
             }
         }
         assertTrue(worn > 1, "the premise: the floor holds its monsters and its boss");
+        assertEquals(1, bosses, "the premise: the boss was visited");
+        assertTrue(heroes > 0, "the premise: the hero was visited");
     }
 
     /** And whatever rises from a rift wears its caller's. */

@@ -241,7 +241,8 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Wea
      * <p>Pushed in from outside rather than read here, exactly as his armour and
      * his weapon bonus are: what a level is worth is {@link uz.dukeengine.dungeon.level.Levelling}'s
      * arithmetic, and this module has no idea what level its owner is. See
-     * {@code HeroProgress}, which is the one place that knows.
+     * {@code HeroProgress}, which knows it for a hero, and {@code Spawner.scale},
+     * which knows it for a monster: the two places that size a pool.
      *
      * <p>A pool that GROWS keeps whatever was in it and gains the difference, so
      * levelling up is a gift rather than a refill -- the same rule the body
@@ -250,9 +251,11 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Wea
      * <p>A pool created from nothing gains nothing, and that is the difference
      * between capacity and contents. Whoever made the creature decides whether he
      * starts full: a hero does, on a new run and on every floor after it, and
-     * {@code HeroProgress} is where that is said. Filling here instead would mean
-     * a creature could never be given a pool it was not also handed the contents
-     * of, which is a decision this module is in no position to make.
+     * {@code HeroProgress} is where that is said; a monster is met rested, and
+     * {@code Spawner.scale} fills it where it is placed or rises. Filling here
+     * instead would mean a creature could never be given a pool it was not also
+     * handed the contents of, which is a decision this module is in no position to
+     * make.
      */
     public void poolOf(int max, int tenthsPerSecond) {
         int was = maxMana;

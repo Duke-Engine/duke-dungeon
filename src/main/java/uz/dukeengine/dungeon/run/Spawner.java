@@ -27,10 +27,11 @@ import uz.dukeengine.rts.module.ExperienceModule;
  *
  * <p>A level is applied to the individual, not to the template. The same Runner
  * appears on every floor and at every level — a template says what a thing is,
- * and this says where it was found. All three effects use seams the engine already
+ * and this says where it was found. Every effect uses seams the engine already
  * offers rather than new engine features: a growable body for health, a damage
- * modifier module for damage, and a replaced experience module for what killing it
- * is worth.
+ * modifier module for damage and for the level itself, a replaced experience
+ * module for what killing it is worth, the skill book's own pool for what it casts
+ * out of, and a word held on the creature for the level its bar shows.
  */
 public final class Spawner {
 
