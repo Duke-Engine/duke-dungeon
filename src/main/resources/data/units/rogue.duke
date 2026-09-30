@@ -310,7 +310,7 @@ Hero
   ; share an Effect and differ in every number, which is why the effect is named
   ; separately from the skill.
   ;
-  ; Effect is the only part of a skill written in code, and there are seven:
+  ; Effect is the only part of a skill written in code, and there are ten:
   ;
   ;   STRIKE        hurt one enemy you point at, within Range. With a Projectile
   ;                 the shot CHASES and never misses; the cost is the flight time.
@@ -356,8 +356,8 @@ Hero
   ; Each one already knows what the player must point at, so binding its key and
   ; drawing its ring both follow from the effect and neither is written twice.
   ;
-  ; The two heroes below use six of the seven between them, and the seventh is here
-  ; for the ones that come next: a spear thrown down a corridor is one SKILLSHOT
+  ; The heroes use seven of the ten: STRIKE through GUARD. The other three are for
+  ; monsters and bosses so far. A spear thrown down a corridor is one SKILLSHOT
   ; block and not a line of Java.
   ;
   ; ★ A KEY BELONGS TO A SLOT, NOT TO A SKILL. Both heroes cast on Q, W, E and R,

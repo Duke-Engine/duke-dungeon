@@ -17,14 +17,16 @@ once.
   as it refuses for want of mana. The brains keep thinking; they only cannot act.
 - **Stars over the stunned head for as long as the stun:** an `Effect` of its own (`Stunned`) with an AURA layer,
   played on the victim by `world.effect`, its seconds set from the longest `StunFrames` any skill has (as
-  `Main.measureLooks` sets a frost's from `SlowFrames`).
+  `Main.measureLooks` sets a frost's from `SlowFrames`); stunned again while it burns, the picture renews to the new
+  stun's end rather than dropping, a game rule applied at load time in `Main.layerOf`.
 
 ## Lifesteal on every boss
 
 - **A passive skill, `LIFESTEAL`:** a `Skill` block like any other, whose `BoostPercent` is the share of the damage
   its bearer's blows deal that it gets back, as health, never above its maximum. Never cast — `SkillBook.cast` refuses
   it, and a monster's brain casts the first of its skills that is not a passive — so it holds for as long as its
-  bearer lives, and a boss whose only skill it is casts nothing. Piece 5's auras are passives the same way.
+  bearer lives, and a boss whose only skill it is casts nothing. A unit that lists `Modules` and gives `Skills` must
+  carry a `SkillBook` among them; a hero may not carry a passive, for now. Piece 5's auras are passives the same way.
 - **Heard where the blows land that a boss can deal:** the melee blow (`Swing.launch` sees the blow's damage before the
   engine lands it) and the shot (`ArrowUpdate.strike`, and the burst's splash, where the shooter is known). A kill is
   no special case: the blow's damage counts, whether or not the victim had that much left.

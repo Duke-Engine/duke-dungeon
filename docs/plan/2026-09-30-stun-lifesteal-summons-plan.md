@@ -8,11 +8,12 @@ boss gets back a quarter of what its blows deal; the summoner raises two swordsm
 **Architecture:** A stun is the engine's `DISABLED`, set by `ArrowUpdate` on the victim's own `StatusUpdate` for the
 `StunFrames` the skill's shot carries (`SkillBook` → `Shot.looseAlong` → `ArrowUpdate`); the heroes gain the
 `StatusUpdate` every monster has, `SkillBook.cast` refuses while its owner is `DISABLED`, and the stars are an
-`Effect` named by the Combat block's `StunLook`, played riding the victim and given its seconds by
-`Main.measureLooks`. Lifesteal is a module with no update of its own that the two places a boss's blow lands tell —
-`Swing.launch` for a swing, `ArrowUpdate.strike`/`splash` for a shot. `Skill.summons` becomes an ordered
-`Map<String, Integer>` read as `BossGuards` is, and `SkillBook.summon` hands the kinds to its rifts in the order
-written.
+`Effect` named by the Combat block's `StunLook`, played riding the victim and renewed with a second stun by a game rule
+in `Main.layerOf`, given their seconds by the longest `StunFrames` any skill has (as `Main.measureLooks` sets them).
+Lifesteal is a passive skill, `SkillEffect.LIFESTEAL`, in the skill system and never cast; the two places a boss's blow
+lands tell `SkillBook.drink` — `Swing.launch` for a swing, `ArrowUpdate.strike`/`splash` for a shot. `Skill.summons`
+becomes an ordered `Map<String, Integer>` read as `BossGuards` is, and `SkillBook.summon` hands the kinds to its rifts
+in the order written.
 
 **Tech Stack:** Java 25, JUnit 5, Gradle (`./gradlew test`), `.duke` data read by the engine's record reader,
 duke-engine 0.7.0 from the checkout beside this one.
@@ -25,8 +26,8 @@ duke-engine 0.7.0 from the checkout beside this one.
   state on the simulation thread (a module's update, a launcher's callback). A lifesteal is one multiplication of the
   blow's own figure by a whole percentage; `Summons` is walked in the order the file wrote it — the reader's map
   keeps it — never through a `Map.of` of several entries, whose order is not fixed.
-- Names and numbers come from data: `StunFrames` on the skill, `StunLook` on the Combat block, `Percent` on the
-  `Lifesteal` block, `Summons` and `MaxSummoned` on the skill. Nothing is compiled in — a blank `StunLook` plays
+- Names and numbers come from data: `StunFrames` on the skill, `StunLook` on the Combat block, `BoostPercent` on the
+  passive `LIFESTEAL` skill, `Summons` and `MaxSummoned` on the skill. Nothing is compiled in — a blank `StunLook` plays
   nothing.
 - `../duke-engine` is never edited. Everything here is game code and data.
 - Each task is committed on its own once its tests pass: the message is the subject, a blank line, and
@@ -37,24 +38,26 @@ duke-engine 0.7.0 from the checkout beside this one.
 
 | File | What it is |
 |---|---|
-| `src/main/java/uz/dukeengine/dungeon/skill/SkillBook.java` | refuses a cast while stunned; the skillshot carries its stun; summons several kinds |
+| `src/main/java/uz/dukeengine/dungeon/skill/SkillBook.java` | refuses a cast while stunned; the skillshot carries its stun; summons several kinds; `drink` tells a passive skill of blows |
 | `src/main/java/uz/dukeengine/dungeon/skill/Skill.java` | + `stunFrames`; `summons` a map, `summonCount` gone |
-| `src/main/java/uz/dukeengine/dungeon/skill/SkillEffect.java` | `SUMMON`'s words |
+| `src/main/java/uz/dukeengine/dungeon/skill/SkillEffect.java` | `SUMMON`'s words; `LIFESTEAL`, passive, never cast |
 | `src/main/java/uz/dukeengine/dungeon/combat/Shot.java` | `looseAlong` carries a stun |
-| `src/main/java/uz/dukeengine/dungeon/combat/ArrowUpdate.java` | stuns what it hurts, plays the stars, tells `Lifesteal` |
-| `src/main/java/uz/dukeengine/dungeon/combat/Swing.java` | tells `Lifesteal` of a swing |
-| `src/main/java/uz/dukeengine/dungeon/combat/Lifesteal.java` | **new** — a share of every blow back |
+| `src/main/java/uz/dukeengine/dungeon/combat/ArrowUpdate.java` | stuns what it hurts, plays the stars, tells `SkillBook.drink` of shots and bursts; renews the stun's look |
+| `src/main/java/uz/dukeengine/dungeon/combat/Swing.java` | tells `SkillBook.drink` of a swing |
 | `src/main/java/uz/dukeengine/dungeon/world/Combat.java` | + `stunLook` |
-| `src/main/java/uz/dukeengine/dungeon/content/DungeonSettings.java` | checks `StunFrames` and `Summons` |
-| `src/main/java/uz/dukeengine/dungeon/content/Content.java`, `.../Dungeon.java` | register `Lifesteal`; `ArrowUpdate` built with the stun's look |
-| `src/main/java/uz/dukeengine/dungeon/Main.java` | `measureLooks` gives the stars their seconds |
-| `src/main/resources/data/units/rogue.duke`, `knight.duke`, `mage.duke` | + `StatusUpdate`; the Rogue's field notes |
+| `src/main/java/uz/dukeengine/dungeon/content/Monster.java` | `skillKey` skips passives |
+| `src/main/java/uz/dukeengine/dungeon/content/MonsterKind.java` | `@param skillKey` reworded for passives |
+| `src/main/java/uz/dukeengine/dungeon/content/DungeonSettings.java` | checks `StunFrames` and `Summons`; requires a `SkillBook` if `Skills` are listed; validates passives and `LIFESTEAL` |
+| `src/main/java/uz/dukeengine/dungeon/content/Content.java`, `.../Dungeon.java` | `Lifesteal` module gone; `ArrowUpdate` built with the stun's look |
+| `src/main/java/uz/dukeengine/dungeon/Main.java` | `measureLooks` gives the stars their seconds; `layerOf` sets renewal on the stun's layers |
+| `src/main/resources/data/units/rogue.duke`, `knight.duke`, `mage.duke` | + `StatusUpdate`; the Rogue's field notes on effects |
 | `src/main/resources/data/units/skeleton_mage.duke` | `StunFrames = 30` |
-| `src/main/resources/data/units/warden.duke`, `reaper.duke`, `necromancer.duke`, `champion.duke` | + `Lifesteal` |
+| `src/main/resources/data/units/warden.duke`, `reaper.duke`, `necromancer.duke`, `champion.duke` | + `SkillBook`; a `LIFESTEAL` skill |
 | `src/main/resources/data/units/skeleton_summoner.duke` | `Summons = [Skeleton = 2, Stalker = 2]` |
-| `src/main/resources/data/world/world.duke` | `StunLook = Stunned`, and the `Stunned` effect |
+| `src/main/resources/data/world/world.duke` | `StunLook = Stunned`, and the `Stunned` effect with renewal |
 | `src/test/java/uz/dukeengine/dungeon/StunTest.java` | **new** |
-| `src/test/java/uz/dukeengine/dungeon/LifestealTest.java` | **new** |
+| `src/test/java/uz/dukeengine/dungeon/LifestealTest.java` | tests the passive skill |
+| `src/test/java/uz/dukeengine/dungeon/DungeonEffectLayerTest.java` | validates effect layers including stun renewal |
 | `src/test/java/uz/dukeengine/dungeon/ai/MonsterSummoningTest.java` | the summoner's four |
 | `src/test/java/uz/dukeengine/dungeon/skill/ManaTest.java`, `SkillRanksTest.java`, `SkillTest.java` | the `Skill` record's new shape |
 
@@ -943,6 +946,10 @@ git commit -m "Stars over a stunned head, for as long as the stun" -m "Co-Author
 
 ### Task 4: Every boss gets back a quarter of what its blows deal
 
+**Superseded by Task 6:** This task built lifesteal as a module; at the owner's word, Task 6 replaced it with a passive
+skill in the skill system — `SkillEffect.LIFESTEAL`, never cast, its share the skill's `BoostPercent`, heard the same
+way. The module and its tests stand below as history. Task 6's implementation applies instead.
+
 **Files:**
 - Create: `src/main/java/uz/dukeengine/dungeon/combat/Lifesteal.java`
 - Modify: `src/main/java/uz/dukeengine/dungeon/combat/Swing.java` (class comment; `launch`)
@@ -1735,6 +1742,29 @@ git commit -m "The summoner raises two swordsmen and two archers a cast" -m "Co-
 
 ---
 
+### Task 6: The bosses' lifesteal is a skill of theirs, not a module
+
+Task 4 built lifesteal as a module. Task 6 replaces it with a passive skill — `SkillEffect.LIFESTEAL`, never cast, its
+share the skill's `BoostPercent`, heard at Task 4's two hooks (`Swing.launch`, `ArrowUpdate.strike` and `splash`), drunk
+by `SkillBook.drink`. The module goes. Every boss carries a `SkillBook` and a Q skill "Qon so'rish" at 25. Two load
+rules come with it: a unit whose file lists Modules and gives Skills must carry a `SkillBook`; a passive skill is
+refused on a hero (monsters' only, for now).
+
+Commits: f66bfc4, a77e40f.
+
+---
+
+### Task 7: The stars renew with a second stun
+
+The engine's `EffectLayer` can renew an AURA (commit 1bb64fa8, engine 0.7.0). The game's data record `Layer` cannot say
+`Renews` (engine request E12), so the game renews exactly the look the Combat block's `StunLook` names, in
+`Main.layerOf(art, settings)`; other auras keep the engine's drop. The stars play on the victim as before; stunned
+again, they last to the new stun's end.
+
+Commits: f91dab1, c15c628.
+
+---
+
 ## Where the spec and the code part
 
 - **"A skill may stun what it hurts"** — only a `SKILLSHOT` carries a stun: it is the one effect whose blow lands
@@ -1745,6 +1775,13 @@ git commit -m "The summoner raises two swordsmen and two archers a cast" -m "Co-
   record reader already refuses a single word where a map is read, with `'Summons' is a map: write it Summons =
   [key = value, key = value]`; no game code is written for it. An old file's `SummonCount` line on its own would be
   refused as a field the `Skill` has not got, but in the shipped order `Summons` is read first.
+- **Engine request E12 (layer renewal)** — the engine's `EffectLayer.Builder.renews(boolean)` cannot be set from data
+  (the Layer record has no such field), so Task 7 sets it at runtime: `Main.layerOf(art, settings)` renews the stun's
+  look and leaves others at the engine's default.
+- **Lifesteal as a passive skill** — `SkillEffect.LIFESTEAL` is never cast; `SkillBook.cast` refuses it, and a
+  monster's brain casts the first of its skills that is not a passive (Task 6's `Monster.skillKey`), so a creature
+  whose only skill it is casts nothing. A unit whose file lists `Modules` and gives `Skills` must carry a `SkillBook`
+  among them (Task 6 enforces at load); a hero may not carry a passive, for now.
 - **Lifesteal "where the blows land"** — `Swing.launch` hears a blow as the weapon lets go of it. For a melee boss
   that is the landing; for a creature whose `Swing` stands before its `Bow` (the Stalker, the mages) it would be
   the throw as well as the arrival. No boss is built so — the Necromancer's `Bow` stands first and takes every
@@ -1753,7 +1790,9 @@ git commit -m "The summoner raises two swordsmen and two archers a cast" -m "Co-
   blow was worth, and the victim's body scales it afterwards; the spec's "the blow's damage counts" is read as that
   figure.
 - **The stars last the longest `StunFrames` any skill has** — one look for every stun, as the spec says, so a
-  shorter stun (none ships) would wear its stars a little past its end; and a stun landing on one still wearing its
-  stars plays a second set rather than restarting the first — the status refreshes, the picture is drawing only.
+  shorter stun (none ships) would wear its stars a little past its end.
+- **The stars renew with a second stun** — stunned again while they turn, the picture lasts to the new stun's end
+  rather than dropping, a game rule applied at load in `Main.layerOf(art, settings)` — the status refreshes, so the
+  look must too. Other AURA layers (the knight's Whirlwind, the mages' projectiles) keep the engine's drop.
 - **Where the look's name lives** — the spec names the effect `Stunned` but not what names it; it is the Combat
   block's `StunLook`, beside `ArrowTemplate`, so no name is compiled in and a blank one draws nothing.
