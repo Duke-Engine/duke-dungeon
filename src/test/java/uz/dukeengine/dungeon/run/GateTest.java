@@ -96,6 +96,8 @@ class GateTest {
         assertNotNull(find(game, "Gate"), "it opened for him");
         assertNull(find(game, "OpenGate"), "and something stands where it stood");
         assertTrue(shut(game, DOORWAY.x(), DOORWAY.y()), "the doorway is open");
+        assertTrue(hero.getPosition().x() > DOORWAY.x() - 25f,
+                "he came up to it, within the reach it used to open at: " + hero.getPosition());
         assertTrue(hero.getPosition().x() < DOORWAY.x(), "and he is still on his side of it: " + hero.getPosition());
     }
 
@@ -121,6 +123,25 @@ class GateTest {
         hero.getLocomotor().moveTo(new Coord3D(300f, 155f, 0f));
         game.runHeadless(250);
         assertTrue(hero.getPosition().x() > 260f, "and he walked on through: " + hero.getPosition());
+    }
+
+    /**
+     * Opened twice in a frame, it opens once: marked destroyed, it stays in the world until the frame's reap, so two
+     * hands can reach it, and only one open gate may stand in its place.
+     */
+    @Test
+    void openedTwiceItStandsOpenOnce() {
+        var arena = withAGate();
+        var game = arena.game();
+        var gate = find(game, "Gate").findModule(GateUpdate.class);
+
+        gate.open();
+        gate.open();
+        game.runHeadless(2);
+
+        var open = game.getLogic().getObjects().stream()
+                .filter(object -> object.getTemplate().name().equals("OpenGate")).count();
+        assertEquals(1, open, "a second opening stood a second open gate in the first");
     }
 
     /** On a floor of the descent, it stands across its keep's doorway, every cell of it shut. */
