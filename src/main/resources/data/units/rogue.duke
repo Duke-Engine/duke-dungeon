@@ -310,7 +310,7 @@ Hero
   ; share an Effect and differ in every number, which is why the effect is named
   ; separately from the skill.
   ;
-  ; Effect is the only part of a skill written in code, and there are ten:
+  ; Effect is the only part of a skill written in code:
   ;
   ;   STRIKE        hurt one enemy you point at, within Range. With a Projectile
   ;                 the shot CHASES and never misses; the cost is the flight time.
@@ -350,15 +350,15 @@ Hero
   ;   LIFESTEAL     a boss's, so far, and never cast: it holds for as long as you
   ;                 stand. Every blow you land gives you back BoostPercent of what it
   ;                 was worth, as health, never above your maximum -- a swing where it
-  ;                 lands, a shot where it arrives. Nothing to point at, and its key
-  ;                 does nothing.
+  ;                 lands, a shot where it arrives. Nothing to point at, and a hero's
+  ;                 file that names one is refused when the file is read.
   ;
   ; Each one already knows what the player must point at, so binding its key and
   ; drawing its ring both follow from the effect and neither is written twice.
   ;
-  ; The heroes use seven of the ten: STRIKE through GUARD. The other three are for
-  ; monsters and bosses so far. A spear thrown down a corridor is one SKILLSHOT
-  ; block and not a line of Java.
+  ; The heroes use STRIKE through GUARD; HEAL, SUMMON and LIFESTEAL are for monsters
+  ; and bosses so far. A spear thrown down a corridor is one SKILLSHOT block and not a
+  ; line of Java.
   ;
   ; ★ A KEY BELONGS TO A SLOT, NOT TO A SKILL. Both heroes cast on Q, W, E and R,
   ; so the file holds two skills on Q — and only the played hero's are bound, his

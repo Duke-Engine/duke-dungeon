@@ -69,15 +69,20 @@ public final class Main {
     }
 
     /**
-     * One layer, in the client's words: whatever the file said, laid over the
-     * client's own defaults.
+     * One layer, in the client's words: whatever the file said, laid over the client's own
+     * defaults, then modified by the game's own logic.
      *
-     * <p>Only what was said, because the defaults are the client's and are written
-     * down once, in {@code EffectLayer.Builder}. Package-private so the game's own
-     * test can ask what a block in the file turns into on screen.
+     * <p>Only what was said, because the defaults are the client's and are written down once,
+     * in {@code EffectLayer.Builder}. A status's picture renews — the stun's count starts again
+     * at each stun, so the look it wears must last to the new end. Named by the Combat block, so
+     * no name is compiled in. Other auras keep the engine's default drop: the knight's
+     * Whirlwind is cast again at each landing and must not be stretched.
+     *
+     * <p>Package-private so the game's own test can ask what a block in the file turns into on
+     * screen.
      */
-    private static uz.dukeengine.client3d.EffectLayer.Builder builderOf(
-            DungeonSettings.EffectLayerArt art) {
+    static uz.dukeengine.client3d.EffectLayer layerOf(DungeonSettings.EffectLayerArt art,
+            DungeonSettings settings) {
         var layer = uz.dukeengine.client3d.EffectLayer.builder();
         art.fields().forEach((field, value) -> {
             switch (field) {
@@ -95,28 +100,8 @@ public final class Main {
                 default -> number(layer, field, Float.parseFloat(value));
             }
         });
-        return layer;
-    }
-
-    static uz.dukeengine.client3d.EffectLayer layerOf(DungeonSettings.EffectLayerArt art) {
-        return builderOf(art).build();
-    }
-
-    /**
-     * One layer, in the client's words: whatever the file said, laid over the client's own
-     * defaults, then modified by the game's own logic.
-     *
-     * <p>A status's picture renews — the stun's count starts again at each stun, so the look
-     * it wears must last to the new end. Named by the Combat block, so no name is compiled in.
-     * Other auras keep the engine's default drop: the knight's Whirlwind is cast again at
-     * each landing and must not be stretched.
-     *
-     * @see #layerOf(DungeonSettings.EffectLayerArt)
-     */
-    static uz.dukeengine.client3d.EffectLayer layerOf(DungeonSettings.EffectLayerArt art,
-            DungeonSettings settings) {
         var stunLook = settings.combat().stunLook();
-        return builderOf(art).renews(!stunLook.isBlank() && art.effect().equals(stunLook)).build();
+        return layer.renews(!stunLook.isBlank() && art.effect().equals(stunLook)).build();
     }
 
     private static void number(uz.dukeengine.client3d.EffectLayer.Builder layer, String field,

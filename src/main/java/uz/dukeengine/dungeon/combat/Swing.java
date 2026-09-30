@@ -58,10 +58,10 @@ public final class Swing extends Module implements ProjectileLauncher {
         }
         // Declined, the weapon lands it where it stands, this frame: a blow landed, and its
         // striker drinks from it if a skill of its says so.
-        // ponytail: on a creature whose Swing stands before its Bow this is heard as the shot
-        // leaves as well as where it lands (ArrowUpdate) -- no boss is built so; skip it here
-        // for a striker with a Bow when one is.
-        SkillBook.drink(striker, damage);
+        // A creature with a Bow lands its blows through its arrows, which drink where they land.
+        if (striker.findModule(Bow.class) == null) {
+            SkillBook.drink(striker, damage);
+        }
         return false; // nothing flies; the weapon lands it where it stands
     }
 }

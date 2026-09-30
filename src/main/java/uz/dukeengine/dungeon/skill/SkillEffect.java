@@ -181,7 +181,7 @@ public enum SkillEffect {
      * <p>Never cast: it holds for as long as its bearer lives -- see
      * {@link #isPassive}. It is told of each blow by the two places a boss's blow
      * lands today, and a boss's first damaging skill that lands anywhere else has to
-     * tell it too; see {@link SkillBook#drink}. Every boss has it.
+     * tell it too; see {@link SkillBook#drink}.
      */
     LIFESTEAL(Aim.SELF, true);
 

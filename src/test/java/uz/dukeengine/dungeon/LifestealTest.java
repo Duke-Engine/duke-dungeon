@@ -43,17 +43,20 @@ class LifestealTest {
         return text.toString();
     }
 
-    /**
-     * The shipped units, with the Rogue's bow reaching nothing, the Necromancer mending nothing on its own, and the
-     * fire mage throwing nothing but its fireball.
-     */
+    /** The shipped units, with the Rogue's bow reaching nothing and the Necromancer mending nothing on its own. */
     private static String units() {
         var rogue = ShippedBlock.of("Rogue");
         var necromancer = ShippedBlock.of("Necromancer");
-        var mage = ShippedBlock.of("SkeletonMage");
         return Content.units().replace(rogue.text(), rogue.with("AttackRange", 0).text())
-                .replace(necromancer.text(), necromancer.with("HealPerSecond", 0).text())
-                .replace(mage.text(), mage.with("AttackRange", 0).text());
+                .replace(necromancer.text(), necromancer.with("HealPerSecond", 0).text());
+    }
+
+    /** The shipped files with the fire mage given a LIFESTEAL of a quarter, as a boss has one. */
+    private static DungeonSettings drinkingMage() {
+        var data = Content.data().replace("      Name = Olov shari\n    End\n", "      Name = Olov shari\n    End,\n"
+                + "    Skill\n      Key = W\n      Effect = LIFESTEAL\n      BoostPercent = 25\n    End\n");
+        assertNotEquals(Content.data(), data, "the premise: the fire mage was given the skill");
+        return DungeonSettings.parse(data);
     }
 
     private static GameObject creature(DukeGame game, String template) {
@@ -70,7 +73,12 @@ class LifestealTest {
      * {@code share} of its health, so what it drinks has room to show.
      */
     private static Duel duel(String monster, float gap, float share) {
-        var arena = Dungeon.world(room(), SETTINGS, units());
+        return duel(SETTINGS, monster, gap, share);
+    }
+
+    /** The same, under {@code settings} instead of the shipped ones. */
+    private static Duel duel(DungeonSettings settings, String monster, float gap, float share) {
+        var arena = Dungeon.world(room(), settings, units());
         var game = arena.game();
         game.spawn("Rogue", arena.hero(), 150f, 150f);
         game.spawn(monster, arena.dungeon(), 150f + gap, 150f);
@@ -124,17 +132,28 @@ class LifestealTest {
     }
 
     /**
+     * A shot is drunk from where it lands and nowhere else. The fire mage's Swing stands before its Bow, on purpose,
+     * so its ordinary fire is offered to Swing first, which declines, and loosed by the Bow after: given the skill,
+     * and its ordinary fire live, it gets back a quarter of all it deals -- that fire not counted twice.
+     */
+    @Test
+    void anOrdinaryShotIsDrunkFromOnceWhereItLands() {
+        var change = lostAndGained(duel(drinkingMage(), "SkeletonMage", 50f, 0.25f), 150);
+        float fireball = SETTINGS.skillsFor("SkeletonMage").getFirst().damage();
+
+        assertTrue(change[0] > fireball,
+                "the premise: in five seconds its ordinary fire struck him as well as its fireball");
+        assertEquals(change[0] / 4f, change[1], 0.001f, "it took " + change[0] + " and got back " + change[1]);
+    }
+
+    /**
      * And from each its burst catches: the fire mage given the skill, two Rogues side by side in its band, and
      * whatever its fireball took from the pair -- the one it struck and the one its burst caught -- it has a quarter
-     * of back. Its ordinary fire reaches nothing here, so what they lose is the fireball's alone: its Swing stands
-     * before its Bow, and a shot of that is heard as it leaves as well as where it lands -- see Swing.launch.
+     * of back.
      */
     @Test
     void itsBurstDrinksFromEachItCatches() {
-        var data = Content.data().replace("      Name = Olov shari\n    End\n", "      Name = Olov shari\n    End,\n"
-                + "    Skill\n      Key = W\n      Effect = LIFESTEAL\n      BoostPercent = 25\n    End\n");
-        assertNotEquals(Content.data(), data, "the premise: the fire mage was given the skill");
-        var arena = Dungeon.world(room(), DungeonSettings.parse(data), units());
+        var arena = Dungeon.world(room(), drinkingMage(), units());
         var game = arena.game();
         game.spawn("Rogue", arena.hero(), 250f, 145f);
         game.spawn("Rogue", arena.hero(), 250f, 155f);

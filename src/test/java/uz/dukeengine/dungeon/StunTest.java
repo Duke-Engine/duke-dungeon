@@ -264,14 +264,13 @@ class StunTest {
         var arrivalLayers = swappedSettings.effectLayers().stream()
                 .filter(art -> art.effect().equals("Arrival"))
                 .map(art -> Main.layerOf(art, swappedSettings)).toList();
-        if (!arrivalLayers.isEmpty()) {
-            assertTrue(arrivalLayers.stream().allMatch(EffectLayer::renews),
-                    "when StunLook points to Arrival, Arrival's layers renew");
-            var stunLayers = swappedSettings.effectLayers().stream()
-                    .filter(art -> art.effect().equals("Stunned"))
-                    .map(art -> Main.layerOf(art, swappedSettings)).toList();
-            assertTrue(stunLayers.stream().noneMatch(EffectLayer::renews),
-                    "and Stunned's layers do not");
-        }
+        assertFalse(arrivalLayers.isEmpty(), "the premise: the kit's Arrival effect has layers");
+        assertTrue(arrivalLayers.stream().allMatch(EffectLayer::renews),
+                "when StunLook points to Arrival, Arrival's layers renew");
+        var stunLayers = swappedSettings.effectLayers().stream()
+                .filter(art -> art.effect().equals("Stunned"))
+                .map(art -> Main.layerOf(art, swappedSettings)).toList();
+        assertTrue(stunLayers.stream().noneMatch(EffectLayer::renews),
+                "and Stunned's layers do not");
     }
 }

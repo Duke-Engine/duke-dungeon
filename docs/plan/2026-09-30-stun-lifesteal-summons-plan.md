@@ -42,7 +42,7 @@ duke-engine 0.7.0 from the checkout beside this one.
 | `src/main/java/uz/dukeengine/dungeon/skill/Skill.java` | + `stunFrames`; `summons` a map, `summonCount` gone |
 | `src/main/java/uz/dukeengine/dungeon/skill/SkillEffect.java` | `SUMMON`'s words; `LIFESTEAL`, passive, never cast |
 | `src/main/java/uz/dukeengine/dungeon/combat/Shot.java` | `looseAlong` carries a stun |
-| `src/main/java/uz/dukeengine/dungeon/combat/ArrowUpdate.java` | stuns what it hurts, plays the stars, tells `SkillBook.drink` of shots and bursts; renews the stun's look |
+| `src/main/java/uz/dukeengine/dungeon/combat/ArrowUpdate.java` | stuns what it hurts, plays the stars, tells `SkillBook.drink` of shots and bursts |
 | `src/main/java/uz/dukeengine/dungeon/combat/Swing.java` | tells `SkillBook.drink` of a swing |
 | `src/main/java/uz/dukeengine/dungeon/world/Combat.java` | + `stunLook` |
 | `src/main/java/uz/dukeengine/dungeon/content/Monster.java` | `skillKey` skips passives |
@@ -1783,9 +1783,9 @@ Commits: f91dab1, c15c628.
   whose only skill it is casts nothing. A unit whose file lists `Modules` and gives `Skills` must carry a `SkillBook`
   among them (Task 6 enforces at load); a hero may not carry a passive, for now.
 - **Lifesteal "where the blows land"** — `Swing.launch` hears a blow as the weapon lets go of it. For a melee boss
-  that is the landing; for a creature whose `Swing` stands before its `Bow` (the Stalker, the mages) it would be
-  the throw as well as the arrival. No boss is built so — the Necromancer's `Bow` stands first and takes every
-  shot — so the drink is left unconditional there, marked with a `ponytail:` comment for piece 5's Revenant aura.
+  that is the landing; for a creature whose `Swing` stands before its `Bow` — the three skeleton mages, on purpose —
+  it was the throw as well as the arrival, twice the share. Found at the whole-branch review and fixed: `Swing`
+  drinks only for a creature without a `Bow`, whose arrows drink where they land (`LifestealTest`).
 - **The heal is of the blow's figure before the victim's armour** — `Swing.launch` and `ArrowUpdate` carry what the
   blow was worth, and the victim's body scales it afterwards; the spec's "the blow's damage counts" is read as that
   figure.
