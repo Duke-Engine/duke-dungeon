@@ -107,6 +107,21 @@ class MonsterLevelTest {
         assertEquals(8, SETTINGS.levelAlong(1, 140, 70), "and past it, the chamber's");
         assertEquals(8, SETTINGS.levelAlong(1, -1, 70), "and where no step reaches, the whole way");
         assertEquals(11, SETTINGS.levelAlong(2, 35, 70), "the second tier half way: 8 + 5 x 0.5, rounded once");
+        assertEquals(1, SETTINGS.levelAlong(1, 1, 70), "a step in: 7 x 1/70 of the climb is a tenth, rounded down");
+        assertEquals(2, SETTINGS.levelAlong(1, 5, 70), "five in: 7 x 5/70 is exactly a half, rounded up -- once, at the"
+                + " end, and not the share to whole percents first, which would take it to 0.49");
+    }
+
+    /** The cap holds for the first tier's way in too: a file that starts a descent above it stands at it. */
+    @Test
+    void aWayInAboveTheCapStandsAtTheCap() {
+        var high = DungeonSettings.parse(dataWith("    WayInLevel = 1\n    BeforeBossLevel = 8\n",
+                "    WayInLevel = 60\n    BeforeBossLevel = 70\n"));
+
+        assertEquals(50, high.maxMonsterLevel(), "the premise: the cap is where it was");
+        assertEquals(50, high.wayInLevel(1), "the way in");
+        assertEquals(50, high.beforeBossLevel(1), "and before the boss");
+        assertEquals(50, high.bossLevel(1), "and the boss");
     }
 
     /** A rule that steps back is refused when the file is read: no way in below 1, no chamber below it, no shrinking. */
@@ -161,6 +176,35 @@ class MonsterLevelTest {
                 }
             }
         }
+    }
+
+    /**
+     * On a floor with a keep the way is the walk to the middle of the chamber the keep's road leaves from, and every
+     * monster stands at its share of it: a floor flattened to the top level, or climbing toward somewhere else, is
+     * neither.
+     */
+    @Test
+    void onAFloorWithAKeepEachMonsterStandsAtItsShareOfTheWayToItsChamber() {
+        int lowest = Integer.MAX_VALUE;
+        for (long seed = 1; seed <= 6; seed++) {
+            var floor = firstFloor(seed);
+            var keep = floor.keep();
+            assertNotNull(keep, "the premise: seed " + seed + "'s first floor has its keep");
+            var chamber = floor.rooms().get(keep.chamber());
+            var walk = StageCheck.walk(floor);
+            int way = walk.to(chamber.centerCellX(), chamber.centerCellY());
+            var levels = Spawner.levelsOf(floor, SETTINGS, 1);
+
+            assertTrue(way > 0, "the premise: seed " + seed + "'s chamber before the keep can be walked to, and is not"
+                    + " the way in");
+            for (int i = 0; i < levels.length; i++) {
+                var monster = floor.monsters().get(i);
+                assertEquals(SETTINGS.levelAlong(1, stepsTo(walk, monster), way), levels[i], "seed " + seed + ": a "
+                        + monster.kind() + " " + stepsTo(walk, monster) + " steps in, of " + way);
+                lowest = Math.min(lowest, levels[i]);
+            }
+        }
+        assertTrue(lowest < 7, "the climb starts low: over the seeds the lowest monster stands at " + lowest);
     }
 
     /**
