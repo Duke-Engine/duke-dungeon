@@ -1,0 +1,45 @@
+; The gate of the boss's keep: it stands across the keep's doorway, at the top
+; of the stair, and nothing walks through it until it is opened -- see gen/Keep
+; and run/GateUpdate.
+;
+;   - no Body, so nothing ever shoots at it
+;   - a Box as long as the doorway (three cells, 30 units) and thin across it;
+;     the spawner turns it along the wall it stands in
+;   - STRUCTURE, so it is drawn as a thing standing on the floor; SELECTABLE, so
+;     the pointer finds it -- the key will be aimed at it
+;
+; For now a hero walking up to it opens it: the key that will open it instead is
+; the next piece of work. What it looks like is the Keep theme's
+; (data/world/themes/keep.duke).
+Object
+  Name = Gate
+  DisplayName = Darvoza
+  KindOf = [STRUCTURE, SELECTABLE]
+  VisionRange = 0
+  Geometry = Box
+    MajorRadius = 15
+    MinorRadius = 2
+    Height = 26
+  End
+  Modules = [
+    GateUpdate
+      ; From its middle, in world units: a hero on the stair, or on the road
+      ; just below it.
+      Reach = 25
+      ; A third of a second.
+      EveryFrames = 10
+      ; What stands in its place once it is open, turned as it was.
+      Opens = OpenGate
+    End
+  ]
+End
+
+; The gate once it is open: the same model, its leaves swinging open as it
+; appears and staying so (the Keep theme's PlayOnce), with no shape, so it is in
+; nobody's way -- and not SELECTABLE, since there is nothing left to do with it.
+Object
+  Name = OpenGate
+  DisplayName = Darvoza
+  KindOf = [STRUCTURE]
+  VisionRange = 0
+End

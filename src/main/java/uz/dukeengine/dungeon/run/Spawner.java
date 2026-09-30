@@ -86,7 +86,10 @@ public final class Spawner {
         // will ever pick one as something to hit.
         for (var prop : dungeon.props()) {
             if (!underIt.contains(key(prop.at().cellX(), prop.at().cellY()))) {
-                spawn(game, dungeonPlayer, prop.kind(), at(logic, prop.at()));
+                var thing = spawn(game, dungeonPlayer, prop.kind(), at(logic, prop.at()));
+                if (thing != null && thing.findModule(GateUpdate.class) != null) {
+                    thing.setOrientation(acrossTheDoorway(dungeon, prop.at()));
+                }
             }
         }
 
@@ -263,6 +266,22 @@ public final class Spawner {
         }
         char cell = rows[y].charAt(x);
         return Character.isDigit(cell) ? cell : '#';
+    }
+
+    /**
+     * Which way a gate faces to stand across the doorway it was put in: along the wall, which is the way the rock lies
+     * two cells off either side of it — the cell either side of it is the doorway's own.
+     */
+    static float acrossTheDoorway(GeneratedDungeon dungeon, GeneratedDungeon.Placement at) {
+        var rows = dungeon.asciiMap().strip().split("\n");
+        int x = at.cellX();
+        int y = at.cellY();
+        return rock(rows, x - 2, y) && rock(rows, x + 2, y) ? 0f : (float) (StrictMath.PI / 2);
+    }
+
+    /** Whether a cell is rock as the map writes it, off the map included. */
+    private static boolean rock(String[] rows, int x, int y) {
+        return y < 0 || y >= rows.length || x < 0 || x >= rows[y].length() || rows[y].charAt(x) == '#';
     }
 
     private static long key(int x, int y) {
