@@ -324,6 +324,7 @@ public final class DungeonSettings {
                     monsters.add(monster.kind());
                     own(monster.name(), monster.portrait(), monster.skills());
                     requireBook("Monster " + monster.name(), monster.modules(), monster.skills());
+                    requirePool(monster);
                 }
                 case Hero hero -> {
                     heroes.add(hero);
@@ -406,6 +407,17 @@ public final class DungeonSettings {
         require(itsSkills.isEmpty() || modules.isEmpty()
                         || modules.stream().anyMatch(SkillBook.Data.class::isInstance),
                 who + " has Skills and no SkillBook among its Modules: nothing would carry them");
+    }
+
+    /**
+     * A monster whose skills cost mana names the pool it pays from: without one it casts free, and the cost would be a
+     * number nothing read. Asked of the skills its own block writes, where the record is read, as a book is: a block
+     * that re-tunes a monster and writes no skills says nothing of what they cost.
+     */
+    private static void requirePool(Monster monster) {
+        require(monster.maxMana() > 0 || monster.skills().stream().allMatch(skill -> skill.manaAt(1) == 0),
+                "Monster " + monster.name() + " has a skill that costs mana and names no pool to pay it from:"
+                        + " give it a MaxMana");
     }
 
     /**
@@ -594,6 +606,7 @@ public final class DungeonSettings {
                             || kind.keepNearest() >= 0f && kind.keepFurthest() > kind.keepNearest(),
                     name + "'s KeepDistance has to be a band, nearest then furthest");
             require(kind.maxPerRoom() >= 0, name + "'s MaxPerRoom cannot be negative");
+            require(kind.maxMana() >= 0 && kind.manaRegen() >= 0, name + "'s MaxMana and ManaRegen cannot be negative");
             requireLinked(kind.look().animations(), name);
         }
         for (var hero : heroes) {
@@ -617,8 +630,8 @@ public final class DungeonSettings {
                 "TierGrowthPercent and BossLevelsAbove cannot step a monster's level back down");
         require(descent.maxMonsterLevel() >= 1, "MaxMonsterLevel is at least the first level");
         require(descent.healthPercentPerLevel() >= 0 && descent.damagePercentPerLevel() >= 0
-                        && descent.experiencePercentPerLevel() >= 0,
-                "a level cannot take a monster's health, its blow or its worth away");
+                        && descent.experiencePercentPerLevel() >= 0 && descent.manaPercentPerLevel() >= 0,
+                "a level cannot take a monster's health, its blow, its worth or its mana away");
         // A creature's words cross to the client joined by ',', inside a line split on '|'.
         require(sayable(unitBar.levelWord()), "the UnitBar's LevelWord may not contain ',' or '|'");
         require(map.generation().corridorWidth() >= 1, "a corridor narrower than one cell is a wall");
@@ -1245,6 +1258,14 @@ public final class DungeonSettings {
 
     public float experienceAtLevel(int level) {
         return scaled(map.descent().experiencePercentPerLevel(), level);
+    }
+
+    /**
+     * A monster's pool at this level, or its trickle in tenths of a point a second: {@code base} and
+     * {@code ManaPercentPerLevel} of it a level past the first, in whole numbers, as everything mana is.
+     */
+    public int manaAtLevel(int base, int level) {
+        return base + base * Math.max(0, level - 1) * map.descent().manaPercentPerLevel() / 100;
     }
 
     /**

@@ -201,10 +201,9 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Wea
     /**
      * Whether this creature pays for what it casts.
      *
-     * <p>Off unless something turns it on, which is the answer for every monster
-     * in the game. A skeleton mage held to a mana pool is a skeleton mage the
-     * player cannot see the pool of, so what it buys is a balance problem nobody
-     * can read -- see {@code UsesMana} in the file.
+     * <p>Off unless it is given a pool: a hero by what he is made of, and a monster
+     * whose kind names one where it is placed -- the three casting mages, see
+     * {@code Spawner.scale}. Every other monster casts free.
      */
     private boolean usesMana;
 

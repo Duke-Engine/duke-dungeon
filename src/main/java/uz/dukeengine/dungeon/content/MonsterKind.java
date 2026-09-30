@@ -42,6 +42,8 @@ package uz.dukeengine.dungeon.content;
  * @param keepFurthest and the furthest it lets him get before it comes after him.
  *                     Zero for a thing that closes to {@code closeDistance} instead
  * @param maxPerRoom   how many of it one room may hold, or zero for no limit
+ * @param maxMana      the pool its skills are paid from at its first level, in whole points; zero casts free
+ * @param manaRegen    how fast that comes back at its first level, in tenths of a point a second
  */
 public record MonsterKind(
         String name,
@@ -61,7 +63,9 @@ public record MonsterKind(
         float skillFurthest,
         float keepNearest,
         float keepFurthest,
-        int maxPerRoom) {
+        int maxPerRoom,
+        int maxMana,
+        int manaRegen) {
 
     public java.awt.Color awtColour() {
         return new java.awt.Color(colour);
@@ -76,7 +80,7 @@ public record MonsterKind(
     public MonsterKind casting(char key) {
         return new MonsterKind(name, senseRadius, chaseRadius, closeDistance, alertRadius, repathFrames,
                 swingFrames, minDepth, weight, colour, scale, look, key, skillNearest, skillFurthest,
-                keepNearest, keepFurthest, maxPerRoom);
+                keepNearest, keepFurthest, maxPerRoom, maxMana, manaRegen);
     }
 
     /** Whether it holds a band of distance from him rather than closing to fight. */

@@ -10,6 +10,7 @@ import uz.dukeengine.dungeon.gen.GeneratedDungeon;
 import uz.dukeengine.dungeon.level.GrowableBody;
 import uz.dukeengine.dungeon.loot.LootDrop;
 import uz.dukeengine.dungeon.loot.LootTable;
+import uz.dukeengine.dungeon.skill.SkillBook;
 import uz.dukeengine.dungeon.stage.StageCheck;
 import uz.dukeengine.game.DukeGame;
 import uz.dukeengine.game.GamePlayer;
@@ -325,9 +326,10 @@ public final class Spawner {
 
     /**
      * Make one creature its level -- a monster placed on the floor, its boss, or whatever rises from a rift: its
-     * health grown, a {@link LevelBonus} saying the level and what it gives, its worth set, and the word its bar reads
-     * the level from ({@code level:8}; the {@code UnitBar}'s {@code LevelWord}). The one step for all of them, so a
-     * creature that rises is made exactly as one placed there would be.
+     * health grown, a {@link LevelBonus} saying the level and what it gives, its worth set, its pool -- if its kind
+     * names one -- sized and filled, and the word its bar reads the level from ({@code level:8}; the {@code UnitBar}'s
+     * {@code LevelWord}). The one step for all of them, so a creature that rises is made exactly as one placed there
+     * would be.
      *
      * <p>Each multiplier is computed from the level in one step rather than
      * compounded level by level, so a level is the same however it was reached.
@@ -340,6 +342,14 @@ public final class Spawner {
         monster.addModule(new LevelBonus(monster, level, settings.damageAtLevel(level), health));
         if (!settings.unitBar().levelWord().isBlank()) {
             monster.setCondition(settings.unitBar().levelWord() + level);
+        }
+        // What it casts out of, grown by its level and full: a monster is met rested. A kind that names no pool is
+        // given none, and casts free.
+        var book = monster.findModule(SkillBook.class);
+        var kind = settings.monster(monster.getTemplate().name());
+        if (book != null && kind != null && kind.maxMana() > 0) {
+            book.poolOf(settings.manaAtLevel(kind.maxMana(), level), settings.manaAtLevel(kind.manaRegen(), level));
+            book.fillMana();
         }
         float experience = settings.experienceAtLevel(level);
         // What killing it is worth is fixed by its template, and the template is

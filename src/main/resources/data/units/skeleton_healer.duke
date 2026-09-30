@@ -85,6 +85,11 @@ Monster
   Attack = Ranged_Magic_Shoot
   Idle = Ranged_Magic_Spellcasting_Long
 
+  ; What it mends out of, in the hero's words and units, as the Skeleton Mage's:
+  ; enough to mend at its cooldown through a fight of a minute or more.
+  MaxMana = 50
+  ManaRegen = 25
+
   Skills = [
     Skill
       Key = Q
@@ -104,6 +109,7 @@ Monster
       Projectile = MendingLight
       ; Eight seconds between mendings. Noticeable, and not a wall.
       CooldownFrames = 240
+      ManaCost = 25
       MaxRank = 1
       Name = Muqaddas nur
     End

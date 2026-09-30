@@ -73,8 +73,9 @@ public record ProceduralMap(String name, Layout generation, @Link(Theme.class) L
      * before closed; its boss {@code bossLevelsAbove} over that chamber's, and nothing above {@code maxMonsterLevel}.
      * See {@code DungeonSettings.levelAlong}. What a level past the first is worth, to monster and boss alike:
      * {@code healthPercentPerLevel} more health, {@code damagePercentPerLevel} more to its blow, its skills and a
-     * mending, and {@code experiencePercentPerLevel} more for killing it. How many monsters a place holds is still its
-     * depth's: {@code monsterCountPercentPerDepth}.
+     * mending, {@code experiencePercentPerLevel} more for killing it, and {@code manaPercentPerLevel} more to the pool
+     * a caster pays from and to its trickle. How many monsters a place holds is still its depth's:
+     * {@code monsterCountPercentPerDepth}.
      *
      * @param bosses        one per floor, in order, and the list is also how many floors there are:
      *     kill the last and the run is won. Empty is a descent with no bottom
@@ -85,11 +86,12 @@ public record ProceduralMap(String name, Layout generation, @Link(Theme.class) L
             @Link(Monster.class) Map<String, Integer> bossGuards, int bossGuardRing,
             int monsterCountPercentPerDepth,
             int wayInLevel, int beforeBossLevel, int tierGrowthPercent, int bossLevelsAbove, int maxMonsterLevel,
-            int healthPercentPerLevel, int damagePercentPerLevel, int experiencePercentPerLevel) {
+            int healthPercentPerLevel, int damagePercentPerLevel, int experiencePercentPerLevel,
+            int manaPercentPerLevel) {
 
         /** What a block leaves out. */
         public static final Descent DEFAULTS = new Descent(List.of(), Map.of(), 2, 20,
-                1, 8, 60, 2, 50, 10, 5, 5);
+                1, 8, 60, 2, 50, 10, 5, 5, 10);
 
         public Descent {
             bosses = bosses == null ? List.of() : List.copyOf(bosses);

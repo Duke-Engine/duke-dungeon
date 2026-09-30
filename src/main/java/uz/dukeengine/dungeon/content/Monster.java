@@ -33,6 +33,9 @@ import uz.dukeengine.dungeon.skill.Skill;
  *                      comes. None, and it closes to {@code closeDistance} like everything else
  * @param maxPerRoom    how many of it one room may hold, or zero for no limit
  * @param skills        what it casts, each a {@code Skill} block in its {@code Skills = [ … ]}
+ * @param maxMana       the pool its skills are paid from, in whole points, as a hero's {@code MaxMana} -- grown by
+ *                      its level where it is placed, and full then. None, and it casts free
+ * @param manaRegen     how fast the pool comes back, in tenths of a point a second, as a hero's {@code ManaRegen}
  */
 public record Monster(@Group("Identity") String name, String displayName, Set<Kind> kindOf,
         @Group("Body") float visionRange, Geometry geometry,
@@ -43,7 +46,8 @@ public record Monster(@Group("Identity") String name, String displayName, Set<Ki
         @Group("Look") String model, String texture, float modelScale, int tint, float facing,
         @Group("Animation") @Link(AnimationSet.class) String animations, @Clip String idle, @Clip String walk,
         @Clip String attack, @Clip String hurt, @Clip String death, @Group("Look") @Link(Effect.class) String effect,
-        Held held, @Group("Skills") PortraitArt portrait, List<Skill> skills) implements Solid, Sighted, Classified, Titled, Drawn {
+        Held held, @Group("Skills") PortraitArt portrait, List<Skill> skills, int maxMana, int manaRegen)
+        implements Solid, Sighted, Classified, Titled, Drawn {
 
     /** Two distances, the nearer first: {@code [20, 60]}. */
     public record Band(float nearest, float furthest) {
@@ -56,7 +60,7 @@ public record Monster(@Group("Identity") String name, String displayName, Set<Ki
             Band.NONE, Band.NONE, 0,
             null, null, 1f, 0xFFFFFF, 90f, null,
             null, null, null, null, null, null, Held.NOTHING,
-            null, List.of());
+            null, List.of(), 0, 0);
 
     public Monster {
         displayName = displayName == null ? "" : displayName;
@@ -73,7 +77,8 @@ public record Monster(@Group("Identity") String name, String displayName, Set<Ki
     public MonsterKind kind() {
         return new MonsterKind(name, senseRadius, chaseRadius, closeDistance, alertRadius, repathFrames,
                 swingFrames, minDepth, weight, colour, scale, look(), skillKey(), skillDistance.nearest(),
-                skillDistance.furthest(), keepDistance.nearest(), keepDistance.furthest(), maxPerRoom);
+                skillDistance.furthest(), keepDistance.nearest(), keepDistance.furthest(), maxPerRoom,
+                maxMana, manaRegen);
     }
 
     /** What it is drawn as, which nothing in the simulation may read. */

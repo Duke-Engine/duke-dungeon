@@ -195,5 +195,8 @@ ProceduralMap
     HealthPercentPerLevel = 10
     DamagePercentPerLevel = 5
     ExperiencePercentPerLevel = 5
+    ; And a tenth more to a caster's pool and to how fast it comes back, in whole
+    ; points and tenths -- see MaxMana and ManaRegen on the three mages.
+    ManaPercentPerLevel = 10
   End
 End

@@ -100,11 +100,20 @@ Monster
   ;
   ; Headed by the creature's name exactly as a hero's are, and cast by its brain
   ; rather than a key -- see Skill, SkillDistance and KeepDistance on its
-  ; Monster block. It pays no mana and has one rank: what makes it hit harder
-  ; further down is the depth, as for its weapon. ProjectileSpeed is how fast what it
-  ; throws travels; unsaid, it would be the hero's HeavySpeed. It says 120, which is
-  ; what HeavySpeed is today, and stays 120 if that moves.
+  ; Monster block. It has one rank: what makes it hit harder further down is its
+  ; level, as for its weapon. ProjectileSpeed is how fast what it throws travels;
+  ; unsaid, it would be the hero's HeavySpeed. It says 120, which is what
+  ; HeavySpeed is today, and stays 120 if that moves.
+  ;
+  ; And it pays for it, as a hero does, out of a pool in the same words and
+  ; units: MaxMana in points, ManaRegen in tenths of a point a second -- each a
+  ; tenth more a level past the first (ManaPercentPerLevel in generation.duke),
+  ; and full when it is placed. Enough to throw at its cooldown through a fight
+  ; of a minute or more, and longer the higher it stands. Nobody sees the pool:
+  ; the bar's mana is the hero's alone.
   ; ---------------------------------------------------------------------------
+  MaxMana = 60
+  ManaRegen = 30
 
   Skills = [
     Skill
@@ -128,6 +137,7 @@ Monster
       StunFrames = 30
       ; Six seconds between fireballs, with its ordinary fire in between.
       CooldownFrames = 180
+      ManaCost = 20
       MaxRank = 1
       Name = Olov shari
     End
