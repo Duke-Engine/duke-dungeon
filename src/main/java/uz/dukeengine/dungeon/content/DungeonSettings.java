@@ -301,9 +301,10 @@ public final class DungeonSettings {
             settings.fillInMissingAttributes();
             settings.fillInMissingAnimationSets();
             // A block that re-tunes a monster and says nothing of its skill keeps the shipped
-            // one, as every other skill is kept -- and so keeps casting it.
+            // one, as every other skill is kept -- and so keeps casting it, if it is one that is cast.
             settings.monsters.replaceAll(kind -> kind.hasSkill() ? kind : settings.skillsFor(kind.name())
-                    .stream().findFirst().map(skill -> kind.casting(skill.key())).orElse(kind));
+                    .stream().filter(skill -> !skill.effect().isPassive()).findFirst()
+                    .map(skill -> kind.casting(skill.key())).orElse(kind));
         }
         settings.validate();
         return settings;
@@ -682,6 +683,12 @@ public final class DungeonSettings {
                             || skill.stunFrames() > 0 && skill.effect() == SkillEffect.SKILLSHOT,
                     skill.heroTemplate() + "'s Skill " + skill.key() + " has StunFrames = " + skill.stunFrames()
                             + ": only a SKILLSHOT stuns, and for no fewer than no frames");
+            // A passive is never cast, so what only a cast reads would be a number nothing read.
+            require(!skill.effect().isPassive() || skill.damage() == 0f && skill.manaCost() == 0
+                            && skill.windUpFrames() == 0 && !skill.hasProjectile() && !skill.hasLook(),
+                    skill.heroTemplate() + "'s Skill " + skill.key() + " is a " + skill.effect()
+                            + ", never cast: a Damage, ManaCost, WindUpFrames, Projectile or Look on it is read by"
+                            + " nothing");
             switch (skill.effect()){
                 case HEAL -> {
                     var name = skill.heroTemplate() + "'s Skill " + skill.key();
@@ -706,6 +713,9 @@ public final class DungeonSettings {
                             name + "'s SummonExperiencePercent is a share, from 0 to 100");
                     require(skill.hasProjectile(), name + " has no rift to open: name it in Projectile");
                 }
+                case LIFESTEAL -> require(skill.boostPercent() >= 1 && skill.boostPercent() <= 100,
+                        skill.heroTemplate() + "'s Skill " + skill.key() + "'s BoostPercent is the share of every"
+                                + " blow it drinks, from 1 to 100");
             }
         }
     }

@@ -29,7 +29,6 @@ import uz.dukeengine.dungeon.combat.ArrowUpdate;
 import uz.dukeengine.dungeon.combat.Bow;
 import uz.dukeengine.dungeon.combat.EyesOnly;
 import uz.dukeengine.dungeon.combat.FallingUpdate;
-import uz.dukeengine.dungeon.combat.Lifesteal;
 import uz.dukeengine.dungeon.combat.Swing;
 import uz.dukeengine.dungeon.level.Attribute;
 import uz.dukeengine.dungeon.level.GrowableBody;
@@ -96,7 +95,7 @@ public final class Content {
             List.<Class<? extends ModuleData>>of(HeroBrain.Data.class, MonsterBrain.Data.class, GrowableBody.Data.class,
                     Recovery.Data.class, SkillBook.Data.class, Bow.Data.class, EyesOnly.Data.class,
                     ArrowUpdate.Data.class, FallingUpdate.Data.class, MendingUpdate.Data.class,
-                    SummoningUpdate.Data.class, Swing.Data.class, Lifesteal.Data.class, GroundItem.Data.class,
+                    SummoningUpdate.Data.class, Swing.Data.class, GroundItem.Data.class,
                     uz.dukeengine.dungeon.level.FountainUpdate.Data.class,
                     uz.dukeengine.dungeon.run.GateUpdate.Data.class))
             .flatMap(List::stream).toList();

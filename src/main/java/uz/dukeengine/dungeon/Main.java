@@ -806,16 +806,16 @@ public final class Main {
             case METEOR -> uz.dukeengine.client3d.SkillRange.Shape.AT_A_SPOT;
             // A summoning calls them up round him, as far out as its Radius.
             case AREA_DAMAGE, SUMMON -> uz.dukeengine.client3d.SkillRange.Shape.AROUND_HIM;
-            // Neither of these reaches past him: one sharpens his sword, the
-            // other thickens his skin.
-            case EMPOWER, GUARD -> uz.dukeengine.client3d.SkillRange.Shape.ON_HIMSELF;
+            // None of these reaches past him: one sharpens his sword, one
+            // thickens his skin, and one -- never cast -- drinks from his blows.
+            case EMPOWER, GUARD, LIFESTEAL -> uz.dukeengine.client3d.SkillRange.Shape.ON_HIMSELF;
         };
         float reach = switch (skill.effect()) {
             case STRIKE, AREA_AT_SPOT, SKILLSHOT, HEAL -> skill.range();
             case DASH, BLINK -> skill.distance();
             case METEOR -> skill.range();
             case AREA_DAMAGE, SUMMON -> skill.radius();
-            case EMPOWER, GUARD -> selfRadius;
+            case EMPOWER, GUARD, LIFESTEAL -> selfRadius;
         };
         // What it LEAVES where it lands: a blast's radius, a lane's width. A dash
         // leaves a man, and a circle round a man-sized spot is a second ring saying

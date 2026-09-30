@@ -82,8 +82,16 @@ public record Monster(@Group("Identity") String name, String displayName, Set<Ki
                 hurt, death, held, effect);
     }
 
-    /** The key of the skill it casts: its own, written inside it, or none. */
+    /**
+     * The key of the skill it casts: the first of its own, written inside it, that is cast at all -- a passive holds
+     * without being cast (see {@code SkillEffect.isPassive}) -- or none.
+     */
     public char skillKey() {
-        return skills.isEmpty() ? 0 : Character.toUpperCase(skills.getFirst().key());
+        for (var skill : skills) {
+            if (!skill.effect().isPassive()) {
+                return Character.toUpperCase(skill.key());
+            }
+        }
+        return 0;
     }
 }

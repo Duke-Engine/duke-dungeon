@@ -21,8 +21,10 @@ once.
 
 ## Lifesteal on every boss
 
-- **A module, `Lifesteal`,** with one number, `Percent`: its bearer gets back that share of the damage its blows deal,
-  as health, never above its maximum.
+- **A passive skill, `LIFESTEAL`:** a `Skill` block like any other, whose `BoostPercent` is the share of the damage
+  its bearer's blows deal that it gets back, as health, never above its maximum. Never cast — `SkillBook.cast` refuses
+  it, and a monster's brain casts the first of its skills that is not a passive — so it holds for as long as its
+  bearer lives, and a boss whose only skill it is casts nothing. Piece 5's auras are passives the same way.
 - **Heard where the blows land that a boss can deal:** the melee blow (`Swing.launch` sees the blow's damage before the
   engine lands it) and the shot (`ArrowUpdate.strike`, and the burst's splash, where the shooter is known). A kill is
   no special case: the blow's damage counts, whether or not the victim had that much left.
@@ -44,8 +46,8 @@ once.
 - A fireball skill with `StunFrames` sets its victim `DISABLED` for exactly that long, and the burst's too; a skill
   without leaves it free; a stunned hero cannot cast, and casts again once the stun is over; the `Stunned` effect is
   played on the victim.
-- A boss with `Lifesteal = 25` hitting a hero for N gets back N/4, capped at its maximum; its shot does the same; a
-  creature without the module gets nothing.
+- A boss with a `LIFESTEAL` of 25 hitting a hero for N gets back N/4, capped at its maximum; its shot does the same;
+  a creature without the skill gets nothing; the skill is never cast.
 - One summoner cast raises two Skeletons and two Stalkers where there is room; `MaxSummoned` still caps them; a
   settings file with the old single `Summons` is refused with a message naming the new form.
 - The shipped data: the fire mage's skill stuns 30 frames; every boss has 25% lifesteal; the heroes carry

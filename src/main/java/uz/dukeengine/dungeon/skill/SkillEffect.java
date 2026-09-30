@@ -12,7 +12,8 @@ package uz.dukeengine.dungeon.skill;
  * everything near you, drop something on a spot, fire something down a line, be
  * somewhere else, be briefly stronger, be briefly harder to kill -- and two that
  * no hero has and a monster does: mend one of your own, and call up more of them.
- * A new shape is
+ * And one that is never cast at all: drink from your own blows -- see
+ * {@link #isPassive}. A new shape is
  * a constant here and one branch in {@link SkillBook}; a new <em>skill</em> is
  * neither, and that is the point of the split — a second hero is blocks of INI
  * and no Java at all.
@@ -168,7 +169,20 @@ public enum SkillEffect {
      * <p>No more than {@code MaxSummoned} of one caster's stand at once, rifts counted.
      * A cast that would open none is refused with its cooldown unspent.
      */
-    SUMMON(Aim.SELF);
+    SUMMON(Aim.SELF),
+
+    /**
+     * Drink from your own blows: every blow its bearer lands gives it back
+     * {@code BoostPercent} of what the blow was worth, as health, never above its
+     * maximum -- a swing where it lands, a shot where it arrives, and each its burst
+     * catches. What the blow was worth is its own figure, before the victim's armour,
+     * and a kill is no special case.
+     *
+     * <p>Never cast: it holds for as long as its bearer lives -- see
+     * {@link #isPassive}. It is told of each blow by the two places a blow lands in
+     * this game; see {@link SkillBook#drink}. Every boss has it.
+     */
+    LIFESTEAL(Aim.SELF);
 
     /** What a player has to click before the cast can go through. */
     public enum Aim {
@@ -207,5 +221,18 @@ public enum SkillEffect {
     /** What has to be pointed at for this effect to be cast. */
     public Aim aim() {
         return aim;
+    }
+
+    /**
+     * Whether it is never cast, and holds instead for as long as its bearer lives.
+     *
+     * <p>{@link SkillBook#cast} refuses one with its cooldown untouched, and a monster
+     * casts the first of its skills that is not one (see {@code Monster.skillKey}), so
+     * a creature whose only skill is a passive casts nothing. What a passive does is
+     * heard where the thing it changes happens -- a lifesteal where a blow lands --
+     * rather than when a key is pressed.
+     */
+    public boolean isPassive() {
+        return this == LIFESTEAL;
     }
 }

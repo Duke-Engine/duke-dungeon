@@ -43,12 +43,8 @@ Monster
     ; instead of walking off mid-blow. It launches nothing -- see Swing.
     Swing
     End,
-    ; It drinks from its blows, as every boss does: a quarter of what each one
-    ; deals comes back to it as health, never above its maximum -- a swing where
-    ; it lands, a shot where it arrives. A long fight with a boss is lost faster
-    ; than its bar says. See Lifesteal.
-    Lifesteal
-      Percent = 25
+    ; That it has skills: one, never cast -- see its Skill block, below.
+    SkillBook
     End,
     ; Timers for the statuses it is wearing -- the engine's own, and today that
     ; means SLOWED. MoveUpdate already halves the step of anything wearing it, and
@@ -109,4 +105,19 @@ Monster
     Scale = 1.2
   End
   Tint = 0xC9B8A0
+
+  Skills = [
+    Skill
+      Key = Q
+      ; It drinks from its blows, as every boss does: a quarter of what each one
+      ; deals comes back to it as health, never above its maximum -- a swing where
+      ; it lands, a shot where it arrives. Never cast: it holds for as long as the
+      ; boss stands, and its brain has nothing to throw. A long fight with a boss
+      ; is lost faster than its bar says.
+      Effect = LIFESTEAL
+      BoostPercent = 25
+      MaxRank = 1
+      Name = Qon so'rish
+    End
+  ]
 End

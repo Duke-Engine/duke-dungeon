@@ -12,6 +12,7 @@ import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.core.thing.ObjectId;
 import uz.dukeengine.core.thing.ObjectStatus;
 import uz.dukeengine.core.thing.World;
+import uz.dukeengine.dungeon.skill.SkillBook;
 import uz.dukeengine.rts.module.ExperienceModule;
 import uz.dukeengine.rts.module.StatusUpdate;
 
@@ -233,10 +234,10 @@ public final class ArrowUpdate extends UpdateModule {
     private void strike(World world, GameObject victim) {
         victim.getBody().damage(damage, damageType);
         stun(world, victim);
-        // Every blow it lands, this one and each its burst deals, its archer drinks from if he
-        // does -- see Lifesteal.
+        // Every blow it lands, this one and each its burst deals, its archer drinks from if a
+        // skill of his says so -- see SkillBook.drink.
         var archer = world.findObject(shooter);
-        Lifesteal.drink(archer, damage);
+        SkillBook.drink(archer, damage);
         splash(world, victim, archer);
         if (victim.isEffectivelyDead()) {
             var earned = victim.findModule(ExperienceModule.class);
@@ -270,7 +271,7 @@ public final class ArrowUpdate extends UpdateModule {
                         && world.getRelationship(side, candidate.getPlayerIndex())
                                 == Relationship.ENEMIES)) {
             caught.getBody().damage(damage, damageType);
-            Lifesteal.drink(archer, damage);
+            SkillBook.drink(archer, damage);
             stun(world, caught);
         }
     }

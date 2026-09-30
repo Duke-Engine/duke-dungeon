@@ -34,8 +34,8 @@ package uz.dukeengine.dungeon.content;
  * @param look         the model, skin and animations to draw it with — empty when
  *                     this kind has no art, and then it falls back to a shape
  * @param skillKey     which of its own skills it decides to cast, by key: the first
- *                     {@code Skill} inside its block, as a hero's are.
- *                     Zero for a thing with no skill
+ *                     {@code Skill} inside its block that is cast at all -- a passive
+ *                     holds without one. Zero for a thing with no skill to cast
  * @param skillNearest the nearest it casts from, surface to surface
  * @param skillFurthest and the furthest
  * @param keepNearest  the nearest it lets him come before it backs away

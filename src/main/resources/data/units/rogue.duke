@@ -347,6 +347,11 @@ Hero
   ;                 climbs out of its own WindUpFrames later. They last DurationFrames,
   ;                 are worth SummonExperiencePercent of their own kind, and no more
   ;                 than MaxSummoned of one caster's stand at once.
+  ;   LIFESTEAL     a boss's, so far, and never cast: it holds for as long as you
+  ;                 stand. Every blow you land gives you back BoostPercent of what it
+  ;                 was worth, as health, never above your maximum -- a swing where it
+  ;                 lands, a shot where it arrives. Nothing to point at, and its key
+  ;                 does nothing.
   ;
   ; Each one already knows what the player must point at, so binding its key and
   ; drawing its ring both follow from the effect and neither is written twice.

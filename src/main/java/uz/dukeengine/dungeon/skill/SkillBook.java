@@ -389,9 +389,9 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Wea
 
     /**
      * Cast the skill on {@code key} at a hero of {@code level}. Returns false and
-     * does nothing if there is no such skill, it is still recharging, he is
-     * stunned, or the level has not unlocked it — an ultimate refuses rather than
-     * fires weakly.
+     * does nothing if there is no such skill, it is still recharging, it is never
+     * cast at all, he is stunned, or the level has not unlocked it — an ultimate
+     * refuses rather than fires weakly.
      */
     public boolean cast(char key, int level) {
         return cast(key, level, null, null);
@@ -413,6 +413,12 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Wea
     public boolean cast(char key, int level, ObjectId at, Coord3D towards) {
         int slot = slotOf(key);
         if (slot < 0 || cooldowns[slot] > 0) {
+            return false;
+        }
+        if (skills.get(slot).effect().isPassive()) {
+            // Never cast: it holds for as long as he lives -- see SkillEffect.isPassive.
+            // Refused before anything happens, so nothing is spent on a key that does
+            // nothing.
             return false;
         }
         if (getOwner().hasStatus(ObjectStatus.DISABLED)) {
@@ -1127,6 +1133,35 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Wea
     @Override
     public float damageMultiplier() {
         return boostFrames > 0 ? 1f + boostPercent / 100f : 1f;
+    }
+
+    /**
+     * {@code striker} landed a blow worth {@code dealt}: every {@code LIFESTEAL} among
+     * its skills gives it back its share, as health, never above its maximum. Nobody,
+     * the dead, and a creature with no such skill get nothing.
+     *
+     * <p>Told rather than listening, by the two places a blow lands in this game: a
+     * swing where the striker stands, which {@code Swing} hears the moment before the
+     * weapon lands it, and a shot when it arrives and each its burst catches, in
+     * {@code ArrowUpdate}. The figure is what the blow was worth, not what the victim
+     * had left: a kill is no special case.
+     *
+     * <p>Deterministic: its skills in the order the file wrote them, one
+     * multiplication of the blow's own figure by a whole percentage each, on the
+     * simulation's frame, and the body's own {@code heal}.
+     */
+    public static void drink(GameObject striker, float dealt) {
+        var book = striker == null ? null : striker.findModule(SkillBook.class);
+        if (book == null || dealt <= 0f || striker.isEffectivelyDead() || striker.getBody() == null) {
+            return;
+        }
+        for (var skill : book.skills) {
+            if (skill.effect() == SkillEffect.LIFESTEAL) {
+                // ponytail: at its first rank, which is a monster's only one; a hero who
+                // drinks reads his rank from SkillRanks, as a cast is handed it.
+                striker.getBody().heal(dealt * skill.boostAt(1) / 100f);
+            }
+        }
     }
 
     /**

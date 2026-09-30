@@ -6,11 +6,12 @@ import uz.dukeengine.core.module.Module;
 import uz.dukeengine.core.module.ModuleGroup;
 import uz.dukeengine.core.module.ModuleGroups;
 import uz.dukeengine.core.thing.GameObject;
+import uz.dukeengine.dungeon.skill.SkillBook;
 import uz.dukeengine.rts.module.ProjectileLauncher;
 
 /**
- * Remembers the frame this creature last struck a blow, and lets it drink from the blow if it does -- see
- * {@link Lifesteal}.
+ * Remembers the frame this creature last struck a blow, and lets it drink from the blow if a skill of its says so --
+ * see {@link SkillBook#drink}.
  *
  * <p>It launches nothing, which is why it is worth explaining. A monster's blow
  * lands where it stands and always did; what the game needs is not to change that
@@ -56,11 +57,11 @@ public final class Swing extends Module implements ProjectileLauncher {
             struckOn = world.getFrame();
         }
         // Declined, the weapon lands it where it stands, this frame: a blow landed, and its
-        // striker drinks from it if it does.
+        // striker drinks from it if a skill of its says so.
         // ponytail: on a creature whose Swing stands before its Bow this is heard as the shot
         // leaves as well as where it lands (ArrowUpdate) -- no boss is built so; skip it here
         // for a striker with a Bow when one is.
-        Lifesteal.drink(striker, damage);
+        SkillBook.drink(striker, damage);
         return false; // nothing flies; the weapon lands it where it stands
     }
 }
