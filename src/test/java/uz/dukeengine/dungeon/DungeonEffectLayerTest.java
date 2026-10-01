@@ -493,6 +493,44 @@ class DungeonEffectLayerTest {
         assertEquals(3, rings, "a ring for each of the three auras");
     }
 
+    /**
+     * Each aura's ring is bold enough to read at a glance: bright -- its texture's brightest line, at the ring's own
+     * alpha, at least 0.4 of full light -- and thick -- across the band on the floor that is at least a quarter as
+     * bright as that line, at least 16 units. Measured in the texture, not assumed: circle_04, the kit's soft thick
+     * ring, is less than a quarter as bright at its best as its sisters, so no alpha makes it bold.
+     */
+    @Test
+    void eachAurasRingIsBoldEnoughToReadAtAGlance() throws java.io.IOException {
+        int rings = 0;
+        for (var aura : SETTINGS.skills().stream().filter(skill -> skill.effect().isAura()).toList()) {
+            for (var art : SETTINGS.effectLayers()) {
+                var layer = drawn(art);
+                if (!art.effect().equals(aura.look()) || !EffectLayer.MARK.equals(layer.type())) {
+                    continue;
+                }
+                var light = ringLight(layer.texture());
+                double peak = java.util.Arrays.stream(light).max().orElse(0);
+                float brightness = (float) peak * Math.min(layer.alphaStart(), layer.alphaEnd());
+                assertTrue(brightness >= 0.4f, aura.look() + " " + art.name() + " burns at " + brightness
+                        + " of full light at its brightest, which is not bold");
+
+                int first = -1;
+                int last = -1;
+                for (int bin = 0; bin < light.length; bin++) {
+                    if (light[bin] >= peak / 4) {
+                        first = first < 0 ? bin : first;
+                        last = bin;
+                    }
+                }
+                float across = (last - first + 1) / (float) light.length * layer.sizeEnd() * aura.radius() / 2f;
+                assertTrue(across >= 16f, aura.look() + " " + art.name() + " is " + across
+                        + " units across, which is not thick");
+                rings++;
+            }
+        }
+        assertEquals(3, rings, "a ring for each of the three auras");
+    }
+
     /** How far across the floor a particle of this layer can be carried. */
     private static float thrownAtMost(EffectLayer layer) {
         float speed = Math.max(Math.abs(layer.speedMin()), Math.abs(layer.speedMax()));
@@ -508,8 +546,8 @@ class DungeonEffectLayerTest {
         return speed * across * carried;
     }
 
-    /** Where a ring texture is brightest, as a share of its half-width. */
-    private static float brightestRadius(String texture) throws java.io.IOException {
+    /** The mean light -- grey times alpha -- at each 200th of a ring texture's half-width, from its middle out. */
+    private static double[] ringLight(String texture) throws java.io.IOException {
         var url = DungeonEffectLayerTest.class.getClassLoader().getResource(texture);
         assertNotNull(url, texture);
         var image = javax.imageio.ImageIO.read(url);
@@ -532,14 +570,22 @@ class DungeonEffectLayerTest {
                 counted[bin]++;
             }
         }
+        for (int bin = 0; bin < bins; bin++) {
+            light[bin] = counted[bin] > 0 ? light[bin] / counted[bin] : 0;
+        }
+        return light;
+    }
+
+    /** Where a ring texture is brightest, as a share of its half-width. */
+    private static float brightestRadius(String texture) throws java.io.IOException {
+        var light = ringLight(texture);
         int brightest = 0;
-        for (int bin = 1; bin < bins; bin++) {
-            if (counted[bin] > 0 && light[bin] / counted[bin]
-                    > light[brightest] / Math.max(1, counted[brightest])) {
+        for (int bin = 1; bin < light.length; bin++) {
+            if (light[bin] > light[brightest]) {
                 brightest = bin;
             }
         }
-        return (brightest + 0.5f) / bins;
+        return (brightest + 0.5f) / light.length;
     }
 
     /** And the budget the file sets reaches the client. */

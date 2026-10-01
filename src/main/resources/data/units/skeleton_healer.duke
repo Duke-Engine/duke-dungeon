@@ -124,8 +124,8 @@ Monster
       ManaRegen = 50
       ; A room round it, and the ones fighting him from its band.
       Radius = 60
-      ; Worn: a faint ring as wide as its Radius, played on it every second -- see the
-      ; Effect ManaAura, below.
+      ; Worn: a thick blue ring as wide as its Radius, and blue motes at its feet, played
+      ; on it every second -- see the Effect ManaAura, below.
       Look = ManaAura
       TickFrames = 30
       MaxRank = 1
@@ -135,8 +135,11 @@ Monster
 End
 
 ; ---------------------------------------------------------------------------
-; A healer's mana, worn: the summoner's MightAura in the healer's own green -- the same
-; ring on the floor as wide as its Radius, played on it every TickFrames and lasting two.
+; A healer's mana, worn, in blue -- the colour of a mana whoever bears it, not the
+; healer's own green: the summoner's MightAura in another colour -- the same thick ring
+; on the floor as wide as its Radius, played on it every TickFrames and lasting two --
+; and, in the place of its sparks, a few blue motes drifting up at its feet. Like those
+; sparks they are an AURA layer, carried on at each beat by Main.layerOf.
 ; ---------------------------------------------------------------------------
 Effect
   Name = ManaAura
@@ -147,15 +150,35 @@ Effect
       Type = MARK
       Measure = Reach
       Follows = Yes
-      Texture = kit/effects/particles/circle_02.png
+      Texture = kit/effects/particles/circle_03.png
       Blend = Additive
       Count = 1
-      Size = [3.56, 3.56]
-      Colour = [0x8FDC6A, 0x8FDC6A]
-      Alpha = [0.3, 0.3]
+      Size = [2.81, 2.81]
+      Colour = [0x3F8CFF, 0x3F8CFF]
+      Alpha = [0.55, 0.55]
       FadeIn = 0.5
       FadeOut = 0.5
       Height = 0.3
+    End,
+
+    ; Soft round motes, a few at a time, low about its feet and drifting up no higher than
+    ; its waist: the small, slow sign of a pool being filled.
+    Layer
+      Name = Motes
+      Type = AURA
+      Texture = kit/effects/particles/star_05.png
+      Blend = Additive
+      Count = 10
+      Rate = 6
+      Radius = 8
+      Life = [1.0, 1.5]
+      Size = [4.0, 1.2]
+      Colour = [0x8FC4FF, 0x3F8CFF]
+      FadeIn = 0.2
+      Speed = [2, 5]
+      Direction = UP
+      Spread = 15
+      Height = 0.5
     End
   ]
 End

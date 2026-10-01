@@ -3,6 +3,7 @@ package uz.dukeengine.dungeon;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -10,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 import uz.dukeengine.client3d.EffectLayer;
 import uz.dukeengine.client3d.SkillRange;
@@ -585,12 +587,14 @@ class AuraTest {
     }
 
     /**
-     * Each look is measured two of its bearer's ticks, as wide as its Radius, and renews as a state does: a ring lying
-     * on the floor that follows its bearer, fading in over its first half and out over its second -- so the one laid a
-     * tick later takes over as it goes, and the two stand as one steady ring.
+     * Each look is measured two of its bearer's ticks, as wide as its Radius, and renews as a state does. Its ring lies
+     * on the floor and follows its bearer, fading in over its first half and out over its second -- so the one laid a
+     * tick later takes over as it goes, and the two stand as one steady ring. Its rider is fed by a Rate on the body,
+     * and each tick carries it on to the next, as a stun's stars are -- with room for every one it lets out to live out
+     * its life, so none is overwritten while it still shows.
      */
     @Test
-    void eachRingIsMeasuredTwoTicksAtItsRadiusAndTakenOverByTheNext() {
+    void eachLookIsMeasuredTwoTicksItsRingAtItsRadiusAndItsRiderRenewed() {
         var visuals = Visuals.create();
         Main.measureLooks(visuals, SETTINGS);
         var auras = SETTINGS.skills().stream().filter(skill -> skill.effect().isAura()).toList();
@@ -602,16 +606,62 @@ class AuraTest {
             assertEquals(aura.radius(), visuals.getEffectReach(aura.look()), 0.001f, aura.look() + ": its Radius");
             var layers = SETTINGS.effectLayers().stream().filter(art -> art.effect().equals(aura.look()))
                     .map(art -> Main.layerOf(art, SETTINGS)).toList();
+            assertEquals(List.of(EffectLayer.MARK, EffectLayer.AURA), layers.stream().map(EffectLayer::type).toList(),
+                    aura.look() + " is a ring on the floor, and under what rides over it, a rider");
+
+            var ring = layers.get(0);
+            assertTrue(ring.follows(), aura.look() + " follows its bearer");
+            assertEquals(EffectLayer.REACH, ring.measure(), aura.look() + " is measured in its reach");
+            assertEquals(0.5f, ring.fadeIn(), 0.001f, aura.look());
+            assertEquals(0.5f, ring.fadeOut(), 0.001f, aura.look());
+            assertTrue(ring.renews(), aura.look() + " renews, worn as a state");
+
+            var rider = layers.get(1);
+            assertTrue(rider.renews(), aura.look() + "'s rider is carried on by each tick, worn as a state");
+            assertTrue(rider.continuous(), aura.look() + "'s rider is fed by a Rate");
+            assertEquals(EffectLayer.UNITS, rider.measure(),
+                    aura.look() + "'s rider is a few units at the body: the ring carries the reach");
+            assertTrue(rider.count() >= Math.ceil(rider.rate() * rider.lifeMax()), aura.look() + "'s rider lets out "
+                    + rider.rate() + " a second living " + rider.lifeMax() + " s, in room for " + rider.count());
+        }
+    }
+
+    /** What each kind of aura is drawn in, whoever bears it: red, blue and violet as hues, in degrees from-to. */
+    private static final Map<SkillEffect, float[]> HUES = Map.of(
+            SkillEffect.LIFESTEAL_AURA, new float[] {340f, 20f},
+            SkillEffect.MANA_AURA, new float[] {200f, 240f},
+            SkillEffect.DAMAGE_AURA, new float[] {255f, 295f});
+
+    /**
+     * Each aura is drawn in the colour of its kind, not of its bearer: the thirst red, the mana blue, the might violet
+     * -- its ring and what rides its body alike, from the colour each starts in to the one it ends in -- so one is told
+     * from another at a glance, as Dota's are. A hue is red when it lies within 20 degrees of red, blue between 200 and
+     * 240, violet between 255 and 295, and coloured when it is at least a quarter saturated: white has no hue to lead.
+     */
+    @Test
+    void eachAurasLookIsInTheColourOfItsKind() {
+        var kinds = new java.util.HashSet<SkillEffect>();
+        for (var aura : SETTINGS.skills().stream().filter(skill -> skill.effect().isAura()).toList()) {
+            var window = HUES.get(aura.effect());
+            assertNotNull(window, aura.effect() + " is a kind of aura with no colour of its own");
+            var layers = SETTINGS.effectLayers().stream().filter(art -> art.effect().equals(aura.look()))
+                    .map(art -> Main.layerOf(art, SETTINGS)).toList();
             assertFalse(layers.isEmpty(), aura.look() + " is drawn in layers");
             for (var layer : layers) {
-                assertEquals(EffectLayer.MARK, layer.type(), aura.look() + " lies on the floor");
-                assertTrue(layer.follows(), aura.look() + " follows its bearer");
-                assertEquals(EffectLayer.REACH, layer.measure(), aura.look() + " is measured in its reach");
-                assertEquals(0.5f, layer.fadeIn(), 0.001f, aura.look());
-                assertEquals(0.5f, layer.fadeOut(), 0.001f, aura.look());
-                assertTrue(layer.renews(), aura.look() + " renews, worn as a state");
+                for (int colour : new int[] {layer.colourStart(), layer.colourEnd()}) {
+                    var hsb = java.awt.Color.RGBtoHSB(colour >> 16 & 0xFF, colour >> 8 & 0xFF, colour & 0xFF, null);
+                    float hue = hsb[0] * 360f;
+                    boolean led = window[0] <= window[1] ? hue >= window[0] && hue <= window[1]
+                            : hue >= window[0] || hue <= window[1];
+                    assertTrue(led && hsb[1] >= 0.25f, aura.effect() + "'s " + aura.look() + " is drawn in 0x"
+                            + Integer.toHexString(colour) + ": hue " + Math.round(hue) + ", saturation "
+                            + Math.round(hsb[1] * 100) + "% -- not hue " + window[0] + " to " + window[1]
+                            + " and coloured");
+                }
             }
+            kinds.add(aura.effect());
         }
+        assertEquals(HUES.keySet(), kinds, "an aura of each kind");
     }
 
     // ---- reach ----

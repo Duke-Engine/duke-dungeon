@@ -77,9 +77,10 @@ public final class Main {
      * again at each stun, a second haste starts the haste again, and an aura is played on its
      * bearer again at every beat — so an AURA layer it adds must last to the new end: see
      * {@link #wornAsAState}. Named by the files, so no name is compiled in. The shipped rings
-     * are MARKs, which the client lays anew each beat, and renewing changes nothing on them.
-     * Other AURA layers keep the engine's default drop: the knight's Whirlwind is cast again at
-     * each landing and must not be stretched.
+     * are MARKs, which the client lays anew each beat, and renewing changes nothing on them;
+     * what each aura's bearer wears besides is an AURA layer, which renewing carries on from
+     * beat to beat. Other AURA layers keep the engine's default drop: the knight's Whirlwind
+     * is cast again at each landing and must not be stretched.
      *
      * <p>Package-private so the game's own test can ask what a block in the file turns into on
      * screen.

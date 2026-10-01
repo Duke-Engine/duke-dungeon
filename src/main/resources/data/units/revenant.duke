@@ -112,8 +112,8 @@ Monster
       BoostPercent = 10
       ; A room round it, and the ones fighting beside it.
       Radius = 60
-      ; Worn: a faint ring as wide as its Radius, played on it every second -- see the
-      ; Effect BloodAura, below.
+      ; Worn: a thick red ring as wide as its Radius, and red drops rising round its body,
+      ; played on it every second -- see the Effect BloodAura, below.
       Look = BloodAura
       TickFrames = 30
       MaxRank = 1
@@ -123,8 +123,11 @@ Monster
 End
 
 ; ---------------------------------------------------------------------------
-; A Revenant's drink, worn: the summoner's MightAura in the Revenant's own blue -- the same
-; ring on the floor as wide as its Radius, played on it every TickFrames and lasting two.
+; A Revenant's drink, worn, in red -- the colour of a thirst whoever bears it, not the
+; Revenant's own blue: the summoner's MightAura in another colour -- the same thick ring
+; on the floor as wide as its Radius, played on it every TickFrames and lasting two --
+; and, in the place of its sparks, red drops rising round the body, as blood drawn up.
+; Like those sparks they are an AURA layer, carried on at each beat by Main.layerOf.
 ; ---------------------------------------------------------------------------
 Effect
   Name = BloodAura
@@ -135,15 +138,40 @@ Effect
       Type = MARK
       Measure = Reach
       Follows = Yes
-      Texture = kit/effects/particles/circle_02.png
+      Texture = kit/effects/particles/circle_03.png
       Blend = Additive
       Count = 1
-      Size = [3.56, 3.56]
-      Colour = [0x6FA8FF, 0x6FA8FF]
-      Alpha = [0.3, 0.3]
+      Size = [2.81, 2.81]
+      Colour = [0xD01C28, 0xD01C28]
+      Alpha = [0.55, 0.55]
       FadeIn = 0.5
       FadeOut = 0.5
       Height = 0.3
+    End,
+
+    ; Soft red drops, drawn out upward as they rise, from the shin to about the head and
+    ; gone as they reach it. They are drops, not a glow -- Cover lets them hide some of the
+    ; pale body behind them, so they stay red where light added to it would wash out to
+    ; pink -- and they start a little off the floor, where a long one is not cut by it.
+    Layer
+      Name = Drops
+      Type = AURA
+      Texture = kit/effects/particles/circle_05.png
+      Blend = Additive
+      Cover = 0.5
+      Count = 13
+      Rate = 9
+      Radius = 6
+      Life = [0.9, 1.4]
+      Size = [3.0, 1.4]
+      Colour = [0xFF4048, 0xA0101C]
+      Alpha = [1, 0.5]
+      FadeIn = 0.15
+      Speed = [7, 11]
+      Direction = UP
+      Spread = 12
+      Stretch = 0.12
+      Height = 2
     End
   ]
 End
