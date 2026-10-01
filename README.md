@@ -285,10 +285,11 @@ birlashtirilgan). Ochilganda darvoza o'rniga shaklsiz `OpenGate` turadi va
 `ClipMode.ONCE`). Darvoza o'zi ochilmaydi: uni faqat kalit ochadi. Yopiq
 turganda u qal'a ichini tashqarisidan ajratib turadi (`run/Seal`): zarba, o'q,
 portlash, meteor va davolash undan o'tmaydi (ostona tashqari hisoblanadi),
-otilish va siljish undan oshib o'tmaydi (mahorat rad etiladi, hech narsa
-sarflanmaydi), chaqiruvchi esa uning narigi tomonida yoriq ochmaydi; ochilgach
-hammasi avvalgidek yetadi. Stage'lar qal'asiz kesiladi — stage fayli
-qal'aning ko'rinishini saqlamaydi.
+tezlik (`Shiddat`) va aura (`Qudrat`, `Sehr buloqi`, `Qon aurasi`) ko'rinib
+tursa ham narigi tomondagilarga yetmaydi, otilish va siljish undan oshib
+o'tmaydi (mahorat rad etiladi, hech narsa sarflanmaydi), chaqiruvchi esa
+uning narigi tomonida yoriq ochmaydi; ochilgach hammasi avvalgidek yetadi.
+Stage'lar qal'asiz kesiladi — stage fayli qal'aning ko'rinishini saqlamaydi.
 
 Qal'ali qavatning **vazifasi** bor (`run/Mission`), ekranning tepasida
 yoziladi: qal'adan tashqaridagi barcha monstrlarni o'ldirish (hisobi bilan),

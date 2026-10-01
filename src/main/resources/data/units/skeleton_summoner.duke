@@ -132,8 +132,8 @@ Monster
       ; five seconds. A second haste while it burns starts the five seconds again.
       BoostPercent = 75
       DurationFrames = 150
-      ; How far from it the one it hastens may stand: past its band, to the ones
-      ; fighting him.
+      ; How far from it the one it hastens may stand, in its plain sight and never through
+      ; the keep's shut gate: past its band, to the ones fighting him.
       Range = 60
       ; The summoning's twelve seconds between castings.
       CooldownFrames = 360
@@ -146,9 +146,9 @@ Monster
     Skill
       Key = E
       ; Everyone of its own round it -- itself, and what it calls up -- hits half as hard
-      ; again: every blow and every skill, within its Radius and in its plain sight.
-      ; Never cast: it holds while it stands. Two summoners lend the stronger, never
-      ; both.
+      ; again: every blow and every skill, within its Radius and in its plain sight, and
+      ; never through the keep's shut gate. Never cast: it holds while it stands. Two
+      ; summoners lend the stronger, never both.
       Effect = DAMAGE_AURA
       BoostPercent = 50
       ; A room round it, and the ones fighting him from its band.

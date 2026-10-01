@@ -185,9 +185,10 @@ public final class Dungeon {
                     // Health coming back on its own, at the rate his block names --
                     // set by HeroProgress, as his mana is.
                     factory.register(Recovery.Data.class, (owner, data) -> new Recovery(owner));
-                    // And the water at the way in, mending whoever stands near it. See FountainUpdate.
+                    // And the water at the way in, mending whoever stands near it -- on its own side of the keep's
+                    // shut gate, as every mending is. See FountainUpdate.
                     factory.register(uz.dukeengine.dungeon.level.FountainUpdate.Data.class,
-                            uz.dukeengine.dungeon.level.FountainUpdate::new);
+                            (owner, data) -> new uz.dukeengine.dungeon.level.FountainUpdate(owner, data, seal));
                     // The keep's gate, which only the key given to it opens. See GateUpdate.
                     factory.register(uz.dukeengine.dungeon.run.GateUpdate.Data.class,
                             uz.dukeengine.dungeon.run.GateUpdate::new);

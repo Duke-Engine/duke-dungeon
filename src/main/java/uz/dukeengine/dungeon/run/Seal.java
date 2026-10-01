@@ -14,9 +14,13 @@ import uz.dukeengine.dungeon.gen.Keep;
  * down on the other side — and every haste and aura, which sight passes and which is not lent across.
  *
  * <p>Within the keep is its square — the court, and the ring of wall with the doorway the gate stands in. The threshold
- * is outside, with the rest of the floor: a hero on it is on the gate's far side from the boss. Nobody stands in the
- * doorway while the gate does, its shape filling it, so where the line falls matters only to what flies: a shot from
- * outside is spent as it reaches the gate's cell, one from within as it leaves it.
+ * is outside, with the rest of the floor: a hero on it is on the gate's far side from the boss. The line between them
+ * is the doorway cell's edge, five units from the gate's middle line, though the gate itself is a slab only four units
+ * thick in the middle of that cell. Nobody outside stands in the cell all the same: a body pressed to the gate has its
+ * middle the gate's half-thickness and its own radius from the middle line, and none is slimmer than the three that
+ * brings that to the cell's edge and no nearer — a test holds every creature of the data to it. So where the line
+ * falls matters only to what flies: a shot from outside is spent as it reaches the gate's cell, one from within as it
+ * leaves it.
  *
  * <p>One to a game, as {@code Orders} is, handed where the game is assembled to everything that asks, and told of each
  * floor as the run lays it. A floor with no keep — a stage, or one where none fitted — parts nothing; nor does one

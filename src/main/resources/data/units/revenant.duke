@@ -106,8 +106,8 @@ Monster
       ; Everyone of its own round it -- itself too -- drinks a tenth of every blow it
       ; lands, as health: a swing where it lands, a shot where it arrives, a burst and a
       ; meteor's blast for each they hurt -- added to a boss's own quarter. Within its
-      ; Radius and in its plain sight. Never cast: it holds while it stands. Two
-      ; Revenants lend the stronger, never both.
+      ; Radius and in its plain sight, and never through the keep's shut gate. Never cast:
+      ; it holds while it stands. Two Revenants lend the stronger, never both.
       Effect = LIFESTEAL_AURA
       BoostPercent = 10
       ; A room round it, and the ones fighting beside it.

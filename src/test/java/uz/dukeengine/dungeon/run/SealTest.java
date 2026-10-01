@@ -2,6 +2,7 @@ package uz.dukeengine.dungeon.run;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -11,8 +12,12 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import uz.dukeengine.core.math.Coord3D;
 import uz.dukeengine.core.pathfind.PathGrid;
+import uz.dukeengine.core.thing.Footprint;
 import uz.dukeengine.core.thing.GameObject;
+import uz.dukeengine.core.thing.Geometry;
 import uz.dukeengine.core.thing.ObjectStatus;
+import uz.dukeengine.core.thing.Solid;
+import uz.dukeengine.core.thing.World;
 import uz.dukeengine.dungeon.Dungeon;
 import uz.dukeengine.dungeon.ai.SightLine;
 import uz.dukeengine.dungeon.combat.ArrowUpdate;
@@ -31,14 +36,17 @@ import uz.dukeengine.combat.module.WeaponUpdate;
 
 /**
  * While the keep's gate stands, nothing that hurts or mends crosses it: a creature within the keep's walls and one
- * outside them cannot reach each other by blow, shot, burst, falling meteor or mending, nor lend each other a haste or
- * an aura, nor go over it by dash or blink, nor call anything up on its far side — and once it is open, everything
- * reaches as before.
+ * outside them cannot reach each other by blow, shot, burst, falling meteor or mending — the fountain's water too —
+ * nor lend each other a haste or an aura, nor go over it by dash or blink, nor call anything up on its far side — and
+ * once it is open, everything reaches as before.
  *
  * <p>Real fights on a floor of the descent with nobody in its chambers — the boss and its guard in the keep — each of
  * them stood where the fight needs them, and the hero on the threshold or the road before it. A fight that asks
  * whether something crosses is fought twice, the gate shut and the gate open, so a gate that stops something is told
  * from a fight in which nothing was ever thrown.
+ *
+ * <p>And the data the rule leans on without asking: that the engine lands no blow of its own, and that no creature
+ * outside is slim enough to stand in the doorway's cell — held to by tests of the creature files, which are no fights.
  */
 class SealTest {
 
@@ -113,11 +121,19 @@ class SealTest {
 
         /**
          * Stand {@code creature} against the gate's face on its {@code side} of it -- 1 outside, -1 within -- on the
-         * line through the gate's middle: four units in from the middle of its cell, as near the gate as a body goes.
+         * line through the gate's middle, as near the gate as a body goes: half a unit off it, since the engine counts
+         * a body that only touches the gate as overlapping it, and shoves it clear.
          */
         GameObject pressToGate(GameObject creature, int side) {
+            // The gate as it stood, shut or not: its template's shape across its doorway.
+            var gate = new Footprint(Solid.of(game().getLogic().findTemplate("Gate")), cell(0, 0),
+                    dungeon.keep().facing());
             var middle = put(creature, side, 0).getPosition();
-            creature.setPosition(new Coord3D(middle.x() - side * 4f * outX, middle.y() - side * 4f * outY, middle.z()));
+            float inward = Footprint.of(creature).separation(gate) - 0.5f;
+            creature.setPosition(new Coord3D(middle.x() - side * inward * outX, middle.y() - side * inward * outY,
+                    middle.z()));
+            assertEquals(0.5f, Footprint.of(creature).separation(gate), 0.01f,
+                    "pressed to the gate, a body stands off it by half a unit");
             return creature;
         }
 
@@ -472,27 +488,79 @@ class SealTest {
         assertFalse(boss.hasStatus(ObjectStatus.SLOWED), "it slowed the boss through the shut gate");
     }
 
-    /**
-     * Every creature with a weapon lands it through a hand the seal can stop: a Swing, for a blow that lands where it
-     * stands, or a Bow, whose arrows the gate stops. One with neither would land its blow through the shut gate, the
-     * engine's weapon asking nobody.
-     */
-    @Test
-    void everyWeaponLandsThroughAHandTheShutGateCanStop() {
+    // ---- the data it leans on ----
+
+    /** The game's own world with nobody in it, to ask the data's templates of. */
+    private static World bareWorld() {
         var game = Dungeon.world(".....\n.....\n.....\n", SETTINGS).game();
         game.runHeadless(1);
-        var factory = game.getLogic().getThingFactory();
+        return game.getLogic();
+    }
+
+    /** The name of every creature of the data: the monsters, then the heroes. */
+    private static List<String> creatureNames() {
         var names = new ArrayList<String>();
         SETTINGS.monsters().forEach(kind -> names.add(kind.name()));
         SETTINGS.heroes().forEach(hero -> names.add(hero.name()));
+        return names;
+    }
 
-        for (var name : names) {
-            var template = factory.findTemplate(name);
+    /**
+     * Every creature with a weapon lands it through a hand the seal can stop: a Swing, for a blow that lands where it
+     * stands, or a Bow, whose arrows the gate stops. One with neither would land its blow through the shut gate, the
+     * engine's weapon asking nobody. So would a blow the engine lands itself: a splash, which it spreads round the one
+     * hit, or a shot a Bow declines, as it does where its projectile carries no ArrowUpdate -- a Swing returns early
+     * for a Bow's carrier, so nothing else takes it.
+     */
+    @Test
+    void everyWeaponLandsThroughAHandTheShutGateCanStop() {
+        var world = bareWorld();
+        for (var name : creatureNames()) {
+            var template = world.findTemplate(name);
             assertNotNull(template, "no creature is called " + name);
-            boolean armed = template.modules().stream().anyMatch(data -> data instanceof WeaponUpdate.Data);
+            var weapons = template.modules().stream().filter(data -> data instanceof WeaponUpdate.Data)
+                    .map(data -> (WeaponUpdate.Data) data).toList();
             boolean handed = template.modules().stream()
                     .anyMatch(data -> data instanceof Swing.Data || data instanceof Bow.Data);
-            assertTrue(!armed || handed, name + " lands its blows through nothing the shut gate can stop");
+            assertTrue(weapons.isEmpty() || handed, name + " lands its blows through nothing the shut gate can stop");
+            for (var weapon : weapons) {
+                assertEquals(0f, weapon.splashRadius(), 0f,
+                        name + "'s weapon has a SplashRadius: the engine splashes round the one hit, asking nobody");
+                assertTrue(weapon.weaponSets().isEmpty(), name + " has weapon sets, whose named weapons may have a"
+                        + " SecondaryRadius, a second ring the engine lands round the one hit, asking nobody");
+            }
+            for (var data : template.modules()) {
+                if (data instanceof Bow.Data bow) {
+                    var arrow = bow.projectile() == null ? SETTINGS.combat().arrowTemplate() : bow.projectile();
+                    var shot = world.findTemplate(arrow);
+                    assertTrue(shot != null && shot.modules().stream().anyMatch(one -> one instanceof ArrowUpdate.Data),
+                            name + "'s bow looses " + arrow + ", which carries no ArrowUpdate: the bow declines the"
+                                    + " shot, and the engine lands the blow itself, asking nobody");
+                }
+            }
+        }
+    }
+
+    /**
+     * No creature outside the gate ever stands in the doorway's cell. The seal draws its line at that cell's edge,
+     * five units from the gate's middle line, and a body pressed to the gate's outer face has its middle as far from
+     * the line as the face is -- the gate's MinorRadius -- and its own footprint radius; so each creature must be broad
+     * enough to put that at the edge or past it, or one outside could stand in the cell, to be taken for one within the
+     * keep. At exactly half a cell, as the Runner's and the Stalker's, the middle comes to the edge and no nearer: the
+     * engine counts a body that only touches the gate as overlapping it, and keeps it clear.
+     */
+    @Test
+    void noCreatureOutsideTheGateReachesIntoTheDoorwaysCell() {
+        var world = bareWorld();
+        float half = PathGrid.DEFAULT_CELL_SIZE / 2f;
+        float face = assertInstanceOf(Geometry.Box.class, Solid.of(world.findTemplate("Gate")), "the gate is no box")
+                .minorRadius();
+        for (var name : creatureNames()) {
+            float radius = Solid.of(world.findTemplate(name)).footprintRadius();
+            assertTrue(face + radius >= half, name + " has a radius of " + radius + ", and the gate's face stands "
+                    + face + " from its middle line: pressed to the face, its middle would be " + (face + radius)
+                    + " from that line, short of half a cell (" + half + "), and so in the doorway's cell, which the"
+                    + " seal counts within the keep");
         }
     }
 
@@ -610,6 +678,55 @@ class SealTest {
             } else {
                 assertEquals(bossHad, bossMost, 0.01f, "the boss was mended through the shut gate");
                 assertTrue(besideMost > besideHad, "the healer mended nobody, the worse hurt being behind the gate");
+            }
+        }
+    }
+
+    /**
+     * The water mends whoever stands near it and stops at the shut gate. A fountain on the threshold, a Skeleton hurt on
+     * the road beside it and a summoner hurt and spent just inside the gate -- twenty units from it, well within its
+     * Radius: two pulses on, the Skeleton is mended either way, and the summoner, health and mana, only once the gate
+     * is open. Both are put back where they stood before each frame, a wounded monster setting off for the hero.
+     */
+    @Test
+    void aFountainOutsideMendsNobodyInsideTheShutGate() {
+        for (boolean opened : new boolean[] {false, true}) {
+            var floor = floor("Rogue");
+            var summoner = floor.guard("SkeletonSummoner");
+            floor.removeGuardsBut(summoner);
+            floor.hold();
+            floor.put(floor.boss(), -8, 0); // far back, and out of it
+            var beside = floor.spawn("Skeleton", 3, 0);
+            floor.spawn("Fountain", 1, 0);
+            if (opened) {
+                floor.open();
+            }
+            var pool = summoner.findModule(SkillBook.class);
+            pool.resize(0, 0);
+            pool.resize(100, 0); // room for a hundred and none of it filled, and no trickle of its own
+            summoner.getBody().setHealth(summoner.getBody().getMaxHealth() / 2f);
+            beside.getBody().setHealth(beside.getBody().getMaxHealth() / 2f);
+            float summonerHad = summoner.getBody().getHealth();
+            float besideHad = beside.getBody().getHealth();
+
+            for (int frame = 0; frame < 60; frame++) { // two of its pulses
+                floor.put(summoner, -1, 0);
+                floor.put(beside, 3, 0);
+                floor.game().runHeadless(1);
+            }
+
+            int summonerPulse = Math.max(1, Math.round(summoner.getBody().getMaxHealth() * 5 / 100f));
+            int besidePulse = Math.max(1, Math.round(beside.getBody().getMaxHealth() * 5 / 100f));
+            assertEquals(besideHad + 2 * besidePulse, beside.getBody().getHealth(), 0.01f,
+                    "the fountain did not mend the one beside it, so this proves nothing");
+            if (opened) {
+                assertEquals(summonerHad + 2 * summonerPulse, summoner.getBody().getHealth(), 0.01f,
+                        "the gate open, the fountain did not mend the one inside");
+                assertEquals(10, pool.getMana(), "and a twentieth of its pool back in each pulse");
+            } else {
+                assertEquals(summonerHad, summoner.getBody().getHealth(), 0.01f,
+                        "the fountain mended the one inside through the shut gate");
+                assertEquals(0, pool.getMana(), "and gave it mana through the shut gate");
             }
         }
     }
