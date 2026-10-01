@@ -1,5 +1,6 @@
 package uz.dukeengine.dungeon.skill;
 
+import uz.dukeengine.combat.module.Errand;
 import uz.dukeengine.core.GameLogic;
 import uz.dukeengine.core.thing.GameObject;
 
@@ -22,6 +23,11 @@ public final class Skills {
      * never has to read the simulation to fill an id in. "The player's living unit
      * that has skills" is unambiguous in a dungeon; where it would not be, the
      * first in creation order wins, which is an order every peer agrees on.
+     *
+     * <p>Cast, it is the player's latest word, and gives up whatever errand he was
+     * on as any order does — here, as the order comes in between frames, rather
+     * than in the book: a monster casts from its own update, in which nothing may
+     * change what modules it has.
      */
     public static boolean cast(GameLogic logic, CastSkill order, int rank) {
         var hero = heroOf(logic, order.playerIndex());
@@ -29,8 +35,11 @@ public final class Skills {
             return false;
         }
         var book = hero.findModule(SkillBook.class);
-        return book != null
-                && book.cast(order.key(), rank, order.target(), order.point());
+        if (book == null || !book.cast(order.key(), rank, order.target(), order.point())) {
+            return false;
+        }
+        Errand.giveUpAll(hero);
+        return true;
     }
 
     /**

@@ -431,6 +431,23 @@ LootDrops
   ; What he says when he is sent to use a thing on something it does nothing
   ; to: the key on anything but the keep's gate. He keeps it.
   NoUseWord = Bu kalit faqat boss darvozasini ochadi
+  ; How long he stands on an errand -- neither walking nor fighting -- without
+  ; having got a cell nearer to where he was sent, before he gives it up, in
+  ; logic frames (30 = one second): a friend standing in a corridor, a body he
+  ; cannot shoot, legs that found no way on. Walking and fighting are not counted
+  ; here: a way round leads off before it comes back, and a fight takes as long as
+  ; it takes.
+  StuckFrames = 900
+  ; And how long without getting a cell nearer however he spends it -- walking,
+  ; fighting, standing -- so that what never ends still ends the errand: a fight
+  ; with a thing that mends faster than he hurts it, legs shuffling between two
+  ; bodies. Longer than the longest way round a floor has: of 240 walks from the
+  ; way in to the gate (the mages' auras in, the hero kept alive), the longest of
+  ; the 217 that got there went 4986 frames without getting nearer; ten went past
+  ; this, fighting or shuffling on one spot, and end here.
+  StuckFightingFrames = 6000
+  ; What he says when he gives up an errand to a thing he cannot get to.
+  NoWayWord = U yerga yetib bora olmadim
 End
 
 ; Icon is the picture his bag draws it with, a path from the resource root.

@@ -500,8 +500,11 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
         spend(slot, skill, level);
         lastCastFrame = world.getFrame();
         // He does one thing at a time. Casting is the player's latest word, so
-        // whatever errand he was on ends here rather than resuming underneath it —
-        // a dash that lands him somewhere and then walks him back is not a dash.
+        // the walk he was on stops here rather than going on underneath it — a
+        // dash that lands him somewhere and then walks him back is not a dash.
+        // The errand the walk was for is given up where the player's cast comes
+        // in (Skills.cast), between frames: a monster's brain casts from its own
+        // update, in which nothing may change what modules it has.
         var legs = owner.findModule(MoveUpdate.class);
         if (legs != null) {
             legs.stop();
