@@ -24,14 +24,19 @@ package uz.dukeengine.dungeon.world;
  * @param attackSpeedWord      and its quicker blows
  * @param noUseWord            what he says when he was sent to use a thing on something it does nothing to — the key
  *     on anything but the keep's gate
+ * @param noWayWord            what he says when he gives up an errand to a thing he cannot get to
+ * @param stuckFrames          how long he stands on an errand, neither walking nor fighting, without getting a cell
+ *     nearer to where he was sent, before he gives it up, in logic frames
+ * @param stuckFightingFrames  and how long without getting nearer however he spends it: a fight in his way that never
+ *     ends, legs shuffling between two bodies, end the errand too
  */
 public record LootDrops(String template, int dropPercent, int bossDropPercent, float pickupRange,
         int valuePercentPerDepth, int noteFrames, int slots, String fullWord, String takeHint, String dropHint,
         String useHint, int joinCount, int topLevel, String healthRegenWord, String manaRegenWord,
-        String attackSpeedWord, String noUseWord) {
+        String attackSpeedWord, String noUseWord, String noWayWord, int stuckFrames, int stuckFightingFrames) {
 
     /** What a block leaves out. */
     public static final LootDrops DEFAULTS = new LootDrops("", 20, 100, 14f, 20, 90, 6, "The bag is full",
             "Right button: take", "Left button: put it down", "Left button: use it", 3, 3, "Health/s", "Mana/s",
-            "Attack speed", "It does nothing here");
+            "Attack speed", "It does nothing here", "I cannot get there", 900, 6000);
 }

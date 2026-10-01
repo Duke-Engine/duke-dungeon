@@ -743,6 +743,11 @@ public final class DungeonSettings {
         require(lootDrops.topLevel() >= 1 && lootDrops.topLevel() <= 3, "TopLevel is 1 to 3");
         require(sayable(lootDrops.fullWord()), "FullWord may not contain ',' or '|'");
         require(sayable(lootDrops.noUseWord()), "NoUseWord may not contain ',' or '|'");
+        require(sayable(lootDrops.noWayWord()), "NoWayWord may not contain ',' or '|'");
+        require(lootDrops.stuckFrames() > 0,
+                "StuckFrames, how long a hero gets no nearer before he gives an errand up, is at least one frame");
+        require(lootDrops.stuckFightingFrames() >= lootDrops.stuckFrames(),
+                "StuckFightingFrames, the limit that counts his fighting too, is at least StuckFrames");
         for (var item : loot) {
             require(sayable(item.name()),
                     "an item's DisplayName may not contain ',' or '|': " + item.id());

@@ -589,4 +589,37 @@ class LootTest {
             assertTrue(refused.getMessage().contains("NoUseWord"), refused.getMessage());
         }
     }
+
+    /** And what he says when he gives up on getting to a thing goes down the same line. */
+    @Test
+    void aNoWayWordTheStatusLineCouldNotCarryIsRefused() {
+        var shipped = "  NoWayWord = U yerga yetib bora olmadim\n";
+        var data = uz.dukeengine.dungeon.content.Content.data();
+        assertTrue(data.contains(shipped), "the shipped word is no longer written this way");
+
+        for (var word : new String[] {"U yerga, yetib bora olmadim", "U yerga | yetib bora olmadim"}) {
+            var refused = assertThrows(IllegalArgumentException.class,
+                    () -> DungeonSettings.parse(data.replace(shipped, "  NoWayWord = " + word + "\n")));
+            assertTrue(refused.getMessage().contains("NoWayWord"), refused.getMessage());
+        }
+    }
+
+    /**
+     * How long he may get no nearer before he gives an errand up is at least a frame, and the count that takes his
+     * fighting in too is at least as long: either way round, the file is refused and says which.
+     */
+    @Test
+    void aStuckLimitThatCannotHoldIsRefused() {
+        var data = uz.dukeengine.dungeon.content.Content.data();
+        assertTrue(data.matches("(?s).*\\n  StuckFrames = \\d+\\n.*")
+                        && data.matches("(?s).*\\n  StuckFightingFrames = \\d+\\n.*"),
+                "the shipped limits are no longer written this way");
+
+        var none = assertThrows(IllegalArgumentException.class, () -> DungeonSettings.parse(
+                data.replaceFirst("\\n  StuckFrames = \\d+\\n", "\n  StuckFrames = 0\n")));
+        assertTrue(none.getMessage().contains("StuckFrames"), none.getMessage());
+        var shorter = assertThrows(IllegalArgumentException.class, () -> DungeonSettings.parse(
+                data.replaceFirst("\\n  StuckFightingFrames = \\d+\\n", "\n  StuckFightingFrames = 1\n")));
+        assertTrue(shorter.getMessage().contains("StuckFightingFrames"), shorter.getMessage());
+    }
 }
