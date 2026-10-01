@@ -25,6 +25,9 @@ Monster
     ; instead of walking off mid-blow. It launches nothing -- see Swing.
     Swing
     End,
+    ; Every monster carries one, casting or not: a summoner's haste is held in it.
+    SkillBook
+    End,
     ; Timers for the statuses it is wearing -- the engine's own, and today that
     ; means SLOWED. MoveUpdate already halves the step of anything wearing it, and
     ; StatusUpdate already counts it down and takes it off, so a monster that

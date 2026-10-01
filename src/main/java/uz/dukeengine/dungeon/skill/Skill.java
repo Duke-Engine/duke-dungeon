@@ -29,8 +29,10 @@ import uz.dukeengine.dungeon.content.Projectile;
  * @param effect        what it does
  * @param damage        damage at the first level ({@code STRIKE}, {@code AREA_DAMAGE})
  * @param damagePerLevel  damage added per level past the first
- * @param radius        how far {@code AREA_DAMAGE} reaches around the caster
- * @param range         how far {@code STRIKE} can find a victim
+ * @param radius        how far {@code AREA_DAMAGE} reaches around the caster, and an
+ *     aura round its bearer, middle to middle
+ * @param range         how far {@code STRIKE} can find a victim, and a {@code HASTE}
+ *     the one it hastens, middle to middle
  * @param distance      how far {@code DASH} carries the caster
  * @param hitWidth      how wide the thing a {@code SKILLSHOT} sends is, across
  *     the line of flight. Nothing in the simulation reads it -- an arrow hits
@@ -40,18 +42,21 @@ import uz.dukeengine.dungeon.content.Projectile;
  *     worked out from the speed because the two are free to disagree and the
  *     PICTURE is the one the player trusts
  * @param boostPercent  what this skill is worth in percent — damage added by
- *     {@code EMPOWER}, damage avoided by {@code GUARD}, and the share of every blow
- *     a {@code LIFESTEAL} gives back as health. One field because it is one
- *     question ("how much is it worth?") asked of two mirrored effects and of a
- *     passive that is worth a share of what its bearer does
+ *     {@code EMPOWER}, damage avoided by {@code GUARD}, the share of every blow
+ *     a {@code LIFESTEAL} or a {@code LIFESTEAL_AURA} gives back as health, how
+ *     much faster a {@code HASTE} makes a weapon fire, and what a
+ *     {@code DAMAGE_AURA} adds to every blow round it. One field because it is one
+ *     question ("how much is it worth?") asked of mirrored effects and of
+ *     passives that are worth a share of what is done
  * @param boostPerLevel that percentage's growth per level
  * @param durationFrames how long it lasts: {@code EMPOWER}'s extra damage,
- *     {@code GUARD}'s protection, or how long an {@code AREA_DAMAGE} goes on
- *     landing. Zero for a skill that happens and is over
+ *     {@code GUARD}'s protection, a {@code HASTE}, or how long an
+ *     {@code AREA_DAMAGE} goes on landing. Zero for a skill that happens and is over
  * @param tickFrames    how often a lasting {@code AREA_DAMAGE} lands, in frames.
  *     Zero lands it once, which is what every skill written before there was a
  *     whirlwind does — so the damage figure means "per landing" either way and no
- *     existing skill changed by a hair
+ *     existing skill changed by a hair. For an aura it is the beat its {@code Look}
+ *     is worn at, and the look lasts two beats
  * @param slowFrames    how long whoever is caught by an area blast drags
  *     his feet afterwards, or zero for a blast that only hurts. One number rather
  *     than a third effect, because a frost nova IS the area blast with one more
@@ -83,7 +88,8 @@ import uz.dukeengine.dungeon.content.Projectile;
  *     this one looks like going off -- the ring across the floor, the knock to
  *     the camera -- or empty for a skill that is drawn by nothing but whatever it
  *     throws. Named rather than described, so two skills may share a look and a
- *     fifth skill is a fifth block of INI
+ *     fifth skill is a fifth block of INI. An aura's is worn rather than gone off:
+ *     played on its bearer every {@code TickFrames}, and lasting two of them
  * @param icon          the picture the panel draws in this skill's slot, as a file
  *     beside the other art, or empty for the letter the key is called. Which
  *     drawing goes with which skill is a matter for the file: a fifth skill should
@@ -107,6 +113,9 @@ import uz.dukeengine.dungeon.content.Projectile;
  *     hurts. The engine's own {@code DISABLED}, worn on the victim's own timers: its
  *     legs and its weapon stand still under it and its skills refuse. The fire mage's
  *     fireball has one and its ordinary fire does not
+ * @param manaRegen     what a {@code MANA_AURA} adds to every pool of its own round it,
+ *     in tenths of a point a second -- the heroes' word and unit for a trickle. Read by
+ *     nothing else, and refused on anything else
  */
 public record Skill(
         String heroTemplate,
@@ -143,7 +152,8 @@ public record Skill(
         @Link(Monster.class) Map<String, Integer> summons,
         int maxSummoned,
         int summonExperiencePercent,
-        int stunFrames) {
+        int stunFrames,
+        int manaRegen) {
 
     /**
      * A cooldown can shorten with level but never vanish: a skill castable every
@@ -156,7 +166,7 @@ public record Skill(
      * ranks deep, whose owner is the block it is written in.
      */
     static final Skill DEFAULTS = new Skill(null, '\0', SkillEffect.STRIKE, 0f, 0f, 0f, 0f, 0f, 0f,
-            0, 0, 0, 0, 0, 90, 0, 4, 0, 0, 0, 0, "", "", "", "", 0f, "", "", 0f, 0f, 0, Map.of(), 0, 0, 0);
+            0, 0, 0, 0, 0, 90, 0, 4, 0, 0, 0, 0, "", "", "", "", 0f, "", "", 0f, 0f, 0, Map.of(), 0, 0, 0, 0);
 
     /** This skill as {@code owner}'s, its key the one a player presses. */
     public Skill ownedBy(String owner) {
@@ -165,7 +175,7 @@ public record Skill(
                 cooldownFrames, cooldownPerLevel, maxRank, levelPerRank, windUpFrames, manaCost,
                 manaCostPerLevel, projectile, icon, look, castAnim, castSeconds, name, blurb,
                 projectileSpeed, heal, healBelowPercent, summons, maxSummoned,
-                summonExperiencePercent, stunFrames);
+                summonExperiencePercent, stunFrames, manaRegen);
     }
 
     /** Levels earned past the first — what every growth figure is multiplied by. */
@@ -232,7 +242,8 @@ public record Skill(
      *
      * <p>Both halves are required and that is the point: a duration with no tick
      * would be a skill that lasts and never lands, and a tick with no duration a
-     * skill that lands for ever.
+     * skill that lands for ever. An aura has a tick and no duration, so this is false
+     * for it: its tick is the beat its look is worn at, not a landing.
      */
     public boolean lasts() {
         return durationFrames > 0 && tickFrames > 0;
