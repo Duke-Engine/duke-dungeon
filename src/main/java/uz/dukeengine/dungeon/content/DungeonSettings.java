@@ -11,6 +11,7 @@ import uz.dukeengine.client3d.MenuStyle;
 import uz.dukeengine.client3d.PanelLook;
 import uz.dukeengine.core.module.ModuleData;
 import uz.dukeengine.core.thing.ThingTemplateLoader;
+import uz.dukeengine.dungeon.loot.ItemUse;
 import uz.dukeengine.dungeon.loot.Loot;
 import uz.dukeengine.dungeon.loot.LootKind;
 import uz.dukeengine.dungeon.skill.Skill;
@@ -749,10 +750,17 @@ public final class DungeonSettings {
         for (var item : loot) {
             require(item.kind() != LootKind.KEY || item.weight() == 0,
                     "LootItem " + item.id() + " is a KEY, which is given and never found: its Weight is 0");
+            // A key is what opens a gate, and nothing else is. What clears the bags at each floor, what the tracker
+            // looks for, what the floor lays and what never joins all ask an item's Kind, and only the opening asks
+            // its Use: only the loader can keep the two sets equal, so it does, each way.
+            require(item.kind() != LootKind.KEY || item.use() == ItemUse.UNLOCK,
+                    "LootItem " + item.id() + " is a KEY, which opens a gate and does nothing else: its Use is UNLOCK");
+            require(item.use() != ItemUse.UNLOCK || item.kind() == LootKind.KEY,
+                    "LootItem " + item.id() + " has Use = UNLOCK and is not a KEY: only a key opens a gate");
         }
-        require(map.keep().sizes().isEmpty()
-                        || loot.stream().anyMatch(item -> item.use() == uz.dukeengine.dungeon.loot.ItemUse.UNLOCK),
-                "a Keep's gate opens only to a key, and no LootItem has Use = UNLOCK");
+        // The floor lays the first KEY there is: a keep needs one.
+        require(map.keep().sizes().isEmpty() || loot.stream().anyMatch(item -> item.kind() == LootKind.KEY),
+                "a Keep's gate opens only to a key, and no LootItem has Kind = KEY to lay on its floor");
         for (var moment : moments) {
             require(!moment.effect().isBlank(), "Moment " + moment.name() + " plays no Effect");
             require(moment.scale() > 0f, "Moment " + moment.name() + " has to be drawn at some size");

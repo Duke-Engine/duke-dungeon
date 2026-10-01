@@ -129,7 +129,7 @@ public final class Mission {
         if (!keyLaid) {
             return Step.CLEAR;
         }
-        if (gate != null && world.findObject(gate) != null) {
+        if (gate != null && GateUpdate.stands(world, gate)) {
             return bags.stream().anyMatch(bag -> bag.holds(LootKind.KEY)) ? Step.GIVE : Step.TAKE;
         }
         return Step.KILL;

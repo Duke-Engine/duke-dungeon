@@ -583,7 +583,10 @@ End
 ; another. Its Use is what a left click on it in the bag does: UNLOCK, and the
 ; next click is on the thing he takes it to -- given to the keep's gate it opens
 ; it and is gone. It lies on the floor as its own thing, the Key in
-; data/props/key.duke, rather than in a chest: LiesAs.
+; data/props/key.duke, rather than in a chest: LiesAs. It belongs to the floor
+; it was found on -- a floor laid takes every key out of every bag, so it is
+; left behind when the floor ends -- and the loader refuses a KEY whose Use is
+; not UNLOCK, an UNLOCK on anything that is not a KEY, and a keep with no KEY.
 LootItem
   Name = Key
   DisplayName = Kalit

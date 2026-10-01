@@ -12,6 +12,7 @@ import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.core.thing.ObjectId;
 import uz.dukeengine.core.thing.ObjectStatus;
 import uz.dukeengine.core.thing.World;
+import uz.dukeengine.dungeon.run.Seal;
 import uz.dukeengine.dungeon.skill.SkillBook;
 import uz.dukeengine.combat.module.ExperienceModule;
 import uz.dukeengine.combat.module.StatusUpdate;
@@ -91,13 +92,22 @@ public final class ArrowUpdate extends UpdateModule {
      */
     private float flight;
 
-    public ArrowUpdate(GameObject owner, String stunLook) {
+    /**
+     * Where it was loosed from: its side of the keep's shut gate, which it does not leave while the gate stands. A
+     * shot that would is spent on the gate — see {@link Seal}.
+     */
+    private Coord3D loosedFrom;
+    private final Seal seal;
+
+    public ArrowUpdate(GameObject owner, String stunLook, Seal seal) {
         super(owner);
         this.stunLook = stunLook == null ? "" : stunLook;
+        this.seal = seal;
     }
 
     /** Send it after something, carrying what the weapon decided it was worth. */
     void loose(GameObject from, GameObject at, float carrying, DamageType type, float speed) {
+        this.loosedFrom = from.getPosition();
         this.shooter = from.getId();
         this.target = at.getId();
         this.damage = carrying;
@@ -120,6 +130,7 @@ public final class ArrowUpdate extends UpdateModule {
             float speed, float distance, float blast, int stun) {
         this.blastRadius = blast;
         this.stunFrames = stun;
+        this.loosedFrom = from.getPosition();
         this.shooter = from.getId();
         this.target = null;
         this.damage = carrying;
@@ -176,8 +187,13 @@ public final class ArrowUpdate extends UpdateModule {
             strike(world, victim);
             return;
         }
-        owner.setPosition(overTheGround(world, here.x() + dx / distance * stepPerFrame,
-                here.y() + dy / distance * stepPerFrame));
+        var next = overTheGround(world, here.x() + dx / distance * stepPerFrame,
+                here.y() + dy / distance * stepPerFrame);
+        if (seal.parts(world, loosedFrom, next)) {
+            owner.markDestroyed(); // spent on the shut gate
+            return;
+        }
+        owner.setPosition(next);
     }
 
     /**
@@ -209,8 +225,8 @@ public final class ArrowUpdate extends UpdateModule {
         var next = overTheGround(world,
                 here.x() + (float) StrictMath.cos(facing) * stepPerFrame,
                 here.y() + (float) StrictMath.sin(facing) * stepPerFrame);
-        if (world.isGroundBlocked(next)) {
-            owner.markDestroyed(); // spent against a wall
+        if (world.isGroundBlocked(next) || seal.parts(world, loosedFrom, next)) {
+            owner.markDestroyed(); // spent against a wall, or the shut gate
             return;
         }
         travelLeft -= stepPerFrame;
@@ -232,6 +248,10 @@ public final class ArrowUpdate extends UpdateModule {
      * is the arrow's to award.
      */
     private void strike(World world, GameObject victim) {
+        if (seal.parts(world, loosedFrom, victim.getPosition())) {
+            getOwner().markDestroyed(); // it came to the shut gate first, and is spent on it
+            return;
+        }
         victim.getBody().damage(damage, damageType);
         stun(world, victim);
         // Every blow it lands, this one and each its burst deals, its archer drinks from if a
@@ -256,7 +276,8 @@ public final class ArrowUpdate extends UpdateModule {
      * a fireball that hit you is not also a fireball that went off beside you.
      * Everyone else within the burst takes the same figure, which is the simplest
      * rule a player can hold in his head -- a falloff would be a second number to
-     * explain and nothing on screen could show it.
+     * explain and nothing on screen could show it. Nor does it reach through the
+     * keep's shut gate from where it burst.
      */
     private void splash(World world, GameObject struck, GameObject archer) {
         if (blastRadius <= 0f) {
@@ -264,12 +285,14 @@ public final class ArrowUpdate extends UpdateModule {
         }
         var owner = getOwner();
         int side = owner.getPlayerIndex();
-        for (var caught : world.objectsInRange(struck.getPosition(), blastRadius, candidate ->
+        var burst = struck.getPosition();
+        for (var caught : world.objectsInRange(burst, blastRadius, candidate ->
                 candidate != struck
                         && candidate.getBody() != null
                         && !candidate.isEffectivelyDead()
                         && world.getRelationship(side, candidate.getPlayerIndex())
-                                == Relationship.ENEMIES)) {
+                                == Relationship.ENEMIES
+                        && !seal.parts(world, burst, candidate.getPosition()))) {
             caught.getBody().damage(damage, damageType);
             SkillBook.drink(archer, damage);
             stun(world, caught);

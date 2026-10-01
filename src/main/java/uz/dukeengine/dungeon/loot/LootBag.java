@@ -146,6 +146,15 @@ public final class LootBag {
         return Arrays.stream(slots).anyMatch(item -> item != null && item.kind() == kind);
     }
 
+    /** Take everything of {@code kind} out of the bag, in slot order: every key, say, once its floor is behind him. */
+    public void removeAll(LootKind kind) {
+        for (int slot = 0; slot < slots.length; slot++) {
+            if (slots[slot] != null && slots[slot].kind() == kind) {
+                remove(slot);
+            }
+        }
+    }
+
     /**
      * Say something for a while, on the panel and in a bubble over his head — what he found, why he left it lying,
      * what he makes of the gate. It is said for {@code noteFrames} frames from {@code frame}.

@@ -99,8 +99,12 @@ public record Keep(Room walls, Side side, int chamber) {
      * nothing.
      */
     public boolean holds(int x, int y) {
-        return x >= walls.x() && y >= walls.y() && x < walls.x() + size() && y < walls.y() + size()
-                || isThreshold(x, y);
+        return within(x, y) || isThreshold(x, y);
+    }
+
+    /** Whether a cell is within the keep's walls: its square — the court, and the ring of wall with its doorway. */
+    public boolean within(int x, int y) {
+        return x >= walls.x() && y >= walls.y() && x < walls.x() + size() && y < walls.y() + size();
     }
 
     /** Where the road leaves from: beyond the threshold's middle, two cells out from the gate. */
