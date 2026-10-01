@@ -14,6 +14,7 @@ import uz.dukeengine.core.thing.ObjectId;
 import uz.dukeengine.core.thing.ObjectStatus;
 import uz.dukeengine.core.thing.World;
 import uz.dukeengine.dungeon.ai.Facing;
+import uz.dukeengine.dungeon.ai.SightLine;
 import uz.dukeengine.dungeon.combat.FallingUpdate;
 import uz.dukeengine.dungeon.combat.LevelBonus;
 import uz.dukeengine.dungeon.combat.Shot;
@@ -21,6 +22,7 @@ import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.dungeon.run.Seal;
 import uz.dukeengine.combat.event.WeaponFired;
 import uz.dukeengine.combat.module.DamageModifier;
+import uz.dukeengine.combat.module.RateOfFireModifier;
 import uz.dukeengine.combat.module.StatusUpdate;
 import uz.dukeengine.combat.module.WeaponHold;
 import uz.dukeengine.combat.module.WeaponUpdate;
@@ -40,14 +42,18 @@ import uz.dukeengine.combat.module.WeaponUpdate;
  * directly rather than attaching a buff module while {@code EMPOWER} lasts.
  * Attaching and detaching a module mid-frame is exactly what the engine's module
  * list refuses (rightly — it would silently skip whatever came next), and a flag
- * that expires is the same thing without the trap.
+ * that expires is the same thing without the trap. A {@code HASTE} is held the
+ * same way, in the hastened's own book, which is a {@link RateOfFireModifier} for
+ * it -- the seam a hero's boots ride through {@code AttackSpeed} -- and every
+ * monster carries one from birth.
  *
  * <p>Determinism: cooldowns are frames counted down, never seconds; the victim of
- * a {@code STRIKE} is the nearest enemy with ties broken by object id; a
+ * a {@code STRIKE} is the nearest enemy with ties broken by object id, and the one
+ * a {@code HASTE} is for the sturdiest near, down to the object id; a
  * {@code DASH} walks with {@link StrictMath}. Nothing here asks the clock.
  */
 @ModuleGroup({ModuleGroups.COMBAT, ModuleGroups.MOVEMENT, ModuleGroups.EFFECT, ModuleGroups.BODY})
-public final class SkillBook extends UpdateModule implements DamageModifier, WeaponHold {
+public final class SkillBook extends UpdateModule implements DamageModifier, RateOfFireModifier, WeaponHold {
 
     /** It reads no fields; the block only says the unit has one. */
     public record Data() implements ModuleData {
@@ -72,6 +78,13 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Wea
     /** Frames of {@code GUARD} left, and how much of a blow it turns aside. */
     private int guardFrames;
     private int guardPercent;
+
+    /**
+     * Frames of a {@code HASTE} left on this one -- whoever cast it -- and how much faster its weapon fires while it
+     * lasts. Counted down here as {@code EMPOWER}'s are; a second haste starts them again at its own figures.
+     */
+    private int hasteFrames;
+    private int hastePercent;
 
     /**
      * An {@code AREA_DAMAGE} that has not finished happening.
@@ -235,12 +248,21 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Wea
      */
     private final Seal seal;
 
+    /**
+     * How far round it an aura may be lent from: the widest {@code Radius} any aura in the files has, and nothing for a
+     * hero's book -- none of his side may bear one -- or where no file gives an aura. See {@link #auraOn}.
+     */
+    private final float auraReach;
+
     public SkillBook(GameObject owner, List<Skill> skills, DungeonSettings settings, Seal seal) {
         super(owner);
         this.skills = List.copyOf(skills);
         this.cooldowns = new int[skills.size()];
         this.settings = settings;
         this.seal = seal;
+        this.auraReach = settings.monster(owner.getTemplate().name()) == null ? 0f
+                : settings.skills().stream().filter(skill -> skill.effect().isAura())
+                        .map(Skill::radius).reduce(0f, Math::max);
     }
 
     /**
@@ -366,6 +388,11 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Wea
     /** Frames of extra damage left, for anything that wants to draw it. */
     public int getBoostFrames() {
         return boostFrames;
+    }
+
+    /** Frames of haste left on it, whoever cast it; 0 when none burns. */
+    public int getHasteFrames() {
+        return hasteFrames;
     }
 
     /** The frame he last committed to a skill, or a long time ago if he never has. */
@@ -599,6 +626,7 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Wea
                 float each = damageOf(skill, level);
                 for (var victim : enemiesWithin(owner, world, spot, skill.radius())) {
                     victim.getBody().damage(each);
+                    drink(owner, each);
                 }
                 // And leaves whoever it caught dragging his feet, if the file asks: the
                 // mage's frost nova, dropped where he points rather than round himself.
@@ -661,6 +689,23 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Wea
             case SUMMON -> {
                 if (!summon(owner, world, skill, towards)) {
                     return false; // no room left, or no floor to open a rift on
+                }
+            }
+            case HASTE -> {
+                // The sturdiest of its own near it, or itself -- never nobody. Held in the hastened's own book and
+                // counted down there, as EMPOWER is in its caster's: a second haste starts it again, never stacks.
+                var hastened = sturdiestNear(owner, world, skill.range());
+                var its = hastened.findModule(SkillBook.class);
+                its.hasteFrames = skill.durationFrames();
+                its.hastePercent = skill.boostAt(level);
+                // It turns to the one it hastens and is seen casting, as a mending is; and the one it hastens wears
+                // the haste's look for as long as it lasts -- Main.measureLooks gives the look its DurationFrames,
+                // and Main.layerOf carries it on to a second haste's end.
+                Facing.turnToward(owner, hastened);
+                world.post(new WeaponFired(world.getFrame(), owner.getId(), null,
+                        owner.getPosition(), hastened.getPosition()));
+                if (skill.hasLook()) {
+                    world.effect(skill.look(), hastened);
                 }
             }
             case DASH -> {
@@ -775,6 +820,7 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Wea
             return;
         }
         victim.getBody().damage(damage);
+        drink(owner, damage);
     }
 
     /**
@@ -867,6 +913,25 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Wea
             }
         }
         return best;
+    }
+
+    /**
+     * Whom a haste is for: of {@code caster}'s own side, living, carrying a book, within {@code range} of it, middle to
+     * middle, and in its plain sight -- itself always among them -- the one of the highest level, then the most health
+     * at its fullest, then the nearer, then the one the world made first. Sturdiest rather than hardest-hitting:
+     * health is on every body, and a blow's worth is not. A total order ending in the object id, so every machine
+     * picks the same one.
+     */
+    private static GameObject sturdiestNear(GameObject caster, World world, float range) {
+        var here = caster.getPosition();
+        var sturdier = java.util.Comparator.<GameObject>comparingInt(LevelBonus::levelOf)
+                .thenComparingDouble(one -> one.getBody().getMaxHealth())
+                .thenComparingDouble(one -> -here.distance(one.getPosition()))
+                .thenComparingInt(one -> -one.getId().value());
+        return world.objectsInRange(here, range, one -> one.getPlayerIndex() == caster.getPlayerIndex()
+                        && one.getBody() != null && !one.isEffectivelyDead()
+                        && one.findModule(SkillBook.class) != null && SightLine.clear(caster, one))
+                .stream().max(sturdier).orElse(caster);
     }
 
     private List<GameObject> enemiesWithin(GameObject owner, World world, float radius) {
@@ -1122,6 +1187,7 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Wea
             float each, float radius) {
         for (var victim : enemiesWithin(owner, world, radius)) {
             victim.getBody().damage(each);
+            drink(owner, each);
         }
     }
 
@@ -1154,43 +1220,105 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Wea
         }
         for (var victim : struck) {
             victim.getBody().damage(each);
+            drink(owner, each);
         }
     }
 
+    /**
+     * How much harder its blows and its skills land: an {@code EMPOWER} while it lasts, and the strongest
+     * {@code DAMAGE_AURA} it stands in -- see {@link #auraOn}. The engine's weapon multiplies it into each blow, and
+     * {@link #damageOf} into each skill; a mending is not damage and does not ask.
+     */
     @Override
     public float damageMultiplier() {
-        return boostFrames > 0 ? 1f + boostPercent / 100f : 1f;
+        float empowered = boostFrames > 0 ? 1f + boostPercent / 100f : 1f;
+        return empowered * (1f + auraOn(getOwner(), SkillEffect.DAMAGE_AURA) / 100f);
+    }
+
+    /**
+     * The strongest aura of {@code kind} on {@code creature}, 0 for none: the largest worth -- a {@code BoostPercent},
+     * or a {@code MANA_AURA}'s tenths of a point a second -- among the bearers of that kind on its side, living, whose
+     * level has opened it, within whose {@code Radius} it stands, middle to middle, and in whose plain sight -- the
+     * bearer itself among them. Nothing for a creature that carries no book, as one without a {@code StatusUpdate} is
+     * not stunned.
+     *
+     * <p>Asked where the figure is used, never pushed to the creature, so it holds exactly while the creature stands in
+     * reach and ends the moment it steps out or its bearer falls: nothing kept, nothing to go stale. A maximum of whole
+     * numbers, the same in any order, behind a sight line walked on integers.
+     *
+     * <p>ponytail: a pass over the floor's objects out to the widest aura, and a sight line for each bearer in reach,
+     * at every asking; a cache by frame if a crowded floor ever shows it.
+     */
+    public static int auraOn(GameObject creature, SkillEffect kind) {
+        var book = creature == null ? null : creature.findModule(SkillBook.class);
+        var world = creature == null ? null : creature.getWorld();
+        if (book == null || world == null || book.auraReach <= 0f) {
+            return 0;
+        }
+        var here = creature.getPosition();
+        int strongest = 0;
+        for (var bearer : world.objectsInRange(here, book.auraReach,
+                one -> one.getPlayerIndex() == creature.getPlayerIndex() && !one.isEffectivelyDead())) {
+            var theirs = bearer.findModule(SkillBook.class);
+            if (theirs == null) {
+                continue;
+            }
+            for (var skill : theirs.skills) {
+                int worth = kind == SkillEffect.MANA_AURA ? skill.manaRegen() : skill.boostPercent();
+                if (skill.effect() == kind && worth > strongest
+                        && LevelBonus.rankOf(bearer, skill) > 0
+                        && here.distance(bearer.getPosition()) <= skill.radius()
+                        && SightLine.clear(bearer, creature)) {
+                    strongest = worth;
+                }
+            }
+        }
+        return strongest;
+    }
+
+    /**
+     * How much faster its weapon fires while a {@code HASTE} burns on it: the engine divides every wait by this and
+     * cuts it to whole frames -- 30 frames at 1.75 are 17. Read at each shot; 1 when none burns.
+     */
+    @Override
+    public float rateOfFireMultiplier() {
+        return hasteFrames > 0 ? 1f + hastePercent / 100f : 1f;
     }
 
     /**
      * {@code striker} landed a blow worth {@code dealt}: every {@code LIFESTEAL} among
-     * its skills gives it back its share, as health, never above its maximum. Nobody,
-     * the dead, and a creature with no such skill get nothing.
+     * its skills, and the strongest {@code LIFESTEAL_AURA} it stands in -- see
+     * {@link #auraOn} -- give it back their shares of it, added, as health, never above
+     * its maximum. Nobody, the dead, and a creature with neither get nothing.
      *
-     * <p>Told rather than listening, by the two places a boss's blow lands today: a
-     * swing where the striker stands, which {@code Swing} hears the moment before the
-     * weapon lands it, and a shot when it arrives and each its burst catches, in
-     * {@code ArrowUpdate}. A boss's first damaging skill that lands anywhere else -- an
-     * area blow, a strike with no shot -- has to call this where its damage lands, or
-     * that blow is not drunk from. The figure is what the blow was worth, not what the
-     * victim had left: a kill is no special case.
+     * <p>Told rather than listening, by every place a blow lands: a swing where the
+     * striker stands, which {@code Swing} hears the moment before the weapon lands it;
+     * a shot when it arrives and each its burst catches, in {@code ArrowUpdate}; a
+     * meteor's blast, for each it hurts, in {@code FallingUpdate}; and a skill's own
+     * blow -- an area blow, a blast at a spot, a strike with no shot, a charge -- for
+     * each it hurts, here in the book. The figure is what the blow was worth, not what
+     * the victim had left: a kill is no special case.
      *
-     * <p>Deterministic: its skills in the order the file wrote them, one
-     * multiplication of the blow's own figure by a whole percentage each, on the
-     * simulation's frame, and the body's own {@code heal}.
+     * <p>Deterministic: whole percentages added up, its skills in the order the file
+     * wrote them, one multiplication of the blow's own figure, on the simulation's
+     * frame, and the body's own {@code heal}.
      */
     public static void drink(GameObject striker, float dealt) {
         var book = striker == null ? null : striker.findModule(SkillBook.class);
         if (book == null || dealt <= 0f || striker.isEffectivelyDead() || striker.getBody() == null) {
             return;
         }
+        int share = auraOn(striker, SkillEffect.LIFESTEAL_AURA);
         for (var skill : book.skills) {
             if (skill.effect() == SkillEffect.LIFESTEAL) {
                 // ponytail: at its first rank, which is a monster's only one; a hero may not
                 // drink yet (see DungeonSettings.validate), and one who does will read his rank
                 // from SkillRanks, as a cast is handed it.
-                striker.getBody().heal(dealt * skill.boostAt(1) / 100f);
+                share += skill.boostAt(1);
             }
+        }
+        if (share > 0) {
+            striker.getBody().heal(dealt * share / 100f);
         }
     }
 
@@ -1233,14 +1361,20 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Wea
      * <p>See the note on {@link #manaCarry} for why it is not a float. In short:
      * a second's worth of frames of the rate is exactly the rate, and no rounding
      * is carried from one second into the next.
+     *
+     * <p>The rate is its own and the strongest {@code MANA_AURA} it stands in, asked
+     * each frame the pool is not full -- see {@link #auraOn}. A pool with no trickle
+     * of its own still fills at the aura's; no pool at all is given nothing.
      */
     private void regenerate() {
-        if (!usesMana || manaTenthsPerSecond <= 0 || mana >= maxMana) {
+        int tenths = !usesMana || mana >= maxMana ? 0
+                : manaTenthsPerSecond + auraOn(getOwner(), SkillEffect.MANA_AURA);
+        if (tenths <= 0) {
             manaCarry = 0;
             return;
         }
         int aSecond = TENTHS * uz.dukeengine.core.GameConstants.LOGICFRAMES_PER_SECOND;
-        manaCarry += manaTenthsPerSecond;
+        manaCarry += tenths;
         while (manaCarry >= aSecond && mana < maxMana) {
             manaCarry -= aSecond;
             mana++;
@@ -1261,9 +1395,35 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Wea
         if (guardFrames > 0) {
             guardFrames--;
         }
+        if (hasteFrames > 0) {
+            hasteFrames--;
+        }
+        wearTheAuras();
         turnTheWhirlwind();
         if (drawing != null && --loosesIn <= 0) {
             looseTheDrawnShot();
+        }
+    }
+
+    /**
+     * Its auras are worn: each its level has opened and that says what it looks like is played on it every
+     * {@code TickFrames} -- on the frames its object id falls on, as a brain's re-plans are, so a roomful are not all
+     * played on one frame -- for as long as it lives, stunned or not. {@code Main.measureLooks} makes each last two
+     * ticks, so it rides its bearer while it stands and is gone within two of its fall. An event: out of the checksum.
+     */
+    private void wearTheAuras() {
+        var owner = getOwner();
+        var world = owner.getWorld();
+        if (world == null || owner.isEffectivelyDead()) {
+            return;
+        }
+        for (var skill : skills) {
+            int beat = skill.tickFrames();
+            if (skill.effect().isAura() && skill.hasLook() && beat > 0
+                    && world.getFrame() % beat == Math.floorMod(owner.getId().value(), beat)
+                    && LevelBonus.rankOf(owner, skill) > 0) {
+                world.effect(skill.look(), owner);
+            }
         }
     }
 

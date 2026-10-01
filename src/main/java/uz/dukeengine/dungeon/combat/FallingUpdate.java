@@ -11,6 +11,7 @@ import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.core.thing.ObjectId;
 import uz.dukeengine.core.thing.World;
 import uz.dukeengine.dungeon.run.Seal;
+import uz.dukeengine.dungeon.skill.SkillBook;
 import uz.dukeengine.combat.event.WeaponFired;
 import uz.dukeengine.combat.module.ExperienceModule;
 
@@ -107,6 +108,9 @@ public final class FallingUpdate extends UpdateModule {
                                 == Relationship.ENEMIES
                         && !seal.parts(world, calledFrom, candidate.getPosition()))) {
             victim.getBody().damage(damage, DamageType.EXPLOSION);
+            // A blow like any other, and its caller drinks from it if a skill of its, or an aura it stands in, says
+            // so -- see SkillBook.drink.
+            SkillBook.drink(caster, damage);
             if (victim.isEffectivelyDead()) {
                 award(caster, victim);
             }

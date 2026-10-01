@@ -83,8 +83,10 @@ one new cast effect, three new passives, and the `SkillBook` the one thing that 
 ## Every blow a monster lands
 
 `drink` adds the strongest `LIFESTEAL_AURA` on the striker to its own `LIFESTEAL` shares. The places that tell it —
-`Swing.launch`, `ArrowUpdate.strike` and `splash` — gain the meteor's blast (`FallingUpdate`, for each it hurts), so no
-blow a monster deals escapes the Revenant's aura. The Revenant keeps its `AutoHealUpdate`, and drinks from its own fire.
+`Swing.launch`, `ArrowUpdate.strike` and `splash` — gain the meteor's blast (`FallingUpdate`, for each it hurts) and
+the blows the book lands itself (`SkillBook`: an area blow, a blast at a spot, a strike with no shot, a charge — for
+each it hurts), so no blow a monster deals escapes the Revenant's aura. The Revenant keeps its `AutoHealUpdate`, and
+drinks from its own fire.
 
 ## Drawn
 
@@ -120,6 +122,7 @@ summoner's pool (80, 2.5 a second) pays for both at their cooldowns; alone, as i
 - An aura needs a `Radius`; a `DAMAGE_AURA` a `BoostPercent` of at least 1, a `LIFESTEAL_AURA` one from 1 to 100 (as
   `LIFESTEAL`), a `MANA_AURA` a `ManaRegen` of at least 1. `ManaRegen` on any other skill is read by nothing, refused as
   `StunFrames` off a skillshot is; an aura's `Look` and `TickFrames` come together or not at all.
+- An aura says no `DurationFrames`: it holds while its bearer lives, and its look is measured two of its beats.
 - A `HASTE` needs a `BoostPercent` of at least 1 and `DurationFrames`; a `Range` of 0 hastens only its caster.
 - A passive is still refused on a hero, and still may not carry `Damage`, `ManaCost`, `WindUpFrames` or a `Projectile`.
 - The switches over every effect (the aim rings' in `Main.rangeOf`) learn the four: the auras where `LIFESTEAL` stands,

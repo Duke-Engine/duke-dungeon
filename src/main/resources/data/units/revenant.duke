@@ -43,6 +43,9 @@ Monster
     ; instead of walking off mid-blow. It launches nothing -- see Swing.
     Swing
     End,
+    ; What carries its aura, below -- and, as every monster's does, a summoner's haste.
+    SkillBook
+    End,
     ; Timers for the statuses it is wearing -- the engine's own, and today that
     ; means SLOWED. MoveUpdate already halves the step of anything wearing it, and
     ; StatusUpdate already counts it down and takes it off, so a monster that
@@ -59,7 +62,8 @@ Monster
 
 
   ; Heals itself (AutoHealUpdate in its template above). Kill it quickly or it undoes
-  ; the fight — a damage check rather than a health check.
+  ; the fight — a damage check rather than a health check. And everyone of its own round
+  ; it drinks from their blows: see its Skill, below.
   ;
   ; And it throws fire, which it did not: a thing in a pointed hat that walks up
   ; and hits you is a skeleton with a hat on. Its ordinary attack is a small
@@ -95,4 +99,51 @@ Monster
   End
   ; It heals itself; the pale wash says so before the health bar does.
   Tint = 0x9FC4FF
+
+  Skills = [
+    Skill
+      Key = Q
+      ; Everyone of its own round it -- itself too -- drinks a tenth of every blow it
+      ; lands, as health: a swing where it lands, a shot where it arrives, a burst and a
+      ; meteor's blast for each they hurt -- added to a boss's own quarter. Within its
+      ; Radius and in its plain sight. Never cast: it holds while it stands. Two
+      ; Revenants lend the stronger, never both.
+      Effect = LIFESTEAL_AURA
+      BoostPercent = 10
+      ; A room round it, and the ones fighting beside it.
+      Radius = 60
+      ; Worn: a faint ring as wide as its Radius, played on it every second -- see the
+      ; Effect BloodAura, below.
+      Look = BloodAura
+      TickFrames = 30
+      MaxRank = 1
+      Name = Qon aurasi
+    End
+  ]
+End
+
+; ---------------------------------------------------------------------------
+; A Revenant's drink, worn: the summoner's MightAura in the Revenant's own blue -- the same
+; ring on the floor as wide as its Radius, played on it every TickFrames and lasting two.
+; ---------------------------------------------------------------------------
+Effect
+  Name = BloodAura
+
+  Layers = [
+    Layer
+      Name = Ring
+      Type = MARK
+      Measure = Reach
+      Follows = Yes
+      Texture = kit/effects/particles/circle_02.png
+      Blend = Additive
+      Count = 1
+      Size = [3.56, 3.56]
+      Colour = [0x6FA8FF, 0x6FA8FF]
+      Alpha = [0.3, 0.3]
+      FadeIn = 0.5
+      FadeOut = 0.5
+      Height = 0.3
+    End
+  ]
 End

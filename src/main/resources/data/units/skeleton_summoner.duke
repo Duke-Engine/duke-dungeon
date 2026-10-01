@@ -1,6 +1,7 @@
 ; The purple one, and it brings more of them. Frail and slow like the other two, with a
-; mote of dark for its ordinary shot, and its skill opens rifts that swordsmen and
-; archers climb out of -- see Monster SkeletonSummoner and the Q skill of the
+; mote of dark for its ordinary shot; its skills open rifts that swordsmen and archers
+; climb out of, and make the sturdiest of its own strike faster, and everyone of its own
+; round it hits harder -- see Monster SkeletonSummoner and the Q, W and E skills of the
 ; SkeletonSummoner below.
 Monster
   Name = SkeletonSummoner
@@ -54,7 +55,7 @@ Monster
   ; two, and whenever he is inside its SkillDistance and in plain sight it opens rifts
   ; round itself that skeletons and stalkers climb out of -- toward him first. They last a
   ; while, fall down again, and are worth nothing: kill the summoner, not what it
-  ; calls up.
+  ; calls up. After its rifts open, it makes the sturdiest of its own near it strike faster.
   SenseRadius = 64
   ChaseRadius = 120
   ; Unused: it holds the band below rather than closing.
@@ -84,9 +85,10 @@ Monster
   Attack = Ranged_Magic_Shoot
   Idle = Ranged_Magic_Spellcasting_Long
 
-  ; What it opens its rifts out of, in the hero's words and units, as the Skeleton
-  ; Mage's: enough to call up its four at its cooldown through a fight of a minute
-  ; or more.
+  ; What it opens its rifts and hastens out of, in the hero's words and units, as the
+  ; Skeleton Mage's: enough to call up its four at its cooldown through a fight of a
+  ; minute or more, and to hasten as its trickle allows -- or, beside a healer, whose
+  ; aura fills it three times as fast, both at their cooldowns.
   MaxMana = 80
   ManaRegen = 25
 
@@ -118,6 +120,122 @@ Monster
       ManaCost = 40
       MaxRank = 1
       Name = Chaqiruv
+    End,
+    Skill
+      Key = W
+      ; One of its own made to strike faster: the sturdiest near it -- the highest level,
+      ; then the most health, then the nearer -- or itself, when nothing sturdier stands
+      ; near. Cast as its summoning is, whenever he is inside its SkillDistance and in
+      ; plain sight: after the summoning in a fight, and never in an empty room.
+      Effect = HASTE
+      ; Three quarters again as fast -- every wait of its weapon divided by 1.75 -- for
+      ; five seconds. A second haste while it burns starts the five seconds again.
+      BoostPercent = 75
+      DurationFrames = 150
+      ; How far from it the one it hastens may stand: past its band, to the ones
+      ; fighting him.
+      Range = 60
+      ; The summoning's twelve seconds between castings.
+      CooldownFrames = 360
+      ManaCost = 25
+      ; And the one it hastens wears it for as long -- see the Effect Hasted, below.
+      Look = Hasted
+      MaxRank = 1
+      Name = Shiddat
+    End,
+    Skill
+      Key = E
+      ; Everyone of its own round it -- itself, and what it calls up -- hits half as hard
+      ; again: every blow and every skill, within its Radius and in its plain sight.
+      ; Never cast: it holds while it stands. Two summoners lend the stronger, never
+      ; both.
+      Effect = DAMAGE_AURA
+      BoostPercent = 50
+      ; A room round it, and the ones fighting him from its band.
+      Radius = 60
+      ; Worn: a faint ring as wide as its Radius, played on it every second -- see the
+      ; Effect MightAura, below.
+      Look = MightAura
+      TickFrames = 30
+      MaxRank = 1
+      Name = Qudrat
+    End
+  ]
+End
+
+; ---------------------------------------------------------------------------
+; What the one a summoner hastens wears, for as long as the haste: the kit's Focus -- a
+; glow round the body, motes rising -- in a fury's red. No layer says how long: the client
+; is told the haste's DurationFrames (Main.measureLooks), and a second haste while it
+; burns carries it on to the new end (Main.layerOf) -- which is why both are let out as
+; they go rather than laid once.
+; ---------------------------------------------------------------------------
+Effect
+  Name = Hasted
+
+  Layers = [
+    Layer
+      Name = Glow
+      Type = AURA
+      Texture = kit/effects/particles/light_02.png
+      Blend = Additive
+      Cover = 0.1
+      Count = 5
+      Rate = 6
+      Life = [0.6, 0.8]
+      Size = [20, 22]
+      Colour = [0xFF5A3A, 0xD81E12]
+      Alpha = [0.35, 0]
+      Spin = 30
+      Height = 6
+    End,
+
+    Layer
+      Name = Motes
+      Type = AURA
+      Texture = kit/effects/particles/star_01.png
+      Blend = Additive
+      Count = 10
+      Rate = 7
+      Radius = 6
+      Life = [0.8, 1.2]
+      Size = [2.4, 0.4]
+      Colour = [0xFFB080, 0xFF3020]
+      Speed = [2, 5]
+      Direction = UP
+      Spread = 20
+      Height = 1
+    End
+  ]
+End
+
+; ---------------------------------------------------------------------------
+; A summoner's might, worn: a faint ring on the floor as wide as its Radius, in its own
+; purple. It plays it on itself every TickFrames (see its E), and the client is told it
+; lasts two of them (Main.measureLooks): each ring fades in over its first half and out
+; over its second, so the one laid a beat later takes over as it goes and the two stand
+; as one steady ring -- until the summoner falls, and the last is gone within two
+; seconds. circle_02's brightest line lies at 0.5625 of its half-width, so a size of 3.56
+; of the reach lays it on the Radius itself: what stands inside the ring is lent to.
+; ---------------------------------------------------------------------------
+Effect
+  Name = MightAura
+
+  Layers = [
+    Layer
+      Name = Ring
+      Type = MARK
+      Measure = Reach
+      Follows = Yes
+      Texture = kit/effects/particles/circle_02.png
+      Blend = Additive
+      Count = 1
+      Size = [3.56, 3.56]
+      Colour = [0xB06AE8, 0xB06AE8]
+      Alpha = [0.3, 0.3]
+      FadeIn = 0.5
+      FadeOut = 0.5
+      Height = 0.3
     End
   ]
 End

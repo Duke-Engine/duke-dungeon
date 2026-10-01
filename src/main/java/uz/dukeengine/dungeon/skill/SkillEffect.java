@@ -10,10 +10,12 @@ package uz.dukeengine.dungeon.skill;
  *
  * <p>These are the shapes a dungeon hero needs: hit one thing hard, hit
  * everything near you, drop something on a spot, fire something down a line, be
- * somewhere else, be briefly stronger, be briefly harder to kill -- and two that
- * no hero has and a monster does: mend one of your own, and call up more of them.
- * And one that is never cast at all: drink from your own blows -- see
- * {@link #isPassive}. A new shape is
+ * somewhere else, be briefly stronger, be briefly harder to kill -- and three that
+ * no hero has and a monster does: mend one of your own, call up more of them, and
+ * make one of them strike faster.
+ * And some that are never cast at all: drink from your own blows, and lend
+ * everyone of your own round you something -- see {@link #isPassive} and
+ * {@link #isAura}. A new shape is
  * a constant here and one branch in {@link SkillBook}; a new <em>skill</em> is
  * neither, and that is the point of the split — a second hero is blocks of INI
  * and no Java at all.
@@ -172,18 +174,51 @@ public enum SkillEffect {
     SUMMON(Aim.SELF),
 
     /**
+     * Make one of your own strike faster, for a while.
+     *
+     * <p>The sturdiest of the caster's own side near it -- the highest level, then the most health at its fullest,
+     * then the nearer, then the one the world made first -- that lives, carries a {@code SkillBook}, and stands within
+     * {@code Range} of the caster, middle to middle, and in its plain sight; the caster itself when nothing sturdier
+     * stands near. Every wait of that one's weapon is divided by 1 + {@code BoostPercent}/100 and cut to whole frames,
+     * the engine's rule for a rate of fire, for {@code DurationFrames}; a second haste while it burns starts it again
+     * at the newer figures. Aimed at nothing, so never refused for want of someone to hasten.
+     */
+    HASTE(Aim.SELF),
+
+    /**
      * Drink from your own blows: every blow its bearer lands gives it back
      * {@code BoostPercent} of what the blow was worth, as health, never above its
-     * maximum -- a swing where it lands, a shot where it arrives, and each its burst
-     * catches. What the blow was worth is its own figure, before the victim's armour,
-     * and a kill is no special case.
+     * maximum -- a swing where it lands, a shot where it arrives, each its burst
+     * catches, each a meteor's blast hurts, and every blow its own skills land. What
+     * the blow was worth is its own figure, before the victim's armour, and a kill is
+     * no special case.
      *
      * <p>Never cast: it holds for as long as its bearer lives -- see
-     * {@link #isPassive}. It is told of each blow by the two places a boss's blow
-     * lands today, and a boss's first damaging skill that lands anywhere else has to
-     * tell it too; see {@link SkillBook#drink}.
+     * {@link #isPassive}. It is told of each blow where it lands; see
+     * {@link SkillBook#drink}.
      */
-    LIFESTEAL(Aim.SELF, true);
+    LIFESTEAL(Aim.SELF, true),
+
+    /**
+     * Everyone of your own round you hits harder: {@code BoostPercent} more on every blow and every skill's damage. A
+     * mending is not damage, and is not raised.
+     *
+     * <p>An aura: never cast, and lent to everyone it reaches rather than to its bearer alone -- see {@link #isAura}.
+     */
+    DAMAGE_AURA(Aim.SELF, true),
+
+    /**
+     * Everyone of your own round you refills faster: {@code ManaRegen}, in tenths of a point a second as a pool's own
+     * trickle is, added to it -- a pool with none of its own still fills at the aura's. A creature with no pool gets
+     * nothing: the aura fills pools, it makes none. An aura -- see {@link #isAura}.
+     */
+    MANA_AURA(Aim.SELF, true),
+
+    /**
+     * Everyone of your own round you drinks from its blows: {@code BoostPercent} of every blow it lands back as
+     * health, added to a {@link #LIFESTEAL} of its own -- see {@link SkillBook#drink}. An aura -- see {@link #isAura}.
+     */
+    LIFESTEAL_AURA(Aim.SELF, true);
 
     /** What a player has to click before the cast can go through. */
     public enum Aim {
@@ -247,5 +282,19 @@ public enum SkillEffect {
      */
     public boolean isPassive() {
         return passive;
+    }
+
+    /**
+     * Whether it lends what it is worth to everyone of its bearer's own side round it: the living of that side that
+     * carry a {@code SkillBook} -- the bearer itself, and what a summoner calls up, among them; heroes never -- within
+     * its {@code Radius} of the bearer, middle to middle, and in its plain sight. Every aura is a passive.
+     *
+     * <p>It is asked by the one it lends to, at the moment the figure is used, never pushed to it -- see
+     * {@link SkillBook#auraOn} -- so it holds exactly while that one stands in reach and ends the moment it steps out
+     * or its bearer falls. Of several of one kind round a creature the strongest counts, never the sum; kinds add,
+     * each where its own figure is used. Its figures are the skill's own and do not grow with its bearer's level.
+     */
+    public boolean isAura() {
+        return this == DAMAGE_AURA || this == MANA_AURA || this == LIFESTEAL_AURA;
     }
 }

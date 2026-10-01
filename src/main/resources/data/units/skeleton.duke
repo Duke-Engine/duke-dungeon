@@ -30,6 +30,9 @@ Monster
     ; instead of walking off mid-blow. It launches nothing -- see Swing.
     Swing
     End,
+    ; Every monster carries one, casting or not: a summoner's haste is held in it.
+    SkillBook
+    End,
     ; Timers for the statuses it is wearing -- the engine's own, and today that
     ; means SLOWED. MoveUpdate already halves the step of anything wearing it, and
     ; StatusUpdate already counts it down and takes it off, so a monster that
@@ -73,8 +76,8 @@ Monster
 ; it casts from, and it only ever casts at something it can see; a skill aimed
 ; at him must have a Range that reaches the far end of that band, or the file is
 ; refused when it is read. Two exceptions: a HEAL is cast on its own side and
-; needs no SkillDistance, and what goes off round the caster -- a summoning --
-; aims at nothing, so its Range is not held to the band.
+; needs no SkillDistance, and what goes off round the caster -- a summoning, a
+; haste -- aims at nothing, so its Range is not held to the band.
 ; KeepDistance is the band it holds instead of closing: nearer and it backs away,
 ; further and it comes. MaxPerRoom keeps one kind from filling a room on its own;
 ; zero is no limit.

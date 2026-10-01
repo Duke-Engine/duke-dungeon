@@ -22,6 +22,7 @@ import uz.dukeengine.dungeon.content.Monster;
 import uz.dukeengine.dungeon.content.ShippedBlock;
 import uz.dukeengine.dungeon.skill.Skill;
 import uz.dukeengine.dungeon.skill.SkillBook;
+import uz.dukeengine.dungeon.skill.SkillEffect;
 import uz.dukeengine.game.DukeGame;
 import uz.dukeengine.combat.module.StatusUpdate;
 
@@ -232,7 +233,8 @@ class StunTest {
     }
 
     /** They last as long as the longest stun any skill gives, and no layer of them says how
-     * long for itself. The stun's layers renew with each stun; other AURA layers do not. */
+     * long for itself. The stun's layers renew with each stun; other AURA layers do not, but
+     * for those of a look worn as a state -- a haste's, an aura's: see HasteTest and AuraTest. */
     @Test
     void theStarsLastAsLongAsTheLongestStun() {
         var visuals = Visuals.create();
@@ -252,8 +254,11 @@ class StunTest {
             assertTrue(layer.renews(), "stunned again while it burns, the picture must last to the new stun's end");
         }
         // Other auras keep the engine's default: they do not renew
+        var states = SETTINGS.skills().stream()
+                .filter(skill -> skill.effect() == SkillEffect.HASTE || skill.effect().isAura())
+                .map(Skill::look).toList();
         var otherAuras = SETTINGS.effectLayers().stream()
-                .filter(art -> !art.effect().equals(SETTINGS.combat().stunLook()))
+                .filter(art -> !art.effect().equals(SETTINGS.combat().stunLook()) && !states.contains(art.effect()))
                 .map(art -> Main.layerOf(art, SETTINGS))
                 .filter(layer -> layer.type().equals(EffectLayer.AURA))
                 .toList();

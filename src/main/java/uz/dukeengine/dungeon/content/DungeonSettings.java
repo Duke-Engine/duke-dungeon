@@ -774,12 +774,32 @@ public final class DungeonSettings {
                             || heroes.stream().noneMatch(hero -> hero.name().equals(skill.heroTemplate())),
                     skill.heroTemplate() + "'s Skill " + skill.key() + " is a " + skill.effect()
                             + ", never cast: only a monster may have one, for now -- a hero's bar has no place for it");
-            // A passive is never cast, so what only a cast reads would be a number nothing read.
+            // A passive is never cast, so what only a cast reads would be a number nothing read -- but an aura is worn,
+            // and may say what it looks like: its bearer plays it on itself.
             require(!skill.effect().isPassive() || skill.damage() == 0f && skill.manaCost() == 0
-                            && skill.windUpFrames() == 0 && !skill.hasProjectile() && !skill.hasLook(),
+                            && skill.windUpFrames() == 0 && !skill.hasProjectile()
+                            && (!skill.hasLook() || skill.effect().isAura()),
                     skill.heroTemplate() + "'s Skill " + skill.key() + " is a " + skill.effect()
                             + ", never cast: a Damage, ManaCost, WindUpFrames, Projectile or Look on it is read by"
-                            + " nothing");
+                            + " nothing -- only an aura is worn, and may name a Look");
+            // And worn at the beat it names: an aura's Look and its TickFrames come together, or neither does.
+            require(!skill.effect().isAura() || skill.hasLook() == (skill.tickFrames() > 0),
+                    skill.heroTemplate() + "'s Skill " + skill.key() + " is a " + skill.effect() + ", worn every"
+                            + " TickFrames as its Look: the two come together, or neither does");
+            // An aura holds while its bearer lives, and its Look is measured two of its beats -- a DurationFrames would
+            // be read first, and lay the rings more than two deep.
+            require(!skill.effect().isAura() || skill.durationFrames() == 0,
+                    skill.heroTemplate() + "'s Skill " + skill.key() + " is a " + skill.effect() + " and has"
+                            + " DurationFrames = " + skill.durationFrames() + ": it holds while its bearer lives, and"
+                            + " its Look lasts two TickFrames");
+            // An aura lends what it is worth as far as its Radius and no further: without one it reaches nobody.
+            require(!skill.effect().isAura() || skill.radius() > 0f,
+                    skill.heroTemplate() + "'s Skill " + skill.key() + " is a " + skill.effect()
+                            + " and reaches nobody: it needs a Radius");
+            // What a mana aura lends, and nothing else reads: written on any other skill, a number nothing read.
+            require(skill.manaRegen() == 0 || skill.effect() == SkillEffect.MANA_AURA,
+                    skill.heroTemplate() + "'s Skill " + skill.key() + " has ManaRegen = " + skill.manaRegen()
+                            + ": only a MANA_AURA lends mana");
             switch (skill.effect()){
                 case HEAL -> {
                     var name = skill.heroTemplate() + "'s Skill " + skill.key();
@@ -804,9 +824,18 @@ public final class DungeonSettings {
                             name + "'s SummonExperiencePercent is a share, from 0 to 100");
                     require(skill.hasProjectile(), name + " has no rift to open: name it in Projectile");
                 }
-                case LIFESTEAL -> require(skill.boostPercent() >= 1 && skill.boostPercent() <= 100,
+                case HASTE -> require(skill.boostPercent() >= 1 && skill.durationFrames() > 0,
+                        skill.heroTemplate() + "'s Skill " + skill.key() + " hastens nobody: it needs a BoostPercent"
+                                + " of at least 1 and DurationFrames for it to last");
+                case LIFESTEAL, LIFESTEAL_AURA -> require(skill.boostPercent() >= 1 && skill.boostPercent() <= 100,
                         skill.heroTemplate() + "'s Skill " + skill.key() + "'s BoostPercent is the share of every"
                                 + " blow it drinks, from 1 to 100");
+                case DAMAGE_AURA -> require(skill.boostPercent() >= 1,
+                        skill.heroTemplate() + "'s Skill " + skill.key() + "'s BoostPercent is what it adds to every"
+                                + " blow round it, at least 1");
+                case MANA_AURA -> require(skill.manaRegen() >= 1,
+                        skill.heroTemplate() + "'s Skill " + skill.key() + "'s ManaRegen is what it adds to every"
+                                + " pool round it, in tenths of a point a second, at least 1");
             }
         }
     }
