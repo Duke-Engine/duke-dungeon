@@ -95,9 +95,10 @@ Hud
   ; panel was designed at, and grown with it. The pictures are the skills' own
   ; Icons, their cards their Names and Blurbs, and what each adds is said in the
   ; words above and in LootDrops -- "+50% Zarba", "+5 Mana/s", a haste's
-  ; "+75% Hujum tezligi" -- and, for a thirst's share, in this one.
+  ; "+75% Hujum tezligi" -- and, for a thirst's share, in this one: the name the
+  ; bosses' own lifesteal goes by. BuffIcon is at least a pixel.
   BuffIcon = 20
-  LifestealWord = Hayot so'rish
+  LifestealWord = Qon so'rish
   ; ★ AND THESE ARE PAINTED, which is the one thing the panel has to be told
   ; about a picture. It tints what it draws -- that is how ONE white drawing
   ; served a slot that is ready, one reloading and one locked, three colours of

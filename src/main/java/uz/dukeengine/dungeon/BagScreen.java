@@ -193,13 +193,14 @@ final class BagScreen implements Painter, CanvasInput {
         }
         // The floor's mission at the top, and what the heroes say over their heads -- under the bag and its cards.
         MissionScreen.paint(canvas, match, settings);
-        // And what is on the creature he picks, over its bar; the card of the picture the pointer is on comes last.
-        var buff = buffs.paint(canvas, match.game(), mouseX, mouseY);
         if (heldIn != match) {
             held = -1; // a match that is over took what was in hand with it
         }
         var slots = bag.slots();
         layOut(canvas, slots.size());
+        // And what is on the creature he picks, over its bar, under the slab: a pointer on the slab is on the bag. The
+        // card of the picture the pointer is on comes last.
+        var card = buffs.paint(canvas, match.game(), mouseX, mouseY, onTheBag(mouseX, mouseY));
         var look = settings.menu();
         canvas.fillRect(left, top, wide, high, 0xE0000000 | look.stoneColour());
         canvas.openRect(left, top, wide, high, 2f, 0xFF000000 | look.stoneEdgeColour());
@@ -238,8 +239,8 @@ final class BagScreen implements Painter, CanvasInput {
         } else if (over >= 0 && slots.get(over) != null) {
             var item = slots.get(over);
             tip(canvas, lines(item), hintsOf(item, true), slotX(over) - gap, slotY(over), true);
-        } else if (buff != null && !onTheBag(mouseX, mouseY)) {
-            tip(canvas, buff.said(), buff.hints(), buff.x(), buff.y(), false);
+        } else if (card != null) {
+            tip(canvas, card.said(), card.hints(), card.x(), card.y(), false);
         } else if (!onTheBag(mouseX, mouseY) && lying.get(match.game().getPointedAt()) instanceof Loot under) {
             tip(canvas, lines(under), hintsOf(under, false), mouseX + 20, mouseY + 20, false);
         }
@@ -425,7 +426,9 @@ final class BagScreen implements Painter, CanvasInput {
             return mine;
         }
         // A picture over a creature's bar is the screen's own: a press on it selects nothing and orders nothing behind.
-        if (shown && button.button() == Mouse.LEFT && buffs.on(button.x(), button.y())) {
+        // One under the slab is the bag's: the slab is drawn over the rows, and what is on it is what is pressed.
+        if (shown && button.button() == Mouse.LEFT && !onTheBag(button.x(), button.y())
+                && buffs.pictureAt(button.x(), button.y())) {
             pressedHere = true;
             return true;
         }

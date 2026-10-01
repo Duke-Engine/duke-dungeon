@@ -21,6 +21,7 @@ import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.dungeon.content.Content;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.dungeon.content.ShippedBlock;
+import uz.dukeengine.dungeon.loot.LootKind;
 import uz.dukeengine.dungeon.skill.Skill;
 import uz.dukeengine.dungeon.skill.SkillBook;
 import uz.dukeengine.dungeon.skill.SkillEffect;
@@ -96,9 +97,14 @@ class BuffScreenTest {
 
         /** The squares framed right over {@link #BAR}, left to right: the row. */
         List<Square> row() {
+            return row(BAR);
+        }
+
+        /** The squares framed right over {@code bar}, left to right. */
+        List<Square> row(Box bar) {
             return framed.stream()
-                    .filter(it -> it.y() + it.h() <= BAR.y() && it.y() + it.h() > BAR.y() - 15f
-                            && it.x() >= BAR.x() - 1f && it.x() < BAR.x() + 300f)
+                    .filter(it -> it.y() + it.h() <= bar.y() && it.y() + it.h() > bar.y() - 15f
+                            && it.x() >= bar.x() - 1f && it.x() < bar.x() + 300f)
                     .sorted(Comparator.comparingDouble(Square::x)).toList();
         }
 
@@ -164,7 +170,11 @@ class BuffScreenTest {
     }
 
     /** A floor being played with the bag drawn over it, and the one a summoner standing on the hero has hastened. */
-    private record Floor(DukeGame game, BagScreen bag, GameObject hastened) {
+    private record Floor(Dungeon.Session session, BagScreen bag, GameObject hastened) {
+
+        DukeGame game() {
+            return session.game();
+        }
 
         int id() {
             return hastened.getId().value();
@@ -201,7 +211,13 @@ class BuffScreenTest {
                 && one.findModule(SkillBook.class).getHasteFrames() > 0).findFirst().orElseThrow();
         game.setSelection(List.of(hastened.getId().value()));
         game.runHeadless(1);
-        return new Floor(game, bag, hastened);
+        return new Floor(session, bag, hastened);
+    }
+
+    /** The hero of {@code floor}: a creature with nothing on it. */
+    private static GameObject heroOf(Floor floor) {
+        return floor.game().getLogic().getObjects().stream().filter(one -> one.getTemplate().name().equals("Rogue"))
+                .findFirst().orElseThrow();
     }
 
     /** The shipped skill of a kind. */
@@ -269,8 +285,7 @@ class BuffScreenTest {
         var design = SETTINGS.panelLook().designWidth();
         var small = floor.paint(new Drawn(Math.round(design), 900), BAR).row();
         assertEquals(SETTINGS.hud().buffIcon(), small.getFirst().w(), 0.01f, "BuffIcon across, at the design's width");
-        assertTrue(SETTINGS.hud().buffIcon() >= 16f && SETTINGS.hud().buffIcon() <= 24f,
-                "and that is small: " + SETTINGS.hud().buffIcon());
+        assertTrue(SETTINGS.hud().buffIcon() >= 1f, "the file's to tune, from a pixel: " + SETTINGS.hud().buffIcon());
     }
 
     /** A skill with no picture is a stone square with the first letter of its name, framed as any is. */
@@ -397,6 +412,96 @@ class BuffScreenTest {
         assertNotNull(floor.paint(drawn, BAR).picture(haste), "the premise: picked again, its row");
         assertNull(floor.paint(drawn, new Canvas.Box(BAR.x(), 860f, BAR.width(), BAR.height())).picture(haste),
                 "its bar behind the panel");
+    }
+
+    /**
+     * The bag's slab is the bag's, over a row drawn under it: a pointer on it names nothing behind it, and a press on a
+     * slot there takes the thing in it in hand -- the key, to be used -- though a picture lies under the slot.
+     */
+    @Test
+    void theBagsSlabIsTheBagsOverARowUnderIt() {
+        var floor = floor(SETTINGS);
+        var game = floor.game();
+        var key = SETTINGS.loot().stream().filter(item -> item.kind() == LootKind.KEY).findFirst().orElseThrow();
+        floor.session().progress().getLoot().take(key, 0, 30);
+        var drawn = floor.paint(new Drawn(), BAR);
+        var slot = drawn.picture(key.icon());
+        assertNotNull(slot, "the premise: the key is in its slot: " + drawn.pictures);
+        var haste = skill(SkillEffect.HASTE).icon();
+        // The bar placed so that the first of its pictures lies under the key's slot.
+        var under = new Canvas.Box(slot.middleX() - 4f, slot.middleY() + 12f, BAR.width(), BAR.height());
+
+        game.setSelection(List.of());
+        game.setPointedAt(floor.id());
+        game.runHeadless(1);
+        floor.bag().take(new CanvasInput.Pointer(slot.middleX(), slot.middleY()));
+        assertNull(floor.paint(drawn, under).picture(haste), "a pointer on the bag names nothing behind it");
+        floor.bag().take(new CanvasInput.Pointer(40, 40));
+        assertNotNull(floor.paint(drawn, under).picture(haste), "the premise: off the bag, the pointed one's row");
+
+        game.setSelection(List.of(floor.id()));
+        game.setPointedAt(-1);
+        game.runHeadless(1);
+        floor.paint(drawn, under);
+        assertTrue(drawn.row(under).getFirst().holds(slot.middleX(), slot.middleY()),
+                "the premise: picked, a picture of its row under the key's slot: " + drawn.row(under));
+        assertTrue(floor.bag().take(new CanvasInput.Button(slot.middleX(), slot.middleY(), CanvasInput.Mouse.LEFT,
+                true, false)), "a press on the slab is the bag's");
+        floor.bag().take(new CanvasInput.Button(slot.middleX(), slot.middleY(), CanvasInput.Mouse.LEFT, false, false));
+        floor.paint(drawn, under);
+        assertEquals(2, drawn.pictures.stream().filter(picture -> picture.path().equals(key.icon())).count(),
+                "the key is in hand, drawn beside the pointer as well as in its slot: " + drawn.pictures);
+    }
+
+    /**
+     * A pointed one's row stands while the pointer is anywhere on its row, its bar or the stretch between -- on its way
+     * up from the body to the row -- and while it is on the row, the row stays that one's whatever the pick names
+     * behind it.
+     */
+    @Test
+    void aPointedOnesRowStandsWhileThePointerIsOnItsRowOrItsBarWhateverIsPickedBehind() {
+        var floor = floor(SETTINGS);
+        var game = floor.game();
+        var drawn = new Drawn();
+        var haste = skill(SkillEffect.HASTE).icon();
+        var onRow = floor.paint(drawn, BAR).picture(haste);
+        assertNotNull(onRow, "the premise: picked, its row: " + drawn.pictures);
+        game.setSelection(List.of());
+        game.setPointedAt(floor.id());
+        game.runHeadless(1);
+
+        game.setPointedAt(-1);
+        int middle = Math.round(BAR.x() + BAR.width() / 2f);
+        for (var at : List.of(new CanvasInput.Pointer(middle, Math.round(BAR.y() + BAR.height() / 2f)),
+                new CanvasInput.Pointer(Math.round(BAR.x()) + 2, Math.round(BAR.y()) - 1))) {
+            floor.bag().take(at);
+            assertNotNull(floor.paint(drawn, BAR).picture(haste), "the pointer off its body, at " + at);
+        }
+
+        floor.bag().take(new CanvasInput.Pointer(onRow.middleX(), onRow.middleY()));
+        floor.paint(drawn, BAR);
+        game.setPointedAt(heroOf(floor).getId().value());
+        game.runHeadless(1);
+        assertNotNull(floor.paint(drawn, BAR).picture(haste), "on its row, the pick naming the hero behind it");
+    }
+
+    /** A bar at the top of the window has its row kept on the window -- lowered over it, as a bubble is -- and its card. */
+    @Test
+    void aRowOverABarAtTheTopOfTheWindowIsKeptOnIt() {
+        var floor = floor(SETTINGS);
+        var high = new Canvas.Box(BAR.x(), 2f, BAR.width(), BAR.height());
+        var haste = skill(SkillEffect.HASTE);
+
+        var drawn = floor.paint(new Drawn(), high);
+        var picture = drawn.picture(haste.icon());
+        assertNotNull(picture, "its row: " + drawn.pictures);
+        assertTrue(picture.y0() >= 4f, "on the window: " + picture);
+
+        floor.bag().take(new CanvasInput.Pointer(picture.middleX(), picture.middleY()));
+        floor.paint(drawn, high);
+        var name = drawn.lines.stream().filter(line -> line.text().equals(haste.name())).findFirst().orElse(null);
+        assertNotNull(name, "and its card: " + drawn.text());
+        assertTrue(name.y() >= 4f, "on the window too: " + name);
     }
 
     /**

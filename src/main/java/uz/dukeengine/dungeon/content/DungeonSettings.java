@@ -925,6 +925,8 @@ public final class DungeonSettings {
                 "HealthWord and SpeedNowWord may not contain ',' or '|'");
         require(hud.primaryWord().indexOf('|') < 0 && hud.eachPointWord().indexOf('|') < 0,
                 "PrimaryWord and EachPointWord may not contain '|'");
+        require(hud.buffIcon() >= 1f, "Hud: BuffIcon is how big each picture over a picked creature's bar is drawn, at"
+                + " least a pixel: " + hud.buffIcon());
     }
 
     /** Ground the generator can carve: every percentage a percentage, and no slope steep enough to be a cliff. */

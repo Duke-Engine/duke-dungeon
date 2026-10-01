@@ -22,9 +22,10 @@ import uz.dukeengine.game.DukeGame;
  * it and for a haste while one burns on it, framed in the colour its own look starts in -- an aura's ring on the floor,
  * a haste's glow on the body -- and the pointer on one says what it adds.
  *
- * <p>The creature he has selected alone shows its row always; the one the pointer rests on, while the pointer is on it
- * or on its row. A pointer over the panel at the foot of the window names nothing, whatever stands behind it there,
- * and a bar behind the panel has no row over it.
+ * <p>The creature he has selected alone shows its row always; the one the pointer rests on, while the pointer is on it,
+ * on its row or on its bar -- and while it is on the row, the row stays that one's, whatever the pick names behind it.
+ * A pointer on the bag's slab, or over the panel at the foot of the window, names nothing, whatever stands behind it
+ * there; a bar behind the panel has no row over it, and one at the top of the window has its row kept on the window.
  *
  * <p>What is on them is read after every frame, on the simulation's thread -- {@link SkillBook#aurasOn}, the one rule
  * the circle under a creature asks too, and the haste its book counts down -- and handed over whole, so the window
@@ -39,7 +40,8 @@ final class BuffScreen {
      * pad of 10 over and under it ({@code HeroPanel}'s {@code SLAB_HEIGHT}), grown as the panel is.
      *
      * <p>ponytail: the engine's figure copied, and the squeeze it gives a window too narrow for its blocks left out --
-     * an engine that told a game where its panel stands would make this exact.
+     * an engine that told a game where its panel stands would make this exact: asked as E15 in
+     * {@code docs/plan/2026-09-29-engine-requests.md}.
      */
     private static final float PANEL_SLAB = 192f;
 
@@ -76,6 +78,13 @@ final class BuffScreen {
     /** The last thing the pointer rested on, kept when it leaves for the row over it: the simulation's thread's own. */
     private int lastPointed = -1;
 
+    /**
+     * The creature whose row -- or bar, or the stretch between -- the pointer was on when last painted, or -1: the
+     * window's word to the simulation's thread, so a row the pointer is reading stays that one's whatever the pick
+     * names behind it.
+     */
+    private volatile int reading = -1;
+
     /** Where each picture was drawn this frame: the window's own, so a press on one is known. */
     private final List<Canvas.Box> drawn = new ArrayList<>();
 
@@ -101,12 +110,16 @@ final class BuffScreen {
         return buffs;
     }
 
-    /** What is on the creature selected alone and on the one the pointer rests on, or last rested on, by id. */
+    /**
+     * What is on the creature selected alone and on the one the pointer rests on, or last rested on, by id -- the one
+     * whose row the pointer is on before whatever the pick names behind that row.
+     */
     private Map<Integer, List<Buff>> pickedIn(DukeGame game) {
         var selection = game.getSelection();
+        int onRow = reading;
         int pointed = game.getPointedAt();
-        if (pointed >= 0) {
-            lastPointed = pointed;
+        if (onRow >= 0 || pointed >= 0) {
+            lastPointed = onRow >= 0 ? onRow : pointed;
         }
         // In this order, which is the order the rows are drawn in: no hash is walked to draw them.
         var found = new LinkedHashMap<Integer, List<Buff>>();
@@ -158,15 +171,12 @@ final class BuffScreen {
     // ---- drawing ----
 
     /**
-     * The rows over the bars of those shown, the pointer at {@code (x, y)}: and the card of the picture it is on, or
-     * null, for the bag to draw last, over everything.
+     * The rows over the bars of those shown, the pointer at {@code (x, y)} -- {@code covered} while it is on something
+     * drawn over them, the bag's slab -- and the card of the picture it is on, or null, for the bag to draw last, over
+     * everything.
      */
-    Card paint(Canvas canvas, DukeGame game, int x, int y) {
+    Card paint(Canvas canvas, DukeGame game, int x, int y, boolean covered) {
         drawn.clear();
-        var shown = buffs;
-        if (shown.isEmpty()) {
-            return null;
-        }
         // Sized as the panel is: the window's width over the one it was designed at, within its least and most.
         var panel = settings.panelLook();
         float scale = Math.clamp(canvas.width() / panel.designWidth(), panel.minScale(), panel.maxScale());
@@ -175,16 +185,26 @@ final class BuffScreen {
         float gap = Math.max(2f, size * 0.15f);
         var selection = game.getSelection();
         int picked = selection.size() == 1 ? selection.getFirst() : -1;
-        int pointed = y >= foot ? -1 : game.getPointedAt();
+        // A pointer on the bag, or over the panel at the foot, names nothing, whatever stands behind it there.
+        boolean free = !covered && y < foot;
+        int pointed = free ? game.getPointedAt() : -1;
+        int over = -1;
         Card card = null;
-        for (var row : shown.entrySet()) {
+        for (var row : buffs.entrySet()) {
             var bar = canvas.barOf(row.getKey());
-            float top = bar == null ? 0f : bar.y() - gap - size;
+            // Kept on the window: a bar with no room above it has its row lowered over it, as a bubble is.
+            float top = bar == null ? 0f : Math.max(4f, bar.y() - gap - size);
             if (bar == null || top + size > foot) {
                 continue; // no bar placed this frame, or one behind the panel
             }
             var on = row.getValue();
-            boolean onTheRow = x >= bar.x() && x < bar.x() + on.size() * (size + gap) && y >= top && y < top + size;
+            // The row, its bar and the stretch between: the pointer on its way up from the body keeps it standing.
+            float right = Math.max(bar.x() + bar.width(), bar.x() + on.size() * (size + gap));
+            float bottom = Math.max(top + size, bar.y() + bar.height());
+            boolean onTheRow = free && x >= bar.x() && x < right && y >= top && y < bottom;
+            if (onTheRow) {
+                over = row.getKey();
+            }
             if (row.getKey() != picked && row.getKey() != pointed && !onTheRow) {
                 continue;
             }
@@ -192,17 +212,18 @@ final class BuffScreen {
                 var box = new Canvas.Box(bar.x() + at * (size + gap), top, size, size);
                 draw(canvas, on.get(at), box);
                 drawn.add(box);
-                if (holds(box, x, y)) {
+                if (free && holds(box, x, y)) {
                     // Hung under the row, over the bar: the rest of the row stays in sight, to be pointed at next.
                     card = cardOf(on.get(at), box.x(), top + size + gap);
                 }
             }
         }
+        reading = over;
         return card;
     }
 
     /** Whether a picture was drawn under {@code (x, y)} this frame. */
-    boolean on(int x, int y) {
+    boolean pictureAt(int x, int y) {
         return drawn.stream().anyMatch(box -> holds(box, x, y));
     }
 

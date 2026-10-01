@@ -284,6 +284,20 @@ class DungeonSettingsTest {
                 "a block that names none draws none");
     }
 
+    /** The pictures over a picked creature's bar are drawn at some size: a BuffIcon under a pixel is refused, by name. */
+    @Test
+    void thePicturesOverAPickedCreaturesBarHaveASize() {
+        var data = Content.data();
+        for (var size : List.of("0", "0.5", "-20")) {
+            var none = data.replaceFirst("(?m)^ *BuffIcon = .*$", "  BuffIcon = " + size);
+            assertNotEquals(data, none, "the premise: the Hud block sizes them");
+            var refused = assertThrows(IllegalArgumentException.class, () -> DungeonSettings.parse(none), size);
+            assertTrue(refused.getMessage().contains("BuffIcon"), refused.getMessage());
+        }
+        assertDoesNotThrow(() -> DungeonSettings.parse(data.replaceFirst("(?m)^ *BuffIcon = .*$", "  BuffIcon = 1")),
+                "a pixel is a size");
+    }
+
     /**
      * The hero stops inside his own reach, not at the edge of it.
      *
