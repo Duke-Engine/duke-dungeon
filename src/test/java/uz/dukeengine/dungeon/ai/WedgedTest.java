@@ -2,6 +2,7 @@ package uz.dukeengine.dungeon.ai;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
@@ -215,9 +216,11 @@ class WedgedTest {
         game.runHeadless(2);
         var hero = creature(game, "Rogue", 0);
         var setOut = hero.getPosition();
-        assertTrue(game.getLogic().getObjects().stream().anyMatch(thing -> thing.getTemplate().name().equals("Statue")
-                        && thing.getPosition().distance(setOut) < 25f),
-                "the floor no longer puts a statue by the way in, so this tells nothing");
+        // The scene this tells of, or nothing: the statue and the fountain just where the road grazes the one with the
+        // other at his side. A way in laid otherwise fails here, rather than passing with no graze in it at all.
+        assertTrue(standsAt(game, "Statue", setOut.x() - 10f, setOut.y() - 20f)
+                        && standsAt(game, "Fountain", setOut.x() - 20f, setOut.y()),
+                "the way in is no longer laid with the statue and fountain this walks between: find the graze again");
 
         game.postCommand(new CombatOrder.MoveTo(game.getLocalPlayerIndex(), List.of(hero.getId()),
                 new Coord3D(547.5f, 267.5f, 0f)));
@@ -225,6 +228,30 @@ class WedgedTest {
 
         assertTrue(hero.getPosition().distance(setOut) > 40f,
                 "he stood waiting for the statue to step aside, at " + hero.getPosition());
+    }
+
+    private static boolean standsAt(DukeGame game, String template, float x, float y) {
+        return game.getLogic().getObjects().stream().anyMatch(thing -> thing.getTemplate().name().equals(template)
+                && Math.abs(thing.getPosition().x() - x) < 0.5f && Math.abs(thing.getPosition().y() - y) < 0.5f);
+    }
+
+    /**
+     * A still thing in front of him does not hide a body beside it. A statue and a skeleton both in the spot he looks
+     * at, the statue made first: the world names the first it finds there, and a way past the statue is no way past the
+     * skeleton -- so it is the body that is asked after, wherever it comes in the world's list.
+     */
+    @Test
+    void aStillThingInFrontOfABodyDoesNotHideIt() {
+        var arena = Dungeon.world(corridor(), DEAF);
+        var game = arena.game();
+        game.spawn("Statue", arena.dungeon(), 56f, 15f);
+        game.spawn("Skeleton", arena.dungeon(), 59f, 15f);
+        game.spawn("Rogue", arena.hero(), 50f, 15f);
+        game.runHeadless(1);
+        var hero = creature(game, "Rogue", 0);
+        hero.setOrientation(0f); // facing them, down the corridor
+
+        assertNotNull(WayAhead.noWayPast(hero, 5f, null), "the statue hid the skeleton: a clear road, he says");
     }
 
     // ---- the same fault from the monsters' side, which is where it survived ----

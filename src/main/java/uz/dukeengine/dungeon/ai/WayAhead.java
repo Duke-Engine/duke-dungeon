@@ -138,11 +138,14 @@ final class WayAhead {
      * lays them into the grid for exactly that. Standing for one to step aside is
      * standing for good, which is what a hero sent from the way in did when his road
      * grazed the statue beside the fountain, his errand open all the while.
+     *
+     * <p>Both are passed over in the asking rather than turned away after it: the
+     * world names the first thing it finds in the spot, and a statue found first
+     * would hide a skeleton standing beside it.
      */
     private static boolean aBodyIn(World world, GameObject mover, Coord3D spot,
             GameObject quarry) {
-        var body = world.findBlocker(mover, spot);
-        return body != null && body != quarry && body.isMobile();
+        return world.findBlocker(mover, spot, thing -> thing == quarry || !thing.isMobile()) != null;
     }
 
     private static Coord3D spotAt(GameObject mover, float heading, float probe) {
