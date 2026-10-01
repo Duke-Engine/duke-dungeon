@@ -21,7 +21,6 @@ import uz.dukeengine.dungeon.combat.Shot;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.combat.event.WeaponFired;
 import uz.dukeengine.combat.module.DamageModifier;
-import uz.dukeengine.combat.module.Errand;
 import uz.dukeengine.combat.module.RateOfFireModifier;
 import uz.dukeengine.combat.module.StatusUpdate;
 import uz.dukeengine.combat.module.WeaponHold;
@@ -493,17 +492,15 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
         spend(slot, skill, level);
         lastCastFrame = world.getFrame();
         // He does one thing at a time. Casting is the player's latest word, so
-        // whatever errand he was on ends here rather than resuming underneath it —
-        // a dash that lands him somewhere and then walks him back is not a dash.
-        // The walk stops, and the errand it was for is given up with it, as any
-        // order gives one up: left on him it would act long after, from wherever
-        // he had stopped. A cast reaches here from an order, between frames; a
-        // monster's brain casts in its own update, and a monster is on no errand.
+        // the walk he was on stops here rather than going on underneath it — a
+        // dash that lands him somewhere and then walks him back is not a dash.
+        // The errand the walk was for is given up where the player's cast comes
+        // in (Skills.cast), between frames: a monster's brain casts from its own
+        // update, in which nothing may change what modules it has.
         var legs = owner.findModule(MoveUpdate.class);
         if (legs != null) {
             legs.stop();
         }
-        Errand.giveUpAll(owner);
         return true;
     }
 

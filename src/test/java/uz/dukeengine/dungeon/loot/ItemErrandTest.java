@@ -535,10 +535,11 @@ class ItemErrandTest {
         assertEquals(BLADE, chest.findModule(GroundItem.class).getHolding());
     }
 
-    /** The Rogue's E: a dash, cast as the player's key casts it. */
+    /** The Rogue's E: a dash, cast as the player's key casts it -- an order, come in between frames. */
     private static void castHisDash(Room room) {
-        var book = room.hero().findModule(uz.dukeengine.dungeon.skill.SkillBook.class);
-        assertTrue(book.cast('E', 1), "the dash did not go off, so this tells nothing");
+        var order = new uz.dukeengine.dungeon.skill.CastSkill(room.hero().getPlayerIndex(), 'E');
+        assertTrue(uz.dukeengine.dungeon.skill.Skills.cast(room.game().getLogic(), order, 1),
+                "the dash did not go off, so this tells nothing");
     }
 
     @Test
