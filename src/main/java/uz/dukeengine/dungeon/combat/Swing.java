@@ -6,6 +6,7 @@ import uz.dukeengine.core.module.Module;
 import uz.dukeengine.core.module.ModuleGroup;
 import uz.dukeengine.core.module.ModuleGroups;
 import uz.dukeengine.core.thing.GameObject;
+import uz.dukeengine.dungeon.run.Seal;
 import uz.dukeengine.dungeon.skill.SkillBook;
 import uz.dukeengine.combat.module.ProjectileLauncher;
 
@@ -30,6 +31,9 @@ import uz.dukeengine.combat.module.ProjectileLauncher;
  * reload would need the engine to expose it; and guessing from distance — which
  * is what this replaced — made a monster pay for a blow every time it merely came
  * close, so anything faster than it could walk away for free.
+ *
+ * <p>The one blow it takes is one struck through the keep's shut gate: that meets the gate, and nothing lands — see
+ * {@link Seal}. So the knight carries one too, his sword being the one blow of a hero's that lands where he stands.
  */
 @ModuleGroup(ModuleGroups.COMBAT)
 public final class Swing extends Module implements ProjectileLauncher {
@@ -41,8 +45,11 @@ public final class Swing extends Module implements ProjectileLauncher {
     /** Long before any run begins, so nothing counts as recently struck at first. */
     private int struckOn = Integer.MIN_VALUE / 2;
 
-    public Swing(GameObject owner, uz.dukeengine.core.module.ModuleData ignored) {
+    private final Seal seal;
+
+    public Swing(GameObject owner, Seal seal) {
         super(owner);
+        this.seal = seal;
     }
 
     /** Whether the blow it struck is still in progress at {@code frame}. */
@@ -56,12 +63,17 @@ public final class Swing extends Module implements ProjectileLauncher {
         if (world != null) {
             struckOn = world.getFrame();
         }
+        // A creature with a Bow lands its blows through its arrows, which the shut gate stops where they reach
+        // it, and which drink where they land.
+        if (striker.findModule(Bow.class) != null) {
+            return false;
+        }
+        if (world != null && seal.parts(world, striker.getPosition(), victim.getPosition())) {
+            return true; // struck at the shut gate between them: taken, and nothing lands
+        }
         // Declined, the weapon lands it where it stands, this frame: a blow landed, and its
         // striker drinks from it if a skill of its says so.
-        // A creature with a Bow lands its blows through its arrows, which drink where they land.
-        if (striker.findModule(Bow.class) == null) {
-            SkillBook.drink(striker, damage);
-        }
+        SkillBook.drink(striker, damage);
         return false; // nothing flies; the weapon lands it where it stands
     }
 }

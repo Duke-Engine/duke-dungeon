@@ -5,6 +5,8 @@ import uz.dukeengine.core.module.ModuleData;
 import uz.dukeengine.core.module.ModuleGroup;
 import uz.dukeengine.core.module.ModuleGroups;
 import uz.dukeengine.core.thing.GameObject;
+import uz.dukeengine.core.thing.ObjectId;
+import uz.dukeengine.core.thing.World;
 
 /**
  * The gate of the boss's keep: it stands across the doorway, and nothing walks through it until it is opened — and
@@ -33,6 +35,19 @@ public final class GateUpdate extends Module {
             opens = opens == null ? "" : opens;
             withoutKeyWord = withoutKeyWord == null ? "" : withoutKeyWord;
             withKeyWord = withKeyWord == null ? "" : withKeyWord;
+            requireSayable("WithoutKeyWord", withoutKeyWord);
+            requireSayable("WithKeyWord", withKeyWord);
+        }
+
+        /**
+         * What he says goes down the panel's status line as his note, which splits on ',' and '|': the rule FullWord
+         * and NoUseWord are held to in {@code DungeonSettings}. The gate is an Object block, which the settings do not
+         * read, so its lines are held to it here, where the block is read — and the binder says where.
+         */
+        private static void requireSayable(String field, String words) {
+            if (words.indexOf(',') >= 0 || words.indexOf('|') >= 0) {
+                throw new IllegalArgumentException(field + " may not contain ',' or '|'");
+            }
         }
     }
 
@@ -48,6 +63,16 @@ public final class GateUpdate extends Module {
     /** What a hero sent up to it says when he gets there: with the key in his bag, or without it. */
     public String lineFor(boolean withTheKey) {
         return withTheKey ? data.withKeyWord() : data.withoutKeyWord();
+    }
+
+    /**
+     * Whether the gate {@code gate} names still stands: it is in the world and has not been opened. Opening marks it
+     * destroyed, and the engine takes it away at the start of the next frame, so from the moment it is opened it no
+     * longer stands. The one answer to it, asked by the seal and by the mission alike.
+     */
+    public static boolean stands(World world, ObjectId gate) {
+        var there = world.findObject(gate);
+        return there != null && !there.isDestroyed();
     }
 
     /**

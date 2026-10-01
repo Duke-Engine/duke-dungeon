@@ -19,6 +19,7 @@ import uz.dukeengine.dungeon.combat.FallingUpdate;
 import uz.dukeengine.dungeon.combat.LevelBonus;
 import uz.dukeengine.dungeon.combat.Shot;
 import uz.dukeengine.dungeon.content.DungeonSettings;
+import uz.dukeengine.dungeon.run.Seal;
 import uz.dukeengine.combat.event.WeaponFired;
 import uz.dukeengine.combat.module.DamageModifier;
 import uz.dukeengine.combat.module.RateOfFireModifier;
@@ -242,16 +243,23 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
     private final List<ObjectId> summoned = new java.util.ArrayList<>();
 
     /**
+     * The keep's shut gate, which nothing a skill hurts or mends is found through, no haste or aura is lent across, and
+     * no dash, blink or rift crosses: see {@link Seal}.
+     */
+    private final Seal seal;
+
+    /**
      * How far round it an aura may be lent from: the widest {@code Radius} any aura in the files has, and nothing for a
      * hero's book -- none of his side may bear one -- or where no file gives an aura. See {@link #auraOn}.
      */
     private final float auraReach;
 
-    public SkillBook(GameObject owner, List<Skill> skills, DungeonSettings settings) {
+    public SkillBook(GameObject owner, List<Skill> skills, DungeonSettings settings, Seal seal) {
         super(owner);
         this.skills = List.copyOf(skills);
         this.cooldowns = new int[skills.size()];
         this.settings = settings;
+        this.seal = seal;
         this.auraReach = settings.monster(owner.getTemplate().name()) == null ? 0f
                 : settings.skills().stream().filter(skill -> skill.effect().isAura())
                         .map(Skill::radius).reduce(0f, Math::max);
@@ -650,8 +658,10 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
                 }
                 var landing = somewhereHeCanStand(owner, world,
                         withinReach(owner, towards, skill.distance()));
-                if (landing == null) {
-                    return false; // nowhere along that line is floor; the cast is not spent
+                if (landing == null || seal.parts(world, owner.getPosition(), landing)) {
+                    // Nowhere along that line is floor, or where it comes down is over
+                    // the keep's shut gate; the cast is not spent.
+                    return false;
                 }
                 var leaving = owner.getPosition();
                 Facing.turnToward(owner, landing);
@@ -699,13 +709,22 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
                 }
             }
             case DASH -> {
+                float facing = owner.getOrientation();
                 if (towards != null) {
                     // Face where he was sent before he goes, so the model and the
                     // travel agree — and so the next thing he does looks that way.
                     Facing.turnToward(owner, towards);
                 }
                 var from = owner.getPosition();
-                owner.setPosition(dashEnd(owner, world, reachOf(skill, owner, towards)));
+                var end = dashEnd(owner, world, reachOf(skill, owner, towards));
+                if (seal.parts(world, from, end)) {
+                    // It comes down over the keep's shut gate: refused, as a blink into
+                    // a pillar is -- nothing spent, and not so much as turned. No charge
+                    // crossing it, the trample below only ever finds his own side.
+                    owner.setOrientation(facing);
+                    return false;
+                }
+                owner.setPosition(end);
                 // A charge hurts what it goes through; a sprint does not. Which of
                 // the two it is, is a number in the file rather than a second
                 // effect here — so the archer's sprint is untouched by having said
@@ -833,13 +852,14 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
      * where he stands. Everything the un-aimed path checks, asked of one named
      * thing instead of all of them.
      */
-    private static GameObject aimedAt(GameObject owner, World world, ObjectId at, float range) {
+    private GameObject aimedAt(GameObject owner, World world, ObjectId at, float range) {
         var victim = world.findObject(at);
         if (victim == null || victim.getBody() == null || victim.isEffectivelyDead()) {
             return null;
         }
         if (world.getRelationship(owner.getPlayerIndex(), victim.getPlayerIndex())
-                != Relationship.ENEMIES) {
+                != Relationship.ENEMIES
+                || seal.parts(world, owner.getPosition(), victim.getPosition())) {
             return null;
         }
         return World.reachBetween(owner, victim) <= range ? victim : null;
@@ -881,7 +901,7 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
      * for reproducibility: two equidistant skeletons must not be chosen by
      * whichever the world happens to list first.
      */
-    private static GameObject nearestEnemy(GameObject owner, World world, float range) {
+    private GameObject nearestEnemy(GameObject owner, World world, float range) {
         GameObject best = null;
         float bestReach = Float.MAX_VALUE;
         for (var candidate : enemiesWithin(owner, world, range)) {
@@ -897,12 +917,12 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
 
     /**
      * Whom a haste is for: of {@code caster}'s own side, living, carrying a book, within {@code range} of it, middle to
-     * middle, and in its plain sight -- itself always among them -- the one of the highest level, then the most health
-     * at its fullest, then the nearer, then the one the world made first. Sturdiest rather than hardest-hitting:
-     * health is on every body, and a blow's worth is not. A total order ending in the object id, so every machine
-     * picks the same one.
+     * middle, on its side of the keep's shut gate and in its plain sight -- itself always among them -- the one of the
+     * highest level, then the most health at its fullest, then the nearer, then the one the world made first.
+     * Sturdiest rather than hardest-hitting: health is on every body, and a blow's worth is not. A total order ending
+     * in the object id, so every machine picks the same one.
      */
-    private static GameObject sturdiestNear(GameObject caster, World world, float range) {
+    private GameObject sturdiestNear(GameObject caster, World world, float range) {
         var here = caster.getPosition();
         var sturdier = java.util.Comparator.<GameObject>comparingInt(LevelBonus::levelOf)
                 .thenComparingDouble(one -> one.getBody().getMaxHealth())
@@ -910,23 +930,29 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
                 .thenComparingInt(one -> -one.getId().value());
         return world.objectsInRange(here, range, one -> one.getPlayerIndex() == caster.getPlayerIndex()
                         && one.getBody() != null && !one.isEffectivelyDead()
-                        && one.findModule(SkillBook.class) != null && SightLine.clear(caster, one))
+                        && one.findModule(SkillBook.class) != null
+                        && !seal.parts(world, here, one.getPosition()) && SightLine.clear(caster, one))
                 .stream().max(sturdier).orElse(caster);
     }
 
-    private static List<GameObject> enemiesWithin(GameObject owner, World world, float radius) {
+    private List<GameObject> enemiesWithin(GameObject owner, World world, float radius) {
         return enemiesWithin(owner, world, owner.getPosition(), radius);
     }
 
-    /** The same, round a spot the player chose rather than round the caster. */
-    private static List<GameObject> enemiesWithin(GameObject owner, World world, Coord3D centre,
+    /**
+     * The same, round a spot the player chose rather than round the caster -- and only on the caster's side of the
+     * keep's shut gate, wherever the spot is: dropped into the court from outside, it catches nobody in it.
+     */
+    private List<GameObject> enemiesWithin(GameObject owner, World world, Coord3D centre,
             float radius) {
         int player = owner.getPlayerIndex();
+        var casterAt = owner.getPosition();
         return world.objectsInRange(centre, radius, candidate ->
                 candidate.getBody() != null
                         && !candidate.isEffectivelyDead()
                         && world.getRelationship(player, candidate.getPlayerIndex())
-                                == Relationship.ENEMIES);
+                                == Relationship.ENEMIES
+                        && !seal.parts(world, casterAt, candidate.getPosition()));
     }
 
     /**
@@ -976,12 +1002,12 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
      * not slow. Better that than the game deciding what a creature is made of
      * behind its own file's back.
      */
-    private static void chill(GameObject owner, World world, float radius, int frames) {
+    private void chill(GameObject owner, World world, float radius, int frames) {
         chill(owner, world, owner.getPosition(), radius, frames);
     }
 
     /** The same, round a spot he chose rather than round himself. */
-    private static void chill(GameObject owner, World world, Coord3D centre, float radius,
+    private void chill(GameObject owner, World world, Coord3D centre, float radius,
             int frames) {
         if (frames <= 0) {
             return;
@@ -1079,7 +1105,7 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
     private boolean mend(GameObject owner, World world, Skill skill, ObjectId at) {
         var patient = at == null ? null : world.findObject(at);
         if (!skill.hasProjectile()
-                || !Mending.canMend(owner, patient, skill.range(), skill.healBelowPercent())) {
+                || !Mending.canMend(owner, patient, skill.range(), skill.healBelowPercent(), seal)) {
             return false;
         }
         var thing = world.findTemplate(skill.projectile());
@@ -1132,7 +1158,7 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
         }
         // Two that rise together stand a body apart -- the widest body of what rises.
         var spots = Summoning.spots(world, owner, towards, skill.radius(), room, 2f * body,
-                settings.combat().summonTurnDegrees(), settings.combat().summonTurns());
+                settings.combat().summonTurnDegrees(), settings.combat().summonTurns(), seal);
         int opened = 0;
         for (var spot : spots) {
             var opening = world.spawn(rift, spot, owner.getPlayerIndex());
@@ -1213,9 +1239,9 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
     /**
      * The strongest aura of {@code kind} on {@code creature}, 0 for none: the largest worth -- a {@code BoostPercent},
      * or a {@code MANA_AURA}'s tenths of a point a second -- among the bearers of that kind on its side, living, whose
-     * level has opened it, within whose {@code Radius} it stands, middle to middle, and in whose plain sight -- the
-     * bearer itself among them. Nothing for a creature that carries no book, as one without a {@code StatusUpdate} is
-     * not stunned.
+     * level has opened it, within whose {@code Radius} it stands, middle to middle, on its side of the keep's shut gate
+     * and in whose plain sight -- the bearer itself among them. Nothing for a creature that carries no book, as one
+     * without a {@code StatusUpdate} is not stunned.
      *
      * <p>Asked where the figure is used, never pushed to the creature, so it holds exactly while the creature stands in
      * reach and ends the moment it steps out or its bearer falls: nothing kept, nothing to go stale. A maximum of whole
@@ -1243,6 +1269,7 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
                 if (skill.effect() == kind && worth > strongest
                         && LevelBonus.rankOf(bearer, skill) > 0
                         && here.distance(bearer.getPosition()) <= skill.radius()
+                        && !book.seal.parts(world, bearer.getPosition(), here)
                         && SightLine.clear(bearer, creature)) {
                     strongest = worth;
                 }

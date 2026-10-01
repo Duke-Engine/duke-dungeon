@@ -282,8 +282,14 @@ tabaqalarining ochilishi Blender'da animatsiya qilingan (ikki klip o'yin
 nusxasida `art/models/join_clips.pl` bilan bitta `open` klipiga
 birlashtirilgan). Ochilganda darvoza o'rniga shaklsiz `OpenGate` turadi va
 `open` klipini bir marta o'ynab, ochiq qoladi (`PlayOnce`, engine
-`ClipMode.ONCE`). Darvoza o'zi ochilmaydi: uni faqat kalit ochadi. Stage'lar
-qal'asiz kesiladi — stage fayli qal'aning ko'rinishini saqlamaydi.
+`ClipMode.ONCE`). Darvoza o'zi ochilmaydi: uni faqat kalit ochadi. Yopiq
+turganda u qal'a ichini tashqarisidan ajratib turadi (`run/Seal`): zarba, o'q,
+portlash, meteor va davolash undan o'tmaydi (ostona tashqari hisoblanadi),
+tezlik (`Shiddat`) va aura (`Qudrat`, `Sehr buloqi`, `Qon aurasi`) ko'rinib
+tursa ham narigi tomondagilarga yetmaydi, otilish va siljish undan oshib
+o'tmaydi (mahorat rad etiladi, hech narsa sarflanmaydi), chaqiruvchi esa
+uning narigi tomonida yoriq ochmaydi; ochilgach hammasi avvalgidek yetadi.
+Stage'lar qal'asiz kesiladi — stage fayli qal'aning ko'rinishini saqlamaydi.
 
 Qal'ali qavatning **vazifasi** bor (`run/Mission`), ekranning tepasida
 yoziladi: qal'adan tashqaridagi barcha monstrlarni o'ldirish (hisobi bilan),
@@ -293,7 +299,10 @@ o'ldirish. Kalit (`world.duke` dagi `Kind = KEY`, `Use = UNLOCK` li
 kalitga chap tugma, keyin darvozaga bosilsa, qahramon borib kalitni darvozaga
 beradi. Darvozaga o'ng tugma bosilsa, qahramon borib, kaliti bor-yo'qligini
 boshi ustidagi pufakchada aytadi. Kalitni ko'targan qahramon yiqilsa, kalit
-o'sha joyda qoladi.
+o'sha joyda qoladi. Kalit o'zi topilgan qavatga tegishli: qavat tugagach u
+keyingi qavatga o'tmaydi, shu yerda qoladi; fayl o'qilganda darvozani ocha
+olmaydigan kalit (`Use = UNLOCK` siz `KEY`), `KEY` bo'lmagan narsadagi
+`UNLOCK` va kalitsiz qal'a rad etiladi.
 
 ## Stage rejimi — o'zgarmaydigan xarita
 

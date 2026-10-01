@@ -72,7 +72,12 @@ public enum SkillEffect {
      */
     SKILLSHOT(Aim.GROUND),
 
-    /** Move the caster toward a chosen spot — closing or escaping. */
+    /**
+     * Move the caster toward a chosen spot — closing or escaping.
+     *
+     * <p>Refused where it would come down on the far side of the keep's shut gate from where it was cast: nothing
+     * spent and the caster not so much as turned, as for a landing in stone -- see {@code Seal}.
+     */
     DASH(Aim.OPEN_GROUND),
 
     /** Raise the caster's own damage for a while. */
@@ -114,7 +119,10 @@ public enum SkillEffect {
      *       first and is near enough — but near enough is not the same thing, and
      *       an escape is a skill you want to land on the tile you picked.
      *   <li>It refuses rather than shrugging. A dash with nowhere to come down
-     *       leaves him standing where he was and spends the cooldown anyway.
+     *       leaves him standing where he was and spends the cooldown anyway --
+     *       though a dash too is refused, nothing spent, where it would come
+     *       down on the far side of the keep's shut gate, as a blink is: see
+     *       {@code Seal}.
      * </ul>
      *
      * <p>The fourth difference is the client's and is the one a player will
@@ -162,7 +170,8 @@ public enum SkillEffect {
      * {@code [Skeleton = 2]}, four for {@code [Skeleton = 2, Stalker = 2]} --
      * {@code Radius} away, toward where it was aimed first and then turned aside in a
      * fixed order, on open floor the caster can see -- never in stone, on another
-     * storey or on somebody; see {@link Summoning}. Each is a thing in the world, as a
+     * storey, on somebody or across the keep's shut gate, which it sees through and
+     * nothing may rise across; see {@link Summoning}. Each is a thing in the world, as a
      * meteor's mark is, and its creature climbs out of it {@code WindUpFrames} later,
      * the kinds taking the rifts in the order written. What climbs out lasts
      * {@code DurationFrames} and then falls down, stands at its caller's level, and is
@@ -178,10 +187,11 @@ public enum SkillEffect {
      *
      * <p>The sturdiest of the caster's own side near it -- the highest level, then the most health at its fullest,
      * then the nearer, then the one the world made first -- that lives, carries a {@code SkillBook}, and stands within
-     * {@code Range} of the caster, middle to middle, and in its plain sight; the caster itself when nothing sturdier
-     * stands near. Every wait of that one's weapon is divided by 1 + {@code BoostPercent}/100 and cut to whole frames,
-     * the engine's rule for a rate of fire, for {@code DurationFrames}; a second haste while it burns starts it again
-     * at the newer figures. Aimed at nothing, so never refused for want of someone to hasten.
+     * {@code Range} of the caster, middle to middle, on its side of the keep's shut gate and in its plain sight; the
+     * caster itself when nothing sturdier stands near. Every wait of that one's weapon is divided by
+     * 1 + {@code BoostPercent}/100 and cut to whole frames, the engine's rule for a rate of fire, for
+     * {@code DurationFrames}; a second haste while it burns starts it again at the newer figures. Aimed at nothing, so
+     * never refused for want of someone to hasten.
      */
     HASTE(Aim.SELF),
 
@@ -287,7 +297,8 @@ public enum SkillEffect {
     /**
      * Whether it lends what it is worth to everyone of its bearer's own side round it: the living of that side that
      * carry a {@code SkillBook} -- the bearer itself, and what a summoner calls up, among them; heroes never -- within
-     * its {@code Radius} of the bearer, middle to middle, and in its plain sight. Every aura is a passive.
+     * its {@code Radius} of the bearer, middle to middle, on its side of the keep's shut gate and in its plain sight.
+     * Every aura is a passive.
      *
      * <p>It is asked by the one it lends to, at the moment the figure is used, never pushed to it -- see
      * {@link SkillBook#auraOn} -- so it holds exactly while that one stands in reach and ends the moment it steps out

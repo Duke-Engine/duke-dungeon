@@ -8,6 +8,7 @@ import uz.dukeengine.dungeon.combat.LevelBonus;
 import uz.dukeengine.dungeon.combat.Swing;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.dungeon.content.MonsterKind;
+import uz.dukeengine.dungeon.run.Seal;
 import uz.dukeengine.dungeon.skill.Mending;
 import uz.dukeengine.dungeon.skill.Skill;
 import uz.dukeengine.dungeon.skill.SkillBook;
@@ -100,8 +101,12 @@ public final class MonsterBrain extends UnitScript {
      */
     private Coord3D backingTo;
 
-    public MonsterBrain(DungeonSettings settings) {
+    /** The keep's shut gate, which it mends nobody through -- see {@link Mending}. */
+    private final Seal seal;
+
+    public MonsterBrain(DungeonSettings settings, Seal seal) {
         this.settings = settings;
+        this.seal = seal;
     }
 
     /**
@@ -255,7 +260,7 @@ public final class MonsterBrain extends UnitScript {
         if (frame() % every != Math.floorMod(unit().getId().value(), every)) {
             return false;
         }
-        var patient = Mending.worstHurt(world(), unit(), skill.range(), skill.healBelowPercent());
+        var patient = Mending.worstHurt(world(), unit(), skill.range(), skill.healBelowPercent(), seal);
         return patient != null && book.cast(skill.key(), rank, patient.getId(), null);
     }
 

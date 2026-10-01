@@ -1,5 +1,6 @@
 package uz.dukeengine.dungeon.combat;
 
+import uz.dukeengine.core.math.Coord3D;
 import uz.dukeengine.core.module.DamageType;
 import uz.dukeengine.core.module.ModuleData;
 import uz.dukeengine.core.module.ModuleGroup;
@@ -9,6 +10,7 @@ import uz.dukeengine.core.player.Relationship;
 import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.core.thing.ObjectId;
 import uz.dukeengine.core.thing.World;
+import uz.dukeengine.dungeon.run.Seal;
 import uz.dukeengine.dungeon.skill.SkillBook;
 import uz.dukeengine.combat.event.WeaponFired;
 import uz.dukeengine.combat.module.ExperienceModule;
@@ -46,8 +48,16 @@ public final class FallingUpdate extends UpdateModule {
     private int fallsIn;
     private boolean called;
 
-    public FallingUpdate(GameObject owner, ModuleData ignored) {
+    /**
+     * Where its caster stood when he called it: the side of the keep's shut gate it falls for. Called into the court
+     * from outside, it hurts nobody in it, and from within, nobody outside — see {@link Seal}.
+     */
+    private Coord3D calledFrom;
+    private final Seal seal;
+
+    public FallingUpdate(GameObject owner, Seal seal) {
         super(owner);
+        this.seal = seal;
     }
 
     /**
@@ -55,10 +65,12 @@ public final class FallingUpdate extends UpdateModule {
      *
      * <p>What it is worth is settled here rather than on arrival, like every other
      * shot in this dungeon — the caster may have levelled, or died, in the second
-     * it spends falling, and neither should change what was already in the air.
+     * it spends falling, and neither should change what was already in the air. Nor
+     * where he stood: that is its side of the keep's gate.
      */
     public void callDown(GameObject from, float carrying, float blast, int frames) {
         this.caller = from.getId();
+        this.calledFrom = from.getPosition();
         this.damage = carrying;
         this.radius = blast;
         this.fallsIn = Math.max(1, frames);
@@ -93,7 +105,8 @@ public final class FallingUpdate extends UpdateModule {
                 candidate.getBody() != null
                         && !candidate.isEffectivelyDead()
                         && world.getRelationship(side, candidate.getPlayerIndex())
-                                == Relationship.ENEMIES)) {
+                                == Relationship.ENEMIES
+                        && !seal.parts(world, calledFrom, candidate.getPosition()))) {
             victim.getBody().damage(damage, DamageType.EXPLOSION);
             // A blow like any other, and its caller drinks from it if a skill of its, or an aura it stands in, says
             // so -- see SkillBook.drink.

@@ -4,13 +4,16 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
+import uz.dukeengine.core.data.DataException;
 import uz.dukeengine.core.math.Coord3D;
 import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.dungeon.Dungeon;
 import uz.dukeengine.dungeon.content.DungeonSettings;
+import uz.dukeengine.dungeon.content.ShippedBlock;
 import uz.dukeengine.dungeon.gen.DungeonGenerator;
 import uz.dukeengine.dungeon.loot.ItemErrand;
 import uz.dukeengine.dungeon.loot.Loot;
@@ -354,6 +357,23 @@ class GateTest {
         assertEquals(SETTINGS.lootDrops().noUseWord(), bag.noteAt(game.getLogic().getFrame()));
         assertEquals(key(), bag.at(0), "he kept it");
         assertNotNull(find(game, "Gate"), "and the gate is as it was");
+    }
+
+    /**
+     * What he says at the gate goes down the panel's line as the NoUseWord does, and the line splits on ',' and '|': a
+     * line of the gate's with either is refused when the file is read, naming which of the two it is.
+     */
+    @Test
+    void aGateLineThePanelLineCouldNotCarryIsRefusedAtLoad() {
+        for (var key : new String[] {"WithoutKeyWord", "WithKeyWord"}) {
+            for (var words : new String[] {"Kalit kerak, darvoza shu", "Kalit kerak | darvoza shu"}) {
+                var data = ShippedBlock.dataWith("Gate", key, words);
+
+                var refused = assertThrows(DataException.class, () -> DungeonSettings.parse(data),
+                        key + " = " + words);
+                assertTrue(refused.getMessage().contains(key), refused.getMessage());
+            }
+        }
     }
 
     /** Opened, the same gate stands open where it stood, turned as it was, and he walks on through. */

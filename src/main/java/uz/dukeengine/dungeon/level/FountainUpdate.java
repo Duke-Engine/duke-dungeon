@@ -5,6 +5,7 @@ import uz.dukeengine.core.module.ModuleGroup;
 import uz.dukeengine.core.module.ModuleGroups;
 import uz.dukeengine.core.module.UpdateModule;
 import uz.dukeengine.core.thing.GameObject;
+import uz.dukeengine.dungeon.run.Seal;
 import uz.dukeengine.dungeon.skill.SkillBook;
 
 /**
@@ -15,6 +16,10 @@ import uz.dukeengine.dungeon.skill.SkillBook;
  * <p>A share of each one's own figures rather than a number of points, so it is worth the same on the first floor
  * as on the tenth, to a rogue as to a knight. And a pulse rather than a trickle: the numbers the client pops over a
  * mended head are how the player learns what the fountain does.
+ *
+ * <p>Like every mending, it does not cross the keep's shut gate: it reaches only those on its own side of it — see
+ * {@link Seal}. The way-in fountain stands far from any keep, but that is only where a floor puts it today, and the
+ * water asks all the same.
  *
  * <p>Deterministic: counted on the world's own frame, and each gift a whole number of points worked out from the
  * thing's own figures, the same on every machine.
@@ -35,10 +40,12 @@ public final class FountainUpdate extends UpdateModule {
     }
 
     private final Data data;
+    private final Seal seal;
 
-    public FountainUpdate(GameObject owner, Data data) {
+    public FountainUpdate(GameObject owner, Data data, Seal seal) {
         super(owner);
         this.data = data;
+        this.seal = seal;
     }
 
     @Override
@@ -49,7 +56,8 @@ public final class FountainUpdate extends UpdateModule {
             return;
         }
         for (var near : world.objectsInRange(owner.getPosition(), data.radius(),
-                thing -> thing != owner && thing.getBody() != null && !thing.isEffectivelyDead())) {
+                thing -> thing != owner && thing.getBody() != null && !thing.isEffectivelyDead()
+                        && !seal.parts(world, owner.getPosition(), thing.getPosition()))) {
             var body = near.getBody();
             if (data.healthPercent() > 0 && body.getHealth() < body.getMaxHealth()) {
                 body.heal(Math.max(1, Math.round(body.getMaxHealth() * data.healthPercent() / 100f)));

@@ -70,6 +70,11 @@ Hero
       ; before every blow would never land one on anything that was backing away.
       AttackOnTheMove = Yes
     End,
+    ; His sword lands where he stands, as a monster's blow does, and through the
+    ; same hand: which is where the keep's shut gate takes a blow struck through
+    ; it, so nothing lands -- see Swing.
+    Swing
+    End,
     ; No Bow and no EyesOnly: both are the archer's, and both are about a shot that
     ; has to cross a room. EyesOnly would also switch off the engine's own target
     ; acquisition, which is exactly what a creature fighting at arm's length wants

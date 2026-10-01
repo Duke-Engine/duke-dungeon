@@ -517,6 +517,40 @@ class LootTest {
         assertEquals(List.of(key(), key(), key()), bag.getFound());
     }
 
+    /**
+     * Every thing of the kind goes and nothing else does: two keys among other things leave their slots empty and the
+     * others where they were, and a bag with nothing of the kind to take is not said to have changed.
+     */
+    @Test
+    void removingAKindTakesEveryThingOfItAndNothingElse() {
+        var bag = new LootBag();
+        bag.take(GAUNTLET, 0, 0);
+        bag.take(key(), 0, 0);
+        bag.take(DECK.get(0), 0, 0);
+        bag.take(key(), 0, 0);
+        bag.take(DECK.get(1), 0, 0);
+        int before = bag.version();
+
+        bag.removeAll(LootKind.KEY);
+
+        assertFalse(bag.holds(LootKind.KEY), "both keys are gone");
+        assertEquals(GAUNTLET, bag.at(0));
+        assertNull(bag.at(1), "a key's slot is left empty, not closed up");
+        assertEquals(DECK.get(0), bag.at(2));
+        assertNull(bag.at(3));
+        assertEquals(DECK.get(1), bag.at(4));
+        assertTrue(bag.version() > before, "and the bag says it changed");
+
+        int after = bag.version();
+        bag.removeAll(LootKind.KEY);
+        assertEquals(after, bag.version(), "no key to take, and nothing changed");
+
+        bag.removeAll(LootKind.ARMOUR);
+        assertNull(bag.at(4), "it is the kind asked for that goes, not the key: the plate is gone");
+        assertEquals(GAUNTLET, bag.at(0), "and what is not of it stays");
+        assertEquals(DECK.get(0), bag.at(2));
+    }
+
     /** Nothing leaves one at random, however often things drop. */
     @Test
     void theKeyIsNeverDrawnAsADrop() {

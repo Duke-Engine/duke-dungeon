@@ -6,6 +6,7 @@ import uz.dukeengine.core.math.Coord3D;
 import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.core.thing.World;
 import uz.dukeengine.dungeon.ai.SightLine;
+import uz.dukeengine.dungeon.run.Seal;
 
 /**
  * Where what a caster calls up rises: {@code distance} from it, first toward where it
@@ -13,10 +14,11 @@ import uz.dukeengine.dungeon.ai.SightLine;
  *
  * <p>Only on open floor. Not stone, and not the solid things baked into the floor with
  * it -- the rule the furniture is held to. No step up or down from where the caster
- * stands, which keeps a stair and another storey out. Nobody's body in the way,
- * nothing but air between the caster and the spot, and each spot at least
- * {@code apart} from the ones already taken, so two that rise together do not rise
- * inside each other.
+ * stands, which keeps a stair and another storey out. Nobody's body in the way, and
+ * nothing but air between the caster and the spot. It sees through the keep's shut
+ * gate, but nothing it calls up may rise across it -- see {@link Seal}. Each spot at
+ * least {@code apart} from the ones already taken, so two that rise together do not
+ * rise inside each other.
  *
  * <p>No dice: the angles are tried in a fixed order and worked with {@link StrictMath},
  * so a room calls its skeletons up in the same places on every machine.
@@ -28,7 +30,7 @@ public final class Summoning {
 
     /** Up to {@code count} spots, in the order they were found; fewer, or none, if the floor has no more. */
     public static List<Coord3D> spots(World world, GameObject caster, Coord3D towards,
-            float distance, int count, float apart, float turnDegrees, int turns) {
+            float distance, int count, float apart, float turnDegrees, int turns, Seal seal) {
         var from = caster.getPosition();
         double ahead = towards == null ? caster.getOrientation()
                 : StrictMath.atan2(towards.y() - from.y(), towards.x() - from.x());
@@ -42,7 +44,7 @@ public final class Summoning {
             var flat = new Coord3D(from.x() + (float) (StrictMath.cos(angle) * distance),
                     from.y() + (float) (StrictMath.sin(angle) * distance), from.z());
             var spot = new Coord3D(flat.x(), flat.y(), world.groundHeight(flat));
-            if (open(world, caster, spot, floor) && clearOf(found, spot, apart)) {
+            if (open(world, caster, spot, floor, seal) && clearOf(found, spot, apart)) {
                 found.add(spot);
             }
         }
@@ -51,11 +53,12 @@ public final class Summoning {
 
     // The floor the caster is on, by its level rather than its height: where the ground rises and falls, the same
     // floor stands at a different height a few steps away.
-    private static boolean open(World world, GameObject caster, Coord3D spot, int floor) {
+    private static boolean open(World world, GameObject caster, Coord3D spot, int floor, Seal seal) {
         return !world.isGroundBlocked(spot)
                 && world.levelAt(spot) == floor
                 && world.findBlocker(caster, spot) == null
-                && SightLine.clear(world, caster.getPosition(), spot);
+                && SightLine.clear(world, caster.getPosition(), spot)
+                && !seal.parts(world, caster.getPosition(), spot);
     }
 
     private static boolean clearOf(List<Coord3D> taken, Coord3D spot, float apart) {
