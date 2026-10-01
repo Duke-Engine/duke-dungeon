@@ -19,12 +19,13 @@ import uz.dukeengine.combat.module.WeaponUpdate;
  *
  * <p>An errand in the engine's sense — a module on him while it lasts — so any order the player gives him after it,
  * a walk, an attack, a stop, a skill, gives it up as it gives up every errand. A walk somewhere else it notices for
- * itself: his legs going anywhere but here is the errand over. Legs that stopped short of it are where he was, not how
- * near he can get, and he looks again from there; legs that find no way nearer from where he stands have got as near
- * as they could, and leave a thing he was sent for lying, and he says so, or put a thing he was sending down where
- * they stopped. A thing with a shape — the gate — is walked up to rather than onto: as near as he can get to it, its
- * edge is there. And he is never on it for ever: getting no nearer for as long as the rules say, he gives it up the
- * same way, and his legs stop with it.
+ * itself: his legs going anywhere but here is the errand over. Legs his brain stands still for a body in the way are
+ * not anywhere yet — it says so, and takes him on itself when the way opens. Legs that stopped of themselves short of
+ * it are where he was, not how near he can get, and he looks again from there; legs that find no way nearer from
+ * where he stands have got as near as they could, and leave a thing he was sent for lying, and he says so, or put a
+ * thing he was sending down where they stopped. A thing with a shape — the gate — is walked up to rather than onto:
+ * as near as he can get to it, its edge is there. And he is never on it for ever: getting no nearer for as long as the
+ * rules say, he gives it up the same way, and his legs stop with it.
  *
  * <p>Deterministic: sent by an order, on every machine on the same frame; checked on a frame boundary; how near he is
  * is the floor's own distance, how far a shape reaches is the engine's own figure, and how long he has got no nearer
@@ -83,6 +84,8 @@ public final class ItemErrand extends UpdateModule implements Errand {
     private float nearest = Float.MAX_VALUE;
     private int nearerAt;
     private int standingSince;
+    /** Whether his brain stands him still for a body in his way: see {@link #heldForABody}. */
+    private boolean heldForABody;
 
     private ItemErrand(GameObject hero, LootBag bag, Rules rules, Act act, Coord3D goal, ObjectId thing, int slot) {
         super(hero);
@@ -180,16 +183,15 @@ public final class ItemErrand extends UpdateModule implements Errand {
         if (!near(hero, rules.reach())) {
             noteHowNearHeIs(hero, legs, world);
             if (!gettingNowhereTooLong(world)) {
-                if (legs == null || legs.isMoving() || (going == null && !legs.stoppedShort())) {
-                    // On his way -- or stopped by his brain for a body in the way, with no goal: he is not there until
-                    // it takes him on (HeroBrain.mindTheWayOnHisErrand).
-                    return;
+                if (legs == null || legs.isMoving() || heldForABody) {
+                    return; // on his way, or stood still by his brain for a body in it until it takes him on
                 }
                 if (!atItsEdge(hero, there) && !arrived(legs, going)) {
-                    // His legs stopped short of it -- a leg they gave up on, a route that ran out at a body, a way
-                    // round one that came back with nowhere in it -- and where they stopped is where he was, not how
-                    // near he can get. He looks again from there, by the walk his brain takes a walk up again with:
-                    // to the place, which ends on the block beside a thing with a shape.
+                    // His legs stopped of themselves short of it -- a leg they gave up on, a route that ran out at a
+                    // body, a way round one that came back with nowhere in it, ten seconds stepping aside -- and where
+                    // they stopped is where he was, not how near he can get. He looks again from there, by the walk
+                    // his brain takes a walk up again with: to the place, which ends on the block beside a thing with
+                    // a shape.
                     legs.moveTo(goal);
                     if (legs.isMoving()) {
                         return;
@@ -320,6 +322,16 @@ public final class ItemErrand extends UpdateModule implements Errand {
     /** Whether it has been done or given up -- or taken off him, by whatever he was told next. */
     public boolean isOver() {
         return over;
+    }
+
+    /**
+     * Told by his brain as it stands him still for a body in his way, and as it lets him go
+     * (HeroBrain.mindTheWayOnHisErrand). While it holds him he is not there, however near he stands. Legs stopped with
+     * no goal are otherwise legs that stopped of themselves -- pressed against what covers the spot they were bound
+     * for, which the engine calls arrival, or done stepping aside -- and those are as near as he gets.
+     */
+    public void heldForABody(boolean held) {
+        heldForABody = held;
     }
 
     /** Taken off him: over, so nothing that walked him on for it (HeroBrain's hold) goes on doing so. */

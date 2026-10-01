@@ -404,7 +404,10 @@ public final class HeroBrain extends UnitScript {
      * <p><b>And with the errand the walk was for.</b> An errand that gave up while
      * he stood here, saying he could not get there, has ended the walk with it:
      * taking it up once the way cleared would have him arrive having said he
-     * could not.
+     * could not. And the errand is told he is held, and let go: legs stopped
+     * with no goal are, to it, otherwise legs that stopped of themselves — the
+     * engine stops a walk so where it calls it arrival — which are as near as he
+     * gets.
      */
     private void mindTheWayOnHisErrand(MoveUpdate move) {
         if (errand != null) {
@@ -428,11 +431,17 @@ public final class HeroBrain extends UnitScript {
             errand = move.getGoal();
             waitingOn = ahead;
             walkingFor = unit().findModule(ItemErrand.class);
+            if (walkingFor != null) {
+                walkingFor.heldForABody(true);
+            }
             move.stop();
         }
     }
 
     private void forgetTheErrand() {
+        if (walkingFor != null) {
+            walkingFor.heldForABody(false); // whatever comes next, this is not holding him any more
+        }
         errand = null;
         waitingOn = null;
         walkingFor = null;

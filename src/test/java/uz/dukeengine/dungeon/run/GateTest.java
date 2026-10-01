@@ -6,10 +6,12 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import uz.dukeengine.core.math.Coord3D;
 import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.dungeon.Dungeon;
+import uz.dukeengine.dungeon.content.Content;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.dungeon.gen.DungeonGenerator;
 import uz.dukeengine.dungeon.loot.ItemErrand;
@@ -33,11 +35,16 @@ class GateTest {
 
     /** A hall forty by thirty with a wall down x = 20, open at y 14 to 16. */
     private static String hall() {
+        return hall(false);
+    }
+
+    /** The same, with {@code aPassage}, its doorway reached down a passage one cell wide, along y 15 from x 14. */
+    private static String hall(boolean aPassage) {
         var text = new StringBuilder();
         for (int y = 0; y < 30; y++) {
             for (int x = 0; x < 40; x++) {
                 boolean border = x == 0 || y == 0 || x == 39 || y == 29;
-                boolean wall = x == 20 && (y < 14 || y > 16);
+                boolean wall = x == 20 && (y < 14 || y > 16) || aPassage && x >= 14 && x < 20 && (y == 14 || y == 16);
                 text.append(border || wall ? '#' : '.');
             }
             text.append('\n');
@@ -60,7 +67,11 @@ class GateTest {
     }
 
     private static Dungeon.Arena withAGate(DungeonSettings settings) {
-        var arena = Dungeon.world(hall(), settings);
+        return withAGate(Dungeon.world(hall(), settings));
+    }
+
+    /** {@code arena}'s floor with the gate standing where the hall's doorway is, turned as it is there. */
+    private static Dungeon.Arena withAGate(Dungeon.Arena arena) {
         arena.game().spawn("Gate", arena.dungeon(), DOORWAY.x(), DOORWAY.y());
         arena.game().runHeadless(1);
         find(arena.game(), "Gate").setOrientation((float) (StrictMath.PI / 2));
@@ -196,11 +207,47 @@ class GateTest {
     }
 
     /**
-     * A hero his brain has stopped on the way — for a body in the doorway, say — is not there yet, however near the
-     * gate he stands: he says it when he gets there, once the brain takes him on again.
+     * A hero his brain stands still on the way -- for a friend in the passage to the gate, whom nothing asks aside --
+     * is not there yet, however near the gate he stands: he says it when he gets there, once the way opens and the
+     * brain takes him on again.
      */
     @Test
-    void sentUpToItAHeroStoppedOnTheWayIsNotThereYet() {
+    void sentUpToItAHeroHisBrainStandsStillOnTheWayIsNotThereYet() {
+        var arena = withAGate(Dungeon.world(hall(true), null, SETTINGS, Content.units(),
+                List.of(new LootBag(), new LootBag())));
+        var game = arena.game();
+        game.spawn("Rogue", arena.heroes().get(0), 120f, 155f);
+        game.spawn("Knight", arena.heroes().get(1), 195f, 155f);
+        game.runHeadless(2);
+        var hero = find(game, "Rogue");
+        var gate = find(game, "Gate");
+        var bag = new LootBag();
+        float reach = SETTINGS.lootDrops().pickupRange();
+
+        assertTrue(ItemErrand.toTheGate(hero, gate, bag, rules(arena)));
+        game.runHeadless(150);
+
+        float apart = hero.getPosition().distance(DOORWAY);
+        assertFalse(hero.getLocomotor().isMoving(), "his brain never stood him still, so this tells nothing");
+        assertTrue(apart > reach && apart <= reach + gate.getGeometry().footprintRadius(),
+                "he stands where a hero at its edge would, or this tells nothing: " + hero.getPosition());
+        assertEquals("", bag.noteAt(game.getLogic().getFrame()), "he said it from where his brain stood him");
+
+        find(game, "Knight").getBody().damage(1e9f); // the friend falls, and the way is open
+        game.runHeadless(150);
+
+        assertEquals("Boss xonasi uchun kalit topishim kerak", bag.noteAt(game.getLogic().getFrame()));
+    }
+
+    /**
+     * Legs that stop of themselves are as near as they are going to get, and at the gate's edge that is there: he says
+     * it from where they stopped. The engine stops a walk so -- with nothing left to walk to, and not short of
+     * anything -- when it presses against the thing that covers the spot it was bound for, which it calls arrival, or
+     * when it has stepped aside for ten seconds. Pressed against the gate's end on the 38th floor of the descent, he
+     * stood there with the errand open. The test stops his legs as the engine does; nothing here holds him.
+     */
+    @Test
+    void sentUpToItHeSaysItWhereHisLegsStopOfThemselvesAtItsEdge() {
         var arena = withAGate();
         var game = arena.game();
         game.spawn("Rogue", arena.hero(), 150f, 155f);
@@ -213,19 +260,14 @@ class GateTest {
         assertTrue(ItemErrand.toTheGate(hero, gate, bag, rules(arena)));
         game.runHeadless(30);
         hero.getLocomotor().stop();
-        game.runHeadless(30);
+        game.runHeadless(2);
 
-        float dx = hero.getPosition().x() - DOORWAY.x();
-        float dy = hero.getPosition().y() - DOORWAY.y();
-        float apart = (float) Math.sqrt(dx * dx + dy * dy);
+        float apart = hero.getPosition().distance(DOORWAY);
         assertTrue(apart > reach && apart <= reach + gate.getGeometry().footprintRadius(),
-                "he is stopped where a hero at its edge would be, or this tells nothing: " + hero.getPosition());
-        assertEquals("", bag.noteAt(game.getLogic().getFrame()), "he said it from where he was stopped");
-
-        hero.getLocomotor().moveTo(DOORWAY);
-        game.runHeadless(150);
-
-        assertEquals("Boss xonasi uchun kalit topishim kerak", bag.noteAt(game.getLogic().getFrame()));
+                "he stopped where a hero at its edge would be, or this tells nothing: " + hero.getPosition());
+        assertEquals("Boss xonasi uchun kalit topishim kerak", bag.noteAt(game.getLogic().getFrame()),
+                "he stands there with the errand open");
+        assertFalse(hero.getLocomotor().isMoving(), "and he walked on from there");
     }
 
     /** Deaf, so a skeleton standing on the threshold is only a body in the way. */
@@ -459,10 +501,13 @@ class GateTest {
     }
 
     /**
-     * The descent's first floors on which one order to go up to the gate, given from the way in two frames into the
-     * run, used to come to nothing: said nothing short of it, stood for good with the errand open, or walked for good.
+     * The descent's first floors on which one order to go up to the gate, given from the way in that many frames into
+     * the run, used to come to nothing: said nothing short of it, stood for good with the errand open, or walked for
+     * good. Each is the floor's seed and the frame: two for most; ten for the 38th, which stood for good pressed
+     * against the gate's end once counting how near he got had come in.
      */
-    private static final long[] WENT_WRONG = {0L, 3L, 4L, 5L, 8L, 9L, 11L, 24L, 26L, 30L, 36L, 37L, 39L};
+    private static final long[][] WENT_WRONG = {{0, 2}, {3, 2}, {4, 2}, {5, 2}, {8, 2}, {9, 2}, {11, 2}, {24, 2},
+        {26, 2}, {30, 2}, {36, 2}, {37, 2}, {39, 2}, {38, 10}};
 
     /** Longer than any of them takes, and than the longest he may go without getting nearer. */
     private static final int A_LONG_WALK = 12_000;
@@ -476,10 +521,11 @@ class GateTest {
      */
     @Test
     void sentUpToItFromTheWayInHeGetsThereOrSaysHeCannot() {
-        for (long seed : WENT_WRONG) {
+        for (long[] wrong : WENT_WRONG) {
+            long seed = wrong[0];
             var session = Dungeon.newSession(seed, SETTINGS);
             var game = session.game();
-            game.runHeadless(2);
+            game.runHeadless((int) wrong[1]);
             var hero = find(game, "Rogue");
             var gate = find(game, "Gate");
             var bag = session.progress().getLoot();
