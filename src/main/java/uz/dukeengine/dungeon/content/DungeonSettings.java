@@ -854,8 +854,8 @@ public final class DungeonSettings {
         }
         // A look worn as a state is played again as the state is given again -- a second stun, a second haste, an aura
         // at each beat -- and an AURA layer of it that does not renew is dropped where it should be carried to the new
-        // end, so its picture would end with the first. A MARK ring is laid anew at each beat by the client, and needs
-        // none.
+        // end, so its picture would end with the first. A MARK is laid anew at each beat by the client, and needs none:
+        // the three auras' looks are each one, and have no AURA layer for this to ask of.
         for (var effect : effects) {
             if (!wornAsAState(effect.name())) {
                 continue;

@@ -58,6 +58,20 @@ auras work (its "Drawn" section changes as Task 1 says).
   the same with the looks and without (the existing `SkillLookTest` run).
 - The words in the three files' notes and the spec's "Drawn" section say what is now true (rings by kind, the rider).
 
+**Changed, 2026-10-01:** the owner, shown the ring and its rider played: "passive skill aurasini radiusini aylana qilib
+chizish shart emas. Men unit tagiga kichkinagina belgi qo'y degan edim. Mana shu passive bor ekanligini ko'rsatadigan" —
+and Warcraft III's Vampiric Aura (a red ring of runes on the ground under the unit, a little wider than its body) and
+Brilliance Aura (blue rippling rings under the hero) as what he meant. So the ring at the reach and the rider above are
+undone, and the colours by kind stay: each aura's look is now one small decal under its bearer — a `MARK` that follows
+it, measured in `Units`, 22 across (some two and three quarters times the 8 its `Geometry` stands in), at `Height` 0.3
+over the 0.15 of Task 2's light-blue circle, `Alpha` 0.75, not turning, crossfading and lasting two beats as before — on
+a picture painted for the game by `art/effects/AuraDecals.java`: `effects/aura_runes.png` for the thirst (red),
+`aura_ripples.png` for the mana (blue), `aura_sigil.png` for the might (violet). Nothing draws an aura's `Radius` any
+more; the circle under each one it reaches says who is lent to. The riders (`Drops`, `Motes`, `Sparks`) and the kit's
+`circle_03` are gone from the three looks, and so are the tests that pinned them: `AuraTest` and `DungeonEffectLayerTest`
+now pin one mark sized by its bearer's `Geometry`, on its kind's picture and in its kind's colour, over the circle's
+height, and the three pictures themselves. The bullets above are what Task 1 first did, and are left as written.
+
 ### Task 2: A light-blue circle under every creature an aura reaches, brighter the more kinds
 
 **Files:** `world/Combat.java` (two new fields), `world.duke`'s Combat block and three new `Effect` blocks beside

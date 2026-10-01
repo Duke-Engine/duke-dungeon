@@ -158,8 +158,9 @@ Monster
       BoostPercent = 50
       ; A room round it, and the ones fighting him from its band.
       Radius = 60
-      ; Worn: a thick violet ring as wide as its Radius, and violet sparks flying off its
-      ; body, played on it every second -- see the Effect MightAura, below.
+      ; Worn: a violet sigil on the floor under its feet, a little wider than its body,
+      ; played on it every second -- see the Effect MightAura, below. Nothing draws how far
+      ; it reaches: the light-blue circle under each one it reaches says who it lends to.
       Look = MightAura
       TickFrames = 30
       MaxRank = 1
@@ -224,61 +225,43 @@ End
 ; ---------------------------------------------------------------------------
 ; A summoner's might, worn, in violet -- the colour of a might whoever bears it, as a
 ; mana is blue and a thirst red (the healer's ManaAura and the Revenant's BloodAura are
-; this look in theirs). Two layers: a thick, bright ring on the floor as wide as its
-; Radius, which says how far it reaches, and sparks flying off the body, which say that
-; this is the one that bears it. The summoner plays it on itself every TickFrames (see
-; its E), and the client is told it lasts two of them (Main.measureLooks): each ring
-; fades in over its first half and out over its second, so the one laid a beat later
-; takes over as it goes and the two stand as one steady ring (a MARK, which the client
-; lays anew at each beat), and the sparks -- an AURA layer, let out at a Rate -- say Renews,
-; so each beat carries them on; until the summoner falls, and the last is gone within two
-; seconds. circle_03's brightest line lies at 0.7125 of its half-width -- the sharp edge
-; its bright band begins at, with a dim shoulder inside it and the glow fading outward --
-; so a size of 2.81 of the reach lays it on the Radius itself: what stands inside the
-; ring is lent to. (circle_04 is softer and less than a quarter as bright: no Alpha makes
-; it bold.) A rider's Count is at least its Rate times its longest Life, so none is
-; overwritten while it still shows.
+; this look in theirs, on pictures of their own). One small mark and nothing more: a sigil
+; of eight points in a double ring, painted for the game (effects/aura_sigil.png, made by
+; art/effects/AuraDecals.java), lying on the floor under its feet and a little wider than
+; its body -- a Size of 22 is some two and three quarters times the 8 its Geometry stands
+; in -- which says that this is the one that bears it. It does not say how far it reaches:
+; nothing draws an aura's Radius, and who is lent to is told by the light-blue circle
+; under each of them (Combat's AuraMarkLooks, in world.duke).
+;
+; The summoner plays it on itself every TickFrames (see its E), and the client is told it
+; lasts two of them (Main.measureLooks): each mark fades in over its first half and out
+; over its second, so the one laid a beat later takes over as it goes and the two stand
+; as one steady mark (a MARK, which the client lays anew at each beat) until the summoner
+; falls, and the last is gone within two seconds. It lies at 0.3, just over the floor
+; and over the 0.15 of the circle -- the bearer is among those its own aura reaches, and
+; wears both -- and it does not turn: left unsaid, a MARK is laid at a new angle each
+; beat, and two sigils at two angles would crossfade as a blur. Nothing here rides the
+; body, so no layer has anything to carry on, and none says Renews.
 ; ---------------------------------------------------------------------------
 Effect
   Name = MightAura
 
   Layers = [
     Layer
-      Name = Ring
+      Name = Sigil
       Type = MARK
-      Measure = Reach
+      Measure = Units
       Follows = Yes
-      Texture = kit/effects/particles/circle_03.png
+      Texture = effects/aura_sigil.png
       Blend = Additive
       Count = 1
-      Size = [2.81, 2.81]
+      Size = [22, 22]
       Colour = [0xB06AE8, 0xB06AE8]
-      Alpha = [0.55, 0.55]
+      Alpha = [0.75, 0.75]
       FadeIn = 0.5
       FadeOut = 0.5
       Height = 0.3
-    End,
-
-    ; Sharp four-pointed glints popping off the body and up to about the head, turning as
-    ; they go and each gone inside a second: seven a second, never more than a few at once.
-    Layer
-      Name = Sparks
-      Type = AURA
-      Renews = Yes
-      Texture = kit/effects/particles/star_07.png
-      Blend = Additive
-      Count = 8
-      Rate = 7
-      Radius = 4
-      Life = [0.5, 0.9]
-      Size = [4.0, 1.0]
-      Colour = [0xC080FF, 0xB06AE8]
-      FadeIn = 0.1
-      Speed = [6, 12]
-      Direction = UP
-      Spread = 35
-      Spin = 90
-      Height = 3
+      TurnJitter = 0
     End
   ]
 End

@@ -80,7 +80,8 @@ public final class Main {
      * again: the stun's count starts again at each stun, a second haste starts the haste again,
      * and an aura is played on its bearer again at every beat. So every AURA layer such a look
      * has says it, and the file is refused where one does not (see {@code DungeonSettings});
-     * the shipped rings are MARKs, which the client lays anew each beat, and need none.
+     * the shipped auras' looks are each one MARK, which the client lays anew each beat, and
+     * needs none.
      *
      * <p>Package-private so the game's own test can ask what a block in the file turns into on
      * screen.

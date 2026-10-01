@@ -125,8 +125,9 @@ Monster
       ManaRegen = 50
       ; A room round it, and the ones fighting him from its band.
       Radius = 60
-      ; Worn: a thick blue ring as wide as its Radius, and blue motes at its feet, played
-      ; on it every second -- see the Effect ManaAura, below.
+      ; Worn: blue ripples spreading on the floor under its feet, a little wider than its
+      ; body, played on it every second -- see the Effect ManaAura, below. Nothing draws how
+      ; far it reaches: the light-blue circle under each one it reaches says who it lends to.
       Look = ManaAura
       TickFrames = 30
       MaxRank = 1
@@ -142,50 +143,31 @@ End
 
 ; ---------------------------------------------------------------------------
 ; A healer's mana, worn, in blue -- the colour of a mana whoever bears it, not the
-; healer's own green: a thick ring on the floor as wide as its Radius, played on it every
-; TickFrames and lasting two, as the summoner's MightAura and the Revenant's BloodAura are
-; -- and a few blue motes drifting up at its feet, which say this is the one that bears it:
-; an AURA layer, let out at a Rate, that says Renews: each beat carries it on.
+; healer's own green: the summoner's MightAura on a picture of its own, a few rings of
+; ripples (effects/aura_ripples.png) spreading on the floor from under its feet, a little
+; wider than its body, played on it every TickFrames and lasting two, as the summoner's
+; MightAura and the Revenant's BloodAura are. Nothing draws its Radius, and nothing rides
+; its body: see the MightAura for why it lies where it does, and does not turn.
 ; ---------------------------------------------------------------------------
 Effect
   Name = ManaAura
 
   Layers = [
     Layer
-      Name = Ring
+      Name = Ripples
       Type = MARK
-      Measure = Reach
+      Measure = Units
       Follows = Yes
-      Texture = kit/effects/particles/circle_03.png
+      Texture = effects/aura_ripples.png
       Blend = Additive
       Count = 1
-      Size = [2.81, 2.81]
+      Size = [22, 22]
       Colour = [0x3F8CFF, 0x3F8CFF]
-      Alpha = [0.55, 0.55]
+      Alpha = [0.75, 0.75]
       FadeIn = 0.5
       FadeOut = 0.5
       Height = 0.3
-    End,
-
-    ; Soft round motes, a few at a time, low about its feet and drifting up no higher than
-    ; its waist: the small, slow sign of a pool being filled.
-    Layer
-      Name = Motes
-      Type = AURA
-      Renews = Yes
-      Texture = kit/effects/particles/star_05.png
-      Blend = Additive
-      Count = 10
-      Rate = 6
-      Radius = 8
-      Life = [1.0, 1.5]
-      Size = [4.0, 1.2]
-      Colour = [0x8FC4FF, 0x3F8CFF]
-      FadeIn = 0.2
-      Speed = [2, 5]
-      Direction = UP
-      Spread = 15
-      Height = 0.5
+      TurnJitter = 0
     End
   ]
 End
