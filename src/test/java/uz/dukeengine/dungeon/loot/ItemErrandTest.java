@@ -416,8 +416,9 @@ class ItemErrandTest {
 
     /**
      * Asked aside on his way, he goes on afterwards. A friend walking the other way along his line meets him head on,
-     * and he, the later in, steps aside: which ends a walk exactly onto a thing, though his legs go on naming its place
-     * as their goal, and their step aside as an arrival. He looks again from where he stepped to, goes on and takes it.
+     * and he, the later in, steps aside: which used to end a walk exactly onto a thing, though his legs went on naming
+     * its place as their goal, and their step aside as an arrival, and he looked again from where he stepped to. The
+     * engine goes on from a step aside by itself now (E14): he goes on and takes it.
      */
     @Test
     void askedAsideOnTheWayHeGoesOnAndTakesIt() {
