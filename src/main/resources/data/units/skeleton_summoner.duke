@@ -176,8 +176,8 @@ End
 ; ---------------------------------------------------------------------------
 ; What the one a summoner hastens wears, for as long as the haste: the kit's Focus -- a
 ; glow round the body, motes rising -- in a fury's red. No layer says how long: the client
-; is told the haste's DurationFrames (Main.measureLooks), and a second haste while it
-; burns carries it on to the new end (Main.layerOf) -- which is why both are let out as
+; is told the haste's DurationFrames (Main.measureLooks), and both say Renews, so a second
+; haste while it burns carries it on to the new end -- which is why both are let out as
 ; they go rather than laid once.
 ; ---------------------------------------------------------------------------
 Effect
@@ -187,6 +187,7 @@ Effect
     Layer
       Name = Glow
       Type = AURA
+      Renews = Yes
       Texture = kit/effects/particles/light_02.png
       Blend = Additive
       Cover = 0.1
@@ -203,6 +204,7 @@ Effect
     Layer
       Name = Motes
       Type = AURA
+      Renews = Yes
       Texture = kit/effects/particles/star_01.png
       Blend = Additive
       Count = 10
@@ -227,9 +229,9 @@ End
 ; this is the one that bears it. The summoner plays it on itself every TickFrames (see
 ; its E), and the client is told it lasts two of them (Main.measureLooks): each ring
 ; fades in over its first half and out over its second, so the one laid a beat later
-; takes over as it goes and the two stand as one steady ring, and the sparks -- an AURA
-; layer, let out at a Rate -- are carried on at each beat by Main.layerOf, which renews
-; every look worn as a state; until the summoner falls, and the last is gone within two
+; takes over as it goes and the two stand as one steady ring (a MARK, which the client
+; lays anew at each beat), and the sparks -- an AURA layer, let out at a Rate -- say Renews,
+; so each beat carries them on; until the summoner falls, and the last is gone within two
 ; seconds. circle_03's brightest line lies at 0.7125 of its half-width -- the sharp edge
 ; its bright band begins at, with a dim shoulder inside it and the glow fading outward --
 ; so a size of 2.81 of the reach lays it on the Radius itself: what stands inside the
@@ -262,6 +264,7 @@ Effect
     Layer
       Name = Sparks
       Type = AURA
+      Renews = Yes
       Texture = kit/effects/particles/star_07.png
       Blend = Additive
       Count = 8

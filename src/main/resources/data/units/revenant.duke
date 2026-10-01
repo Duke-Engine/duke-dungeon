@@ -132,7 +132,7 @@ End
 ; Revenant's own blue: a thick ring on the floor as wide as its Radius, played on it every
 ; TickFrames and lasting two, as the summoner's MightAura and the healer's ManaAura are --
 ; and red drops rising round the body, as blood drawn up, which say this is the one that
-; bears it: an AURA layer, let out at a Rate and carried on at each beat by Main.layerOf.
+; bears it: an AURA layer, let out at a Rate, that says Renews: each beat carries it on.
 ; Its ring burns a little brighter than the other two: a red is the darkest of the three.
 ; ---------------------------------------------------------------------------
 Effect
@@ -162,6 +162,7 @@ Effect
     Layer
       Name = Drops
       Type = AURA
+      Renews = Yes
       Texture = kit/effects/particles/circle_05.png
       Blend = Additive
       Cover = 0.5

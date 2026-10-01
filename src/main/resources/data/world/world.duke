@@ -218,9 +218,10 @@ End
 ; ---------------------------------------------------------------------------
 Effect
   Name = Stunned
-  ; The game's own rule on Combat's StunLook (Main.layerOf): a Layer block cannot say
-  ; Renews, so stunned again while it burns, the picture lasts to the new stun's end
-  ; rather than being dropped, as the stun itself starts its count again.
+  ; Each AURA layer says Renews: stunned again while it burns, the picture lasts to the
+  ; new stun's end rather than being dropped, as the stun itself starts its count again.
+  ; Every look worn as a state says it -- this one, which Combat's StunLook names, and
+  ; each haste's and aura's -- and the file is refused where an AURA layer of one does not.
 
   Layers = [
     ; A ring of light turning over his head, as a dazed man's world turns: above a
@@ -229,6 +230,7 @@ Effect
     Layer
       Name = Halo
       Type = AURA
+      Renews = Yes
       Texture = kit/effects/particles/twirl_02.png
       Blend = Additive
       Count = 1
@@ -247,6 +249,7 @@ Effect
     Layer
       Name = Stars
       Type = AURA
+      Renews = Yes
       Texture = kit/effects/particles/star_04.png
       Blend = Additive
       Count = 6

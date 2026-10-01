@@ -708,7 +708,7 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
                 its.hastePercent = skill.boostAt(level);
                 // It turns to the one it hastens and is seen casting, as a mending is; and the one it hastens wears
                 // the haste's look for as long as it lasts -- Main.measureLooks gives the look its DurationFrames,
-                // and Main.layerOf carries it on to a second haste's end.
+                // and its layers say Renews, which carries it on to a second haste's end.
                 Facing.turnToward(owner, hastened);
                 world.post(new WeaponFired(world.getFrame(), owner.getId(), null,
                         owner.getPosition(), hastened.getPosition()));

@@ -2,17 +2,23 @@ package uz.dukeengine.dungeon;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.ArrayList;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 import uz.dukeengine.client3d.EffectLayer;
 import uz.dukeengine.client3d.Visuals;
 import uz.dukeengine.core.GameConstants;
+import uz.dukeengine.dungeon.content.Content;
 import uz.dukeengine.dungeon.content.DungeonSettings;
+import uz.dukeengine.dungeon.content.ShippedBlock;
+import uz.dukeengine.dungeon.skill.SkillEffect;
 
 /**
  * The layers in the settings file are layers the client can draw, from textures
@@ -31,7 +37,7 @@ class DungeonEffectLayerTest {
 
     /** What the file's layers turn into, exactly as Main hands them over. */
     private static EffectLayer drawn(DungeonSettings.EffectLayerArt art) {
-        return Main.layerOf(art, SETTINGS);
+        return Main.layerOf(art);
     }
 
     /**
@@ -379,6 +385,120 @@ class DungeonEffectLayerTest {
         assertTrue(SETTINGS.hitFeel().hitFlashSeconds() > 0.05f && SETTINGS.hitFeel().hitFlashSeconds() <= 0.2f,
                 "a flash of " + SETTINGS.hitFeel().hitFlashSeconds() + " s");
         assertTrue(SETTINGS.hitFeel().shakeScale() >= 0f);
+    }
+
+    // ---- a state given again ----
+
+    /**
+     * A layer renews when its block says it does, and not otherwise: said, a cast of it on somebody it still burns on
+     * carries it to the new cast's end; unsaid, or said not, it is dropped as the client always dropped it -- the
+     * knight's whirlwind is cast again at each landing, and must not be stretched.
+     */
+    @Test
+    void aLayerRenewsWhenItsBlockSaysSoAndNotOtherwise() {
+        var settings = DungeonSettings.parse("""
+                Effect
+                  Name = Given
+                  Layers = [
+                    Layer
+                      Name = Said
+                      Type = AURA
+                      Renews = Yes
+                    End,
+                    Layer
+                      Name = Denied
+                      Type = AURA
+                      Renews = No
+                    End,
+                    Layer
+                      Name = Unsaid
+                      Type = AURA
+                    End
+                  ]
+                End
+                """);
+
+        var renews = new java.util.LinkedHashMap<String, Boolean>();
+        for (var art : settings.effectLayers()) {
+            renews.put(art.name(), drawn(art).renews());
+        }
+        assertEquals(java.util.Map.of("Said", true, "Denied", false, "Unsaid", false), renews);
+    }
+
+    /**
+     * The shipped looks say it where it is needed: every AURA layer of a look worn as a state -- the Combat block's
+     * StunLook, and every haste's and aura's Look -- is handed to the client renewing, so the stars wear on to the
+     * second stun's end, the glow to the second haste's, each rider from one beat to the next; and no other AURA layer
+     * is, the whirlwind's among them. The auras' rings are MARKs, which the client lays anew at each beat: they say
+     * nothing of it, and are asked nothing.
+     */
+    @Test
+    void theShippedLooksWornAsStatesAreDrawnRenewingAndNoOtherAuraIs() {
+        var states = new java.util.TreeSet<String>();
+        states.add(SETTINGS.combat().stunLook());
+        for (var skill : SETTINGS.skills()) {
+            if (skill.hasLook() && (skill.effect() == SkillEffect.HASTE || skill.effect().isAura())) {
+                states.add(skill.look());
+            }
+        }
+        assertEquals(Set.of("Stunned", "Hasted", "MightAura", "ManaAura", "BloodAura"), states,
+                "the premise: the stun, the haste and the three auras are worn as states");
+
+        var renewing = new java.util.TreeSet<String>();
+        var rings = new ArrayList<DungeonSettings.EffectLayerArt>();
+        for (var art : SETTINGS.effectLayers()) {
+            var layer = drawn(art);
+            if (EffectLayer.AURA.equals(layer.type())) {
+                assertEquals(states.contains(art.effect()), layer.renews(),
+                        art.effect() + " " + art.name() + (layer.renews() ? " renews" : " does not renew"));
+                if (layer.renews()) {
+                    renewing.add(art.effect());
+                }
+            } else if (EffectLayer.MARK.equals(layer.type()) && states.contains(art.effect())) {
+                rings.add(art);
+            }
+        }
+        assertEquals(states, renewing, "each look worn as a state has an AURA layer that renews, or this tells nothing");
+        assertEquals(3, rings.size(), "the premise: each aura has a ring, and the stun and the haste have none");
+        assertTrue(rings.stream().noneMatch(ring -> ring.fields().containsKey("renews")),
+                "and a ring says nothing of renewing, the shipped files let in all the same");
+    }
+
+    /**
+     * A look worn as a state is played again each time the state is given again -- a second stun, a second haste, an
+     * aura at every beat -- and an AURA layer of it that does not renew is dropped, not carried to the new end, so its
+     * picture ends with the first. The file is refused where one says nothing of it, naming the look and the layer; and
+     * what is asked follows what is worn as a state, not the look's name: the Combat block's StunLook pointed at the
+     * whirlwind, whose layers say nothing, is refused as well.
+     */
+    @Test
+    void aLookWornAsAStateWhoseAuraLayerDoesNotSayItRenewsIsRefused() {
+        for (var layer : new String[][] {{"Stunned", "Halo"}, {"Stunned", "Stars"}, {"Hasted", "Glow"},
+                {"Hasted", "Motes"}, {"MightAura", "Sparks"}, {"ManaAura", "Motes"}, {"BloodAura", "Drops"}}) {
+            var text = withoutRenews(layer[0], layer[1]);
+
+            var refused = assertThrows(IllegalArgumentException.class, () -> DungeonSettings.parse(text),
+                    layer[0] + "'s " + layer[1]);
+            assertTrue(refused.getMessage().contains(layer[0]) && refused.getMessage().contains(layer[1])
+                    && refused.getMessage().contains("Renews"), refused.getMessage());
+        }
+
+        var repointed = Content.data().replace("StunLook = " + SETTINGS.combat().stunLook(), "StunLook = Whirlwind");
+        assertNotEquals(Content.data(), repointed, "the premise: the stun is worn in the whirlwind's look");
+        var refused = assertThrows(IllegalArgumentException.class, () -> DungeonSettings.parse(repointed));
+        assertTrue(refused.getMessage().contains("Whirlwind") && refused.getMessage().contains("Renews"),
+                refused.getMessage());
+    }
+
+    /** The shipped files with the line that says {@code layer} of the look {@code look} renews taken out. */
+    private static String withoutRenews(String look, String layer) {
+        var block = ShippedBlock.of(look).text();
+        int from = block.indexOf("      Name = " + layer + "\n");
+        int line = block.indexOf("      Renews = Yes\n", from);
+        assertTrue(from >= 0 && line > from && line < block.indexOf("\n    End", from),
+                "the premise: " + look + "'s " + layer + " says Renews = Yes");
+        return Content.data().replace(block,
+                block.substring(0, line) + block.substring(line + "      Renews = Yes\n".length()));
     }
 
     // ---- a blast is exactly as wide as it hurts ----
