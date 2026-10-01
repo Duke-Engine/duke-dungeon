@@ -29,6 +29,7 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E13 | an armed thing-aim's press marked as the game's own order, not an attack | landed, 308841ce |
 | E14 | a walk that stops short says so, and a way shut by bodies still goes as near as they let it | landed, b4c291c3: (1), (2), (3) and (5); (4) was only noted |
 | E15 | where the bottom panel stands, told to a game's painter | landed, 0adfc96c |
+| E16 | a painted world drawn as Warcraft III, Dota and Generals draw theirs: streamed in chunks, blends from the paint, mips, tint, cliffs by slope | waiting (big) |
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
 game builds against the local engine. E12–E15 reached it together at 668045f0 (their pull requests merged as
@@ -38,12 +39,13 @@ e4666f06, b03a781c, 8f6bbd87 and 668045f0), which is still 0.8.0.
 
 1. **E1–E7, E9–E15 and E8's steps 1–2 are done** — they are here for their history. Do not redo them.
 2. **The small ones — E12, E13, E14 and E15 — are done too**, landed together by 668045f0 and taken up by the game:
-   only E8's step 3 and step 4, below, remain.
+   only E8's step 3 and step 4, below, remain — and E16.
 3. **E8's step 3 (rpg)** lifts the game's own packages, and the game's master is on GitHub with every piece since
    the stun (the key to the keep, monsters that grow, the haste and auras, the keep's seal, the long walk, what an aura
    looks like). That step waits only for the owner's word — ask him when. Step 4 (the clients) comes after it.
    The class-by-class proposal is the owner's page https://claude.ai/artifact/Sx1NpP81xmiqmLUny7Qakt (version 2).
-4. Every change is announced to the game as the landings above were: the engine version, the API, what the game must
+4. **E16 is the open world's ground** — big; its section stands on its own, its parts in the order it gives.
+5. Every change is announced to the game as the landings above were: the engine version, the API, what the game must
    change (for E8, the old-to-new package map of each step).
 
 ---
@@ -501,6 +503,57 @@ window, as tall as it is drawn, so a window too narrow for its blocks squeezes i
 copied — and null while it is hidden. The game's `BuffScreen` asks it: a pointer inside the box names nothing for a row,
 a row whose bar lies behind it is not drawn, and null keeps nothing off. `PANEL_SLAB` and its `ponytail:` note are gone;
 the panel's legible scale stays, for the size of the pictures.
+
+## E16 — A painted world, drawn as Warcraft III, Dota and Generals draw theirs (2026-10-01, big)
+
+Last Hero's open world (the campaign: `docs/plan/2026-10-01-campaign.md`; the world E10 made possible, about 900 × 900
+cells of 10 units) is to be painted ground — textures blended into each other, relief, no grid — not the dungeon's
+KayKit floor tiles, whose cells show. The engine already paints ground (`GroundPaint`, `TerrainScene`: a map's `@Paint`
+rows and palette, world-scaled texture repeat, `@Overlay`/`@Fade` blends, `@Relief`), and duke-generals draws its maps
+with it. At an open world's size and look it falls short; measured with the engine's own `TerrainScene.rebuild` on a
+synthetic 900 × 900 painted map (6 surfaces, 13.5% of cells blended), lines from 668045f0:
+
+- It is built whole, never streamed: one mesh per palette entry for the world (TerrainScene ~266-274, 351-422), its
+  scenery too (~315-318); E10's streaming is the kit's path only (~572-582, 669-672). At 900 × 900: 148 MB of buffers
+  (197 MB with `groundLight`), 3.8 M vertices and 2.06 M triangles, every mesh's bound spanning the world, so all are
+  sent every frame; 4,096 × 4,096 would be several GB. `applyDiscovery` loops over every cell each frame (~1750-1756).
+- A blend is one cell wide, a straight ramp in one of 16 cell-shaped fades (FadeShape ~17-48), and nothing derives it
+  from the paint: a game must author `@Overlay`/`@Fade` per cell (Generals' maps carry SAGE's baked blends). Borders
+  follow the grid, never ragged as in Warcraft III or Dota.
+- Ground textures are loaded without mipmaps or anisotropy (DukeRtsApp ~7825-7838; jME's default minification is
+  bilinear with no mips), so ground shimmers at a distance under a tilted camera.
+- One colour map per surface: no tint, no de-tiling, no normal or detail maps; per-cell flat normals unless
+  `Visuals.groundLight` is set; a cliff's texture stretches unless the game writes `@PictureCorners` for every steep
+  cell; `#` cells on a painted map draw as 6-unit grey boxes at the floor, not on the relief (~286-314).
+- A kit beats paint, and a game's default kit counts (~251, 204-209, 258-261), so a game whose scene names a default
+  `Tiles` floor cannot paint a map without dropping it.
+
+Asked, in the order the game can use them:
+
+1. **A map may choose paint over a game's default kit** (a `Painted` map with rows wins), and **ground textures get
+   mipmaps and anisotropic filtering**, as a model's skin already does. (Small.)
+2. **Paint inside E10's chunks.** Painted ground — its surfaces, overlays and a painted map's scenery — built a chunk at
+   a time round the camera, culled, and let go far off, as the kit's floor is; each chunk, corner for corner, what the
+   whole build makes; per-cell work every frame only for cells near the camera.
+3. **Blends from the paint alone, Warcraft III style.** Per-cell corner weights of up to four surfaces derived from
+   `@Paint`, the border between two broken by a noise (or each surface's own height) texture thresholded in the shader,
+   so borders are soft and ragged rather than cell-shaped; a map's own `@Overlay`/`@Fade` drawn as today, so Generals'
+   maps keep their look.
+4. **A surface's tint and de-tiling.** A palette entry may be a texture times a colour; a surface may vary per cell
+   (rotation or offset of its picture) or carry a large variation map, so one texture over a valley does not repeat
+   visibly.
+5. **Cliffs by slope.** A steep cell drawn with a cliff surface mapped without stretching (triplanar, or slope to a
+   named palette entry), so a game need not write `@PictureCorners`; `#` cells on a painted map draw nothing.
+6. **Smooth relief by default:** smooth normals without `groundLight`; optionally each cell cut 2 × 2.
+
+Done when: a generated 900 × 900 painted world with at least six surfaces and relief walks with E10's frame budget (no
+frame over 33 ms at a chunk's edge) and its memory in chunks round the camera; the borders between its surfaces are
+soft and ragged, its ground does not shimmer at a distance, its cliffs are textured without per-cell picture corners;
+and every duke-generals map looks as it did.
+
+Until then the game tries painted ground on small maps — its palette KayKit's own colours as `#RRGGBB` entries, with
+`Visuals.groundShade` for variation — and keeps the descent on its kit. Textures to paint with are the game's to choose
+(hand-painted, as Warcraft III's; licensed so the PNGs may sit in a public repository).
 
 ---
 
