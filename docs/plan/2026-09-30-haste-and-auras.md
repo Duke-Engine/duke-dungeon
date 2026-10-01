@@ -100,7 +100,13 @@ drinks from its own fire.
   book plays it on itself every `TickFrames` (30), staggered by its id as the brain's re-plans are, and
   `Main.measureLooks` makes an aura's look last two ticks: each ring crossfades into the next, `Main.layerOf` renews the
   rider at each beat, and the whole look rides the bearer while it lives and fades within two seconds of its fall.
-  Nothing is drawn on each creature an aura reaches.
+- **A creature an aura reaches** wears a small light-blue circle under its feet, brighter the more kinds of aura reach
+  it (the aura-looks plan, Task 2): its own book asks `SkillBook.aurasOn` — the kinds whose `auraOn` is above 0, a mana
+  aura only for a creature with a pool, a hero never — every Combat `AuraMarkTickFrames` (30), staggered by its id, and
+  plays the `AuraMarkLooks` mark for that count: the first for one kind, the second for two, the third for three (a
+  count past the list's end wears its last). Each is a `MARK` measured in units, a soft glow of the kit's `circle_05`
+  some 14 units across, differing only in `Alpha`; `Main.measureLooks` makes it last two beats, so it rides the creature
+  while an aura reaches it and is gone within two beats of its leaving.
 - **The passive-`Look` rule relaxes for an aura:** it may name one, with a `TickFrames` — a lasting skill's beat, as a
   whirlwind's is; a `LIFESTEAL` still may not. `Main.layerOf` renews every look worn as a state: the stun's, each
   `HASTE`'s and each aura's. The four looks are written in their mages' files.
@@ -153,6 +159,10 @@ are events, out of the checksum. Every name and number from data.
   own fire's; a boss beside it 35%; two Revenants, still 10%; out of reach, nothing; the meteor's blast drinks.
 - **Reach:** its bearer killed, a Skeleton's next blow is its own again; a creature with no book is not reached; an aura
   its bearer's level has not opened lends nothing.
+- **Marks:** a Skeleton beside a summoner wears the first mark at its beat, the summoner itself one; with a healer too
+  (the Skeleton given a pool) the second, with a Revenant as well the third; two summoners, still the first; none for a
+  pool-less Skeleton beside a healer alone, alone, behind stone, past the `Radius`, a hero, or a creature killed; the
+  marks measured two beats, their `Alpha` rising, the load rules refused by message, the checksum the same without them.
 - **The file:** each refusal above, by its message; an aura's `Look` and `TickFrames` accepted, a `LIFESTEAL`'s not.
 - **The shipped data:** the three mages' skills in that order with those figures; every `Monster` carries a `SkillBook`;
   the four looks exist and renew, `Hasted` measured 5 s and each aura's look two ticks, its ring bold and at its
@@ -177,7 +187,7 @@ are events, out of the checksum. Every name and number from data.
 11. **Asked where it is used, not pushed to the receivers:** nothing held, nothing to go stale.
 12. **Every monster carries a book** — one line in each of five files.
 13. **Drawn:** a thick ring in the aura's colour, and a rider of its own, on each bearer, the ring as wide as its reach;
-    `Hasted` on the hastened; nothing on each it reaches.
+    `Hasted` on the hastened; a light-blue circle, brighter the more kinds, on each it reaches.
 14. **The meteor's blast drinks,** so the lifesteal aura misses no monster's blow.
 15. **Priority and names:** the summoning before the haste; *Shiddat*, *Qudrat*, *Sehr buloqi*, *Qon aurasi* — all data.
 

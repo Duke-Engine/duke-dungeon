@@ -607,6 +607,14 @@ public final class DungeonSettings {
         require(combat.summonTurns() >= 0, "SummonTurns cannot be negative");
         require(combat.summonTurnDegrees() > 0f && combat.summonTurnDegrees() * combat.summonTurns() <= 180f,
                 "SummonTurnDegrees times SummonTurns has to stay within a half turn");
+        // A mark whose name is no Effect would be drawn by nothing, and nothing would say so.
+        for (var mark : combat.auraMarkLooks()) {
+            require(effects.stream().anyMatch(effect -> effect.name().equals(mark)),
+                    "Combat's AuraMarkLooks names " + mark + ", and no Effect block describes it");
+        }
+        require(combat.auraMarkLooks().isEmpty() || combat.auraMarkTickFrames() >= 1,
+                "AuraMarkTickFrames is the beat the marks are laid at, at least 1 while AuraMarkLooks names any:"
+                        + " laying one every zero frames is not a beat");
         for (var kind : monsters) {
             var name = "Monster " + kind.name();
             for (var skill : skillsFor(kind.name())) {

@@ -1252,6 +1252,34 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
     }
 
     /**
+     * The kinds of aura on {@code creature} now, in {@link SkillEffect} order: each one whose {@link #auraOn} is above
+     * 0 -- but a {@code MANA_AURA} only for a creature with a pool, for it fills pools and makes none, and changes
+     * nothing on one without. Counted by kind, not by bearer: two summoners lend one might. Nothing for a creature
+     * that carries no book, for a hero -- no aura reaches him -- or for one that has fallen.
+     *
+     * <p>The one rule for what is on a creature, for whatever draws it to ask -- the circle its own book lays under it
+     * ({@code wearTheMark}) is the first. It asks {@link #auraOn}, so a picture of what is lent holds exactly while the
+     * figures do, and cannot disagree with them. Pure: asked when wanted, nothing kept, and an answer that is the
+     * asker's own.
+     *
+     * <p>ponytail: one {@code auraOn} a kind, so three passes over the floor's objects at each asking -- once a beat
+     * for each creature; one pass for all three if a crowded floor ever shows it.
+     */
+    public static List<SkillEffect> aurasOn(GameObject creature) {
+        var book = creature == null ? null : creature.findModule(SkillBook.class);
+        if (book == null || creature.isEffectivelyDead()) {
+            return List.of();
+        }
+        var on = new java.util.ArrayList<SkillEffect>();
+        for (var kind : SkillEffect.values()) {
+            if (kind.isAura() && auraOn(creature, kind) > 0 && (kind != SkillEffect.MANA_AURA || book.usesMana)) {
+                on.add(kind);
+            }
+        }
+        return List.copyOf(on);
+    }
+
+    /**
      * How much faster its weapon fires while a {@code HASTE} burns on it: the engine divides every wait by this and
      * cuts it to whole frames -- 30 frames at 1.75 are 17. Read at each shot; 1 when none burns.
      */
@@ -1374,6 +1402,7 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
             hasteFrames--;
         }
         wearTheAuras();
+        wearTheMark();
         turnTheWhirlwind();
         if (drawing != null && --loosesIn <= 0) {
             looseTheDrawnShot();
@@ -1399,6 +1428,29 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
                     && LevelBonus.rankOf(owner, skill) > 0) {
                 world.effect(skill.look(), owner);
             }
+        }
+    }
+
+    /**
+     * The circle under it is worn: every Combat {@code AuraMarkTickFrames} -- on the frames its object id falls on, as
+     * {@link #wearTheAuras} does -- it asks {@link #aurasOn} of itself and, if any aura reaches it, plays on itself
+     * the look for how many kinds do: the first of the Combat block's {@code AuraMarkLooks} for one, the second for
+     * two, and past the list's end its last. {@code Main.measureLooks} makes each last two beats, so it rides the
+     * creature while an aura reaches it and is gone within two of its leaving. A hero's book asks the same and is
+     * answered none, as is a creature that has fallen. An event: out of the checksum.
+     */
+    private void wearTheMark() {
+        var owner = getOwner();
+        var world = owner.getWorld();
+        var looks = settings.combat().auraMarkLooks();
+        int beat = settings.combat().auraMarkTickFrames();
+        if (world == null || looks.isEmpty() || beat <= 0
+                || world.getFrame() % beat != Math.floorMod(owner.getId().value(), beat)) {
+            return;
+        }
+        int kinds = aurasOn(owner).size();
+        if (kinds > 0) {
+            world.effect(looks.get(Math.min(kinds, looks.size()) - 1), owner);
         }
     }
 

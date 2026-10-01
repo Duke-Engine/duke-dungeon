@@ -269,22 +269,27 @@ class SkillLookTest {
         var without = DungeonSettings.parse(withoutTheLooks(Content.data()));
 
         assertTrue(playersSkills().stream().allMatch(skill -> skill.hasLook()));
+        assertFalse(with.combat().auraMarkLooks().isEmpty(), "the premise: the marks under an aura's reach are named");
         assertTrue(without.skills().stream().noneMatch(skill -> skill.hasLook()),
                 "the stripped file still names looks");
+        assertTrue(without.combat().auraMarkLooks().isEmpty(), "the stripped file still names marks");
         assertEquals(signature(with), signature(without),
                 "a floor played differently once the skills were drawn with nothing");
     }
 
     /**
      * The same file with every skill's Look line cut out of it -- and an aura's TickFrames, written under its Look: the
-     * beat it is worn at, which nothing else reads, and which a file may not name without the look it beats.
+     * beat it is worn at, which nothing else reads, and which a file may not name without the look it beats -- and the
+     * Combat block's AuraMarkLooks, the marks laid under what an aura reaches. Its AuraMarkTickFrames stays: a block
+     * that names no marks may still give the beat they would be laid at.
      */
     private static String withoutTheLooks(String file) {
         var kept = new StringBuilder();
         boolean underALook = false;
         for (var line : file.split("\n", -1)) {
             boolean look = line.trim().startsWith("Look = ");
-            if (!look && !(underALook && line.trim().startsWith("TickFrames = "))) {
+            if (!look && !(underALook && line.trim().startsWith("TickFrames = "))
+                    && !line.trim().startsWith("AuraMarkLooks = ")) {
                 kept.append(line).append('\n');
             }
             underALook = look;

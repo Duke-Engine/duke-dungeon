@@ -1,5 +1,6 @@
 package uz.dukeengine.dungeon.world;
 
+import java.util.List;
 import uz.dukeengine.core.content.Effect;
 import uz.dukeengine.core.data.Link;
 
@@ -21,13 +22,19 @@ import uz.dukeengine.core.data.Link;
  * @param arrowMuzzleOffset  how far in front of an archer his arrow appears — the bow, not his chest
  * @param stunLook           what a stunned creature wears while it stands dazed: an {@code Effect} played on it
  *     by whatever stunned it, lasting as long as the longest {@code StunFrames} any skill has. Blank for nothing
+ * @param auraMarkLooks      what a creature an aura reaches wears under its feet, by how many kinds of aura reach it:
+ *     the first {@code Effect} for one kind, the second for two, the third for three, and a count past the list's end
+ *     the last. Played on it by its own book, every {@code auraMarkTickFrames}. Empty for nothing
+ * @param auraMarkTickFrames how often, in logic frames, a creature's book plays its mark on it -- the beat each look
+ *     above is measured two of, as an aura's {@code TickFrames} is. At least 1 while any is named
  */
 public record Combat(float skeletonSenseRadius, float skeletonChaseRadius, int skeletonRepathFrames,
         float closeDistance, int heroRepathFrames, float wayAheadProbe, float retreatTurnDegrees,
         int retreatTurns, float summonTurnDegrees, int summonTurns, String arrowTemplate, float arrowSpeed,
-        float arrowMuzzleOffset, @Link(Effect.class) String stunLook) {
+        float arrowMuzzleOffset, @Link(Effect.class) String stunLook, @Link(Effect.class) List<String> auraMarkLooks,
+        int auraMarkTickFrames) {
 
     /** What a block leaves out. */
     public static final Combat DEFAULTS = new Combat(90f, 150f, 10, 4f, 10, 5f, 30f, 3, 45f, 4, "Arrow",
-            260f, 5f, "");
+            260f, 5f, "", List.of(), 30);
 }

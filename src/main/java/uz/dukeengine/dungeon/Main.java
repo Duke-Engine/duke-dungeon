@@ -175,7 +175,10 @@ public final class Main {
      *
      * <p>And the stars over a stunned head last as long as the longest stun any skill
      * gives: the look is the Combat block's, one for every stun, played on whoever
-     * was stunned rather than where a skill went off.
+     * was stunned rather than where a skill went off. So does each mark under a
+     * creature an aura reaches, from the same block: two of the beats its book lays
+     * it at, as an aura's look is, so it rides the creature while an aura reaches it
+     * and is gone within two beats of its leaving.
      */
     static void measureLooks(uz.dukeengine.client3d.Visuals visuals, DungeonSettings settings) {
         float perSecond = uz.dukeengine.core.GameConstants.LOGICFRAMES_PER_SECOND;
@@ -209,6 +212,9 @@ public final class Main {
         }
         if (longestStun > 0 && !settings.combat().stunLook().isBlank()) {
             visuals.effectSeconds(settings.combat().stunLook(), longestStun / perSecond);
+        }
+        for (var mark : settings.combat().auraMarkLooks()) {
+            visuals.effectSeconds(mark, 2 * settings.combat().auraMarkTickFrames() / perSecond);
         }
     }
 

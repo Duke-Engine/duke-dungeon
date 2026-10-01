@@ -259,6 +259,32 @@ class DungeonSettingsTest {
     }
 
     /**
+     * The marks under what an aura reaches are named by the Combat block, and a name that is no Effect would be a mark
+     * that draws nothing, silently: each must name one, and while any is named they are laid at a beat of at least 1. A
+     * block that names none draws none, and needs no beat.
+     */
+    @Test
+    void theAuraMarksNameEffectsAndAreLaidAtABeat() {
+        var data = Content.data();
+        var unknown = data.replaceFirst("(?m)^ *AuraMarkLooks = .*$", "  AuraMarkLooks = [Nonesuch]");
+        assertNotEquals(data, unknown, "the premise: the Combat block names its marks");
+        var nameless = assertThrows(IllegalArgumentException.class, () -> DungeonSettings.parse(unknown));
+        assertTrue(nameless.getMessage().contains("AuraMarkLooks") && nameless.getMessage().contains("Nonesuch"),
+                nameless.getMessage());
+
+        var beatless = data.replaceFirst("(?m)^ *AuraMarkTickFrames = .*$", "  AuraMarkTickFrames = 0");
+        assertNotEquals(data, beatless, "the premise: the Combat block gives their beat");
+        var refused = assertThrows(IllegalArgumentException.class, () -> DungeonSettings.parse(beatless));
+        assertTrue(refused.getMessage().contains("AuraMarkTickFrames"), refused.getMessage());
+
+        var none = beatless.replaceFirst("(?m)^ *AuraMarkLooks = .*$", "  AuraMarkLooks = []");
+        assertDoesNotThrow(() -> DungeonSettings.parse(none), "no marks, no beat to lay them at");
+        assertEquals(List.of(),
+                DungeonSettings.parse("Combat\n  SkeletonSenseRadius = 120\nEnd\n").combat().auraMarkLooks(),
+                "a block that names none draws none");
+    }
+
+    /**
      * The hero stops inside his own reach, not at the edge of it.
      *
      * <p>{@code CloseDistance} is his: each monster carries its own further down

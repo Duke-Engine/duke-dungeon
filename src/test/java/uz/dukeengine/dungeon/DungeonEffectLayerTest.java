@@ -531,6 +531,36 @@ class DungeonEffectLayerTest {
         assertEquals(3, rings, "a ring for each of the three auras");
     }
 
+    /**
+     * Each mark under a creature an aura reaches is a small glow, and seen: measured in its texture, where it is at
+     * least a quarter as bright as at its brightest it is across 10 to 20 units -- wider than the 8 a skeleton stands
+     * in, so it shows round its feet, and nothing like the ring a bearer wears -- and even the dimmest, for one kind,
+     * burns at least 0.2 of full light at its brightest.
+     */
+    @Test
+    void eachMarkUnderACreatureAnAuraReachesIsASmallGlowAndSeen() throws java.io.IOException {
+        var marks = SETTINGS.combat().auraMarkLooks();
+        assertEquals(3, marks.size(), "the premise: a mark for one kind, for two and for three");
+        for (var look : marks) {
+            var layer = drawn(SETTINGS.effectLayers().stream().filter(art -> art.effect().equals(look)).findFirst()
+                    .orElseThrow());
+            var light = ringLight(layer.texture());
+            double peak = java.util.Arrays.stream(light).max().orElse(0);
+            int last = -1;
+            for (int bin = 0; bin < light.length; bin++) {
+                if (light[bin] >= peak / 4) {
+                    last = bin;
+                }
+            }
+            float across = (last + 1) / (float) light.length * layer.sizeEnd();
+            assertTrue(across >= 10f && across <= 20f, look + " glows " + across + " units across, where it is at least"
+                    + " a quarter as bright as at its brightest: not a small circle round a creature's feet");
+            float brightness = (float) peak * Math.min(layer.alphaStart(), layer.alphaEnd());
+            assertTrue(brightness >= 0.2f, look + " burns at " + brightness + " of full light at its brightest,"
+                    + " which is not seen");
+        }
+    }
+
     /** How far across the floor a particle of this layer can be carried. */
     private static float thrownAtMost(EffectLayer layer) {
         float speed = Math.max(Math.abs(layer.speedMin()), Math.abs(layer.speedMax()));
