@@ -43,7 +43,12 @@ public final class PartyOrders {
      * by the engine as the word the game named, and the pointer over the gate is the cursor of that name.
      */
     public static final String TO_THE_GATE = "ToTheGate";
-    static final String USE = "use";
+    /**
+     * The word of the key's order, and what its press on the gate is answered as: the bag's use aim names it
+     * ({@code CommandButton.answeredAs}), so the client marks and voices that press as a click giving this word on a
+     * thing -- the ring of the game's own orders, in their colour -- and not as an attack on it.
+     */
+    public static final String USE = "use";
 
     private PartyOrders() {
     }

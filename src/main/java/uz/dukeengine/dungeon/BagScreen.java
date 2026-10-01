@@ -1,6 +1,7 @@
 package uz.dukeengine.dungeon;
 
 import java.util.List;
+import uz.dukeengine.client3d.AimOutcome;
 import uz.dukeengine.client3d.Canvas;
 import uz.dukeengine.client3d.CanvasInput;
 import uz.dukeengine.client3d.Duke3D;
@@ -49,7 +50,8 @@ final class BagScreen implements Painter, CanvasInput {
     private static final long STILL_NANOS = 500_000_000L;
 
     private final DungeonSettings settings;
-    private final Duke3D duke;
+    /** How a thing taken in hand is armed: the button, and who is told how its aim ended. */
+    private final java.util.function.BiConsumer<CommandButton, java.util.function.Consumer<AimOutcome>> arm;
     /** What is on the creature he picks, over its bar: drawn under the bag, its card over everything. */
     private final BuffScreen buffs;
 
@@ -98,8 +100,18 @@ final class BagScreen implements Painter, CanvasInput {
     }
 
     BagScreen(DungeonSettings settings, Duke3D duke, java.util.function.LongSupplier clock) {
+        this(settings, (button, ended) -> duke.aim(button, 0f, HOLDING, ended), clock);
+    }
+
+    /**
+     * The same, arming what is taken in hand by {@code arm} and not by the client: for a test to see what the bag aims
+     * with, without a window.
+     */
+    BagScreen(DungeonSettings settings,
+            java.util.function.BiConsumer<CommandButton, java.util.function.Consumer<AimOutcome>> arm,
+            java.util.function.LongSupplier clock) {
         this.settings = settings;
-        this.duke = duke;
+        this.arm = arm;
         this.clock = clock;
         this.buffs = new BuffScreen(settings);
     }
@@ -460,17 +472,21 @@ final class BagScreen implements Painter, CanvasInput {
     /**
      * Take the thing in {@code at} in hand: to be put down where the next click on the ground is, or — a thing that
      * does something — taken to the thing the next click is on. The client arms the aim, and says when it is over.
+     *
+     * <p>A press on a thing is answered as the game's own order, {@link PartyOrders#USE}: marked in the ring of the
+     * game's orders and voiced as they are, as a right click on the gate is, and not as an attack on it. A drop aims
+     * at the floor, and says nothing of it.
      */
     private void hold(Dungeon.Session match, int at, Loot item, String kind, CommandButton.Aim aim) {
         int armed = ++aims;
         held = at;
         heldIn = match;
         using = aim == CommandButton.Aim.UNIT;
-        duke.aim(new CommandButton(kind + at, item.icon(), item.name(), null, true, aim, null), 0f, HOLDING,
-                outcome -> {
-                    if (aims == armed) {
-                        held = -1;
-                    }
-                });
+        var button = new CommandButton(kind + at, item.icon(), item.name(), null, true, aim, null);
+        arm.accept(using ? button.answeredAs(PartyOrders.USE) : button, outcome -> {
+            if (aims == armed) {
+                held = -1;
+            }
+        });
     }
 }

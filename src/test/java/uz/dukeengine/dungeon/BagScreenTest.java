@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import uz.dukeengine.core.view.CommandButton;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.dungeon.loot.Loot;
 import uz.dukeengine.dungeon.loot.LootKind;
@@ -325,6 +326,46 @@ class BagScreenTest {
         game.pressCommand("use:2", null, 0f, gate.getId().value());
         game.runHeadless(2);
         assertEquals(List.of(expected), heard.stream().filter(order -> order.word().equals(expected.word())).toList());
+    }
+
+    /**
+     * What the bag arms when a thing is taken in hand, as the aim a window would be asked for. The key, taken in hand
+     * with the left button, is a button that aims at a thing and says its press there is the game's own order, "use":
+     * so the client marks and voices it as it does a right click on the gate -- the ring of the game's orders, in their
+     * colour -- and not as an attack on it, in the attack's ring, as if the gate were to be fought. A thing put down,
+     * taken in hand with the right button, aims at the floor and says nothing of it.
+     */
+    @Test
+    void theKeysAimIsAnsweredAsTheGamesUseAndADropsAsNothing() {
+        var session = Dungeon.newSession(21L);
+        var game = session.game();
+        game.runHeadless(2);
+        var key = SETTINGS.loot().stream().filter(item -> item.kind() == LootKind.KEY).findFirst().orElseThrow();
+        var gauntlet = SETTINGS.loot().stream().filter(item -> item.id().equals("Gauntlet")).findFirst().orElseThrow();
+        session.progress().getLoot().take(key, 0, 30);
+        session.progress().getLoot().take(gauntlet, 0, 30);
+        var armed = new java.util.ArrayList<CommandButton>();
+        var bag = new BagScreen(SETTINGS, (button, ended) -> armed.add(button), () -> 0L);
+        bag.show(session);
+        var drawn = new Drawn();
+        bag.paint(drawn);
+        var onKey = drawn.picture(key.icon());
+        var onGauntlet = drawn.picture(gauntlet.icon());
+        assertNotNull(onKey, "the key is drawn in its slot: " + drawn.pictures);
+        assertNotNull(onGauntlet, "the gauntlet is drawn in its slot: " + drawn.pictures);
+
+        bag.take(new uz.dukeengine.client3d.CanvasInput.Button(onKey.middleX(), onKey.middleY(),
+                uz.dukeengine.client3d.CanvasInput.Mouse.LEFT, true, false));
+        bag.take(new uz.dukeengine.client3d.CanvasInput.Button(onGauntlet.middleX(), onGauntlet.middleY(),
+                uz.dukeengine.client3d.CanvasInput.Mouse.RIGHT, true, false));
+
+        assertEquals(List.of(
+                new CommandButton("use:0", key.icon(), key.name(), null, true, CommandButton.Aim.UNIT, null)
+                        .answeredAs("use"),
+                new CommandButton("drop:1", gauntlet.icon(), gauntlet.name(), null, true, CommandButton.Aim.GROUND,
+                        null)),
+                armed, "the key's aim answered as the game's use, and the drop's as nothing, the rest as it was");
+        assertNull(armed.getLast().answeredAs(), "a drop aims at the floor, where the game's orders are not given");
     }
 
     /** A key gives nothing, so the pointer on it says what it is and how to take it, with no empty row for a figure. */
