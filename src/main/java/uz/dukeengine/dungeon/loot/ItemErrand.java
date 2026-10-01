@@ -177,7 +177,7 @@ public final class ItemErrand extends UpdateModule implements Errand {
         var there = thing == null ? null : world.findObject(thing);
         var lying = there == null ? null : there.findModule(GroundItem.class);
         if (thing != null && (there == null || act == Act.TAKE && (lying == null || lying.getHolding() == null))) {
-            over = true; // gone, or somebody got there first
+            end(legs); // gone, or somebody got there first
             return;
         }
         if (!near(hero, rules.reach())) {
@@ -206,18 +206,12 @@ public final class ItemErrand extends UpdateModule implements Errand {
             // Waiting it out -- standing, looking again every HeroRepathFrames -- is the upgrade. Its first try sent a
             // hero round a loop for good, which counting how near he gets now ends; not tried again.
             if (there != null && !atItsEdge(hero, there)) {
-                over = true;
-                if (legs != null && legs.isMoving()) {
-                    legs.stop(); // where he says he cannot get to is not where his legs go on walking
-                }
+                end(legs);
                 bag.say(rules.noWayWord(), world.getFrame(), rules.noteFrames());
                 return;
             }
         }
-        over = true;
-        if (legs != null && legs.isMoving()) {
-            legs.stop();
-        }
+        end(legs);
         int frame = world.getFrame();
         switch (act) {
             case TAKE -> {
@@ -254,6 +248,17 @@ public final class ItemErrand extends UpdateModule implements Errand {
                     bag.say(gate.lineFor(bag.holds(LootKind.KEY)), frame, rules.noteFrames());
                 }
             }
+        }
+    }
+
+    /**
+     * Over, done or given up or gone, and his legs stop with it: where it ended is nowhere to walk on to. Not when he
+     * was sent somewhere else -- that walk is what he was told.
+     */
+    private void end(MoveUpdate legs) {
+        over = true;
+        if (legs != null && legs.isMoving()) {
+            legs.stop();
         }
     }
 

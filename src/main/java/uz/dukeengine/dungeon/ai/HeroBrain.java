@@ -411,7 +411,7 @@ public final class HeroBrain extends UnitScript {
      */
     private void mindTheWayOnHisErrand(MoveUpdate move) {
         if (errand != null) {
-            if (move.isMoving() || walkingFor != null && walkingFor.isOver()) {
+            if (move.isMoving() || (walkingFor != null && walkingFor.isOver())) {
                 forgetTheErrand(); // he has been given something else to do, or what he was walking for is over
                 return;
             }
@@ -430,7 +430,8 @@ public final class HeroBrain extends UnitScript {
         if (ahead != null) {
             errand = move.getGoal();
             waitingOn = ahead;
-            walkingFor = unit().findModule(ItemErrand.class);
+            var on = unit().findModule(ItemErrand.class);
+            walkingFor = on == null || on.isOver() ? null : on; // one done, still on him, is not what this is for
             if (walkingFor != null) {
                 walkingFor.heldForABody(true);
             }

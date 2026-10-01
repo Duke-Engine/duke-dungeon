@@ -341,9 +341,83 @@ class ItemErrandTest {
     }
 
     /**
+     * Each cell nearer starts the count again. His brain stands him behind his friend for most of what the rules let
+     * him stand; the friend walks on a way and stops, he follows him nearer and is stood still again -- longer, all
+     * told, than the rules allow, but never that long since he last got nearer. He is still on it, and once the way
+     * opens he takes the thing.
+     */
+    @Test
+    void aCellNearerStartsTheCountAgain() {
+        var corridor = inACorridorWith(true);
+        var game = corridor.game();
+        var hero = corridor.hero();
+        var bag = new LootBag();
+        assertTrue(ItemErrand.pickUp(hero, corridor.chest(), bag, corridor.room().rules()));
+        game.runHeadless(40 + STUCK * 3 / 4);
+        assertFalse(hero.getLocomotor().isMoving(), "his brain never stood him still, so this tells nothing");
+
+        corridor.inTheWay().getLocomotor().moveTo(new Coord3D(150f, 15f, 0f)); // a way on, and he stops again
+        game.runHeadless(100 + STUCK * 3 / 4);
+        assertFalse(hero.getLocomotor().isMoving(), "his brain never stood him still again, so this tells nothing");
+        assertTrue(hero.getPosition().x() > 100f, "he never followed him nearer, so this tells nothing");
+        assertEquals("", bag.noteAt(game.getLogic().getFrame()), "he counted the stand from before he got nearer");
+
+        corridor.inTheWay().getBody().damage(1e9f);
+        game.runHeadless(300);
+        assertEquals(List.of(BLADE), bag.getFound());
+    }
+
+    /**
+     * A finished errand still on him is not what a walk is for. He has put a thing down at his feet, and his legs are
+     * then given a walk by something other than an order -- as a level gained gives a walk back -- that his brain
+     * stands still behind his friend: when the friend goes, he goes on.
+     */
+    @Test
+    void aWalkHeldAfterAnErrandIsDoneGoesOnWhenTheWayOpens() {
+        var corridor = inACorridorWith(true);
+        var game = corridor.game();
+        var hero = corridor.hero();
+        var bag = new LootBag();
+        bag.take(SHIELD, 0, 0);
+        assertTrue(ItemErrand.drop(hero, 0, hero.getPosition(), bag, corridor.room().rules()));
+        game.runHeadless(2);
+        assertTrue(hero.findModule(ItemErrand.class).isOver(), "the errand is not done, so this tells nothing");
+
+        hero.getLocomotor().moveTo(new Coord3D(200f, 15f, 0f));
+        game.runHeadless(90);
+        assertFalse(hero.getLocomotor().isMoving(), "his brain never stood him still, so this tells nothing");
+        corridor.inTheWay().getBody().damage(1e9f);
+        game.runHeadless(300);
+
+        assertTrue(hero.getPosition().x() > 150f, "he stood where his brain stood him: " + hero.getPosition());
+    }
+
+    /**
+     * Gone before he gets there -- somebody else took what was in it -- the errand is over, and his legs stop rather
+     * than walk him on to the empty floor.
+     */
+    @Test
+    void aThingTakenBeforeHeGetsThereStopsHisWalk() {
+        var room = room(100f);
+        var chest = room.chestAt(320f, BLADE);
+        var bag = new LootBag();
+        assertTrue(ItemErrand.pickUp(room.hero(), chest, bag, room.rules()));
+        room.game().runHeadless(30);
+
+        chest.findModule(GroundItem.class).take();
+        room.game().runHeadless(2);
+        var stoppedAt = room.hero().getPosition();
+        room.game().runHeadless(60);
+
+        assertFalse(room.hero().getLocomotor().isMoving(), "his legs walk on");
+        assertTrue(room.hero().getPosition().distance(stoppedAt) < 2f, "he walked on, to " + room.hero().getPosition());
+        assertEquals("", bag.noteAt(room.game().getLogic().getFrame()), "and he said something of it");
+    }
+
+    /**
      * Asked aside on his way, he goes on afterwards. A friend walking the other way along his line meets him head on,
      * and he, the later in, steps aside: which ends a walk exactly onto a thing, though his legs go on naming its place
-     * as their goal, and their step aside as an arrival. He looks again from where he stepped to, walks on and takes it.
+     * as their goal, and their step aside as an arrival. He looks again from where he stepped to, goes on and takes it.
      */
     @Test
     void askedAsideOnTheWayHeGoesOnAndTakesIt() {
