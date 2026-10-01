@@ -7,6 +7,7 @@ import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.core.thing.ObjectId;
 import uz.dukeengine.core.thing.World;
 import uz.dukeengine.dungeon.content.DungeonSettings;
+import uz.dukeengine.dungeon.loot.ItemErrand;
 import uz.dukeengine.dungeon.skill.SkillBook;
 import uz.dukeengine.core.module.ModuleData;
 import uz.dukeengine.core.module.ModuleGroup;
@@ -95,6 +96,12 @@ public final class HeroBrain extends UnitScript {
      * carry on rather than simply lose the order. Null unless he is waiting.
      */
     private Coord3D errand;
+
+    /**
+     * The errand he was walking for when the body stopped him, if he was on one: the
+     * walk is that errand's, and it ends with it. See {@link #mindTheWayOnHisErrand}.
+     */
+    private ItemErrand walkingFor;
 
     /** The standing orders his player has given; see {@link Orders}. */
     private final Orders orders;
@@ -393,11 +400,16 @@ public final class HeroBrain extends UnitScript {
      * the moment anything else is asked of him — a new walk, an attack, a skill —
      * or he would set off again for somewhere the player had long since thought
      * better of.
+     *
+     * <p><b>And with the errand the walk was for.</b> An errand that gave up while
+     * he stood here, saying he could not get there, has ended the walk with it:
+     * taking it up once the way cleared would have him arrive having said he
+     * could not.
      */
     private void mindTheWayOnHisErrand(MoveUpdate move) {
         if (errand != null) {
-            if (move.isMoving()) {
-                forgetTheErrand(); // he has been given something else to do
+            if (move.isMoving() || walkingFor != null && walkingFor.isOver()) {
+                forgetTheErrand(); // he has been given something else to do, or what he was walking for is over
                 return;
             }
             if (WayAhead.stillShut(unit(), waitingOn, errand, settings.combat().wayAheadProbe(), null)) {
@@ -415,6 +427,7 @@ public final class HeroBrain extends UnitScript {
         if (ahead != null) {
             errand = move.getGoal();
             waitingOn = ahead;
+            walkingFor = unit().findModule(ItemErrand.class);
             move.stop();
         }
     }
@@ -422,6 +435,7 @@ public final class HeroBrain extends UnitScript {
     private void forgetTheErrand() {
         errand = null;
         waitingOn = null;
+        walkingFor = null;
     }
 
     /** Send him walking at something, remembering where it was when he set off. */

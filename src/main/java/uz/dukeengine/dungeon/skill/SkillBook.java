@@ -20,6 +20,7 @@ import uz.dukeengine.dungeon.combat.Shot;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.combat.event.WeaponFired;
 import uz.dukeengine.combat.module.DamageModifier;
+import uz.dukeengine.combat.module.Errand;
 import uz.dukeengine.combat.module.StatusUpdate;
 import uz.dukeengine.combat.module.WeaponHold;
 import uz.dukeengine.combat.module.WeaponUpdate;
@@ -467,10 +468,15 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Wea
         // He does one thing at a time. Casting is the player's latest word, so
         // whatever errand he was on ends here rather than resuming underneath it —
         // a dash that lands him somewhere and then walks him back is not a dash.
+        // The walk stops, and the errand it was for is given up with it, as any
+        // order gives one up: left on him it would act long after, from wherever
+        // he had stopped. A cast reaches here from an order, between frames; a
+        // monster's brain casts in its own update, and a monster is on no errand.
         var legs = owner.findModule(MoveUpdate.class);
         if (legs != null) {
             legs.stop();
         }
+        Errand.giveUpAll(owner);
         return true;
     }
 

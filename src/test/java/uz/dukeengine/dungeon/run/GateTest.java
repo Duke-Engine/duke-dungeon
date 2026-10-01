@@ -82,7 +82,7 @@ class GateTest {
     private static ItemErrand.Rules rules(Dungeon.Arena arena, float reach) {
         var drops = SETTINGS.lootDrops();
         return new ItemErrand.Rules(reach, 100_000, drops.template(), arena.dungeon().getIndex(), drops.fullWord(),
-                drops.noUseWord(), drops.noWayWord(), drops.stuckFrames());
+                drops.noUseWord(), drops.noWayWord(), drops.stuckFrames(), drops.stuckFightingFrames());
     }
 
     private static Loot key() {
@@ -455,6 +455,51 @@ class GateTest {
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * The descent's first floors on which one order to go up to the gate, given from the way in two frames into the
+     * run, used to come to nothing: said nothing short of it, stood for good with the errand open, or walked for good.
+     */
+    private static final long[] WENT_WRONG = {0L, 3L, 4L, 5L, 8L, 9L, 11L, 24L, 26L, 30L, 36L, 37L, 39L};
+
+    /** Longer than any of them takes, and than the longest he may go without getting nearer. */
+    private static final int A_LONG_WALK = 12_000;
+
+    /**
+     * Sent up to the gate from the way in, he gets there and says what he makes of it, or he says he cannot get there
+     * -- and nothing else: never an errand left open, never legs still walking. On every floor where that used to go
+     * wrong.
+     *
+     * <p>He is kept alive throughout: what is asked here is his walk, not the fights on the way.
+     */
+    @Test
+    void sentUpToItFromTheWayInHeGetsThereOrSaysHeCannot() {
+        for (long seed : WENT_WRONG) {
+            var session = Dungeon.newSession(seed, SETTINGS);
+            var game = session.game();
+            game.runHeadless(2);
+            var hero = find(game, "Rogue");
+            var gate = find(game, "Gate");
+            var bag = session.progress().getLoot();
+            game.postCommand(PartyOrders.of(new ToTheGate(game.getLocalPlayerIndex(), gate.getId())));
+
+            ItemErrand errand = null;
+            for (int frame = 0; frame < A_LONG_WALK && (errand == null || !errand.isOver()); frame++) {
+                hero.getBody().setHealth(hero.getBody().getMaxHealth());
+                game.runHeadless(1);
+                errand = hero.findModule(ItemErrand.class);
+            }
+
+            assertTrue(errand != null && errand.isOver(), "seed " + seed + ": the errand is still open, at "
+                    + hero.getPosition());
+            var said = bag.noteAt(game.getLogic().getFrame());
+            assertTrue(said.equals(gate.findModule(GateUpdate.class).lineFor(false))
+                            || said.equals(SETTINGS.lootDrops().noWayWord()),
+                    "seed " + seed + ": it ended saying '" + said + "'");
+            game.runHeadless(30);
+            assertFalse(hero.getLocomotor().isMoving(), "seed " + seed + ": his legs walk on");
         }
     }
 }

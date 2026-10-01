@@ -56,8 +56,13 @@ class ItemErrandTest {
     private record Room(DukeGame game, GameObject hero, int floorOwner) {
 
         ItemErrand.Rules rules() {
+            return rules(STUCK, 100_000);
+        }
+
+        /** The same with limits of its own on how long he may get no nearer: not fighting, and fighting or not. */
+        ItemErrand.Rules rules(int stuck, int stuckFighting) {
             return new ItemErrand.Rules(SETTINGS.lootDrops().pickupRange(), 100_000, "Chest", floorOwner, "Full",
-                    "No use", "No way", STUCK);
+                    "No use", "No way", stuck, stuckFighting);
         }
 
         /** A chest holding {@code item} at {@code x}, as a monster would have left it. */
@@ -212,33 +217,206 @@ class ItemErrandTest {
                 + room.chests().getFirst().getPosition());
     }
 
+    /** Deaf, so a skeleton in his way stands there to be shot rather than coming at him. */
+    private static final DungeonSettings DEAF = DungeonSettings.parse("""
+            Monster
+              Name = Skeleton
+              SenseRadius = 1
+              ChaseRadius = 1
+              CloseDistance = 4
+            End
+            """);
+
+    /** The hero at 25 in a corridor one cell wide, a chest at 250, and at 70 something standing in his way. */
+    private record Corridor(DukeGame game, GameObject hero, GameObject inTheWay, GameObject chest, Room room) {
+    }
+
+    /**
+     * The corridor with a friend of his in the way -- a second hero's Knight, whom nothing asks aside and whom he will
+     * not shoot -- or, {@code aFriend} false, one of the dungeon's: a deaf skeleton, which stands there and is shot.
+     */
+    private static Corridor inACorridorWith(boolean aFriend) {
+        var arena = Dungeon.world(corridor(), null, aFriend ? SETTINGS : DEAF,
+                uz.dukeengine.dungeon.content.Content.units(), List.of(new LootBag(), new LootBag()));
+        var game = arena.game();
+        game.spawn("Rogue", arena.heroes().get(0), 25f, 15f);
+        if (aFriend) {
+            game.spawn("Knight", arena.heroes().get(1), 70f, 15f);
+        } else {
+            game.spawn("Skeleton", arena.dungeon(), 70f, 15f);
+        }
+        game.runHeadless(1);
+        var hero = named(game, "Rogue");
+        var room = new Room(game, hero, arena.dungeon().getIndex());
+        var chest = GroundItem.lay(game.getLogic(), "Chest", BLADE, new Coord3D(250f, 15f, 0f), room.floorOwner());
+        return new Corridor(game, hero, named(game, aFriend ? "Knight" : "Skeleton"), chest, room);
+    }
+
+    private static GameObject named(DukeGame game, String template) {
+        return game.getLogic().getObjects().stream()
+                .filter(object -> object.getTemplate().name().equals(template)).findFirst().orElseThrow();
+    }
+
     /**
      * A body in his way that never goes does not keep him on the errand for ever. His friend stands in a corridor one
      * cell wide with the thing past him: his brain stands him behind the friend until the way opens, and nothing asks
-     * a friend aside. Once he has stood getting nowhere for as long as the rules say, he gives it up and says why, and
-     * the thing stays where it lies.
+     * a friend aside. Once he has gone as long as the rules say without getting any nearer, he gives it up and says
+     * why, and the thing stays where it lies.
      */
     @Test
     void aBodyThatNeverGoesHasHimGiveItUpAndSayWhy() {
-        var arena = Dungeon.world(corridor(), null, SETTINGS, uz.dukeengine.dungeon.content.Content.units(),
-                List.of(new LootBag(), new LootBag()));
-        var game = arena.game();
-        game.spawn("Rogue", arena.heroes().get(0), 25f, 15f);
-        game.spawn("Knight", arena.heroes().get(1), 70f, 15f); // his friend, standing in the way
-        game.runHeadless(1);
-        var hero = game.getLogic().getObjects().stream()
-                .filter(object -> object.getTemplate().name().equals("Rogue")).findFirst().orElseThrow();
-        var room = new Room(game, hero, arena.dungeon().getIndex());
-        var chest = GroundItem.lay(game.getLogic(), "Chest", BLADE, new Coord3D(250f, 15f, 0f), room.floorOwner());
+        var corridor = inACorridorWith(true);
+        var hero = corridor.hero();
         var bag = new LootBag();
 
-        assertTrue(ItemErrand.pickUp(hero, chest, bag, room.rules()));
-        game.runHeadless(STUCK + 90);
+        assertTrue(ItemErrand.pickUp(hero, corridor.chest(), bag, corridor.room().rules()));
+        corridor.game().runHeadless(STUCK + 90);
 
-        assertEquals("No way", bag.noteAt(game.getLogic().getFrame()), "he is still waiting behind his friend");
+        assertEquals("No way", bag.noteAt(corridor.game().getLogic().getFrame()),
+                "he is still waiting behind his friend");
         assertTrue(hero.findModule(ItemErrand.class).isOver(), "with the errand open");
-        assertEquals(BLADE, chest.findModule(GroundItem.class).getHolding(), "and the thing stays where it lies");
+        assertEquals(BLADE, corridor.chest().findModule(GroundItem.class).getHolding(),
+                "and the thing stays where it lies");
         assertTrue(hero.getPosition().x() < 70f, "he got past his friend after all: " + hero.getPosition());
+    }
+
+    /**
+     * Given up, it stays given up: when his friend goes at last, his brain does not walk him on to the thing it had
+     * stood him short of -- to stand there having said he could not get there.
+     */
+    @Test
+    void anErrandGivenUpIsNotWalkedOnWhenTheWayOpens() {
+        var corridor = inACorridorWith(true);
+        var hero = corridor.hero();
+        var bag = new LootBag();
+        assertTrue(ItemErrand.pickUp(hero, corridor.chest(), bag, corridor.room().rules()));
+        corridor.game().runHeadless(STUCK + 90);
+        assertEquals("No way", bag.noteAt(corridor.game().getLogic().getFrame()), "or this tells nothing");
+        var gaveUpAt = hero.getPosition();
+
+        corridor.inTheWay().getBody().damage(1e9f); // the friend falls, and the way is open
+        corridor.game().runHeadless(300);
+
+        assertTrue(hero.getPosition().distance(gaveUpAt) < 5f,
+                "having said he could not get there, he went on anyway, to " + hero.getPosition());
+    }
+
+    /**
+     * A body in his way that he is fighting is not a way that stays shut. His brain stands him behind a skeleton in
+     * the corridor and he shoots it; however long that takes -- longer here than the rules let him get no nearer
+     * while not fighting -- he is not getting nowhere. It falls, and he goes on and takes the thing.
+     */
+    @Test
+    void aBodyHeIsFightingDoesNotMakeHimGiveItUp() {
+        var corridor = inACorridorWith(false);
+        corridor.inTheWay().getBody().setHealth(10f); // five of his arrows here: four seconds of fighting
+        var bag = new LootBag();
+
+        assertTrue(ItemErrand.pickUp(corridor.hero(), corridor.chest(), bag, corridor.room().rules(30, 100_000)));
+        corridor.game().runHeadless(600);
+
+        assertTrue(corridor.inTheWay().isEffectivelyDead(), "the skeleton still stands, so this tells nothing");
+        assertEquals(List.of(BLADE), bag.getFound(),
+                "he gave it up while he was fighting his way: " + bag.noteAt(corridor.game().getLogic().getFrame()));
+    }
+
+    /**
+     * But a fight in his way that never ends -- a skeleton mended as fast as he hurts it -- ends the errand all the
+     * same, once he has gone as long as the rules say, fighting or not, without getting any nearer.
+     */
+    @Test
+    void aFightThatNeverEndsEndsTheErrandAllTheSame() {
+        var corridor = inACorridorWith(false);
+        var bag = new LootBag();
+        assertTrue(ItemErrand.pickUp(corridor.hero(), corridor.chest(), bag, corridor.room().rules(100_000, 200)));
+
+        var body = corridor.inTheWay().getBody();
+        for (int frame = 0; frame < 400; frame++) {
+            body.setHealth(body.getMaxHealth());
+            corridor.game().runHeadless(1);
+        }
+
+        assertEquals("No way", bag.noteAt(corridor.game().getLogic().getFrame()), "he is fighting it still");
+        assertEquals(BLADE, corridor.chest().findModule(GroundItem.class).getHolding());
+    }
+
+    /**
+     * Given up, he stops where he is. An errand that ends while his legs are still walking it -- here a way round that
+     * leads off from the thing for longer than the rules let him go without getting nearer -- does not leave them
+     * walking on to where he has just said he cannot get.
+     */
+    @Test
+    void anErrandGivenUpOnTheWayStopsHisLegs() {
+        // A pocket open to the west, the hero in it and the chest outside it to the east: his way leads off west.
+        var map = new StringBuilder();
+        for (int y = 0; y < 30; y++) {
+            for (int x = 0; x < 40; x++) {
+                boolean pocket = (y == 10 || y == 20) && x >= 3 && x <= 14 || x == 14 && y >= 10 && y <= 20;
+                map.append(x == 0 || y == 0 || x == 39 || y == 29 || pocket ? '#' : '.');
+            }
+            map.append('\n');
+        }
+        var arena = Dungeon.world(map.toString(), SETTINGS);
+        var game = arena.game();
+        game.spawn("Rogue", arena.hero(), 100f, 150f);
+        game.runHeadless(1);
+        var hero = named(game, "Rogue");
+        var room = new Room(game, hero, arena.dungeon().getIndex());
+        var chest = GroundItem.lay(game.getLogic(), "Chest", BLADE, new Coord3D(250f, 150f, 0f), room.floorOwner());
+        var bag = new LootBag();
+
+        assertTrue(ItemErrand.pickUp(hero, chest, bag, room.rules(100_000, 30)));
+        game.runHeadless(60);
+        assertEquals("No way", bag.noteAt(game.getLogic().getFrame()), "he never gave it up, so this tells nothing");
+        var gaveUpAt = hero.getPosition();
+        game.runHeadless(120);
+
+        assertFalse(hero.findModule(uz.dukeengine.core.module.MoveUpdate.class).isMoving(), "his legs walk on");
+        assertTrue(hero.getPosition().distance(gaveUpAt) < 2f, "he walked on, to " + hero.getPosition());
+    }
+
+    /**
+     * A skill is the player's latest word too: cast on the way, it ends the errand he was on, as any order does. He
+     * stands where the dash put him, the thing he was taking down stays in his bag, and nothing is said of it later.
+     */
+    @Test
+    void aSkillCastOnTheWayEndsAnErrandToPutAThingDown() {
+        var room = room(100f);
+        var bag = new LootBag();
+        bag.take(BLADE, 0, 0);
+        assertTrue(ItemErrand.drop(room.hero(), 0, new Coord3D(320f, 150f, 0f), bag, room.rules()));
+        room.game().runHeadless(10);
+
+        castHisDash(room);
+        room.game().runHeadless(STUCK + 120);
+
+        assertNull(room.hero().findModule(ItemErrand.class), "the errand is still on him");
+        assertEquals(List.of(BLADE), bag.getFound(), "it went down where he stood, long after the cast");
+        assertTrue(room.chests().isEmpty());
+    }
+
+    /** And an errand to take a thing: the chest stays where it lies, and he never says he could not get to it. */
+    @Test
+    void aSkillCastOnTheWayEndsAnErrandToTakeAThing() {
+        var room = room(100f);
+        var chest = room.chestAt(320f, BLADE);
+        var bag = new LootBag();
+        assertTrue(ItemErrand.pickUp(room.hero(), chest, bag, room.rules()));
+        room.game().runHeadless(10);
+
+        castHisDash(room);
+        room.game().runHeadless(STUCK + 120);
+
+        assertNull(room.hero().findModule(ItemErrand.class), "the errand is still on him");
+        assertEquals("", bag.noteAt(room.game().getLogic().getFrame()),
+                "he spoke of a chest he was not after any more");
+        assertEquals(BLADE, chest.findModule(GroundItem.class).getHolding());
+    }
+
+    /** The Rogue's E: a dash, cast as the player's key casts it. */
+    private static void castHisDash(Room room) {
+        var book = room.hero().findModule(uz.dukeengine.dungeon.skill.SkillBook.class);
+        assertTrue(book.cast('E', 1), "the dash did not go off, so this tells nothing");
     }
 
     @Test
