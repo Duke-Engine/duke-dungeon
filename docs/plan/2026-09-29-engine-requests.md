@@ -38,10 +38,10 @@ game builds against the local engine. E12–E15 reached it together, merged as 6
 1. **E1–E7, E9–E15 and E8's steps 1–2 are done** — they are here for their history. Do not redo them.
 2. **The small ones — E12, E13, E14 and E15 — are done too**, landed together as 668045f0 and taken up by the game:
    only E8's step 3 and step 4, below, remain.
-3. **E8's step 3 (rpg)** lifts the game's own packages, and the game's newest code is not on GitHub yet: its
-   stun-lifesteal-summons, key-to-the-keep and monsters-grow pieces are on the owner's master only, and the keep's seal
-   and the auras are still being built. That step waits for them — ask him when. Step 4 (the clients) comes after it.
-   The class-by-class proposal is the owner's page https://claude.ai/artifact/Sx1NpP81xmiqmLUny7Qakt (version 2).
+3. **E8's step 3 (rpg)** lifts the game's own packages, and the game's newest code is not on GitHub yet: its pieces since
+   the stun (the key to the keep, monsters that grow, the haste and auras, the keep's seal, the long walk, what an aura
+   looks like) are on the owner's master only, not pushed. That step waits for his word — ask him when. Step 4 (the
+   clients) comes after it. The class-by-class proposal is the owner's page https://claude.ai/artifact/Sx1NpP81xmiqmLUny7Qakt (version 2).
 4. Every change is announced to the game as the landings above were: the engine version, the API, what the game must
    change (for E8, the old-to-new package map of each step).
 
