@@ -24,8 +24,9 @@ import uz.dukeengine.game.DukeGame;
  *
  * <p>The creature he has selected alone shows its row always; the one the pointer rests on, while the pointer is on it,
  * on its row or on its bar -- and while it is on the row, the row stays that one's, whatever the pick names behind it.
- * A pointer on the bag's slab, or over the panel at the foot of the window, names nothing, whatever stands behind it
- * there; a bar behind the panel has no row over it, and one at the top of the window has its row kept on the window.
+ * A pointer on the bag's slab, or over the panel at the foot of the window -- where the canvas says it stands, squeezed
+ * or not, and nowhere while it is hidden -- names nothing, whatever stands behind it there; a bar behind the panel has
+ * no row over it, and one at the top of the window has its row kept on the window.
  *
  * <p>What is on them is read after every frame, on the simulation's thread -- {@link SkillBook#aurasOn}, the one rule
  * the circle under a creature asks too, and the haste its book counts down -- and handed over whole, so the window
@@ -34,16 +35,6 @@ import uz.dukeengine.game.DukeGame;
  * neither selects nor orders what is behind it.
  */
 final class BuffScreen {
-
-    /**
-     * How tall the engine's panel at the foot of the window is in the pixels it was designed at: its band of 172 and a
-     * pad of 10 over and under it ({@code HeroPanel}'s {@code SLAB_HEIGHT}), grown as the panel is.
-     *
-     * <p>ponytail: the engine's figure copied, and the squeeze it gives a window too narrow for its blocks left out --
-     * an engine that told a game where its panel stands would make this exact: asked as E15 in
-     * {@code docs/plan/2026-09-29-engine-requests.md}.
-     */
-    private static final float PANEL_SLAB = 192f;
 
     /**
      * One thing on a creature: the skill it is, what it is worth there -- a percent, or a mana aura's tenths of a point
@@ -178,15 +169,17 @@ final class BuffScreen {
     Card paint(Canvas canvas, DukeGame game, int x, int y, boolean covered) {
         drawn.clear();
         // Sized as the panel is: the window's width over the one it was designed at, within its least and most.
-        var panel = settings.panelLook();
-        float scale = Math.clamp(canvas.width() / panel.designWidth(), panel.minScale(), panel.maxScale());
-        float foot = canvas.height() - (panel.blocks().isEmpty() ? 0f : PANEL_SLAB * scale);
+        var look = settings.panelLook();
+        float scale = Math.clamp(canvas.width() / look.designWidth(), look.minScale(), look.maxScale());
         float size = settings.hud().buffIcon() * scale;
         float gap = Math.max(2f, size * 0.15f);
+        // Where the panel at the foot stands this frame is the canvas's to say -- a window too narrow for its blocks
+        // squeezes it below its design's height -- and null while it is hidden, when nothing is kept off it.
+        var panel = canvas.bottomPanel();
         var selection = game.getSelection();
         int picked = selection.size() == 1 ? selection.getFirst() : -1;
         // A pointer on the bag, or over the panel at the foot, names nothing, whatever stands behind it there.
-        boolean free = !covered && y < foot;
+        boolean free = !covered && (panel == null || !holds(panel, x, y));
         int pointed = free ? game.getPointedAt() : -1;
         int over = -1;
         Card card = null;
@@ -194,7 +187,7 @@ final class BuffScreen {
             var bar = canvas.barOf(row.getKey());
             // Kept on the window: a bar with no room above it has its row lowered over it, as a bubble is.
             float top = bar == null ? 0f : Math.max(4f, bar.y() - gap - size);
-            if (bar == null || top + size > foot) {
+            if (bar == null || panel != null && top + size > panel.y()) {
                 continue; // no bar placed this frame, or one behind the panel
             }
             var on = row.getValue();

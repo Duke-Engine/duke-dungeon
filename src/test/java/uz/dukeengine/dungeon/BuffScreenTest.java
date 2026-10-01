@@ -70,10 +70,13 @@ class BuffScreenTest {
         private final int high;
         /** Where each thing's bar stands, by its id: nowhere, unless a test says. */
         IntFunction<Box> bars = id -> null;
+        /** Where the client's panel stands: a band across the window's foot, unless a test moves it or hides it (null). */
+        Box panel;
 
         Drawn(int wide, int high) {
             this.wide = wide;
             this.high = high;
+            this.panel = new Box(0f, high - 200f, wide, 200f);
         }
 
         Drawn() {
@@ -166,6 +169,11 @@ class BuffScreenTest {
         @Override
         public Box barOf(int id) {
             return bars.apply(id);
+        }
+
+        @Override
+        public Box bottomPanel() {
+            return panel;
         }
     }
 
@@ -412,6 +420,52 @@ class BuffScreenTest {
         assertNotNull(floor.paint(drawn, BAR).picture(haste), "the premise: picked again, its row");
         assertNull(floor.paint(drawn, new Canvas.Box(BAR.x(), 860f, BAR.width(), BAR.height())).picture(haste),
                 "its bar behind the panel");
+    }
+
+    /**
+     * Where the panel at the window's foot stands is for the canvas to say, and the game does not work it out: the
+     * pointer inside it names nothing for the row, and a row whose bar lies behind it is not drawn, whether the canvas
+     * puts it higher than its design's figure would -- that is 664 from the top, of 900 -- or squeezed lower into a
+     * window too narrow for its blocks; and where the canvas says it is hidden, nothing is kept off.
+     */
+    @Test
+    void theRowKeepsOffThePanelWhereverTheCanvasSaysItStandsAndOffNothingWhileItIsHidden() {
+        var floor = floor(SETTINGS);
+        var game = floor.game();
+        var drawn = new Drawn();
+        var haste = skill(SkillEffect.HASTE).icon();
+
+        game.setSelection(List.of());
+        game.setPointedAt(floor.id());
+        game.runHeadless(1);
+        for (float top : new float[] {500f, 850f}) {
+            drawn.panel = new Canvas.Box(0f, top, 1600f, 900f - top);
+            floor.bag().take(new CanvasInput.Pointer(40, Math.round(top) + 5));
+            assertNull(floor.paint(drawn, BAR).picture(haste), "the pointer inside the panel, from " + top);
+            floor.bag().take(new CanvasInput.Pointer(40, Math.round(top) - 5));
+            assertNotNull(floor.paint(drawn, BAR).picture(haste), "and above it, the pointed one's row");
+        }
+
+        game.setSelection(List.of(floor.id()));
+        game.setPointedAt(-1);
+        game.runHeadless(1);
+        floor.bag().take(new CanvasInput.Pointer(40, 40));
+        for (float top : new float[] {500f, 850f}) {
+            drawn.panel = new Canvas.Box(0f, top, 1600f, 900f - top);
+            var behind = new Canvas.Box(BAR.x(), top + 20f, BAR.width(), BAR.height());
+            var clear = new Canvas.Box(BAR.x(), top - 60f, BAR.width(), BAR.height());
+            assertNull(floor.paint(drawn, behind).picture(haste), "the picked one's bar behind the panel, from " + top);
+            assertNotNull(floor.paint(drawn, clear).picture(haste), "and clear of it, its row");
+        }
+
+        drawn.panel = null;
+        floor.bag().take(new CanvasInput.Pointer(40, 890));
+        assertNotNull(floor.paint(drawn, new Canvas.Box(BAR.x(), 860f, BAR.width(), BAR.height())).picture(haste),
+                "the panel hidden, a bar where it stood has its row");
+        game.setSelection(List.of());
+        game.setPointedAt(floor.id());
+        game.runHeadless(1);
+        assertNotNull(floor.paint(drawn, BAR).picture(haste), "and a pointer where it stood names the creature");
     }
 
     /**
