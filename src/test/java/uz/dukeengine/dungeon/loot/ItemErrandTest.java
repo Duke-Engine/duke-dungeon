@@ -447,7 +447,39 @@ class ItemErrandTest {
      */
     @Test
     void anErrandGivenUpOnTheWayStopsHisLegs() {
-        // A pocket open to the west, the hero in it and the chest outside it to the east: his way leads off west.
+        var room = inAPocket();
+        var hero = room.hero();
+        var bag = new LootBag();
+
+        assertTrue(ItemErrand.pickUp(hero, room.chests().getFirst(), bag, room.rules(100_000, 30)));
+        room.game().runHeadless(60);
+        assertEquals("No way", bag.noteAt(room.game().getLogic().getFrame()),
+                "he never gave it up, so this tells nothing");
+        var gaveUpAt = hero.getPosition();
+        room.game().runHeadless(120);
+
+        assertFalse(hero.findModule(uz.dukeengine.core.module.MoveUpdate.class).isMoving(), "his legs walk on");
+        assertTrue(hero.getPosition().distance(gaveUpAt) < 2f, "he walked on, to " + hero.getPosition());
+    }
+
+    /**
+     * And a way round that leads off is walked, not stood: out of the same pocket he goes for far longer than the rules
+     * let him stand getting no nearer, and takes the thing.
+     */
+    @Test
+    void aWayRoundThatLeadsOffIsNotStandingStill() {
+        var room = inAPocket();
+        var bag = new LootBag();
+
+        assertTrue(ItemErrand.pickUp(room.hero(), room.chests().getFirst(), bag, room.rules(30, 100_000)));
+        room.game().runHeadless(900);
+
+        assertEquals(List.of(BLADE), bag.getFound(),
+                "he gave it up on the way round: " + bag.noteAt(room.game().getLogic().getFrame()));
+    }
+
+    /** A pocket open to the west, the hero in it at 100 and a chest outside it at 250: his way leads off west. */
+    private static Room inAPocket() {
         var map = new StringBuilder();
         for (int y = 0; y < 30; y++) {
             for (int x = 0; x < 40; x++) {
@@ -460,19 +492,9 @@ class ItemErrandTest {
         var game = arena.game();
         game.spawn("Rogue", arena.hero(), 100f, 150f);
         game.runHeadless(1);
-        var hero = named(game, "Rogue");
-        var room = new Room(game, hero, arena.dungeon().getIndex());
-        var chest = GroundItem.lay(game.getLogic(), "Chest", BLADE, new Coord3D(250f, 150f, 0f), room.floorOwner());
-        var bag = new LootBag();
-
-        assertTrue(ItemErrand.pickUp(hero, chest, bag, room.rules(100_000, 30)));
-        game.runHeadless(60);
-        assertEquals("No way", bag.noteAt(game.getLogic().getFrame()), "he never gave it up, so this tells nothing");
-        var gaveUpAt = hero.getPosition();
-        game.runHeadless(120);
-
-        assertFalse(hero.findModule(uz.dukeengine.core.module.MoveUpdate.class).isMoving(), "his legs walk on");
-        assertTrue(hero.getPosition().distance(gaveUpAt) < 2f, "he walked on, to " + hero.getPosition());
+        var room = new Room(game, named(game, "Rogue"), arena.dungeon().getIndex());
+        GroundItem.lay(game.getLogic(), "Chest", BLADE, new Coord3D(250f, 150f, 0f), room.floorOwner());
+        return room;
     }
 
     /**

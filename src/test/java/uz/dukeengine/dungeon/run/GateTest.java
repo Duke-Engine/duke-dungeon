@@ -501,31 +501,38 @@ class GateTest {
     }
 
     /**
-     * The descent's first floors on which one order to go up to the gate, given from the way in that many frames into
-     * the run, used to come to nothing: said nothing short of it, stood for good with the errand open, or walked for
-     * good. Each is the floor's seed and the frame: two for most; ten for the 38th, which stood for good pressed
-     * against the gate's end once counting how near he got had come in.
+     * A floor of the descent on which one order to go up to the gate, given from the way in {@code frame} frames into
+     * the run, used to come to nothing.
      */
-    private static final long[][] WENT_WRONG = {{0, 2}, {3, 2}, {4, 2}, {5, 2}, {8, 2}, {9, 2}, {11, 2}, {24, 2},
-        {26, 2}, {30, 2}, {36, 2}, {37, 2}, {39, 2}, {38, 10}};
+    private record Floor(long seed, int frame) {
+    }
+
+    /**
+     * One for each way it went wrong that a floor still shows, and he gets there on each today. The 0th: sent exactly
+     * at the gate with a healer on its threshold, his legs found nowhere nearer at once, and he said nothing. The 26th:
+     * the road grazes a statue, and a still thing in the spot ahead held him for good. The 38th, at frame ten: his legs
+     * stopped of themselves against the gate's end, and he stood there with the errand open; the floor takes him
+     * another way now, which a look again ends. The walk that never ends -- the 20th's shuffle on one spot, which the
+     * longer count ends with the word -- takes six seconds here, and ItemErrandTest pins that count.
+     */
+    private static final List<Floor> WENT_WRONG = List.of(new Floor(0, 2), new Floor(26, 2), new Floor(38, 10));
 
     /** Longer than any of them takes, and than the longest he may go without getting nearer. */
     private static final int A_LONG_WALK = 12_000;
 
     /**
-     * Sent up to the gate from the way in, he gets there and says what he makes of it, or he says he cannot get there
-     * -- and nothing else: never an errand left open, never legs still walking. On every floor where that used to go
-     * wrong.
+     * Sent up to the gate from the way in, he gets there and says what he makes of it -- never an errand left open,
+     * never legs still walking -- on a floor for each way that used to go wrong.
      *
      * <p>He is kept alive throughout: what is asked here is his walk, not the fights on the way.
      */
     @Test
-    void sentUpToItFromTheWayInHeGetsThereOrSaysHeCannot() {
-        for (long[] wrong : WENT_WRONG) {
-            long seed = wrong[0];
+    void sentUpToItFromTheWayInHeGetsThere() {
+        for (var floor : WENT_WRONG) {
+            long seed = floor.seed();
             var session = Dungeon.newSession(seed, SETTINGS);
             var game = session.game();
-            game.runHeadless((int) wrong[1]);
+            game.runHeadless(floor.frame());
             var hero = find(game, "Rogue");
             var gate = find(game, "Gate");
             var bag = session.progress().getLoot();
@@ -540,10 +547,8 @@ class GateTest {
 
             assertTrue(errand != null && errand.isOver(), "seed " + seed + ": the errand is still open, at "
                     + hero.getPosition());
-            var said = bag.noteAt(game.getLogic().getFrame());
-            assertTrue(said.equals(gate.findModule(GateUpdate.class).lineFor(false))
-                            || said.equals(SETTINGS.lootDrops().noWayWord()),
-                    "seed " + seed + ": it ended saying '" + said + "'");
+            assertEquals(gate.findModule(GateUpdate.class).lineFor(false), bag.noteAt(game.getLogic().getFrame()),
+                    "seed " + seed + ": it ended short of the gate, at " + hero.getPosition());
             game.runHeadless(30);
             assertFalse(hero.getLocomotor().isMoving(), "seed " + seed + ": his legs walk on");
         }
