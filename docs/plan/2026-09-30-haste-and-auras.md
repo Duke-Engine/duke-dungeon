@@ -93,14 +93,16 @@ drinks from its own fire.
 - **The hastened** wear `Hasted` — the kit's `Focus` (a glow round the body, motes rising) in a fury's red — for as long
   as the haste.
 - **An aura's bearer** wears its `Look` (`MightAura`, `ManaAura`, `BloodAura`), in the colour of the aura's *kind*, not
-  of its bearer — might violet, mana blue, the thirst red — and of two layers (the aura-looks plan, Task 1): a thick,
-  bright ring on the floor as wide as its `Radius` (a `MARK` measured in reach, which `Main.measureLooks` already sets
-  from the skill; the kit's `circle_03`, sized so its brightest line lies on the `Radius`), and a small `AURA` layer
-  riding the body that says which kind it bears — violet sparks, a few blue motes at the feet, red drops rising. Its
-  book plays it on itself every `TickFrames` (30), staggered by its id as the brain's re-plans are, and
-  `Main.measureLooks` makes an aura's look last two ticks: each ring crossfades into the next, the rider says `Renews`
-  and so is carried on at each beat, and the whole look rides the bearer while it lives and fades within two seconds of
-  its fall.
+  of its bearer — might violet, mana blue, the thirst red — and of one layer (the aura-looks plan, Task 1, as changed
+  on 2026-10-01): a small decal on the floor under its feet, a little wider than its body. A `MARK` that follows its
+  bearer, measured in units — 22 across, some two and three quarters times the 8 its `Geometry` stands in — at `Height`
+  0.3, over the 0.15 of the circle under what an aura reaches, at `Alpha` 0.75 and not turning, on a picture painted
+  for the game (`art/effects/AuraDecals.java`): `effects/aura_runes.png`, a ring of runes, for the thirst;
+  `aura_ripples.png`, ripples, for the mana; `aura_sigil.png`, a sigil of eight points in a double ring, for the might.
+  Nothing draws the aura's `Radius`, and nothing rides the body: who is lent to is told by the circle below. Its book
+  plays it on itself every `TickFrames` (30), staggered by its id as the brain's re-plans are, and `Main.measureLooks`
+  makes an aura's look last two ticks: each decal crossfades into the next, and the whole look rides the bearer while it
+  lives and fades within two seconds of its fall.
 - **A creature an aura reaches** wears a small light-blue circle under its feet, brighter the more kinds of aura reach
   it (the aura-looks plan, Task 2): its own book asks `SkillBook.aurasOn` — the kinds whose `auraOn` is above 0, a mana
   aura only for a creature with a pool, a hero never — every Combat `AuraMarkTickFrames` (30), staggered by its id, and
@@ -110,8 +112,8 @@ drinks from its own fire.
   while an aura reaches it and is gone within two beats of its leaving.
 - **The passive-`Look` rule relaxes for an aura:** it may name one, with a `TickFrames` — a lasting skill's beat, as a
   whirlwind's is; a `LIFESTEAL` still may not. Every look worn as a state — the stun's, each `HASTE`'s and each aura's —
-  says `Renews = Yes` on its `AURA` layers (engine request E12), and the file is refused where one does not. The four
-  looks are written in their mages' files.
+  says `Renews = Yes` on its `AURA` layers (engine request E12; the three auras' looks have none now), and the file is
+  refused where one does not. The four looks are written in their mages' files.
 
 ## The three mages
 
@@ -167,8 +169,9 @@ are events, out of the checksum. Every name and number from data.
   marks measured two beats, their `Alpha` rising, the load rules refused by message, the checksum the same without them.
 - **The file:** each refusal above, by its message; an aura's `Look` and `TickFrames` accepted, a `LIFESTEAL`'s not.
 - **The shipped data:** the three mages' skills in that order with those figures; every `Monster` carries a `SkillBook`;
-  the four looks exist and renew, `Hasted` measured 5 s and each aura's look two ticks, its ring bold and at its
-  `Radius`, its rider fed, and both in the colour of its kind.
+  the four looks exist, `Hasted` measured 5 s and renewing and each aura's look two ticks, each aura's look one decal
+  under its bearer, sized by the bearer's `Geometry` and over the circle's height, on its kind's picture and in its
+  kind's colour, and the three pictures painted.
 - **Lock-step:** two worlds fought through the same frames with the three mages read the same checksum.
 
 ## Decided by default (the owner may change)
@@ -188,8 +191,9 @@ are events, out of the checksum. Every name and number from data.
 10. **Mana as a rate,** 5.0 a second through the carry; nothing to a creature with no pool; no aura grows with a level.
 11. **Asked where it is used, not pushed to the receivers:** nothing held, nothing to go stale.
 12. **Every monster carries a book** — one line in each of five files.
-13. **Drawn:** a thick ring in the aura's colour, and a rider of its own, on each bearer, the ring as wide as its reach;
-    `Hasted` on the hastened; a light-blue circle, brighter the more kinds, on each it reaches.
+13. **Drawn:** a small decal in the aura's colour, on a picture of its kind's own, under each bearer (the owner asked
+    for it on 2026-10-01, in place of a ring at its reach and a rider); `Hasted` on the hastened; a light-blue circle,
+    brighter the more kinds, on each it reaches.
 14. **The meteor's blast drinks,** so the lifesteal aura misses no monster's blow.
 15. **Priority and names:** the summoning before the haste; *Shiddat*, *Qudrat*, *Sehr buloqi*, *Qon aurasi* — all data.
 

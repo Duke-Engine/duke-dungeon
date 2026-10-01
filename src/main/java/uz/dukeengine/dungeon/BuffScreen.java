@@ -19,8 +19,8 @@ import uz.dukeengine.game.DukeGame;
 
 /**
  * What is on a creature the player picks, as Dota draws it: over its bar, a small picture for each aura that reaches
- * it and for a haste while one burns on it, framed in the colour its own look starts in -- an aura's ring on the floor,
- * a haste's glow on the body -- and the pointer on one says what it adds.
+ * it and for a haste while one burns on it, framed in the colour its own look starts in -- an aura's mark under its
+ * bearer's feet, a haste's glow on the body -- and the pointer on one says what it adds.
  *
  * <p>The creature he has selected alone shows its row always; the one the pointer rests on, while the pointer is on it,
  * on its row or on its bar -- and while it is on the row, the row stays that one's, whatever the pick names behind it.

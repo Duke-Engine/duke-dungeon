@@ -112,8 +112,9 @@ Monster
       BoostPercent = 10
       ; A room round it, and the ones fighting beside it.
       Radius = 60
-      ; Worn: a thick red ring as wide as its Radius, and red drops rising round its body,
-      ; played on it every second -- see the Effect BloodAura, below.
+      ; Worn: a ring of red runes on the floor under its feet, a little wider than its body,
+      ; played on it every second -- see the Effect BloodAura, below. Nothing draws how far
+      ; it reaches: the light-blue circle under each one it reaches says who it lends to.
       Look = BloodAura
       TickFrames = 30
       MaxRank = 1
@@ -129,56 +130,31 @@ End
 
 ; ---------------------------------------------------------------------------
 ; A Revenant's drink, worn, in red -- the colour of a thirst whoever bears it, not the
-; Revenant's own blue: a thick ring on the floor as wide as its Radius, played on it every
-; TickFrames and lasting two, as the summoner's MightAura and the healer's ManaAura are --
-; and red drops rising round the body, as blood drawn up, which say this is the one that
-; bears it: an AURA layer, let out at a Rate, that says Renews: each beat carries it on.
-; Its ring burns a little brighter than the other two: a red is the darkest of the three.
+; Revenant's own blue: the summoner's MightAura on a picture of its own, a ring of runes
+; (effects/aura_runes.png) lying on the floor under its feet, a little wider than its body,
+; played on it every TickFrames and lasting two, as the summoner's MightAura and the
+; healer's ManaAura are. Nothing draws its Radius, and nothing rides its body: see the
+; MightAura for why it lies where it does, and does not turn.
 ; ---------------------------------------------------------------------------
 Effect
   Name = BloodAura
 
   Layers = [
     Layer
-      Name = Ring
+      Name = Runes
       Type = MARK
-      Measure = Reach
+      Measure = Units
       Follows = Yes
-      Texture = kit/effects/particles/circle_03.png
+      Texture = effects/aura_runes.png
       Blend = Additive
       Count = 1
-      Size = [2.81, 2.81]
+      Size = [22, 22]
       Colour = [0xD01C28, 0xD01C28]
-      Alpha = [0.6, 0.6]
+      Alpha = [0.75, 0.75]
       FadeIn = 0.5
       FadeOut = 0.5
       Height = 0.3
-    End,
-
-    ; Soft red drops, drawn out upward as they rise, from the shin to about the head and
-    ; gone as they reach it. They are drops, not a glow -- Cover lets them hide some of the
-    ; pale body behind them, so they stay red where light added to it would wash out to
-    ; pink -- and they start a little off the floor, where a long one is not cut by it.
-    Layer
-      Name = Drops
-      Type = AURA
-      Renews = Yes
-      Texture = kit/effects/particles/circle_05.png
-      Blend = Additive
-      Cover = 0.5
-      Count = 13
-      Rate = 9
-      Radius = 6
-      Life = [0.9, 1.4]
-      Size = [3.0, 1.4]
-      Colour = [0xFF4048, 0xA0101C]
-      Alpha = [1, 0.5]
-      FadeIn = 0.15
-      Speed = [7, 11]
-      Direction = UP
-      Spread = 12
-      Stretch = 0.12
-      Height = 2
+      TurnJitter = 0
     End
   ]
 End

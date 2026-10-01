@@ -279,14 +279,16 @@ End
 ; picture: out to where it is half as bright as at its heart it is 0.315 of its Size
 ; across, and to a quarter as bright 0.365 of it. So a Size of 44 is a glow some 14
 ; units across and 16 at its fringe -- wider than the 8 a skeleton stands in, so it
-; shows round the feet even at the dimmest, and nothing like the 120 of a bearer's
-; ring, which it must not be mistaken for. Light blue, paler than the mana ring's blue.
+; shows round the feet even at the dimmest, and plainer and paler than the picture a
+; bearer wears under its feet, which it must not be mistaken for. Light blue, paler than
+; the mana mark's blue.
 ;
-; Like those rings, each is laid anew at every beat and lasts two (Main.measureLooks),
+; Like a bearer's mark, each is laid anew at every beat and lasts two (Main.measureLooks),
 ; fading in over its first half and out over its second, so the one laid a beat later
 ; takes over as it goes and the two stand as one steady circle. A creature that one more
 ; kind of aura reaches is crossfaded into the brighter mark, not switched to it. Lower
-; than the rings lie (0.3), so the two do not fight over a height.
+; than a bearer's mark lies (0.3), so the two do not fight over a height: a bearer is
+; among those its own aura reaches, and wears both.
 ; ---------------------------------------------------------------------------
 Effect
   Name = AuraMarkOne

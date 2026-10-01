@@ -428,9 +428,10 @@ class DungeonEffectLayerTest {
     /**
      * The shipped looks say it where it is needed: every AURA layer of a look worn as a state -- the Combat block's
      * StunLook, and every haste's and aura's Look -- is handed to the client renewing, so the stars wear on to the
-     * second stun's end, the glow to the second haste's, each rider from one beat to the next; and no other AURA layer
-     * is, the whirlwind's among them. The auras' rings are MARKs, which the client lays anew at each beat: they say
-     * nothing of it, and are asked nothing.
+     * second stun's end and the glow and the motes to the second haste's; and no other AURA layer is, the whirlwind's
+     * among them. The three auras' looks have no AURA layer at all: each is one MARK under its bearer, which the client
+     * lays anew at each beat, says nothing of renewing, and is asked nothing -- so the rule has nothing to ask of
+     * them, and waits for the next look that rides a body.
      */
     @Test
     void theShippedLooksWornAsStatesAreDrawnRenewingAndNoOtherAuraIs() {
@@ -445,7 +446,7 @@ class DungeonEffectLayerTest {
                 "the premise: the stun, the haste and the three auras are worn as states");
 
         var renewing = new java.util.TreeSet<String>();
-        var rings = new ArrayList<DungeonSettings.EffectLayerArt>();
+        var marks = new ArrayList<DungeonSettings.EffectLayerArt>();
         for (var art : SETTINGS.effectLayers()) {
             var layer = drawn(art);
             if (EffectLayer.AURA.equals(layer.type())) {
@@ -455,13 +456,14 @@ class DungeonEffectLayerTest {
                     renewing.add(art.effect());
                 }
             } else if (EffectLayer.MARK.equals(layer.type()) && states.contains(art.effect())) {
-                rings.add(art);
+                marks.add(art);
             }
         }
-        assertEquals(states, renewing, "each look worn as a state has an AURA layer that renews, or this tells nothing");
-        assertEquals(3, rings.size(), "the premise: each aura has a ring, and the stun and the haste have none");
-        assertTrue(rings.stream().noneMatch(ring -> ring.fields().containsKey("renews")),
-                "and a ring says nothing of renewing, the shipped files let in all the same");
+        assertEquals(Set.of("Stunned", "Hasted"), renewing,
+                "the stun and the haste have an AURA layer that renews, and no aura's look has one");
+        assertEquals(3, marks.size(), "the premise: each aura is one mark, and the stun and the haste have none");
+        assertTrue(marks.stream().noneMatch(mark -> mark.fields().containsKey("renews")),
+                "and a mark says nothing of renewing, the shipped files let in all the same");
     }
 
     /**
@@ -469,17 +471,25 @@ class DungeonEffectLayerTest {
      * aura at every beat -- and an AURA layer of it that does not renew is dropped, not carried to the new end, so its
      * picture ends with the first. The file is refused where one says nothing of it, naming the look and the layer; and
      * what is asked follows what is worn as a state, not the look's name: the Combat block's StunLook pointed at the
-     * whirlwind, whose layers say nothing, is refused as well.
+     * whirlwind, whose layers say nothing, is refused as well. The three auras' looks have no AURA layer to ask of,
+     * but are held to it all the same: one that is given a rider saying nothing of renewing is refused.
      */
     @Test
     void aLookWornAsAStateWhoseAuraLayerDoesNotSayItRenewsIsRefused() {
         for (var layer : new String[][] {{"Stunned", "Halo"}, {"Stunned", "Stars"}, {"Hasted", "Glow"},
-                {"Hasted", "Motes"}, {"MightAura", "Sparks"}, {"ManaAura", "Motes"}, {"BloodAura", "Drops"}}) {
+                {"Hasted", "Motes"}}) {
             var text = withoutRenews(layer[0], layer[1]);
 
             var refused = assertThrows(IllegalArgumentException.class, () -> DungeonSettings.parse(text),
                     layer[0] + "'s " + layer[1]);
             assertTrue(refused.getMessage().contains(layer[0]) && refused.getMessage().contains(layer[1])
+                    && refused.getMessage().contains("Renews"), refused.getMessage());
+        }
+        for (var aura : new String[] {"MightAura", "ManaAura", "BloodAura"}) {
+            var text = withARider(aura);
+
+            var refused = assertThrows(IllegalArgumentException.class, () -> DungeonSettings.parse(text), aura);
+            assertTrue(refused.getMessage().contains(aura) && refused.getMessage().contains("Rider")
                     && refused.getMessage().contains("Renews"), refused.getMessage());
         }
 
@@ -499,6 +509,15 @@ class DungeonEffectLayerTest {
                 "the premise: " + look + "'s " + layer + " says Renews = Yes");
         return Content.data().replace(block,
                 block.substring(0, line) + block.substring(line + "      Renews = Yes\n".length()));
+    }
+
+    /** The shipped files with a layer riding the body, saying nothing of renewing, added to the look {@code look}. */
+    private static String withARider(String look) {
+        var block = ShippedBlock.of(look).text();
+        var close = "    End\n  ]\nEnd\n";
+        assertTrue(block.endsWith(close), "the premise: " + look + "'s last layer closes the block");
+        return Content.data().replace(block, block.substring(0, block.length() - close.length())
+                + "    End,\n    Layer\n      Name = Rider\n      Type = AURA\n    End\n  ]\nEnd\n");
     }
 
     // ---- a blast is exactly as wide as it hurts ----
@@ -589,73 +608,53 @@ class DungeonEffectLayerTest {
     }
 
     /**
-     * Each aura's ring lies where its reach ends: measured in the aura's reach, and its texture's brightest line on its
-     * Radius -- so what stands inside the ring is what it lends to, as a blast's edge is where its damage stops.
+     * The picture each aura's mark is drawn from is painted, and there: on the classpath, a square of white on clear --
+     * the layer gives the colour, as it does for every texture -- with its corners clear, a fair share of it lit, and
+     * the lit part reaching out toward the edge, so that a mark sized by its bearer's body is as wide as it seems. And
+     * one picture to a kind: no two auras are drawn on the same.
      */
     @Test
-    void eachAurasRingLiesWhereItsReachEnds() throws java.io.IOException {
-        var visuals = Visuals.create();
-        Main.measureLooks(visuals, SETTINGS);
-        int rings = 0;
+    void eachAurasPictureIsPaintedWhiteOnClearAndNotBlank() throws java.io.IOException {
+        var pictures = new java.util.HashSet<String>();
         for (var aura : SETTINGS.skills().stream().filter(skill -> skill.effect().isAura()).toList()) {
-            assertEquals(aura.radius(), visuals.getEffectReach(aura.look()), 0.001f, aura.look());
-            for (var art : SETTINGS.effectLayers()) {
-                var layer = drawn(art);
-                if (!art.effect().equals(aura.look()) || !EffectLayer.MARK.equals(layer.type())) {
-                    continue;
-                }
-                assertEquals(EffectLayer.REACH, layer.measure(), art.name() + " is not measured in reach");
-                float edge = layer.sizeEnd() * brightestRadius(layer.texture()) / 2f;
-                assertEquals(1f, edge, 0.05f, aura.look() + " " + art.name() + " lies at " + edge + " of its Radius");
-                rings++;
-            }
-        }
-        assertEquals(3, rings, "a ring for each of the three auras");
-    }
+            var texture = SETTINGS.effectLayers().stream().filter(art -> art.effect().equals(aura.look()))
+                    .map(DungeonEffectLayerTest::drawn).findFirst().orElseThrow().texture();
+            var url = DungeonEffectLayerTest.class.getClassLoader().getResource(texture);
+            assertNotNull(url, aura.look() + "'s picture is not on the classpath: " + texture);
+            var image = javax.imageio.ImageIO.read(url);
+            assertEquals(image.getWidth(), image.getHeight(), texture + " is not square");
 
-    /**
-     * Each aura's ring is bold enough to read at a glance: bright -- its texture's brightest line, at the ring's own
-     * alpha, at least 0.4 of full light -- and thick -- across the band on the floor that is at least a quarter as
-     * bright as that line, at least 16 units. Measured in the texture, not assumed: circle_04, the kit's soft thick
-     * ring, is less than a quarter as bright at its best as its sisters, so no alpha makes it bold.
-     */
-    @Test
-    void eachAurasRingIsBoldEnoughToReadAtAGlance() throws java.io.IOException {
-        int rings = 0;
-        for (var aura : SETTINGS.skills().stream().filter(skill -> skill.effect().isAura()).toList()) {
-            for (var art : SETTINGS.effectLayers()) {
-                var layer = drawn(art);
-                if (!art.effect().equals(aura.look()) || !EffectLayer.MARK.equals(layer.type())) {
-                    continue;
-                }
-                var light = ringLight(layer.texture());
-                double peak = java.util.Arrays.stream(light).max().orElse(0);
-                float brightness = (float) peak * Math.min(layer.alphaStart(), layer.alphaEnd());
-                assertTrue(brightness >= 0.4f, aura.look() + " " + art.name() + " burns at " + brightness
-                        + " of full light at its brightest, which is not bold");
-
-                int first = -1;
-                int last = -1;
-                for (int bin = 0; bin < light.length; bin++) {
-                    if (light[bin] >= peak / 4) {
-                        first = first < 0 ? bin : first;
-                        last = bin;
+            int lit = 0;
+            double reaches = 0;
+            double half = image.getWidth() / 2.0;
+            for (int y = 0; y < image.getHeight(); y++) {
+                for (int x = 0; x < image.getWidth(); x++) {
+                    int argb = image.getRGB(x, y);
+                    if (argb >>> 24 > 0) {
+                        assertEquals(0xFFFFFF, argb & 0xFFFFFF, texture + " is painted in colour at " + x + "," + y
+                                + ": white on clear, or the layer cannot give it its own");
+                    }
+                    if (argb >>> 24 >= 128) {
+                        lit++;
+                        reaches = Math.max(reaches, Math.hypot(x + 0.5 - half, y + 0.5 - half) / half);
                     }
                 }
-                float across = (last - first + 1) / (float) light.length * layer.sizeEnd() * aura.radius() / 2f;
-                assertTrue(across >= 16f, aura.look() + " " + art.name() + " is " + across
-                        + " units across, which is not thick");
-                rings++;
             }
+            assertEquals(0, image.getRGB(0, 0) >>> 24, texture + " is not clear at its corner");
+            float share = lit / (float) (image.getWidth() * image.getHeight());
+            assertTrue(share >= 0.03f, texture + " is lit across " + share + " of it, which is blank to the eye");
+            assertTrue(reaches >= 0.85,
+                    texture + " is lit out to " + reaches + " of its half-width: short of its edge");
+            assertTrue(pictures.add(texture), aura.look() + " is drawn on " + texture + ", as another aura is");
         }
-        assertEquals(3, rings, "a ring for each of the three auras");
+        assertEquals(3, pictures.size(), "a picture for each of the three auras");
     }
 
     /**
      * Each mark under a creature an aura reaches is a small glow, and seen: measured in its texture, where it is at
      * least a quarter as bright as at its brightest it is across 10 to 20 units -- wider than the 8 a skeleton stands
-     * in, so it shows round its feet, and nothing like the ring a bearer wears -- and even the dimmest, for one kind,
-     * burns at least 0.2 of full light at its brightest.
+     * in, so it shows round its feet, and plainer than the picture a bearer wears -- and even the dimmest, for one
+     * kind, burns at least 0.2 of full light at its brightest.
      */
     @Test
     void eachMarkUnderACreatureAnAuraReachesIsASmallGlowAndSeen() throws java.io.IOException {

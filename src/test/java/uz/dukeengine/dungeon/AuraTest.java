@@ -613,44 +613,67 @@ class AuraTest {
     }
 
     /**
-     * Each look is measured two of its bearer's ticks, as wide as its Radius. Its ring lies on the floor and follows its
-     * bearer, fading in over its first half and out over its second -- so the one laid a tick later takes over as it
-     * goes, and the two stand as one steady ring: the client lays it anew at each tick, and it says nothing of renewing.
-     * Its rider is fed by a Rate on the body, and says it renews, so each tick carries it on to the next, as a stun's
-     * stars are -- with room for every one it lets out to live out its life, so none is overwritten while it still
-     * shows.
+     * Each look is measured two of its bearer's ticks, and is one small mark on the floor under its bearer: nothing
+     * draws the aura's Radius, and nothing rides the body. It is a MARK that follows its bearer, counted in units and
+     * sized by the body it stands under -- 2 to 4 times as wide as the cylinder its bearer's Geometry gives it, read
+     * from there and not from a figure kept here -- lying just above the floor and above the circle under what an aura
+     * reaches (its bearer is among them, and wears both), spinning not at all and turned the same way at every tick,
+     * for a picture laid at a new angle each time would crossfade into a blur. It fades in over its first tick and out
+     * over its second, so the one laid a tick later takes over as it goes and the two stand as one steady mark: the
+     * client lays it anew at each tick, and it says nothing of renewing.
      */
     @Test
-    void eachLookIsMeasuredTwoTicksItsRingAtItsRadiusAndItsRiderRenewed() {
+    void eachLookIsOneMarkUnderItsBearerSizedByItsBodyAndMeasuredTwoTicks() {
         var visuals = Visuals.create();
         Main.measureLooks(visuals, SETTINGS);
         var auras = SETTINGS.skills().stream().filter(skill -> skill.effect().isAura()).toList();
         assertEquals(3, auras.size(), "the premise: three auras");
+        var bearers = room(SETTINGS, NO_WALL, one(SUMMONER, 60f, 150f), one(HEALER, 180f, 150f),
+                one(REVENANT, 300f, 150f)).ones();
+        assertEquals(List.of("MightAura", "ManaAura", "BloodAura"),
+                bearers.stream().map(bearer -> auraOf(bearer).look()).toList(), "the premise: their bearers, in turn");
+        float circle = 0f;
+        for (var look : SETTINGS.combat().auraMarkLooks()) {
+            for (var art : SETTINGS.effectLayers()) {
+                if (art.effect().equals(look)) {
+                    circle = Math.max(circle, Main.layerOf(art).height());
+                }
+            }
+        }
+        assertTrue(circle > 0f, "the premise: the circle under what an aura reaches lies above the floor");
 
-        for (var aura : auras) {
+        for (var bearer : bearers) {
+            var aura = auraOf(bearer);
             assertEquals(2f * aura.tickFrames() / GameConstants.LOGICFRAMES_PER_SECOND,
                     visuals.getEffectSeconds(aura.look()), 0.001f, aura.look() + ": two ticks");
-            assertEquals(aura.radius(), visuals.getEffectReach(aura.look()), 0.001f, aura.look() + ": its Radius");
             var layers = SETTINGS.effectLayers().stream().filter(art -> art.effect().equals(aura.look()))
                     .map(Main::layerOf).toList();
-            assertEquals(List.of(EffectLayer.MARK, EffectLayer.AURA), layers.stream().map(EffectLayer::type).toList(),
-                    aura.look() + " is a ring on the floor, and under what rides over it, a rider");
+            assertEquals(List.of(EffectLayer.MARK), layers.stream().map(EffectLayer::type).toList(),
+                    aura.look() + " is one mark on the floor, and nothing rides over it");
 
-            var ring = layers.get(0);
-            assertTrue(ring.follows(), aura.look() + " follows its bearer");
-            assertEquals(EffectLayer.REACH, ring.measure(), aura.look() + " is measured in its reach");
-            assertEquals(0.5f, ring.fadeIn(), 0.001f, aura.look());
-            assertEquals(0.5f, ring.fadeOut(), 0.001f, aura.look());
-
-            var rider = layers.get(1);
-            assertTrue(rider.renews(), aura.look() + "'s rider says it renews, and each tick carries it on");
-            assertTrue(rider.continuous(), aura.look() + "'s rider is fed by a Rate");
-            assertEquals(EffectLayer.UNITS, rider.measure(),
-                    aura.look() + "'s rider is a few units at the body: the ring carries the reach");
-            assertTrue(rider.count() >= Math.ceil(rider.rate() * rider.lifeMax()), aura.look() + "'s rider lets out "
-                    + rider.rate() + " a second living " + rider.lifeMax() + " s, in room for " + rider.count());
+            var mark = layers.getFirst();
+            assertTrue(mark.follows(), aura.look() + " follows its bearer");
+            assertEquals(EffectLayer.UNITS, mark.measure(), aura.look() + " is counted in units, not in its reach");
+            float body = 2f * bearer.getGeometry().footprintRadius();
+            assertTrue(body > 0f, "the premise: " + bearer.getTemplate().name() + " stands in a body");
+            for (float size : new float[] {mark.sizeStart(), mark.sizeEnd()}) {
+                assertTrue(size >= 2f * body && size <= 4f * body, aura.look() + " is " + size + " across, not 2 to 4"
+                        + " times the " + body + " its bearer stands in");
+            }
+            assertTrue(mark.height() > circle && mark.height() <= 0.5f, aura.look() + " lies at " + mark.height()
+                    + ": just above the floor, and over the circle's " + circle);
+            assertEquals(0f, mark.spin(), 0.0001f, aura.look() + " does not spin");
+            assertEquals(0f, mark.turnJitter(), 0.0001f, aura.look() + " is laid at the same angle every tick");
+            assertEquals(0.5f, mark.fadeIn(), 0.001f, aura.look());
+            assertEquals(0.5f, mark.fadeOut(), 0.001f, aura.look());
         }
     }
+
+    /** What each kind of aura is drawn on, whoever bears it: runes, ripples and a sigil, painted for the game. */
+    private static final Map<SkillEffect, String> PICTURES = Map.of(
+            SkillEffect.LIFESTEAL_AURA, "effects/aura_runes.png",
+            SkillEffect.MANA_AURA, "effects/aura_ripples.png",
+            SkillEffect.DAMAGE_AURA, "effects/aura_sigil.png");
 
     /** What each kind of aura is drawn in, whoever bears it: red, blue and violet as hues, in degrees from-to. */
     private static final Map<SkillEffect, float[]> HUES = Map.of(
@@ -659,13 +682,13 @@ class AuraTest {
             SkillEffect.DAMAGE_AURA, new float[] {255f, 295f});
 
     /**
-     * Each aura is drawn in the colour of its kind, not of its bearer: the thirst red, the mana blue, the might violet
-     * -- its ring and what rides its body alike, from the colour each starts in to the one it ends in -- so one is told
-     * from another at a glance, as Dota's are. A hue is red when it lies within 20 degrees of red, blue between 200 and
-     * 240, violet between 255 and 295, and coloured when it is at least a quarter saturated: white has no hue to lead.
+     * Each aura is drawn on the picture of its kind and in the colour of its kind, not of its bearer: the thirst a ring
+     * of runes in red, the mana ripples in blue, the might a sigil in violet -- so one is told from another at a
+     * glance, as Dota's are. A hue is red when it lies within 20 degrees of red, blue between 200 and 240, violet
+     * between 255 and 295, and coloured when it is at least a quarter saturated: white has no hue to lead.
      */
     @Test
-    void eachAurasLookIsInTheColourOfItsKind() {
+    void eachAurasMarkIsItsKindsPictureInItsKindsColour() {
         var kinds = new java.util.HashSet<SkillEffect>();
         for (var aura : SETTINGS.skills().stream().filter(skill -> skill.effect().isAura()).toList()) {
             var window = HUES.get(aura.effect());
@@ -674,6 +697,8 @@ class AuraTest {
                     .map(Main::layerOf).toList();
             assertFalse(layers.isEmpty(), aura.look() + " is drawn in layers");
             for (var layer : layers) {
+                assertEquals(PICTURES.get(aura.effect()), layer.texture(),
+                        aura.effect() + "'s " + aura.look() + " is drawn on the wrong picture");
                 for (int colour : new int[] {layer.colourStart(), layer.colourEnd()}) {
                     var hsb = java.awt.Color.RGBtoHSB(colour >> 16 & 0xFF, colour >> 8 & 0xFF, colour & 0xFF, null);
                     float hue = hsb[0] * 360f;
@@ -737,8 +762,8 @@ class AuraTest {
 
     /**
      * Every creature an aura reaches wears a light-blue circle underfoot, laid by its own book every
-     * {@code AuraMarkTickFrames} on the frames its object id falls on, as the rings are staggered: a Skeleton beside a
-     * summoner wears the first mark, and the summoner itself -- among those its aura reaches -- wears one too.
+     * {@code AuraMarkTickFrames} on the frames its object id falls on, as a bearer's own mark is staggered: a Skeleton
+     * beside a summoner wears the first mark, and the summoner itself -- among those its aura reaches -- wears one too.
      */
     @Test
     void aSkeletonBesideASummonerWearsTheFirstMarkAtItsBeat() {
@@ -967,9 +992,9 @@ class AuraTest {
 
     /**
      * As shipped: a small light-blue circle lying just above the floor under the creature, a few units across and not
-     * the reach of anything, crossfading from one beat's to the next as the rings do -- and burning brighter the more
-     * kinds reach it. Light blue is paler than the mana ring's blue: a hue between 190 and 215 degrees, at most 65%
-     * saturated, and at least 90% bright.
+     * the reach of anything, crossfading from one beat's to the next as a bearer's mark does -- and burning brighter
+     * the more kinds reach it. Light blue is paler than the mana mark's blue: a hue between 190 and 215 degrees, at
+     * most 65% saturated, and at least 90% bright.
      */
     @Test
     void theShippedMarksAreLightBlueAndBrighterTheMoreKindsReachIt() {
@@ -1294,7 +1319,7 @@ class AuraTest {
 
     /**
      * An aura holds while its bearer lives, and its look is measured two of its beats: a DurationFrames on one would
-     * lay its rings more than two deep, and break the steady ring they stand as -- so the file is refused, saying so,
+     * lay its marks more than two deep, and break the steady mark they stand as -- so the file is refused, saying so,
      * of each of the three.
      */
     @Test
