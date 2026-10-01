@@ -326,7 +326,8 @@ public final class ItemErrand extends UpdateModule implements Errand {
      * Told by his brain as it stands him still for a body in his way, and as it lets him go
      * (HeroBrain.mindTheWayOnHisErrand). While it holds him he is not there, however near he stands. Legs stopped with
      * no goal are otherwise legs that stopped of themselves -- pressed against what covers the spot they were bound
-     * for, which the engine calls arrival, or done stepping aside -- and those are as near as he gets.
+     * for, which the engine calls arrival, or done stepping aside -- and from there he looks again: only a look that
+     * finds nowhere nearer is as near as he gets.
      */
     public void heldForABody(boolean held) {
         heldForABody = held;

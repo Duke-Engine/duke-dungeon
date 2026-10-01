@@ -406,8 +406,8 @@ public final class HeroBrain extends UnitScript {
      * taking it up once the way cleared would have him arrive having said he
      * could not. And the errand is told he is held, and let go: legs stopped
      * with no goal are, to it, otherwise legs that stopped of themselves — the
-     * engine stops a walk so where it calls it arrival — which are as near as he
-     * gets.
+     * engine stops a walk so where it calls it arrival — from where it looks
+     * again.
      */
     private void mindTheWayOnHisErrand(MoveUpdate move) {
         if (errand != null) {
