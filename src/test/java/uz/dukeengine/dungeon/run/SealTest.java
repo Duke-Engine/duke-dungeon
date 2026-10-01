@@ -839,7 +839,8 @@ class SealTest {
     /**
      * A Revenant just outside the gate and the boss just inside it, within its Radius and in its plain sight through
      * the doorway: it lends the boss none of its thirst while the gate stands, and once it is open, its share of every
-     * blow.
+     * blow -- and the one rule for what is on a creature, which the circle under it and the HUD's row ask, says the
+     * same.
      */
     @Test
     void aRevenantOutsideLendsNoThirstToTheBossInsideTheShutGate() {
@@ -859,8 +860,11 @@ class SealTest {
             int lent = SkillBook.auraOn(boss, SkillEffect.LIFESTEAL_AURA);
             if (opened) {
                 assertEquals(thirst, lent, "the gate open, the Revenant still lent no thirst");
+                assertEquals(List.of(SkillEffect.LIFESTEAL_AURA), SkillBook.aurasOn(boss),
+                        "the gate open, nothing is said to be on the boss");
             } else {
                 assertEquals(0, lent, "the Revenant lent its thirst through the shut gate");
+                assertEquals(List.of(), SkillBook.aurasOn(boss), "the thirst is said to be on it through the shut gate");
             }
         }
     }

@@ -105,7 +105,10 @@ class ProjectileEffectTest {
                 "a floor played differently once the fire was taken out of it");
     }
 
-    /** The same files with every top-level Effect block cut out of them. */
+    /**
+     * The same files with every top-level Effect block cut out of them -- and the Combat block's AuraMarkLooks, which a
+     * file may not write without the Effects it names.
+     */
     private static String withoutTheBurning(String file) {
         var kept = new StringBuilder();
         boolean inside = false;
@@ -113,7 +116,7 @@ class ProjectileEffectTest {
             if (line.equals("Effect")) {
                 inside = true;
             }
-            if (!inside) {
+            if (!inside && !line.trim().startsWith("AuraMarkLooks = ")) {
                 kept.append(line).append('\n');
             }
             if (inside && line.equals("End")) {

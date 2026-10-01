@@ -190,6 +190,21 @@ Combat
   ; What a stunned creature wears while it stands dazed -- see the Effect below,
   ; and StunFrames on the fire mage's fireball. Blank, and a stun is not drawn.
   StunLook = Stunned
+
+  ; What a creature an aura reaches wears under its feet, by how many kinds of aura reach it:
+  ; the first Effect below for one kind, the second for two, the third for three, and a count
+  ; past the list's end wears its last -- a light-blue circle that burns brighter the more of
+  ; them there are. A kind counts once however many bearers lend it, and a mana aura counts
+  ; only for a creature with a pool, for it changes nothing on one without. No aura reaches a
+  ; hero, so a hero never wears one. Empty, and nothing is drawn under anyone.
+  ;
+  ; Its own book lays it, once every AuraMarkTickFrames and on the frames its object id falls
+  ; on, so a roomful are not all laid on one frame. The client is told each lasts two beats
+  ; (Main.measureLooks): the one laid at the next beat takes over as it goes, and a creature
+  ; an aura no longer reaches -- stepped out of it, behind stone, its bearer fallen -- is
+  ; bare within two beats. At least 1 while any is named.
+  AuraMarkLooks = [AuraMarkOne, AuraMarkTwo, AuraMarkThree]
+  AuraMarkTickFrames = 30
 End
 
 ; ---------------------------------------------------------------------------
@@ -244,6 +259,91 @@ Effect
       Direction = NONE
       Spin = 180
       Height = 15
+    End
+  ]
+End
+
+; ---------------------------------------------------------------------------
+; The light-blue circle under a creature an aura reaches, and Combat's AuraMarkLooks
+; names the three: AuraMarkOne when one kind of aura reaches it, AuraMarkTwo when two
+; do, AuraMarkThree when three do. They differ in nothing but their Alpha, which rises
+; with the count -- 0.3, 0.55, 0.85 -- so a creature standing in more of its side's
+; auras burns brighter than one standing in a single one.
+;
+; Each is a MARK: a small soft glow lying just above the floor and going where its
+; creature goes, a few units across whatever an aura's reach is, which is why it is
+; measured in Units. circle_05 is a soft blob that fills only the middle of its
+; picture: out to where it is half as bright as at its heart it is 0.315 of its Size
+; across, and to a quarter as bright 0.365 of it. So a Size of 44 is a glow some 14
+; units across and 16 at its fringe -- wider than the 8 a skeleton stands in, so it
+; shows round the feet even at the dimmest, and nothing like the 120 of a bearer's
+; ring, which it must not be mistaken for. Light blue, paler than the mana ring's blue.
+;
+; Like those rings, each is laid anew at every beat and lasts two (Main.measureLooks),
+; fading in over its first half and out over its second, so the one laid a beat later
+; takes over as it goes and the two stand as one steady circle. A creature that one more
+; kind of aura reaches is crossfaded into the brighter mark, not switched to it. Lower
+; than the rings lie (0.3), so the two do not fight over a height.
+; ---------------------------------------------------------------------------
+Effect
+  Name = AuraMarkOne
+  Layers = [
+    Layer
+      Name = Circle
+      Type = MARK
+      Measure = Units
+      Follows = Yes
+      Texture = kit/effects/particles/circle_05.png
+      Blend = Additive
+      Count = 1
+      Size = [44, 44]
+      Colour = [0x8FD8FF, 0x8FD8FF]
+      Alpha = [0.3, 0.3]
+      FadeIn = 0.5
+      FadeOut = 0.5
+      Height = 0.15
+    End
+  ]
+End
+
+Effect
+  Name = AuraMarkTwo
+  Layers = [
+    Layer
+      Name = Circle
+      Type = MARK
+      Measure = Units
+      Follows = Yes
+      Texture = kit/effects/particles/circle_05.png
+      Blend = Additive
+      Count = 1
+      Size = [44, 44]
+      Colour = [0x8FD8FF, 0x8FD8FF]
+      Alpha = [0.55, 0.55]
+      FadeIn = 0.5
+      FadeOut = 0.5
+      Height = 0.15
+    End
+  ]
+End
+
+Effect
+  Name = AuraMarkThree
+  Layers = [
+    Layer
+      Name = Circle
+      Type = MARK
+      Measure = Units
+      Follows = Yes
+      Texture = kit/effects/particles/circle_05.png
+      Blend = Additive
+      Count = 1
+      Size = [44, 44]
+      Colour = [0x8FD8FF, 0x8FD8FF]
+      Alpha = [0.85, 0.85]
+      FadeIn = 0.5
+      FadeOut = 0.5
+      Height = 0.15
     End
   ]
 End

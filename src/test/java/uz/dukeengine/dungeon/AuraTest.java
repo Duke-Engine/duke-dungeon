@@ -3,6 +3,7 @@ package uz.dukeengine.dungeon;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -10,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 import uz.dukeengine.client3d.EffectLayer;
 import uz.dukeengine.client3d.SkillRange;
@@ -39,6 +41,10 @@ import uz.dukeengine.game.DukeGame;
  *
  * <p>Most of it is asked of creatures standing in a room with nobody to fight, so nothing moves the figure read; a blow
  * is fought for real, against a Rogue who cannot answer, where the figure is the blow itself.
+ *
+ * <p>And what is drawn of it: each bearer's look, and the circle under every creature an aura reaches -- laid by that
+ * creature's own book from {@code SkillBook.aurasOn}, which asks the same figures -- and what the HUD is handed of
+ * the creature the player picks, from the same rule.
  */
 class AuraTest {
 
@@ -86,8 +92,15 @@ class AuraTest {
 
     /** The same, of creatures as {@code units} write them. */
     private static Room room(DungeonSettings settings, String units, int wallColumn, One... ones) {
+        return room(settings, units, wallColumn, game -> { }, ones);
+    }
+
+    /** The same, {@code before} told of the world before its first frame -- as the HUD's row is, by the bag. */
+    private static Room room(DungeonSettings settings, String units, int wallColumn,
+            java.util.function.Consumer<DukeGame> before, One... ones) {
         var arena = Dungeon.world(room(wallColumn), settings, units);
         var game = arena.game();
+        before.accept(game);
         for (var one : ones) {
             game.spawn(one.kind(), arena.dungeon(), one.x(), one.y());
         }
@@ -516,11 +529,10 @@ class AuraTest {
     }
 
     /**
-     * Every aura's look played over the next {@code frames}, in the order played -- watched through nobody's fog, since
-     * a room with no hero in it is a room nobody sees.
+     * Every one of {@code looks} played over the next {@code frames}, in the order played -- watched through nobody's
+     * fog, since a room with no hero in it is a room nobody sees.
      */
-    private static List<Worn> worn(DukeGame game, int frames) {
-        var looks = SETTINGS.skills().stream().filter(skill -> skill.effect().isAura()).map(Skill::look).toList();
+    private static List<Worn> played(DukeGame game, int frames, List<String> looks) {
         game.watch();
         var worn = new ArrayList<Worn>();
         for (int frame = 0; frame < frames; frame++) {
@@ -532,6 +544,22 @@ class AuraTest {
             }
         }
         return worn;
+    }
+
+    /** Every aura's look played over the next {@code frames}, in the order played. */
+    private static List<Worn> worn(DukeGame game, int frames) {
+        return played(game, frames,
+                SETTINGS.skills().stream().filter(skill -> skill.effect().isAura()).map(Skill::look).toList());
+    }
+
+    /** Every mark under a creature an aura reaches played over the next {@code frames}, in the order played. */
+    private static List<Worn> marked(DukeGame game, int frames) {
+        return played(game, frames, SETTINGS.combat().auraMarkLooks());
+    }
+
+    /** The looks among these worn by {@code creature}, in the order they were played on it. */
+    private static List<String> on(List<Worn> worn, GameObject creature) {
+        return worn.stream().filter(one -> creature.getId().equals(one.on())).map(Worn::look).toList();
     }
 
     /** Its aura, as shipped. */
@@ -585,12 +613,14 @@ class AuraTest {
     }
 
     /**
-     * Each look is measured two of its bearer's ticks, as wide as its Radius, and renews as a state does: a ring lying
-     * on the floor that follows its bearer, fading in over its first half and out over its second -- so the one laid a
-     * tick later takes over as it goes, and the two stand as one steady ring.
+     * Each look is measured two of its bearer's ticks, as wide as its Radius, and renews as a state does. Its ring lies
+     * on the floor and follows its bearer, fading in over its first half and out over its second -- so the one laid a
+     * tick later takes over as it goes, and the two stand as one steady ring. Its rider is fed by a Rate on the body,
+     * and each tick carries it on to the next, as a stun's stars are -- with room for every one it lets out to live out
+     * its life, so none is overwritten while it still shows.
      */
     @Test
-    void eachRingIsMeasuredTwoTicksAtItsRadiusAndTakenOverByTheNext() {
+    void eachLookIsMeasuredTwoTicksItsRingAtItsRadiusAndItsRiderRenewed() {
         var visuals = Visuals.create();
         Main.measureLooks(visuals, SETTINGS);
         var auras = SETTINGS.skills().stream().filter(skill -> skill.effect().isAura()).toList();
@@ -602,16 +632,505 @@ class AuraTest {
             assertEquals(aura.radius(), visuals.getEffectReach(aura.look()), 0.001f, aura.look() + ": its Radius");
             var layers = SETTINGS.effectLayers().stream().filter(art -> art.effect().equals(aura.look()))
                     .map(art -> Main.layerOf(art, SETTINGS)).toList();
+            assertEquals(List.of(EffectLayer.MARK, EffectLayer.AURA), layers.stream().map(EffectLayer::type).toList(),
+                    aura.look() + " is a ring on the floor, and under what rides over it, a rider");
+
+            var ring = layers.get(0);
+            assertTrue(ring.follows(), aura.look() + " follows its bearer");
+            assertEquals(EffectLayer.REACH, ring.measure(), aura.look() + " is measured in its reach");
+            assertEquals(0.5f, ring.fadeIn(), 0.001f, aura.look());
+            assertEquals(0.5f, ring.fadeOut(), 0.001f, aura.look());
+            assertTrue(ring.renews(), aura.look() + " renews, worn as a state");
+
+            var rider = layers.get(1);
+            assertTrue(rider.renews(), aura.look() + "'s rider is carried on by each tick, worn as a state");
+            assertTrue(rider.continuous(), aura.look() + "'s rider is fed by a Rate");
+            assertEquals(EffectLayer.UNITS, rider.measure(),
+                    aura.look() + "'s rider is a few units at the body: the ring carries the reach");
+            assertTrue(rider.count() >= Math.ceil(rider.rate() * rider.lifeMax()), aura.look() + "'s rider lets out "
+                    + rider.rate() + " a second living " + rider.lifeMax() + " s, in room for " + rider.count());
+        }
+    }
+
+    /** What each kind of aura is drawn in, whoever bears it: red, blue and violet as hues, in degrees from-to. */
+    private static final Map<SkillEffect, float[]> HUES = Map.of(
+            SkillEffect.LIFESTEAL_AURA, new float[] {340f, 20f},
+            SkillEffect.MANA_AURA, new float[] {200f, 240f},
+            SkillEffect.DAMAGE_AURA, new float[] {255f, 295f});
+
+    /**
+     * Each aura is drawn in the colour of its kind, not of its bearer: the thirst red, the mana blue, the might violet
+     * -- its ring and what rides its body alike, from the colour each starts in to the one it ends in -- so one is told
+     * from another at a glance, as Dota's are. A hue is red when it lies within 20 degrees of red, blue between 200 and
+     * 240, violet between 255 and 295, and coloured when it is at least a quarter saturated: white has no hue to lead.
+     */
+    @Test
+    void eachAurasLookIsInTheColourOfItsKind() {
+        var kinds = new java.util.HashSet<SkillEffect>();
+        for (var aura : SETTINGS.skills().stream().filter(skill -> skill.effect().isAura()).toList()) {
+            var window = HUES.get(aura.effect());
+            assertNotNull(window, aura.effect() + " is a kind of aura with no colour of its own");
+            var layers = SETTINGS.effectLayers().stream().filter(art -> art.effect().equals(aura.look()))
+                    .map(art -> Main.layerOf(art, SETTINGS)).toList();
             assertFalse(layers.isEmpty(), aura.look() + " is drawn in layers");
             for (var layer : layers) {
-                assertEquals(EffectLayer.MARK, layer.type(), aura.look() + " lies on the floor");
-                assertTrue(layer.follows(), aura.look() + " follows its bearer");
-                assertEquals(EffectLayer.REACH, layer.measure(), aura.look() + " is measured in its reach");
-                assertEquals(0.5f, layer.fadeIn(), 0.001f, aura.look());
-                assertEquals(0.5f, layer.fadeOut(), 0.001f, aura.look());
-                assertTrue(layer.renews(), aura.look() + " renews, worn as a state");
+                for (int colour : new int[] {layer.colourStart(), layer.colourEnd()}) {
+                    var hsb = java.awt.Color.RGBtoHSB(colour >> 16 & 0xFF, colour >> 8 & 0xFF, colour & 0xFF, null);
+                    float hue = hsb[0] * 360f;
+                    boolean led = window[0] <= window[1] ? hue >= window[0] && hue <= window[1]
+                            : hue >= window[0] || hue <= window[1];
+                    assertTrue(led && hsb[1] >= 0.25f, aura.effect() + "'s " + aura.look() + " is drawn in 0x"
+                            + Integer.toHexString(colour) + ": hue " + Math.round(hue) + ", saturation "
+                            + Math.round(hsb[1] * 100) + "% -- not hue " + window[0] + " to " + window[1]
+                            + " and coloured");
+                }
+            }
+            kinds.add(aura.effect());
+        }
+        assertEquals(HUES.keySet(), kinds, "an aura of each kind");
+    }
+
+    // ---- marked ----
+
+    /** Where the bearers stand round the Skeleton at (130, 150): each within 40 of it, and in plain sight of it. */
+    private static final float[][] ROUND_IT = {{100f, 150f}, {100f, 130f}, {100f, 170f}};
+
+    /** These bearers of its side, in this order, standing round a Skeleton at (130, 150): the last of the room. */
+    private static Room beside(DungeonSettings settings, String... bearers) {
+        return beside(settings, game -> { }, bearers);
+    }
+
+    /** The same, {@code before} told of the world before its first frame. */
+    private static Room beside(DungeonSettings settings, java.util.function.Consumer<DukeGame> before,
+            String... bearers) {
+        var ones = new ArrayList<One>();
+        for (int at = 0; at < bearers.length; at++) {
+            ones.add(one(bearers[at], ROUND_IT[at][0], ROUND_IT[at][1]));
+        }
+        ones.add(one("Skeleton", 130f, 150f));
+        return room(settings, Content.units(), NO_WALL, before, ones.toArray(One[]::new));
+    }
+
+    /** The last of a room's creatures: the Skeleton {@link #beside} puts last. */
+    private static GameObject lastOf(Room room) {
+        return room.get(room.ones().size() - 1);
+    }
+
+    /** The shipped files whole, with the Combat block's {@code AuraMarkLooks} naming just these. */
+    private static DungeonSettings marksNamed(List<String> looks) {
+        var data = Content.data();
+        var changed = data.replaceFirst("(?m)^ *AuraMarkLooks = .*$",
+                "  AuraMarkLooks = [" + String.join(", ", looks) + "]");
+        assertNotEquals(data, changed, "the premise: the Combat block names its marks");
+        return DungeonSettings.parse(changed);
+    }
+
+    /** The shipped files whole, with these kinds noticing nobody: their Combat block stays, so the marks are drawn. */
+    private static DungeonSettings unseeingInWhole(String... kinds) {
+        var data = Content.data();
+        for (var kind : kinds) {
+            var block = ShippedBlock.of(kind);
+            data = data.replace(block.text(), unseen(block));
+        }
+        return DungeonSettings.parse(data);
+    }
+
+    /**
+     * Every creature an aura reaches wears a light-blue circle underfoot, laid by its own book every
+     * {@code AuraMarkTickFrames} on the frames its object id falls on, as the rings are staggered: a Skeleton beside a
+     * summoner wears the first mark, and the summoner itself -- among those its aura reaches -- wears one too.
+     */
+    @Test
+    void aSkeletonBesideASummonerWearsTheFirstMarkAtItsBeat() {
+        var room = beside(SETTINGS, SUMMONER);
+        var marks = marked(room.game(), 90);
+        int beat = SETTINGS.combat().auraMarkTickFrames();
+        var first = SETTINGS.combat().auraMarkLooks().getFirst();
+
+        for (var creature : room.ones()) {
+            var its = marks.stream().filter(one -> creature.getId().equals(one.on())).toList();
+            assertEquals(List.of(first, first, first), its.stream().map(Worn::look).toList(),
+                    creature.getTemplate().name() + " wears the first mark once a beat, three in three seconds: "
+                            + its);
+            for (var one : its) {
+                assertEquals(Math.floorMod(creature.getId().value(), beat), one.frame() % beat,
+                        "on the frames its id falls on: " + its);
             }
         }
+        assertEquals(6, marks.size(), "and on nobody else: " + marks);
+    }
+
+    /**
+     * What it wears is chosen by how many kinds of aura reach it: beside a summoner the first mark, beside a healer
+     * too the second -- the Skeleton given a pool, for a mana aura changes nothing on a creature with none -- and
+     * beside a Revenant as well the third.
+     */
+    @Test
+    void itWearsTheMarkOfHowManyKindsReachIt() {
+        var bearers = new String[] {SUMMONER, HEALER, REVENANT};
+        for (int kinds = 1; kinds <= 3; kinds++) {
+            var room = beside(SETTINGS, Arrays.copyOf(bearers, kinds));
+            bookOf(lastOf(room)).resize(50, 0);
+
+            assertEquals(kinds, SkillBook.aurasOn(lastOf(room)).size(), "the premise: " + kinds + " reach it");
+            var wanted = SETTINGS.combat().auraMarkLooks().get(kinds - 1);
+            assertEquals(List.of(wanted, wanted), on(marked(room.game(), 60), lastOf(room)),
+                    kinds + " kinds reach it: the mark in that place of the list, once a beat");
+        }
+    }
+
+    /** Counted by kind, not by bearer: two summoners lend one might, so what stands beside them wears the first. */
+    @Test
+    void twoSummonersMakeOneKindAndTheFirstMark() {
+        var room = room(SETTINGS, NO_WALL, one(SUMMONER, 100f, 150f), one(SUMMONER, 160f, 150f),
+                one("Skeleton", 130f, 150f));
+        var first = SETTINGS.combat().auraMarkLooks().getFirst();
+
+        assertEquals(List.of(SkillEffect.DAMAGE_AURA), SkillBook.aurasOn(room.get(2)),
+                "the premise: one kind reaches it, from two bearers");
+        assertEquals(List.of(first, first), on(marked(room.game(), 60), room.get(2)));
+    }
+
+    /**
+     * Where no aura reaches there is no mark: a Skeleton alone, one behind stone, one a step past the Radius, and one
+     * with no pool beside a healer -- whose mana is lent to pools and changes nothing on a creature without.
+     */
+    @Test
+    void whereNoAuraReachesItWearsNothing() {
+        var alone = room(SETTINGS, NO_WALL, one("Skeleton", 130f, 150f));
+        var walled = room(SETTINGS, 13, one(SUMMONER, 100f, 150f), one("Skeleton", 150f, 150f));
+        var apart = room(SETTINGS, NO_WALL, one(SUMMONER, 100f, 150f), one("Skeleton", 161f, 150f));
+        var poolless = beside(SETTINGS, HEALER);
+        assertEquals(50, SkillBook.auraOn(lastOf(poolless), SkillEffect.MANA_AURA), "the premise: the aura reaches it");
+        assertEquals(0, bookOf(lastOf(poolless)).getMaxMana(), "the premise: and it has no pool");
+
+        var cases = Map.of("alone", alone, "behind stone", walled, "61 from it", apart,
+                "with no pool beside a healer", poolless);
+        for (var one : cases.entrySet()) {
+            var worn = marked(one.getValue().game(), 90);
+            assertEquals(List.of(), on(worn, lastOf(one.getValue())), "a Skeleton " + one.getKey());
+        }
+    }
+
+    /** A hero's side is never reached -- no aura reaches a hero -- so a hero beside a summoner never wears one. */
+    @Test
+    void aHeroBesideASummonerNeverWearsOne() {
+        var arena = Dungeon.world(room(NO_WALL), unseeingInWhole(SUMMONER), unarmedRogue());
+        var game = arena.game();
+        game.spawn(SUMMONER, arena.dungeon(), 100f, 150f);
+        game.spawn("Rogue", arena.hero(), 115f, 150f);
+        game.runHeadless(1);
+        arena.orders().hold(arena.hero().getIndex(), true);
+        var hero = first(game, "Rogue");
+
+        var marks = marked(game, 90);
+        assertEquals(3, on(marks, first(game, SUMMONER)).size(), "the premise: the summoner wears its own");
+        assertEquals(List.of(), on(marks, hero), "a hero, 15 from it");
+        assertEquals(List.of(), SkillBook.aurasOn(hero));
+    }
+
+    /**
+     * Runs the game on until the next frame it runs is the one {@code creature} lays its next mark on. What is done to
+     * the room then is done a frame before the beat, so a beat that took no notice of it would lay its mark at once --
+     * where a body reaped meanwhile would have hidden the fault.
+     */
+    private static void toTheFrameBefore(Room room, GameObject creature) {
+        int beat = SETTINGS.combat().auraMarkTickFrames();
+        int frame = room.game().getLogic().getFrame();
+        int wait = Math.floorMod(Math.floorMod(creature.getId().value(), beat) - frame, beat);
+        if (wait > 0) {
+            room.game().runHeadless(wait);
+        }
+        assertEquals(Math.floorMod(creature.getId().value(), beat), room.game().getLogic().getFrame() % beat,
+                "the premise: the next frame is its beat");
+    }
+
+    /** A creature killed wears none from then, its body still lying there: not the next beat's, nor those after. */
+    @Test
+    void aCreatureKilledWearsNoMarkFromThen() {
+        var room = beside(SETTINGS, SUMMONER);
+        var skeleton = lastOf(room);
+        assertFalse(on(marked(room.game(), 30), skeleton).isEmpty(), "the premise: standing, it wears the mark");
+
+        toTheFrameBefore(room, skeleton);
+        var body = skeleton.getBody();
+        body.damage(body.getHealth() + 1f);
+
+        assertTrue(skeleton.isEffectivelyDead(), "the premise: it is dead");
+        var after = marked(room.game(), 90);
+        assertEquals(List.of(), on(after, skeleton), "killed on the frame before its beat");
+        assertEquals(3, on(after, room.get(0)).size(), "and the summoner goes on wearing its own");
+        assertEquals(List.of(), SkillBook.aurasOn(skeleton), "no aura is on a creature that has fallen");
+    }
+
+    /** The mark follows the aura: its bearer fallen, none is laid on those it lent to -- from the very next beat. */
+    @Test
+    void whenItsBearerFallsNoMarkIsLaidOnThoseItLentTo() {
+        var room = beside(SETTINGS, SUMMONER);
+        var skeleton = lastOf(room);
+        assertFalse(on(marked(room.game(), 30), skeleton).isEmpty(), "the premise: it wears the mark");
+
+        toTheFrameBefore(room, skeleton);
+        var body = room.get(0).getBody();
+        body.damage(body.getHealth() + 1f);
+
+        assertEquals(List.of(), on(marked(room.game(), 90), skeleton),
+                "its bearer killed on the frame before its beat");
+    }
+
+    /**
+     * One rule says which auras are on a creature: the kinds that reach it, each at most once, in {@code SkillEffect}
+     * order whatever order their bearers stand in -- a mana aura counted only for a creature with a pool.
+     */
+    @Test
+    void aurasOnAnswersTheKindsThatReachItInOrder() {
+        var room = beside(SETTINGS, REVENANT, HEALER, SUMMONER);
+        var skeleton = lastOf(room);
+
+        assertEquals(50, SkillBook.auraOn(skeleton, SkillEffect.MANA_AURA),
+                "the premise: the healer's aura reaches it");
+        assertEquals(List.of(SkillEffect.DAMAGE_AURA, SkillEffect.LIFESTEAL_AURA), SkillBook.aurasOn(skeleton),
+                "with no pool the mana aura is not on it, though it reaches it");
+        bookOf(skeleton).resize(50, 0);
+        assertEquals(List.of(SkillEffect.DAMAGE_AURA, SkillEffect.MANA_AURA, SkillEffect.LIFESTEAL_AURA),
+                SkillBook.aurasOn(skeleton), "given a pool, all three, in SkillEffect order");
+        assertEquals(List.of(), SkillBook.aurasOn(null), "nobody");
+        assertThrows(UnsupportedOperationException.class, () -> SkillBook.aurasOn(skeleton).add(SkillEffect.STRIKE),
+                "an answer, never a view of anything kept");
+    }
+
+    /**
+     * A list that ends early is worn to its last -- three kinds reaching a creature where two marks are named: the
+     * second -- and an empty one draws nothing, the summoner wearing its might all the same.
+     */
+    @Test
+    void aCountPastTheListsEndWearsItsLastAndAnEmptyListDrawsNothing() {
+        var shipped = SETTINGS.combat().auraMarkLooks();
+        var two = marksNamed(shipped.subList(0, 2));
+        var room = beside(two, SUMMONER, HEALER, REVENANT);
+        bookOf(lastOf(room)).resize(50, 0);
+        assertEquals(3, SkillBook.aurasOn(lastOf(room)).size(), "the premise: three kinds reach it");
+        assertEquals(List.of(shipped.get(1), shipped.get(1)), on(played(room.game(), 60, shipped), lastOf(room)),
+                "three kinds, two marks named: the second");
+
+        var empty = beside(marksNamed(List.of()), SUMMONER);
+        var looks = new ArrayList<>(shipped);
+        looks.add(auraOf(empty.get(0)).look());
+        var seen = played(empty.game(), 90, looks);
+        assertEquals(3, on(seen, empty.get(0)).size(), "the premise: the summoner wears its might");
+        assertTrue(seen.stream().noneMatch(one -> shipped.contains(one.look())),
+                "an empty list draws nothing: " + seen);
+    }
+
+    /** Each mark lasts two beats: it rides the creature while an aura reaches it, and is gone within two of leaving. */
+    @Test
+    void eachMarkIsMeasuredTwoBeats() {
+        var visuals = Visuals.create();
+        Main.measureLooks(visuals, SETTINGS);
+        var looks = SETTINGS.combat().auraMarkLooks();
+        assertEquals(3, looks.size(), "the premise: a mark for one kind, for two and for three");
+
+        for (var look : looks) {
+            assertEquals(2f * SETTINGS.combat().auraMarkTickFrames() / GameConstants.LOGICFRAMES_PER_SECOND,
+                    visuals.getEffectSeconds(look), 0.001f, look + ": two beats");
+        }
+    }
+
+    /**
+     * The beat is the file's, and no figure the code keeps: at an AuraMarkTickFrames of 20 each creature wears its mark
+     * on the frames its id falls on in twenties, three in two seconds, and each mark is measured two of those beats.
+     */
+    @Test
+    void theMarksAreLaidAndMeasuredAtTheBeatTheFileGives() {
+        var data = Content.data();
+        var twenty = data.replaceFirst("(?m)^ *AuraMarkTickFrames = .*$", "  AuraMarkTickFrames = 20");
+        assertNotEquals(data, twenty, "the premise: the Combat block gives the marks' beat");
+        var settings = DungeonSettings.parse(twenty);
+        var room = beside(settings, SUMMONER);
+        var marks = marked(room.game(), 60);
+
+        for (var creature : room.ones()) {
+            var its = marks.stream().filter(one -> creature.getId().equals(one.on())).toList();
+            assertEquals(3, its.size(), creature.getTemplate().name() + ": three beats in two seconds: " + its);
+            for (var one : its) {
+                assertEquals(Math.floorMod(creature.getId().value(), 20), one.frame() % 20,
+                        "on the frames its id falls on in twenties: " + its);
+            }
+        }
+        var visuals = Visuals.create();
+        Main.measureLooks(visuals, settings);
+        for (var look : settings.combat().auraMarkLooks()) {
+            assertEquals(2f * 20 / GameConstants.LOGICFRAMES_PER_SECOND, visuals.getEffectSeconds(look), 0.001f,
+                    look + ": two beats of 20");
+        }
+    }
+
+    /**
+     * As shipped: a small light-blue circle lying just above the floor under the creature, a few units across and not
+     * the reach of anything, crossfading from one beat's to the next as the rings do -- and burning brighter the more
+     * kinds reach it. Light blue is paler than the mana ring's blue: a hue between 190 and 215 degrees, at most 65%
+     * saturated, and at least 90% bright.
+     */
+    @Test
+    void theShippedMarksAreLightBlueAndBrighterTheMoreKindsReachIt() {
+        var looks = SETTINGS.combat().auraMarkLooks();
+        assertEquals(3, looks.size(), "the premise: a mark for one kind, for two and for three");
+
+        float dimmer = 0f;
+        for (var look : looks) {
+            var layers = SETTINGS.effectLayers().stream().filter(art -> art.effect().equals(look))
+                    .map(art -> Main.layerOf(art, SETTINGS)).toList();
+            assertEquals(1, layers.size(), look + " is one circle");
+            var mark = layers.getFirst();
+            assertEquals(EffectLayer.MARK, mark.type(), look + " lies on the floor");
+            assertTrue(mark.follows(), look + " goes where its creature goes");
+            assertEquals(EffectLayer.UNITS, mark.measure(), look + " is a few units across, whatever an aura's reach");
+            assertEquals(0.5f, mark.fadeIn(), 0.001f, look);
+            assertEquals(0.5f, mark.fadeOut(), 0.001f, look);
+            assertTrue(mark.height() > 0f && mark.height() <= 0.5f, look + " lies just above the floor: "
+                    + mark.height());
+            for (int colour : new int[] {mark.colourStart(), mark.colourEnd()}) {
+                var hsb = java.awt.Color.RGBtoHSB(colour >> 16 & 0xFF, colour >> 8 & 0xFF, colour & 0xFF, null);
+                float hue = hsb[0] * 360f;
+                assertTrue(hue >= 190f && hue <= 215f && hsb[1] >= 0.2f && hsb[1] <= 0.65f && hsb[2] >= 0.9f,
+                        look + " is drawn in 0x" + Integer.toHexString(colour) + ": hue " + Math.round(hue)
+                                + ", saturation " + Math.round(hsb[1] * 100) + "%, brightness "
+                                + Math.round(hsb[2] * 100) + "% -- not a light blue");
+            }
+            assertEquals(mark.alphaStart(), mark.alphaEnd(), 0.0001f, look + " holds its brightness");
+            assertTrue(mark.alphaStart() > dimmer, look + " burns at " + mark.alphaStart() + ", no brighter than the "
+                    + "mark for one kind fewer, " + dimmer);
+            dimmer = mark.alphaStart();
+        }
+    }
+
+    // ---- shown ----
+
+    /** What the screen last handed over for {@code creature}, each one's kind in the order handed: none for none. */
+    private static List<SkillEffect> handedOver(BuffScreen screen, GameObject creature) {
+        return screen.buffs().getOrDefault(creature.getId().value(), List.of()).stream()
+                .map(buff -> buff.skill().effect()).toList();
+    }
+
+    /** The player has picked {@code creature} alone, and a frame has gone by. */
+    private static void picked(DukeGame game, GameObject creature) {
+        game.setSelection(List.of(creature.getId().value()));
+        game.runHeadless(1);
+    }
+
+    /**
+     * What is on the creature the player has picked alone is handed over whole after each frame, each with its skill and
+     * figure: a Skeleton in a summoner's reach holds the might; beside a healer too, given a pool, the might and the mana;
+     * and hastened, the haste and the frames it has left first, as SkillEffect has them -- until it burns out.
+     */
+    @Test
+    void whatIsOnTheCreatureThePlayerPicksIsHandedOverWhole() {
+        var screen = new BuffScreen(SETTINGS);
+        var mighty = beside(SETTINGS, screen::show, SUMMONER);
+        picked(mighty.game(), lastOf(mighty));
+        var might = auraOf(mighty.get(0));
+        assertEquals(List.of(new BuffScreen.Buff(might, 50, 0)), screen.buffs().get(lastOf(mighty).getId().value()),
+                "the might, at its 50");
+
+        var shown = new BuffScreen(SETTINGS);
+        var both = beside(SETTINGS, shown::show, SUMMONER, HEALER);
+        bookOf(lastOf(both)).resize(50, 0);
+        picked(both.game(), lastOf(both));
+        assertEquals(List.of(new BuffScreen.Buff(might, 50, 0), new BuffScreen.Buff(auraOf(both.get(1)), 50, 0)),
+                shown.buffs().get(lastOf(both).getId().value()), "the might, and the mana in tenths a second");
+
+        var its = new BuffScreen(SETTINGS);
+        var hastened = beside(SETTINGS, its::show, SUMMONER);
+        var skeleton = lastOf(hastened);
+        assertTrue(bookOf(hastened.get(0)).cast('W', 1, null, null), "the premise: it cast its haste");
+        assertTrue(bookOf(skeleton).getHasteFrames() > 0, "the premise: on the Skeleton, the sturdier");
+        picked(hastened.game(), skeleton);
+        var held = its.buffs().get(skeleton.getId().value());
+        var haste = SETTINGS.skillsFor(SUMMONER).stream().filter(skill -> skill.effect() == SkillEffect.HASTE)
+                .findFirst().orElseThrow();
+        assertEquals(List.of(new BuffScreen.Buff(haste, 75, bookOf(skeleton).getHasteFrames()),
+                new BuffScreen.Buff(might, 50, 0)), held, "the haste with the frames it has left, then the might");
+
+        hastened.game().runHeadless(haste.durationFrames());
+        assertEquals(List.of(SkillEffect.DAMAGE_AURA), handedOver(its, skeleton), "burnt out, the might alone");
+    }
+
+    /**
+     * Nothing is handed over for a creature nothing is on: a hero beside a summoner -- no aura reaches a hero -- a
+     * Skeleton with no pool beside a healer alone, and a hastened Skeleton in a might once it has fallen. A body is
+     * reaped in the frame it falls, before the screen reads the world; one killed after the reap -- by a word of the
+     * game's own, read before the screen's -- is read lying there dead, its haste still counting down in its book.
+     */
+    @Test
+    void aHeroAPoollessSkeletonBesideAHealerAndAFallenOneHoldNone() {
+        var arena = Dungeon.world(room(NO_WALL), unseeingInWhole(SUMMONER), unarmedRogue());
+        var game = arena.game();
+        var beheld = new BuffScreen(SETTINGS);
+        beheld.show(game);
+        game.spawn(SUMMONER, arena.dungeon(), 100f, 150f);
+        game.spawn("Rogue", arena.hero(), 115f, 150f);
+        game.runHeadless(1);
+        arena.orders().hold(arena.hero().getIndex(), true);
+        var hero = first(game, "Rogue");
+        assertEquals(1.5f, might(first(game, SUMMONER)), 0.0001f, "the premise: the summoner bears its might");
+        picked(game, hero);
+        assertEquals(List.of(), handedOver(beheld, hero), "a hero, 15 from a summoner");
+
+        var dry = new BuffScreen(SETTINGS);
+        var poolless = beside(SETTINGS, dry::show, HEALER);
+        assertEquals(50, SkillBook.auraOn(lastOf(poolless), SkillEffect.MANA_AURA), "the premise: the aura reaches it");
+        picked(poolless.game(), lastOf(poolless));
+        assertEquals(List.of(), handedOver(dry, lastOf(poolless)), "a Skeleton with no pool beside a healer");
+
+        var fallen = new BuffScreen(SETTINGS);
+        var killed = new java.util.concurrent.atomic.AtomicReference<GameObject>();
+        var room = beside(SETTINGS, world -> {
+            world.onTick(ticked -> {
+                var one = killed.getAndSet(null);
+                if (one != null) {
+                    one.getBody().damage(one.getBody().getHealth() + 1f);
+                }
+            });
+            fallen.show(world);
+        }, SUMMONER);
+        var skeleton = lastOf(room);
+        assertTrue(bookOf(room.get(0)).cast('W', 1, null, null), "the premise: it cast its haste");
+        picked(room.game(), skeleton);
+        assertEquals(List.of(SkillEffect.HASTE, SkillEffect.DAMAGE_AURA), handedOver(fallen, skeleton),
+                "the premise: hastened, in the might");
+        killed.set(skeleton);
+        room.game().runHeadless(1);
+        assertTrue(skeleton.isEffectivelyDead() && room.game().getLogic().findObject(skeleton.getId()) != null
+                && bookOf(skeleton).getHasteFrames() > 0, "the premise: it lies there dead, its haste counting down");
+        assertEquals(List.of(), handedOver(fallen, skeleton), "fallen");
+    }
+
+    /**
+     * And the one the pointer rests on, picked or not -- kept once the pointer leaves it, so its row may stay while the
+     * pointer is on the row, until the pointer rests on another; two picked together are neither picked alone.
+     */
+    @Test
+    void theOneThePointerRestsOnIsHandedOverTooAndKeptWhenItLeaves() {
+        var screen = new BuffScreen(SETTINGS);
+        var room = beside(SETTINGS, screen::show, SUMMONER);
+        var game = room.game();
+        var summoner = room.get(0);
+        var skeleton = lastOf(room);
+
+        game.setSelection(List.of(summoner.getId().value(), skeleton.getId().value()));
+        game.runHeadless(1);
+        assertEquals(Map.of(), screen.buffs(), "two picked, neither alone");
+
+        game.setPointedAt(skeleton.getId().value());
+        game.runHeadless(1);
+        assertEquals(List.of(SkillEffect.DAMAGE_AURA), handedOver(screen, skeleton), "the pointer on it");
+        game.setPointedAt(-1);
+        game.runHeadless(1);
+        assertEquals(List.of(SkillEffect.DAMAGE_AURA), handedOver(screen, skeleton), "and kept once it leaves it");
+        game.setPointedAt(summoner.getId().value());
+        game.runHeadless(1);
+        assertEquals(List.of(), handedOver(screen, skeleton), "until it rests on another");
+        assertEquals(List.of(SkillEffect.DAMAGE_AURA), handedOver(screen, summoner), "which is handed over instead");
     }
 
     // ---- reach ----

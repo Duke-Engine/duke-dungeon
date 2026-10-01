@@ -33,6 +33,9 @@ import uz.dukeengine.core.view.WorldSnapshot;
  * <p>On the window's thread, but for what is handed to the match and run on the simulation's: the rule that names
  * the pickup, and a look after every frame at what lies on the floor. Both only read, and change nothing. What the
  * pointer rests on is the window's own word ({@code DukeGame.getPointedAt}), so it is said whatever is selected.
+ *
+ * <p>And, under the bag, what is on the creature he picks, over its bar: see {@link BuffScreen}, which it paints,
+ * whose cards it draws in its own style, and whose pictures it takes a press on.
  */
 final class BagScreen implements Painter, CanvasInput {
 
@@ -47,6 +50,8 @@ final class BagScreen implements Painter, CanvasInput {
 
     private final DungeonSettings settings;
     private final Duke3D duke;
+    /** What is on the creature he picks, over its bar: drawn under the bag, its card over everything. */
+    private final BuffScreen buffs;
 
     /** The match being played: the one the window opened with, or the party's that replaced it. */
     private volatile Dungeon.Session session;
@@ -96,6 +101,7 @@ final class BagScreen implements Painter, CanvasInput {
         this.settings = settings;
         this.duke = duke;
         this.clock = clock;
+        this.buffs = new BuffScreen(settings);
     }
 
     /**
@@ -114,6 +120,7 @@ final class BagScreen implements Painter, CanvasInput {
             return target.findModule(GateUpdate.class) == null ? null : PartyOrders.TO_THE_GATE;
         });
         game.onTick(ticked -> lying = lyingIn(ticked));
+        buffs.show(game);
         game.onCommandPressed(press -> {
             int put = slotOf(DROP, press.id());
             if (put >= 0 && press.place() != null) {
@@ -191,6 +198,9 @@ final class BagScreen implements Painter, CanvasInput {
         }
         var slots = bag.slots();
         layOut(canvas, slots.size());
+        // And what is on the creature he picks, over its bar, under the slab: a pointer on the slab is on the bag. The
+        // card of the picture the pointer is on comes last.
+        var card = buffs.paint(canvas, match.game(), mouseX, mouseY, onTheBag(mouseX, mouseY));
         var look = settings.menu();
         canvas.fillRect(left, top, wide, high, 0xE0000000 | look.stoneColour());
         canvas.openRect(left, top, wide, high, 2f, 0xFF000000 | look.stoneEdgeColour());
@@ -229,6 +239,8 @@ final class BagScreen implements Painter, CanvasInput {
         } else if (over >= 0 && slots.get(over) != null) {
             var item = slots.get(over);
             tip(canvas, lines(item), hintsOf(item, true), slotX(over) - gap, slotY(over), true);
+        } else if (card != null) {
+            tip(canvas, card.said(), card.hints(), card.x(), card.y(), false);
         } else if (!onTheBag(mouseX, mouseY) && lying.get(match.game().getPointedAt()) instanceof Loot under) {
             tip(canvas, lines(under), hintsOf(under, false), mouseX + 20, mouseY + 20, false);
         }
@@ -412,6 +424,13 @@ final class BagScreen implements Painter, CanvasInput {
             boolean mine = pressedHere;
             pressedHere = false;
             return mine;
+        }
+        // A picture over a creature's bar is the screen's own: a press on it selects nothing and orders nothing behind.
+        // One under the slab is the bag's: the slab is drawn over the rows, and what is on it is what is pressed.
+        if (shown && button.button() == Mouse.LEFT && !onTheBag(button.x(), button.y())
+                && buffs.pictureAt(button.x(), button.y())) {
+            pressedHere = true;
+            return true;
         }
         if (!onTheBag(button.x(), button.y())) {
             return false;

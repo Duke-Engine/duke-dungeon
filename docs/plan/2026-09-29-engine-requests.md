@@ -28,6 +28,7 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E12 | a Layer block may say `Renews` (E9's option reachable from data) | waiting (small) |
 | E13 | an armed thing-aim's press marked as the game's own order, not an attack | waiting (small) |
 | E14 | a walk that stops short says so, and a way shut by bodies still goes as near as they let it | waiting: (1), (2) and (5) small, (3) a change to how a held mover plans |
+| E15 | where the bottom panel stands, told to a game's painter | waiting (small) |
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
 game builds against the local engine.
@@ -35,8 +36,8 @@ game builds against the local engine.
 **For a session given this whole file** (a cloud session working on github.com/Duke-Engine/duke-engine):
 
 1. **E1–E7, E9, E10, E11 and E8's steps 1–2 are done** — they are here for their history. Do not redo them.
-2. **E12, E13 and E14's (1), (2) and (5) are small** and can be done now, each on its own; E14's (3) changes what a held
-   mover remembers between its routes, and wants the reference's stuck handling read first.
+2. **E12, E13, E14's (1), (2) and (5), and E15 are small** and can be done now, each on its own; E14's (3) changes what
+   a held mover remembers between its routes, and wants the reference's stuck handling read first.
 3. **E8's step 3 (rpg)** lifts the game's own packages, and the game's newest code is not on GitHub yet: its
    stun-lifesteal-summons, key-to-the-keep and monsters-grow pieces are on the owner's master only, and the keep's seal
    and the auras are still being built. That step waits for them — ask him when. Step 4 (the clients) comes after it.
@@ -445,6 +446,23 @@ to the place (which goes through the connected branch), and only a walk that fin
 stands ends it there; and an errand is given up — his legs stopped, the hero saying `NoWayWord` — when he has stood,
 neither walking nor fighting, for `StuckFrames` without getting a cell nearer, or gone `StuckFightingFrames` without
 getting nearer however he spent them (what ends (3) for him).
+
+## E15 — Where the bottom panel stands, told to a game's painter (2026-10-01, small)
+
+The dungeon draws a row of small pictures over the bar of the creature the player picks — the auras on it and a
+haste — through its own `Painter`, which draws over the client's HUD. A row over a bar the panel at the window's foot
+covers would be drawn over the panel, and the pointer over the panel still names the creature behind it
+(`DukeGame.getPointedAt`: the pick goes through the slab, the world region being the whole window), so the game keeps
+both off the panel. To know where the panel stands it copies the engine's figure: `HeroPanel.SLAB_HEIGHT` (the band of
+172 and a pad of 10 over and under it, 192 design pixels) times the panel's legible scale,
+`clamp(width / PanelLook.designWidth, minScale, maxScale)`. That misses the squeeze `HeroPanel.scaleFor` gives a window
+too narrow for the bar's blocks (its `fits`), and goes stale the day the slab changes.
+
+- Asked: the `Canvas` handed to a painter says where the bottom panel stands this frame — its rectangle, or its top
+  edge, in canvas pixels, and nothing while it is hidden — as `barOf` says where a thing's bar is.
+
+Done when: a game's painter reads where the bottom panel stands at any window size, squeezed or not, and nothing while
+it is hidden. Until then the game copies the height, with a `ponytail:` note on it (`BuffScreen.PANEL_SLAB`).
 
 ---
 
