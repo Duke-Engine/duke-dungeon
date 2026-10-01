@@ -43,7 +43,8 @@ import uz.dukeengine.game.DukeGame;
  * is fought for real, against a Rogue who cannot answer, where the figure is the blow itself.
  *
  * <p>And what is drawn of it: each bearer's look, and the circle under every creature an aura reaches -- laid by that
- * creature's own book from {@code SkillBook.aurasOn}, which asks the same figures.
+ * creature's own book from {@code SkillBook.aurasOn}, which asks the same figures -- and what the HUD is handed of
+ * the creature the player picks, from the same rule.
  */
 class AuraTest {
 
@@ -91,8 +92,15 @@ class AuraTest {
 
     /** The same, of creatures as {@code units} write them. */
     private static Room room(DungeonSettings settings, String units, int wallColumn, One... ones) {
+        return room(settings, units, wallColumn, game -> { }, ones);
+    }
+
+    /** The same, {@code before} told of the world before its first frame -- as the HUD's row is, by the bag. */
+    private static Room room(DungeonSettings settings, String units, int wallColumn,
+            java.util.function.Consumer<DukeGame> before, One... ones) {
         var arena = Dungeon.world(room(wallColumn), settings, units);
         var game = arena.game();
+        before.accept(game);
         for (var one : ones) {
             game.spawn(one.kind(), arena.dungeon(), one.x(), one.y());
         }
@@ -689,12 +697,18 @@ class AuraTest {
 
     /** These bearers of its side, in this order, standing round a Skeleton at (130, 150): the last of the room. */
     private static Room beside(DungeonSettings settings, String... bearers) {
+        return beside(settings, game -> { }, bearers);
+    }
+
+    /** The same, {@code before} told of the world before its first frame. */
+    private static Room beside(DungeonSettings settings, java.util.function.Consumer<DukeGame> before,
+            String... bearers) {
         var ones = new ArrayList<One>();
         for (int at = 0; at < bearers.length; at++) {
             ones.add(one(bearers[at], ROUND_IT[at][0], ROUND_IT[at][1]));
         }
         ones.add(one("Skeleton", 130f, 150f));
-        return room(settings, NO_WALL, ones.toArray(One[]::new));
+        return room(settings, Content.units(), NO_WALL, before, ones.toArray(One[]::new));
     }
 
     /** The last of a room's creatures: the Skeleton {@link #beside} puts last. */
@@ -959,6 +973,135 @@ class AuraTest {
                     + "mark for one kind fewer, " + dimmer);
             dimmer = mark.alphaStart();
         }
+    }
+
+    // ---- shown ----
+
+    /** What the screen last handed over for {@code creature}, each one's kind in the order handed: none for none. */
+    private static List<SkillEffect> handedOver(BuffScreen screen, GameObject creature) {
+        return screen.buffs().getOrDefault(creature.getId().value(), List.of()).stream()
+                .map(buff -> buff.skill().effect()).toList();
+    }
+
+    /** The player has picked {@code creature} alone, and a frame has gone by. */
+    private static void picked(DukeGame game, GameObject creature) {
+        game.setSelection(List.of(creature.getId().value()));
+        game.runHeadless(1);
+    }
+
+    /**
+     * What is on the creature the player has picked alone is handed over whole after each frame, each with its skill and
+     * figure: a Skeleton in a summoner's reach holds the might; beside a healer too, given a pool, the might and the mana;
+     * and hastened, the haste and the frames it has left first, as SkillEffect has them -- until it burns out.
+     */
+    @Test
+    void whatIsOnTheCreatureThePlayerPicksIsHandedOverWhole() {
+        var screen = new BuffScreen(SETTINGS);
+        var mighty = beside(SETTINGS, screen::show, SUMMONER);
+        picked(mighty.game(), lastOf(mighty));
+        var might = auraOf(mighty.get(0));
+        assertEquals(List.of(new BuffScreen.Buff(might, 50, 0)), screen.buffs().get(lastOf(mighty).getId().value()),
+                "the might, at its 50");
+
+        var shown = new BuffScreen(SETTINGS);
+        var both = beside(SETTINGS, shown::show, SUMMONER, HEALER);
+        bookOf(lastOf(both)).resize(50, 0);
+        picked(both.game(), lastOf(both));
+        assertEquals(List.of(new BuffScreen.Buff(might, 50, 0), new BuffScreen.Buff(auraOf(both.get(1)), 50, 0)),
+                shown.buffs().get(lastOf(both).getId().value()), "the might, and the mana in tenths a second");
+
+        var its = new BuffScreen(SETTINGS);
+        var hastened = beside(SETTINGS, its::show, SUMMONER);
+        var skeleton = lastOf(hastened);
+        assertTrue(bookOf(hastened.get(0)).cast('W', 1, null, null), "the premise: it cast its haste");
+        assertTrue(bookOf(skeleton).getHasteFrames() > 0, "the premise: on the Skeleton, the sturdier");
+        picked(hastened.game(), skeleton);
+        var held = its.buffs().get(skeleton.getId().value());
+        var haste = SETTINGS.skillsFor(SUMMONER).stream().filter(skill -> skill.effect() == SkillEffect.HASTE)
+                .findFirst().orElseThrow();
+        assertEquals(List.of(new BuffScreen.Buff(haste, 75, bookOf(skeleton).getHasteFrames()),
+                new BuffScreen.Buff(might, 50, 0)), held, "the haste with the frames it has left, then the might");
+
+        hastened.game().runHeadless(haste.durationFrames());
+        assertEquals(List.of(SkillEffect.DAMAGE_AURA), handedOver(its, skeleton), "burnt out, the might alone");
+    }
+
+    /**
+     * Nothing is handed over for a creature nothing is on: a hero beside a summoner -- no aura reaches a hero -- a
+     * Skeleton with no pool beside a healer alone, and a hastened Skeleton in a might once it has fallen. A body is
+     * reaped in the frame it falls, before the screen reads the world; one killed after the reap -- by a word of the
+     * game's own, read before the screen's -- is read lying there dead, its haste still counting down in its book.
+     */
+    @Test
+    void aHeroAPoollessSkeletonBesideAHealerAndAFallenOneHoldNone() {
+        var arena = Dungeon.world(room(NO_WALL), unseeingInWhole(SUMMONER), unarmedRogue());
+        var game = arena.game();
+        var beheld = new BuffScreen(SETTINGS);
+        beheld.show(game);
+        game.spawn(SUMMONER, arena.dungeon(), 100f, 150f);
+        game.spawn("Rogue", arena.hero(), 115f, 150f);
+        game.runHeadless(1);
+        arena.orders().hold(arena.hero().getIndex(), true);
+        var hero = first(game, "Rogue");
+        assertEquals(1.5f, might(first(game, SUMMONER)), 0.0001f, "the premise: the summoner bears its might");
+        picked(game, hero);
+        assertEquals(List.of(), handedOver(beheld, hero), "a hero, 15 from a summoner");
+
+        var dry = new BuffScreen(SETTINGS);
+        var poolless = beside(SETTINGS, dry::show, HEALER);
+        assertEquals(50, SkillBook.auraOn(lastOf(poolless), SkillEffect.MANA_AURA), "the premise: the aura reaches it");
+        picked(poolless.game(), lastOf(poolless));
+        assertEquals(List.of(), handedOver(dry, lastOf(poolless)), "a Skeleton with no pool beside a healer");
+
+        var fallen = new BuffScreen(SETTINGS);
+        var killed = new java.util.concurrent.atomic.AtomicReference<GameObject>();
+        var room = beside(SETTINGS, world -> {
+            world.onTick(ticked -> {
+                var one = killed.getAndSet(null);
+                if (one != null) {
+                    one.getBody().damage(one.getBody().getHealth() + 1f);
+                }
+            });
+            fallen.show(world);
+        }, SUMMONER);
+        var skeleton = lastOf(room);
+        assertTrue(bookOf(room.get(0)).cast('W', 1, null, null), "the premise: it cast its haste");
+        picked(room.game(), skeleton);
+        assertEquals(List.of(SkillEffect.HASTE, SkillEffect.DAMAGE_AURA), handedOver(fallen, skeleton),
+                "the premise: hastened, in the might");
+        killed.set(skeleton);
+        room.game().runHeadless(1);
+        assertTrue(skeleton.isEffectivelyDead() && room.game().getLogic().findObject(skeleton.getId()) != null
+                && bookOf(skeleton).getHasteFrames() > 0, "the premise: it lies there dead, its haste counting down");
+        assertEquals(List.of(), handedOver(fallen, skeleton), "fallen");
+    }
+
+    /**
+     * And the one the pointer rests on, picked or not -- kept once the pointer leaves it, so its row may stay while the
+     * pointer is on the row, until the pointer rests on another; two picked together are neither picked alone.
+     */
+    @Test
+    void theOneThePointerRestsOnIsHandedOverTooAndKeptWhenItLeaves() {
+        var screen = new BuffScreen(SETTINGS);
+        var room = beside(SETTINGS, screen::show, SUMMONER);
+        var game = room.game();
+        var summoner = room.get(0);
+        var skeleton = lastOf(room);
+
+        game.setSelection(List.of(summoner.getId().value(), skeleton.getId().value()));
+        game.runHeadless(1);
+        assertEquals(Map.of(), screen.buffs(), "two picked, neither alone");
+
+        game.setPointedAt(skeleton.getId().value());
+        game.runHeadless(1);
+        assertEquals(List.of(SkillEffect.DAMAGE_AURA), handedOver(screen, skeleton), "the pointer on it");
+        game.setPointedAt(-1);
+        game.runHeadless(1);
+        assertEquals(List.of(SkillEffect.DAMAGE_AURA), handedOver(screen, skeleton), "and kept once it leaves it");
+        game.setPointedAt(summoner.getId().value());
+        game.runHeadless(1);
+        assertEquals(List.of(), handedOver(screen, skeleton), "until it rests on another");
+        assertEquals(List.of(SkillEffect.DAMAGE_AURA), handedOver(screen, summoner), "which is handed over instead");
     }
 
     // ---- reach ----

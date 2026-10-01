@@ -131,6 +131,10 @@ Monster
       TickFrames = 30
       MaxRank = 1
       Name = Sehr buloqi
+      ; What the HUD draws over the bar of every pool it fills, and its card's line: the stat
+      ; picture for intelligence, until a picture of its own is painted.
+      Icon = icons/stats/stat_intelligence.png
+      Blurb = Atrofidagi o'zinikilarning manasi tezroq to'ladi.
     End
   ]
 End

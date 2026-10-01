@@ -33,6 +33,10 @@ import uz.dukeengine.dungeon.content.PortraitArt;
  * @param portrait          the portrait every selectable creature gets unless its own block frames
  *     one, or null for none. The camera is written in fractions of whatever it is looking at, so
  *     one framing fits a skeleton and a hero alike
+ * @param buffIcon          how big each picture over the bar of a creature he picks is -- an aura on
+ *     it, a haste -- in the pixels the panel was designed at, and grown as the panel is
+ * @param lifestealWord     what a lifesteal aura's share is called on that picture's card, as the
+ *     attack word is a might's
  */
 public record Hud(String depthWord, String rankSuffix, String skillsWord, String pointsWord, String masterWord,
         String damageWord, String cooldownWord, String radiusWord, String rangeWord, String boostWord,
@@ -45,12 +49,12 @@ public record Hud(String depthWord, String rankSuffix, String skillsWord, String
         String primaryWord, String eachPointWord, String speedNowWord, String manaWord,
         boolean paintedSkillIcons, String cmdMoveIcon, String cmdAttackIcon, String cmdStopIcon,
         String cmdGuardIcon, String attackIcon, String armourIcon, String speedIcon, int portraitFps,
-        PortraitArt portrait) {
+        PortraitArt portrait, float buffIcon, String lifestealWord) {
 
     /** What a block leaves out. */
     public static final Hud DEFAULTS = new Hud("DEPTH", "-lv", "", "", "", "", "", "", "", "", "", "", "", "",
             "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
-            "", "", false, "", "", "", "", "", "", "", 24, null);
+            "", "", false, "", "", "", "", "", "", "", 24, null, 20f, "");
 
     /** The four orders on the buttons beside the map, in the order they are drawn. */
     public List<String> orderWords() {

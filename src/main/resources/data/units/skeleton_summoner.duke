@@ -142,6 +142,10 @@ Monster
       Look = Hasted
       MaxRank = 1
       Name = Shiddat
+      ; What the HUD draws over the bar of the one it hastens, while it burns, and its card's
+      ; line: the stat picture for speed, until a picture of its own is painted.
+      Icon = icons/stats/stat_speed.png
+      Blurb = Bir necha soniya ancha tezroq uradi.
     End,
     Skill
       Key = E
@@ -159,6 +163,10 @@ Monster
       TickFrames = 30
       MaxRank = 1
       Name = Qudrat
+      ; What the HUD draws over the bar of everyone it reaches, and its card's line: the stat
+      ; picture for attack, until a picture of its own is painted.
+      Icon = icons/stats/stat_attack.png
+      Blurb = Atrofidagi o'zinikilar qattiqroq uradi, mahoratlari ham kuchliroq.
     End
   ]
 End

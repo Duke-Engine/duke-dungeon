@@ -395,6 +395,11 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
         return hasteFrames;
     }
 
+    /** How much faster a haste burning on it makes its weapon fire, in percent; 0 when none burns. */
+    public int getHastePercent() {
+        return hasteFrames > 0 ? hastePercent : 0;
+    }
+
     /** The frame he last committed to a skill, or a long time ago if he never has. */
     public int getLastCastFrame() {
         return lastCastFrame;

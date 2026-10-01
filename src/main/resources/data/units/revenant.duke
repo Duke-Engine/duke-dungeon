@@ -118,6 +118,10 @@ Monster
       TickFrames = 30
       MaxRank = 1
       Name = Qon aurasi
+      ; What the HUD draws over the bar of everyone it reaches, and its card's line: the stat
+      ; picture for lifesteal, until a picture of its own is painted.
+      Icon = icons/stats/stat_lifesteal.png
+      Blurb = Atrofidagi o'zinikilar har zarbasidan jon qaytarib oladi.
     End
   ]
 End
