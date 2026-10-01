@@ -28,6 +28,7 @@ import uz.dukeengine.client3d.Camera;
 import uz.dukeengine.dungeon.world.Combat;
 import uz.dukeengine.client3d.Cursor;
 import uz.dukeengine.client3d.EffectBudget;
+import uz.dukeengine.client3d.EffectLayer;
 import uz.dukeengine.dungeon.world.Fog;
 import uz.dukeengine.client3d.HitFeel;
 import uz.dukeengine.dungeon.world.Hud;
@@ -851,6 +852,31 @@ public final class DungeonSettings {
                                 + " pool round it, in tenths of a point a second, at least 1");
             }
         }
+        // A look worn as a state is played again as the state is given again -- a second stun, a second haste, an aura
+        // at each beat -- and an AURA layer of it that does not renew is dropped where it should be carried to the new
+        // end, so its picture would end with the first. A MARK ring is laid anew at each beat by the client, and needs
+        // none.
+        for (var effect : effects) {
+            if (!wornAsAState(effect.name())) {
+                continue;
+            }
+            for (var layer : effect.layers()) {
+                require(!EffectLayer.AURA.equalsIgnoreCase(layer.type()) || Boolean.TRUE.equals(layer.renews()),
+                        "Effect " + effect.name() + " is worn as a state -- a stun's, a haste's or an aura's look -- and"
+                                + " its Layer " + layer.name() + " is an AURA that does not say Renews = Yes: given"
+                                + " again, the state would outlast the layer, which is dropped instead of being carried"
+                                + " to the new end");
+            }
+        }
+    }
+
+    /**
+     * Whether {@code look} is worn as a state: the Combat block's {@code StunLook}, and every haste's and aura's
+     * {@code Look}.
+     */
+    private boolean wornAsAState(String look) {
+        return look != null && (look.equals(combat.stunLook()) || skills.stream().anyMatch(skill ->
+                look.equals(skill.look()) && (skill.effect() == SkillEffect.HASTE || skill.effect().isAura())));
     }
 
     /**

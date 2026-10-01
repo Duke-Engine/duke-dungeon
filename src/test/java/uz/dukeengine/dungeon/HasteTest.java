@@ -355,7 +355,7 @@ class HasteTest {
         Main.measureLooks(visuals, SETTINGS);
         assertEquals(5f, visuals.getEffectSeconds("Hasted"), 0.001f, "for five seconds");
         var layers = SETTINGS.effectLayers().stream().filter(art -> art.effect().equals("Hasted"))
-                .map(art -> Main.layerOf(art, SETTINGS)).toList();
+                .map(Main::layerOf).toList();
         assertFalse(layers.isEmpty(), "the premise: Hasted is drawn in layers");
         for (var layer : layers) {
             assertEquals(EffectLayer.AURA, layer.type(), "worn, and going where it goes");

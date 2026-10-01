@@ -245,9 +245,10 @@ class GateTest {
     /**
      * Legs that stop of themselves are as near as they are going to get, and at the gate's edge that is there: he says
      * it from where they stopped. The engine stops a walk so -- with nothing left to walk to, and not short of
-     * anything -- when it presses against the thing that covers the spot it was bound for, which it calls arrival, or
-     * when it has stepped aside for ten seconds. Pressed against the gate's end on the 38th floor of the descent, he
-     * stood there with the errand open. The test stops his legs as the engine does; nothing here holds him.
+     * anything -- when it presses against the thing that covers the spot it was bound for, which it calls arrival; a
+     * step aside that finishes goes on now (E14), though one that runs its ten seconds out still stops so. Pressed
+     * against the gate's end on the 38th floor of the descent, he stood there with the errand open. The test stops his
+     * legs as the engine does; nothing here holds him.
      */
     @Test
     void sentUpToItHeSaysItWhereHisLegsStopOfThemselvesAtItsEdge() {
@@ -285,12 +286,13 @@ class GateTest {
 
     /**
      * A body standing still on the threshold, where his road to the gate ends, does not end the errand where he set
-     * out. Sent at the gate itself, his legs aim at the one spot beside it that the body stands on, find no way nearer
-     * than where he is, and stop there: stopped short is where he was, not how near he can get. He looks again from
-     * there, as his brain takes a walk up again -- to a place beside the gate he may stand in -- walks up and says it.
+     * out. Sent at the gate itself, his legs aim at the one spot beside it that the body stands on. They used to find
+     * no way nearer than where he was and stop there -- stopped short is where he was, not how near he can get -- and
+     * he looked again from there, as his brain takes a walk up again, to a place beside the gate he may stand in. The
+     * engine walks him up beside the body itself now (E14), and he says it.
      */
     @Test
-    void sentUpToItWithABodyOnItsThresholdHeLooksAgainAndGetsThere() {
+    void sentUpToItWithABodyOnItsThresholdHeGetsThere() {
         var arena = withAGate(DEAF);
         var game = arena.game();
         game.spawn("Skeleton", arena.dungeon(), 197.5f, 157.5f);
@@ -529,13 +531,16 @@ class GateTest {
 
     /**
      * One for each way it went wrong that a floor still shows, and he gets there on each today. The 0th: sent exactly
-     * at the gate with a healer on its threshold, his legs found nowhere nearer at once, and he said nothing. The 26th:
-     * the road grazes a statue, and a still thing in the spot ahead held him for good. The 38th, at frame ten: his legs
-     * stopped of themselves against the gate's end, and he stood there with the errand open; the floor takes him
-     * another way now, which a look again ends. The walk that never ends -- the 20th's shuffle on one spot, which the
-     * longer count ends with the word -- takes six seconds here, and ItemErrandTest pins that count.
+     * at the gate with a healer on its threshold, his legs found nowhere nearer at once, and he said nothing; the engine
+     * walks him up beside the healer now (E14). The 26th: the road grazes a statue, and a still thing in the spot ahead
+     * held him for good. The 38th, at frame ten: his legs stopped of themselves against the gate's end, and he stood
+     * there with the errand open; the floor takes him another way now, which a look again ends. The 6th: his legs end
+     * 68 from the gate and say so, short (E14); a look again from there takes him up to it, which nothing else does.
+     * The walk that never ends -- the 20th's shuffle on one spot, which the engine ends itself now (E14) and the longer
+     * count still ends with the word -- takes six seconds here, and ItemErrandTest pins that count.
      */
-    private static final List<Floor> WENT_WRONG = List.of(new Floor(0, 2), new Floor(26, 2), new Floor(38, 10));
+    private static final List<Floor> WENT_WRONG =
+            List.of(new Floor(0, 2), new Floor(26, 2), new Floor(38, 10), new Floor(6, 2));
 
     /** Longer than any of them takes, and than the longest he may go without getting nearer. */
     private static final int A_LONG_WALK = 12_000;

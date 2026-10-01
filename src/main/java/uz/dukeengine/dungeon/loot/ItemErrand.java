@@ -189,10 +189,13 @@ public final class ItemErrand extends UpdateModule implements Errand {
                 if (!atItsEdge(hero, there)) {
                     // His legs stopped of themselves short of it -- a leg they gave up on, a route that ran out at a
                     // body, a way round one that came back with nowhere in it, a step aside for a friend -- and where
-                    // they stopped is where he was, not how near he can get. How they stopped is no answer: a step
-                    // aside ends a walk exactly onto a thing and still names it, arrived. He looks again from there,
-                    // by the walk his brain takes a walk up again with -- to the place, which ends on the block beside
-                    // a thing with a shape -- and only a look that finds nowhere nearer than where he stands is one.
+                    // they stopped is where he was, not how near he can get. The last two the engine tells better now
+                    // (E14): a way round a body that finds nowhere nearer ends the walk stoppedShort, and a step aside
+                    // goes on to a thing it was walking exactly onto, which it dropped and went on naming, arrived.
+                    // Short is not the end of it, though: on a floor of the descent a look again from where they
+                    // stopped still takes him on where the engine's own one look did not. He looks again, by the walk
+                    // his brain takes a walk up again with -- to the place, which ends on the block beside a thing with
+                    // a shape -- and only a look that finds nowhere nearer than where he stands is as near as he gets.
                     legs.moveTo(goal);
                     if (legs.isMoving() && !within(hero.getPosition(), legs.getDestination(), legs.closeEnough())) {
                         return;
@@ -326,8 +329,8 @@ public final class ItemErrand extends UpdateModule implements Errand {
      * Told by his brain as it stands him still for a body in his way, and as it lets him go
      * (HeroBrain.mindTheWayOnHisErrand). While it holds him he is not there, however near he stands. Legs stopped with
      * no goal are otherwise legs that stopped of themselves -- pressed against what covers the spot they were bound
-     * for, which the engine calls arrival, or done stepping aside -- and from there he looks again: only a look that
-     * finds nowhere nearer is as near as he gets.
+     * for, which the engine calls arrival, or, before E14, done stepping aside -- and from there he looks again: only
+     * a look that finds nowhere nearer is as near as he gets.
      */
     public void heldForABody(boolean held) {
         heldForABody = held;

@@ -145,7 +145,7 @@ End
 ; healer's own green: a thick ring on the floor as wide as its Radius, played on it every
 ; TickFrames and lasting two, as the summoner's MightAura and the Revenant's BloodAura are
 ; -- and a few blue motes drifting up at its feet, which say this is the one that bears it:
-; an AURA layer, let out at a Rate and carried on at each beat by Main.layerOf.
+; an AURA layer, let out at a Rate, that says Renews: each beat carries it on.
 ; ---------------------------------------------------------------------------
 Effect
   Name = ManaAura
@@ -172,6 +172,7 @@ Effect
     Layer
       Name = Motes
       Type = AURA
+      Renews = Yes
       Texture = kit/effects/particles/star_05.png
       Blend = Additive
       Count = 10

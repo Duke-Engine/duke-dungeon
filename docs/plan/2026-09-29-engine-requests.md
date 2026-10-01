@@ -25,22 +25,23 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E9 | an aura's picture follows its status | landed, 1bb64fa8 |
 | E10 | one seamless world, ~900 × 900 cells, any size by design | landed in 0.8.0 (4236489b); the game takes its parts when it builds the open world |
 | E11 | an untextured model keeps its own colour | landed, d7204414; the key's `Tint` is gone |
-| E12 | a Layer block may say `Renews` (E9's option reachable from data) | waiting (small) |
-| E13 | an armed thing-aim's press marked as the game's own order, not an attack | waiting (small) |
-| E14 | a walk that stops short says so, and a way shut by bodies still goes as near as they let it | waiting: (1), (2) and (5) small, (3) a change to how a held mover plans |
-| E15 | where the bottom panel stands, told to a game's painter | waiting (small) |
+| E12 | a Layer block may say `Renews` (E9's option reachable from data) | landed, 97e3c86c |
+| E13 | an armed thing-aim's press marked as the game's own order, not an attack | landed, 308841ce |
+| E14 | a walk that stops short says so, and a way shut by bodies still goes as near as they let it | landed, b4c291c3: (1), (2), (3) and (5); (4) was only noted |
+| E15 | where the bottom panel stands, told to a game's painter | landed, 0adfc96c |
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
-game builds against the local engine.
+game builds against the local engine. E12–E15 reached it together at 668045f0 (their pull requests merged as
+e4666f06, b03a781c, 8f6bbd87 and 668045f0), which is still 0.8.0.
 
 **For a session given this whole file** (a cloud session working on github.com/Duke-Engine/duke-engine):
 
-1. **E1–E7, E9, E10, E11 and E8's steps 1–2 are done** — they are here for their history. Do not redo them.
-2. **E12, E13, E14's (1), (2) and (5), and E15 are small** and can be done now, each on its own; E14's (3) changes what
-   a held mover remembers between its routes, and wants the reference's stuck handling read first.
-3. **E8's step 3 (rpg)** lifts the game's own packages, and the game's newest code is not on GitHub yet: its
-   stun-lifesteal-summons, key-to-the-keep and monsters-grow pieces are on the owner's master only, and the keep's seal
-   and the auras are still being built. That step waits for them — ask him when. Step 4 (the clients) comes after it.
+1. **E1–E7, E9–E15 and E8's steps 1–2 are done** — they are here for their history. Do not redo them.
+2. **The small ones — E12, E13, E14 and E15 — are done too**, landed together by 668045f0 and taken up by the game:
+   only E8's step 3 and step 4, below, remain.
+3. **E8's step 3 (rpg)** lifts the game's own packages, and the game's master is on GitHub with every piece since
+   the stun (the key to the keep, monsters that grow, the haste and auras, the keep's seal, the long walk, what an aura
+   looks like). That step waits only for the owner's word — ask him when. Step 4 (the clients) comes after it.
    The class-by-class proposal is the owner's page https://claude.ai/artifact/Sx1NpP81xmiqmLUny7Qakt (version 2).
 4. Every change is announced to the game as the landings above were: the engine version, the API, what the game must
    change (for E8, the old-to-new package map of each step).
@@ -373,6 +374,15 @@ Done when: a Layer block with `Renews = true` loads and reaches the builder as r
 Until then the game asks the client itself to renew the one look a status wears — the Combat block's `StunLook`
 (`Main.layerOf(art, settings)`); with this landed, that becomes `Renews = true` on the `Stunned` layers in data.
 
+**Landed** as 97e3c86c (0.8.0, merged as e4666f06): `Layer` gains `Boolean renews`, after `follows`, read from
+`Renews = Yes|No` and handed on by `fields()` as `"renews"`, as `follows` is; a block that does not say it hands on
+nothing, and is drawn as before. The game took it up: `Main.layerOf` has `case "renews"` beside `"follows"`, and its
+code rule — `wornAsAState` and the trailing `.renews(...)`, with the settings argument only they asked for — is gone.
+The AURA layers of the five looks worn as a state (the stun's `Stunned`, the haste's `Hasted`, and the riders of
+`MightAura`, `ManaAura` and `BloodAura`) say `Renews = Yes`, and `DungeonSettings` refuses a file where an AURA layer
+of such a look does not, by a message naming the look and the layer; a MARK ring says nothing, the client lays it anew
+at each beat.
+
 ## E13 — A thing-aim's press marked as the game's own order (2026-10-01, small)
 
 The dungeon's key is used by a left click on it in the bag (arming a `CommandButton` with `Aim.UNIT`, id `use:<slot>`)
@@ -386,6 +396,14 @@ fight it — where a right click on the same gate (a context order, `game.contex
   staying the default so an ability aimed at an enemy is marked as today.
 
 Done when: a use aim pressed on the gate flashes the context colour; an attack ability aimed at an enemy looks as now.
+
+**Landed** as 308841ce (0.8.0, merged as b03a781c): `CommandButton` gains a last component, `answeredAs`, and
+`answeredAs(String word)` gives the same button answered as that word: pressed on a thing, it is marked and voiced as a
+click giving the word on a thing is (`Visuals.wordMark`, `Visuals.orderAnswer`) — here the ring of the game's own
+orders, in `ContextColour`, and a move's voice, as a right click on the gate gets — where it was the attack's ring and
+the button's own name voiced. A button naming none is answered as before, and every constructor the game called builds
+one as before. The game's use aim, the key armed from the bag, says `.answeredAs(PartyOrders.USE)` (`"use"`, public now
+as `PICK_UP` and `TO_THE_GATE` are); the drop aim, which aims at the floor, names none.
 
 ## E14 — A walk that stops short says so, and a way shut by bodies still goes as near as they let it (2026-10-01)
 
@@ -447,6 +465,19 @@ stands ends it there; and an errand is given up — his legs stopped, the hero s
 neither walking nor fighting, for `StuckFrames` without getting a cell nearer, or gone `StuckFightingFrames` without
 getting nearer however he spent them (what ends (3) for him).
 
+**Landed** as b4c291c3 (0.8.0, merged as 8f6bbd87), four of the five points: (1) a goal no zone holds is gone for to
+the nearest cell it can reach where the bodies shut the zone's nearest, so a hero sent at the gate with a still enemy on
+its threshold walks up beside him; (2) a route again round a body that finds nowhere nearer has the walk stopped short
+(`stoppedShort()`); (3) a mover held between bodies plans round all those it has been held by while it makes no
+headway, and so passes through them or stops short within its stuck limit; (5) a step aside goes on afterwards to a
+point it was walking exactly onto. (4), the gap two round things leave that a body does not fit, was only noted as seen,
+and is not among them. The game changed no code and removed no behaviour: `ItemErrand`'s look again after his legs stop,
+its standing watch (`StuckFrames`) and its cap (`StuckFightingFrames`) stay as safety, and the notes in `ItemErrand`,
+`world.duke` and the tests that said what the engine did before say what it does now. The look again still earns its
+place: sent up to the gate from the way in, the hero kept alive, on the first floor of seeds 0 to 39 at 668045f0, 37 get
+there with the guards and 32 without the look again (the 6th, 9th, 23rd, 34th and 36th are the five it takes up), and
+the 2nd, 4th and 39th end saying `NoWayWord` either way; `GateTest` sends him from the way in on the 6th.
+
 ## E15 — Where the bottom panel stands, told to a game's painter (2026-10-01, small)
 
 The dungeon draws a row of small pictures over the bar of the creature the player picks — the auras on it and a
@@ -463,6 +494,13 @@ too narrow for the bar's blocks (its `fits`), and goes stale the day the slab ch
 
 Done when: a game's painter reads where the bottom panel stands at any window size, squeezed or not, and nothing while
 it is hidden. Until then the game copies the height, with a `ponytail:` note on it (`BuffScreen.PANEL_SLAB`).
+
+**Landed** as 0adfc96c (0.8.0, merged as 668045f0): `Canvas.bottomPanel()`, a default method answering null, says where
+the client's bottom panel stands this frame as a `Canvas.Box` in the canvas's pixels — the bar across the foot of the
+window, as tall as it is drawn, so a window too narrow for its blocks squeezes it below the `192 × scale` the game had
+copied — and null while it is hidden. The game's `BuffScreen` asks it: a pointer inside the box names nothing for a row,
+a row whose bar lies behind it is not drawn, and null keeps nothing off. `PANEL_SLAB` and its `ponytail:` note are gone;
+the panel's legible scale stays, for the size of the pictures.
 
 ---
 

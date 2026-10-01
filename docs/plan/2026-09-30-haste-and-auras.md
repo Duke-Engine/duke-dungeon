@@ -98,8 +98,9 @@ drinks from its own fire.
   from the skill; the kit's `circle_03`, sized so its brightest line lies on the `Radius`), and a small `AURA` layer
   riding the body that says which kind it bears — violet sparks, a few blue motes at the feet, red drops rising. Its
   book plays it on itself every `TickFrames` (30), staggered by its id as the brain's re-plans are, and
-  `Main.measureLooks` makes an aura's look last two ticks: each ring crossfades into the next, `Main.layerOf` renews the
-  rider at each beat, and the whole look rides the bearer while it lives and fades within two seconds of its fall.
+  `Main.measureLooks` makes an aura's look last two ticks: each ring crossfades into the next, the rider says `Renews`
+  and so is carried on at each beat, and the whole look rides the bearer while it lives and fades within two seconds of
+  its fall.
 - **A creature an aura reaches** wears a small light-blue circle under its feet, brighter the more kinds of aura reach
   it (the aura-looks plan, Task 2): its own book asks `SkillBook.aurasOn` — the kinds whose `auraOn` is above 0, a mana
   aura only for a creature with a pool, a hero never — every Combat `AuraMarkTickFrames` (30), staggered by its id, and
@@ -108,8 +109,9 @@ drinks from its own fire.
   some 14 units across, differing only in `Alpha`; `Main.measureLooks` makes it last two beats, so it rides the creature
   while an aura reaches it and is gone within two beats of its leaving.
 - **The passive-`Look` rule relaxes for an aura:** it may name one, with a `TickFrames` — a lasting skill's beat, as a
-  whirlwind's is; a `LIFESTEAL` still may not. `Main.layerOf` renews every look worn as a state: the stun's, each
-  `HASTE`'s and each aura's. The four looks are written in their mages' files.
+  whirlwind's is; a `LIFESTEAL` still may not. Every look worn as a state — the stun's, each `HASTE`'s and each aura's —
+  says `Renews = Yes` on its `AURA` layers (engine request E12), and the file is refused where one does not. The four
+  looks are written in their mages' files.
 
 ## The three mages
 

@@ -613,11 +613,12 @@ class AuraTest {
     }
 
     /**
-     * Each look is measured two of its bearer's ticks, as wide as its Radius, and renews as a state does. Its ring lies
-     * on the floor and follows its bearer, fading in over its first half and out over its second -- so the one laid a
-     * tick later takes over as it goes, and the two stand as one steady ring. Its rider is fed by a Rate on the body,
-     * and each tick carries it on to the next, as a stun's stars are -- with room for every one it lets out to live out
-     * its life, so none is overwritten while it still shows.
+     * Each look is measured two of its bearer's ticks, as wide as its Radius. Its ring lies on the floor and follows its
+     * bearer, fading in over its first half and out over its second -- so the one laid a tick later takes over as it
+     * goes, and the two stand as one steady ring: the client lays it anew at each tick, and it says nothing of renewing.
+     * Its rider is fed by a Rate on the body, and says it renews, so each tick carries it on to the next, as a stun's
+     * stars are -- with room for every one it lets out to live out its life, so none is overwritten while it still
+     * shows.
      */
     @Test
     void eachLookIsMeasuredTwoTicksItsRingAtItsRadiusAndItsRiderRenewed() {
@@ -631,7 +632,7 @@ class AuraTest {
                     visuals.getEffectSeconds(aura.look()), 0.001f, aura.look() + ": two ticks");
             assertEquals(aura.radius(), visuals.getEffectReach(aura.look()), 0.001f, aura.look() + ": its Radius");
             var layers = SETTINGS.effectLayers().stream().filter(art -> art.effect().equals(aura.look()))
-                    .map(art -> Main.layerOf(art, SETTINGS)).toList();
+                    .map(Main::layerOf).toList();
             assertEquals(List.of(EffectLayer.MARK, EffectLayer.AURA), layers.stream().map(EffectLayer::type).toList(),
                     aura.look() + " is a ring on the floor, and under what rides over it, a rider");
 
@@ -640,10 +641,9 @@ class AuraTest {
             assertEquals(EffectLayer.REACH, ring.measure(), aura.look() + " is measured in its reach");
             assertEquals(0.5f, ring.fadeIn(), 0.001f, aura.look());
             assertEquals(0.5f, ring.fadeOut(), 0.001f, aura.look());
-            assertTrue(ring.renews(), aura.look() + " renews, worn as a state");
 
             var rider = layers.get(1);
-            assertTrue(rider.renews(), aura.look() + "'s rider is carried on by each tick, worn as a state");
+            assertTrue(rider.renews(), aura.look() + "'s rider says it renews, and each tick carries it on");
             assertTrue(rider.continuous(), aura.look() + "'s rider is fed by a Rate");
             assertEquals(EffectLayer.UNITS, rider.measure(),
                     aura.look() + "'s rider is a few units at the body: the ring carries the reach");
@@ -671,7 +671,7 @@ class AuraTest {
             var window = HUES.get(aura.effect());
             assertNotNull(window, aura.effect() + " is a kind of aura with no colour of its own");
             var layers = SETTINGS.effectLayers().stream().filter(art -> art.effect().equals(aura.look()))
-                    .map(art -> Main.layerOf(art, SETTINGS)).toList();
+                    .map(Main::layerOf).toList();
             assertFalse(layers.isEmpty(), aura.look() + " is drawn in layers");
             for (var layer : layers) {
                 for (int colour : new int[] {layer.colourStart(), layer.colourEnd()}) {
@@ -979,7 +979,7 @@ class AuraTest {
         float dimmer = 0f;
         for (var look : looks) {
             var layers = SETTINGS.effectLayers().stream().filter(art -> art.effect().equals(look))
-                    .map(art -> Main.layerOf(art, SETTINGS)).toList();
+                    .map(Main::layerOf).toList();
             assertEquals(1, layers.size(), look + " is one circle");
             var mark = layers.getFirst();
             assertEquals(EffectLayer.MARK, mark.type(), look + " lies on the floor");

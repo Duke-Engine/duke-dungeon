@@ -70,23 +70,22 @@ public final class Main {
 
     /**
      * One layer, in the client's words: whatever the file said, laid over the client's own
-     * defaults, then modified by the game's own logic.
+     * defaults.
      *
      * <p>Only what was said, because the defaults are the client's and are written down once,
-     * in {@code EffectLayer.Builder}. A look worn as a state renews — the stun's count starts
-     * again at each stun, a second haste starts the haste again, and an aura is played on its
-     * bearer again at every beat — so an AURA layer it adds must last to the new end: see
-     * {@link #wornAsAState}. Named by the files, so no name is compiled in. The shipped rings
-     * are MARKs, which the client lays anew each beat, and renewing changes nothing on them;
-     * what each aura's bearer wears besides is an AURA layer, which renewing carries on from
-     * beat to beat. Other AURA layers keep the engine's default drop: the knight's Whirlwind
-     * is cast again at each landing and must not be stretched.
+     * in {@code EffectLayer.Builder}. Renewing is said too, layer by layer: an AURA layer that
+     * {@code Renews} is carried on to the new end when it is cast again on somebody it still
+     * burns on, where one that does not is dropped, as the knight's Whirlwind — cast again at
+     * each landing — must be. A look worn as a state is played again as the state is given
+     * again: the stun's count starts again at each stun, a second haste starts the haste again,
+     * and an aura is played on its bearer again at every beat. So every AURA layer such a look
+     * has says it, and the file is refused where one does not (see {@code DungeonSettings});
+     * the shipped rings are MARKs, which the client lays anew each beat, and need none.
      *
      * <p>Package-private so the game's own test can ask what a block in the file turns into on
      * screen.
      */
-    static uz.dukeengine.client3d.EffectLayer layerOf(DungeonSettings.EffectLayerArt art,
-            DungeonSettings settings) {
+    static uz.dukeengine.client3d.EffectLayer layerOf(DungeonSettings.EffectLayerArt art) {
         var layer = uz.dukeengine.client3d.EffectLayer.builder();
         art.fields().forEach((field, value) -> {
             switch (field) {
@@ -101,17 +100,11 @@ public final class Main {
                 case "at" -> layer.at(value);
                 case "measure" -> layer.measure(value);
                 case "follows" -> layer.follows(Boolean.parseBoolean(value));
+                case "renews" -> layer.renews(Boolean.parseBoolean(value));
                 default -> number(layer, field, Float.parseFloat(value));
             }
         });
-        return layer.renews(wornAsAState(art.effect(), settings)).build();
-    }
-
-    /** Whether a look is worn as a state: the Combat block's {@code StunLook}, and every haste's and aura's. */
-    private static boolean wornAsAState(String look, DungeonSettings settings) {
-        return look.equals(settings.combat().stunLook()) || settings.skills().stream().anyMatch(skill ->
-                skill.look().equals(look) && (skill.effect() == uz.dukeengine.dungeon.skill.SkillEffect.HASTE
-                        || skill.effect().isAura()));
+        return layer.build();
     }
 
     private static void number(uz.dukeengine.client3d.EffectLayer.Builder layer, String field,
@@ -1063,7 +1056,7 @@ public final class Main {
         // order they are laid one over another.
         for (var layer : settings.effectLayers()) {
             visuals.effect(layer.effect(),
-                    recipe -> recipe.layer(layerOf(layer, settings)));
+                    recipe -> recipe.layer(layerOf(layer)));
         }
         for (var look : settings.projectiles()) {
             arrow(visuals, look.name(), look);
