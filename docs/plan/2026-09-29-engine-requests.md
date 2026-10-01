@@ -27,7 +27,7 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E11 | an untextured model keeps its own colour | landed, d7204414; the key's `Tint` is gone |
 | E12 | a Layer block may say `Renews` (E9's option reachable from data) | waiting (small) |
 | E13 | an armed thing-aim's press marked as the game's own order, not an attack | waiting (small) |
-| E14 | a walk that stops short says so, and a way shut by bodies still goes as near as they let it | waiting: (1) and (2) small, (3) a change to how a held mover plans |
+| E14 | a walk that stops short says so, and a way shut by bodies still goes as near as they let it | waiting: (1), (2) and (5) small, (3) a change to how a held mover plans |
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
 game builds against the local engine.
@@ -35,7 +35,7 @@ game builds against the local engine.
 **For a session given this whole file** (a cloud session working on github.com/Duke-Engine/duke-engine):
 
 1. **E1–E7, E9, E10, E11 and E8's steps 1–2 are done** — they are here for their history. Do not redo them.
-2. **E12, E13 and E14's (1) and (2) are small** and can be done now, each on its own; E14's (3) changes what a held
+2. **E12, E13 and E14's (1), (2) and (5) are small** and can be done now, each on its own; E14's (3) changes what a held
    mover remembers between its routes, and wants the reference's stuck handling read first.
 3. **E8's step 3 (rpg)** lifts the game's own packages, and the game's newest code is not on GitHub yet: its
    stun-lifesteal-summons, key-to-the-keep and monsters-grow pieces are on the owner's master only, and the keep's seal
@@ -424,16 +424,27 @@ at 1bb64fa8; each place is also named by a comment in it, which the 0.8.0 code s
    pillar whose centres are 14.1 apart, radii 3.5 and 3, so 7.6 between their edges, for a hero 8 wide. The cells on
    either side have room at their centres, so the route goes through; the locomotor refuses the step, circles, gives
    up after two seconds, and a fresh route from there plans the same gap. Worth a look when (1)–(3) are done.
+5. **A step aside drops a walk exactly to a point, yet goes on naming it, arrived** (small). `MoveUpdate.stepAsideFor`
+   (~1180-1208; the one that goes "on to where it was sent afterwards if it was on its way somewhere"): what it goes on
+   to (`goOnTo`, ~1199) is kept only for a walk to a place, so a walk exactly to a point — `moveExactlyTo`, a walk onto
+   a thing to take or use it — is dropped; but the step sets `toPlace = true` and keeps `sentTo`, so `getGoal()`
+   (~666-671) goes on answering that point, and once the step ends the mover reads as having got there as near as it
+   could: not moving, not `stoppedShort()`, `isGoalReachable()`. In co-op a hero sent for a chest 300 away, met head on
+   by a friend, stepped aside 155 short of it and was told he had arrived. The same at 0.8.0.
+   - Asked: the step goes on afterwards to a point it was walking exactly to, as it does to a place — or, dropping
+     the walk, reports no goal.
 
 Done when: sent at a building whose nearest open cell a still enemy stands on, a mover walks up beside that enemy;
 after a re-plan round a body that finds no way, `stoppedShort()` is true; a mover held between two still movers
-passes through them or stops short within the stuck limit.
+passes through them or stops short within the stuck limit; a mover sent exactly to a point and asked aside on the
+way goes on to it afterwards, or has no goal.
 
-Until then the game copes in `ItemErrand`: legs that stopped short of a thing, or stand as (2) leaves them, are taken
-up again from where he stands by a walk to the place (which goes through the connected branch); and an errand is
-given up — his legs stopped, the hero saying `NoWayWord` — when he has stood, neither walking nor fighting, for
-`StuckFrames` without getting a cell nearer, or gone `StuckFightingFrames` without getting nearer however he spent
-them (what ends (3) for him).
+Until then the game copes in `ItemErrand`: legs that stopped short of a thing, stand as (2) leaves them, or stopped
+in any way at all — a step aside included, whatever they report — are taken up again from where he stands by a walk
+to the place (which goes through the connected branch), and only a walk that finds nowhere nearer than where he
+stands ends it there; and an errand is given up — his legs stopped, the hero saying `NoWayWord` — when he has stood,
+neither walking nor fighting, for `StuckFrames` without getting a cell nearer, or gone `StuckFightingFrames` without
+getting nearer however he spent them (what ends (3) for him).
 
 ---
 
