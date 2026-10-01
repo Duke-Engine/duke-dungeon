@@ -338,6 +338,18 @@ Hero
   ;                 mirror and not a negative of it: that one changes what you deal,
   ;                 through the player's weapon bonus, and this changes what you
   ;                 take, through your body's armour. Nothing to point at.
+  ;   BLINK         be at the spot you point at, up to Distance away, at once and
+  ;                 THROUGH whatever is between: a wall is no part of the question.
+  ;                 It will not put you in stone -- the arrival is pulled back along
+  ;                 the line to the last floor, and where there is none the cast is
+  ;                 refused with its cooldown untouched. It hurts nothing, which is
+  ;                 what keeps it from being a charge.
+  ;   METEOR        call the Projectile down on a spot you point at, up to Range
+  ;                 away -- pointing past it means "as far that way as I can" -- and
+  ;                 WindUpFrames later it lands: Damage to everything within Radius
+  ;                 of the spot. The mark lies on the floor all that while, for them
+  ;                 as much as for you, so whatever walks out of the circle has
+  ;                 beaten it. The Projectile is the mark and the meteor both.
   ;   HEAL          a monster's, so far: call the Projectile down on one of your own
   ;                 below HealBelowPercent of his health, within Range and in plain
   ;                 sight, and it gives back Heal when it lands, WindUpFrames later.
@@ -347,16 +359,47 @@ Hero
   ;                 climbs out of its own WindUpFrames later. They last DurationFrames,
   ;                 are worth SummonExperiencePercent of their own kind, and no more
   ;                 than MaxSummoned of one caster's stand at once.
+  ;   HASTE         a monster's, so far: one of your own fires faster for
+  ;                 DurationFrames -- the sturdiest within Range of you and in plain
+  ;                 sight (the highest level, then the most health), or yourself when
+  ;                 none is sturdier. Every wait of its weapon is divided by
+  ;                 1 + BoostPercent/100, and a second haste while it burns starts it
+  ;                 again and never stacks. Nothing to point at. It needs a
+  ;                 BoostPercent of at least 1 and DurationFrames, or the file is
+  ;                 refused when it is read.
   ;   LIFESTEAL     a boss's, so far, and never cast: it holds for as long as you
   ;                 stand. Every blow you land gives you back BoostPercent of what it
   ;                 was worth, as health, never above your maximum -- a swing where it
-  ;                 lands, a shot where it arrives. Nothing to point at, and a hero's
-  ;                 file that names one is refused when the file is read.
+  ;                 lands, a shot where it arrives, each its burst catches, each a
+  ;                 meteor's blast hurts, and every blow your own skills land. Nothing
+  ;                 to point at, and a hero's file that names one is refused when the
+  ;                 file is read. BoostPercent is a share, from 1 to 100.
+  ;   DAMAGE_AURA   a monster's, so far, and never cast: everyone of your own round
+  ;                 you hits BoostPercent harder, every blow and every skill but not
+  ;                 a mending, for as long as you stand. BoostPercent of at least 1.
+  ;   MANA_AURA     as DAMAGE_AURA, but every pool of your own round you fills
+  ;                 ManaRegen faster -- tenths of a point a second, the unit of a
+  ;                 pool's own trickle, added to it -- and a creature with no pool is
+  ;                 given none. ManaRegen of at least 1; on any other skill it is
+  ;                 read by nothing, and the file is refused.
+  ;   LIFESTEAL_AURA
+  ;                 as DAMAGE_AURA, but everyone of your own round you drinks
+  ;                 BoostPercent of every blow it lands, added to a LIFESTEAL of its
+  ;                 own. A share from 1 to 100, as a LIFESTEAL's is.
+  ;
+  ; An aura reaches everyone of your own side within its Radius of you, middle to
+  ; middle, and in plain sight -- you too, and whatever you call up. Of several of a
+  ; kind the strongest counts, never the sum. The file is refused if an aura has no
+  ; Radius, or names a DurationFrames (it holds while you stand, and its Look is worn
+  ; two TickFrames at a time), or names a Look without a TickFrames or a TickFrames
+  ; without a Look: the two come together, or neither does. A Damage, ManaCost,
+  ; WindUpFrames or Projectile on one is refused as on any passive; a Look it may
+  ; have. A hero's file that names one is refused, as for a LIFESTEAL.
   ;
   ; Each one already knows what the player must point at, so binding its key and
   ; drawing its ring both follow from the effect and neither is written twice.
   ;
-  ; The heroes use STRIKE through GUARD; HEAL, SUMMON and LIFESTEAL are for monsters
+  ; The heroes use STRIKE through METEOR; everything from HEAL on is for monsters
   ; and bosses so far. A spear thrown down a corridor is one SKILLSHOT block and not a
   ; line of Java.
   ;
