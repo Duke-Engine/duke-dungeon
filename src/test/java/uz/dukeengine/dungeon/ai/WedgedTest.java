@@ -12,7 +12,7 @@ import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.dungeon.Dungeon;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.game.DukeGame;
-import uz.dukeengine.rts.message.GameMessage;
+import uz.dukeengine.combat.message.CombatOrder;
 
 /**
  * Something that cannot get past stands still instead of treading the floor.
@@ -81,7 +81,7 @@ class WedgedTest {
 
         var hero = creature(game, "Rogue", 0);
         var quarry = creature(game, "Skeleton", 1);
-        game.postCommand(new GameMessage.AttackObject(
+        game.postCommand(new CombatOrder.AttackObject(
                 game.getLocalPlayerIndex(), List.of(hero.getId()), quarry.getId()));
 
         game.runHeadless(frames - watched);
@@ -135,7 +135,7 @@ class WedgedTest {
         game.runHeadless(1);
         var hero = creature(game, "Rogue", 0);
         var quarry = creature(game, "Skeleton", 1);
-        game.postCommand(new GameMessage.AttackObject(
+        game.postCommand(new CombatOrder.AttackObject(
                 game.getLocalPlayerIndex(), List.of(hero.getId()), quarry.getId()));
 
         game.runHeadless(210);
@@ -165,7 +165,7 @@ class WedgedTest {
         game.spawn("Skeleton", arena.dungeon(), 70f, 15f);
         game.runHeadless(1);
         var hero = creature(game, "Rogue", 0);
-        game.postCommand(new GameMessage.MoveTo(game.getLocalPlayerIndex(),
+        game.postCommand(new CombatOrder.MoveTo(game.getLocalPlayerIndex(),
                 List.of(hero.getId()), new Coord3D(250f, 15f, 0f)));
         return new Queue(game, hero, creature(game, "Skeleton", 0), hero);
     }
@@ -219,7 +219,7 @@ class WedgedTest {
                         && thing.getPosition().distance(setOut) < 25f),
                 "the floor no longer puts a statue by the way in, so this tells nothing");
 
-        game.postCommand(new GameMessage.MoveTo(game.getLocalPlayerIndex(), List.of(hero.getId()),
+        game.postCommand(new CombatOrder.MoveTo(game.getLocalPlayerIndex(), List.of(hero.getId()),
                 new Coord3D(547.5f, 267.5f, 0f)));
         game.runHeadless(80); // long enough to be well past it, and short of whatever the floor has further on
 
@@ -276,7 +276,7 @@ class WedgedTest {
         game.runHeadless(1);
 
         var hero = creature(game, "Rogue", 0);
-        game.postCommand(new GameMessage.MoveTo(game.getLocalPlayerIndex(),
+        game.postCommand(new CombatOrder.MoveTo(game.getLocalPlayerIndex(),
                 List.of(hero.getId()), new Coord3D(1150f, 15f, 0f)));
         return new Queue(game, hero, creature(game, "Skeleton", 0), creature(game, "Brute", 0));
     }

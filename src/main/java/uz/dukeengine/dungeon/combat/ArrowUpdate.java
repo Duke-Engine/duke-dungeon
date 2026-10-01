@@ -13,8 +13,8 @@ import uz.dukeengine.core.thing.ObjectId;
 import uz.dukeengine.core.thing.ObjectStatus;
 import uz.dukeengine.core.thing.World;
 import uz.dukeengine.dungeon.skill.SkillBook;
-import uz.dukeengine.rts.module.ExperienceModule;
-import uz.dukeengine.rts.module.StatusUpdate;
+import uz.dukeengine.combat.module.ExperienceModule;
+import uz.dukeengine.combat.module.StatusUpdate;
 
 /**
  * An arrow in the air: it chases what it was loosed at, and hurts it on arrival.

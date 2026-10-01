@@ -16,10 +16,10 @@ uchun yangi engine imkoniyatini talab qilsa, demak engine tugallanmagan.
 
 ## Engine qayerdan olinadi
 
-O'yin engine **0.7.0** ga yozilgan (`build.gradle.kts` dagi
-`uz.duke-engine:bom:0.7.0`). 0.7.0 hali Maven Central'da **yo'q**, shuning uchun
+O'yin engine **0.8.0** ga yozilgan (`build.gradle.kts` dagi
+`uz.duke-engine:bom:0.8.0`). 0.8.0 hali Maven Central'da **yo'q**, shuning uchun
 `gradle.properties` dagi `dukeEngineLocal=true` o'yinni yonidagi engine
-checkout'idan quradi — 0.6.0 chiqquncha qanday bo'lgan bo'lsa, shunday. 0.7.0
+checkout'idan quradi — 0.6.0 chiqquncha qanday bo'lgan bo'lsa, shunday. 0.8.0
 chiqqach o'sha qatorni o'chirsangiz, o'yin yana Central'dan oladi va klon hamda
 `./gradlew build` yetarli bo'ladi.
 

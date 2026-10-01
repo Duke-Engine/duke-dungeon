@@ -7,7 +7,8 @@ import uz.dukeengine.dungeon.content.HeroLook;
 import uz.dukeengine.dungeon.loot.LootBag;
 import uz.dukeengine.game.DukeGame;
 import uz.dukeengine.game.GamePlayer;
-import uz.dukeengine.rts.module.ExperienceModule;
+import uz.dukeengine.rts.player.RtsPlayer;
+import uz.dukeengine.combat.module.ExperienceModule;
 
 /**
  * The hero getting stronger: watches what he has killed and spends it on levels.
@@ -234,7 +235,7 @@ public final class HeroProgress {
             growable.setDamageTaken(
                     rules.damageTakenWith(level, hero.armourPercent() + loot.armourPercent()));
         }
-        var player = game.getLogic().getRtsPlayer(heroPlayer.getIndex());
+        var player = RtsPlayer.of(game.getLogic(), heroPlayer.getIndex());
         if (player != null) {
             // The weapon was built with his first-level blow; this is what the blow is
             // worth now, as a share of that. It belongs to the player rather than the

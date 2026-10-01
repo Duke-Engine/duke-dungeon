@@ -14,8 +14,8 @@ import uz.dukeengine.dungeon.Dungeon;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.dungeon.skill.CastSkill;
 import uz.dukeengine.game.DukeGame;
-import uz.dukeengine.rts.message.GameMessage;
-import uz.dukeengine.rts.module.WeaponUpdate;
+import uz.dukeengine.combat.message.CombatOrder;
+import uz.dukeengine.combat.module.WeaponUpdate;
 
 /**
  * What the hero shoots at, and what he stops doing when he is told something new.
@@ -318,7 +318,7 @@ class SightTest {
     void anOrderThroughAWallSendsHimWalking() {
         var arena = arena(13, 10, 15);
         var game = arena.game();
-        game.postCommand(new GameMessage.AttackObject(game.getLocalPlayerIndex(),
+        game.postCommand(new CombatOrder.AttackObject(game.getLocalPlayerIndex(),
                 List.of(arena.hero().getId()), arena.skeleton().getId()));
         float before = healthOf(arena.skeleton());
         float startedAt = arena.hero().getPosition().x();
@@ -334,7 +334,7 @@ class SightTest {
 
     private static void sendHimAcrossTheRoom(Arena arena) {
         var game = arena.game();
-        game.postCommand(new GameMessage.MoveTo(game.getLocalPlayerIndex(),
+        game.postCommand(new CombatOrder.MoveTo(game.getLocalPlayerIndex(),
                 List.of(arena.hero().getId()), new uz.dukeengine.core.math.Coord3D(at(35), at(15), 0f)));
         game.runHeadless(10);
     }
@@ -349,7 +349,7 @@ class SightTest {
         sendHimAcrossTheRoom(arena);
         assertTrue(legs.isMoving(), "he should be on his way");
 
-        game.postCommand(new GameMessage.AttackObject(game.getLocalPlayerIndex(),
+        game.postCommand(new CombatOrder.AttackObject(game.getLocalPlayerIndex(),
                 List.of(arena.hero().getId()), arena.skeleton().getId()));
         game.runHeadless(3);
 
@@ -396,7 +396,7 @@ class SightTest {
         var arena = arena(NO_WALL, 10, 34);
         var game = arena.game();
         var legs = arena.hero().findModule(MoveUpdate.class);
-        game.postCommand(new GameMessage.AttackObject(game.getLocalPlayerIndex(),
+        game.postCommand(new CombatOrder.AttackObject(game.getLocalPlayerIndex(),
                 List.of(arena.hero().getId()), arena.skeleton().getId()));
         game.runHeadless(10);
         assertTrue(legs.isMoving(), "far away, so he sets off after it");

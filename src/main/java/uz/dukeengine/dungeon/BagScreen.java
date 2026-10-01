@@ -15,8 +15,8 @@ import uz.dukeengine.dungeon.loot.LootBag;
 import uz.dukeengine.dungeon.loot.UseItem;
 import uz.dukeengine.dungeon.party.PartyOrders;
 import uz.dukeengine.dungeon.run.GateUpdate;
-import uz.dukeengine.game.view.CommandButton;
-import uz.dukeengine.game.view.WorldSnapshot;
+import uz.dukeengine.core.view.CommandButton;
+import uz.dukeengine.core.view.WorldSnapshot;
 
 /**
  * The hero's bag as the player handles it: its slots on a slab of stone at the right of the window, what a thing

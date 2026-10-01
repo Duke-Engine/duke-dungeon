@@ -9,7 +9,7 @@ import uz.dukeengine.core.module.ModuleGroups;
 import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.dungeon.content.Projectile;
-import uz.dukeengine.rts.module.ProjectileLauncher;
+import uz.dukeengine.combat.module.ProjectileLauncher;
 
 /**
  * Turns a creature's shots into things that have to get there.

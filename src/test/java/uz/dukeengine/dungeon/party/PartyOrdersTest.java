@@ -18,7 +18,7 @@ import uz.dukeengine.dungeon.run.ToTheGate;
 import uz.dukeengine.dungeon.run.Watching;
 import uz.dukeengine.dungeon.skill.CastSkill;
 import uz.dukeengine.dungeon.skill.UpgradeSkill;
-import uz.dukeengine.rts.message.GameMessage.GameOrder;
+import uz.dukeengine.combat.message.GameOrder;
 import uz.dukeengine.rts.network.CommandCodec;
 
 /** Every order a player gives crosses the wire and comes out the order it went in as. */

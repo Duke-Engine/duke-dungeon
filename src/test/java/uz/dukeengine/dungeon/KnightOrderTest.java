@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.game.DukeGame;
-import uz.dukeengine.rts.message.GameMessage;
+import uz.dukeengine.combat.message.CombatOrder;
 
 /**
  * A melee hero given an attack order walks to it.
@@ -62,7 +62,7 @@ class KnightOrderTest {
     }
 
     private static void order(Fight fight) {
-        fight.game().postCommand(new GameMessage.AttackObject(
+        fight.game().postCommand(new CombatOrder.AttackObject(
                 fight.game().getLocalPlayerIndex(), java.util.List.of(fight.hero().getId()),
                 fight.skeleton().getId()));
     }
@@ -94,7 +94,7 @@ class KnightOrderTest {
 
     private static float reachOf(uz.dukeengine.core.thing.ThingFactory templates, String template) {
         for (var entry : templates.findTemplate(template).modules()) {
-            if (entry instanceof uz.dukeengine.rts.module.WeaponUpdate.Data weapon) {
+            if (entry instanceof uz.dukeengine.combat.module.WeaponUpdate.Data weapon) {
                 return weapon.attackRange();
             }
         }

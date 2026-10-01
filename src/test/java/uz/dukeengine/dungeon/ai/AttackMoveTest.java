@@ -12,7 +12,7 @@ import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.dungeon.Dungeon;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.game.DukeGame;
-import uz.dukeengine.rts.module.WeaponUpdate;
+import uz.dukeengine.combat.module.WeaponUpdate;
 
 /**
  * "Go there, and kill what you meet on the way."
@@ -213,7 +213,7 @@ class AttackMoveTest {
         march.game().runHeadless(10);
         assertTrue(march.stillMarching(), "the premise: he is on his way");
 
-        march.game().postCommand(new uz.dukeengine.rts.message.GameMessage.MoveTo(
+        march.game().postCommand(new uz.dukeengine.combat.message.CombatOrder.MoveTo(
                 march.game().getLocalPlayerIndex(),
                 java.util.List.of(march.hero().getId()),
                 new Coord3D(150f, 250f, 0f)));
@@ -231,7 +231,7 @@ class AttackMoveTest {
         march.game().runHeadless(5);
         assertTrue(march.stillMarching(), "the premise: he is on his way");
 
-        march.game().postCommand(new uz.dukeengine.rts.message.GameMessage.AttackObject(
+        march.game().postCommand(new uz.dukeengine.combat.message.CombatOrder.AttackObject(
                 march.game().getLocalPlayerIndex(),
                 java.util.List.of(march.hero().getId()),
                 creature(march.game(), "Skeleton").getId()));

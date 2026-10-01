@@ -8,7 +8,7 @@ import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.dungeon.Dungeon;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.game.DukeGame;
-import uz.dukeengine.rts.module.WeaponUpdate;
+import uz.dukeengine.combat.module.WeaponUpdate;
 
 /**
  * Told to hold his ground, the hero stops picking fights.
@@ -101,7 +101,7 @@ class HoldGroundTest {
         fight.game().runHeadless(30);
         assertFalse(fight.shooting(), "nothing should have started on its own");
 
-        fight.game().postCommand(new uz.dukeengine.rts.message.GameMessage.AttackObject(
+        fight.game().postCommand(new uz.dukeengine.combat.message.CombatOrder.AttackObject(
                 fight.game().getLocalPlayerIndex(), java.util.List.of(fight.hero().getId()),
                 fight.skeleton().getId()));
         fight.game().runHeadless(10);
@@ -165,7 +165,7 @@ class HoldGroundTest {
         fight.game().runHeadless(10);
         assertTrue(fight.orders().isHolding(fight.hero().getPlayerIndex()));
 
-        fight.game().postCommand(new uz.dukeengine.rts.message.GameMessage.MoveTo(
+        fight.game().postCommand(new uz.dukeengine.combat.message.CombatOrder.MoveTo(
                 fight.game().getLocalPlayerIndex(),
                 java.util.List.of(fight.hero().getId()),
                 new uz.dukeengine.core.math.Coord3D(300f, 150f, 0f)));

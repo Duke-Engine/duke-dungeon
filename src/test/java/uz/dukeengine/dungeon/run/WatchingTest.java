@@ -56,7 +56,7 @@ class WatchingTest {
         var skeleton = game.getLogic().getObjects().stream()
                 .filter(o -> o.getPlayerIndex() != hero.getPlayerIndex())
                 .filter(o -> o.getBody() != null && !o.isEffectivelyDead())
-                .filter(o -> o.findModule(uz.dukeengine.rts.module.WeaponUpdate.class) != null)
+                .filter(o -> o.findModule(uz.dukeengine.combat.module.WeaponUpdate.class) != null)
                 .findFirst().orElseThrow();
         return new Watched(game, hero, skeleton, session.orders());
     }

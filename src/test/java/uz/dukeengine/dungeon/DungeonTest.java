@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 import uz.dukeengine.core.math.Coord3D;
 import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.game.DukeGame;
-import uz.dukeengine.rts.message.GameMessage;
+import uz.dukeengine.combat.message.CombatOrder;
 
 /**
  * The dungeon is playable: the hero goes where he is sent, fights what he is
@@ -53,7 +53,7 @@ class DungeonTest {
         var hero = heroOf(game);
         var destination = new Coord3D(330f, 190f, 0f);
 
-        game.postCommand(new GameMessage.MoveTo(game.getLocalPlayerIndex(),
+        game.postCommand(new CombatOrder.MoveTo(game.getLocalPlayerIndex(),
                 List.of(hero.getId()), destination));
         game.runHeadless(400);
 
@@ -70,9 +70,9 @@ class DungeonTest {
 
         // What a click on a skeleton sends: walk to it, then engage. The order
         // matters — a move order clears the current target.
-        game.postCommand(new GameMessage.MoveTo(game.getLocalPlayerIndex(),
+        game.postCommand(new CombatOrder.MoveTo(game.getLocalPlayerIndex(),
                 List.of(hero.getId()), skeleton.getPosition()));
-        game.postCommand(new GameMessage.AttackObject(game.getLocalPlayerIndex(),
+        game.postCommand(new CombatOrder.AttackObject(game.getLocalPlayerIndex(),
                 List.of(hero.getId()), skeletonId));
         game.runHeadless(500);
 
@@ -90,7 +90,7 @@ class DungeonTest {
         var hero = heroOf(game);
         float before = hero.getBody().getHealth();
 
-        game.postCommand(new GameMessage.MoveTo(game.getLocalPlayerIndex(),
+        game.postCommand(new CombatOrder.MoveTo(game.getLocalPlayerIndex(),
                 List.of(hero.getId()), creature(game, "Skeleton").getPosition()));
         game.runHeadless(400);
 
@@ -105,7 +105,7 @@ class DungeonTest {
         var terrain = game.getTerrain();
 
         // Ordered straight into the far wall, through the pillars.
-        game.postCommand(new GameMessage.MoveTo(game.getLocalPlayerIndex(),
+        game.postCommand(new CombatOrder.MoveTo(game.getLocalPlayerIndex(),
                 List.of(hero.getId()), new Coord3D(20f, 20f, 0f)));
 
         for (int frame = 0; frame < 400; frame++) {

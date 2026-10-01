@@ -6,8 +6,8 @@ import uz.dukeengine.core.module.ModuleGroup;
 import uz.dukeengine.core.module.ModuleGroups;
 import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.dungeon.ai.SightLine;
-import uz.dukeengine.rts.module.WeaponHold;
-import uz.dukeengine.rts.module.WeaponUpdate;
+import uz.dukeengine.combat.module.WeaponHold;
+import uz.dukeengine.combat.module.WeaponUpdate;
 
 /**
  * He shoots at what he can see, and at nothing else.

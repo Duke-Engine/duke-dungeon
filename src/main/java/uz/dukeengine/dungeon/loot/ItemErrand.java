@@ -8,9 +8,9 @@ import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.core.thing.ObjectId;
 import uz.dukeengine.core.thing.World;
 import uz.dukeengine.dungeon.run.GateUpdate;
-import uz.dukeengine.rts.module.Errand;
+import uz.dukeengine.combat.module.Errand;
 import uz.dukeengine.rts.module.RtsModuleGroups;
-import uz.dukeengine.rts.module.WeaponUpdate;
+import uz.dukeengine.combat.module.WeaponUpdate;
 
 /**
  * A hero sent to pick a thing up off the floor, to put one of his down, to use one of his on a thing, or up to the

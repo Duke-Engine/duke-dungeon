@@ -5,7 +5,7 @@ import uz.dukeengine.core.module.ModuleGroup;
 import uz.dukeengine.core.module.ModuleGroups;
 import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.dungeon.skill.Skill;
-import uz.dukeengine.rts.module.DamageModifier;
+import uz.dukeengine.combat.module.DamageModifier;
 import uz.dukeengine.rts.module.RtsModuleGroups;
 
 /**
