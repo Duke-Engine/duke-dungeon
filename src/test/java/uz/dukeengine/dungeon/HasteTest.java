@@ -185,6 +185,21 @@ class HasteTest {
         assertEquals(room.get(0), room.hastened(), "itself, and not the Runner 30 away");
     }
 
+    /** A dead one is never chosen: the Brute, sturdiest of them, has fallen in its reach, so a Skeleton is hastened. */
+    @Test
+    void aFallenOneIsPassedOver() {
+        var room = room(SETTINGS, NO_WALL, one(SUMMONER, 100f, 150f), one("Skeleton", 130f, 150f),
+                one("Brute", 100f, 180f));
+        var brute = room.get(2);
+        assertTrue(brute.getBody().getMaxHealth() > room.get(1).getBody().getMaxHealth(),
+                "the premise: the Brute is the sturdier");
+        brute.getBody().damage(brute.getBody().getHealth() + 1f);
+        assertTrue(brute.isEffectivelyDead(), "the premise: the Brute has fallen");
+
+        assertTrue(room.castsItsHaste(), "the premise: it cast its haste");
+        assertEquals(room.get(1), room.hastened(), "the Skeleton, and not the Brute lying 30 away");
+    }
+
     /** Alone, it hastens itself -- and so it does with a Range of 0, a Brute beside it. */
     @Test
     void aloneOrWithNoRangeItHastensItself() {

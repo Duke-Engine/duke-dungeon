@@ -83,8 +83,10 @@ one new cast effect, three new passives, and the `SkillBook` the one thing that 
 ## Every blow a monster lands
 
 `drink` adds the strongest `LIFESTEAL_AURA` on the striker to its own `LIFESTEAL` shares. The places that tell it —
-`Swing.launch`, `ArrowUpdate.strike` and `splash` — gain the meteor's blast (`FallingUpdate`, for each it hurts), so no
-blow a monster deals escapes the Revenant's aura. The Revenant keeps its `AutoHealUpdate`, and drinks from its own fire.
+`Swing.launch`, `ArrowUpdate.strike` and `splash` — gain the meteor's blast (`FallingUpdate`, for each it hurts) and
+the blows the book lands itself (`SkillBook`: an area blow, a blast at a spot, a strike with no shot, a charge — for
+each it hurts), so no blow a monster deals escapes the Revenant's aura. The Revenant keeps its `AutoHealUpdate`, and
+drinks from its own fire.
 
 ## Drawn
 

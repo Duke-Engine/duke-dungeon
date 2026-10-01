@@ -618,6 +618,7 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
                 float each = damageOf(skill, level);
                 for (var victim : enemiesWithin(owner, world, spot, skill.radius())) {
                     victim.getBody().damage(each);
+                    drink(owner, each);
                 }
                 // And leaves whoever it caught dragging his feet, if the file asks: the
                 // mage's frost nova, dropped where he points rather than round himself.
@@ -800,6 +801,7 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
             return;
         }
         victim.getBody().damage(damage);
+        drink(owner, damage);
     }
 
     /**
@@ -1160,6 +1162,7 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
             float each, float radius) {
         for (var victim : enemiesWithin(owner, world, radius)) {
             victim.getBody().damage(each);
+            drink(owner, each);
         }
     }
 
@@ -1192,6 +1195,7 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
         }
         for (var victim : struck) {
             victim.getBody().damage(each);
+            drink(owner, each);
         }
     }
 
@@ -1262,14 +1266,13 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
      * {@link #auraOn} -- give it back their shares of it, added, as health, never above
      * its maximum. Nobody, the dead, and a creature with neither get nothing.
      *
-     * <p>Told rather than listening, by the places a monster's blow lands today: a
-     * swing where the striker stands, which {@code Swing} hears the moment before the
-     * weapon lands it; a shot when it arrives and each its burst catches, in
-     * {@code ArrowUpdate}; and a meteor's blast, for each it hurts, in
-     * {@code FallingUpdate}. A damaging skill that lands anywhere else -- an area
-     * blow, a strike with no shot -- has to call this where its damage lands, or that
-     * blow is not drunk from. The figure is what the blow was worth, not what the
-     * victim had left: a kill is no special case.
+     * <p>Told rather than listening, by every place a blow lands: a swing where the
+     * striker stands, which {@code Swing} hears the moment before the weapon lands it;
+     * a shot when it arrives and each its burst catches, in {@code ArrowUpdate}; a
+     * meteor's blast, for each it hurts, in {@code FallingUpdate}; and a skill's own
+     * blow -- an area blow, a blast at a spot, a strike with no shot, a charge -- for
+     * each it hurts, here in the book. The figure is what the blow was worth, not what
+     * the victim had left: a kill is no special case.
      *
      * <p>Deterministic: whole percentages added up, its skills in the order the file
      * wrote them, one multiplication of the blow's own figure, on the simulation's

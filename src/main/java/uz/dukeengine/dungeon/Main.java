@@ -76,10 +76,10 @@ public final class Main {
      * in {@code EffectLayer.Builder}. A look worn as a state renews — the stun's count starts
      * again at each stun, a second haste starts the haste again, and an aura is played on its
      * bearer again at every beat — so an AURA layer it adds must last to the new end: see
-     * {@link #wornAsAState}. The shipped rings are MARKs, which the client lays anew each beat,
-     * and renewing changes nothing on them. Named by the files, so no name is compiled in. Other
-     * AURA layers keep the engine's default drop: the knight's Whirlwind is cast again at each
-     * landing and must not be stretched.
+     * {@link #wornAsAState}. Named by the files, so no name is compiled in. The shipped rings
+     * are MARKs, which the client lays anew each beat, and renewing changes nothing on them.
+     * Other AURA layers keep the engine's default drop: the knight's Whirlwind is cast again at
+     * each landing and must not be stretched.
      *
      * <p>Package-private so the game's own test can ask what a block in the file turns into on
      * screen.

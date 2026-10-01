@@ -111,12 +111,16 @@ class AuraTest {
         return Content.units().replace(rogue.text(), rogue.with("AttackRange", 0).text());
     }
 
+    /** This block with its creature noticing nobody: it does only what a test does for it. */
+    private static String unseen(ShippedBlock block) {
+        return block.with("SenseRadius", 1).with("ChaseRadius", 1).with("AlertRadius", 0).text();
+    }
+
     /** The shipped files with these kinds noticing nobody: they do only what a test does for them. */
     private static DungeonSettings unseeing(String... kinds) {
         var text = new StringBuilder();
         for (var kind : kinds) {
-            text.append(ShippedBlock.of(kind).with("SenseRadius", 1).with("ChaseRadius", 1).with("AlertRadius", 0)
-                    .text());
+            text.append(unseen(ShippedBlock.of(kind)));
         }
         return DungeonSettings.parse(text.toString());
     }
@@ -184,6 +188,31 @@ class AuraTest {
 
         assertEquals(45f, plain, 0.001f, "the premise: its fireball, alone");
         assertEquals(plain * 1.5f, aFireballFrom(true), 0.001f, "beside a summoner");
+    }
+
+    /** What the healer's mending gives a Skeleton left at ten, called down by hand -- beside a summoner, or alone. */
+    private static float aMendingFrom(boolean summonerBeside) {
+        var room = summonerBeside
+                ? room(SETTINGS, NO_WALL, one(HEALER, 100f, 150f), one("Skeleton", 130f, 150f),
+                        one(SUMMONER, 100f, 110f))
+                : room(SETTINGS, NO_WALL, one(HEALER, 100f, 150f), one("Skeleton", 130f, 150f));
+        var patient = room.get(1);
+        patient.getBody().setHealth(10f);
+        var mending = SETTINGS.skillsFor(HEALER).getFirst();
+
+        assertEquals(summonerBeside ? 1.5f : 1f, might(room.get(0)), 0.0001f, "the premise: the might on the healer");
+        assertTrue(bookOf(room.get(0)).cast(mending.key(), 1, patient.getId(), null), "the premise: it mended");
+        room.game().runHeadless(mending.windUpFrames() + 5);
+        return patient.getBody().getHealth() - 10f;
+    }
+
+    /** A mending is not damage and the might does not raise it: beside a summoner it heals what it heals alone. */
+    @Test
+    void aMendingIsNotRaisedByTheMight() {
+        float alone = aMendingFrom(false);
+
+        assertEquals(30f, alone, 0.001f, "the premise: its Heal, alone");
+        assertEquals(alone, aMendingFrom(true), 0.001f, "beside a summoner");
     }
 
     /** At 60, middle to middle, half as hard again; a step further, or behind stone, its own. */
@@ -387,34 +416,97 @@ class AuraTest {
         assertEquals(0f, aBlowOfTwentyTo(apart.get(1)), 0.001f, "61 from it");
     }
 
+    /** Two Rogues of the hero's side, one beside the other at (150, 150), held where they stand. */
+    private static List<GameObject> twoRogues(Dungeon.Arena arena) {
+        arena.game().spawn("Rogue", arena.hero(), 150f, 150f);
+        arena.game().spawn("Rogue", arena.hero(), 150f, 160f);
+        arena.game().runHeadless(1);
+        arena.orders().hold(arena.hero().getIndex(), true);
+        return arena.game().getLogic().getObjects().stream()
+                .filter(object -> object.getTemplate().name().equals("Rogue")).toList();
+    }
+
+    /** The health the two of them have between them. */
+    private static float together(List<GameObject> two) {
+        return two.get(0).getBody().getHealth() + two.get(1).getBody().getHealth();
+    }
+
     /**
-     * The meteor's blast drinks, for each it hurts: a level-6 fire mage beside a Revenant, its meteor cast by hand at a
-     * Rogue who cannot answer, gets back a tenth of the 112.5 that landed on him. It is given room to drink into by its
-     * ceiling raised, its health left where it was: lowered, its brain would take it for a wound and answer it.
+     * The meteor's blast drinks, for each it hurts: a level-6 fire mage beside a Revenant, its meteor cast by hand
+     * at two Rogues standing in one blast, gets back a tenth of the 112.5 that landed on each. It is given room to
+     * drink into by its ceiling raised, its health left where it was: lowered, its brain would take it for a wound
+     * and answer it.
      */
     @Test
-    void theMeteorsBlastDrinks() {
+    void theMeteorsBlastDrinksFromEachItHurts() {
         var arena = Dungeon.world(room(NO_WALL), unseeing(MAGE, REVENANT), unarmedRogue());
-        var game = arena.game();
-        game.spawn("Rogue", arena.hero(), 150f, 150f);
-        game.spawn(MAGE, arena.dungeon(), 200f, 150f);
-        game.spawn(REVENANT, arena.dungeon(), 200f, 100f);
-        game.runHeadless(1);
-        arena.orders().hold(arena.hero().getIndex(), true);
-        var hero = first(game, "Rogue");
-        var mage = first(game, MAGE);
+        arena.game().spawn(MAGE, arena.dungeon(), 200f, 150f);
+        arena.game().spawn(REVENANT, arena.dungeon(), 200f, 100f);
+        var heroes = twoRogues(arena);
+        var mage = first(arena.game(), MAGE);
         Spawner.scale(mage, 6, SETTINGS);
         ((GrowableBody) mage.getBody()).setMaxHealth(mage.getBody().getMaxHealth() * 2f);
-        float his = hero.getBody().getHealth();
+        float his = together(heroes);
         float its = mage.getBody().getHealth();
         var meteor = SETTINGS.skillsFor(MAGE).getFirst();
 
-        assertTrue(bookOf(mage).cast(meteor.key(), 1, null, hero.getPosition()),
+        assertTrue(bookOf(mage).cast(meteor.key(), 1, null, heroes.get(0).getPosition()),
                 "the premise: it called the meteor down");
-        game.runHeadless(meteor.windUpFrames() + 5);
+        arena.game().runHeadless(meteor.windUpFrames() + 5);
 
-        assertEquals(112.5f, his - hero.getBody().getHealth(), 0.01f, "the premise: what landed on him");
-        assertEquals(11.25f, mage.getBody().getHealth() - its, 0.01f, "a tenth of it back");
+        assertEquals(2 * 112.5f, his - together(heroes), 0.01f, "the premise: what landed on the two of them");
+        assertEquals(2 * 11.25f, mage.getBody().getHealth() - its, 0.01f, "a tenth of each back");
+    }
+
+    /** A damaging skill the book lands for itself: its effect, the figures that make it reach, the Rogues it hurts. */
+    private record Blow(String effect, String figures, int hurts) {
+    }
+
+    /**
+     * A Skeleton given a LIFESTEAL of a quarter and this skill, with a Revenant 30 from it and both noticing nobody,
+     * casts the skill by hand at two Rogues who cannot answer, 40 away: what they lost and what it gained.
+     */
+    private static float[] aSkillsBlow(Blow blow) {
+        var skeleton = ShippedBlock.of("Skeleton").text();
+        var skills = "  SkillDistance = [0, 60]\n  Skills = [\n"
+                + "    Skill\n      Key = Q\n      Effect = " + blow.effect() + "\n      Damage = 20\n"
+                + blow.figures() + "      MaxRank = 1\n    End,\n"
+                + "    Skill\n      Key = W\n      Effect = LIFESTEAL\n      BoostPercent = 25\n      MaxRank = 1\n"
+                + "    End\n  ]\n";
+        var armed = skeleton.replace("\nEnd\n", "\n" + skills + "End\n");
+        assertNotEquals(skeleton, armed, "the premise: the Skeleton was given its skills");
+        var settings = DungeonSettings.parse(unseen(new ShippedBlock(armed)) + unseen(ShippedBlock.of(REVENANT)));
+        var arena = Dungeon.world(room(NO_WALL), settings, drinkingUnits());
+        arena.game().spawn("Skeleton", arena.dungeon(), 190f, 150f);
+        arena.game().spawn(REVENANT, arena.dungeon(), 190f, 120f);
+        var heroes = twoRogues(arena);
+        var striker = first(arena.game(), "Skeleton");
+        striker.getBody().setHealth(striker.getBody().getMaxHealth() / 2f);
+        float his = together(heroes);
+        float its = striker.getBody().getHealth();
+
+        assertTrue(bookOf(striker).cast('Q', 1, null, heroes.get(0).getPosition()),
+                "the premise: it cast its " + blow.effect());
+        return new float[] {his - together(heroes), striker.getBody().getHealth() - its};
+    }
+
+    /**
+     * A skill's own blows drink where they land, as a weapon's do, for each they hurt: an area blow, a blast at a spot,
+     * a strike with no shot and a charge, each cast by a Skeleton given a LIFESTEAL beside a Revenant, give it back the
+     * quarter and the tenth of every 20 that landed.
+     */
+    @Test
+    void aSkillsOwnBlowsDrinkForEachTheyHurt() {
+        for (var blow : List.of(new Blow("AREA_DAMAGE", "      Radius = 50\n", 2),
+                new Blow("AREA_AT_SPOT", "      Radius = 15\n      Range = 60\n", 2),
+                new Blow("STRIKE", "      Range = 60\n", 1),
+                new Blow("DASH", "      Distance = 40\n      Radius = 30\n      Range = 60\n", 2))) {
+            var change = aSkillsBlow(blow);
+
+            assertEquals(20f * blow.hurts(), change[0], 0.001f, "the premise: what its " + blow.effect() + " took");
+            assertEquals(change[0] * 35f / 100f, change[1], 0.001f,
+                    blow.effect() + " took " + change[0] + " and got back " + change[1]);
+        }
     }
 
     // ---- worn ----

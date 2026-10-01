@@ -115,8 +115,8 @@ class MonsterSummoningTest {
     }
 
     /**
-     * The shipped summoner with its summoning the only skill it has: the skills written after it -- its haste -- set
-     * lines of the same names, and these tests are the summoning's.
+     * The shipped summoner with its summoning the only skill it has: the skills written after it -- its haste and its
+     * might -- set lines of the same names, and these tests are the summoning's.
      */
     private static ShippedBlock summoningAlone() {
         var block = ShippedBlock.of(SUMMONER).text();

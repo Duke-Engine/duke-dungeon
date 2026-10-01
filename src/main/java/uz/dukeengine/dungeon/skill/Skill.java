@@ -242,8 +242,8 @@ public record Skill(
      *
      * <p>Both halves are required and that is the point: a duration with no tick
      * would be a skill that lasts and never lands, and a tick with no duration a
-     * skill that lands for ever. An aura is neither: its tick is the beat its look
-     * is worn at, and it has no duration.
+     * skill that lands for ever. An aura has a tick and no duration, so this is false
+     * for it: its tick is the beat its look is worn at, not a landing.
      */
     public boolean lasts() {
         return durationFrames > 0 && tickFrames > 0;
