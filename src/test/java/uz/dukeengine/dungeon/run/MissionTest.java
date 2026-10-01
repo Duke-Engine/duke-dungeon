@@ -236,6 +236,24 @@ class MissionTest {
         assertEquals(words.killBossWord(), run.getTracker());
     }
 
+    /**
+     * The gate is open for the mission the moment it is opened, as it is for the seal: opening marks it destroyed a
+     * frame before the engine takes it away, and the step is the boss's from then, not the key's for one frame more.
+     */
+    @Test
+    void theGateIsOpenForTheMissionTheMomentItIsOpened() {
+        var session = opened(nobodyOutside());
+        var logic = session.game().getLogic();
+        var mission = session.run().getMission();
+        var gate = find(session.game(), "Gate");
+        assertEquals(Mission.Step.TAKE, mission.step(logic, List.of()), "the premise: the key lying, the gate shut");
+
+        gate.findModule(GateUpdate.class).open();
+
+        assertNotNull(logic.findObject(gate.getId()), "the premise: the engine has not taken it away yet");
+        assertEquals(Mission.Step.KILL, mission.step(logic, List.of()), "opened, though not yet taken away");
+    }
+
     @Test
     void aHeroWhoFallsWithTheKeyLeavesItWhereHeFell() {
         var session = opened(SETTINGS);

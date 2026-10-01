@@ -243,8 +243,8 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
     private final List<ObjectId> summoned = new java.util.ArrayList<>();
 
     /**
-     * The keep's shut gate, which nothing a skill hurts or mends is found through, and which no dash, blink or rift
-     * crosses: see {@link Seal}.
+     * The keep's shut gate, which nothing a skill hurts or mends is found through, no haste or aura is lent across, and
+     * no dash, blink or rift crosses: see {@link Seal}.
      */
     private final Seal seal;
 
@@ -917,12 +917,12 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
 
     /**
      * Whom a haste is for: of {@code caster}'s own side, living, carrying a book, within {@code range} of it, middle to
-     * middle, and in its plain sight -- itself always among them -- the one of the highest level, then the most health
-     * at its fullest, then the nearer, then the one the world made first. Sturdiest rather than hardest-hitting:
-     * health is on every body, and a blow's worth is not. A total order ending in the object id, so every machine
-     * picks the same one.
+     * middle, on its side of the keep's shut gate and in its plain sight -- itself always among them -- the one of the
+     * highest level, then the most health at its fullest, then the nearer, then the one the world made first.
+     * Sturdiest rather than hardest-hitting: health is on every body, and a blow's worth is not. A total order ending
+     * in the object id, so every machine picks the same one.
      */
-    private static GameObject sturdiestNear(GameObject caster, World world, float range) {
+    private GameObject sturdiestNear(GameObject caster, World world, float range) {
         var here = caster.getPosition();
         var sturdier = java.util.Comparator.<GameObject>comparingInt(LevelBonus::levelOf)
                 .thenComparingDouble(one -> one.getBody().getMaxHealth())
@@ -930,7 +930,8 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
                 .thenComparingInt(one -> -one.getId().value());
         return world.objectsInRange(here, range, one -> one.getPlayerIndex() == caster.getPlayerIndex()
                         && one.getBody() != null && !one.isEffectivelyDead()
-                        && one.findModule(SkillBook.class) != null && SightLine.clear(caster, one))
+                        && one.findModule(SkillBook.class) != null
+                        && !seal.parts(world, here, one.getPosition()) && SightLine.clear(caster, one))
                 .stream().max(sturdier).orElse(caster);
     }
 
@@ -945,13 +946,13 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
     private List<GameObject> enemiesWithin(GameObject owner, World world, Coord3D centre,
             float radius) {
         int player = owner.getPlayerIndex();
-        var side = owner.getPosition();
+        var casterAt = owner.getPosition();
         return world.objectsInRange(centre, radius, candidate ->
                 candidate.getBody() != null
                         && !candidate.isEffectivelyDead()
                         && world.getRelationship(player, candidate.getPlayerIndex())
                                 == Relationship.ENEMIES
-                        && !seal.parts(world, side, candidate.getPosition()));
+                        && !seal.parts(world, casterAt, candidate.getPosition()));
     }
 
     /**
@@ -1238,9 +1239,9 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
     /**
      * The strongest aura of {@code kind} on {@code creature}, 0 for none: the largest worth -- a {@code BoostPercent},
      * or a {@code MANA_AURA}'s tenths of a point a second -- among the bearers of that kind on its side, living, whose
-     * level has opened it, within whose {@code Radius} it stands, middle to middle, and in whose plain sight -- the
-     * bearer itself among them. Nothing for a creature that carries no book, as one without a {@code StatusUpdate} is
-     * not stunned.
+     * level has opened it, within whose {@code Radius} it stands, middle to middle, on its side of the keep's shut gate
+     * and in whose plain sight -- the bearer itself among them. Nothing for a creature that carries no book, as one
+     * without a {@code StatusUpdate} is not stunned.
      *
      * <p>Asked where the figure is used, never pushed to the creature, so it holds exactly while the creature stands in
      * reach and ends the moment it steps out or its bearer falls: nothing kept, nothing to go stale. A maximum of whole
@@ -1268,6 +1269,7 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
                 if (skill.effect() == kind && worth > strongest
                         && LevelBonus.rankOf(bearer, skill) > 0
                         && here.distance(bearer.getPosition()) <= skill.radius()
+                        && !book.seal.parts(world, bearer.getPosition(), here)
                         && SightLine.clear(bearer, creature)) {
                     strongest = worth;
                 }

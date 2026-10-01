@@ -11,7 +11,7 @@ import uz.dukeengine.dungeon.gen.Keep;
  * The keep's shut gate, as a rule: while it stands, nothing that hurts or mends passes between the keep and the rest
  * of the floor, and nobody goes over it. Every blow, shot, burst, falling meteor and mending asks {@link #parts} rather
  * than saying the rule again, and so does every dash, blink and rift — refused, or not opened, where it would come
- * down on the other side.
+ * down on the other side — and every haste and aura, which sight passes and which is not lent across.
  *
  * <p>Within the keep is its square — the court, and the ring of wall with the doorway the gate stands in. The threshold
  * is outside, with the rest of the floor: a hero on it is on the gate's far side from the boss. Nobody stands in the
@@ -39,11 +39,7 @@ public final class Seal {
 
     /** Whether the shut gate parts {@code a} from {@code b}: one within the keep and one outside, the gate standing. */
     public boolean parts(World world, Coord3D a, Coord3D b) {
-        if (keep == null || gate == null || within(a) == within(b)) {
-            return false;
-        }
-        var standing = world.findObject(gate);
-        return standing != null && !standing.isDestroyed();
+        return keep != null && gate != null && within(a) != within(b) && GateUpdate.stands(world, gate);
     }
 
     private boolean within(Coord3D at) {

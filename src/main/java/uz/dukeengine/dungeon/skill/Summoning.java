@@ -14,9 +14,9 @@ import uz.dukeengine.dungeon.run.Seal;
  *
  * <p>Only on open floor. Not stone, and not the solid things baked into the floor with
  * it -- the rule the furniture is held to. No step up or down from where the caster
- * stands, which keeps a stair and another storey out. Nobody's body in the way,
- * nothing but air between the caster and the spot, nor the keep's shut gate, which
- * it sees through and nothing it calls up may pass (see {@link Seal}). Each spot at
+ * stands, which keeps a stair and another storey out. Nobody's body in the way, and
+ * nothing but air between the caster and the spot. It sees through the keep's shut
+ * gate, but nothing it calls up may rise across it -- see {@link Seal}. Each spot at
  * least {@code apart} from the ones already taken, so two that rise together do not
  * rise inside each other.
  *

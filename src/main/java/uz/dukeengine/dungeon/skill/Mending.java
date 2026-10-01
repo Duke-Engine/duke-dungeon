@@ -48,8 +48,8 @@ public final class Mending {
         var body = patient.getBody();
         return body.getHealth() * 100f < body.getMaxHealth() * belowPercent
                 && healer.getPosition().distance(patient.getPosition()) <= reach
-                && SightLine.clear(healer, patient)
-                && !seal.parts(healer.getWorld(), healer.getPosition(), patient.getPosition());
+                && !seal.parts(healer.getWorld(), healer.getPosition(), patient.getPosition())
+                && SightLine.clear(healer, patient);
     }
 
     /** Worse hurt as a share of himself; the smaller id when they are the same. */

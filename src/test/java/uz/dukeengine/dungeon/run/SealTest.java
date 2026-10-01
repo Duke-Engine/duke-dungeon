@@ -14,6 +14,7 @@ import uz.dukeengine.core.pathfind.PathGrid;
 import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.core.thing.ObjectStatus;
 import uz.dukeengine.dungeon.Dungeon;
+import uz.dukeengine.dungeon.ai.SightLine;
 import uz.dukeengine.dungeon.combat.ArrowUpdate;
 import uz.dukeengine.dungeon.combat.Bow;
 import uz.dukeengine.dungeon.combat.Swing;
@@ -23,14 +24,16 @@ import uz.dukeengine.dungeon.gen.DungeonGenerator;
 import uz.dukeengine.dungeon.gen.GeneratedDungeon;
 import uz.dukeengine.dungeon.skill.Skill;
 import uz.dukeengine.dungeon.skill.SkillBook;
+import uz.dukeengine.dungeon.skill.SkillEffect;
 import uz.dukeengine.game.DukeGame;
 import uz.dukeengine.combat.message.CombatOrder;
 import uz.dukeengine.combat.module.WeaponUpdate;
 
 /**
  * While the keep's gate stands, nothing that hurts or mends crosses it: a creature within the keep's walls and one
- * outside them cannot reach each other by blow, shot, burst, falling meteor or mending, nor go over it by dash or
- * blink, nor call anything up on its far side — and once it is open, everything reaches as before.
+ * outside them cannot reach each other by blow, shot, burst, falling meteor or mending, nor lend each other a haste or
+ * an aura, nor go over it by dash or blink, nor call anything up on its far side — and once it is open, everything
+ * reaches as before.
  *
  * <p>Real fights on a floor of the descent with nobody in its chambers — the boss and its guard in the keep — each of
  * them stood where the fight needs them, and the hero on the threshold or the road before it. A fight that asks
@@ -92,7 +95,8 @@ class SealTest {
         Coord3D cell(int out, int aside) {
             int x = gateCell[0] + out * outX - aside * outY;
             int y = gateCell[1] + out * outY + aside * outX;
-            var flat = new Coord3D((x + 0.5f) * 10f, (y + 0.5f) * 10f, 0f);
+            float size = PathGrid.DEFAULT_CELL_SIZE;
+            var flat = new Coord3D((x + 0.5f) * size, (y + 0.5f) * size, 0f);
             var logic = game().getLogic();
             assertFalse(logic.isGroundBlocked(flat), "the cell " + out + " out and " + aside + " along is stone");
             return new Coord3D(flat.x(), flat.y(), logic.groundHeight(flat));
@@ -105,6 +109,36 @@ class SealTest {
                 creature.getLocomotor().stop();
             }
             return creature;
+        }
+
+        /**
+         * Stand {@code creature} against the gate's face on its {@code side} of it -- 1 outside, -1 within -- on the
+         * line through the gate's middle: four units in from the middle of its cell, as near the gate as a body goes.
+         */
+        GameObject pressToGate(GameObject creature, int side) {
+            var middle = put(creature, side, 0).getPosition();
+            creature.setPosition(new Coord3D(middle.x() - side * 4f * outX, middle.y() - side * 4f * outY, middle.z()));
+            return creature;
+        }
+
+        /** A new {@code kind} of the boss's side, {@code out} cells out from the gate, {@code aside} along its wall. */
+        GameObject spawn(String kind, int out, int aside) {
+            var world = game().getLogic();
+            var born = world.spawn(world.findTemplate(kind), cell(out, aside), boss().getPlayerIndex());
+            game().runHeadless(1);
+            return born;
+        }
+
+        /** The first of the boss's guard that is a {@code kind}: the floor makes two of each. */
+        GameObject guard(String kind) {
+            return guards().stream().filter(guard -> guard.getTemplate().name().equals(kind)).findFirst()
+                    .orElseThrow(() -> new AssertionError("no " + kind + " among the guard"));
+        }
+
+        /** The boss's guard gone but {@code these}, and a frame run to take them away. */
+        void removeGuardsBut(GameObject... these) {
+            var kept = List.of(these);
+            remove(guards().stream().filter(guard -> !kept.contains(guard)).toList());
         }
 
         /** Every one of {@code creatures} gone, and a frame run to take them away. */
@@ -282,12 +316,45 @@ class SealTest {
             }
             floor.attack(knight, boss);
 
-            var fight = fight(floor, boss, knight.getPlayerIndex(), null, 150);
+            var fight = fight(floor, boss, knight.getPlayerIndex(), knight, 150);
 
             if (opened) {
                 assertTrue(fight.lost() > 0f, "the gate open, his sword still did not reach the boss");
             } else {
+                assertTrue(fight.struck(), "he never swung, so this proves nothing");
                 assertEquals(0f, fight.lost(), 0.01f, "his sword reached the boss through the shut gate");
+            }
+        }
+    }
+
+    /**
+     * An archer pressed to the gate's inner face and the hero to its outer, so near that its bolt is at him the
+     * moment it leaves the crossbow, before it has flown a step: it is spent on the shut gate all the same, and once
+     * the gate is open it hurts him.
+     */
+    @Test
+    void aBoltAlreadyAtItsVictimIsSpentOnTheShutGate() {
+        for (boolean opened : new boolean[] {false, true}) {
+            var floor = floor("Rogue");
+            var hero = floor.hero();
+            var boss = floor.boss();
+            floor.remove(floor.guards());
+            var archer = floor.spawn("Stalker", -1, 0);
+            floor.hold();
+            if (opened) {
+                floor.open();
+            }
+            floor.put(boss, -8, 0); // far back, and out of it
+            floor.pressToGate(archer, -1);
+            floor.pressToGate(hero, 1);
+
+            var fight = fight(floor, hero, archer.getPlayerIndex(), null, 90);
+
+            assertTrue(fight.shots() > 0, "the archer never loosed, so this proves nothing");
+            if (opened) {
+                assertTrue(fight.lost() > 0f, "the gate open, its bolt still did not reach him");
+            } else {
+                assertEquals(0f, fight.lost(), 0.01f, "its bolt hurt him through the shut gate");
             }
         }
     }
@@ -451,6 +518,9 @@ class SealTest {
         assertTrue(seal.parts(world, threshold, court) && seal.parts(world, court, threshold),
                 "the keep's gate standing, it did not part them, so this proves nothing");
         assertFalse(seal.parts(world, threshold, floor.cell(3, 0)), "it parted two places outside the keep");
+        var doorway = floor.cell(0, 0);
+        assertTrue(seal.parts(world, doorway, threshold), "the doorway is within the keep: parted from the threshold");
+        assertFalse(seal.parts(world, doorway, court), "the doorway is within the keep: not parted from the court");
 
         seal.floor(null, null);
         assertFalse(seal.parts(world, threshold, court), "a floor with no keep, after one with, parted them");
@@ -502,45 +572,263 @@ class SealTest {
         }
     }
 
-    // ---- what goes over it ----
-
+    /**
+     * A healer outside the gate with two of its own hurt, in reach and plain sight -- the boss, the worse of them, a
+     * step behind the gate, and a Skeleton beside it -- mends the one beside it: the brain does not choose the one the
+     * book would refuse, and leave the other hurt. Once the gate is open it mends the boss, the worst hurt.
+     */
     @Test
-    void theRoguesSprintNeverCarriesHimOverTheShutGate() {
-        overTheGate("Rogue", 'E');
+    void aHealerWithTheWorseHurtBehindTheShutGateMendsTheOneBesideIt() {
+        for (boolean opened : new boolean[] {false, true}) {
+            var floor = floor("Rogue");
+            var boss = floor.boss();
+            var healer = floor.guard("SkeletonHealer");
+            floor.removeGuardsBut(healer);
+            var beside = floor.spawn("Skeleton", 2, 0);
+            floor.hold();
+            floor.put(floor.hero(), 8, 0);
+            floor.put(healer, 3, 0);
+            floor.put(boss, -1, 0);
+            boss.getBody().setHealth(boss.getBody().getMaxHealth() * 0.3f);
+            beside.getBody().setHealth(beside.getBody().getMaxHealth() * 0.5f);
+            if (opened) {
+                floor.open();
+            }
+            float bossHad = boss.getBody().getHealth();
+            float besideHad = beside.getBody().getHealth();
+
+            float bossMost = bossHad;
+            float besideMost = besideHad;
+            for (int frame = 0; frame < A_WHILE; frame++) {
+                floor.game().runHeadless(1);
+                bossMost = Math.max(bossMost, boss.getBody().getHealth());
+                besideMost = Math.max(besideMost, beside.getBody().getHealth());
+            }
+
+            if (opened) {
+                assertTrue(bossMost > bossHad, "the gate open, the healer did not mend the boss, the worse hurt");
+            } else {
+                assertEquals(bossHad, bossMost, 0.01f, "the boss was mended through the shut gate");
+                assertTrue(besideMost > besideHad, "the healer mended nobody, the worse hurt being behind the gate");
+            }
+        }
     }
 
-    @Test
-    void theKnightsChargeNeverCarriesHimOverTheShutGate() {
-        overTheGate("Knight", 'W');
-    }
+    // ---- what is lent ----
 
-    @Test
-    void theMagesBlinkNeverCarriesHimOverTheShutGate() {
-        overTheGate("Mage", 'E');
+    /** How hard its blows and its skills land: its book's multiplier, as its weapon reads it. */
+    private static float might(GameObject creature) {
+        return creature.findModule(SkillBook.class).damageMultiplier();
     }
 
     /**
-     * On ten floors of the descent, {@code hero} on the threshold's middle casts the skill on {@code key} deep into the
-     * court: while the gate stands it is refused, as a landing in stone is — nothing spent and nothing moved — and
-     * once it is open it carries him into the court.
+     * A summoner just inside the gate, a Skeleton just outside it, within its Radius and in its plain sight through
+     * the doorway: it lends the Skeleton no might while the gate stands, and once it is open, half as hard again.
      */
-    private static void overTheGate(String hero, char key) {
+    @Test
+    void aSummonerInsideLendsNoMightToASkeletonOutsideTheShutGate() {
+        float lent = 1f + skillOf("SkeletonSummoner", 'E').boostPercent() / 100f;
+        for (boolean opened : new boolean[] {false, true}) {
+            var floor = floor("Rogue");
+            var summoner = floor.guard("SkeletonSummoner");
+            floor.removeGuardsBut(summoner);
+            floor.put(summoner, -1, 0);
+            var skeleton = floor.spawn("Skeleton", 1, 0);
+            if (opened) {
+                floor.open();
+            }
+
+            assertTrue(SightLine.clear(summoner, skeleton),
+                    "it does not see it through the doorway, so this proves nothing");
+            if (opened) {
+                assertEquals(lent, might(skeleton), 0.0001f, "the gate open, the summoner still lent no might");
+            } else {
+                assertEquals(1f, might(skeleton), 0.0001f, "the summoner lent its might through the shut gate");
+            }
+        }
+    }
+
+    /**
+     * A healer just inside the gate, a summoner just outside it with its pool emptied, within the healer's Radius and
+     * in its plain sight: two seconds on, the pool holds only its own trickle while the gate stands, and once it is
+     * open, the aura's as well.
+     */
+    @Test
+    void aHealerInsideFillsNoPoolOutsideTheShutGate() {
+        int aura = skillOf("SkeletonHealer", 'W').manaRegen();
+        for (boolean opened : new boolean[] {false, true}) {
+            var floor = floor("Rogue");
+            var healer = floor.guard("SkeletonHealer");
+            var summoner = floor.guard("SkeletonSummoner");
+            floor.removeGuardsBut(healer, summoner);
+            floor.put(healer, -1, 0);
+            floor.put(summoner, 1, 0);
+            if (opened) {
+                floor.open();
+            }
+            var pool = summoner.findModule(SkillBook.class);
+            int most = pool.getMaxMana();
+            int tenths = pool.getManaRegen();
+            pool.resize(0, 0);
+            pool.resize(most, tenths); // as big as it was, and empty
+
+            floor.game().runHeadless(60);
+
+            assertTrue(SightLine.clear(healer, summoner),
+                    "it does not see it through the doorway, so this proves nothing");
+            assertTrue(most > 0 && tenths > 0, "the summoner has no pool of its own trickling, so this proves nothing");
+            // Two seconds at so many tenths of a point a second: a point falls out for every five tenths.
+            if (opened) {
+                assertEquals((tenths + aura) / 5, pool.getMana(), "the gate open, the healer still filled no pool");
+            } else {
+                assertEquals(tenths / 5, pool.getMana(), "the healer filled a pool through the shut gate");
+            }
+        }
+    }
+
+    /**
+     * A summoner just inside the gate and the boss, the sturdier by far, just outside it, within its Range and in its
+     * plain sight through the doorway: it hastens itself and never the boss while the gate stands, and once it is
+     * open, the boss.
+     */
+    @Test
+    void aSummonerInsideNeverHastensTheBossOutsideTheShutGate() {
+        for (boolean opened : new boolean[] {false, true}) {
+            var floor = floor("Rogue");
+            var summoner = floor.guard("SkeletonSummoner");
+            var boss = floor.boss();
+            floor.removeGuardsBut(summoner);
+            floor.put(summoner, -1, 0);
+            floor.put(boss, 1, 0);
+            if (opened) {
+                floor.open();
+            }
+            var its = summoner.findModule(SkillBook.class);
+            var his = boss.findModule(SkillBook.class);
+
+            assertTrue(SightLine.clear(summoner, boss),
+                    "it does not see the boss through the doorway, so this proves nothing");
+            assertTrue(its.cast('W', 1, null, null), "the summoner did not cast its haste");
+            if (opened) {
+                assertTrue(his.getHasteFrames() > 0, "the gate open, the summoner still did not hasten the boss");
+                assertEquals(0, its.getHasteFrames(), "and it hastened itself as well");
+            } else {
+                assertEquals(0, his.getHasteFrames(), "the summoner hastened the boss through the shut gate");
+                assertTrue(its.getHasteFrames() > 0, "and it hastened nobody, not even itself");
+            }
+        }
+    }
+
+    /**
+     * A Revenant just outside the gate and the boss just inside it, within its Radius and in its plain sight through
+     * the doorway: it lends the boss none of its thirst while the gate stands, and once it is open, its share of every
+     * blow.
+     */
+    @Test
+    void aRevenantOutsideLendsNoThirstToTheBossInsideTheShutGate() {
+        int thirst = skillOf("Revenant", 'Q').boostPercent();
+        for (boolean opened : new boolean[] {false, true}) {
+            var floor = floor("Rogue");
+            var boss = floor.boss();
+            floor.remove(floor.guards());
+            floor.put(boss, -1, 0);
+            var revenant = floor.spawn("Revenant", 1, 0);
+            if (opened) {
+                floor.open();
+            }
+
+            assertTrue(SightLine.clear(revenant, boss),
+                    "it does not see the boss through the doorway, so this proves nothing");
+            int lent = SkillBook.auraOn(boss, SkillEffect.LIFESTEAL_AURA);
+            if (opened) {
+                assertEquals(thirst, lent, "the gate open, the Revenant still lent no thirst");
+            } else {
+                assertEquals(0, lent, "the Revenant lent its thirst through the shut gate");
+            }
+        }
+    }
+
+    // ---- what goes over it ----
+
+    /** The Rogue's sprint from the threshold into the court: refused while the gate stands, made once it is open. */
+    @Test
+    void theRoguesSprintNeverCarriesHimOverTheShutGate() {
+        overTheGate("Rogue", 'E', 1, -6);
+    }
+
+    /** The Knight's charge from the threshold into the court: refused while the gate stands, made once it is open. */
+    @Test
+    void theKnightsChargeNeverCarriesHimOverTheShutGate() {
+        overTheGate("Knight", 'W', 1, -6);
+    }
+
+    /** The Mage's blink from the threshold into the court: refused while the gate stands, made once it is open. */
+    @Test
+    void theMagesBlinkNeverCarriesHimOverTheShutGate() {
+        overTheGate("Mage", 'E', 1, -6);
+    }
+
+    /** The other way over it: from the court's first cell toward the road, the Rogue's sprint is refused just so. */
+    @Test
+    void theRoguesSprintFromTheCourtNeverCarriesHimOutOverTheShutGate() {
+        overTheGate("Rogue", 'E', -1, 3);
+    }
+
+    /**
+     * What the gate leaves alone: a sprint or a blink that comes down on its own side of it goes off while it stands
+     * -- from the threshold out along the road, and from the court's first cell deeper into the court -- carrying him
+     * there and paid for, on a floor with the gate on each of the four sides.
+     */
+    @Test
+    void aSprintOrABlinkThatKeepsToItsOwnSideGoesOffWhileTheGateIsShut() {
+        for (var skill : new String[][] {{"Rogue", "E"}, {"Mage", "E"}}) {
+            char key = skill[1].charAt(0);
+            for (long seed : new long[] {21, 24, 25, 29}) { // the gate on the keep's south, west, east and north
+                for (int from : new int[] {1, -1}) {
+                    var floor = floor(skill[0], seed);
+                    var keep = floor.dungeon().keep();
+                    var him = floor.hero();
+                    var book = floor.book();
+                    floor.hold();
+                    var stood = floor.put(him, from, 0).getPosition();
+                    int mana = book.getMana();
+                    var where = "seed " + seed + ", from " + from + ": his " + key + " ";
+
+                    boolean went = book.cast(key, 1, null, floor.cell(3 * from, 0));
+
+                    var landed = cellOf(him);
+                    assertTrue(went, where + "was refused, landing on his own side of the shut gate");
+                    assertFalse(stood.equals(him.getPosition()), where + "carried him nowhere");
+                    assertEquals(from < 0, keep.within(landed[0], landed[1]), where + "carried him over the shut gate");
+                    assertTrue(!book.isReady(key) && book.getMana() < mana, where + "was not paid for");
+                }
+            }
+        }
+    }
+
+    /**
+     * On ten floors of the descent, {@code hero} casts the skill on {@code key} over the gate, from {@code from} cells
+     * out of it toward {@code to} cells out -- a negative number is within the keep: while the gate stands it is
+     * refused, as a landing in stone is — nothing spent and nothing moved — and once it is open it carries him over.
+     */
+    private static void overTheGate(String hero, char key, int from, int to) {
+        boolean fromTheCourt = from < 0;
         for (long seed = 21; seed <= 30; seed++) {
             var floor = floor(hero, seed);
             var keep = floor.dungeon().keep();
             var him = floor.hero();
             var book = floor.book();
-            var deep = floor.cell(-6, 0); // farther in than any of the three carries
+            var there = floor.cell(to, 0);
             floor.hold();
-            var stood = floor.put(him, 1, 0).getPosition();
+            var stood = floor.put(him, from, 0).getPosition();
             float facing = him.getOrientation();
             int mana = book.getMana();
 
-            boolean went = book.cast(key, 1, null, deep);
+            boolean went = book.cast(key, 1, null, there);
 
             var landed = cellOf(him);
-            assertFalse(keep.isCourt(landed[0], landed[1]),
-                    "seed " + seed + ": his " + key + " carried him over the shut gate into the court");
+            assertEquals(fromTheCourt, keep.isCourt(landed[0], landed[1]),
+                    "seed " + seed + ": his " + key + " carried him over the shut gate");
             assertFalse(went, "seed " + seed + ": his " + key + " went off with its landing over the shut gate");
             assertTrue(stood.equals(him.getPosition()) && facing == him.getOrientation(),
                     "seed " + seed + ": the refused " + key + " moved or turned him");
@@ -548,11 +836,11 @@ class SealTest {
                     "seed " + seed + ": the refused " + key + " was paid for");
 
             floor.open();
-            floor.put(him, 1, 0);
-            assertTrue(book.cast(key, 1, null, deep), "seed " + seed + ": the gate open, his " + key + " was refused");
+            floor.put(him, from, 0);
+            assertTrue(book.cast(key, 1, null, there), "seed " + seed + ": the gate open, his " + key + " was refused");
             landed = cellOf(him);
-            assertTrue(keep.isCourt(landed[0], landed[1]),
-                    "seed " + seed + ": the gate open, his " + key + " did not carry him into the court");
+            assertEquals(!fromTheCourt, keep.isCourt(landed[0], landed[1]),
+                    "seed " + seed + ": the gate open, his " + key + " did not carry him over");
         }
     }
 
