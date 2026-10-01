@@ -341,6 +341,32 @@ class ItemErrandTest {
     }
 
     /**
+     * Asked aside on his way, he goes on afterwards. A friend walking the other way along his line meets him head on,
+     * and he, the later in, steps aside: which ends a walk exactly onto a thing, though his legs go on naming its place
+     * as their goal, and their step aside as an arrival. He looks again from where he stepped to, walks on and takes it.
+     */
+    @Test
+    void askedAsideOnTheWayHeGoesOnAndTakesIt() {
+        var arena = Dungeon.world(room(), null, SETTINGS, uz.dukeengine.dungeon.content.Content.units(),
+                List.of(new LootBag(), new LootBag()));
+        var game = arena.game();
+        game.spawn("Knight", arena.heroes().get(1), 300f, 150f); // in first, so the right of way is his
+        game.spawn("Rogue", arena.heroes().get(0), 50f, 150f);
+        game.runHeadless(1);
+        var hero = named(game, "Rogue");
+        var room = new Room(game, hero, arena.dungeon().getIndex());
+        var chest = room.chestAt(350f, BLADE);
+        var bag = new LootBag();
+
+        assertTrue(ItemErrand.pickUp(hero, chest, bag, room.rules()));
+        named(game, "Knight").getLocomotor().moveTo(new Coord3D(20f, 150f, 0f));
+        game.runHeadless(450);
+
+        assertEquals(List.of(BLADE), bag.getFound(),
+                "he said '" + bag.noteAt(game.getLogic().getFrame()) + "', at " + hero.getPosition());
+    }
+
+    /**
      * Given up, he stops where he is. An errand that ends while his legs are still walking it -- here a way round that
      * leads off from the thing for longer than the rules let him go without getting nearer -- does not leave them
      * walking on to where he has just said he cannot get.

@@ -186,14 +186,15 @@ public final class ItemErrand extends UpdateModule implements Errand {
                 if (legs == null || legs.isMoving() || heldForABody) {
                     return; // on his way, or stood still by his brain for a body in it until it takes him on
                 }
-                if (!atItsEdge(hero, there) && !arrived(legs, going)) {
+                if (!atItsEdge(hero, there)) {
                     // His legs stopped of themselves short of it -- a leg they gave up on, a route that ran out at a
-                    // body, a way round one that came back with nowhere in it, ten seconds stepping aside -- and where
-                    // they stopped is where he was, not how near he can get. He looks again from there, by the walk
-                    // his brain takes a walk up again with: to the place, which ends on the block beside a thing with
-                    // a shape.
+                    // body, a way round one that came back with nowhere in it, a step aside for a friend -- and where
+                    // they stopped is where he was, not how near he can get. How they stopped is no answer: a step
+                    // aside ends a walk exactly onto a thing and still names it, arrived. He looks again from there,
+                    // by the walk his brain takes a walk up again with -- to the place, which ends on the block beside
+                    // a thing with a shape -- and only a look that finds nowhere nearer than where he stands is one.
                     legs.moveTo(goal);
-                    if (legs.isMoving()) {
+                    if (legs.isMoving() && !within(hero.getPosition(), legs.getDestination(), legs.closeEnough())) {
                         return;
                     }
                 }
@@ -298,14 +299,6 @@ public final class ItemErrand extends UpdateModule implements Errand {
      */
     private boolean atItsEdge(GameObject hero, GameObject there) {
         return there != null && near(hero, rules.reach() + there.getGeometry().footprintRadius());
-    }
-
-    /**
-     * Whether his legs walked where they were going and that was the end of it: as near as the ground would let them,
-     * which is an answer, where legs that stopped short are not one.
-     */
-    private static boolean arrived(MoveUpdate legs, Coord3D going) {
-        return going != null && !legs.stoppedShort() && legs.isGoalReachable();
     }
 
     /** Whether he stands within {@code reach} of it, across the floor: how high either is does not come into it. */
