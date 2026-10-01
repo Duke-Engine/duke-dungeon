@@ -937,6 +937,35 @@ class AuraTest {
     }
 
     /**
+     * The beat is the file's, and no figure the code keeps: at an AuraMarkTickFrames of 20 each creature wears its mark
+     * on the frames its id falls on in twenties, three in two seconds, and each mark is measured two of those beats.
+     */
+    @Test
+    void theMarksAreLaidAndMeasuredAtTheBeatTheFileGives() {
+        var data = Content.data();
+        var twenty = data.replaceFirst("(?m)^ *AuraMarkTickFrames = .*$", "  AuraMarkTickFrames = 20");
+        assertNotEquals(data, twenty, "the premise: the Combat block gives the marks' beat");
+        var settings = DungeonSettings.parse(twenty);
+        var room = beside(settings, SUMMONER);
+        var marks = marked(room.game(), 60);
+
+        for (var creature : room.ones()) {
+            var its = marks.stream().filter(one -> creature.getId().equals(one.on())).toList();
+            assertEquals(3, its.size(), creature.getTemplate().name() + ": three beats in two seconds: " + its);
+            for (var one : its) {
+                assertEquals(Math.floorMod(creature.getId().value(), 20), one.frame() % 20,
+                        "on the frames its id falls on in twenties: " + its);
+            }
+        }
+        var visuals = Visuals.create();
+        Main.measureLooks(visuals, settings);
+        for (var look : settings.combat().auraMarkLooks()) {
+            assertEquals(2f * 20 / GameConstants.LOGICFRAMES_PER_SECOND, visuals.getEffectSeconds(look), 0.001f,
+                    look + ": two beats of 20");
+        }
+    }
+
+    /**
      * As shipped: a small light-blue circle lying just above the floor under the creature, a few units across and not
      * the reach of anything, crossfading from one beat's to the next as the rings do -- and burning brighter the more
      * kinds reach it. Light blue is paler than the mana ring's blue: a hue between 190 and 215 degrees, at most 65%

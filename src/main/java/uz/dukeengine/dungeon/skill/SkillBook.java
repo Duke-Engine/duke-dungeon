@@ -1293,12 +1293,12 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
      * that carries no book, for a hero -- no aura reaches him -- or for one that has fallen.
      *
      * <p>The one rule for what is on a creature, for whatever draws it to ask -- the circle its own book lays under it
-     * ({@code wearTheMark}) is the first. It asks {@link #auraOn}, so a picture of what is lent holds exactly while the
-     * figures do, and cannot disagree with them. Pure: asked when wanted, nothing kept, and an answer that is the
-     * asker's own.
+     * ({@code wearTheMark}), and the HUD's row over the creature the player picks. It asks {@link #auraOn}, so a
+     * picture of what is lent holds exactly while the figures do, and cannot disagree with them. Pure: asked when
+     * wanted, nothing kept, and an answer that is the asker's own.
      *
-     * <p>ponytail: one {@code auraOn} a kind, so three passes over the floor's objects at each asking -- once a beat
-     * for each creature; one pass for all three if a crowded floor ever shows it.
+     * <p>ponytail: one {@code auraOn} a kind, so three passes over the floor's objects at each asking, two for a
+     * creature with no pool -- once a beat for each creature; one pass for all three if a crowded floor ever shows it.
      */
     public static List<SkillEffect> aurasOn(GameObject creature) {
         var book = creature == null ? null : creature.findModule(SkillBook.class);
@@ -1307,7 +1307,8 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
         }
         var on = new java.util.ArrayList<SkillEffect>();
         for (var kind : SkillEffect.values()) {
-            if (kind.isAura() && auraOn(creature, kind) > 0 && (kind != SkillEffect.MANA_AURA || book.usesMana)) {
+            // The pool first: a mana aura is not looked for round a creature it could change nothing on.
+            if (kind.isAura() && (kind != SkillEffect.MANA_AURA || book.usesMana) && auraOn(creature, kind) > 0) {
                 on.add(kind);
             }
         }

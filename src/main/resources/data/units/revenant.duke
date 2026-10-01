@@ -118,8 +118,9 @@ Monster
       TickFrames = 30
       MaxRank = 1
       Name = Qon aurasi
-      ; What the HUD draws over the bar of everyone it reaches, and its card's line: the stat
-      ; picture for lifesteal, until a picture of its own is painted.
+      ; What the HUD draws over the bar of one it reaches -- the creature the player picks
+      ; alone, or points at -- and its card's line: the stat picture for lifesteal, until a
+      ; picture of its own is painted.
       Icon = icons/stats/stat_lifesteal.png
       Blurb = Atrofidagi o'zinikilar har zarbasidan jon qaytarib oladi.
     End
@@ -128,10 +129,11 @@ End
 
 ; ---------------------------------------------------------------------------
 ; A Revenant's drink, worn, in red -- the colour of a thirst whoever bears it, not the
-; Revenant's own blue: the summoner's MightAura in another colour -- the same thick ring
-; on the floor as wide as its Radius, played on it every TickFrames and lasting two --
-; and, in the place of its sparks, red drops rising round the body, as blood drawn up.
-; Like those sparks they are an AURA layer, carried on at each beat by Main.layerOf.
+; Revenant's own blue: a thick ring on the floor as wide as its Radius, played on it every
+; TickFrames and lasting two, as the summoner's MightAura and the healer's ManaAura are --
+; and red drops rising round the body, as blood drawn up, which say this is the one that
+; bears it: an AURA layer, let out at a Rate and carried on at each beat by Main.layerOf.
+; Its ring burns a little brighter than the other two: a red is the darkest of the three.
 ; ---------------------------------------------------------------------------
 Effect
   Name = BloodAura
@@ -147,7 +149,7 @@ Effect
       Count = 1
       Size = [2.81, 2.81]
       Colour = [0xD01C28, 0xD01C28]
-      Alpha = [0.55, 0.55]
+      Alpha = [0.6, 0.6]
       FadeIn = 0.5
       FadeOut = 0.5
       Height = 0.3

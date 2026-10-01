@@ -131,8 +131,9 @@ Monster
       TickFrames = 30
       MaxRank = 1
       Name = Sehr buloqi
-      ; What the HUD draws over the bar of every pool it fills, and its card's line: the stat
-      ; picture for intelligence, until a picture of its own is painted.
+      ; What the HUD draws over the bar of a pool it fills -- the creature the player picks
+      ; alone, or points at -- and its card's line: the stat picture for intelligence, until a
+      ; picture of its own is painted.
       Icon = icons/stats/stat_intelligence.png
       Blurb = Atrofidagi o'zinikilarning manasi tezroq to'ladi.
     End
@@ -141,10 +142,10 @@ End
 
 ; ---------------------------------------------------------------------------
 ; A healer's mana, worn, in blue -- the colour of a mana whoever bears it, not the
-; healer's own green: the summoner's MightAura in another colour -- the same thick ring
-; on the floor as wide as its Radius, played on it every TickFrames and lasting two --
-; and, in the place of its sparks, a few blue motes drifting up at its feet. Like those
-; sparks they are an AURA layer, carried on at each beat by Main.layerOf.
+; healer's own green: a thick ring on the floor as wide as its Radius, played on it every
+; TickFrames and lasting two, as the summoner's MightAura and the Revenant's BloodAura are
+; -- and a few blue motes drifting up at its feet, which say this is the one that bears it:
+; an AURA layer, let out at a Rate and carried on at each beat by Main.layerOf.
 ; ---------------------------------------------------------------------------
 Effect
   Name = ManaAura

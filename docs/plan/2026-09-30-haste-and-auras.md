@@ -193,6 +193,9 @@ are events, out of the checksum. Every name and number from data.
 
 ## Not in this piece
 
-A hero's haste or aura (a passive stays a monster's); auras that grow with a level, stack, or reach through stone; a
-mark on every creature an aura reaches; speed of foot in the haste; sounds for either; the creature card showing what an
-aura or a haste lends; an aura on any boss; the Revenant's self-mending as a skill (it stays `AutoHealUpdate`).
+A hero's haste or aura (a passive stays a monster's); auras that grow with a level, stack, or reach through stone; speed
+of foot in the haste; sounds for either; an aura on any boss; the Revenant's self-mending as a skill (it stays
+`AutoHealUpdate`).
+
+The mark under every creature an aura reaches and the HUD's row of what is on a picked creature came after: see
+`docs/plan/2026-10-01-aura-looks-plan.md`.
