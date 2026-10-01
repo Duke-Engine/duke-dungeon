@@ -245,10 +245,10 @@ class GateTest {
     /**
      * Legs that stop of themselves are as near as they are going to get, and at the gate's edge that is there: he says
      * it from where they stopped. The engine stops a walk so -- with nothing left to walk to, and not short of
-     * anything -- when it presses against the thing that covers the spot it was bound for, which it calls arrival; it
-     * did when it had stepped aside for ten seconds too, and goes on from that now (E14). Pressed against the gate's
-     * end on the 38th floor of the descent, he stood there with the errand open. The test stops his legs as the engine
-     * does; nothing here holds him.
+     * anything -- when it presses against the thing that covers the spot it was bound for, which it calls arrival; a
+     * step aside that finishes goes on now (E14), though one that runs its ten seconds out still stops so. Pressed
+     * against the gate's end on the 38th floor of the descent, he stood there with the errand open. The test stops his
+     * legs as the engine does; nothing here holds him.
      */
     @Test
     void sentUpToItHeSaysItWhereHisLegsStopOfThemselvesAtItsEdge() {
@@ -292,7 +292,7 @@ class GateTest {
      * engine walks him up beside the body itself now (E14), and he says it.
      */
     @Test
-    void sentUpToItWithABodyOnItsThresholdHeLooksAgainAndGetsThere() {
+    void sentUpToItWithABodyOnItsThresholdHeGetsThere() {
         var arena = withAGate(DEAF);
         var game = arena.game();
         game.spawn("Skeleton", arena.dungeon(), 197.5f, 157.5f);

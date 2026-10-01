@@ -18,7 +18,8 @@ once.
 - **Stars over the stunned head for as long as the stun:** an `Effect` of its own (`Stunned`) with an AURA layer,
   played on the victim by `world.effect`, its seconds set from the longest `StunFrames` any skill has (as
   `Main.measureLooks` sets a frost's from `SlowFrames`); stunned again while it burns, the picture renews to the new
-  stun's end rather than dropping, a game rule applied at load time in `Main.layerOf`.
+  stun's end rather than dropping — said in data since the engine's E12 (`Renews = Yes` on the look's AURA layers),
+  where it was a game rule applied at load time in `Main.layerOf`.
 
 ## Lifesteal on every boss
 

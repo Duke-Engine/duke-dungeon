@@ -31,17 +31,18 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E15 | where the bottom panel stands, told to a game's painter | landed, 0adfc96c |
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
-game builds against the local engine. E12–E15 reached it together, merged as 668045f0, which is still 0.8.0.
+game builds against the local engine. E12–E15 reached it together at 668045f0 (their pull requests merged as
+e4666f06, b03a781c, 8f6bbd87 and 668045f0), which is still 0.8.0.
 
 **For a session given this whole file** (a cloud session working on github.com/Duke-Engine/duke-engine):
 
 1. **E1–E7, E9–E15 and E8's steps 1–2 are done** — they are here for their history. Do not redo them.
-2. **The small ones — E12, E13, E14 and E15 — are done too**, landed together as 668045f0 and taken up by the game:
+2. **The small ones — E12, E13, E14 and E15 — are done too**, landed together by 668045f0 and taken up by the game:
    only E8's step 3 and step 4, below, remain.
-3. **E8's step 3 (rpg)** lifts the game's own packages, and the game's newest code is not on GitHub yet: its pieces since
+3. **E8's step 3 (rpg)** lifts the game's own packages, and the game's master is on GitHub with every piece since
    the stun (the key to the keep, monsters that grow, the haste and auras, the keep's seal, the long walk, what an aura
-   looks like) are on the owner's master only, not pushed. That step waits for his word — ask him when. Step 4 (the
-   clients) comes after it. The class-by-class proposal is the owner's page https://claude.ai/artifact/Sx1NpP81xmiqmLUny7Qakt (version 2).
+   looks like). That step waits only for the owner's word — ask him when. Step 4 (the clients) comes after it.
+   The class-by-class proposal is the owner's page https://claude.ai/artifact/Sx1NpP81xmiqmLUny7Qakt (version 2).
 4. Every change is announced to the game as the landings above were: the engine version, the API, what the game must
    change (for E8, the old-to-new package map of each step).
 
@@ -373,7 +374,7 @@ Done when: a Layer block with `Renews = true` loads and reaches the builder as r
 Until then the game asks the client itself to renew the one look a status wears — the Combat block's `StunLook`
 (`Main.layerOf(art, settings)`); with this landed, that becomes `Renews = true` on the `Stunned` layers in data.
 
-**Landed** as 97e3c86c (0.8.0, merged as 668045f0): `Layer` gains `Boolean renews`, after `follows`, read from
+**Landed** as 97e3c86c (0.8.0, merged as e4666f06): `Layer` gains `Boolean renews`, after `follows`, read from
 `Renews = Yes|No` and handed on by `fields()` as `"renews"`, as `follows` is; a block that does not say it hands on
 nothing, and is drawn as before. The game took it up: `Main.layerOf` has `case "renews"` beside `"follows"`, and its
 code rule — `wornAsAState` and the trailing `.renews(...)`, with the settings argument only they asked for — is gone.
@@ -396,7 +397,7 @@ fight it — where a right click on the same gate (a context order, `game.contex
 
 Done when: a use aim pressed on the gate flashes the context colour; an attack ability aimed at an enemy looks as now.
 
-**Landed** as 308841ce (0.8.0, merged as 668045f0): `CommandButton` gains a last component, `answeredAs`, and
+**Landed** as 308841ce (0.8.0, merged as b03a781c): `CommandButton` gains a last component, `answeredAs`, and
 `answeredAs(String word)` gives the same button answered as that word: pressed on a thing, it is marked and voiced as a
 click giving the word on a thing is (`Visuals.wordMark`, `Visuals.orderAnswer`) — here the ring of the game's own
 orders, in `ContextColour`, and a move's voice, as a right click on the gate gets — where it was the attack's ring and
@@ -464,7 +465,7 @@ stands ends it there; and an errand is given up — his legs stopped, the hero s
 neither walking nor fighting, for `StuckFrames` without getting a cell nearer, or gone `StuckFightingFrames` without
 getting nearer however he spent them (what ends (3) for him).
 
-**Landed** as b4c291c3 (0.8.0, merged as 668045f0), four of the five points: (1) a goal no zone holds is gone for to
+**Landed** as b4c291c3 (0.8.0, merged as 8f6bbd87), four of the five points: (1) a goal no zone holds is gone for to
 the nearest cell it can reach where the bodies shut the zone's nearest, so a hero sent at the gate with a still enemy on
 its threshold walks up beside him; (2) a route again round a body that finds nowhere nearer has the walk stopped short
 (`stoppedShort()`); (3) a mover held between bodies plans round all those it has been held by while it makes no
