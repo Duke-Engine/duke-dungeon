@@ -1,5 +1,10 @@
 # Biome generator — Implementation Plan
 
+> **Superseded in part.** The per-cell layout this plan describes — every cell the biome nearest the climate there,
+> a majority pass over the specks — was replaced on 2026-10-02 by laying a few large regions out first and giving
+> each one a biome: see Stage 3 of `2026-09-29-world-generation.md` (commit `74227ea`). The terrain by region, the
+> wiring and the biomes themselves (tasks 3 to 5) stand as written.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** One floor of the descent mixes several biomes — each region cut to its own biome's terrain — decided by

@@ -32,11 +32,26 @@ and a boss that does not fit goes round. `CorridorWidth` and the sliver rule are
   look). New ones beside Forest and Dungeon (the caves), each a file and a folder of models: a pine wood, an autumn
   wood (the forest atlas repainted), dead land and a mine. No halls of worked stone: their edges would be masonry,
   and the owner's rule is that a boundary is rock or wood, never slabs.
-- **Climate picks the biome.** Two value-noise fields per floor — how wild (worked stone ↔ wilderness) and how
-  alive (barren ↔ lush) — about forty cells to a feature, from their own seed stream. Each biome file states the
-  point it sits at (`Climate = [wild, alive]`) and a cell takes the nearest; depth moves the whole floor toward
-  worked and barren, so the woods thin out on the way down. A chamber takes the biome at its middle, whole;
-  tunnels and rock take their own cell's; a majority pass removes one-cell specks.
+- **A few large regions, each then given a biome.** A floor is laid out in regions first — three or four drawn
+  (`BiomeCount`), none under 15% of the cells (`MinBiomeShare`) once laid — and only then is each given a biome.
+  (This plan first chose a biome cell by cell from the climate there, which made hundreds of small patches on a map
+  the size of a world; the owner wanted a few large places, whatever the size.) The regions' hearts are scattered
+  far from one another and clear of the edges; every cell belongs to the nearest heart once its position has been
+  pushed about by two noise fields, so the borders wander; and the fields grow with the size of a region (to a span
+  of a thousand, where the noise's arithmetic ends), so a world 900 cells across is the same few places a 96 × 72
+  floor is, only larger. Each region is kept to one piece: a piece cut off, and a region under the share, are joined
+  whole to the region they border most — which is why a floor of 96 × 72 comes out in three places about three
+  times in five, in four about twice in five, and in two about once in seventy. The biome comes last. Two
+  value-noise fields per floor — how wild (worked stone ↔ wilderness) and how alive (barren ↔ lush), about forty
+  cells to a feature (`BiomeSize`), from their own seed stream — are read at each region's heart, and the regions,
+  the largest first, each take the biome whose point (`Climate = [wild, alive]`, in the biome's file) is nearest the
+  weather there and not yet taken: no biome twice while there are biomes enough. Depth moves the whole floor's
+  weather toward worked and barren, so the woods thin out on the way down. A chamber takes the region at its
+  middle, whole, before regions are joined, so it goes with its piece and is never cut in two; tunnels and rock take
+  their own cell's. That is what drawing the floor leaves. The boss's keep is set in afterwards: its square can
+  overlap the rock at the corners of a chamber's footprint, as it always could, and, taken out of the regions it
+  stands across, can leave one a little under the share (about one floor in three hundred, by up to two points).
+  See `gen/BiomeMap`.
 - **The ground follows the biome.** Each chamber is cut with its own biome's `Terrain` (ragged, islands), a
   tunnel with the mean of its two ends', and the relief is blended across regions; the slope clamp stays global,
   so no border becomes a cliff.
@@ -73,5 +88,7 @@ keeps holding `MinRooms` to its word at the new size.
    `world.duke`) on floors that mix biomes; a wood's groves are trees on open ground with their trunks' footprints
    (`Theme.Grove`), so a hero goes between two where they leave room and a boss goes round. Cavern and mine pillars
    stay rock.
-7. Next: 128×96 once the owner has seen the frame rate at 96×72; the second half of Stage 2 — the boundary trees and
+7. ✓ A few large biomes, not a patch of each: regions laid out first and each then given a biome (`BiomeCount`,
+   `MinBiomeShare`), on a floor of 96×72 and on a map of any size.
+8. Next: 128×96 once the owner has seen the frame rate at 96×72; the second half of Stage 2 — the boundary trees and
    rocks round every glade as scenery with footprints — if the groves play well.
