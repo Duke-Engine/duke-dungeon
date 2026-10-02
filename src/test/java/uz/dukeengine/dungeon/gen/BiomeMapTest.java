@@ -202,6 +202,28 @@ class BiomeMapTest {
         assertChambersWhole(1L, map, crowd);
     }
 
+    /**
+     * The warp is value noise from {@link Relief#octave}, which works in a long and runs out at a sweep of about 540.
+     * A world 2,000 across in three regions asks it for 577, and past the edge whatever was over wrapped round to a
+     * negative height, which pushed cells a thousand cells off and made the borders sawtooth. So the span the warp is
+     * told stops growing at a thousand, and the push stays within a third of that, whatever the world.
+     */
+    @Test
+    void theWarpOfAWorldPastTheNoiseCeilingStaysInRange() {
+        var pushes = BiomeMap.warp(new DeterministicRng(1L), 2000, 2000, 1154);
+
+        int least = 0;
+        int most = 0;
+        for (var push : pushes) {
+            for (int cells : push) {
+                least = Math.min(least, cells);
+                most = Math.max(most, cells);
+            }
+        }
+        assertTrue(least >= -250 && most <= 250, "cells pushed from " + least + " to " + most + " across 2,000");
+        assertTrue(most - least > 150, "and pushed all the same: from " + least + " to " + most);
+    }
+
     /** More biomes asked for than the file lists is fine: the biome the largest regions leave is given again. */
     @Test
     void whenRegionsOutnumberBiomesEveryBiomeIsStillGrown() {
@@ -218,6 +240,19 @@ class BiomeMapTest {
         for (long seed = 1; seed <= 30; seed++) {
             var pieces = pieces(draw(seed, 1, crowded), WIDTH, HEIGHT);
             assertTrue(pieces.size() <= 2, "seed " + seed + " grew " + pieces);
+        }
+    }
+
+    /**
+     * And it is lowered before any region is laid, not merged down after: a floor asked for six at forty percent is
+     * the floor asked for two, cell for cell, from the same stream. Joining six down would lay six hearts and come
+     * out as a different map.
+     */
+    @Test
+    void theShareLowersTheCountBeforeAnyRegionIsLaid() {
+        for (long seed = 1; seed <= 20; seed++) {
+            assertEquals(draw(seed, 1, asking(SIX, new Count(2, 2), 40)),
+                    draw(seed, 1, asking(SIX, new Count(6, 6), 40)), "seed " + seed);
         }
     }
 

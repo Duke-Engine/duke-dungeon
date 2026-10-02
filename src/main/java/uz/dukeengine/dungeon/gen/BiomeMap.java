@@ -43,6 +43,9 @@ public final class BiomeMap {
     /** How many places are tried for each heart after the first, the farthest from the rest being kept. */
     private static final int CANDIDATES = 8;
 
+    /** The widest a region's span is taken as in warping the borders: see {@link #warp}. */
+    private static final int WARP_CEILING = 1000;
+
     private final int width;
     private final List<Theme> biomes;
     private final int[] cells;
@@ -240,16 +243,7 @@ public final class BiomeMap {
      * span rather than the floor's, so a larger floor's borders wander more and not merely longer.
      */
     private static int[] lay(DeterministicRng rng, int[] hearts, int width, int height, int span) {
-        int sweep = Math.max(2, span / 2);
-        int push = span / 3;
-        var shiftX = new int[width * height];
-        var shiftY = new int[width * height];
-        for (var field : List.of(shiftX, shiftY)) {
-            Relief.octave(rng, field, width, height, sweep, push);
-            Relief.octave(rng, field, width, height, Math.max(1, sweep / 2), push / 2);
-        }
-        // Each field runs from nothing to this much, and where it is half that nothing is moved.
-        int middle = (push + push / 2) / 2;
+        var pushes = warp(rng, width, height, span);
         var heartX = new int[hearts.length];
         var heartY = new int[hearts.length];
         for (int heart = 0; heart < hearts.length; heart++) {
@@ -260,8 +254,8 @@ public final class BiomeMap {
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 int at = y * width + x;
-                long pushedX = x + shiftX[at] - middle;
-                long pushedY = y + shiftY[at] - middle;
+                long pushedX = x + pushes[0][at];
+                long pushedY = y + pushes[1][at];
                 long nearest = Long.MAX_VALUE;
                 for (int heart = 0; heart < hearts.length; heart++) {
                     long dx = pushedX - heartX[heart];
@@ -275,6 +269,33 @@ public final class BiomeMap {
             }
         }
         return region;
+    }
+
+    /**
+     * How far every cell's position is pushed, across and then down: two fields of noise sweeping half a region's
+     * {@code span} and pushing a third of it, with their middle taken for no push at all.
+     *
+     * <p>ponytail: the span stops growing at {@link #WARP_CEILING}. {@link Relief#octave} works in a long and
+     * multiplies a height by its sweep six times over, which runs out at a sweep of about 540, a span of about 1,080;
+     * past it the borders went to sawtooth. So a world past about 1,700 across keeps borders that wander on the scale
+     * of a span of a thousand and no wider. Wider wants an octave of its own in wider arithmetic: Relief's rounding is
+     * every hill's, and is not to be moved for this.
+     */
+    static int[][] warp(DeterministicRng rng, int width, int height, int span) {
+        int reach = Math.min(span, WARP_CEILING);
+        int sweep = Math.max(2, reach / 2);
+        int push = reach / 3;
+        // Each field runs from nothing to this much, and where it is half that nothing is moved.
+        int middle = (push + push / 2) / 2;
+        var pushes = new int[2][width * height];
+        for (var field : pushes) {
+            Relief.octave(rng, field, width, height, sweep, push);
+            Relief.octave(rng, field, width, height, Math.max(1, sweep / 2), push / 2);
+            for (int at = 0; at < field.length; at++) {
+                field[at] -= middle;
+            }
+        }
+        return pushes;
     }
 
     /**

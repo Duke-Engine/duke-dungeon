@@ -78,11 +78,15 @@ class BiomeSettingsTest {
         assertThrows(IllegalArgumentException.class, () -> DungeonSettings.parse(data));
     }
 
+    /** Weather that changes inside a chamber is noise: refused by name, and for what BiomeSize is now. */
     @Test
     void aClimateFeatureSmallerThanARoomIsRefused() {
         var data = BiomeFile.textListing("Dungeon", "Forest").replace("  BiomeSize = 40\n", "  BiomeSize = 4\n");
 
-        assertThrows(IllegalArgumentException.class, () -> DungeonSettings.parse(data));
+        var refused = assertThrows(IllegalArgumentException.class, () -> DungeonSettings.parse(data));
+        assertTrue(refused.getMessage().contains("BiomeSize") && refused.getMessage().contains("weather"),
+                refused.getMessage());
+        assertTrue(!refused.getMessage().contains("no region"), "BiomeSize no longer says how big a region is");
     }
 
     /** A map is laid out in a region at the least, and a range that runs backwards draws from nothing. */

@@ -705,7 +705,8 @@ public final class DungeonSettings {
                     "Biome " + name + "'s Climate is how wild then how alive, each 0 to 100");
         }
         require(map.biomes().isEmpty() || map.biomeSize() >= 8,
-                "BiomeSize is at least 8 cells: a sweep of climate smaller than a chamber is no region at all");
+                "BiomeSize is at least 8 cells: it is how far one sweep of the weather reaches, which picks each region's"
+                        + " biome, and weather that changes inside a chamber is noise and not weather");
         // Not asked that the most regions times the share come to 100 or under: the generator lowers the count it
         // draws to what the share lets fit, and generation.duke says so.
         require(map.biomes().isEmpty() || map.biomeCount().fewest() >= 1,
