@@ -46,16 +46,17 @@ public final class BiomeMap {
     private final int width;
     private final List<Theme> biomes;
     private final int[] cells;
-    private final int[] rooms;
+    /** Where each chamber's middle is, as a cell: the biome a chamber is, is the one its middle reads. */
+    private final int[] middles;
     /** Which region every cell is in, and which biome each region is: how the cells came to be, kept for a keep. */
     private final int[] region;
     private final int[] biomeOf;
 
-    private BiomeMap(int width, List<Theme> biomes, int[] cells, int[] rooms, int[] region, int[] biomeOf) {
+    private BiomeMap(int width, List<Theme> biomes, int[] cells, int[] middles, int[] region, int[] biomeOf) {
         this.width = width;
         this.biomes = List.copyOf(biomes);
         this.cells = cells;
-        this.rooms = rooms;
+        this.middles = middles;
         this.region = region;
         this.biomeOf = biomeOf;
     }
@@ -75,12 +76,16 @@ public final class BiomeMap {
         }
         join(region, width, count, settings.minShare());
 
-        var biomeOf = choose(rng, region, hearts, depth, width, height, settings);
-        var ofRoom = new int[rooms.size()];
-        for (int i = 0; i < rooms.size(); i++) {
-            ofRoom[i] = biomeOf[region[rooms.get(i).centerCellY() * width + rooms.get(i).centerCellX()]];
+        return of(width, settings.all(), region, choose(rng, region, hearts, depth, width, height, settings), rooms);
+    }
+
+    /** A map from regions already laid, and the biome each is, with its chambers standing in them. */
+    static BiomeMap of(int width, List<Theme> biomes, int[] region, int[] biomeOf, List<Room> rooms) {
+        var middles = new int[rooms.size()];
+        for (int i = 0; i < middles.length; i++) {
+            middles[i] = middleOf(rooms.get(i), width);
         }
-        return new BiomeMap(width, settings.all(), cellsOf(region, biomeOf), ofRoom, region, biomeOf);
+        return new BiomeMap(width, biomes, cellsOf(region, biomeOf), middles, region, biomeOf);
     }
 
     /** The biome of the cell at {@code (x, y)}. */
@@ -93,22 +98,23 @@ public final class BiomeMap {
         return cells[y * width + x];
     }
 
-    /** The biome chamber {@code room} is, whole. */
+    /** The biome chamber {@code room} is, whole: the one its middle reads, whatever has happened to the map since. */
     public Theme ofRoom(int room) {
-        return biomes.get(rooms[room]);
+        return biomes.get(cells[middles[room]]);
     }
 
     /**
      * The same map with one more chamber, whole in the biome under its middle, numbered after the rest: a keep, built
      * once the floor was carved. Standing across a border it may cut the far side off another region; that piece
-     * goes where any piece cut off does, and no region is left in two.
+     * goes where any piece cut off does, and no region is left in two — chamber and all, so a chamber that was in it
+     * is the biome of the region it went to, which {@link #ofRoom} reads off the cells and so always says.
      */
     BiomeMap withRoom(Room room) {
         var painted = region.clone();
-        int under = fill(painted, width, room);
+        fill(painted, width, room);
         join(painted, width, biomeOf.length, 0);
-        var more = Arrays.copyOf(rooms, rooms.length + 1);
-        more[rooms.length] = biomeOf[under];
+        var more = Arrays.copyOf(middles, middles.length + 1);
+        more[middles.length] = middleOf(room, width);
         return new BiomeMap(width, biomes, cellsOf(painted, biomeOf), more, painted, biomeOf);
     }
 
@@ -121,12 +127,12 @@ public final class BiomeMap {
     @Override
     public boolean equals(Object other) {
         return other instanceof BiomeMap map && width == map.width && biomes.equals(map.biomes)
-                && Arrays.equals(cells, map.cells) && Arrays.equals(rooms, map.rooms);
+                && Arrays.equals(cells, map.cells) && Arrays.equals(middles, map.middles);
     }
 
     @Override
     public int hashCode() {
-        return 31 * Arrays.hashCode(cells) + Arrays.hashCode(rooms);
+        return 31 * Arrays.hashCode(cells) + Arrays.hashCode(middles);
     }
 
     /**
@@ -171,15 +177,19 @@ public final class BiomeMap {
         return sum / Math.max(1, meeting);
     }
 
-    /** {@code room}'s whole footprint given to the region under its middle, which is returned. */
-    private static int fill(int[] region, int width, Room room) {
-        int under = region[room.centerCellY() * width + room.centerCellX()];
+    /** The cell at {@code room}'s middle. */
+    private static int middleOf(Room room, int width) {
+        return room.centerCellY() * width + room.centerCellX();
+    }
+
+    /** {@code room}'s whole footprint given to the region under its middle. */
+    private static void fill(int[] region, int width, Room room) {
+        int under = region[middleOf(room, width)];
         for (int y = room.y(); y < room.y() + room.h(); y++) {
             for (int x = room.x(); x < room.x() + room.w(); x++) {
                 region[y * width + x] = under;
             }
         }
-        return under;
     }
 
     /** Every cell's biome, given the region it is in and the biome each region is. */

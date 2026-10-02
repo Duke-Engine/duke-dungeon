@@ -100,6 +100,38 @@ class BiomeMapTest {
         }
     }
 
+    /**
+     * A keep set across a long arm of one region cuts off its far end, chamber and all, and that piece goes to the
+     * region beside it. The chamber is that region's biome from then on, as its cells read, and not the one it was
+     * drawn in: here the Dungeon's arm along the top of the map reaches a chamber, and a keep is set across the arm.
+     */
+    @Test
+    void aChamberInThePieceAKeepCutsOffIsTheBiomeItsCellsNowRead() {
+        var region = regions(
+                "111111111111111111111111",
+                "111111110000000000001111",
+                "111111110000000000001111",
+                "111111110000000000001111",
+                "111111110000000000001111",
+                "111111110000000000001111",
+                "111111110000000000001111",
+                "111111110000000000001111",
+                "111111110000000000001111");
+        var chamber = new Room(20, 2, 4, 5);
+        var keep = new Room(11, 0, 5, 5);
+        var floor = BiomeMap.of(24, TWO.all(), region, new int[] {0, 1}, List.of(chamber));
+        assertEquals("Dungeon", floor.ofRoom(0).name(), "the chamber is drawn in the arm's biome");
+
+        var built = floor.withRoom(keep);
+
+        assertEquals("Forest", built.at(chamber.centerCellX(), chamber.centerCellY()).name(),
+                "the piece the keep cut off went to the region it borders");
+        assertEquals(built.at(chamber.centerCellX(), chamber.centerCellY()), built.ofRoom(0),
+                "the chamber says the biome its cells now read");
+        assertChambersWhole(0L, built, List.of(chamber));
+        assertEquals("Forest", built.ofRoom(1).name(), "and the keep is the biome under its middle");
+    }
+
     /** The point of it: one floor, more than one place — on nearly every seed, not now and then. */
     @Test
     void aFloorMixesItsBiomes() {
@@ -317,17 +349,23 @@ class BiomeMapTest {
                 "222222"));
     }
 
-    /** A map of regions drawn in digits, row by row, once joined: the digits that are left. */
-    private static List<String> joined(int minShare, String... rows) {
+    /** A map of regions drawn in digits, row by row: which region every cell is in. */
+    private static int[] regions(String... rows) {
         int width = rows[0].length();
         var region = new int[width * rows.length];
-        int count = 0;
         for (int y = 0; y < rows.length; y++) {
             for (int x = 0; x < width; x++) {
                 region[y * width + x] = rows[y].charAt(x) - '0';
-                count = Math.max(count, region[y * width + x] + 1);
             }
         }
+        return region;
+    }
+
+    /** A map of regions drawn in digits, row by row, once joined: the digits that are left. */
+    private static List<String> joined(int minShare, String... rows) {
+        int width = rows[0].length();
+        var region = regions(rows);
+        int count = java.util.Arrays.stream(region).max().orElse(0) + 1;
         BiomeMap.join(region, width, count, minShare);
         var joined = new ArrayList<String>();
         for (int y = 0; y < rows.length; y++) {
