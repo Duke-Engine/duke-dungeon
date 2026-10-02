@@ -23,7 +23,12 @@ import uz.dukeengine.dungeon.world.Theme;
  * <p><b>One piece each, and none small.</b> Pushing cuts a region in two now and then, and a sliver of the map is no
  * place. Each region keeps only its largest piece; any other piece, and any region under {@code MinBiomeShare} of
  * the cells, is joined whole to the region it borders most, the smallest first, until none is left. Regions are only
- * ever joined, so a floor may come out in fewer places than it was laid out in, and never in more.
+ * ever joined, so a floor may come out in fewer places than it was laid out in, and never in more: of the shipped
+ * 96 by 72, about three in five come out in three places, two in five in four, and one in seventy in two.
+ *
+ * <p>That is what {@link #draw} leaves, and it is true of what it leaves. The boss's keep is set in afterwards
+ * ({@link #withRoom}), its square taken out of whatever it stands across: a piece that cuts off is joined again, but
+ * a region can end a little under the share — about one floor in three hundred has one, by up to two points.
  *
  * <p><b>Then a biome for each.</b> Two broad fields of weather are drawn across the floor — how wild, how alive —
  * each ranked to cover the whole scale evenly, and drifted by depth as the map says. The largest region chooses
@@ -32,8 +37,11 @@ import uz.dukeengine.dungeon.world.Theme;
  * outnumber the biomes, the nearest of all.
  *
  * <p><b>Whole in every chamber.</b> A chamber takes the region under its middle over its whole footprint, and does so
- * before regions are joined, so what is joined is joined with its chambers in it: a chamber is never cut in two, and
- * never left behind to be a speck of one biome in the middle of another.
+ * before regions are joined, so what is joined is joined with its chambers in it: {@link #draw} never cuts a chamber
+ * in two, nor leaves one behind to be a speck of one biome in the middle of another. The keep, set in rock beside the
+ * deepest chamber afterwards, can overlap the rock at the corners of a chamber's footprint, as it always could, and
+ * its square is painted over them. A chamber is the biome its middle cell reads, and {@link #ofRoom} reads it off the
+ * cells, so when a keep sends a piece with a chamber in it to another region it says the new biome, not the old.
  *
  * <p>Drawn from a stream of its own, so turning biomes on moves no other draw on the floor, and a seed grows one
  * landscape on every machine.

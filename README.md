@@ -231,10 +231,12 @@ simulyatsiyaga ta'sir qilmaydi (`DungeonThemeTest`).
 ### Biomlar — bitta qavatda bir nechta joy
 
 Minecraft'dagidek, lekin mayda dog'lar emas, katta joylar: avval qavat bir nechta
-**katta mintaqaga** bo'linadi — 3 yoki 4 ta (`BiomeCount`), har biri qavatning kamida
-15 foizi (`MinBiomeShare`) va bitta yaxlit bo'lak — va shundan keyingina har mintaqa
-o'z biomini oladi (`gen/BiomeMap`). Xarita qanchalik katta bo'lmasin, mintaqalar soni
-oshmaydi: ular kattalashadi. Biomni qavat ustidan o'tadigan ikki keng "ob-havo" maydoni
+**katta mintaqaga** bo'linadi — odatda 3 ta, ba'zan 4 ta, kamdan-kam 2 ta (`BiomeCount`
+3 yoki 4 ta tanlaydi, lekin juda kichik mintaqa qo'shnisiga qo'shiladi), har biri bitta
+yaxlit bo'lak va qavatning kamida 15 foizi (`MinBiomeShare`; boss qal'asi qurilgach, bir
+oz kam qolishi mumkin) — va shundan keyingina har mintaqa o'z biomini oladi
+(`gen/BiomeMap`). Xarita qanchalik katta bo'lmasin, mintaqalar soni oshmaydi: ular
+kattalashadi. Biomni qavat ustidan o'tadigan ikki keng "ob-havo" maydoni
 tanlaydi — **qanchalik yovvoyi** va **qanchalik tirik**: mintaqa (kattasidan boshlab)
 markazidagi ob-havoga `Climate` nuqtasi (tema faylida, `[wild, alive]`) eng yaqin, hali
 olinmagan biomni oladi, shuning uchun biomlar yetarli bo'lsa, bitta biom ikki marta

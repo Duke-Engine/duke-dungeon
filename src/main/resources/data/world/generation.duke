@@ -93,15 +93,21 @@ ProceduralMap
   ;
   ; The fewest and most regions a floor is laid out in, drawn from the floor's own
   ; seed. It does not grow with the map: a floor of 96 by 72 and a world of 900 by
-  ; 900 both come out in three or four, and it is the places that are larger. With
-  ; fewer biomes listed than regions drawn, some biome falls to more than one.
+  ; 900 are laid out in the same few places, and it is the places that are larger.
+  ; Three or four are laid, but a place that comes out too small is joined to its
+  ; neighbour (see MinBiomeShare), so a floor of 96 by 72 comes out usually in three
+  ; (about three floors in five), sometimes in four (two in five) and rarely in two
+  ; (one in seventy). With fewer biomes listed than regions drawn, some biome falls
+  ; to more than one.
   BiomeCount = [3, 4]
   ; The least share of the floor, in percent, one region may cover: 1 to 50. A
   ; region that comes out smaller is joined whole to the one it borders most, as is
   ; any piece of a region cut off from the rest, so a floor may hold fewer places
-  ; than BiomeCount's fewest but never a small one. The most places asked for times
-  ; this share need not come to 100: the count drawn is lowered to what the share
-  ; lets fit, which is 100 over it -- six, at fifteen.
+  ; than BiomeCount's fewest but never a small one -- until the boss's keep is set
+  ; in, which takes a square out of the region it stands across and can leave one a
+  ; little under (about one floor in three hundred, by up to two points). The most
+  ; places asked for times this share need not come to 100: the count drawn is
+  ; lowered to what the share lets fit, which is 100 over it -- six, at fifteen.
   MinBiomeShare = 15
   ; About how many cells across one sweep of weather is: how quickly it varies from
   ; place to place, which decides what each region grows. It says nothing of how big
