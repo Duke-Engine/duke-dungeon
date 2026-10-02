@@ -706,6 +706,16 @@ public final class DungeonSettings {
         }
         require(map.biomes().isEmpty() || map.biomeSize() >= 8,
                 "BiomeSize is at least 8 cells: a sweep of climate smaller than a chamber is no region at all");
+        // Not asked that the most regions times the share come to 100 or under: the generator lowers the count it
+        // draws to what the share lets fit, and generation.duke says so.
+        require(map.biomes().isEmpty() || map.biomeCount().fewest() >= 1,
+                "BiomeCount's fewest is at least 1: a floor with no region has no biome to wear");
+        require(map.biomes().isEmpty() || map.biomeCount().most() >= map.biomeCount().fewest(),
+                "BiomeCount is the fewest regions then the most, and the most is not below the fewest: ["
+                        + map.biomeCount().fewest() + ", " + map.biomeCount().most() + "]");
+        require(map.biomes().isEmpty() || map.minBiomeShare() >= 1 && map.minBiomeShare() <= 50,
+                "MinBiomeShare is 1 to 50 percent of the floor: a region is some of it, and over half would leave"
+                        + " no room for a second");
         require(run.respawnDelayFrames() >= 0, "the death pause cannot be negative");
         require(run.descendDelayFrames() >= 0, "the pause before descending cannot be negative");
         require(progression.maxLevel() >= Levelling.FIRST_LEVEL, "MaxLevel cannot be below the first level");
@@ -1116,7 +1126,7 @@ public final class DungeonSettings {
         for (var name : map.biomes()) {
             themes.stream().filter(theme -> theme.name().equals(name)).findFirst().ifPresent(named::add);
         }
-        return new Biomes(named, map.biomeSize(), map.climatePerDepth());
+        return new Biomes(named, map.biomeCount(), map.minBiomeShare(), map.biomeSize(), map.climatePerDepth());
     }
 
     /**

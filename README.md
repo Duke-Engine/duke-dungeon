@@ -230,13 +230,18 @@ simulyatsiyaga ta'sir qilmaydi (`DungeonThemeTest`).
 
 ### Biomlar — bitta qavatda bir nechta joy
 
-Minecraft'dagidek: qavat ustidan ikki keng "ob-havo" maydoni o'tadi — **qanchalik
-yovvoyi** va **qanchalik tirik** (`gen/BiomeMap`). Har bir katak `Climate` nuqtasi
-(tema faylida, `[wild, alive]`) shu ob-havoga eng yaqin biomni oladi. Kamera
-butunlay bitta biom va o'sha biomning `Terrain`i bilan kesiladi; tunnel ikki
-uchining o'rtachasi; relyef mintaqa bo'yicha, lekin chegarada jar yo'q. Mayda
-dog'lar qolmaydi, chuqurlashgan sari ob-havo `ClimatePerDepth` bo'yicha siljiydi
-(o'rmonlar kamayadi, kon va o'lik yerlar ko'payadi).
+Minecraft'dagidek, lekin mayda dog'lar emas, katta joylar: avval qavat bir nechta
+**katta mintaqaga** bo'linadi — 3 yoki 4 ta (`BiomeCount`), har biri qavatning kamida
+15 foizi (`MinBiomeShare`) va bitta yaxlit bo'lak — va shundan keyingina har mintaqa
+o'z biomini oladi (`gen/BiomeMap`). Xarita qanchalik katta bo'lmasin, mintaqalar soni
+oshmaydi: ular kattalashadi. Biomni qavat ustidan o'tadigan ikki keng "ob-havo" maydoni
+tanlaydi — **qanchalik yovvoyi** va **qanchalik tirik**: mintaqa (kattasidan boshlab)
+markazidagi ob-havoga `Climate` nuqtasi (tema faylida, `[wild, alive]`) eng yaqin, hali
+olinmagan biomni oladi, shuning uchun biomlar yetarli bo'lsa, bitta biom ikki marta
+chiqmaydi. Kamera butunlay bitta biom va o'sha biomning `Terrain`i bilan kesiladi; tunnel
+ikki uchining o'rtachasi; relyef mintaqa bo'yicha, lekin chegarada jar yo'q. Chuqurlashgan
+sari ob-havo `ClimatePerDepth` bo'yicha siljiydi (o'rmonlar kamayadi, kon va o'lik
+yerlar ko'payadi).
 
 Biomlar: **Forest**, **Autumn** (kuzgi o'rmon — oltin, to'q sariq, qizil),
 **PineWood** (qarag'ay), **DeadLand** (o'lik o'rmon), **Dungeon** (g'orlar),

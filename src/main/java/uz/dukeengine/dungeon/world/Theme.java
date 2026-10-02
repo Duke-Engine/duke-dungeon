@@ -174,9 +174,10 @@ public record Theme(
     /**
      * Where a biome grows, as a point in the two things a floor's climate varies in, each 0 to 100.
      *
-     * <p>A floor that mixes biomes draws both across itself as broad hills of noise, and every cell grows the biome
-     * whose point is nearest the climate there — so a biome is wherever the weather suits it, the way a Minecraft
-     * world lays its deserts and its taigas, and two biomes meet where their climates do. The map may also drift
+     * <p>A floor that mixes biomes is laid out in a few large regions and draws both across itself as broad hills of
+     * noise, and each region — the largest first — grows the biome whose point is nearest the climate at its heart
+     * among those no region has taken: a biome is where the weather suits it, the way a Minecraft world lays its
+     * deserts and its taigas, and no two regions are alike while there are biomes enough. The map may also drift
      * the whole floor's climate with depth: the same numbers, read as a shift per floor down.
      *
      * @param wild  worked stone at 0 — halls, a mine — and wilderness at 100

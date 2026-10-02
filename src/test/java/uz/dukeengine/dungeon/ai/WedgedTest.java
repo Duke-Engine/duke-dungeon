@@ -205,14 +205,15 @@ class WedgedTest {
      * A thing that never moves is part of the ground, not a body in the way: he walks past it, as past a wall, rather
      * than stand waiting for it to step aside.
      *
-     * <p>The way in of the descent's first floor on seed 26 has a statue beside its fountain, and the road north runs
+     * <p>The way in of the descent's first floor on seed 3179 has a statue beside its fountain, and the road north runs
      * between the two, grazing the statue. From there the statue is a hair in front of him with the fountain at his
      * side, which for a body would be a reason to stand; a statue never steps aside, and he stood there for good, 16
-     * units from where he set out.
+     * units from where he set out. (Seed 26 had this scene until biomes were laid out as a few large regions, which
+     * moved what stands where on every floor; 3179 has it just the same, and he walks the same road six cells north.)
      */
     @Test
     void aThingThatNeverMovesIsWalkedPastRatherThanWaitedFor() {
-        var game = Dungeon.newSession(26L, DungeonSettings.load()).game();
+        var game = Dungeon.newSession(3179L, DungeonSettings.load()).game();
         game.runHeadless(2);
         var hero = creature(game, "Rogue", 0);
         var setOut = hero.getPosition();
@@ -223,8 +224,8 @@ class WedgedTest {
                 "the way in is no longer laid with the statue and fountain this walks between: find the graze again");
 
         game.postCommand(new CombatOrder.MoveTo(game.getLocalPlayerIndex(), List.of(hero.getId()),
-                new Coord3D(547.5f, 267.5f, 0f)));
-        game.runHeadless(80); // long enough to be well past it, and short of whatever the floor has further on
+                new Coord3D(227.5f, 165f, 0f)));
+        game.runHeadless(80); // long enough to be well past it, and to the end of the road, six cells on
 
         assertTrue(hero.getPosition().distance(setOut) > 40f,
                 "he stood waiting for the statue to step aside, at " + hero.getPosition());

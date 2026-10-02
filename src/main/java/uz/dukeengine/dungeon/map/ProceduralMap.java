@@ -19,21 +19,25 @@ import uz.dukeengine.dungeon.world.Theme;
  * @param propsPerRoom  how many things stand about in a room, fewest and most — the one the hero
  *     starts in included. Kept low: things to walk round are furniture, and a room full of
  *     furniture is a room nobody can fight in
- * @param biomes        the themes one floor mixes, each where its {@code Climate} suits it; empty is a
- *     floor that wears one theme whole, chosen by depth from {@code themes}
- * @param biomeSize     about how many cells across one sweep of climate is — so how big a biome's
- *     region comes out
+ * @param biomes        the themes one floor mixes, each given the region whose weather suits its {@code Climate};
+ *     empty is a floor that wears one theme whole, chosen by depth from {@code themes}
+ * @param biomeCount    the fewest and most regions a floor is laid out in before any is given a biome, drawn from the
+ *     floor's seed: a few large places, and never a place more for the map being bigger
+ * @param minBiomeShare the least share of a floor's cells, in percent, one region may cover; a smaller one is joined
+ *     to the region it borders most
+ * @param biomeSize     about how many cells across one sweep of the climate fields is: the weather that decides which
+ *     biome each region grows, and nothing about how big a region is
  * @param climatePerDepth how far the whole floor's climate drifts per floor down, wild then alive
  * @param keep          the boss's keep at the end of every floor — see {@link Keep}
  */
 public record ProceduralMap(String name, Layout generation, @Link(Theme.class) List<String> themes,
         Themes.WhenExhausted whenExhausted,
-        PerRoom propsPerRoom, Descent descent, @Link(Theme.class) List<String> biomes, int biomeSize,
-        Theme.Climate climatePerDepth, Keep keep) {
+        PerRoom propsPerRoom, Descent descent, @Link(Theme.class) List<String> biomes, Count biomeCount,
+        int minBiomeShare, int biomeSize, Theme.Climate climatePerDepth, Keep keep) {
 
     /** What a block leaves out. */
     public static final ProceduralMap DEFAULTS = new ProceduralMap("", Layout.DEFAULTS, List.of(),
-            Themes.WhenExhausted.REPEAT, new PerRoom(0, 3), Descent.DEFAULTS, List.of(), 40,
+            Themes.WhenExhausted.REPEAT, new PerRoom(0, 3), Descent.DEFAULTS, List.of(), new Count(3, 4), 15, 40,
             new Theme.Climate(0, 0), Keep.DEFAULTS);
 
     public ProceduralMap {
@@ -62,6 +66,10 @@ public record ProceduralMap(String name, Layout generation, @Link(Theme.class) L
 
     /** Fewest and most, written {@code [0, 3]}. */
     public record PerRoom(int min, int max) {
+    }
+
+    /** How many places, fewest and most, written {@code [3, 4]}. */
+    public record Count(int fewest, int most) {
     }
 
     /**
