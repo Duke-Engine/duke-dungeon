@@ -388,7 +388,8 @@ Hero
   ;                 own. A share from 1 to 100, as a LIFESTEAL's is.
   ;
   ; An aura reaches everyone of your own side within its Radius of you, middle to
-  ; middle, and in plain sight -- you too, and whatever you call up. Of several of a
+  ; middle, through walls but never through a keep's shut gate -- you too, and whatever
+  ; you call up. Of several of a
   ; kind the strongest counts, never the sum. The file is refused if an aura has no
   ; Radius, or names a DurationFrames (it holds while you stand, and its Look is worn
   ; two TickFrames at a time), or names a Look without a TickFrames or a TickFrames

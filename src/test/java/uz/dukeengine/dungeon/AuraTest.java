@@ -228,7 +228,7 @@ class AuraTest {
         assertEquals(alone, aMendingFrom(true), 0.001f, "beside a summoner");
     }
 
-    /** At 60, middle to middle, half as hard again; a step further, or behind stone, its own. */
+    /** At 60, middle to middle, half as hard again, stone between or not; a step further, its own. */
     @Test
     void atSixtyOneItsOwnButThroughStoneTheMight() {
         var at60 = room(SETTINGS, NO_WALL, one(SUMMONER, 100f, 150f), one("Skeleton", 160f, 150f));
@@ -817,7 +817,7 @@ class AuraTest {
     }
 
     /**
-     * Where no aura reaches there is no mark: a Skeleton alone, one behind stone, one a step past the Radius, and one
+     * Where no aura reaches there is no mark: a Skeleton alone, one a step past the Radius, and one
      * with no pool beside a healer -- whose mana is lent to pools and changes nothing on a creature without.
      */
     @Test

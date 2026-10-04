@@ -117,7 +117,7 @@ Monster
     Skill
       Key = W
       ; Every pool of its own round it -- its own, a summoner's, a fire mage's -- fills
-      ; five points a second faster, within its Radius and in its plain sight, and never
+      ; five points a second faster, within its Radius, through walls or not, and never
       ; through the keep's shut gate: in tenths of a point a second, as a pool's own
       ; trickle. A creature with no pool is given none. Never cast: it holds while it
       ; stands. Two healers lend the stronger.
