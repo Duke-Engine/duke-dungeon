@@ -1247,16 +1247,16 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
     /**
      * The strongest aura of {@code kind} on {@code creature}, 0 for none: the largest worth -- a {@code BoostPercent},
      * or a {@code MANA_AURA}'s tenths of a point a second -- among the bearers of that kind on its side, living, whose
-     * level has opened it, within whose {@code Radius} it stands, middle to middle, on its side of the keep's shut gate
-     * and in whose plain sight -- the bearer itself among them. Nothing for a creature that carries no book, as one
-     * without a {@code StatusUpdate} is not stunned.
+     * level has opened it, within whose {@code Radius} it stands, middle to middle, on its side of the keep's shut gate,
+     * walls or none -- the bearer itself among them. Nothing for a creature that carries no book, as one without a
+     * {@code StatusUpdate} is not stunned.
      *
      * <p>Asked where the figure is used, never pushed to the creature, so it holds exactly while the creature stands in
      * reach and ends the moment it steps out or its bearer falls: nothing kept, nothing to go stale. A maximum of whole
-     * numbers, the same in any order, behind a sight line walked on integers.
+     * numbers, the same in any order.
      *
-     * <p>ponytail: a pass over the floor's objects out to the widest aura, and a sight line for each bearer in reach,
-     * at every asking; a cache by frame if a crowded floor ever shows it.
+     * <p>ponytail: a pass over the floor's objects out to the widest aura at every asking; a cache by frame if a
+     * crowded floor ever shows it.
      */
     public static int auraOn(GameObject creature, SkillEffect kind) {
         var book = creature == null ? null : creature.findModule(SkillBook.class);
@@ -1277,8 +1277,7 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
                 if (skill.effect() == kind && worth > strongest
                         && LevelBonus.rankOf(bearer, skill) > 0
                         && here.distance(bearer.getPosition()) <= skill.radius()
-                        && !book.seal.parts(world, bearer.getPosition(), here)
-                        && SightLine.clear(bearer, creature)) {
+                        && !book.seal.parts(world, bearer.getPosition(), here)) {
                     strongest = worth;
                 }
             }

@@ -183,8 +183,8 @@ are events, out of the checksum. Every name and number from data.
 3. **A haste only in a fight,** the brain's condition for what it throws at him; it refreshes, never stacks.
 4. **The haste's cost, rhythm and reach:** 25 mana, the summoning's 12 s, a mending's 60; the owner gave the +75%, 5 s.
 5. **Everyone** is the bearer's own side that carries a book, the bearer and what is summoned included; heroes never.
-6. **Only in plain sight,** as a mending and the alarm are: stone does not carry an aura, so a room is a room and the
-   court's mages lend nothing through the keep's wall. (Warcraft's auras ignore walls; a dungeon of rooms should not.)
+6. **Through walls, as Warcraft's auras** (the owner, 2026-10-03: "Aura devordan o'tsin"); never through the keep's
+   shut gate, which seals the court until it opens.
 7. **A `Radius` of 60** for all three: a room round the bearer, and the ones fighting him from a mage's band.
 8. **The strongest of a kind, never the sum; kinds add; a creature's own lifesteal and the aura add.**
 9. **+50% on every blow and every skill's damage,** as EMPOWER's; a mending is not raised.
