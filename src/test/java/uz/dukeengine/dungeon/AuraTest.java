@@ -230,7 +230,7 @@ class AuraTest {
 
     /** At 60, middle to middle, half as hard again; a step further, or behind stone, its own. */
     @Test
-    void atSixtyOneOrBehindStoneItsOwn() {
+    void atSixtyOneItsOwnButThroughStoneTheMight() {
         var at60 = room(SETTINGS, NO_WALL, one(SUMMONER, 100f, 150f), one("Skeleton", 160f, 150f));
         assertEquals(1.5f, might(at60.get(1)), 0.0001f, "60 from it");
 
@@ -238,7 +238,7 @@ class AuraTest {
         assertEquals(1f, might(at61.get(1)), 0.0001f, "61 from it");
 
         var walled = room(SETTINGS, 13, one(SUMMONER, 100f, 150f), one("Skeleton", 150f, 150f));
-        assertEquals(1f, might(walled.get(1)), 0.0001f, "50 from it, stone between");
+        assertEquals(1.5f, might(walled.get(1)), 0.0001f, "50 from it, stone between");
     }
 
     /** Of several of one kind, the strongest -- never the sum: two summoners, and still half as hard again. */
@@ -823,13 +823,12 @@ class AuraTest {
     @Test
     void whereNoAuraReachesItWearsNothing() {
         var alone = room(SETTINGS, NO_WALL, one("Skeleton", 130f, 150f));
-        var walled = room(SETTINGS, 13, one(SUMMONER, 100f, 150f), one("Skeleton", 150f, 150f));
         var apart = room(SETTINGS, NO_WALL, one(SUMMONER, 100f, 150f), one("Skeleton", 161f, 150f));
         var poolless = beside(SETTINGS, HEALER);
         assertEquals(50, SkillBook.auraOn(lastOf(poolless), SkillEffect.MANA_AURA), "the premise: the aura reaches it");
         assertEquals(0, bookOf(lastOf(poolless)).getMaxMana(), "the premise: and it has no pool");
 
-        var cases = Map.of("alone", alone, "behind stone", walled, "61 from it", apart,
+        var cases = Map.of("alone", alone, "61 from it", apart,
                 "with no pool beside a healer", poolless);
         for (var one : cases.entrySet()) {
             var worn = marked(one.getValue().game(), 90);

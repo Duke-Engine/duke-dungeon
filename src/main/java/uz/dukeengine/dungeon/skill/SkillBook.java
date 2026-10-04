@@ -1277,8 +1277,7 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
                 if (skill.effect() == kind && worth > strongest
                         && LevelBonus.rankOf(bearer, skill) > 0
                         && here.distance(bearer.getPosition()) <= skill.radius()
-                        && !book.seal.parts(world, bearer.getPosition(), here)
-                        && SightLine.clear(bearer, creature)) {
+                        && !book.seal.parts(world, bearer.getPosition(), here)) {
                     strongest = worth;
                 }
             }
