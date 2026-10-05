@@ -36,10 +36,14 @@ one new cast effect, three new passives, and the `SkillBook` the one thing that 
 - **When:** its condition is that of anything the brain throws at him — he is inside its `SkillDistance` and in plain
   sight: a haste in a fight, never in an empty room. `Aim.SELF`, as the summoning is, so piece 4's rule that an aimed
   skill's `Range` reach the band's far end does not ask it. Never refused for want of a target.
-- **Held in the hastened's book,** its frames and percent counted down as EMPOWER's are; a second haste while it burns
-  starts it again at the newer figures — it refreshes, never stacks. The book becomes a `RateOfFireModifier`, the seam
-  the heroes' boots ride through `AttackSpeed`, rather than a module attached for five seconds: attaching one mid-frame
-  is what the engine's module list refuses (the book's own note on EMPOWER), and every monster has its book from birth.
+- **Held in the hastened's book,** as a buff from its caster on the list the auras are lent onto: worth `BoostPercent`
+  and holding `DurationFrames`, the frame it is cast the first; the weapon reads the strongest that holds, never the sum.
+  A second haste from the same caster replaces its own buff and starts it again at the newer figures, and another
+  summoner's counts beside it, so a longer one carries on after a stronger one runs out — it refreshes, never stacks.
+  *(As built at first its frames and percent were counted down in the book as EMPOWER's are; since 2026-10-05 it is a
+  buff, `2026-10-05-push-buffs-plan.md`.)* The book is a `RateOfFireModifier`, the seam the heroes' boots ride through
+  `AttackSpeed`, rather than a module attached for five seconds: attaching one mid-frame is what the engine's module
+  list refuses (the book's own note on EMPOWER), and every monster has its book from birth.
 - **Seen:** the caster turns to it and is seen casting (`WeaponFired`, as a mending posts), and the hastened wears the
   skill's `Look`, played on it by `world.effect` for as long as the haste — `Main.measureLooks` already gives a look its
   skill's `DurationFrames` — and carried on by a second haste.
@@ -153,16 +157,18 @@ summoner's pool (80, 2.5 a second) pays for both at their cooldowns; alone, as i
 
 On the simulation thread, from simulation state: an aura is lent on the frames its bearer's object id falls on and read
 as a maximum of whole percents and tenths over the buffs a book holds, the same in any order; the haste's choice a total
-order ending in the object id, behind a sight line walked on integers; its frames counted down; the mana by the book's
-carry in whole points; the waits by the engine's own cut to whole frames. The looks are events, out of the checksum.
+order ending in the object id, behind a sight line walked on integers; its buff holding through a frame number; the mana
+by the book's carry in whole points; the waits by the engine's own cut to whole frames. The looks are events, out of the
+checksum.
 Every name and number from data.
 
 ## Tests
 
 - **Haste:** in a fight the summoner hastens a Brute over two Skeletons of its level, a Skeleton a level up over the
   Brute, the nearer of two alike, nobody behind stone or past `Range`, and itself when alone; a hastened Skeleton waits
-  17 frames for its 30 through 150 frames, and 30 after; a second haste starts the 150 again; it spends 25 mana and is
-  refused stunned or unpaid for; `Hasted` is played on the one hastened.
+  17 frames for its 30 through 150 frames, and 30 after; a second haste starts the 150 again, and of two casters' the
+  stronger counts, never the sum; it spends 25 mana and is refused stunned or unpaid for; `Hasted` is played on the one
+  hastened.
 - **Might:** a Skeleton 60 from a summoner deals 10.5 for its 7, a fire mage's fireball ×1.5 alike; at 61, or behind
   stone, 7; two summoners, still 10.5; the summoner itself ×1.5; a hero beside it, his own.
 - **Mana:** a healer alone refills 7.5 a second (its own 2.5, its aura's 5), a fire mage beside it 8, out of reach 3;

@@ -1119,12 +1119,14 @@ public class AuraTest {
         var skeleton = lastOf(hastened);
         aBuffsLife(hastened.game());
         assertTrue(bookOf(hastened.get(0)).cast('W', 1, null, null), "the premise: it cast its haste");
-        assertTrue(bookOf(skeleton).getHasteFrames() > 0, "the premise: on the Skeleton, the sturdier");
+        assertTrue(bookOf(skeleton).buffOf(SkillEffect.HASTE, hastened.game().getLogic().getFrame()) > 0,
+                "the premise: on the Skeleton, the sturdier");
         picked(hastened.game(), skeleton);
         var held = its.buffs().get(skeleton.getId().value());
         var haste = SETTINGS.skillsFor(SUMMONER).stream().filter(skill -> skill.effect() == SkillEffect.HASTE)
                 .findFirst().orElseThrow();
-        assertEquals(List.of(new BuffScreen.Buff(haste, 75, bookOf(skeleton).getHasteFrames()),
+        // One of its frames gone, the one picked ran.
+        assertEquals(List.of(new BuffScreen.Buff(haste, 75, haste.durationFrames() - 1),
                 new BuffScreen.Buff(might, 50, 0)), held, "the haste with the frames it has left, then the might");
 
         hastened.game().runHeadless(haste.durationFrames());
@@ -1132,10 +1134,64 @@ public class AuraTest {
     }
 
     /**
+     * The frames the haste has left count down in what is handed over, one fewer after each frame, down to the one it
+     * holds on its last -- and it is gone from the row after that frame, not a frame later: what is left is what is
+     * still to run.
+     */
+    @Test
+    void theHastesFramesCountDownInWhatIsHandedOverUntilItsLastIsGone() {
+        var screen = new BuffScreen(SETTINGS);
+        var room = beside(SETTINGS, screen::show, SUMMONER);
+        var skeleton = lastOf(room);
+        var game = room.game();
+        aBuffsLife(game);
+        assertTrue(bookOf(room.get(0)).cast('W', 1, null, null), "the premise: it cast its haste");
+        int lasts = SETTINGS.skillsFor(SUMMONER).stream().filter(skill -> skill.effect() == SkillEffect.HASTE)
+                .findFirst().orElseThrow().durationFrames();
+
+        picked(game, skeleton);
+        for (int run = 1; run < lasts; run++) {
+            var held = screen.buffs().get(skeleton.getId().value()).getFirst();
+            assertEquals(SkillEffect.HASTE, held.skill().effect(), "the haste first, after " + run + " frames");
+            assertEquals(lasts - run, held.framesLeft(), "its frames left after " + run + " of them");
+            game.runHeadless(1);
+        }
+        assertEquals(List.of(SkillEffect.DAMAGE_AURA), handedOver(screen, skeleton),
+                "the haste is gone with its last frame, and the might stays");
+    }
+
+    /**
+     * Two hastes on one creature: what is handed over is the strongest's figure with the frames that one has left --
+     * not those of the longest on the list -- and the other's when it has run out, as the weapon fires by them.
+     */
+    @Test
+    void ofTwoHastesWhatIsHandedOverIsTheStrongestAndItsOwnFrames() {
+        var screen = new BuffScreen(SETTINGS);
+        var room = beside(SETTINGS, screen::show, SUMMONER);
+        var skeleton = lastOf(room);
+        var game = room.game();
+        aBuffsLife(game);
+        assertTrue(bookOf(room.get(0)).cast('W', 1, null, null), "the premise: it cast its haste");
+        var haste = SETTINGS.skillsFor(SUMMONER).stream().filter(skill -> skill.effect() == SkillEffect.HASTE)
+                .findFirst().orElseThrow();
+        // Another summoner's, whose id no creature has -- given as its cast would, and stronger than any the files
+        // hold: twice as fast again, for the next two seconds.
+        bookOf(skeleton).give(SkillEffect.HASTE, -1, 100, game.getLogic().getFrame() + 59);
+
+        picked(game, skeleton);
+        assertEquals(new BuffScreen.Buff(haste, 100, 59), screen.buffs().get(skeleton.getId().value()).getFirst(),
+                "the stronger's, with its own frames");
+        game.runHeadless(59);
+        assertEquals(new BuffScreen.Buff(haste, 75, haste.durationFrames() - 60),
+                screen.buffs().get(skeleton.getId().value()).getFirst(),
+                "the summoner's own, which holds on once the stronger has run out");
+    }
+
+    /**
      * Nothing is handed over for a creature nothing is on: a hero beside a summoner -- no aura reaches a hero -- a
      * Skeleton with no pool beside a healer alone, and a hastened Skeleton in a might once it has fallen. A body is
      * reaped in the frame it falls, before the screen reads the world; one killed after the reap -- by a word of the
-     * game's own, read before the screen's -- is read lying there dead, its haste still counting down in its book.
+     * game's own, read before the screen's -- is read lying there dead, its haste still on its list.
      */
     @Test
     void aHeroAPoollessSkeletonBesideAHealerAndAFallenOneHoldNone() {
@@ -1180,7 +1236,8 @@ public class AuraTest {
         killed.set(skeleton);
         room.game().runHeadless(1);
         assertTrue(skeleton.isEffectivelyDead() && room.game().getLogic().findObject(skeleton.getId()) != null
-                && bookOf(skeleton).getHasteFrames() > 0, "the premise: it lies there dead, its haste counting down");
+                && bookOf(skeleton).buffOf(SkillEffect.HASTE, room.game().getLogic().getFrame()) > 0,
+                "the premise: it lies there dead, its haste still on its list");
         assertEquals(List.of(), handedOver(fallen, skeleton), "fallen");
     }
 

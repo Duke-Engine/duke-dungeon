@@ -17,6 +17,7 @@ import uz.dukeengine.client3d.CanvasInput;
 import uz.dukeengine.client3d.Duke3D;
 import uz.dukeengine.client3d.Visuals;
 import uz.dukeengine.combat.module.WeaponUpdate;
+import uz.dukeengine.core.GameConstants;
 import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.dungeon.content.Content;
 import uz.dukeengine.dungeon.content.DungeonSettings;
@@ -217,7 +218,8 @@ class BuffScreenTest {
         var summoner = logic.spawn(logic.findTemplate("SkeletonSummoner"), hero.getPosition(), dungeon);
         assertTrue(summoner.findModule(SkillBook.class).cast('W', 1, null, null), "the premise: it cast its haste");
         var hastened = logic.getObjects().stream().filter(one -> one.findModule(SkillBook.class) != null
-                && one.findModule(SkillBook.class).getHasteFrames() > 0).findFirst().orElseThrow();
+                && one.findModule(SkillBook.class).buffOf(SkillEffect.HASTE, logic.getFrame()) > 0)
+                .findFirst().orElseThrow();
         game.setSelection(List.of(hastened.getId().value()));
         AuraTest.aBuffsLife(game);
         return new Floor(session, bag, hastened);
@@ -343,9 +345,10 @@ class BuffScreenTest {
     void thePointerOnAPictureSaysWhatItIsAndWhatItAdds() {
         var floor = floor(SETTINGS);
         var drawn = floor.paint(new Drawn(), BAR);
-        var book = floor.hastened().findModule(SkillBook.class);
+        // What the floor ran on since the haste was cast, a buff's life, is gone from it.
+        int left = skill(SkillEffect.HASTE).durationFrames() - SETTINGS.combat().buffLifeFrames();
 
-        for (var buff : List.of(new BuffScreen.Buff(skill(SkillEffect.HASTE), 75, book.getHasteFrames()),
+        for (var buff : List.of(new BuffScreen.Buff(skill(SkillEffect.HASTE), 75, left),
                 new BuffScreen.Buff(skill(SkillEffect.DAMAGE_AURA), 50, 0))) {
             var picture = floor.paint(drawn, BAR).picture(buff.skill().icon());
             floor.bag().take(new CanvasInput.Pointer(picture.middleX(), picture.middleY()));
@@ -365,6 +368,29 @@ class BuffScreenTest {
         floor.bag().take(new CanvasInput.Pointer(40, 40));
         floor.paint(drawn, BAR);
         assertFalse(drawn.text().contains(skill(SkillEffect.DAMAGE_AURA).name()), "and nothing once it is off them");
+    }
+
+    /**
+     * The haste's seconds count down on its card as the frames go by: five while more than 120 of its frames are left,
+     * four from the frame it has 120 -- a part of a second is a second.
+     */
+    @Test
+    void theHastesSecondsCountDownOnItsCardAsTheFramesGoBy() {
+        var floor = floor(SETTINGS);
+        var drawn = new Drawn();
+        var haste = skill(SkillEffect.HASTE);
+        var picture = floor.paint(drawn, BAR).picture(haste.icon());
+        floor.bag().take(new CanvasInput.Pointer(picture.middleX(), picture.middleY()));
+
+        // The floor has run a buff's life since the cast: so many frames of the haste gone, and one more as each goes.
+        int perSecond = GameConstants.LOGICFRAMES_PER_SECOND;
+        for (int gone = SETTINGS.combat().buffLifeFrames(); gone <= perSecond + 1; gone++) {
+            var said = " · " + Math.ceilDiv(haste.durationFrames() - gone, perSecond) + SETTINGS.hud().secondsWord();
+            floor.paint(drawn, BAR);
+            assertTrue(drawn.text().stream().anyMatch(line -> line.endsWith(said)),
+                    "the card says" + said + " with " + gone + " of its frames gone: " + drawn.text());
+            floor.game().runHeadless(1);
+        }
     }
 
     /** A left press on a picture is the screen's, and so is its letting go: one beside the row goes to the world. */

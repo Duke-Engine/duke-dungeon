@@ -81,10 +81,17 @@ class HasteTest {
 
         /** The one of them a haste is burning on: exactly one, or the test says who else. */
         GameObject hastened() {
-            var burning = ones.stream().filter(one -> bookOf(one).getHasteFrames() > 0).toList();
+            var burning = ones.stream().filter(one -> hasteLeft(one) > 0).toList();
             assertEquals(1, burning.size(), "hastened: " + burning);
             return burning.getFirst();
         }
+    }
+
+    /** The frames the longest haste on its list still holds, counting the one the world runs next: 0 for none. */
+    private static int hasteLeft(GameObject creature) {
+        int next = creature.getWorld().getFrame();
+        return bookOf(creature).getBuffs().stream().filter(buff -> buff.kind() == SkillEffect.HASTE)
+                .mapToInt(buff -> Math.max(0, buff.until() - next + 1)).max().orElse(0);
     }
 
     /** A room holding these of the dungeon's own, in this order, and nobody to fight. */
@@ -119,7 +126,7 @@ class HasteTest {
         var fired = room.game().getLogic().drainEvents();
 
         assertEquals(room.get(2), room.hastened(), "the Brute");
-        assertEquals(haste().durationFrames(), bookOf(room.get(2)).getHasteFrames(), "for its DurationFrames");
+        assertEquals(haste().durationFrames(), hasteLeft(room.get(2)), "for its DurationFrames");
         assertEquals((float) (Math.PI / 2), summoner.getOrientation(), 0.001f, "turned to the Brute, up the column");
         assertTrue(fired.stream().anyMatch(event -> event instanceof WeaponFired shot
                         && shot.shooter().equals(summoner.getId())),
@@ -265,7 +272,7 @@ class HasteTest {
 
         assertTrue(untilStruck(game, hero, 150), "the premise: the Skeleton struck him");
         assertTrue(bookOf(first(game, SUMMONER)).cast('W', 1, null, null), "the premise: it cast its haste");
-        assertEquals(lasts, bookOf(skeleton).getHasteFrames(), "the premise: on the Skeleton");
+        assertEquals(lasts, hasteLeft(skeleton), "the premise: on the Skeleton");
         int hastedAt = game.getLogic().getFrame();
         var blows = new ArrayList<Integer>();
         while (game.getLogic().getFrame() - hastedAt < lasts + 90) {
@@ -288,24 +295,63 @@ class HasteTest {
 
     /**
      * A second haste while one burns starts it again at the newer figures -- never stacked: two summoners hasten one
-     * Brute two seconds apart, and it has the whole 150 frames again and fires 1.75 times as fast, not faster.
+     * Brute two seconds apart, and it has the whole 150 frames again, to the last of them and not past it, and fires
+     * 1.75 times as fast, not faster.
      */
     @Test
     void aSecondHasteStartsItAgainAndNeverStacks() {
         var room = room(SETTINGS, NO_WALL, one(SUMMONER, 100f, 150f), one(SUMMONER, 160f, 150f),
                 one("Brute", 130f, 150f));
-        var brute = bookOf(room.get(2));
+        var brute = room.get(2);
         int lasts = haste().durationFrames();
+        float asOne = 1f + haste().boostPercent() / 100f;
 
         assertTrue(room.castsItsHaste(), "the premise: the first cast its haste");
-        assertEquals(lasts, brute.getHasteFrames());
+        assertEquals(lasts, hasteLeft(brute));
         room.game().runHeadless(60);
-        assertEquals(lasts - 60, brute.getHasteFrames(), "the premise: two seconds of it gone");
+        assertEquals(lasts - 60, hasteLeft(brute), "the premise: two seconds of it gone");
 
         assertTrue(bookOf(room.get(1)).cast('W', 1, null, null), "the premise: the second cast its haste");
-        assertEquals(lasts, brute.getHasteFrames(), "started again, not added to");
-        assertEquals(1f + haste().boostPercent() / 100f, brute.rateOfFireMultiplier(), 0.0001f,
-                "and as fast as one haste makes it");
+        assertEquals(lasts, hasteLeft(brute), "started again, not added to");
+        assertEquals(List.of(room.get(0).getId().value(), room.get(1).getId().value()),
+                bookOf(brute).getBuffs().stream().filter(buff -> buff.kind() == SkillEffect.HASTE)
+                        .map(buff -> buff.source()).toList(),
+                "a haste on its list from each caster, in the order they cast");
+        assertEquals(asOne, bookOf(brute).rateOfFireMultiplier(), 0.0001f, "and as fast as one haste makes it");
+
+        room.game().runHeadless(lasts - 1);
+        assertEquals(1, hasteLeft(brute), "the premise: one frame of it left");
+        assertEquals(asOne, bookOf(brute).rateOfFireMultiplier(), 0.0001f, "and as fast as ever");
+        room.game().runHeadless(1);
+        assertEquals(0, hasteLeft(brute), "none past its DurationFrames");
+        assertEquals(1f, bookOf(brute).rateOfFireMultiplier(), 0.0001f, "and as fast as it was without it");
+    }
+
+    /**
+     * Two casters' hastes on one Brute count as the larger, never the sum, each while it holds -- the list's rule: a
+     * stronger one, from another summoner and for two seconds, is the figure for those two, and the summoner's own,
+     * still holding, is the figure after.
+     */
+    @Test
+    void ofTwoCastersHastesTheStrongerCountsWhileItHoldsAndTheOtherHoldsOn() {
+        var room = room(SETTINGS, NO_WALL, one(SUMMONER, 100f, 150f), one(SUMMONER, 160f, 150f),
+                one("Brute", 130f, 150f));
+        var brute = room.get(2);
+        var book = bookOf(brute);
+        float asOne = 1f + haste().boostPercent() / 100f;
+
+        assertTrue(room.castsItsHaste(), "the premise: the first cast its haste");
+        // The other summoner's, given as its cast would give it but stronger than any the files hold: twice as fast
+        // again, for two seconds.
+        int now = brute.getWorld().getFrame();
+        book.give(SkillEffect.HASTE, room.get(1).getId().value(), 100, now + 59);
+
+        assertEquals(2f, book.rateOfFireMultiplier(), 0.0001f, "the stronger of the two, and not 2.75");
+        room.game().runHeadless(59);
+        assertEquals(2f, book.rateOfFireMultiplier(), 0.0001f, "to the last frame it holds");
+        room.game().runHeadless(1);
+        assertEquals(asOne, book.rateOfFireMultiplier(), 0.0001f, "and then the first's, which holds on");
+        assertEquals(haste().durationFrames() - 60, hasteLeft(brute), "for the rest of its own frames");
     }
 
     /** It spends its ManaCost from the summoner's pool, and is refused, spending nothing, stunned or unpaid for. */
@@ -324,7 +370,7 @@ class HasteTest {
         stunned.get(0).findModule(StatusUpdate.class).apply(ObjectStatus.DISABLED, 30);
         assertFalse(stunned.castsItsHaste(), "cast stunned");
         assertTrue(bookOf(stunned.get(0)).isReady('W'), "and a cast that never went off spent its cooldown");
-        assertEquals(0, bookOf(stunned.get(0)).getHasteFrames(), "and hastened it");
+        assertEquals(0, hasteLeft(stunned.get(0)), "and hastened it");
 
         var poor = room(SETTINGS, NO_WALL, one(SUMMONER, 100f, 150f));
         Spawner.scale(poor.get(0), 1, SETTINGS);
@@ -384,7 +430,7 @@ class HasteTest {
         assertFalse(book.isReady('Q'), "the premise: it summoned");
         assertFalse(book.isReady('W'), "and then hastened");
         assertTrue(game.getLogic().getObjects().stream().anyMatch(object -> object.getPlayerIndex()
-                        == arena.dungeon().getIndex() && bookOf(object) != null && bookOf(object).getHasteFrames() > 0),
+                        == arena.dungeon().getIndex() && bookOf(object) != null && hasteLeft(object) > 0),
                 "someone of its own is hastened");
 
         var empty = room(SETTINGS, NO_WALL, one(SUMMONER, 100f, 150f));

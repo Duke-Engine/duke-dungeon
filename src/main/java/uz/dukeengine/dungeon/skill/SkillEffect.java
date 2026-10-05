@@ -190,8 +190,13 @@ public enum SkillEffect {
      * {@code Range} of the caster, middle to middle, on its side of the keep's shut gate and in its plain sight; the
      * caster itself when nothing sturdier stands near. Every wait of that one's weapon is divided by
      * 1 + {@code BoostPercent}/100 and cut to whole frames, the engine's rule for a rate of fire, for
-     * {@code DurationFrames}; a second haste while it burns starts it again at the newer figures. Aimed at nothing, so
-     * never refused for want of someone to hasten.
+     * {@code DurationFrames}; a second haste from the same caster while it burns starts it again at the newer figures.
+     * Aimed at nothing, so never refused for want of someone to hasten.
+     *
+     * <p>Held as a buff the caster gives the one it hastens -- the list an aura is lent onto, see
+     * {@link SkillBook#give} -- worth {@code BoostPercent} and holding {@code DurationFrames}, the frame it is cast the
+     * first. The weapon reads the strongest that holds, never the sum, so another summoner's stronger haste on the same
+     * creature wins while it holds, and a longer one carries on after it: see {@link SkillBook#buffOf}.
      */
     HASTE(Aim.SELF),
 

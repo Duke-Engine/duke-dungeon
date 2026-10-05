@@ -29,7 +29,7 @@ import uz.dukeengine.game.DukeGame;
  * no row over it, and one at the top of the window has its row kept on the window.
  *
  * <p>What is on them is read after every frame, on the simulation's thread -- {@link SkillBook#aurasOn}, the one rule
- * the circle under a creature asks too, and the haste its book counts down -- and handed over whole, so the window
+ * the circle under a creature asks too, and the haste on its book's list -- and handed over whole, so the window
  * never reads a book in the middle of being written. Owned by the {@link BagScreen}, which paints it under the bag,
  * draws the card of the picture the pointer is on in its own style, and takes a press on a picture, so a click there
  * neither selects nor orders what is behind it.
@@ -114,9 +114,10 @@ final class BuffScreen {
         }
         // In this order, which is the order the rows are drawn in: no hash is walked to draw them.
         var found = new LinkedHashMap<Integer, List<Buff>>();
+        int frame = game.getLogic().getFrame();
         for (int id : new int[] {selection.size() == 1 ? selection.getFirst() : -1, lastPointed}) {
             var creature = id < 0 ? null : game.getLogic().findObject(new ObjectId(id));
-            var on = creature == null ? List.<Buff>of() : on(creature);
+            var on = creature == null ? List.<Buff>of() : on(creature, frame);
             if (!on.isEmpty()) {
                 found.put(id, on);
             }
@@ -125,17 +126,25 @@ final class BuffScreen {
     }
 
     /**
-     * What is on {@code creature}, in {@link SkillEffect} order: a haste while one burns on it, and then each aura that
+     * What is on {@code creature}, in {@link SkillEffect} order: a haste while one holds on it, and then each aura that
      * reaches it, by the one rule the circle under it asks ({@link SkillBook#aurasOn}). Nothing on one that has fallen.
+     *
+     * <p>Read after frame {@code frame} has run, so what is left of a haste is what is still to run: the strongest that
+     * holds on the next frame, and the frames to the last it holds -- of the buffs worth that figure, not of the longest
+     * on the list, which may be a weaker one's. It is gone from the row after the last frame it holds on.
      */
-    private List<Buff> on(GameObject creature) {
+    private List<Buff> on(GameObject creature, int frame) {
         var book = creature.findModule(SkillBook.class);
         if (book == null || creature.isEffectivelyDead()) {
             return List.of();
         }
         var on = new ArrayList<Buff>();
-        if (book.getHasteFrames() > 0) {
-            on.add(new Buff(kinds.get(SkillEffect.HASTE), book.getHastePercent(), book.getHasteFrames()));
+        int haste = book.buffOf(SkillEffect.HASTE, frame + 1);
+        if (haste > 0) {
+            int last = book.getBuffs().stream()
+                    .filter(held -> held.kind() == SkillEffect.HASTE && held.value() == haste)
+                    .mapToInt(held -> held.until()).max().orElse(frame);
+            on.add(new Buff(kinds.get(SkillEffect.HASTE), haste, last - frame));
         }
         for (var kind : SkillBook.aurasOn(creature)) {
             on.add(new Buff(kinds.get(kind), SkillBook.auraOn(creature, kind), 0));

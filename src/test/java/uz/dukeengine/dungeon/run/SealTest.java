@@ -830,12 +830,15 @@ class SealTest {
             assertTrue(SightLine.clear(summoner, boss),
                     "it does not see the boss through the doorway, so this proves nothing");
             assertTrue(its.cast('W', 1, null, null), "the summoner did not cast its haste");
+            int frame = floor.game().getLogic().getFrame();
             if (opened) {
-                assertTrue(his.getHasteFrames() > 0, "the gate open, the summoner still did not hasten the boss");
-                assertEquals(0, its.getHasteFrames(), "and it hastened itself as well");
+                assertTrue(his.buffOf(SkillEffect.HASTE, frame) > 0,
+                        "the gate open, the summoner still did not hasten the boss");
+                assertEquals(0, its.buffOf(SkillEffect.HASTE, frame), "and it hastened itself as well");
             } else {
-                assertEquals(0, his.getHasteFrames(), "the summoner hastened the boss through the shut gate");
-                assertTrue(its.getHasteFrames() > 0, "and it hastened nobody, not even itself");
+                assertEquals(0, his.buffOf(SkillEffect.HASTE, frame),
+                        "the summoner hastened the boss through the shut gate");
+                assertTrue(its.buffOf(SkillEffect.HASTE, frame) > 0, "and it hastened nobody, not even itself");
             }
         }
     }

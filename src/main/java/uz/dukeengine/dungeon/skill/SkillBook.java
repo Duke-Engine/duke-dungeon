@@ -43,9 +43,9 @@ import uz.dukeengine.combat.module.WeaponUpdate;
  * Attaching and detaching a module mid-frame is exactly what the engine's module
  * list refuses (rightly — it would silently skip whatever came next), and a flag
  * that expires is the same thing without the trap. A {@code HASTE} is held the
- * same way, in the hastened's own book, which is a {@link RateOfFireModifier} for
- * it -- the seam a hero's boots ride through {@code AttackSpeed} -- and every
- * monster carries one from birth.
+ * same way: a buff on the hastened's own book, the list an aura is lent onto,
+ * and that book is a {@link RateOfFireModifier} for it -- the seam a hero's boots
+ * ride through {@code AttackSpeed} -- and every monster carries one from birth.
  *
  * <p>Determinism: cooldowns are frames counted down, never seconds; the victim of
  * a {@code STRIKE} is the nearest enemy with ties broken by object id, and the one
@@ -80,17 +80,10 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
     private int guardPercent;
 
     /**
-     * Frames of a {@code HASTE} left on this one -- whoever cast it -- and how much faster its weapon fires while it
-     * lasts. Counted down here as {@code EMPOWER}'s are; a second haste starts them again at its own figures.
-     */
-    private int hasteFrames;
-    private int hastePercent;
-
-    /**
      * What others have lent it and not yet let go of: one buff for each kind and lender, in the order they were first
-     * given -- an aura, given again on each of its bearer's pulses (see {@link #lendTheAuras}). Plain state, the same
-     * on every machine: {@link #buffOf} reads it on the frame a figure is wanted, and {@link #update} lets go of what
-     * has passed.
+     * given -- an aura, given again on each of its bearer's pulses (see {@link #lendTheAuras}), or a haste, given when
+     * it is cast (see {@link #apply}). Plain state, the same on every machine: {@link #buffOf} reads it on the frame a
+     * figure is wanted, and {@link #update} lets go of what has passed.
      */
     private final List<Buff> buffs = new java.util.ArrayList<>();
 
@@ -387,16 +380,6 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
     /** Frames of extra damage left, for anything that wants to draw it. */
     public int getBoostFrames() {
         return boostFrames;
-    }
-
-    /** Frames of haste left on it, whoever cast it; 0 when none burns. */
-    public int getHasteFrames() {
-        return hasteFrames;
-    }
-
-    /** How much faster a haste burning on it makes its weapon fire, in percent; 0 when none burns. */
-    public int getHastePercent() {
-        return hasteFrames > 0 ? hastePercent : 0;
     }
 
     /**
@@ -739,12 +722,13 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
                 }
             }
             case HASTE -> {
-                // The sturdiest of its own near it, or itself -- never nobody. Held in the hastened's own book and
-                // counted down there, as EMPOWER is in its caster's: a second haste starts it again, never stacks.
+                // The sturdiest of its own near it, or itself -- never nobody. Given to the hastened's own book as a
+                // buff from the caster, holding DurationFrames with this frame the first: a second haste from the same
+                // caster starts it again, and the strongest of those that hold is the one that counts, never the sum.
                 var hastened = sturdiestNear(owner, world, skill.range());
                 var its = hastened.findModule(SkillBook.class);
-                its.hasteFrames = skill.durationFrames();
-                its.hastePercent = skill.boostAt(level);
+                its.give(SkillEffect.HASTE, owner.getId().value(), skill.boostAt(level),
+                        world.getFrame() + skill.durationFrames() - 1);
                 // It turns to the one it hastens and is seen casting, as a mending is; and the one it hastens wears
                 // the haste's look for as long as it lasts -- Main.measureLooks gives the look its DurationFrames,
                 // and its layers say Renews, which carries it on to a second haste's end.
@@ -1326,12 +1310,14 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
     }
 
     /**
-     * How much faster its weapon fires while a {@code HASTE} burns on it: the engine divides every wait by this and
-     * cuts it to whole frames -- 30 frames at 1.75 are 17. Read at each shot; 1 when none burns.
+     * How much faster its weapon fires while a {@code HASTE} holds on it: the engine divides every wait by this and
+     * cuts it to whole frames -- 30 frames at 1.75 are 17. Read at each shot, from the strongest haste on its list that
+     * holds on this frame, never the sum -- see {@link #buffOf}; 1 when none holds.
      */
     @Override
     public float rateOfFireMultiplier() {
-        return hasteFrames > 0 ? 1f + hastePercent / 100f : 1f;
+        var world = getOwner().getWorld();
+        return world == null ? 1f : 1f + buffOf(SkillEffect.HASTE, world.getFrame()) / 100f;
     }
 
     /**
@@ -1443,9 +1429,6 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
         }
         if (guardFrames > 0) {
             guardFrames--;
-        }
-        if (hasteFrames > 0) {
-            hasteFrames--;
         }
         letGoOfTheBuffsThatHavePassed();
         lendTheAuras();
