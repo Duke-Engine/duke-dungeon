@@ -27,14 +27,19 @@ import uz.dukeengine.core.data.Link;
  *     the last. Played on it by its own book, every {@code auraMarkTickFrames}. Empty for nothing
  * @param auraMarkTickFrames how often, in logic frames, a creature's book plays its mark on it -- the beat each look
  *     above is measured two of, as an aura's {@code TickFrames} is. At least 1 while any is named
+ * @param auraPulseFrames    how often, in logic frames, a creature that bears an aura lends it again to everyone of its
+ *     side within reach -- on the frames its object id falls on, as the marks are laid. At least 1
+ * @param buffLifeFrames     how long, in logic frames, what an aura lends holds once it is lent, and is let go of if it
+ *     is not lent again. Longer than {@code auraPulseFrames}, so that a buff does not lapse between two pulses of a
+ *     bearer that still reaches the one it lends to
  */
 public record Combat(float skeletonSenseRadius, float skeletonChaseRadius, int skeletonRepathFrames,
         float closeDistance, int heroRepathFrames, float wayAheadProbe, float retreatTurnDegrees,
         int retreatTurns, float summonTurnDegrees, int summonTurns, String arrowTemplate, float arrowSpeed,
         float arrowMuzzleOffset, @Link(Effect.class) String stunLook, @Link(Effect.class) List<String> auraMarkLooks,
-        int auraMarkTickFrames) {
+        int auraMarkTickFrames, int auraPulseFrames, int buffLifeFrames) {
 
     /** What a block leaves out. */
     public static final Combat DEFAULTS = new Combat(90f, 150f, 10, 4f, 10, 5f, 30f, 3, 45f, 4, "Arrow",
-            260f, 5f, "", List.of(), 30);
+            260f, 5f, "", List.of(), 30, 10, 15);
 }

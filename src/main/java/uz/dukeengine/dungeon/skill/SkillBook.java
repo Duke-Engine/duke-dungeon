@@ -87,6 +87,13 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
     private int hastePercent;
 
     /**
+     * What others have lent it and not yet let go of: one buff for each kind and lender, in the order they were first
+     * given. Plain state, the same on every machine: {@link #buffOf} reads it on the frame a figure is wanted, and
+     * {@link #update} lets go of what has passed.
+     */
+    private final List<Buff> buffs = new java.util.ArrayList<>();
+
+    /**
      * An {@code AREA_DAMAGE} that has not finished happening.
      *
      * <p>What it is worth is worked out when it is cast rather than when it lands,
@@ -398,6 +405,46 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
     /** How much faster a haste burning on it makes its weapon fire, in percent; 0 when none burns. */
     public int getHastePercent() {
         return hasteFrames > 0 ? hastePercent : 0;
+    }
+
+    /**
+     * Lend it {@code value} of {@code kind}, holding through frame {@code until}, from the creature whose object id is
+     * {@code source}. It holds one buff for each kind and lender, so a lender giving again replaces its own -- where it
+     * stands in the list, and whatever it was worth before: the latest word is the lender's.
+     */
+    public void give(SkillEffect kind, int source, int value, int until) {
+        var buff = new Buff(kind, source, value, until);
+        for (int at = 0; at < buffs.size(); at++) {
+            var held = buffs.get(at);
+            if (held.kind() == kind && held.source() == source) {
+                buffs.set(at, buff);
+                return;
+            }
+        }
+        buffs.add(buff);
+    }
+
+    /**
+     * The figure of {@code kind} it holds on {@code frame}: the largest worth among the buffs of that kind that still
+     * hold then, and 0 for none. The largest and never the sum, so that a stronger lender leaving hands over to a weaker
+     * one still in reach with no frame between that is worth nothing; whole numbers, so it is the same in any order.
+     */
+    public int buffOf(SkillEffect kind, int frame) {
+        int largest = 0;
+        for (var buff : buffs) {
+            if (buff.kind() == kind && buff.until() >= frame) {
+                largest = Math.max(largest, buff.value());
+            }
+        }
+        return largest;
+    }
+
+    /**
+     * What it holds, in the order the buffs were first given. One whose last frame has passed is still in it until the
+     * next {@link #update} lets go of it.
+     */
+    public List<Buff> getBuffs() {
+        return List.copyOf(buffs);
     }
 
     /** The frame he last committed to a skill, or a long time ago if he never has. */
@@ -1436,11 +1483,25 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
         if (hasteFrames > 0) {
             hasteFrames--;
         }
+        letGoOfTheBuffsThatHavePassed();
         wearTheAuras();
         wearTheMark();
         turnTheWhirlwind();
         if (drawing != null && --loosesIn <= 0) {
             looseTheDrawnShot();
+        }
+    }
+
+    /**
+     * Every buff whose last frame has gone by is let go of, and the rest keep their places. Nothing hangs on it --
+     * {@link #buffOf} counts a buff by the frame it is asked on -- but it keeps the list to what is still held, which is
+     * what whatever draws it has to show.
+     */
+    private void letGoOfTheBuffsThatHavePassed() {
+        var world = getOwner().getWorld();
+        if (world != null) {
+            int frame = world.getFrame();
+            buffs.removeIf(buff -> buff.until() < frame);
         }
     }
 

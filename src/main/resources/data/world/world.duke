@@ -205,6 +205,18 @@ Combat
   ; bare within two beats. At least 1 while any is named.
   AuraMarkLooks = [AuraMarkOne, AuraMarkTwo, AuraMarkThree]
   AuraMarkTickFrames = 30
+
+  ; How an aura is lent: its bearer lends it again to everyone of its side within its Radius every
+  ; AuraPulseFrames, on the frames its object id falls on -- as the marks above are laid, so a roomful
+  ; of bearers are not all lending on one frame -- and what it lends holds for BuffLifeFrames, and is
+  ; let go of unless it is lent again. So a creature that steps into reach, or a bearer that appears,
+  ; is lent within one pulse; and one that steps out, or whose bearer falls, keeps what it was lent for
+  ; at most the life. Ten frames and fifteen are a third of a second and half of one.
+  ;
+  ; Each at least 1, and the life longer than the pulse -- a life no longer would lapse between two
+  ; pulses of a bearer that still reaches the one it lends to -- or the file is refused.
+  AuraPulseFrames = 10
+  BuffLifeFrames = 15
 End
 
 ; ---------------------------------------------------------------------------

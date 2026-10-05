@@ -284,6 +284,67 @@ class DungeonSettingsTest {
                 "a block that names none draws none");
     }
 
+    /**
+     * How an aura is lent is the Combat block's: how often its bearer lends it again, and how long what it lends holds
+     * if it is not lent again. The shipped file writes both, so the ten and the fifteen it reads are its own and not the
+     * built-in ones a block that leaves them out is given.
+     */
+    @Test
+    void theAuraPulseAndTheBuffLifeAreTheCombatBlocks() {
+        var shipped = DungeonSettings.load().combat();
+        assertEquals(10, shipped.auraPulseFrames());
+        assertEquals(15, shipped.buffLifeFrames());
+        var data = Content.data();
+        assertTrue(data.contains("  AuraPulseFrames = 10\n") && data.contains("  BuffLifeFrames = 15\n"),
+                "the premise: the shipped Combat block writes both, and does not leave them to the built-in ones");
+
+        var own = DungeonSettings.parse("Combat\n  AuraPulseFrames = 6\n  BuffLifeFrames = 20\nEnd\n").combat();
+        assertEquals(6, own.auraPulseFrames());
+        assertEquals(20, own.buffLifeFrames());
+
+        var sparse = DungeonSettings.parse("Combat\n  SkeletonSenseRadius = 120\nEnd\n").combat();
+        assertEquals(10, sparse.auraPulseFrames(), "a block that leaves them out is given the built-in pulse");
+        assertEquals(15, sparse.buffLifeFrames(), "and the built-in life");
+    }
+
+    /**
+     * Neither is a beat at under one frame -- an aura lent every zero frames, or a buff that holds for none, reaches
+     * nobody -- and the life has to outlast the pulse, or a buff would lapse between two pulses of a bearer that still
+     * reaches it. Each is refused by the key it is written on: the first two by that key alone, the third by both. The
+     * shortest pair that holds is let through.
+     */
+    @Test
+    void theAuraPulseIsABeatAndTheBuffLifeOutlastsIt() {
+        for (int pulse : new int[] {0, -3}) {
+            assertNamesOnly(refusedFor(pulse, 15), "AuraPulseFrames");
+        }
+        for (int life : new int[] {0, -1}) {
+            assertNamesOnly(refusedFor(10, life), "BuffLifeFrames");
+        }
+        // The life no longer than the pulse: the same as it, shorter, and shorter than a pulse the block lengthened.
+        assertNamesOnly(refusedFor(10, 10), "AuraPulseFrames", "BuffLifeFrames");
+        assertNamesOnly(refusedFor(10, 4), "AuraPulseFrames", "BuffLifeFrames");
+        assertNamesOnly(refusedFor(20, 15), "AuraPulseFrames", "BuffLifeFrames");
+
+        assertDoesNotThrow(() -> DungeonSettings.parse("Combat\n  AuraPulseFrames = 1\n  BuffLifeFrames = 2\nEnd\n"),
+                "a pulse every frame is a beat, and a life of one frame more outlasts it");
+        assertDoesNotThrow(() -> DungeonSettings.parse("Combat\n  AuraPulseFrames = 10\n  BuffLifeFrames = 11\nEnd\n"),
+                "the life need only be longer");
+    }
+
+    /** What the settings refuse a Combat block that writes this pulse and this life with, as the message says it. */
+    private static String refusedFor(int pulse, int life) {
+        var block = "Combat\n  AuraPulseFrames = " + pulse + "\n  BuffLifeFrames = " + life + "\nEnd\n";
+        return assertThrows(IllegalArgumentException.class, () -> DungeonSettings.parse(block), block).getMessage();
+    }
+
+    /** The message names these of the two keys, and none other of them. */
+    private static void assertNamesOnly(String message, String... named) {
+        for (var key : List.of("AuraPulseFrames", "BuffLifeFrames")) {
+            assertEquals(List.of(named).contains(key), message.contains(key), key + " in: " + message);
+        }
+    }
+
     /** The pictures over a picked creature's bar are drawn at some size: a BuffIcon under a pixel is refused, by name. */
     @Test
     void thePicturesOverAPickedCreaturesBarHaveASize() {
