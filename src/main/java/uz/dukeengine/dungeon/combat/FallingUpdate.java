@@ -108,7 +108,7 @@ public final class FallingUpdate extends UpdateModule {
                                 == Relationship.ENEMIES
                         && !seal.parts(world, calledFrom, candidate.getPosition()))) {
             victim.getBody().damage(damage, DamageType.EXPLOSION);
-            // A blow like any other, and its caller drinks from it if a skill of its, or an aura it stands in, says
+            // A blow like any other, and its caller drinks from it if a skill of its, or an aura lent to it, says
             // so -- see SkillBook.drink.
             SkillBook.drink(caster, damage);
             if (victim.isEffectivelyDead()) {

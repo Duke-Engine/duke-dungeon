@@ -617,6 +617,17 @@ public final class DungeonSettings {
         require(combat.auraMarkLooks().isEmpty() || combat.auraMarkTickFrames() >= 1,
                 "AuraMarkTickFrames is the beat the marks are laid at, at least 1 while AuraMarkLooks names any:"
                         + " laying one every zero frames is not a beat");
+        // An aura is lent again every AuraPulseFrames, and what it lends holds BuffLifeFrames: neither is a beat at
+        // under one frame, and a life no longer than the pulse would lapse before the next pulse could renew it.
+        require(combat.auraPulseFrames() >= 1,
+                "AuraPulseFrames is the beat an aura is lent again at, at least 1: lending every zero frames is not"
+                        + " a beat");
+        require(combat.buffLifeFrames() >= 1,
+                "BuffLifeFrames is how long what an aura lends holds, at least 1: a buff that holds for no frames is"
+                        + " lent to nobody");
+        require(combat.buffLifeFrames() > combat.auraPulseFrames(),
+                "BuffLifeFrames has to be longer than AuraPulseFrames: a buff that holds no longer than the beat it is"
+                        + " lent at would lapse between two pulses of a bearer that still reaches it");
         for (var kind : monsters) {
             var name = "Monster " + kind.name();
             for (var skill : skillsFor(kind.name())) {

@@ -190,8 +190,13 @@ public enum SkillEffect {
      * {@code Range} of the caster, middle to middle, on its side of the keep's shut gate and in its plain sight; the
      * caster itself when nothing sturdier stands near. Every wait of that one's weapon is divided by
      * 1 + {@code BoostPercent}/100 and cut to whole frames, the engine's rule for a rate of fire, for
-     * {@code DurationFrames}; a second haste while it burns starts it again at the newer figures. Aimed at nothing, so
-     * never refused for want of someone to hasten.
+     * {@code DurationFrames}; a second haste from the same caster while it burns starts it again at the newer figures.
+     * Aimed at nothing, so never refused for want of someone to hasten.
+     *
+     * <p>Held as a buff the caster gives the one it hastens -- the list an aura is lent onto, see
+     * {@link SkillBook#give} -- worth {@code BoostPercent} and holding {@code DurationFrames}, the frame it is cast the
+     * first. The weapon reads the strongest that holds, never the sum, so another summoner's stronger haste on the same
+     * creature wins while it holds, and a longer one carries on after it: see {@link SkillBook#buffOf}.
      */
     HASTE(Aim.SELF),
 
@@ -297,13 +302,15 @@ public enum SkillEffect {
     /**
      * Whether it lends what it is worth to everyone of its bearer's own side round it: the living of that side that
      * carry a {@code SkillBook} -- the bearer itself, and what a summoner calls up, among them; heroes never -- within
-     * its {@code Radius} of the bearer, middle to middle, on its side of the keep's shut gate and in its plain sight.
-     * Every aura is a passive.
+     * its {@code Radius} of the bearer, middle to middle, through walls and never across the keep's shut gate. Every
+     * aura is a passive.
      *
-     * <p>It is asked by the one it lends to, at the moment the figure is used, never pushed to it -- see
-     * {@link SkillBook#auraOn} -- so it holds exactly while that one stands in reach and ends the moment it steps out
-     * or its bearer falls. Of several of one kind round a creature the strongest counts, never the sum; kinds add,
-     * each where its own figure is used. Its figures are the skill's own and do not grow with its bearer's level.
+     * <p>It is pushed by its bearer, never searched for by the one it lends to: every Combat {@code AuraPulseFrames}
+     * the bearer gives everyone it reaches a buff of its kind and worth, which that one's book holds for Combat's
+     * {@code BuffLifeFrames} and reads its figures from -- see {@link SkillBook#auraOn}. So one stepping into reach, or
+     * a bearer appearing, is lent within one pulse, and one stepping out, or whose bearer falls, keeps it a buff's life
+     * at most. Of several of one kind on a creature the strongest counts, never the sum; kinds add, each where its own
+     * figure is used. Its figures are the skill's own and do not grow with its bearer's level.
      */
     public boolean isAura() {
         return this == DAMAGE_AURA || this == MANA_AURA || this == LIFESTEAL_AURA;

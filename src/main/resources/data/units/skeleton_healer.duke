@@ -119,8 +119,9 @@ Monster
       ; Every pool of its own round it -- its own, a summoner's, a fire mage's -- fills
       ; five points a second faster, within its Radius, through walls or not, and never
       ; through the keep's shut gate: in tenths of a point a second, as a pool's own
-      ; trickle. A creature with no pool is given none. Never cast: it holds while it
-      ; stands. Two healers lend the stronger.
+      ; trickle. A creature with no pool is given none. Never cast: while it stands it
+      ; lends it anew every AuraPulseFrames, and what it lends holds BuffLifeFrames --
+      ; see world.duke's Combat block. Two healers lend the stronger.
       Effect = MANA_AURA
       ManaRegen = 50
       ; A room round it, and the ones fighting him from its band.

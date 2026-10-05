@@ -152,8 +152,9 @@ Monster
       Key = E
       ; Everyone of its own round it -- itself, and what it calls up -- hits half as hard
       ; again: every blow and every skill, within its Radius, through walls or not, and
-      ; never through the keep's shut gate. Never cast: it holds while it stands. Two
-      ; summoners lend the stronger, never both.
+      ; never through the keep's shut gate. Never cast: while it stands it lends it anew
+      ; every AuraPulseFrames, and what it lends holds BuffLifeFrames -- see world.duke's
+      ; Combat block. Two summoners lend the stronger, never both.
       Effect = DAMAGE_AURA
       BoostPercent = 50
       ; A room round it, and the ones fighting him from its band.

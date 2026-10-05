@@ -389,8 +389,9 @@ Hero
   ;
   ; An aura reaches everyone of your own side within its Radius of you, middle to
   ; middle, through walls but never through a keep's shut gate -- you too, and whatever
-  ; you call up. Of several of a
-  ; kind the strongest counts, never the sum. The file is refused if an aura has no
+  ; you call up -- lent anew every AuraPulseFrames while you stand, and what is lent
+  ; holds BuffLifeFrames (world.duke's Combat block). Of several of a kind the
+  ; strongest counts, never the sum. The file is refused if an aura has no
   ; Radius, or names a DurationFrames (it holds while you stand, and its Look is worn
   ; two TickFrames at a time), or names a Look without a TickFrames or a TickFrames
   ; without a Look: the two come together, or neither does. A Damage, ManaCost,
