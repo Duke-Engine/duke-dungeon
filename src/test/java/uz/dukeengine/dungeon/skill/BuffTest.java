@@ -12,8 +12,9 @@ import uz.dukeengine.game.DukeGame;
  * What a creature's book holds of what others have lent it: each buff a lender gave -- of a kind, worth a figure, and
  * holding through a last frame -- and the one figure the creature reads of a kind, the largest of those that still hold.
  *
- * <p>Nothing reads the list yet, so this is the list alone, asked of a real book in a real world: frames are what it is
- * counted in, and the book's own {@code update} is what lets go of a buff that has passed.
+ * <p>The list alone -- what an aura's pulse gives it, and the figures that read it, are {@code AuraTest}'s -- asked of
+ * a real book in a real world, a skeleton alone that nobody lends to: frames are what it is counted in, and the book's
+ * own {@code update} is what lets go of a buff that has passed.
  */
 class BuffTest {
 

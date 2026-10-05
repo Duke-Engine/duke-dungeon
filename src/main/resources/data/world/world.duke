@@ -201,8 +201,9 @@ Combat
   ; Its own book lays it, once every AuraMarkTickFrames and on the frames its object id falls
   ; on, so a roomful are not all laid on one frame. The client is told each lasts two beats
   ; (Main.measureLooks): the one laid at the next beat takes over as it goes, and a creature
-  ; an aura no longer reaches -- stepped out of it, behind stone, its bearer fallen -- is
-  ; bare within two beats. At least 1 while any is named.
+  ; whose last aura has lapsed -- stepped out of it, or its bearer fallen, and what it was
+  ; lent let go of (BuffLifeFrames, below) -- is bare within two beats. At least 1 while
+  ; any is named.
   AuraMarkLooks = [AuraMarkOne, AuraMarkTwo, AuraMarkThree]
   AuraMarkTickFrames = 30
 

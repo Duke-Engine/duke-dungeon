@@ -18,6 +18,7 @@ import uz.dukeengine.core.thing.Geometry;
 import uz.dukeengine.core.thing.ObjectStatus;
 import uz.dukeengine.core.thing.Solid;
 import uz.dukeengine.core.thing.World;
+import uz.dukeengine.dungeon.AuraTest;
 import uz.dukeengine.dungeon.Dungeon;
 import uz.dukeengine.dungeon.ai.SightLine;
 import uz.dukeengine.dungeon.combat.ArrowUpdate;
@@ -740,7 +741,8 @@ class SealTest {
 
     /**
      * A summoner just inside the gate, a Skeleton just outside it, within its Radius and in its plain sight through
-     * the doorway: it lends the Skeleton no might while the gate stands, and once it is open, half as hard again.
+     * the doorway: a buff's life on, it has lent the Skeleton no might while the gate stands, and once it is open, half
+     * as hard again.
      */
     @Test
     void aSummonerInsideLendsNoMightToASkeletonOutsideTheShutGate() {
@@ -754,6 +756,7 @@ class SealTest {
             if (opened) {
                 floor.open();
             }
+            AuraTest.aBuffsLife(floor.game());
 
             assertTrue(SightLine.clear(summoner, skeleton),
                     "it does not see it through the doorway, so this proves nothing");
@@ -766,9 +769,9 @@ class SealTest {
     }
 
     /**
-     * A healer just inside the gate, a summoner just outside it with its pool emptied, within the healer's Radius and
-     * in its plain sight: two seconds on, the pool holds only its own trickle while the gate stands, and once it is
-     * open, the aura's as well.
+     * A healer just inside the gate, a summoner just outside it with its pool emptied a buff's life on, within the
+     * healer's Radius and in its plain sight: two seconds on, the pool holds only its own trickle while the gate
+     * stands, and once it is open, the aura's as well.
      */
     @Test
     void aHealerInsideFillsNoPoolOutsideTheShutGate() {
@@ -783,6 +786,7 @@ class SealTest {
             if (opened) {
                 floor.open();
             }
+            AuraTest.aBuffsLife(floor.game());
             var pool = summoner.findModule(SkillBook.class);
             int most = pool.getMaxMana();
             int tenths = pool.getManaRegen();
@@ -838,9 +842,9 @@ class SealTest {
 
     /**
      * A Revenant just outside the gate and the boss just inside it, within its Radius and in its plain sight through
-     * the doorway: it lends the boss none of its thirst while the gate stands, and once it is open, its share of every
-     * blow -- and the one rule for what is on a creature, which the circle under it and the HUD's row ask, says the
-     * same.
+     * the doorway: a buff's life on -- what its guard lent it let go of -- it has lent the boss none of its thirst
+     * while the gate stands, and once it is open, its share of every blow; and the one rule for what is on a creature,
+     * which the circle under it and the HUD's row ask, says the same.
      */
     @Test
     void aRevenantOutsideLendsNoThirstToTheBossInsideTheShutGate() {
@@ -854,6 +858,7 @@ class SealTest {
             if (opened) {
                 floor.open();
             }
+            AuraTest.aBuffsLife(floor.game());
 
             assertTrue(SightLine.clear(revenant, boss),
                     "it does not see the boss through the doorway, so this proves nothing");

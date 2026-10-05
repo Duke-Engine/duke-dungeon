@@ -200,7 +200,8 @@ class BuffScreenTest {
     /**
      * Seed 21's first floor, the bag -- drawn by {@code settings} -- told of it before it starts, as the game tells it,
      * and a summoner of the dungeon's put down on the hero, its haste cast by hand: on the sturdiest of its own near it,
-     * or on itself, in its might either way. That one is picked alone, and a frame has gone by.
+     * or on itself, in its might either way. That one is picked alone, and a buff's life has gone by, so the might is
+     * lent.
      */
     private static Floor floor(DungeonSettings settings) {
         var session = Dungeon.newSession(21L);
@@ -218,7 +219,7 @@ class BuffScreenTest {
         var hastened = logic.getObjects().stream().filter(one -> one.findModule(SkillBook.class) != null
                 && one.findModule(SkillBook.class).getHasteFrames() > 0).findFirst().orElseThrow();
         game.setSelection(List.of(hastened.getId().value()));
-        game.runHeadless(1);
+        AuraTest.aBuffsLife(game);
         return new Floor(session, bag, hastened);
     }
 

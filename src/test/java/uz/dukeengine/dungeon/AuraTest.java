@@ -36,17 +36,18 @@ import uz.dukeengine.game.DukeGame;
 
 /**
  * The mages' auras: what each lends everyone of its own round it -- the living of its side that carry a book, within
- * its Radius, middle to middle, and in its plain sight, itself among them -- asked by the one it lends to at the moment
- * the figure is used.
+ * its Radius, middle to middle, through walls and never across the keep's shut gate, itself among them -- pushed by its
+ * bearer every AuraPulseFrames, a buff the one it reaches holds for BuffLifeFrames and reads its figures from.
  *
  * <p>Most of it is asked of creatures standing in a room with nobody to fight, so nothing moves the figure read; a blow
- * is fought for real, against a Rogue who cannot answer, where the figure is the blow itself.
+ * is fought for real, against a Rogue who cannot answer, where the figure is the blow itself. A figure is read only
+ * once what is lent is lent -- see {@link #aBuffsLife}.
  *
  * <p>And what is drawn of it: each bearer's look, and the circle under every creature an aura reaches -- laid by that
  * creature's own book from {@code SkillBook.aurasOn}, which asks the same figures -- and what the HUD is handed of
  * the creature the player picks, from the same rule.
  */
-class AuraTest {
+public class AuraTest {
 
     private static final DungeonSettings SETTINGS = DungeonSettings.load();
     private static final String SUMMONER = "SkeletonSummoner";
@@ -107,6 +108,17 @@ class AuraTest {
         game.runHeadless(1);
         return new Room(game, game.getLogic().getObjects().stream().filter(object -> object.getBody() != null)
                 .toList());
+    }
+
+    /**
+     * Runs {@code game} on a buff's life, Combat's BuffLifeFrames, so that what is lent is what the room lends as it
+     * now stands. An aura is lent on its bearer's pulse and not the moment the two meet, so a figure asked on the frame
+     * a room is made -- or changed -- would find nothing lent yet, or what was lent before. A buff's life is longer
+     * than a pulse: every bearer standing has lent once at least, and whatever was lent by one since gone, or to one
+     * since out of its reach, has been let go of.
+     */
+    public static void aBuffsLife(DukeGame game) {
+        game.runHeadless(SETTINGS.combat().buffLifeFrames());
     }
 
     private static SkillBook bookOf(GameObject creature) {
@@ -171,8 +183,12 @@ class AuraTest {
         game.spawn(SUMMONER, arena.dungeon(), 162f, 90f);
         game.runHeadless(1);
         arena.orders().hold(arena.hero().getIndex(), true);
+        var hero = first(game, "Rogue");
+        float unstruck = hero.getBody().getHealth();
+        aBuffsLife(game);
+        assertEquals(unstruck, hero.getBody().getHealth(), 0.001f, "the premise: nothing has struck him yet");
 
-        assertEquals(10.5f, untilStruck(game, first(game, "Rogue"), 150), 0.001f, "its first blow");
+        assertEquals(10.5f, untilStruck(game, hero, 150), 0.001f, "its first blow");
     }
 
     /** What the fire mage's fireball takes off a Rogue, thrown by hand -- with a summoner 50 from it, or without. */
@@ -186,6 +202,7 @@ class AuraTest {
         }
         game.runHeadless(1);
         arena.orders().hold(arena.hero().getIndex(), true);
+        aBuffsLife(game);
         var hero = first(game, "Rogue");
         float health = hero.getBody().getHealth();
 
@@ -209,6 +226,7 @@ class AuraTest {
                 ? room(SETTINGS, NO_WALL, one(HEALER, 100f, 150f), one("Skeleton", 130f, 150f),
                         one(SUMMONER, 100f, 110f))
                 : room(SETTINGS, NO_WALL, one(HEALER, 100f, 150f), one("Skeleton", 130f, 150f));
+        aBuffsLife(room.game());
         var patient = room.get(1);
         patient.getBody().setHealth(10f);
         var mending = SETTINGS.skillsFor(HEALER).getFirst();
@@ -232,12 +250,15 @@ class AuraTest {
     @Test
     void atSixtyOneItsOwnButThroughStoneTheMight() {
         var at60 = room(SETTINGS, NO_WALL, one(SUMMONER, 100f, 150f), one("Skeleton", 160f, 150f));
+        aBuffsLife(at60.game());
         assertEquals(1.5f, might(at60.get(1)), 0.0001f, "60 from it");
 
         var at61 = room(SETTINGS, NO_WALL, one(SUMMONER, 100f, 150f), one("Skeleton", 161f, 150f));
+        aBuffsLife(at61.game());
         assertEquals(1f, might(at61.get(1)), 0.0001f, "61 from it");
 
         var walled = room(SETTINGS, 13, one(SUMMONER, 100f, 150f), one("Skeleton", 150f, 150f));
+        aBuffsLife(walled.game());
         assertEquals(1.5f, might(walled.get(1)), 0.0001f, "50 from it, stone between");
     }
 
@@ -246,6 +267,7 @@ class AuraTest {
     void twoSummonersLendTheStrongerNotBoth() {
         var two = room(SETTINGS, NO_WALL, one(SUMMONER, 100f, 150f), one(SUMMONER, 160f, 150f),
                 one("Skeleton", 130f, 150f));
+        aBuffsLife(two.game());
 
         assertEquals(1.5f, might(two.get(2)), 0.0001f);
     }
@@ -258,6 +280,7 @@ class AuraTest {
         game.spawn(SUMMONER, arena.dungeon(), 100f, 150f);
         game.spawn("Rogue", arena.hero(), 115f, 150f);
         game.runHeadless(1);
+        aBuffsLife(game);
 
         assertEquals(1.5f, might(first(game, SUMMONER)), 0.0001f, "the summoner itself");
         assertEquals(1f, might(first(game, "Rogue")), 0.0001f, "a hero, 15 from it");
@@ -288,6 +311,7 @@ class AuraTest {
     @Test
     void aHealerAloneRefillsSevenAndAHalfASecond() {
         var alone = room(SETTINGS, NO_WALL, one(HEALER, 100f, 150f));
+        aBuffsLife(alone.game());
 
         assertEquals(List.of(15), twoSecondsOf(alone, 0));
     }
@@ -299,12 +323,15 @@ class AuraTest {
     @Test
     void aFireMageBesideItRefillsEightAndOutOfItsReachThree() {
         var beside = room(SETTINGS, NO_WALL, one(HEALER, 100f, 150f), one(MAGE, 160f, 150f));
+        aBuffsLife(beside.game());
         assertEquals(List.of(16), twoSecondsOf(beside, 1), "60 from it");
 
         var apart = room(SETTINGS, NO_WALL, one(HEALER, 100f, 150f), one(MAGE, 161f, 150f));
+        aBuffsLife(apart.game());
         assertEquals(List.of(6), twoSecondsOf(apart, 1), "61 from it");
 
         var dry = room(SETTINGS, NO_WALL, one(HEALER, 100f, 150f), one(MAGE, 130f, 150f));
+        aBuffsLife(dry.game());
         var book = emptied(dry.get(1));
         book.resize(book.getMaxMana(), 0);
         dry.game().runHeadless(60);
@@ -315,6 +342,7 @@ class AuraTest {
     @Test
     void twoHealersStillFiveMore() {
         var two = room(SETTINGS, NO_WALL, one(HEALER, 100f, 150f), one(HEALER, 160f, 150f), one(MAGE, 130f, 150f));
+        aBuffsLife(two.game());
 
         assertEquals(List.of(15, 15, 16), twoSecondsOf(two, 0, 1, 2));
     }
@@ -326,6 +354,7 @@ class AuraTest {
     @Test
     void aSkeletonBesideAHealerIsGivenNoPool() {
         var room = room(SETTINGS, NO_WALL, one(HEALER, 100f, 150f), one("Skeleton", 130f, 150f));
+        aBuffsLife(room.game());
         Spawner.scale(room.get(1), 1, SETTINGS);
         assertEquals(50, SkillBook.auraOn(room.get(1), SkillEffect.MANA_AURA), "the premise: the aura reaches it");
         room.game().runHeadless(60);
@@ -352,7 +381,7 @@ class AuraTest {
 
     /**
      * A fight: a Rogue who cannot answer at (150, 150), {@code striker} at {@code (x, 150)} and a Revenant noticing
-     * nobody 50 from it -- or none, for {@code REVENANT} itself.
+     * nobody 50 from it -- or none, for {@code REVENANT} itself -- fought for a buff's life, so the Revenant has lent.
      */
     private static Room fight(String striker, float x) {
         var arena = Dungeon.world(room(NO_WALL), REVENANT.equals(striker) ? SETTINGS : unseeing(REVENANT),
@@ -365,6 +394,7 @@ class AuraTest {
         }
         game.runHeadless(1);
         arena.orders().hold(arena.hero().getIndex(), true);
+        aBuffsLife(game);
         return new Room(game, List.of(first(game, "Rogue"), first(game, striker)));
     }
 
@@ -414,6 +444,7 @@ class AuraTest {
     @Test
     void aBossBesideARevenantDrinksItsOwnAndTheAura() {
         var room = room(SETTINGS, NO_WALL, one(REVENANT, 100f, 150f), one("Warden", 140f, 150f));
+        aBuffsLife(room.game());
 
         assertEquals(7f, aBlowOfTwentyTo(room.get(1)), 0.001f, "35% of 20");
     }
@@ -423,9 +454,11 @@ class AuraTest {
     void twoRevenantsStillATenthAndOutOfReachNothing() {
         var two = room(SETTINGS, NO_WALL, one(REVENANT, 100f, 150f), one(REVENANT, 160f, 150f),
                 one("Skeleton", 130f, 150f));
+        aBuffsLife(two.game());
         assertEquals(2f, aBlowOfTwentyTo(two.get(2)), 0.001f, "two Revenants");
 
         var apart = room(SETTINGS, NO_WALL, one(REVENANT, 100f, 150f), one("Skeleton", 161f, 150f));
+        aBuffsLife(apart.game());
         assertEquals(0f, aBlowOfTwentyTo(apart.get(1)), 0.001f, "61 from it");
     }
 
@@ -456,6 +489,7 @@ class AuraTest {
         arena.game().spawn(MAGE, arena.dungeon(), 200f, 150f);
         arena.game().spawn(REVENANT, arena.dungeon(), 200f, 100f);
         var heroes = twoRogues(arena);
+        aBuffsLife(arena.game());
         var mage = first(arena.game(), MAGE);
         Spawner.scale(mage, 6, SETTINGS);
         ((GrowableBody) mage.getBody()).setMaxHealth(mage.getBody().getMaxHealth() * 2f);
@@ -493,6 +527,7 @@ class AuraTest {
         arena.game().spawn("Skeleton", arena.dungeon(), 190f, 150f);
         arena.game().spawn(REVENANT, arena.dungeon(), 190f, 120f);
         var heroes = twoRogues(arena);
+        aBuffsLife(arena.game());
         var striker = first(arena.game(), "Skeleton");
         striker.getBody().setHealth(striker.getBody().getMaxHealth() / 2f);
         float his = together(heroes);
@@ -768,6 +803,7 @@ class AuraTest {
     @Test
     void aSkeletonBesideASummonerWearsTheFirstMarkAtItsBeat() {
         var room = beside(SETTINGS, SUMMONER);
+        aBuffsLife(room.game());
         var marks = marked(room.game(), 90);
         int beat = SETTINGS.combat().auraMarkTickFrames();
         var first = SETTINGS.combat().auraMarkLooks().getFirst();
@@ -796,6 +832,7 @@ class AuraTest {
         for (int kinds = 1; kinds <= 3; kinds++) {
             var room = beside(SETTINGS, Arrays.copyOf(bearers, kinds));
             bookOf(lastOf(room)).resize(50, 0);
+            aBuffsLife(room.game());
 
             assertEquals(kinds, SkillBook.aurasOn(lastOf(room)).size(), "the premise: " + kinds + " reach it");
             var wanted = SETTINGS.combat().auraMarkLooks().get(kinds - 1);
@@ -809,6 +846,7 @@ class AuraTest {
     void twoSummonersMakeOneKindAndTheFirstMark() {
         var room = room(SETTINGS, NO_WALL, one(SUMMONER, 100f, 150f), one(SUMMONER, 160f, 150f),
                 one("Skeleton", 130f, 150f));
+        aBuffsLife(room.game());
         var first = SETTINGS.combat().auraMarkLooks().getFirst();
 
         assertEquals(List.of(SkillEffect.DAMAGE_AURA), SkillBook.aurasOn(room.get(2)),
@@ -825,6 +863,7 @@ class AuraTest {
         var alone = room(SETTINGS, NO_WALL, one("Skeleton", 130f, 150f));
         var apart = room(SETTINGS, NO_WALL, one(SUMMONER, 100f, 150f), one("Skeleton", 161f, 150f));
         var poolless = beside(SETTINGS, HEALER);
+        aBuffsLife(poolless.game());
         assertEquals(50, SkillBook.auraOn(lastOf(poolless), SkillEffect.MANA_AURA), "the premise: the aura reaches it");
         assertEquals(0, bookOf(lastOf(poolless)).getMaxMana(), "the premise: and it has no pool");
 
@@ -845,6 +884,7 @@ class AuraTest {
         game.spawn("Rogue", arena.hero(), 115f, 150f);
         game.runHeadless(1);
         arena.orders().hold(arena.hero().getIndex(), true);
+        aBuffsLife(game);
         var hero = first(game, "Rogue");
 
         var marks = marked(game, 90);
@@ -874,6 +914,7 @@ class AuraTest {
     void aCreatureKilledWearsNoMarkFromThen() {
         var room = beside(SETTINGS, SUMMONER);
         var skeleton = lastOf(room);
+        aBuffsLife(room.game());
         assertFalse(on(marked(room.game(), 30), skeleton).isEmpty(), "the premise: standing, it wears the mark");
 
         toTheFrameBefore(room, skeleton);
@@ -887,19 +928,24 @@ class AuraTest {
         assertEquals(List.of(), SkillBook.aurasOn(skeleton), "no aura is on a creature that has fallen");
     }
 
-    /** The mark follows the aura: its bearer fallen, none is laid on those it lent to -- from the very next beat. */
+    /**
+     * The mark follows what is lent: its bearer killed on the frame before the Skeleton's beat, the Skeleton wears the
+     * mark once more -- what it was lent holds yet -- and never after, for that lapses within BuffLifeFrames, long
+     * before its next beat.
+     */
     @Test
-    void whenItsBearerFallsNoMarkIsLaidOnThoseItLentTo() {
+    void whenItsBearerFallsTheMarkIsLaidOnlyWhileWhatItLentHolds() {
         var room = beside(SETTINGS, SUMMONER);
         var skeleton = lastOf(room);
+        aBuffsLife(room.game());
         assertFalse(on(marked(room.game(), 30), skeleton).isEmpty(), "the premise: it wears the mark");
 
         toTheFrameBefore(room, skeleton);
         var body = room.get(0).getBody();
         body.damage(body.getHealth() + 1f);
 
-        assertEquals(List.of(), on(marked(room.game(), 90), skeleton),
-                "its bearer killed on the frame before its beat");
+        assertEquals(List.of(SETTINGS.combat().auraMarkLooks().getFirst()), on(marked(room.game(), 90), skeleton),
+                "its bearer killed on the frame before its beat: one more, and none after");
     }
 
     /**
@@ -910,6 +956,7 @@ class AuraTest {
     void aurasOnAnswersTheKindsThatReachItInOrder() {
         var room = beside(SETTINGS, REVENANT, HEALER, SUMMONER);
         var skeleton = lastOf(room);
+        aBuffsLife(room.game());
 
         assertEquals(50, SkillBook.auraOn(skeleton, SkillEffect.MANA_AURA),
                 "the premise: the healer's aura reaches it");
@@ -933,6 +980,7 @@ class AuraTest {
         var two = marksNamed(shipped.subList(0, 2));
         var room = beside(two, SUMMONER, HEALER, REVENANT);
         bookOf(lastOf(room)).resize(50, 0);
+        aBuffsLife(room.game());
         assertEquals(3, SkillBook.aurasOn(lastOf(room)).size(), "the premise: three kinds reach it");
         assertEquals(List.of(shipped.get(1), shipped.get(1)), on(played(room.game(), 60, shipped), lastOf(room)),
                 "three kinds, two marks named: the second");
@@ -971,6 +1019,7 @@ class AuraTest {
         assertNotEquals(data, twenty, "the premise: the Combat block gives the marks' beat");
         var settings = DungeonSettings.parse(twenty);
         var room = beside(settings, SUMMONER);
+        aBuffsLife(room.game());
         var marks = marked(room.game(), 60);
 
         for (var creature : room.ones()) {
@@ -1051,6 +1100,7 @@ class AuraTest {
     void whatIsOnTheCreatureThePlayerPicksIsHandedOverWhole() {
         var screen = new BuffScreen(SETTINGS);
         var mighty = beside(SETTINGS, screen::show, SUMMONER);
+        aBuffsLife(mighty.game());
         picked(mighty.game(), lastOf(mighty));
         var might = auraOf(mighty.get(0));
         assertEquals(List.of(new BuffScreen.Buff(might, 50, 0)), screen.buffs().get(lastOf(mighty).getId().value()),
@@ -1059,6 +1109,7 @@ class AuraTest {
         var shown = new BuffScreen(SETTINGS);
         var both = beside(SETTINGS, shown::show, SUMMONER, HEALER);
         bookOf(lastOf(both)).resize(50, 0);
+        aBuffsLife(both.game());
         picked(both.game(), lastOf(both));
         assertEquals(List.of(new BuffScreen.Buff(might, 50, 0), new BuffScreen.Buff(auraOf(both.get(1)), 50, 0)),
                 shown.buffs().get(lastOf(both).getId().value()), "the might, and the mana in tenths a second");
@@ -1066,6 +1117,7 @@ class AuraTest {
         var its = new BuffScreen(SETTINGS);
         var hastened = beside(SETTINGS, its::show, SUMMONER);
         var skeleton = lastOf(hastened);
+        aBuffsLife(hastened.game());
         assertTrue(bookOf(hastened.get(0)).cast('W', 1, null, null), "the premise: it cast its haste");
         assertTrue(bookOf(skeleton).getHasteFrames() > 0, "the premise: on the Skeleton, the sturdier");
         picked(hastened.game(), skeleton);
@@ -1095,6 +1147,7 @@ class AuraTest {
         game.spawn("Rogue", arena.hero(), 115f, 150f);
         game.runHeadless(1);
         arena.orders().hold(arena.hero().getIndex(), true);
+        aBuffsLife(game);
         var hero = first(game, "Rogue");
         assertEquals(1.5f, might(first(game, SUMMONER)), 0.0001f, "the premise: the summoner bears its might");
         picked(game, hero);
@@ -1102,6 +1155,7 @@ class AuraTest {
 
         var dry = new BuffScreen(SETTINGS);
         var poolless = beside(SETTINGS, dry::show, HEALER);
+        aBuffsLife(poolless.game());
         assertEquals(50, SkillBook.auraOn(lastOf(poolless), SkillEffect.MANA_AURA), "the premise: the aura reaches it");
         picked(poolless.game(), lastOf(poolless));
         assertEquals(List.of(), handedOver(dry, lastOf(poolless)), "a Skeleton with no pool beside a healer");
@@ -1118,6 +1172,7 @@ class AuraTest {
             fallen.show(world);
         }, SUMMONER);
         var skeleton = lastOf(room);
+        aBuffsLife(room.game());
         assertTrue(bookOf(room.get(0)).cast('W', 1, null, null), "the premise: it cast its haste");
         picked(room.game(), skeleton);
         assertEquals(List.of(SkillEffect.HASTE, SkillEffect.DAMAGE_AURA), handedOver(fallen, skeleton),
@@ -1127,6 +1182,27 @@ class AuraTest {
         assertTrue(skeleton.isEffectivelyDead() && room.game().getLogic().findObject(skeleton.getId()) != null
                 && bookOf(skeleton).getHasteFrames() > 0, "the premise: it lies there dead, its haste counting down");
         assertEquals(List.of(), handedOver(fallen, skeleton), "fallen");
+    }
+
+    /**
+     * The row follows what is lent, as the circle does: its summoner killed, the Skeleton picked alone is handed the
+     * might while what it was lent holds, and none once that has lapsed, within BuffLifeFrames.
+     */
+    @Test
+    void theRowLetsTheMightGoWithinABuffsLifeOfItsBearersFall() {
+        var screen = new BuffScreen(SETTINGS);
+        var room = beside(SETTINGS, screen::show, SUMMONER);
+        var skeleton = lastOf(room);
+        aBuffsLife(room.game());
+        picked(room.game(), skeleton);
+        assertEquals(List.of(SkillEffect.DAMAGE_AURA), handedOver(screen, skeleton), "the premise: in the might");
+
+        var body = room.get(0).getBody();
+        body.damage(body.getHealth() + 1f);
+        room.game().runHeadless(1);
+        assertEquals(List.of(SkillEffect.DAMAGE_AURA), handedOver(screen, skeleton), "the frame it falls: held yet");
+        room.game().runHeadless(SETTINGS.combat().buffLifeFrames());
+        assertEquals(List.of(), handedOver(screen, skeleton), "a buff's life on: let go of");
     }
 
     /**
@@ -1140,6 +1216,7 @@ class AuraTest {
         var game = room.game();
         var summoner = room.get(0);
         var skeleton = lastOf(room);
+        aBuffsLife(game);
 
         game.setSelection(List.of(summoner.getId().value(), skeleton.getId().value()));
         game.runHeadless(1);
@@ -1159,30 +1236,91 @@ class AuraTest {
 
     // ---- reach ----
 
-    /**
-     * It holds while its bearer lives: the summoner killed, the Skeleton beside it is its own again -- from the moment
-     * it falls, its body still lying there, and after.
-     */
-    @Test
-    void itsBearerKilledItsBlowIsItsOwnAgain() {
-        var room = room(SETTINGS, NO_WALL, one(SUMMONER, 100f, 150f), one("Skeleton", 130f, 150f));
-        assertEquals(1.5f, might(room.get(1)), 0.0001f, "the premise: it lends");
-
-        var body = room.get(0).getBody();
-        body.damage(body.getHealth() + 1f);
-
-        assertTrue(room.get(0).isEffectivelyDead(), "the premise: the summoner is dead");
-        assertEquals(1f, might(room.get(1)), 0.0001f, "the moment it falls");
-        room.game().runHeadless(1);
-        assertEquals(1f, might(room.get(1)), 0.0001f, "and after");
+    /** A bearer, one of its own it lends to, and that one's figure of the aura: as it reads it lent, and its own. */
+    private record Lending(String bearer, String to, java.util.function.Function<GameObject, Float> figure, float lent,
+            float own) {
     }
 
-    /** It holds while its bearer lives, stunned or not: a summoner standing dazed still lends. */
+    /**
+     * The three: what a Skeleton's blows are multiplied by beside a summoner, what a fire mage's pool is lent beside a
+     * healer -- in tenths of a point a second -- and what a Skeleton beside a Revenant drinks of a blow of twenty.
+     */
+    private static final List<Lending> LENDINGS = List.of(
+            new Lending(SUMMONER, "Skeleton", AuraTest::might, 1.5f, 1f),
+            new Lending(HEALER, MAGE, one -> (float) SkillBook.auraOn(one, SkillEffect.MANA_AURA), 50f, 0f),
+            new Lending(REVENANT, "Skeleton", AuraTest::aBlowOfTwentyTo, 2f, 0f));
+
+    /**
+     * An aura is lent on its bearer's pulse, not the moment the two meet: one of its own stepping into its reach -- a
+     * Skeleton into a summoner's, a fire mage into a healer's, a Skeleton into a Revenant's -- is its own at first, and
+     * is lent it on the next frame its bearer's object id falls on in AuraPulseFrames: within one pulse.
+     */
+    @Test
+    void oneSteppingIntoReachIsLentWithinOnePulseOnItsBearersBeat() {
+        int pulse = SETTINGS.combat().auraPulseFrames();
+        for (var lending : LENDINGS) {
+            var room = room(SETTINGS, NO_WALL, one(lending.bearer(), 100f, 150f), one(lending.to(), 300f, 150f));
+            var one = room.get(1);
+            aBuffsLife(room.game());
+            assertEquals(lending.own(), lending.figure().apply(one), 0.0001f, "the premise: " + lending.to()
+                    + " 200 from a " + lending.bearer());
+
+            one.setPosition(new Coord3D(130f, 150f, one.getPosition().z()));
+            assertEquals(lending.own(), lending.figure().apply(one), 0.0001f, lending.to() + " stepped into a "
+                    + lending.bearer() + "'s reach: not the moment it meets it");
+            int waited = 0;
+            while (lending.figure().apply(one) == lending.own()) {
+                assertTrue(++waited <= pulse, lending.to() + " was not lent within a pulse of stepping in");
+                room.game().runHeadless(1);
+            }
+            assertEquals(lending.lent(), lending.figure().apply(one), 0.0001f, lending.to() + ", lent");
+            int lentOn = room.game().getLogic().getFrame() - 1;
+            assertEquals(Math.floorMod(room.get(0).getId().value(), pulse), lentOn % pulse, lending.to()
+                    + " was lent on frame " + lentOn + ", not one its " + lending.bearer() + "'s id falls on");
+        }
+    }
+
+    /**
+     * And what it lent outlives its bearer by a buff's life at most: each bearer killed, the one beside it holds what
+     * it was lent the moment it falls, its body lying there, is its own again within BuffLifeFrames -- a bearer fallen
+     * lends no more -- and stays so.
+     */
+    @Test
+    void itsBearerKilledWhatItLentIsGoneWithinABuffsLife() {
+        int life = SETTINGS.combat().buffLifeFrames();
+        for (var lending : LENDINGS) {
+            var room = room(SETTINGS, NO_WALL, one(lending.bearer(), 100f, 150f), one(lending.to(), 130f, 150f));
+            var one = room.get(1);
+            aBuffsLife(room.game());
+            assertEquals(lending.lent(), lending.figure().apply(one), 0.0001f, "the premise: a " + lending.bearer()
+                    + " lends to a " + lending.to());
+
+            var body = room.get(0).getBody();
+            body.damage(body.getHealth() + 1f);
+
+            assertTrue(room.get(0).isEffectivelyDead(), "the premise: the " + lending.bearer() + " is dead");
+            assertEquals(lending.lent(), lending.figure().apply(one), 0.0001f, lending.to() + ", the moment the "
+                    + lending.bearer() + " falls: what was lent is held");
+            int kept = 0;
+            while (lending.figure().apply(one) != lending.own()) {
+                assertTrue(++kept <= life, lending.to() + " held what a fallen " + lending.bearer() + " lent past a"
+                        + " buff's life");
+                room.game().runHeadless(1);
+            }
+            aBuffsLife(room.game());
+            assertEquals(lending.own(), lending.figure().apply(one), 0.0001f, lending.to() + ", and after");
+        }
+    }
+
+    /**
+     * It is lent while its bearer lives, stunned or not: a summoner standing dazed for a buff's life -- so whatever it
+     * lent before has lapsed -- still lends.
+     */
     @Test
     void aStunnedBearerStillLends() {
         var room = room(SETTINGS, NO_WALL, one(SUMMONER, 100f, 150f), one("Skeleton", 130f, 150f));
         room.get(0).findModule(StatusUpdate.class).apply(ObjectStatus.DISABLED, 60);
-        room.game().runHeadless(1);
+        aBuffsLife(room.game());
 
         assertTrue(room.get(0).hasStatus(ObjectStatus.DISABLED), "the premise: the summoner stands dazed");
         assertEquals(1.5f, might(room.get(1)), 0.0001f);
@@ -1195,6 +1333,7 @@ class AuraTest {
         assertTrue(bookOf(room.get(0)).cast('Q', 1, null, new Coord3D(150f, 150f, 0f)),
                 "the premise: it opened its rifts");
         room.game().runHeadless(30);
+        aBuffsLife(room.game());
 
         var risen = room.game().getLogic().getObjects().stream()
                 .filter(object -> object.findModule(Summoned.class) != null).toList();
@@ -1214,15 +1353,16 @@ class AuraTest {
         assertNotEquals(skeleton, bookless, "the premise: the Skeleton's book was taken out");
         var room = room(SETTINGS, Content.units().replace(skeleton, bookless), NO_WALL,
                 one(SUMMONER, 100f, 150f), one("Skeleton", 130f, 150f));
+        aBuffsLife(room.game());
 
         assertNull(bookOf(room.get(1)), "the premise: it carries none");
         assertEquals(0, SkillBook.auraOn(room.get(1), SkillEffect.DAMAGE_AURA));
     }
 
     /**
-     * A summoner lends its own side and no other: a Skeleton of the hero's side -- a monster of another player, whose
-     * own book reaches as far as any monster's -- 36 from it and in its plain sight hits as hard as it ever did, where
-     * one of the summoner's own, 30 from it, hits half as hard again.
+     * A summoner lends its own side and no other: a Skeleton of the hero's side -- a monster of another player, with a
+     * book to be lent to as any monster has -- 36 from it hits as hard as it ever did, where one of the summoner's own,
+     * 30 from it, hits half as hard again.
      */
     @Test
     void aMonsterOfAnotherSideIsNotLent() {
@@ -1236,6 +1376,7 @@ class AuraTest {
                 .toList());
         var own = room.get(1);
         var rival = room.get(2);
+        aBuffsLife(game);
 
         assertEquals(arena.dungeon().getIndex(), own.getPlayerIndex(), "the premise: one is the summoner's own");
         assertEquals(arena.hero().getIndex(), rival.getPlayerIndex(), "the premise: and one is of another side");
@@ -1252,9 +1393,11 @@ class AuraTest {
         assertNotEquals(Content.data(), data, "the premise: the summoner's might waits for its sixth level");
         var settings = DungeonSettings.parse(data);
         var room = room(settings, NO_WALL, one(SUMMONER, 100f, 150f), one("Skeleton", 130f, 150f));
+        aBuffsLife(room.game());
 
         assertEquals(1f, might(room.get(1)), 0.0001f, "at its first level");
         Spawner.scale(room.get(0), 6, settings);
+        aBuffsLife(room.game());
         assertEquals(1.5f, might(room.get(1)), 0.0001f, "at its sixth");
     }
 

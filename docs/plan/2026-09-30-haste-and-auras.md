@@ -68,17 +68,24 @@ one new cast effect, three new passives, and the `SkillBook` the one thing that 
 
 ## How an aura reaches
 
-- **The receiver asks, when it uses the figure:** the aura of a kind on a creature is the largest worth among the
-  bearers of that kind on its side, living, within whose `Radius` it stands (middle to middle, as an area blast
-  measures) and in whose plain sight — 0 for none. One static helper, `SkillBook.auraOn(creature, kind)`, over
-  `world.objectsInRange` out to the widest aura any file gives, asked in three places: the book's `damageMultiplier` at
-  each blow and skill, `drink` at each blow landed, and the mana trickle each frame the pool is not full.
-- So it holds exactly while the receiver stands in reach and ends the moment it steps out or its bearer falls — no state
-  kept, no timer, nothing sent between the two — and a maximum comes out the same in any order.
+*As built at first the receiver asked, at each use; since 2026-10-05 the bearer pushes
+(`2026-10-05-push-buffs-plan.md`). What follows is the push.*
+
+- **The bearer lends, every `AuraPulseFrames`:** on the frames its object id falls on (`frame % pulse == id % pulse`,
+  as its look is staggered), a living bearer gives everyone of its side within the aura's `Radius` (middle to middle,
+  as an area blast measures; through walls, never across the keep's shut gate), living and carrying a book — itself
+  among them — a **buff** of the aura's kind and worth, which the receiver's `SkillBook` holds for `BuffLifeFrames`
+  (Combat block: 10 and 15). One pass over the objects in its `Radius` for each aura, once a pulse.
+- **The receiver reads what it holds:** `SkillBook.auraOn(creature, kind)` is the largest worth among its buffs of that
+  kind that still hold — 0 for none — asked in the same three places: the book's `damageMultiplier` at each blow and
+  skill, `drink` at each blow landed, and the mana trickle each frame the pool is not full. No search at any asking.
+- **Latency, accepted:** a creature stepping into reach, or a bearer appearing, is lent within one pulse; one stepping
+  out, or whose bearer falls, keeps what it was lent at most `BuffLifeFrames`. The life outlasts the pulse, so a buff
+  never lapses between two pulses of a bearer that still reaches it; and a maximum comes out the same in any order.
 - **Several of one kind: the strongest,** never the sum — two summoners make a skeleton hit ×1.5, not ×2.25. Kinds add,
   each on its own seam. **A creature's own `LIFESTEAL` and the aura add:** a boss beside a Revenant drinks 25% + 10%.
-- **Cost:** a pass over the floor's objects and a sight line per bearer in reach, at each blow and each refilling frame;
-  none for a hero's book (none of his side may bear one) or where no file gives an aura. A cache waits for a slow floor.
+- **Heroes never:** no bearer stands on a hero's side (a passive is refused on a hero), and a bearer lends its own
+  side alone.
 
 ## Every blow a monster lands
 
@@ -109,7 +116,7 @@ drinks from its own fire.
   plays the `AuraMarkLooks` mark for that count: the first for one kind, the second for two, the third for three (a
   count past the list's end wears its last). Each is a `MARK` measured in units, a soft glow of the kit's `circle_05`
   some 14 units across, differing only in `Alpha`; `Main.measureLooks` makes it last two beats, so it rides the creature
-  while an aura reaches it and is gone within two beats of its leaving.
+  while an aura is lent to it and is gone within two beats of what it was lent lapsing.
 - **The passive-`Look` rule relaxes for an aura:** it may name one, with a `TickFrames` — a lasting skill's beat, as a
   whirlwind's is; a `LIFESTEAL` still may not. Every look worn as a state — the stun's, each `HASTE`'s and each aura's —
   says `Renews = Yes` on its `AURA` layers (engine request E12; the three auras' looks have none now), and the file is
@@ -144,10 +151,11 @@ summoner's pool (80, 2.5 a second) pays for both at their cooldowns; alone, as i
 
 ## Lock-step
 
-On the simulation thread, from simulation state: an aura is a maximum of whole percents and tenths, the same in any
-order, behind a sight line walked on integers; the haste's choice a total order ending in the object id; its frames
-counted down; the mana by the book's carry in whole points; the waits by the engine's own cut to whole frames. The looks
-are events, out of the checksum. Every name and number from data.
+On the simulation thread, from simulation state: an aura is lent on the frames its bearer's object id falls on and read
+as a maximum of whole percents and tenths over the buffs a book holds, the same in any order; the haste's choice a total
+order ending in the object id, behind a sight line walked on integers; its frames counted down; the mana by the book's
+carry in whole points; the waits by the engine's own cut to whole frames. The looks are events, out of the checksum.
+Every name and number from data.
 
 ## Tests
 
@@ -161,8 +169,8 @@ are events, out of the checksum. Every name and number from data.
   two healers, still 5 more; a Skeleton beside it has no pool and is given none.
 - **Lifesteal:** a Skeleton beside a Revenant striking for 7 gets back 0.7, a Stalker's bolt its tenth, the Revenant its
   own fire's; a boss beside it 35%; two Revenants, still 10%; out of reach, nothing; the meteor's blast drinks.
-- **Reach:** its bearer killed, a Skeleton's next blow is its own again; a creature with no book is not reached; an aura
-  its bearer's level has not opened lends nothing.
+- **Reach:** its bearer killed, a Skeleton's blow is its own again within `BuffLifeFrames` (since the push; at first,
+  its next blow); a creature with no book is not reached; an aura its bearer's level has not opened lends nothing.
 - **Marks:** a Skeleton beside a summoner wears the first mark at its beat, the summoner itself one; with a healer too
   (the Skeleton given a pool) the second, with a Revenant as well the third; two summoners, still the first; none for a
   pool-less Skeleton beside a healer alone, alone, behind stone, past the `Radius`, a hero, or a creature killed; the
@@ -189,7 +197,8 @@ are events, out of the checksum. Every name and number from data.
 8. **The strongest of a kind, never the sum; kinds add; a creature's own lifesteal and the aura add.**
 9. **+50% on every blow and every skill's damage,** as EMPOWER's; a mending is not raised.
 10. **Mana as a rate,** 5.0 a second through the carry; nothing to a creature with no pool; no aura grows with a level.
-11. **Asked where it is used, not pushed to the receivers:** nothing held, nothing to go stale.
+11. **Pushed to the receivers, not asked where it is used** (the owner, 2026-10-05; at first it was asked, nothing
+    held): a bearer lends every `AuraPulseFrames` a buff held `BuffLifeFrames`, so a receiver reads its own list.
 12. **Every monster carries a book** — one line in each of five files.
 13. **Drawn:** a small decal in the aura's colour, on a picture of its kind's own, under each bearer (the owner asked
     for it on 2026-10-01, in place of a ring at its reach and a rider); `Hasted` on the hastened; a light-blue circle,

@@ -88,8 +88,9 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
 
     /**
      * What others have lent it and not yet let go of: one buff for each kind and lender, in the order they were first
-     * given. Plain state, the same on every machine: {@link #buffOf} reads it on the frame a figure is wanted, and
-     * {@link #update} lets go of what has passed.
+     * given -- an aura, given again on each of its bearer's pulses (see {@link #lendTheAuras}). Plain state, the same
+     * on every machine: {@link #buffOf} reads it on the frame a figure is wanted, and {@link #update} lets go of what
+     * has passed.
      */
     private final List<Buff> buffs = new java.util.ArrayList<>();
 
@@ -255,21 +256,12 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
      */
     private final Seal seal;
 
-    /**
-     * How far round it an aura may be lent from: the widest {@code Radius} any aura in the files has, and nothing for a
-     * hero's book -- none of his side may bear one -- or where no file gives an aura. See {@link #auraOn}.
-     */
-    private final float auraReach;
-
     public SkillBook(GameObject owner, List<Skill> skills, DungeonSettings settings, Seal seal) {
         super(owner);
         this.skills = List.copyOf(skills);
         this.cooldowns = new int[skills.size()];
         this.settings = settings;
         this.seal = seal;
-        this.auraReach = settings.monster(owner.getTemplate().name()) == null ? 0f
-                : settings.skills().stream().filter(skill -> skill.effect().isAura())
-                        .map(Skill::radius).reduce(0f, Math::max);
     }
 
     /**
@@ -1282,8 +1274,8 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
 
     /**
      * How much harder its blows and its skills land: an {@code EMPOWER} while it lasts, and the strongest
-     * {@code DAMAGE_AURA} it stands in -- see {@link #auraOn}. The engine's weapon multiplies it into each blow, and
-     * {@link #damageOf} into each skill; a mending is not damage and does not ask.
+     * {@code DAMAGE_AURA} lent to it that still holds -- see {@link #auraOn}. The engine's weapon multiplies it into
+     * each blow, and {@link #damageOf} into each skill; a mending is not damage and does not ask.
      */
     @Override
     public float damageMultiplier() {
@@ -1293,58 +1285,30 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
 
     /**
      * The strongest aura of {@code kind} on {@code creature}, 0 for none: the largest worth -- a {@code BoostPercent},
-     * or a {@code MANA_AURA}'s tenths of a point a second -- among the bearers of that kind on its side, living, whose
-     * level has opened it, within whose {@code Radius} it stands, middle to middle, on its side of the keep's shut gate,
-     * walls or none -- the bearer itself among them. Nothing for a creature that carries no book, as one without a
-     * {@code StatusUpdate} is not stunned.
+     * or a {@code MANA_AURA}'s tenths of a point a second -- among the buffs of that kind its book holds on this frame,
+     * each lent by a bearer of its side that reached it on a pulse (see {@link #lendTheAuras}). Nothing for a creature
+     * that carries no book, as one without a {@code StatusUpdate} is not stunned.
      *
-     * <p>Asked where the figure is used, never pushed to the creature, so it holds exactly while the creature stands in
-     * reach and ends the moment it steps out or its bearer falls: nothing kept, nothing to go stale. A maximum of whole
-     * numbers, the same in any order.
-     *
-     * <p>ponytail: a pass over the floor's objects out to the widest aura at every asking; a cache by frame if a
-     * crowded floor ever shows it.
+     * <p>Read from what it holds, never searched for round it: a creature stepping into reach, or a bearer appearing,
+     * is lent within one Combat {@code AuraPulseFrames}, and one stepping out, or whose bearer falls, keeps what it was
+     * lent at most Combat's {@code BuffLifeFrames}. A maximum of whole numbers, the same in any order.
      */
     public static int auraOn(GameObject creature, SkillEffect kind) {
         var book = creature == null ? null : creature.findModule(SkillBook.class);
         var world = creature == null ? null : creature.getWorld();
-        if (book == null || world == null || book.auraReach <= 0f) {
-            return 0;
-        }
-        var here = creature.getPosition();
-        int strongest = 0;
-        for (var bearer : world.objectsInRange(here, book.auraReach,
-                one -> one.getPlayerIndex() == creature.getPlayerIndex() && !one.isEffectivelyDead())) {
-            var theirs = bearer.findModule(SkillBook.class);
-            if (theirs == null) {
-                continue;
-            }
-            for (var skill : theirs.skills) {
-                int worth = kind == SkillEffect.MANA_AURA ? skill.manaRegen() : skill.boostPercent();
-                if (skill.effect() == kind && worth > strongest
-                        && LevelBonus.rankOf(bearer, skill) > 0
-                        && here.distance(bearer.getPosition()) <= skill.radius()
-                        && !book.seal.parts(world, bearer.getPosition(), here)) {
-                    strongest = worth;
-                }
-            }
-        }
-        return strongest;
+        return book == null || world == null ? 0 : book.buffOf(kind, world.getFrame());
     }
 
     /**
      * The kinds of aura on {@code creature} now, in {@link SkillEffect} order: each one whose {@link #auraOn} is above
      * 0 -- but a {@code MANA_AURA} only for a creature with a pool, for it fills pools and makes none, and changes
      * nothing on one without. Counted by kind, not by bearer: two summoners lend one might. Nothing for a creature
-     * that carries no book, for a hero -- no aura reaches him -- or for one that has fallen.
+     * that carries no book, for a hero -- no aura is lent to him -- or for one that has fallen.
      *
      * <p>The one rule for what is on a creature, for whatever draws it to ask -- the circle its own book lays under it
      * ({@code wearTheMark}), and the HUD's row over the creature the player picks. It asks {@link #auraOn}, so a
      * picture of what is lent holds exactly while the figures do, and cannot disagree with them. Pure: asked when
      * wanted, nothing kept, and an answer that is the asker's own.
-     *
-     * <p>ponytail: one {@code auraOn} a kind, so three passes over the floor's objects at each asking, two for a
-     * creature with no pool -- once a beat for each creature; one pass for all three if a crowded floor ever shows it.
      */
     public static List<SkillEffect> aurasOn(GameObject creature) {
         var book = creature == null ? null : creature.findModule(SkillBook.class);
@@ -1372,9 +1336,9 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
 
     /**
      * {@code striker} landed a blow worth {@code dealt}: every {@code LIFESTEAL} among
-     * its skills, and the strongest {@code LIFESTEAL_AURA} it stands in -- see
-     * {@link #auraOn} -- give it back their shares of it, added, as health, never above
-     * its maximum. Nobody, the dead, and a creature with neither get nothing.
+     * its skills, and the strongest {@code LIFESTEAL_AURA} lent to it that still holds
+     * -- see {@link #auraOn} -- give it back their shares of it, added, as health, never
+     * above its maximum. Nobody, the dead, and a creature with neither get nothing.
      *
      * <p>Told rather than listening, by every place a blow lands: a swing where the
      * striker stands, which {@code Swing} hears the moment before the weapon lands it;
@@ -1447,9 +1411,9 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
      * a second's worth of frames of the rate is exactly the rate, and no rounding
      * is carried from one second into the next.
      *
-     * <p>The rate is its own and the strongest {@code MANA_AURA} it stands in, asked
-     * each frame the pool is not full -- see {@link #auraOn}. A pool with no trickle
-     * of its own still fills at the aura's; no pool at all is given nothing.
+     * <p>The rate is its own and the strongest {@code MANA_AURA} lent to it that still
+     * holds, read each frame the pool is not full -- see {@link #auraOn}. A pool with no
+     * trickle of its own still fills at the aura's; no pool at all is given nothing.
      */
     private void regenerate() {
         int tenths = !usesMana || mana >= maxMana ? 0
@@ -1484,6 +1448,7 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
             hasteFrames--;
         }
         letGoOfTheBuffsThatHavePassed();
+        lendTheAuras();
         wearTheAuras();
         wearTheMark();
         turnTheWhirlwind();
@@ -1502,6 +1467,47 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
         if (world != null) {
             int frame = world.getFrame();
             buffs.removeIf(buff -> buff.until() < frame);
+        }
+    }
+
+    /**
+     * Its auras are lent: once every Combat {@code AuraPulseFrames}, on the frames its object id falls on -- as its
+     * looks are worn, so a roomful of bearers are not all lending on one frame -- each aura its level has opened is
+     * given, at the skill's worth ({@code BoostPercent}, or a {@code MANA_AURA}'s {@code ManaRegen}), to everyone of
+     * its side within the skill's {@code Radius} of it, middle to middle, through walls but never across the keep's
+     * shut gate, living and carrying a book -- itself among them -- to hold for Combat's {@code BuffLifeFrames}, this
+     * frame the first. No hero is given one: no bearer stands on a hero's side, a passive being refused on a hero.
+     *
+     * <p>Stunned, it lends still; fallen, it lends no more, and what it lent runs out by itself. The life outlasts the
+     * pulse, so what it lends to one still in reach holds on until the next pulse gives it again, whichever of the two
+     * books is updated first on that frame.
+     *
+     * <p>ponytail: one buff a kind from each lender, so of two auras of one kind on one bearer the later in its file
+     * is what is lent; no file gives a bearer two, and giving them weakest first would keep the stronger if one does.
+     */
+    private void lendTheAuras() {
+        var owner = getOwner();
+        var world = owner.getWorld();
+        int pulse = settings.combat().auraPulseFrames();
+        if (world == null || owner.isEffectivelyDead()
+                || world.getFrame() % pulse != Math.floorMod(owner.getId().value(), pulse)) {
+            return;
+        }
+        var here = owner.getPosition();
+        int until = world.getFrame() + settings.combat().buffLifeFrames() - 1;
+        for (var skill : skills) {
+            if (!skill.effect().isAura() || LevelBonus.rankOf(owner, skill) <= 0) {
+                continue;
+            }
+            int worth = skill.effect() == SkillEffect.MANA_AURA ? skill.manaRegen() : skill.boostPercent();
+            for (var one : world.objectsInRange(here, skill.radius(),
+                    candidate -> candidate.getPlayerIndex() == owner.getPlayerIndex()
+                            && !candidate.isEffectivelyDead() && !seal.parts(world, here, candidate.getPosition()))) {
+                var book = one.findModule(SkillBook.class);
+                if (book != null) {
+                    book.give(skill.effect(), owner.getId().value(), worth, until);
+                }
+            }
         }
     }
 
@@ -1529,11 +1535,11 @@ public final class SkillBook extends UpdateModule implements DamageModifier, Rat
 
     /**
      * The circle under it is worn: every Combat {@code AuraMarkTickFrames} -- on the frames its object id falls on, as
-     * {@link #wearTheAuras} does -- it asks {@link #aurasOn} of itself and, if any aura reaches it, plays on itself
-     * the look for how many kinds do: the first of the Combat block's {@code AuraMarkLooks} for one, the second for
-     * two, and past the list's end its last. {@code Main.measureLooks} makes each last two beats, so it rides the
-     * creature while an aura reaches it and is gone within two of its leaving. A hero's book asks the same and is
-     * answered none, as is a creature that has fallen. An event: out of the checksum.
+     * {@link #wearTheAuras} does -- it asks {@link #aurasOn} of itself and, if it holds any aura lent to it, plays on
+     * itself the look for how many kinds it holds: the first of the Combat block's {@code AuraMarkLooks} for one, the
+     * second for two, and past the list's end its last. {@code Main.measureLooks} makes each last two beats, so it
+     * rides the creature while an aura is lent to it and is gone within two of the last lapsing. A hero's book asks the
+     * same and is answered none, as is a creature that has fallen. An event: out of the checksum.
      */
     private void wearTheMark() {
         var owner = getOwner();
