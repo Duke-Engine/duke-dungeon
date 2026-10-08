@@ -9,7 +9,8 @@ import java.util.function.Function;
 import javax.imageio.ImageIO;
 
 /**
- * The pictures a painted map's ground is drawn with, painted rather than found: grass, dirt, rock, snow and sand,
+ * The pictures a painted map's ground is drawn with, painted rather than found: grass, dirt, rock, snow, sand, the
+ * dark floor of a deep forest and the mud of a marsh,
  * a picture of noise whose four channels break the borders between them, and a large one whose red channel varies
  * each surface so one picture over a valley does not repeat to the eye.
  *
@@ -38,6 +39,8 @@ public final class GroundPictures {
             "rock", GroundPictures::rock,
             "snow", GroundPictures::snow,
             "sand", GroundPictures::sand,
+            "forest", GroundPictures::forest,
+            "mud", GroundPictures::mud,
             "noise", GroundPictures::noise,
             "variation", GroundPictures::variation);
 
@@ -120,6 +123,33 @@ public final class GroundPictures {
             var colour = ramp(0.6 * body + 0.25 * ripple + 0.15 * grain,
                     new double[][] {{168, 140, 94}, {196, 170, 120}, {218, 198, 150}, {232, 216, 172}});
             return shade(colour, 0.94 + 0.1 * grain);
+        });
+    }
+
+    /** A deep forest's floor: moss and old needles, darker and browner than a meadow's grass. */
+    static BufferedImage forest(int size) {
+        return surface(size, (u, v) -> {
+            double body = fbm(u, v, 4, 5, SEED + 80);
+            double litter = fbm(u, v, 20, 2, SEED + 81);
+            double needle = speck(u, v, size, SEED + 82);
+            var colour = ramp(0.6 * body + 0.4 * litter,
+                    new double[][] {{24, 36, 18}, {40, 56, 26}, {58, 70, 32}, {78, 72, 40}});
+            return needle > 0.94 ? shade(colour, 1.3) : shade(colour, 0.85 + 0.25 * needle);
+        });
+    }
+
+    /** A marsh's mud: dark wet earth, and lighter puddles where the sky shows in it. */
+    static BufferedImage mud(int size) {
+        return surface(size, (u, v) -> {
+            double body = fbm(u, v, 4, 5, SEED + 90);
+            double puddle = fbm(u, v, 6, 3, SEED + 91);
+            double grain = speck(u, v, size, SEED + 92);
+            var colour = ramp(body, new double[][] {{36, 30, 22}, {54, 44, 30}, {70, 60, 42}, {84, 76, 58}});
+            // A puddle's edge fades into the mud rather than being cut out of it.
+            double wet = Math.clamp((puddle - 0.6) / 0.08, 0, 1);
+            var water = new double[] {52, 60, 60};
+            return shade(new double[] {lerp(colour[0], water[0], wet), lerp(colour[1], water[1], wet),
+                    lerp(colour[2], water[2], wet)}, 0.9 + 0.15 * grain);
         });
     }
 

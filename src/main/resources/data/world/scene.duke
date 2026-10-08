@@ -169,6 +169,8 @@ PaintedGround
     ground/rock.png = 0xFFFFFF,
     ground/snow.png = 0xF4F8FF,
     ground/sand.png = 0xFFF8EC,
+    ground/forest.png = 0xFFFFFF,
+    ground/mud.png = 0xFFFFFF,
   ]
   Variations = [
     ground/grass.png = 0.6,
@@ -176,6 +178,8 @@ PaintedGround
     ground/rock.png = 0.35,
     ground/snow.png = 0.25,
     ground/sand.png = 0.45,
+    ground/forest.png = 0.5,
+    ground/mud.png = 0.3,
   ]
   ; Ground leaning past CliffSlope degrees is drawn as rock, laid on the face
   ; rather than down from above, a copy every CliffCoverage cells. A cell leaning
