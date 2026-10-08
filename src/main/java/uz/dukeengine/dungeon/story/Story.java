@@ -10,7 +10,7 @@ import java.util.List;
  * files are read, never found in play.
  */
 public record Story(Dialogue dialogue, List<Speaker> speakers, List<Conversation> conversations, List<Npc> npcs,
-        List<Quest> quests) {
+        List<Quest> quests, List<Trigger> triggers, List<Cutscene> cutscenes) {
 
     public static final Story NONE = new Story(Dialogue.DEFAULTS, List.of(), List.of(), List.of(), List.of());
 
@@ -20,6 +20,22 @@ public record Story(Dialogue dialogue, List<Speaker> speakers, List<Conversation
         conversations = List.copyOf(conversations);
         npcs = List.copyOf(npcs);
         quests = List.copyOf(quests);
+        triggers = List.copyOf(triggers);
+        cutscenes = List.copyOf(cutscenes);
+    }
+
+    /** A story with no triggers and no cutscenes. */
+    public Story(Dialogue dialogue, List<Speaker> speakers, List<Conversation> conversations, List<Npc> npcs,
+            List<Quest> quests) {
+        this(dialogue, speakers, conversations, npcs, quests, List.of(), List.of());
+    }
+
+    public Trigger trigger(String name) {
+        return triggers.stream().filter(each -> each.name().equals(name)).findFirst().orElse(null);
+    }
+
+    public Cutscene cutscene(String name) {
+        return cutscenes.stream().filter(each -> each.name().equals(name)).findFirst().orElse(null);
     }
 
     public Speaker speaker(String name) {
@@ -75,7 +91,110 @@ public record Story(Dialogue dialogue, List<Speaker> speakers, List<Conversation
                 step(quest.steps().get(i), named + " step " + (i + 1), monsters, items, wrong);
             }
         }
+        for (var trigger : triggers) {
+            trigger(trigger, monsters, items, wrong);
+        }
+        for (var cutscene : cutscenes) {
+            var named = "Cutscene " + cutscene.name();
+            if (cutscene.shots().isEmpty()) {
+                wrong.add(named + " has no Shots");
+            }
+            for (var shot : cutscene.shots()) {
+                if (!shot.says().isBlank()) {
+                    conversation(shot.says(), named + " Says", wrong);
+                }
+                if (shot.frames() < 0 || shot.hold() < 0) {
+                    wrong.add(named + " has a shot of fewer than no frames");
+                }
+            }
+        }
         return wrong;
+    }
+
+    private void trigger(Trigger trigger, Collection<String> monsters, Collection<String> items, List<String> wrong) {
+        var named = "Trigger " + trigger.name();
+        if (trigger.when() == null) {
+            wrong.add(named + " has no When: one of " + java.util.Arrays.toString(Trigger.When.values()));
+            return;
+        }
+        if (trigger.delay() < 0) {
+            wrong.add(named + " has a Delay of fewer than no frames");
+        }
+        var target = trigger.target();
+        switch (trigger.when()) {
+            case MAP_START -> {
+            }
+            case ZONE, FLAG -> {
+                if (target.isBlank()) {
+                    wrong.add(named + " waits on a " + trigger.when() + " and names none");
+                }
+            }
+            case DIED -> {
+                if (!monsters.contains(target)) {
+                    wrong.add(named + " waits for a " + target + " to die, and no Monster is called that");
+                }
+            }
+            case QUEST_DONE, STEP_DONE -> {
+                var quest = quest(target);
+                if (quest == null) {
+                    wrong.add(named + " waits on " + target + ", and no Quest is called that");
+                } else if (trigger.when() == Trigger.When.STEP_DONE
+                        && (trigger.step() < 1 || trigger.step() > quest.steps().size())) {
+                    wrong.add(named + " waits on step " + trigger.step() + " of " + target + ", which has "
+                            + quest.steps().size());
+                }
+            }
+            case HEARD -> conversation(target, named, wrong);
+            case AFTER -> {
+                if (trigger(target) == null) {
+                    wrong.add(named + " comes after " + target + ", and no Trigger is called that");
+                }
+            }
+        }
+        if (trigger.actions().isEmpty()) {
+            wrong.add(named + " does nothing: it has no Actions");
+        }
+        for (var action : trigger.actions()) {
+            if (action.act() == null) {
+                wrong.add(named + " has an Action with no Act");
+                continue;
+            }
+            var what = action.target();
+            switch (action.act()) {
+                case SAY -> conversation(what, named, wrong);
+                case START_QUEST, FINISH_QUEST -> quest(what, named, wrong);
+                case SPAWN -> {
+                    if (!monsters.contains(what)) {
+                        wrong.add(named + " spawns " + what + ", and no Monster is called that");
+                    }
+                    if (action.zone().isBlank() || action.count() < 1) {
+                        wrong.add(named + " spawns " + what + " with no Zone, or fewer than one");
+                    }
+                }
+                case WALK -> {
+                    if (npc(what) == null || action.zone().isBlank()) {
+                        wrong.add(named + " walks " + what + ", who is no Npc, or to no Zone");
+                    }
+                }
+                case GIVE, TAKE -> {
+                    if (!items.contains(what)) {
+                        wrong.add(named + " gives or takes " + what + ", and no LootItem is called that");
+                    }
+                }
+                case FLAG, MAP -> {
+                    if (what.isBlank()) {
+                        wrong.add(named + " has a " + action.act() + " that names none");
+                    }
+                }
+                case CUTSCENE -> {
+                    if (cutscene(what) == null) {
+                        wrong.add(named + " plays " + what + ", and no Cutscene is called that");
+                    }
+                }
+                case OPEN_GATE -> {
+                }
+            }
+        }
     }
 
     private void step(Quest.Step step, String named, Collection<String> monsters, Collection<String> items,

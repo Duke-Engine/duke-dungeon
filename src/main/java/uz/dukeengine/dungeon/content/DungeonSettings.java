@@ -117,6 +117,8 @@ public final class DungeonSettings {
     private final List<uz.dukeengine.dungeon.story.Conversation> conversations = new java.util.ArrayList<>();
     private final List<uz.dukeengine.dungeon.story.Npc> npcs = new java.util.ArrayList<>();
     private final List<uz.dukeengine.dungeon.story.Quest> quests = new java.util.ArrayList<>();
+    private final List<uz.dukeengine.dungeon.story.Trigger> triggers = new java.util.ArrayList<>();
+    private final List<uz.dukeengine.dungeon.story.Cutscene> cutscenes = new java.util.ArrayList<>();
 
     /** Every attribute, in file order — the order a hero's are held in and the panel draws them. */
     private final List<Attribute> attributes = new java.util.ArrayList<>();
@@ -223,7 +225,8 @@ public final class DungeonSettings {
 
     /** People, their talk and the quests: see {@code docs/plan/2026-10-08-dialogue-and-quests.md}. */
     public uz.dukeengine.dungeon.story.Story story() {
-        return new uz.dukeengine.dungeon.story.Story(dialogue, speakers, conversations, npcs, quests);
+        return new uz.dukeengine.dungeon.story.Story(dialogue, speakers, conversations, npcs, quests, triggers,
+                cutscenes);
     }
 
     /** Every moment the files give a look, in the order they give them. */
@@ -396,6 +399,8 @@ public final class DungeonSettings {
                 case uz.dukeengine.dungeon.story.Conversation conversation -> conversations.add(conversation);
                 case uz.dukeengine.dungeon.story.Npc npc -> npcs.add(npc);
                 case uz.dukeengine.dungeon.story.Quest quest -> quests.add(quest);
+                case uz.dukeengine.dungeon.story.Trigger trigger -> triggers.add(trigger);
+                case uz.dukeengine.dungeon.story.Cutscene cutscene -> cutscenes.add(cutscene);
                 case uz.dukeengine.dungeon.world.SaveMenu block -> saveMenu = once(block, once);
                 case UnitBar block -> unitBar = once(block, once);
                 case StatBlock block -> statBlock = once(block, once);
