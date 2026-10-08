@@ -21,7 +21,8 @@ Choices the owner left open are marked **default**.
 
 ## Gold ("oltin")
 
-- Every monster of the dungeon a hero kills pays the killer's purse at once: `GoldPerKill + GoldPerLevel × level`
+- Every monster the floor placed, or a story spawned, pays the purse of the hero who kills it, at once (**default**:
+  one a summoner raised pays nothing — a summoner is not a well of gold): `GoldPerKill + GoldPerLevel × level`
   (its level as the floor scaled it). **Default** 4 + 2 × level. Straight into the purse — no coins lie on the floor —
   and the hero's bubble says `+12 oltin`.
 - Each hero has his own purse (a party's heroes are paid for their own kills). It is shown at the bottom right, above
