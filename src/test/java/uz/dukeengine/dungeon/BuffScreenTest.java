@@ -1,5 +1,7 @@
 package uz.dukeengine.dungeon;
 
+import uz.dukeengine.client3d.rpg.BagScreen;
+import uz.dukeengine.client3d.rpg.BuffScreen;
 import uz.dukeengine.rpg.item.ItemUse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -15,8 +17,6 @@ import java.util.function.IntFunction;
 import org.junit.jupiter.api.Test;
 import uz.dukeengine.client3d.Canvas;
 import uz.dukeengine.client3d.CanvasInput;
-import uz.dukeengine.client3d.Duke3D;
-import uz.dukeengine.client3d.Visuals;
 import uz.dukeengine.combat.module.WeaponUpdate;
 import uz.dukeengine.core.GameConstants;
 import uz.dukeengine.core.thing.GameObject;
@@ -38,6 +38,8 @@ import uz.dukeengine.game.DukeGame;
 class BuffScreenTest {
 
     private static final DungeonSettings SETTINGS = DungeonSettings.load();
+    /** The screen as the game builds it, for what it says of a buff in the game's words. */
+    private static final BuffScreen BUFFS = Bag.buffs(SETTINGS);
 
     /** Where the client placed the picked one's bar: well clear of every edge, and of the panel at the window's foot. */
     private static final Canvas.Box BAR = new Canvas.Box(700f, 400f, 80f, 8f);
@@ -208,8 +210,8 @@ class BuffScreenTest {
     private static Floor floor(DungeonSettings settings) {
         var session = Dungeon.newSession(21L);
         var game = session.game();
-        var bag = new BagScreen(settings, Duke3D.of(game, Visuals.create()), () -> 0L);
-        bag.show(session);
+        var bag = Bag.of(settings, (button, ended) -> { }, () -> 0L);
+        Bag.show(bag, session, settings);
         game.runHeadless(2);
         var logic = game.getLogic();
         var hero = logic.getObjects().stream().filter(one -> one.getTemplate().name().equals("Rogue")).findFirst()
@@ -250,19 +252,19 @@ class BuffScreenTest {
         var drops = SETTINGS.lootDrops();
 
         assertEquals("+50% " + hud.attackWord(),
-                BuffScreen.addsOf(new BuffScreen.Buff(skill(SkillEffect.DAMAGE_AURA), 50, 0), SETTINGS));
+                BUFFS.addsOf(new BuffScreen.Buff(skill(SkillEffect.DAMAGE_AURA), 50, 0)));
         assertEquals("+5 " + drops.manaRegenWord(),
-                BuffScreen.addsOf(new BuffScreen.Buff(skill(SkillEffect.MANA_AURA), 50, 0), SETTINGS),
+                BUFFS.addsOf(new BuffScreen.Buff(skill(SkillEffect.MANA_AURA), 50, 0)),
                 "tenths of a point a second, as a whole point");
         assertEquals("+2.5 " + drops.manaRegenWord(),
-                BuffScreen.addsOf(new BuffScreen.Buff(skill(SkillEffect.MANA_AURA), 25, 0), SETTINGS));
+                BUFFS.addsOf(new BuffScreen.Buff(skill(SkillEffect.MANA_AURA), 25, 0)));
         assertEquals("10% " + hud.lifestealWord(),
-                BuffScreen.addsOf(new BuffScreen.Buff(skill(SkillEffect.LIFESTEAL_AURA), 10, 0), SETTINGS));
+                BUFFS.addsOf(new BuffScreen.Buff(skill(SkillEffect.LIFESTEAL_AURA), 10, 0)));
         assertEquals("+75% " + drops.attackSpeedWord() + " · 5" + hud.secondsWord(),
-                BuffScreen.addsOf(new BuffScreen.Buff(skill(SkillEffect.HASTE), 75, 150), SETTINGS),
+                BUFFS.addsOf(new BuffScreen.Buff(skill(SkillEffect.HASTE), 75, 150)),
                 "and the seconds it has left");
         assertEquals("+75% " + drops.attackSpeedWord() + " · 1" + hud.secondsWord(),
-                BuffScreen.addsOf(new BuffScreen.Buff(skill(SkillEffect.HASTE), 75, 1), SETTINGS),
+                BUFFS.addsOf(new BuffScreen.Buff(skill(SkillEffect.HASTE), 75, 1)),
                 "a part of a second is a second");
         assertFalse(hud.lifestealWord().isBlank(), "a lifesteal's share has a word");
         assertNotEquals(Hud.DEFAULTS.lifestealWord(), hud.lifestealWord(), "the file says it, not the default");
@@ -354,7 +356,7 @@ class BuffScreenTest {
             var picture = floor.paint(drawn, BAR).picture(buff.skill().icon());
             floor.bag().take(new CanvasInput.Pointer(picture.middleX(), picture.middleY()));
             floor.paint(drawn, BAR);
-            var said = List.of(buff.skill().name(), BuffScreen.addsOf(buff, SETTINGS), buff.skill().blurb());
+            var said = List.of(buff.skill().name(), BUFFS.addsOf(buff), buff.skill().blurb());
             assertFalse(buff.skill().blurb().isBlank(), "the premise: " + buff.skill().name() + " says what it does");
             assertTrue(drawn.text().containsAll(said), "the pointer on " + buff.skill().name() + " says " + said + ": "
                     + drawn.text());

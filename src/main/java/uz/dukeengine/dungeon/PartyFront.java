@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import uz.dukeengine.client3d.Duke3D;
+import uz.dukeengine.client3d.rpg.BagScreen;
 import uz.dukeengine.client3d.Hotkeys;
 import uz.dukeengine.client3d.Shell;
 import uz.dukeengine.client3d.Visuals;
@@ -160,7 +161,7 @@ final class PartyFront {
         lobby = null;
         try {
             var party = Dungeon.newPartySession(match, net.getPlayerCount(), net, settings, hero);
-            bag.show(party);
+            Bag.show(bag, party, settings);
             duke.startMatch(party.game());
         } catch (RuntimeException e) {
             net.close();

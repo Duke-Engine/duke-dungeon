@@ -3,6 +3,7 @@ package uz.dukeengine.dungeon;
 import java.util.List;
 
 import uz.dukeengine.client3d.Duke3D;
+import uz.dukeengine.client3d.rpg.BagScreen;
 import uz.dukeengine.client3d.EdgeScroll;
 import uz.dukeengine.core.content.Effect;
 import uz.dukeengine.client3d.Fog;
@@ -461,10 +462,10 @@ public final class Main {
         // Held too: a party is a match of its own, built once its players have met, and
         // it is the client that is asked to play it — see PartyFront.
         var duke = Duke3D.of(session.game(), visuals).hotkeys(keys);
-        // His bag, drawn and handled by the game: what he carries, and a hand to take a thing out of it and put it
-        // down. Told of every match it is drawn over -- this one, and a party's that replaces it.
-        var bag = new BagScreen(settings, duke);
-        bag.show(session);
+        // His bag, the engine's RPG part in the game's words: what he carries, and a hand to take a thing
+        // out of it and put it down. Told of every match it is drawn over -- this one, and a party's that replaces it.
+        var bag = Bag.on(settings, duke);
+        Bag.show(bag, session, settings);
         duke.canvas(bag).input(bag);
         duke.shell(Shell.create()
                 .entry(Shell.Entry.PLAY, "Enter the dungeon")

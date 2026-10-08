@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import uz.dukeengine.client3d.rpg.BagScreen;
 import uz.dukeengine.core.view.CommandButton;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.rpg.item.Loot;
@@ -24,14 +25,14 @@ class BagScreenTest {
     void whatAThingGivesIsSaidInTheGamesOwnWords() {
         var hud = SETTINGS.hud();
         assertEquals("+8% " + hud.attackWord(),
-                BagScreen.bonusOf(new Loot("Blade", "Blade", "", Stat.ATTACK, 8, 1, 1), SETTINGS));
+                Bag.bonusOf(new Loot("Blade", "Blade", "", Stat.ATTACK, 8, 1, 1), SETTINGS));
         assertEquals("+4% " + hud.armourWord(),
-                BagScreen.bonusOf(new Loot("Shield", "Shield", "", Stat.ARMOUR, 4, 1, 1), SETTINGS));
+                Bag.bonusOf(new Loot("Shield", "Shield", "", Stat.ARMOUR, 4, 1, 1), SETTINGS));
         assertEquals("+40 " + hud.healthWord(),
-                BagScreen.bonusOf(new Loot("Bread", "Bread", "", Stat.HEALTH, 40, 1, 1), SETTINGS));
+                Bag.bonusOf(new Loot("Bread", "Bread", "", Stat.HEALTH, 40, 1, 1), SETTINGS));
         assertEquals("+25 " + hud.manaWord(),
-                BagScreen.bonusOf(new Loot("Stone", "Stone", "", Stat.MANA, 25, 1, 1), SETTINGS));
-        assertEquals("+3 Kuch", BagScreen.bonusOf(
+                Bag.bonusOf(new Loot("Stone", "Stone", "", Stat.MANA, 25, 1, 1), SETTINGS));
+        assertEquals("+3 Kuch", Bag.bonusOf(
                 new Loot("Gauntlet", "Gauntlet", "", Stat.ATTRIBUTE, 3, 1, 1, "Strength"), SETTINGS),
                 "an attribute by the word the panel calls it");
     }
@@ -40,8 +41,8 @@ class BagScreenTest {
     @Test
     void everyShippedThingCanBeDrawnAndSaid() {
         for (var item : SETTINGS.loot()) {
-            assertNotNull(BagScreen.class.getResource("/" + item.icon()), item.id() + " draws " + item.icon());
-            var said = BagScreen.bonusOf(item, SETTINGS);
+            assertNotNull(Bag.class.getResource("/" + item.icon()), item.id() + " draws " + item.icon());
+            var said = Bag.bonusOf(item, SETTINGS);
             if (item.use() == ItemUse.UNLOCK) {
                 assertEquals("", said, "a key gives nothing, and says nothing of it");
                 continue;
@@ -136,8 +137,7 @@ class BagScreenTest {
      * to say and not for how long the machine running the test took between two paints.
      */
     private static BagScreen bagOver(uz.dukeengine.game.DukeGame game) {
-        return new BagScreen(SETTINGS,
-                uz.dukeengine.client3d.Duke3D.of(game, uz.dukeengine.client3d.Visuals.create()), () -> 0L);
+        return Bag.of(SETTINGS, (button, ended) -> { }, () -> 0L);
     }
 
     /**
@@ -149,9 +149,8 @@ class BagScreenTest {
         var session = Dungeon.newSession(21L);
         var game = session.game();
         var now = new java.util.concurrent.atomic.AtomicLong();
-        var bag = new BagScreen(SETTINGS,
-                uz.dukeengine.client3d.Duke3D.of(game, uz.dukeengine.client3d.Visuals.create()), now::get);
-        bag.show(session);
+        var bag = Bag.of(SETTINGS, (button, ended) -> { }, now::get);
+        Bag.show(bag, session, SETTINGS);
         game.runHeadless(2);
         var drawn = new Drawn();
         bag.paint(drawn);
@@ -188,9 +187,8 @@ class BagScreenTest {
         game.runHeadless(2);
         var blade = SETTINGS.loot().stream().filter(item -> item.id().equals("Gauntlet")).findFirst().orElseThrow();
         session.progress().getLoot().take(blade, 0, 30);
-        var duke = uz.dukeengine.client3d.Duke3D.of(game, uz.dukeengine.client3d.Visuals.create());
-        var bag = new BagScreen(SETTINGS, duke, () -> 0L);
-        bag.show(session);
+        var bag = bagOver(game);
+        Bag.show(bag, session, SETTINGS);
         var drawn = new Drawn();
 
         bag.paint(drawn);
@@ -201,7 +199,7 @@ class BagScreenTest {
         bag.take(new uz.dukeengine.client3d.CanvasInput.Pointer(picture.middleX(), picture.middleY()));
         drawn.clear();
         bag.paint(drawn);
-        assertTrue(drawn.text.contains(blade.name()) && drawn.text.contains(BagScreen.bonusOf(blade, SETTINGS)),
+        assertTrue(drawn.text.contains(blade.name()) && drawn.text.contains(Bag.bonusOf(blade, SETTINGS)),
                 "the pointer on it says what it is and what it gives: " + drawn.text);
 
         assertTrue(bag.take(new uz.dukeengine.client3d.CanvasInput.Button(picture.middleX(), picture.middleY(),
@@ -234,7 +232,7 @@ class BagScreenTest {
         var key = SETTINGS.loot().stream().filter(item -> item.use() == ItemUse.UNLOCK).findFirst().orElseThrow();
         session.progress().getLoot().take(key, 0, 30);
         var bag = bagOver(game);
-        bag.show(session);
+        Bag.show(bag, session, SETTINGS);
         var drawn = new Drawn();
         bag.paint(drawn);
         var picture = drawn.picture(key.icon());
@@ -269,7 +267,7 @@ class BagScreenTest {
         session.progress().getLoot().take(gauntlet, 0, 30);
         session.progress().getLoot().take(key, 0, 30);
         var bag = bagOver(game);
-        bag.show(session);
+        Bag.show(bag, session, SETTINGS);
         var drawn = new Drawn();
         bag.paint(drawn);
         var onGauntlet = drawn.picture(gauntlet.icon());
@@ -313,7 +311,7 @@ class BagScreenTest {
         var game = session.game();
         var heard = new java.util.ArrayList<uz.dukeengine.combat.message.GameOrder>();
         game.onOrder(heard::add); // before the world starts, as the game's own is
-        bagOver(game).show(session);
+        Bag.show(bagOver(game), session, SETTINGS);
         game.runHeadless(2);
         var gate = find(game, "Gate");
         var expected = uz.dukeengine.dungeon.party.PartyOrders.of(
@@ -346,8 +344,8 @@ class BagScreenTest {
         session.progress().getLoot().take(key, 0, 30);
         session.progress().getLoot().take(gauntlet, 0, 30);
         var armed = new java.util.ArrayList<CommandButton>();
-        var bag = new BagScreen(SETTINGS, (button, ended) -> armed.add(button), () -> 0L);
-        bag.show(session);
+        var bag = Bag.of(SETTINGS, (button, ended) -> armed.add(button), () -> 0L);
+        Bag.show(bag, session, SETTINGS);
         var drawn = new Drawn();
         bag.paint(drawn);
         var onKey = drawn.picture(key.icon());
@@ -378,7 +376,7 @@ class BagScreenTest {
         var key = SETTINGS.loot().stream().filter(item -> item.use() == ItemUse.UNLOCK).findFirst().orElseThrow();
         session.progress().getLoot().take(key, 0, 30);
         var bag = bagOver(game);
-        bag.show(session);
+        Bag.show(bag, session, SETTINGS);
         var drawn = new Drawn();
 
         bag.paint(drawn);
@@ -403,7 +401,7 @@ class BagScreenTest {
         var session = Dungeon.newSession(21L);
         var game = session.game();
         var bag = bagOver(game);
-        bag.show(session);
+        Bag.show(bag, session, SETTINGS);
         game.runHeadless(2);
         var gauntlet = SETTINGS.loot().stream().filter(item -> item.id().equals("Gauntlet")).findFirst()
                 .orElseThrow();
@@ -455,7 +453,7 @@ class BagScreenTest {
         var session = Dungeon.newSession(21L);
         var game = session.game();
         var bag = bagOver(game);
-        bag.show(session); // before it starts, as the game tells it
+        Bag.show(bag, session, SETTINGS); // before it starts, as the game tells it
         game.runHeadless(2);
         var hero = find(game, "Rogue");
         var blade = SETTINGS.loot().stream().filter(item -> item.id().equals("Gauntlet")).findFirst().orElseThrow();
@@ -486,7 +484,7 @@ class BagScreenTest {
         var session = Dungeon.newSession(21L);
         var game = session.game();
         var bag = bagOver(game);
-        bag.show(session);
+        Bag.show(bag, session, SETTINGS);
         game.runHeadless(2);
         var hero = find(game, "Rogue");
         var blade = SETTINGS.loot().stream().filter(item -> item.id().equals("Gauntlet")).findFirst().orElseThrow();
@@ -502,7 +500,7 @@ class BagScreenTest {
             game.runHeadless(2);
             var drawn = new Drawn();
             bag.paint(drawn);
-            assertTrue(drawn.text.contains(blade.name()) && drawn.text.contains(BagScreen.bonusOf(blade, SETTINGS)),
+            assertTrue(drawn.text.contains(blade.name()) && drawn.text.contains(Bag.bonusOf(blade, SETTINGS)),
                     "with " + selected + " selected: " + drawn.text);
         }
 
@@ -523,7 +521,7 @@ class BagScreenTest {
         var session = Dungeon.newSession(21L);
         var game = session.game();
         var bag = bagOver(game);
-        bag.show(session);
+        Bag.show(bag, session, SETTINGS);
         game.runHeadless(2);
         var hero = find(game, "Rogue");
         var gate = find(game, "Gate");
@@ -570,7 +568,7 @@ class BagScreenTest {
         var session = Dungeon.newSession(21L);
         var game = session.game();
         var bag = bagOver(game);
-        bag.show(session);
+        Bag.show(bag, session, SETTINGS);
         game.runHeadless(2);
         var blade = SETTINGS.loot().stream().filter(item -> item.id().equals("Gauntlet")).findFirst().orElseThrow();
         session.progress().getLoot().take(blade, 0, 30);
@@ -597,7 +595,7 @@ class BagScreenTest {
     void beforeTheMatchStartsNothingIsDrawn() {
         var session = Dungeon.newSession(21L);
         var bag = bagOver(session.game());
-        bag.show(session);
+        Bag.show(bag, session, SETTINGS);
         var drawn = new Drawn();
 
         bag.paint(drawn);
@@ -614,11 +612,11 @@ class BagScreenTest {
         var third = boots.joined(3).joined(3);
 
         assertEquals(tome.name() + " II", uz.dukeengine.rpg.item.LootBag.nameOf(second));
-        assertEquals("+9 Aql", BagScreen.bonusOf(second, SETTINGS));
-        assertEquals("+2 " + SETTINGS.lootDrops().manaRegenWord(), BagScreen.extraOf(second, SETTINGS));
-        assertEquals("+27 Epchillik", BagScreen.bonusOf(third, SETTINGS));
-        assertEquals("+60% " + SETTINGS.lootDrops().attackSpeedWord(), BagScreen.extraOf(third, SETTINGS));
-        assertEquals("", BagScreen.extraOf(tome, SETTINGS), "nothing beside its figure at the first level");
+        assertEquals("+9 Aql", Bag.bonusOf(second, SETTINGS));
+        assertEquals("+2 " + SETTINGS.lootDrops().manaRegenWord(), Bag.extraOf(second, SETTINGS));
+        assertEquals("+27 Epchillik", Bag.bonusOf(third, SETTINGS));
+        assertEquals("+60% " + SETTINGS.lootDrops().attackSpeedWord(), Bag.extraOf(third, SETTINGS));
+        assertEquals("", Bag.extraOf(tome, SETTINGS), "nothing beside its figure at the first level");
     }
 
     @Test
