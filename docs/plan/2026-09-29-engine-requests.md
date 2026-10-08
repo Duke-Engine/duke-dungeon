@@ -21,7 +21,7 @@ and runs them himself in a cloud session; each section below stands on its own f
 | Request | What | Status |
 |---|---|---|
 | E1–E7 | resolution, wall lists, large maps, per-cell looks, scenery, finer blocking, a creature's own level | landed in 0.7.0 (unreleased) |
-| E8 | the engine split into `combat`, `rts`, `rpg` and their clients | steps 1–2 landed in 0.8.0 (the `combat` module, the runtime of no kind; the game follows at 1b82edf3). **Step 3 landed** in 0.8.0 on the engine's branch `e8-3-rpg` (812b0c36..2f13dc52): the `rpg` module, this game's `skill/`, `loot/`, `level/`, `combat/`, `run/Mission`, `GateUpdate`, `Seal`, `ai/SightLine` and `Facing` in `uz.dukeengine.rpg.*`. **Step 4 landed** in 0.8.0 on the branch `e8-4-clients`, made from `e8-3-rpg` (ebc07810..72686d21): `rts-client-3d` and `rpg-client-3d`, the hero bar and its portrait in `uz.dukeengine.client3d.rpg`, this game's `BagScreen` and `BuffScreen` there too, the hero card written by `HeroCard`, and single-hero control. Neither branch is merged or pushed. The game: depends on `uz.duke-engine:rpg-client-3d` (and `rts`, for `RtsFlavour`); changes imports by the CHANGELOG's 0.8.0 tables ("A new module, `rpg`" and "The client is split"); deletes its `BagScreen` and `BuffScreen` and builds the engine's with its words, its `bonusOf`/`extraOf` as their lines, `PartyOrders::of` as the wire and `MissionScreen` under the bag; writes its `HeroStatus` through `HeroCard`; sets the bar's looks on `HeroLooks.of(visuals)`; and needs no selected hero for his orders |
+| E8 | the engine split into `combat`, `rts`, `rpg` and their clients | steps 1–2 landed in 0.8.0 (the `combat` module, the runtime of no kind; the game follows at 1b82edf3). **Step 3 landed** in 0.8.0 on the engine's branch `e8-3-rpg` (812b0c36..2f13dc52): the `rpg` module, this game's `skill/`, `loot/`, `level/`, `combat/`, `run/Mission`, `GateUpdate`, `Seal`, `ai/SightLine` and `Facing` in `uz.dukeengine.rpg.*`. **Step 4 landed** in 0.8.0 on the branch `e8-4-clients`, made from `e8-3-rpg` (ebc07810..72686d21): `rts-client-3d` and `rpg-client-3d`, the hero bar and its portrait in `uz.dukeengine.client3d.rpg`, this game's `BagScreen` and `BuffScreen` there too, the hero card written by `HeroCard`, and single-hero control. Both merged to master, pushed, and released as 0.8.0 (tag `v0.8.0`); the game took them at 186fd82. The game: depends on `uz.duke-engine:rpg-client-3d` (and `rts`, for `RtsFlavour`); changes imports by the CHANGELOG's 0.8.0 tables ("A new module, `rpg`" and "The client is split"); deletes its `BagScreen` and `BuffScreen` and builds the engine's with its words, its `bonusOf`/`extraOf` as their lines, `PartyOrders::of` as the wire and `MissionScreen` under the bag; writes its `HeroStatus` through `HeroCard`; sets the bar's looks on `HeroLooks.of(visuals)`; and needs no selected hero for his orders |
 | E9 | an aura's picture follows its status | landed, 1bb64fa8 |
 | E10 | one seamless world, ~900 × 900 cells, any size by design | landed in 0.8.0 (4236489b); the game takes its parts when it builds the open world |
 | E11 | an untextured model keeps its own colour | landed, d7204414; the key's `Tint` is gone |
@@ -30,6 +30,7 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E14 | a walk that stops short says so, and a way shut by bodies still goes as near as they let it | landed, b4c291c3: (1), (2), (3) and (5); (4) was only noted |
 | E15 | where the bottom panel stands, told to a game's painter | landed, 0adfc96c |
 | E16 | a painted world drawn as Warcraft III, Dota and Generals draw theirs: streamed in chunks, blends from the paint, mips, tint, cliffs by slope | waiting (big) |
+| E17 | a thing that hides what is behind it from sight while it stands (`BlocksSight`) — the keep's shut gate | waiting (small) |
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
 game builds against the local engine. E12–E15 reached it together at 668045f0 (their pull requests merged as
@@ -561,3 +562,25 @@ Until then the game tries painted ground on small maps — its palette KayKit's 
 and E5 unlock biomes on screen (the game's biome generator is written and tested headless meanwhile). E6 last.
 Please tell the duke-dungeon session as each one lands, with the API it ended up as and the engine version it is
 in — this repo is the game's, so the engine side is best not written into it.
+
+## E17 — A thing that hides what is behind it from sight (2026-10-08, small)
+
+The owner, 2026-10-03: while the keep's gate is shut, nothing on its far side is seen — the player does not see into
+the court. The fog already does most of it: the court's walls are stone, which a line of sight stops at
+(`SightCells.Ground.stone`, read from `PathGrid.isTerrainBlocked`). The gate is not stone: it is an object standing in
+the doorway (`data/props/gate.duke`, a Box 30 × 4, no Body), so a hero at the threshold sees through it into the court.
+
+Asked:
+
+- An object template may say `BlocksSight = Yes` (default No). While such a thing stands, the sight cells its
+  footprint covers are stone to every looker's line of sight — the cells themselves seen, what is behind them not —
+  exactly as the map's stone is. The same rule for every player, so lock-step holds; nothing about pathing changes.
+- When it goes (destroyed, or swapped for another template — the gate opening swaps it for `OpenGate`, which will not
+  say it), the cells are open again on the next look.
+- Generic on purpose: a door, a curtain, a thick hedge can say it later.
+
+The game then adds `BlocksSight = Yes` to `Gate` and nothing else.
+
+Done when: a hero at the shut gate's threshold has the court's cells not in sight (its creatures not drawn); the gate
+opened, the next look shows them; a test in core pins a `BlocksSight` box hiding a cell behind it and unhiding it when
+removed. Announce the version and the key's name to the game.
