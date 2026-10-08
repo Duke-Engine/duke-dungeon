@@ -19,6 +19,9 @@ import uz.dukeengine.dungeon.world.Theme;
 import uz.dukeengine.dungeon.party.PartyOrders;
 import uz.dukeengine.rpg.skill.CastSkill;
 import uz.dukeengine.dungeon.stage.Stages;
+import uz.dukeengine.dungeon.run.Floors;
+import uz.dukeengine.dungeon.run.SaveGame;
+import uz.dukeengine.dungeon.run.Saves;
 
 /**
  * Opens the dungeon in the engine's 3D client.
@@ -467,14 +470,87 @@ public final class Main {
         var bag = Bag.on(settings, duke);
         Bag.show(bag, session, settings);
         duke.canvas(bag).input(bag);
+        // The run saves itself as each floor is entered -- see docs/plan/2026-10-08-saving.md.
+        var saves = Saves.ofThePlayer();
+        session.run().onCheckpoint(save -> {
+            try {
+                saves.write(Saves.AUTOSAVE, save);
+            } catch (java.io.IOException e) {
+                java.util.logging.Logger.getLogger(Main.class.getName())
+                        .warning("the autosave could not be written: " + e);
+            }
+        });
         duke.shell(Shell.create()
                 .entry(Shell.Entry.PLAY, "Enter the dungeon")
                 .entry(Shell.Entry.SETTINGS)
                 .entry(Shell.Entry.QUIT)
-                // Which turns Play into a path rather than a start -- with whom, how,
-                // then where, then who. Nothing opens until it is walked. See whoGoesIn.
-                .asking(whoGoesIn(session, settings, visuals, keys, duke, bag)));
+                // Which turns Play into a path rather than a start -- a save to go back to, then with whom,
+                // how, then where, then who. Nothing opens until it is walked. See whoGoesIn.
+                .asking(savedGames(settings, loadable(saves.list(), settings), him -> displayNameOf(session, him),
+                        saved -> {
+                            heroChosen(session, settings, visuals, keys, saved.game().hero());
+                            session.run().resume(saved.game(), Floors.resumed(saved.game(), settings));
+                        },
+                        whoGoesIn(session, settings, visuals, keys, duke, bag))));
         duke.launch();
+    }
+
+    /** The saves this build can play: a hero it has, and floors it can lay — the rest are left out, and said so. */
+    private static List<Saves.Saved> loadable(List<Saves.Saved> saves, DungeonSettings settings) {
+        var heroes = settings.heroes().stream().map(hero -> hero.name()).toList();
+        var log = java.util.logging.Logger.getLogger(Main.class.getName());
+        var playable = new java.util.ArrayList<Saves.Saved>();
+        for (var saved : saves) {
+            if (!heroes.contains(saved.game().hero())) {
+                log.warning(saved.slot() + " cannot be loaded: no hero is called " + saved.game().hero());
+                continue;
+            }
+            try {
+                Floors.resumed(saved.game(), settings);
+                playable.add(saved);
+            } catch (SaveGame.Refused e) {
+                log.warning(saved.slot() + " cannot be loaded: " + e.getMessage());
+            }
+        }
+        return playable;
+    }
+
+    /**
+     * The first question on the way in when there is a save to go back to: continue the newest, load one of them,
+     * or a new game down the path the game always had — {@code fresh}, which is all there is with no save at all.
+     *
+     * @param saves newest first, as {@link Saves#list} reads them
+     * @param named what the player calls a hero, by his template
+     * @param load  picks up a save and starts it
+     */
+    static Shell.Question savedGames(DungeonSettings settings, List<Saves.Saved> saves,
+            java.util.function.UnaryOperator<String> named, java.util.function.Consumer<Saves.Saved> load,
+            Shell.Question fresh) {
+        if (saves.isEmpty()) {
+            return fresh;
+        }
+        var words = settings.saveMenu();
+        var rows = new java.util.ArrayList<Shell.Option>();
+        for (var saved : saves) {
+            var slot = saved.slot().equals(Saves.AUTOSAVE) ? words.autosaveWord()
+                    : String.format(words.slotWord(), saved.slot().replaceAll("\\D", ""));
+            rows.add(new Shell.Option(slot, about(settings, saved, named), () -> load.accept(saved), null));
+        }
+        var newest = saves.getFirst();
+        return new Shell.Question(words.title(), words.hint(), List.of(
+                new Shell.Option(words.continueWord(), about(settings, newest, named), () -> load.accept(newest),
+                        null),
+                new Shell.Option(words.loadWord(), words.loadBlurb(), null,
+                        new Shell.Question(words.loadTitle(), words.hint(), rows)),
+                new Shell.Option(words.newWord(), words.newBlurb(), null, fresh)));
+    }
+
+    /** The line under a save: its hero, his level and the floor. */
+    private static String about(DungeonSettings settings, Saves.Saved saved,
+            java.util.function.UnaryOperator<String> named) {
+        var game = saved.game();
+        return String.format(settings.saveMenu().aboutSave(), named.apply(game.hero()),
+                settings.levelling().levelFor(game.experience()), game.depth());
     }
 
     /**
@@ -657,30 +733,36 @@ public final class Main {
             options.add(new uz.dukeengine.client3d.Shell.Option(
                     displayNameOf(session, him), hero.title(),
                     () -> {
-                        // The dark opens around HIS eyes. Named rather than
-                        // measured, so the radius is his own VisionRange -- and a
-                        // knight sees a shorter way than an archer, which is part
-                        // of playing him. Left pointing at the file's hero, the
-                        // map would never open at all: nothing of that template is
-                        // in the dungeon.
-                        visuals.discoveredBy(him);
-                        // ★ And HIS four keys, and HIS four rings. Everything the
-                        // client knows about a skill is keyed by the letter, and
-                        // until this line it was all settled at startup from
-                        // DefaultHero -- so whoever you picked, Q asked you to
-                        // point at whatever the FILE'S hero's Q needed. Choosing
-                        // the mage got you the rogue's aims: his Q wants a
-                        // creature, and a fireball handed a creature instead of a
-                        // direction has nowhere to fly and refuses, which from a
-                        // chair is a skill that does nothing at all.
-                        aimsFor(keys, settings, him);
-                        ringsFor(visuals, settings, him);
-                        attackRingFor(visuals, session.game(), him);
+                        heroChosen(session, settings, visuals, keys, him);
                         then.accept(him);
                     }, next));
         }
         return new uz.dukeengine.client3d.Shell.Question(settings.hud().chooseHeroWord(),
                 settings.hud().chooseHeroHint(), options);
+    }
+
+    /** Everything the client knows about the hero played, settled for {@code him}: chosen, or a save's. */
+    static void heroChosen(Dungeon.Session session, DungeonSettings settings, Visuals visuals, Hotkeys keys,
+            String him) {
+        // The dark opens around HIS eyes. Named rather than
+        // measured, so the radius is his own VisionRange -- and a
+        // knight sees a shorter way than an archer, which is part
+        // of playing him. Left pointing at the file's hero, the
+        // map would never open at all: nothing of that template is
+        // in the dungeon.
+        visuals.discoveredBy(him);
+        // ★ And HIS four keys, and HIS four rings. Everything the
+        // client knows about a skill is keyed by the letter, and
+        // until this line it was all settled at startup from
+        // DefaultHero -- so whoever you picked, Q asked you to
+        // point at whatever the FILE'S hero's Q needed. Choosing
+        // the mage got you the rogue's aims: his Q wants a
+        // creature, and a fireball handed a creature instead of a
+        // direction has nowhere to fly and refuses, which from a
+        // chair is a skill that does nothing at all.
+        aimsFor(keys, settings, him);
+        ringsFor(visuals, settings, him);
+        attackRingFor(visuals, session.game(), him);
     }
 
     /**

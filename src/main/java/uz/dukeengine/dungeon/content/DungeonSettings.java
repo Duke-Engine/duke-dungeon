@@ -94,6 +94,7 @@ public final class DungeonSettings {
     private Camera camera = Camera.DEFAULTS;
     private Hud hud = Hud.DEFAULTS;
     private uz.dukeengine.dungeon.world.Party party = uz.dukeengine.dungeon.world.Party.DEFAULTS;
+    private uz.dukeengine.dungeon.world.SaveMenu saveMenu = uz.dukeengine.dungeon.world.SaveMenu.DEFAULTS;
     private UnitBar unitBar = UnitBar.DEFAULTS;
     private StatBlock statBlock = StatBlock.DEFAULTS;
     private SkillRing skillRing = SkillRing.DEFAULTS;
@@ -142,6 +143,11 @@ public final class DungeonSettings {
     /** Going down together: how many, where the host listens, and the words on the way in. */
     public uz.dukeengine.dungeon.world.Party party() {
         return party;
+    }
+
+    /** The words of the saved games on the way in: continue, load, a new game. */
+    public uz.dukeengine.dungeon.world.SaveMenu saveMenu() {
+        return saveMenu;
     }
 
     public Hud hud() {
@@ -366,6 +372,7 @@ public final class DungeonSettings {
                 case Camera block -> camera = once(block, once);
                 case Hud block -> hud = once(block, once);
                 case uz.dukeengine.dungeon.world.Party block -> party = once(block, once);
+                case uz.dukeengine.dungeon.world.SaveMenu block -> saveMenu = once(block, once);
                 case UnitBar block -> unitBar = once(block, once);
                 case StatBlock block -> statBlock = once(block, once);
                 case SkillRing block -> skillRing = once(block, once);
