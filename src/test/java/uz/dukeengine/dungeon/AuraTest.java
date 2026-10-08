@@ -26,12 +26,12 @@ import uz.dukeengine.core.thing.ObjectStatus;
 import uz.dukeengine.dungeon.content.Content;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.dungeon.content.ShippedBlock;
-import uz.dukeengine.dungeon.level.GrowableBody;
+import uz.dukeengine.rpg.hero.GrowableBody;
 import uz.dukeengine.dungeon.run.Spawner;
-import uz.dukeengine.dungeon.skill.Skill;
-import uz.dukeengine.dungeon.skill.SkillBook;
-import uz.dukeengine.dungeon.skill.SkillEffect;
-import uz.dukeengine.dungeon.skill.Summoned;
+import uz.dukeengine.rpg.skill.Skill;
+import uz.dukeengine.rpg.skill.SkillBook;
+import uz.dukeengine.rpg.skill.SkillEffect;
+import uz.dukeengine.rpg.skill.Summoned;
 import uz.dukeengine.game.DukeGame;
 
 /**

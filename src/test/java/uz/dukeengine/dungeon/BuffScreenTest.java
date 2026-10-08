@@ -1,5 +1,6 @@
 package uz.dukeengine.dungeon;
 
+import uz.dukeengine.rpg.item.ItemUse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -22,10 +23,10 @@ import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.dungeon.content.Content;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.dungeon.content.ShippedBlock;
-import uz.dukeengine.dungeon.loot.LootKind;
-import uz.dukeengine.dungeon.skill.Skill;
-import uz.dukeengine.dungeon.skill.SkillBook;
-import uz.dukeengine.dungeon.skill.SkillEffect;
+import uz.dukeengine.rpg.item.Stat;
+import uz.dukeengine.rpg.skill.Skill;
+import uz.dukeengine.rpg.skill.SkillBook;
+import uz.dukeengine.rpg.skill.SkillEffect;
 import uz.dukeengine.dungeon.world.Hud;
 import uz.dukeengine.game.DukeGame;
 
@@ -503,7 +504,7 @@ class BuffScreenTest {
     void theBagsSlabIsTheBagsOverARowUnderIt() {
         var floor = floor(SETTINGS);
         var game = floor.game();
-        var key = SETTINGS.loot().stream().filter(item -> item.kind() == LootKind.KEY).findFirst().orElseThrow();
+        var key = SETTINGS.loot().stream().filter(item -> item.use() == ItemUse.UNLOCK).findFirst().orElseThrow();
         floor.session().progress().getLoot().take(key, 0, 30);
         var drawn = floor.paint(new Drawn(), BAR);
         var slot = drawn.picture(key.icon());

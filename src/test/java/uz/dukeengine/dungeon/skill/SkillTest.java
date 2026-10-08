@@ -1,5 +1,7 @@
 package uz.dukeengine.dungeon.skill;
 
+import uz.dukeengine.rpg.skill.SkillEffect;
+import uz.dukeengine.rpg.skill.Skill;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;

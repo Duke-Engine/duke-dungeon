@@ -9,8 +9,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
 import uz.dukeengine.dungeon.content.DungeonSettings;
-import uz.dukeengine.dungeon.level.GrowableBody;
-import uz.dukeengine.dungeon.skill.SkillBook;
+import uz.dukeengine.rpg.hero.GrowableBody;
+import uz.dukeengine.rpg.skill.SkillBook;
 import uz.dukeengine.game.DukeGame;
 
 /**

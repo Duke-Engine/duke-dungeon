@@ -582,7 +582,7 @@ class DungeonSettingsTest {
     @Test
     void everyShotDownALaneSaysHowWideItIs() {
         for (var skill : DungeonSettings.load().skills()) {
-            if (skill.effect() != uz.dukeengine.dungeon.skill.SkillEffect.SKILLSHOT) {
+            if (skill.effect() != uz.dukeengine.rpg.skill.SkillEffect.SKILLSHOT) {
                 continue;
             }
             assertTrue(skill.hitWidth() > 0f, skill.heroTemplate() + "'s " + skill.key()

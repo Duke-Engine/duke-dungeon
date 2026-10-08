@@ -18,7 +18,7 @@ import uz.dukeengine.core.GameConstants;
 import uz.dukeengine.dungeon.content.Content;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.dungeon.content.ShippedBlock;
-import uz.dukeengine.dungeon.skill.SkillEffect;
+import uz.dukeengine.rpg.skill.SkillEffect;
 
 /**
  * The layers in the settings file are layers the client can draw, from textures

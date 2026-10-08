@@ -1,5 +1,6 @@
 package uz.dukeengine.dungeon.ai;
 
+import uz.dukeengine.rpg.SightLine;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -14,15 +15,15 @@ import uz.dukeengine.core.data.DataException;
 import uz.dukeengine.core.math.Coord3D;
 import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.dungeon.Dungeon;
-import uz.dukeengine.dungeon.combat.LevelBonus;
+import uz.dukeengine.rpg.hero.LevelBonus;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.dungeon.content.ShippedBlock;
 import uz.dukeengine.dungeon.run.Seal;
 import uz.dukeengine.dungeon.run.Spawner;
-import uz.dukeengine.dungeon.skill.Skill;
-import uz.dukeengine.dungeon.skill.SkillBook;
-import uz.dukeengine.dungeon.skill.Summoned;
-import uz.dukeengine.dungeon.skill.Summoning;
+import uz.dukeengine.rpg.skill.Skill;
+import uz.dukeengine.rpg.skill.SkillBook;
+import uz.dukeengine.rpg.skill.Summoned;
+import uz.dukeengine.rpg.skill.Summoning;
 import uz.dukeengine.game.DukeGame;
 import uz.dukeengine.combat.module.ExperienceModule;
 

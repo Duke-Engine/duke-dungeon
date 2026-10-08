@@ -12,7 +12,7 @@ import uz.dukeengine.dungeon.content.Content;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.dungeon.gen.DungeonGenerator;
 import uz.dukeengine.dungeon.gen.GeneratedDungeon;
-import uz.dukeengine.dungeon.loot.LootBag;
+import uz.dukeengine.rpg.item.LootBag;
 
 /**
  * Where a floor stands the heroes it lets in: round the fountain at the way in, a cell each, and never in the keep —

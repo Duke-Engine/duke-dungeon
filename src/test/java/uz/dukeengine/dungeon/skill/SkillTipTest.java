@@ -1,5 +1,7 @@
 package uz.dukeengine.dungeon.skill;
 
+import uz.dukeengine.rpg.skill.SkillTip;
+import uz.dukeengine.rpg.skill.Skill;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -20,7 +22,7 @@ class SkillTipTest {
     private static final DungeonSettings SETTINGS = DungeonSettings.load();
 
     /** The skills a player casts: a hero's. A monster's has no key, no card and no look. */
-    private static java.util.List<uz.dukeengine.dungeon.skill.Skill> playersSkills() {
+    private static java.util.List<uz.dukeengine.rpg.skill.Skill> playersSkills() {
         var heroes = SETTINGS.heroes().stream().map(uz.dukeengine.dungeon.content.HeroLook::name)
                 .collect(java.util.stream.Collectors.toSet());
         return SETTINGS.skills().stream().filter(skill -> heroes.contains(skill.heroTemplate()))

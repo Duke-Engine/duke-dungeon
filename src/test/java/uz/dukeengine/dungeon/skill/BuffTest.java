@@ -1,5 +1,8 @@
 package uz.dukeengine.dungeon.skill;
 
+import uz.dukeengine.rpg.skill.SkillEffect;
+import uz.dukeengine.rpg.skill.SkillBook;
+import uz.dukeengine.rpg.skill.Buff;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.List;

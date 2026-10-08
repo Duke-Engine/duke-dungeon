@@ -1,5 +1,13 @@
 package uz.dukeengine.dungeon.loot;
 
+import uz.dukeengine.rpg.item.Stat;
+import uz.dukeengine.rpg.item.PickUp;
+import uz.dukeengine.rpg.item.LootTable;
+import uz.dukeengine.rpg.item.LootBag;
+import uz.dukeengine.rpg.item.Loot;
+import uz.dukeengine.rpg.item.ItemUse;
+import uz.dukeengine.rpg.item.GroundItem;
+import uz.dukeengine.rpg.item.DropItem;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -9,78 +17,57 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import uz.dukeengine.core.math.LogicRandom;
 import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.dungeon.Dungeon;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.game.DukeGame;
-import uz.dukeengine.rts.player.RtsPlayer;
+import uz.dukeengine.rpg.hero.AttackBonus;
 
 /**
  * What a dead monster leaves, and what picking it up is worth.
  *
  * <p>Nothing here asserts a balance figure — which items exist and what they are
  * worth is written in {@code data/world/world.duke}, so a re-tune should move these tests
- * with it. What is held still is the mechanism: that the draw is the seed's and
- * not the clock's, that a monster's own draw does not depend on when it died,
- * that the floor decides what may be found, and that a run's findings die with it.
+ * with it. What is held still is the mechanism: that the draw is the world's and
+ * not the clock's, that the floor decides what may be found, and that a run's
+ * findings die with it. That one stream draws the same things again, and what a
+ * tier makes an item worth, are the engine's to hold (its rpg LootTest).
  */
 class LootTest {
 
     private static final DungeonSettings SHIPPED = DungeonSettings.load();
 
     private static final List<Loot> DECK = List.of(
-            new Loot("Blade", "Blade", "", LootKind.ATTACK, 10, 10, 1),
-            new Loot("Plate", "Plate", "", LootKind.ARMOUR, 5, 10, 3));
+            new Loot("Blade", "Blade", "", Stat.ATTACK, 10, 10, 1),
+            new Loot("Plate", "Plate", "", Stat.ARMOUR, 5, 10, 3));
 
     /** Always drops, so a test about what drops is not a test about whether. */
-    private static LootTable always(long seed) {
-        return new LootTable(DECK, seed, 100, 100, 0);
+    private static LootTable always() {
+        return new LootTable(DECK, 100, 100, 0);
     }
 
     // ---- the draw ----
 
     @Test
-    void theSameMonsterAlwaysLeavesTheSameThing() {
-        var table = always(99L);
-        var first = table.dropFor(41, 2, false);
-        assertNotNull(first);
-        assertEquals(first.id(), table.dropFor(41, 2, false).id(),
-                "a seed is the whole run, the loot included");
-    }
-
-    /**
-     * And it does not depend on the order the player killed things in.
-     *
-     * <p>A generator advanced once per death would be reproducible too, but only
-     * for a player who took the same route — which would make a replay depend on
-     * where he walked rather than on what he ordered.
-     */
-    @Test
-    void theOrderOfDeathsDoesNotChangeTheDraw() {
-        var table = always(99L);
-        var alone = table.dropFor(41, 2, false);
-        table.dropFor(7, 2, false);
-        table.dropFor(8, 2, false);
-        table.dropFor(9, 2, false);
-        assertEquals(alone.id(), table.dropFor(41, 2, false).id());
-    }
-
-    @Test
-    void differentMonstersLeaveDifferentThings() {
-        var table = always(99L);
+    void differentDeathsLeaveDifferentThings() {
+        var table = always();
+        var random = new LogicRandom(99L);
+        var first = table.dropFor(random, 3, false).id();
         boolean anyDifferent = false;
-        for (int id = 1; id <= 40 && !anyDifferent; id++) {
-            anyDifferent = !table.dropFor(id, 3, false).id().equals(table.dropFor(1, 3, false).id());
+        for (int death = 1; death <= 40 && !anyDifferent; death++) {
+            anyDifferent = !table.dropFor(random, 3, false).id().equals(first);
         }
-        assertTrue(anyDifferent, "every monster leaving the same item is not a table");
+        assertTrue(anyDifferent, "every death leaving the same item is not a table");
     }
 
     @Test
     void mostDeathsLeaveNothing() {
-        var stingy = new LootTable(DECK, 5L, 20, 100, 0);
+        var stingy = new LootTable(DECK, 20, 100, 0);
+        var random = new LogicRandom(5L);
         int dropped = 0;
-        for (int id = 1; id <= 200; id++) {
-            if (stingy.dropFor(id, 1, false) != null) {
+        for (int death = 1; death <= 200; death++) {
+            if (stingy.dropFor(random, 1, false) != null) {
                 dropped++;
             }
         }
@@ -90,35 +77,25 @@ class LootTest {
 
     @Test
     void theBossAlwaysLeavesSomething() {
-        var stingy = new LootTable(DECK, 5L, 0, 100, 0);
-        assertNull(stingy.dropFor(3, 1, false), "nothing drops at zero percent");
-        assertNotNull(stingy.dropFor(3, 1, true), "except from the thing guarding the way down");
+        var stingy = new LootTable(DECK, 0, 100, 0);
+        var random = new LogicRandom(5L);
+        assertNull(stingy.dropFor(random, 1, false), "nothing drops at zero percent");
+        assertNotNull(stingy.dropFor(random, 1, true), "except from the thing guarding the way down");
     }
 
     @Test
     void aDeepItemIsNotFoundInTheFirstRooms() {
-        var table = always(1234L);
-        for (int id = 1; id <= 60; id++) {
-            assertEquals("Blade", table.dropFor(id, 1, false).id(),
-                    "Plate has MinDepth 3 and must not appear on the first floor");
+        var table = always();
+        var random = new LogicRandom(1234L);
+        for (int death = 1; death <= 60; death++) {
+            assertEquals("Blade", table.dropFor(random, 1, false).id(),
+                    "Plate has MinTier 3 and must not appear on the first floor");
         }
         boolean anyPlate = false;
-        for (int id = 1; id <= 60 && !anyPlate; id++) {
-            anyPlate = "Plate".equals(table.dropFor(id, 3, false).id());
+        for (int death = 1; death <= 60 && !anyPlate; death++) {
+            anyPlate = "Plate".equals(table.dropFor(random, 3, false).id());
         }
         assertTrue(anyPlate, "and must appear once the floor is deep enough");
-    }
-
-    @Test
-    void whatIsFoundIsWorthMoreDeeperDown() {
-        // One item, so the two depths are certainly comparing the same thing:
-        // with a second in the deck a deeper floor could simply have drawn it.
-        var growing = new LootTable(List.of(DECK.get(0)), 7L, 100, 100, 50);
-        int shallow = growing.dropFor(11, 1, false).value();
-        int deep = growing.dropFor(11, 3, false).value();
-        assertTrue(deep > shallow, shallow + " -> " + deep);
-        // Computed from the depth in one step: two floors at fifty percent is +100%.
-        assertEquals(shallow * 2, deep);
     }
 
     // ---- what a bag comes to ----
@@ -177,8 +154,8 @@ class LootTest {
 
     // ---- three alike ----
 
-    private static final Loot GAUNTLET = new Loot("Gauntlet", "Gauntlet", "", LootKind.ATTRIBUTE, 3, 10, 1,
-            "Strength", LootExtra.HEALTH_REGEN, 0, 2, 1, ItemUse.NONE, "");
+    private static final Loot GAUNTLET = new Loot("Gauntlet", "Gauntlet", "", Stat.ATTRIBUTE, 3, 10, 1,
+            "Strength", Stat.HEALTH_REGEN, 0, 2, 1, ItemUse.NONE, "");
 
     @Test
     void threeAlikeJoinIntoOneOfTheNextLevel() {
@@ -246,7 +223,7 @@ class LootTest {
     /** What a thing does when used and what it lies as are its own: joining it or pricing it anew keeps both. */
     @Test
     void whatAThingDoesAndLiesAsSurvivesJoiningAndAnotherWorth() {
-        var charm = new Loot("Charm", "Charm", "", LootKind.ATTACK, 10, 10, 1, "", LootExtra.NONE, 0, 0, 1,
+        var charm = new Loot("Charm", "Charm", "", Stat.ATTACK, 10, 10, 1, "", "", 0, 0, 1,
                 ItemUse.UNLOCK, "Key");
 
         assertEquals(ItemUse.UNLOCK, charm.joined(3).use(), "joined, it does what it did");
@@ -256,6 +233,12 @@ class LootTest {
     }
 
     // ---- in the game ----
+
+    /** What his blow is worth now, as a share of the one his weapon was built with: 1 until it is more. */
+    private static float blowOf(DukeGame game) {
+        var bonus = find(game, "Rogue").findModule(AttackBonus.class);
+        return bonus == null ? 1f : bonus.damageMultiplier();
+    }
 
     private static GameObject find(DukeGame game, String template) {
         return game.getLogic().getObjects().stream()
@@ -338,19 +321,18 @@ class LootTest {
         var game = session.game();
         game.runHeadless(1);
         var hero = find(game, "Rogue");
-        var player = RtsPlayer.of(game.getLogic(), game.getLocalPlayerIndex());
-        float plain = player.getWeaponDamageBonus();
-        var blade = new Loot("Blade", "Blade", "", LootKind.ATTACK, 25, 10, 1);
+        float plain = blowOf(game);
+        var blade = new Loot("Blade", "Blade", "", Stat.ATTACK, 25, 10, 1);
         session.progress().getLoot().take(blade, 0, 30);
         game.runHeadless(2);
-        assertTrue(player.getWeaponDamageBonus() > plain, "a sword in his bag is a sword in his hand");
+        assertTrue(blowOf(game) > plain, "a sword in his bag is a sword in his hand");
 
         game.postCommand(uz.dukeengine.dungeon.party.PartyOrders.of(
                 new DropItem(game.getLocalPlayerIndex(), 0, hero.getPosition())));
         game.runHeadless(3);
 
         assertTrue(session.progress().getLoot().getFound().isEmpty(), "out of his bag");
-        assertEquals(plain, player.getWeaponDamageBonus(), 0.0001f, "and out of his hand");
+        assertEquals(plain, blowOf(game), 0.0001f, "and out of his hand");
         var chest = find(game, "Chest");
         assertNotNull(chest, "and on the floor");
         assertEquals(blade, chest.findModule(GroundItem.class).getHolding());
@@ -368,7 +350,7 @@ class LootTest {
         game.runHeadless(1);
         var body = find(game, "Rogue").getBody();
         var bag = session.progress().getLoot();
-        var heart = new Loot("Heart", "Heart", "", LootKind.HEALTH, 90, 10, 1);
+        var heart = new Loot("Heart", "Heart", "", Stat.HEALTH, 90, 10, 1);
         float bare = body.getMaxHealth();
 
         bag.take(heart, 0, 30);
@@ -392,20 +374,19 @@ class LootTest {
         var session = Dungeon.newSession(21L);
         var game = session.game();
         game.runHeadless(1);
-        var player = RtsPlayer.of(game.getLogic(), game.getLocalPlayerIndex());
-        float plain = player.getWeaponDamageBonus();
+        float plain = blowOf(game);
 
         session.progress().getLoot().take(
-                new Loot("Blade", "Blade", "", LootKind.ATTACK, 25, 10, 1), 0, 30);
+                new Loot("Blade", "Blade", "", Stat.ATTACK, 25, 10, 1), 0, 30);
         game.runHeadless(2);
-        assertTrue(player.getWeaponDamageBonus() > plain,
+        assertTrue(blowOf(game) > plain,
                 "a sword he found should reach the arrow he looses");
 
         game.getLogic().destroyObject(find(game, "Rogue"));
         game.runHeadless(DungeonSettings.load().run().respawnDelayFrames() + 4);
         assertTrue(session.progress().getLoot().getFound().isEmpty(),
                 "a new run starts with nothing, what he found included");
-        assertEquals(plain, player.getWeaponDamageBonus(), 0.0001f,
+        assertEquals(plain, blowOf(game), 0.0001f,
                 "and the bonus goes with it rather than outliving him");
     }
 
@@ -423,8 +404,8 @@ class LootTest {
         var game = session.game();
         game.runHeadless(2);
         var hero = find(game, "Rogue");
-        var recovery = hero.findModule(uz.dukeengine.dungeon.level.Recovery.class);
-        var book = hero.findModule(uz.dukeengine.dungeon.skill.SkillBook.class);
+        var recovery = hero.findModule(uz.dukeengine.rpg.hero.Recovery.class);
+        var book = hero.findModule(uz.dukeengine.rpg.skill.SkillBook.class);
         int healthWas = recovery.getRate();
         int manaWas = book.getManaRegen();
         var bag = session.progress().getLoot();
@@ -436,7 +417,7 @@ class LootTest {
 
         assertEquals(healthWas + 20, recovery.getRate(), "two points of health a second more, in tenths");
         assertEquals(manaWas + 20, book.getManaRegen(), "and two of mana");
-        var quick = hero.findModule(uz.dukeengine.dungeon.level.AttackSpeed.class);
+        var quick = hero.findModule(uz.dukeengine.rpg.hero.AttackSpeed.class);
         assertNotNull(quick, "and his blows made quicker");
         assertEquals(1.2f, quick.rateOfFireMultiplier(), 0.0001f, "by a fifth");
 
@@ -453,9 +434,9 @@ class LootTest {
         var found = SHIPPED.loot().stream().filter(item -> item.weight() > 0).toList();
         assertEquals(List.of("Gauntlet", "Boots", "Tome"), found.stream().map(Loot::id).toList());
         for (var item : found) {
-            assertEquals(LootKind.ATTRIBUTE, item.kind(), item.id());
+            assertEquals(Stat.ATTRIBUTE, item.kind(), item.id());
             assertEquals(3, item.value(), item.id());
-            assertTrue(item.extra() != LootExtra.NONE && item.extraStep() > 0, item.id() + " has an extra to come");
+            assertTrue(!item.extra().isEmpty() && item.extraStep() > 0, item.id() + " has an extra to come");
         }
         assertEquals(0, SHIPPED.lootDrops().valuePercentPerDepth(), "alike things have to stay alike to join");
     }
@@ -466,12 +447,12 @@ class LootTest {
         assertEquals("Chest", SHIPPED.lootDrops().template());
         for (var item : SHIPPED.loot()) {
             assertFalse(item.name().isBlank(), item.id() + " has nothing to say for itself");
-            assertTrue(item.value() > 0 || item.kind() == LootKind.KEY, item.id() + " is worth nothing");
+            assertTrue(item.value() > 0 || item.use() == ItemUse.UNLOCK, item.id() + " is worth nothing");
         }
     }
 
     private static Loot key() {
-        return SHIPPED.loot().stream().filter(item -> item.kind() == LootKind.KEY).findFirst().orElseThrow();
+        return SHIPPED.loot().stream().filter(item -> item.use() == ItemUse.UNLOCK).findFirst().orElseThrow();
     }
 
     /** The shipped key: given, never found, used on a gate, lying as a key rather than in a chest. */
@@ -492,19 +473,18 @@ class LootTest {
         bag.take(key(), 0, 0);
         assertEquals(0, bag.attackPercent() + bag.health() + bag.mana() + bag.armourPercent() + bag.healthRegen()
                 + bag.manaRegen() + bag.attackSpeedPercent(), "a figure from a key");
-        assertTrue(bag.holds(LootKind.KEY));
+        assertTrue(bag.holds(ItemUse.UNLOCK));
 
         var session = Dungeon.newSession(21L);
         var game = session.game();
         game.runHeadless(2);
         var hero = find(game, "Rogue");
-        var player = RtsPlayer.of(game.getLogic(), game.getLocalPlayerIndex());
         float health = hero.getBody().getMaxHealth();
-        float blow = player.getWeaponDamageBonus();
+        float blow = blowOf(game);
         session.progress().getLoot().take(key(), 0, 30);
         game.runHeadless(2);
         assertEquals(health, hero.getBody().getMaxHealth(), 0.0001f, "his health");
-        assertEquals(blow, player.getWeaponDamageBonus(), 0.0001f, "his blow");
+        assertEquals(blow, blowOf(game), 0.0001f, "his blow");
     }
 
     /** Three keys are three keys: a key never joins into a higher one. */
@@ -518,11 +498,11 @@ class LootTest {
     }
 
     /**
-     * Every thing of the kind goes and nothing else does: two keys among other things leave their slots empty and the
-     * others where they were, and a bag with nothing of the kind to take is not said to have changed.
+     * Every thing of the use goes and nothing else does: two keys among other things leave their slots empty and the
+     * others where they were, and a bag with nothing of the use to take is not said to have changed.
      */
     @Test
-    void removingAKindTakesEveryThingOfItAndNothingElse() {
+    void removingAUseTakesEveryThingOfItAndNothingElse() {
         var bag = new LootBag();
         bag.take(GAUNTLET, 0, 0);
         bag.take(key(), 0, 0);
@@ -531,9 +511,9 @@ class LootTest {
         bag.take(DECK.get(1), 0, 0);
         int before = bag.version();
 
-        bag.removeAll(LootKind.KEY);
+        bag.removeAll(ItemUse.UNLOCK);
 
-        assertFalse(bag.holds(LootKind.KEY), "both keys are gone");
+        assertFalse(bag.holds(ItemUse.UNLOCK), "both keys are gone");
         assertEquals(GAUNTLET, bag.at(0));
         assertNull(bag.at(1), "a key's slot is left empty, not closed up");
         assertEquals(DECK.get(0), bag.at(2));
@@ -542,24 +522,20 @@ class LootTest {
         assertTrue(bag.version() > before, "and the bag says it changed");
 
         int after = bag.version();
-        bag.removeAll(LootKind.KEY);
+        bag.removeAll(ItemUse.UNLOCK);
         assertEquals(after, bag.version(), "no key to take, and nothing changed");
-
-        bag.removeAll(LootKind.ARMOUR);
-        assertNull(bag.at(4), "it is the kind asked for that goes, not the key: the plate is gone");
-        assertEquals(GAUNTLET, bag.at(0), "and what is not of it stays");
-        assertEquals(DECK.get(0), bag.at(2));
     }
 
     /** Nothing leaves one at random, however often things drop. */
     @Test
     void theKeyIsNeverDrawnAsADrop() {
         assertEquals(0, key().weight());
-        var table = new LootTable(SHIPPED.loot(), 7L, 100, 100, 0);
+        var table = new LootTable(SHIPPED.loot(), 100, 100, 0);
+        var random = new LogicRandom(7L);
         for (int id = 0; id < 2000; id++) {
-            var drop = table.dropFor(id, 1 + id % 4, id % 10 == 0);
+            var drop = table.dropFor(random, 1 + id % 4, id % 10 == 0);
             assertNotNull(drop);
-            assertTrue(drop.kind() != LootKind.KEY, "monster " + id + " dropped the key");
+            assertTrue(drop.use() != ItemUse.UNLOCK, "monster " + id + " dropped the key");
         }
     }
 

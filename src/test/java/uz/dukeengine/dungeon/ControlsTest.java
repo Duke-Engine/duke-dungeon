@@ -288,7 +288,7 @@ class ControlsTest {
     void aLaneIsAReachAndADirectionAndNothingElse() {
         var settings = DungeonSettings.load();
         var fireball = settings.skills().stream()
-                .filter(skill -> skill.effect() == uz.dukeengine.dungeon.skill.SkillEffect.SKILLSHOT)
+                .filter(skill -> skill.effect() == uz.dukeengine.rpg.skill.SkillEffect.SKILLSHOT)
                 .findFirst().orElseThrow(() -> new AssertionError("nothing is a skillshot"));
 
         var drawn = uz.dukeengine.dungeon.Main.rangeOf(fireball, settings.skillRing().selfRadius());

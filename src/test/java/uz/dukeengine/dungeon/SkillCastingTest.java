@@ -14,8 +14,8 @@ import uz.dukeengine.core.thing.ObjectId;
 import uz.dukeengine.dungeon.content.Content;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.dungeon.content.ShippedBlock;
-import uz.dukeengine.dungeon.skill.CastSkill;
-import uz.dukeengine.dungeon.skill.SkillBook;
+import uz.dukeengine.rpg.skill.CastSkill;
+import uz.dukeengine.rpg.skill.SkillBook;
 import uz.dukeengine.game.DukeGame;
 
 /**
@@ -229,7 +229,7 @@ class SkillCastingTest {
     // ---- the drawn shot ----
 
     /** The skill the file describes, by key. */
-    private static uz.dukeengine.dungeon.skill.Skill skillNamed(char key) {
+    private static uz.dukeengine.rpg.skill.Skill skillNamed(char key) {
         return SETTINGS.skillsFor("Rogue").stream()
                 .filter(skill -> skill.key() == key).findFirst().orElseThrow();
     }
@@ -1110,7 +1110,7 @@ class SkillCastingTest {
      * he starts with" rather than a way to hand him a finished build.
      */
     private static void learn(uz.dukeengine.game.DukeGame game, char key) {
-        game.postCommand(new uz.dukeengine.dungeon.skill.UpgradeSkill(
+        game.postCommand(new uz.dukeengine.rpg.skill.UpgradeSkill(
                 game.getLocalPlayerIndex(), key));
         game.runHeadless(1);
     }

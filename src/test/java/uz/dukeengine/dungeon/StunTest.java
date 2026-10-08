@@ -20,8 +20,8 @@ import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.dungeon.content.Hero;
 import uz.dukeengine.dungeon.content.Monster;
 import uz.dukeengine.dungeon.content.ShippedBlock;
-import uz.dukeengine.dungeon.skill.Skill;
-import uz.dukeengine.dungeon.skill.SkillBook;
+import uz.dukeengine.rpg.skill.Skill;
+import uz.dukeengine.rpg.skill.SkillBook;
 import uz.dukeengine.game.DukeGame;
 import uz.dukeengine.combat.module.StatusUpdate;
 

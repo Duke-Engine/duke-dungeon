@@ -11,9 +11,9 @@ import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.core.thing.ObjectStatus;
 import uz.dukeengine.dungeon.content.Content;
 import uz.dukeengine.dungeon.content.DungeonSettings;
-import uz.dukeengine.dungeon.skill.Skill;
-import uz.dukeengine.dungeon.skill.SkillBook;
-import uz.dukeengine.dungeon.skill.SkillEffect;
+import uz.dukeengine.rpg.skill.Skill;
+import uz.dukeengine.rpg.skill.SkillBook;
+import uz.dukeengine.rpg.skill.SkillEffect;
 import uz.dukeengine.game.DukeGame;
 
 /**
@@ -479,12 +479,12 @@ class MageTest {
     }
 
     /** What he is at his first level: his creature block with his attributes on it. */
-    private static uz.dukeengine.dungeon.level.HeroFigures firstLevel(String hero) {
+    private static uz.dukeengine.rpg.hero.HeroFigures firstLevel(String hero) {
         var look = SETTINGS.heroNamed(hero);
-        return uz.dukeengine.dungeon.level.HeroFigures.of(
-                uz.dukeengine.dungeon.level.HeroBase.of(templateOf(hero)), look.maxMana(),
+        return uz.dukeengine.rpg.hero.HeroFigures.of(
+                uz.dukeengine.rpg.hero.HeroBase.of(templateOf(hero)), look.maxMana(),
                 look.attributes(), SETTINGS.attributeRules(), 1,
-                uz.dukeengine.dungeon.level.HeroFigures.Found.NOTHING);
+                uz.dukeengine.rpg.hero.HeroFigures.Found.NOTHING);
     }
 
     private static float health(String hero) {

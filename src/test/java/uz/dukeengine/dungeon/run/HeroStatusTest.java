@@ -1,5 +1,6 @@
 package uz.dukeengine.dungeon.run;
 
+import uz.dukeengine.rpg.item.Stat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -327,8 +328,8 @@ class HeroStatusTest {
         var game = session.game();
         game.runHeadless(2);
         pickOutTheHero(session);
-        session.progress().getLoot().take(new uz.dukeengine.dungeon.loot.Loot("Tome", "Tome", "flask",
-                uz.dukeengine.dungeon.loot.LootKind.ATTRIBUTE, 5, 1, 1, "STR"),
+        session.progress().getLoot().take(new uz.dukeengine.rpg.item.Loot("Tome", "Tome", "flask",
+                Stat.ATTRIBUTE, 5, 1, 1, "STR"),
                 game.getLogic().getFrame(), 60);
         game.runHeadless(2);
 
@@ -427,7 +428,7 @@ class HeroStatusTest {
 
         var settings = DungeonSettings.load();
         var blade = settings.loot().stream()
-                .filter(item -> item.kind() == uz.dukeengine.dungeon.loot.LootKind.ATTRIBUTE)
+                .filter(item -> Stat.ATTRIBUTE.equals(item.kind()))
                 .findFirst().orElseThrow();
         session.progress().getLoot().take(blade, game.getLogic().getFrame(), 60);
         game.runHeadless(2);

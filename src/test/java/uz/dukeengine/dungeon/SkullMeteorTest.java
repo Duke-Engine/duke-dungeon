@@ -14,14 +14,14 @@ import org.junit.jupiter.api.Test;
 import uz.dukeengine.client3d.Visuals;
 import uz.dukeengine.core.GameConstants;
 import uz.dukeengine.core.thing.GameObject;
-import uz.dukeengine.dungeon.combat.LevelBonus;
+import uz.dukeengine.rpg.hero.LevelBonus;
 import uz.dukeengine.dungeon.content.Content;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.dungeon.content.ShippedBlock;
 import uz.dukeengine.dungeon.run.Spawner;
-import uz.dukeengine.dungeon.skill.Skill;
-import uz.dukeengine.dungeon.skill.SkillBook;
-import uz.dukeengine.dungeon.skill.SkillEffect;
+import uz.dukeengine.rpg.skill.Skill;
+import uz.dukeengine.rpg.skill.SkillBook;
+import uz.dukeengine.rpg.skill.SkillEffect;
 import uz.dukeengine.game.DukeGame;
 
 /**

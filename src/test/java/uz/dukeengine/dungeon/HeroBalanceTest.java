@@ -9,9 +9,9 @@ import uz.dukeengine.core.GameConstants;
 import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.dungeon.content.Content;
 import uz.dukeengine.dungeon.content.DungeonSettings;
-import uz.dukeengine.dungeon.level.HeroFigures;
-import uz.dukeengine.dungeon.level.HeroProgress;
-import uz.dukeengine.dungeon.loot.LootBag;
+import uz.dukeengine.rpg.hero.HeroFigures;
+import uz.dukeengine.rpg.hero.HeroProgress;
+import uz.dukeengine.rpg.item.LootBag;
 import uz.dukeengine.game.DukeGame;
 import uz.dukeengine.game.GamePlayer;
 import uz.dukeengine.combat.message.CombatOrder;
@@ -158,10 +158,11 @@ class HeroBalanceTest {
         var bag = new LootBag();
         var arena = Dungeon.world(room(40, 30), SETTINGS, creatures, bag);
         var game = arena.game();
-        var progress = new HeroProgress(arena.hero(), SETTINGS.levelling(),
+        var progress = new HeroProgress(arena.hero()::getIndex,
+                uz.dukeengine.dungeon.Dungeon.banner(arena.game(), arena.hero()), SETTINGS.levelling(),
                 SETTINGS.attributeRules(), SETTINGS.progression().levelUpBannerFrames(), bag);
         progress.playing(SETTINGS.heroNamed(template));
-        game.onTick(progress::tick);
+        game.onTick(ticked -> progress.tick(ticked.getLogic()));
         game.spawn(template, arena.hero(), 200f, 150f);
         game.runHeadless(1);
         var fight = new Fight(game, progress, arena.dungeon(), template);

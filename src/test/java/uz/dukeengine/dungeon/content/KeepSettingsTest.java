@@ -7,8 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import org.junit.jupiter.api.Test;
-import uz.dukeengine.dungeon.loot.ItemUse;
-import uz.dukeengine.dungeon.loot.LootKind;
+import uz.dukeengine.rpg.item.ItemUse;
 
 /** What a map says about the boss's keep, and what it may not say. */
 class KeepSettingsTest {
@@ -150,7 +149,7 @@ class KeepSettingsTest {
         var settings = DungeonSettings.parse(data);
 
         assertTrue(settings.keep().sizes().isEmpty(), "no keep");
-        assertTrue(settings.loot().stream().noneMatch(item -> item.kind() == LootKind.KEY
+        assertTrue(settings.loot().stream().noneMatch(item -> "KEY".equals(item.kind())
                 || item.use() == ItemUse.UNLOCK), "and no key to open it");
     }
 
@@ -158,13 +157,13 @@ class KeepSettingsTest {
     @Test
     void theShippedFilesGiveTheKeepAKeyThatOpens() {
         var settings = DungeonSettings.load();
-        var keys = settings.loot().stream().filter(item -> item.kind() == LootKind.KEY).toList();
+        var keys = settings.loot().stream().filter(item -> "KEY".equals(item.kind())).toList();
 
         assertFalse(settings.keep().sizes().isEmpty(), "the premise: the descent builds a keep");
         assertFalse(keys.isEmpty(), "a keep with no key to lay");
         assertTrue(keys.stream().allMatch(key -> key.use() == ItemUse.UNLOCK), "a key that opens nothing");
         assertTrue(settings.loot().stream().filter(item -> item.use() == ItemUse.UNLOCK)
-                .allMatch(item -> item.kind() == LootKind.KEY), "a thing that opens the gate and is not a key");
+                .allMatch(item -> "KEY".equals(item.kind())), "a thing that opens the gate and is not a key");
     }
 
     /** Drawn in the Keep theme, and a Look naming no theme is refused — by the link or by the check, either way. */
