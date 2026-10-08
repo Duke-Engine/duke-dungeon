@@ -92,6 +92,16 @@ public final class StageFile {
         list(out, "Monsters", floor.monsters().stream().map(monster -> placed(monster.kind(), monster.at())).toList());
         out.append("  ; Solid, and not alive — see data/props/.\n");
         list(out, "Props", floor.props().stream().map(prop -> placed(prop.kind(), prop.at())).toList());
+        var paint = stage.paint();
+        if (paint != null) {
+            out.append("  ; What the ground is painted with: a character a cell, each one the palette names.\n");
+            list(out, "Paint", paint.rows().stream().map(row -> "\"" + row + "\"").toList());
+            out.append("  ; Each character's picture, under the game's resources, and how many cells one copy covers.\n");
+            list(out, "Palette", paint.palette().entrySet().stream()
+                    .map(entry -> entry.getKey() + " = \"" + entry.getValue() + "\"").toList());
+            list(out, "Coverage", paint.palette().keySet().stream().filter(paint.coverage()::containsKey)
+                    .map(key -> key + " = " + paint.coverage().get(key)).toList());
+        }
         return out.append("End\n").toString();
     }
 
@@ -162,7 +172,7 @@ public final class StageFile {
         var floor = new GeneratedDungeon(walls, levels, entrance, monsters, boss, bossRoom(map), rooms, links, storeys,
                 props, reliefOf(map, source), map.levelHeight());
         return new Stage(map.name(), map.displayName(), map.description(), map.difficulty(), map.players(), map.seed(),
-                floor);
+                floor, paintOf(map, source));
     }
 
     /** The map's relief, or null for none: one more row of corners than it has cells, and one more corner a row. */
@@ -183,6 +193,51 @@ public final class StageFile {
                     + (width + 1) + " by " + (map.cells().size() + 1));
         }
         return relief;
+    }
+
+    /**
+     * The map's paint, or null for none: a row for every row of cells, a character for every cell, and every
+     * character one the palette names — a cell the palette does not name would be drawn as nothing at all.
+     */
+    private static StagePaint paintOf(StaticMap map, String source) {
+        if (map.paint().isEmpty() && map.palette().isEmpty()) {
+            return null;
+        }
+        if (map.paint().isEmpty() || map.palette().isEmpty()) {
+            throw new DataException(source, map.name() + " has " + (map.paint().isEmpty() ? "a Palette and no Paint"
+                    : "Paint and no Palette") + ": painted ground needs both");
+        }
+        int width = map.cells().getFirst().length();
+        if (map.paint().size() != map.cells().size()) {
+            throw new DataException(source, "the Paint of " + map.name() + " is " + map.paint().size()
+                    + " rows, and its Cells " + map.cells().size());
+        }
+        for (var key : map.palette().keySet()) {
+            if (key.length() != 1) {
+                throw new DataException(source, "the Palette of " + map.name() + " names '" + key
+                        + "', and a cell is painted with one character");
+            }
+        }
+        for (int y = 0; y < map.paint().size(); y++) {
+            var row = map.paint().get(y);
+            if (row.length() != width) {
+                throw new DataException(source, "row " + y + " of the Paint of " + map.name() + " is " + row.length()
+                        + " cells, and its Cells " + width);
+            }
+            for (int x = 0; x < width; x++) {
+                if (!map.palette().containsKey(String.valueOf(row.charAt(x)))) {
+                    throw new DataException(source, "the Paint of " + map.name() + " has '" + row.charAt(x) + "' at "
+                            + x + "," + y + ", which its Palette does not name");
+                }
+            }
+        }
+        for (var key : map.coverage().keySet()) {
+            if (!map.palette().containsKey(key)) {
+                throw new DataException(source, "the Coverage of " + map.name() + " names '" + key
+                        + "', which its Palette does not");
+            }
+        }
+        return new StagePaint(map.name(), map.paint(), map.palette(), map.coverage());
     }
 
     /** Which room the boss stands in: the one its cell is inside, so it is written once, as the cell. */

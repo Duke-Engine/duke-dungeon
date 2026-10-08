@@ -62,6 +62,11 @@ public interface Floors {
      */
     int lastDepth();
 
+    /** What the floors' ground is painted with, or null for floors drawn by the kit of their look. */
+    default uz.dukeengine.dungeon.stage.StagePaint paint() {
+        return null;
+    }
+
     /** Floors drawn from a seed, each one deeper and nastier — the endless descent. */
     static Floors generated(long seed, DungeonSettings settings) {
         return new GeneratedFloors(seed, settings);
