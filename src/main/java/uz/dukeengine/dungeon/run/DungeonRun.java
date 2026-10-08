@@ -326,6 +326,9 @@ public final class DungeonRun {
      * Before a floor exists, and for one that mixes none, it is the depth's theme as ever.
      */
     private String lookOf(GeneratedDungeon floor) {
+        if (floors.paint() != null) {
+            return null; // painted ground: a look's kit would be drawn over it
+        }
         var chosen = floor != null && floor.biomes() != null
                 ? themes.dressedAs(floor.biomes().ofRoom(0), floors.seed(), depth)
                 : themes.pick(floors.seed(), depth);
@@ -336,9 +339,12 @@ public final class DungeonRun {
      * What each cell of {@code floor} is drawn as, for a floor that mixes biomes, or null for one that wears its look
      * whole. Each biome in the tone the depth draws for it — the same draw {@link #lookOf} makes for the biome the
      * heroes come in to, so the cells round them and the status line name one look — but for the keep's cells, which
-     * wear the keep's, whatever biome they stand in.
+     * wear the keep's, whatever biome they stand in. A painted stage is its paint, and wears no look at all.
      */
-    private FloorLooks looksOf(GeneratedDungeon floor) {
+    private uz.dukeengine.core.map.MapTemplate looksOf(GeneratedDungeon floor) {
+        if (floors.paint() != null) {
+            return floors.paint();
+        }
         if (floor.biomes() == null) {
             return null;
         }

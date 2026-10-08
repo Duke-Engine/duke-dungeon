@@ -444,6 +444,34 @@ public final class Main {
         };
     }
 
+    /** The blend, each surface's look, the cliffs and the quarters a painted map is drawn with. */
+    static void paintedGround(Visuals visuals, uz.dukeengine.dungeon.world.PaintedGround ground) {
+        if (ground.blend()) {
+            visuals.paintBlend(new Visuals.PaintBlend(ground.noise(), ground.raggedness(), ground.sharpness(),
+                    ground.noiseCoverage(), ground.variation(), ground.variationCoverage()));
+        }
+        var surfaces = new java.util.LinkedHashSet<>(ground.tints().keySet());
+        surfaces.addAll(ground.variations().keySet());
+        for (var surface : surfaces) {
+            visuals.surface(surface, new Visuals.SurfaceLook(ground.tints().getOrDefault(surface, 0xFFFFFF),
+                    ground.variations().getOrDefault(surface, 0f)));
+        }
+        if (ground.cliffs() != null) {
+            visuals.paintCliffs(new Visuals.Cliffs(ground.cliffs(), ground.cliffSlope(), ground.cliffCoverage()));
+        }
+        visuals.paintInQuarters(ground.quarters());
+    }
+
+    /**
+     * Whether the map the game opens on is painted. Building ground round the camera is the client's one switch for
+     * a kit's floor and painted ground alike, so it is thrown only for a painted map named at launch: the descent's
+     * floors are never built any other way than they always were.
+     */
+    static boolean opensPainted(uz.dukeengine.core.map.MapPackage opening) {
+        return opening != null
+                && uz.dukeengine.dungeon.stage.StageFile.read(opening.text(), opening.name()).paint() != null;
+    }
+
     public static void main(String[] args) {
         // Which map the game opens on is settled before its data is read, because a map brings blocks of its
         // own with it — see MapPackage — and they are part of the settings everything else is built from.
@@ -454,6 +482,9 @@ public final class Main {
         // Held rather than passed straight in: the question below reaches back
         // into it, because whose eyes open the map is part of who you chose.
         var visuals = looks(settings);
+        if (opensPainted(opening)) {
+            visuals.streamGround(settings.paintedGround().streamCells());
+        }
         // Both held rather than passed straight in, because the question below
         // reaches back into both: whose eyes open the map, what his four keys ask
         // the player to point at, and how far each of them reaches are all part of
@@ -1126,6 +1157,10 @@ public final class Main {
                 settings.fog().visiblePercent() / 100f, settings.fog().softenCells(),
                 settings.fog().openPerSecond(), settings.fog().textureSize(), settings.fog().tint(),
                 settings.fog().texelsPerCell()));
+
+        // How a painted map's ground is drawn -- see PaintedGround in data/world/scene.duke. Only painted ground
+        // reads any of it: a floor laid by a kit, every floor of the descent, is drawn exactly as before.
+        paintedGround(visuals, settings.paintedGround());
 
         // What a caster is seen doing, keyed by the recipe the cast is announced
         // under -- see Visuals.castAnim. A skill that names no gesture is cast
