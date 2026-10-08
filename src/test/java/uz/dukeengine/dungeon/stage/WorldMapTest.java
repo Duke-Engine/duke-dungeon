@@ -133,12 +133,27 @@ class WorldMapTest {
         var game = session.game();
         game.runHeadless(1);
         long laid = System.nanoTime();
-        int frames = 120;
+        int frames = 600;
         game.runHeadless(frames);
         long ran = System.nanoTime();
-        System.out.printf("world: read and checked %d ms, laid %d ms, %.2f ms a frame over %d frames%n",
-                (loaded - started) / 1_000_000, (laid - loaded) / 1_000_000,
-                (ran - laid) / 1e6 / frames, frames);
+        var logic = game.getLogic();
+        long asleep = logic.getObjects().stream().filter(logic::isAsleep).count();
+        System.out.printf("world: read and checked %d ms, laid %d ms, %.3f ms a frame over %d frames,"
+                        + " %d of %d things asleep%n", (loaded - started) / 1_000_000, (laid - loaded) / 1_000_000,
+                (ran - laid) / 1e6 / frames, frames, asleep, logic.getObjects().size());
+
+        // A wide world: routed by sectors, and its camps asleep while no hero is near them.
+        assertEquals(StagePaint.SECTOR, logic.getRouteSectors());
+        assertTrue(asleep >= 50, "only " + asleep + " things sleep far from the hero");
+
+        // The same world with everything awake, for the record: what the sleep saves.
+        var awake = uz.dukeengine.dungeon.Dungeon.newStageSession(stage, SETTINGS).game();
+        awake.runHeadless(1);
+        awake.getLogic().setSleep(null);
+        long from = System.nanoTime();
+        awake.runHeadless(frames);
+        System.out.printf("world awake: %.3f ms a frame over %d frames%n", (System.nanoTime() - from) / 1e6 / frames,
+                frames);
 
         var hero = game.getLogic().getObjects().stream()
                 .filter(o -> o.getTemplate().name().equals(SETTINGS.run().defaultHero())).findFirst().orElse(null);
@@ -153,6 +168,99 @@ class WorldMapTest {
             assertTrue(Math.hypot(end.x() - to.x(), end.y() - to.y()) < 2 * cell,
                     "the way to " + site.zone() + " stops at " + end + ", short of " + to);
         }
+    }
+
+    /** The descent stays as it was: no sectors, nothing asleep. */
+    @Test
+    void theDescentIsAwakeAndSearchedWhole() {
+        var game = uz.dukeengine.dungeon.Dungeon.newSession(11L).game();
+        game.runHeadless(40);
+        var logic = game.getLogic();
+        assertEquals(0, logic.getRouteSectors());
+        assertEquals(0, logic.getObjects().stream().filter(logic::isAsleep).count());
+    }
+
+    /**
+     * The lake and the river are water the client is handed, and ground nobody walks: the lake's middle and the
+     * river's course are stone in the grid but where a road fords it.
+     */
+    @Test
+    void itsLakeAndRiverAreWaterNobodyWalksThrough() {
+        var stage = shipped();
+        var water = stage.paint().areas();
+        assertTrue(water.stream().anyMatch(area -> !area.river()), "no lake");
+        assertTrue(water.stream().filter(area -> area.river()).count() > 5, "no river worth the name");
+        var grid = groundOf(stage);
+        var road = WorldMapWriter.roads(WorldMapWriter.SEED);
+        int blocked = 0;
+        int fords = 0;
+        for (var area : water) {
+            var p = area.points();
+            for (int i = 0; i < p.size(); i += 2) {
+                assertTrue(p.get(i) >= 0 && p.get(i + 1) >= 0 && p.get(i) <= WorldMapWriter.SIZE
+                        && p.get(i + 1) <= WorldMapWriter.SIZE, area.name() + " runs off the map");
+            }
+            // The middle of a reach: between its first two corners' middle and its far end's, on the course.
+            int x = (int) ((p.get(0) + p.get(2)) / 2);
+            int y = (int) ((p.get(1) + p.get(3)) / 2);
+            if (!area.river()) {
+                x = (int) WorldMapWriter.lakeMiddle()[0];
+                y = (int) WorldMapWriter.lakeMiddle()[1];
+            }
+            if (road[y * WorldMapWriter.SIZE + x]) {
+                fords++;
+            } else if (grid.isBlocked(x, y)) {
+                blocked++;
+            }
+        }
+        assertTrue(blocked >= water.size() * 3 / 4, blocked + " of " + water.size() + " waters block their middle"
+                + " (" + fords + " fords)");
+
+        var session = uz.dukeengine.dungeon.Dungeon.newStageSession(stage, SETTINGS);
+        session.game().runHeadless(2);
+        assertTrue(session.game().getMapRecord() instanceof uz.dukeengine.core.map.Zoned zoned
+                && zoned.areas().size() == water.size(), "the client is not handed the water");
+    }
+
+    /**
+     * No stretch of ground larger than a ledge is cut off: every piece of walkable ground over
+     * {@link WorldMapWriter#SHELF} cells is walked to from the city, by the engine's own rule for a step.
+     */
+    @Test
+    void everyShelfLargerThanALedgeIsReachedFromTheCity() {
+        var grid = groundOf(shipped());
+        var walk = StageCheck.walk(shipped().floor());
+        int size = WorldMapWriter.SIZE;
+        var seen = new boolean[size * size];
+        var cutOff = new java.util.ArrayList<String>();
+        for (int at = 0; at < seen.length; at++) {
+            int x0 = at % size;
+            int y0 = at / size;
+            if (seen[at] || walk.to(x0, y0) >= 0 || grid.isBlocked(x0, y0) || grid.getRelief().isCliff(x0, y0)) {
+                continue;
+            }
+            int cells = 0;
+            var queue = new ArrayDeque<int[]>();
+            seen[at] = true;
+            queue.add(new int[] {x0, y0});
+            while (!queue.isEmpty()) {
+                var here = queue.poll();
+                cells++;
+                for (int[] way : new int[][] {{1, 0}, {-1, 0}, {0, 1}, {0, -1}}) {
+                    int x = here[0] + way[0];
+                    int y = here[1] + way[1];
+                    if (grid.inBounds(x, y) && !seen[y * size + x] && grid.canStep(here[0], here[1], x, y)) {
+                        seen[y * size + x] = true;
+                        queue.add(new int[] {x, y});
+                    }
+                }
+            }
+            if (cells > WorldMapWriter.SHELF) {
+                cutOff.add(cells + " cells at " + x0 + "," + y0);
+            }
+        }
+        System.out.println("world: " + WorldMapWriter.sealedCells(WorldMapWriter.SEED) + " cells of shelves sealed");
+        assertTrue(cutOff.isEmpty(), "cut off from the city: " + cutOff);
     }
 
     private static int[] middleOf(Zone zone) {
