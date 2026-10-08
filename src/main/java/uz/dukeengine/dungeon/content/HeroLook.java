@@ -56,7 +56,7 @@ import java.util.List;
  *                   and just as fixed
  * @param attributes his strength, agility and intelligence, what each level adds to
  *                   them, and which is his primary — {@link
- *                   uz.dukeengine.dungeon.level.HeroAttributes#NONE} for a hero whose
+ *                   uz.dukeengine.rpg.hero.HeroAttributes#NONE} for a hero whose
  *                   block names none, who is then his creature block exactly
  * @param armourPercent how much incoming damage he shrugs off before he has
  *                   earned a single level, as a percentage. Here rather than in
@@ -93,7 +93,7 @@ public record HeroLook(
         int maxMana,
         int manaRegen,
         int healthRegen,
-        uz.dukeengine.dungeon.level.HeroAttributes attributes,
+        uz.dukeengine.rpg.hero.HeroAttributes attributes,
         String model,
         String texture,
         float modelScale,
@@ -104,17 +104,17 @@ public record HeroLook(
         String attack,
         String hurt,
         String death,
-        java.util.List<Held> held) {
+        java.util.List<Held> held) implements uz.dukeengine.rpg.hero.HeroSheet {
 
     public HeroLook {
         animations = List.copyOf(animations);
         held = held == null ? List.of() : List.copyOf(held);
-        attributes = attributes == null ? uz.dukeengine.dungeon.level.HeroAttributes.NONE : attributes;
+        attributes = attributes == null ? uz.dukeengine.rpg.hero.HeroAttributes.NONE : attributes;
     }
 
     /** No art: he is drawn as a shape, as he was before there was a model. */
     public static final HeroLook NONE = new HeroLook("Rogue", "", 0f, 0, 0, 0, 0,
-            uz.dukeengine.dungeon.level.HeroAttributes.NONE, null, null, 1f, 0f,
+            uz.dukeengine.rpg.hero.HeroAttributes.NONE, null, null, 1f, 0f,
             List.of(), null, null, null, null, null, List.of());
 
     public boolean hasModel() {

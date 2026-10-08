@@ -8,14 +8,15 @@ import uz.dukeengine.client3d.Duke3D;
 import uz.dukeengine.client3d.Painter;
 import uz.dukeengine.core.thing.ObjectId;
 import uz.dukeengine.dungeon.content.DungeonSettings;
-import uz.dukeengine.dungeon.loot.DropItem;
-import uz.dukeengine.dungeon.loot.GroundItem;
-import uz.dukeengine.dungeon.loot.ItemUse;
-import uz.dukeengine.dungeon.loot.Loot;
-import uz.dukeengine.dungeon.loot.LootBag;
-import uz.dukeengine.dungeon.loot.UseItem;
+import uz.dukeengine.rpg.item.DropItem;
+import uz.dukeengine.rpg.item.GroundItem;
+import uz.dukeengine.rpg.item.ItemUse;
+import uz.dukeengine.rpg.item.Loot;
+import uz.dukeengine.rpg.item.LootBag;
+import uz.dukeengine.rpg.item.Stat;
+import uz.dukeengine.rpg.item.UseItem;
 import uz.dukeengine.dungeon.party.PartyOrders;
-import uz.dukeengine.dungeon.run.GateUpdate;
+import uz.dukeengine.rpg.mission.GateUpdate;
 import uz.dukeengine.core.view.CommandButton;
 import uz.dukeengine.core.view.WorldSnapshot;
 
@@ -180,16 +181,16 @@ final class BagScreen implements Painter, CanvasInput {
     static String bonusOf(Loot item, DungeonSettings settings) {
         var hud = settings.hud();
         return switch (item.kind()) {
-            case ATTACK -> "+" + item.value() + "% " + hud.attackWord();
-            case ARMOUR -> "+" + item.value() + "% " + hud.armourWord();
-            case HEALTH -> "+" + item.value() + " " + hud.healthWord();
-            case MANA -> "+" + item.value() + " " + hud.manaWord();
-            case ATTRIBUTE -> {
+            case Stat.ATTACK -> "+" + item.value() + "% " + hud.attackWord();
+            case Stat.ARMOUR -> "+" + item.value() + "% " + hud.armourWord();
+            case Stat.HEALTH -> "+" + item.value() + " " + hud.healthWord();
+            case Stat.MANA -> "+" + item.value() + " " + hud.manaWord();
+            case Stat.ATTRIBUTE -> {
                 var rules = settings.attributeRules();
                 int at = rules.indexOf(item.attribute());
                 yield "+" + item.value() + " " + (at < 0 ? item.attribute() : rules.attributes().get(at).word());
             }
-            case KEY -> ""; // it opens a gate, and gives him nothing
+            default -> ""; // a key opens a gate, and gives him nothing
         };
     }
 
@@ -289,10 +290,10 @@ final class BagScreen implements Painter, CanvasInput {
     static String extraOf(Loot item, DungeonSettings settings) {
         var drops = settings.lootDrops();
         return item.extraValue() <= 0 ? "" : switch (item.extra()) {
-            case NONE -> "";
-            case HEALTH_REGEN -> "+" + item.extraValue() + " " + drops.healthRegenWord();
-            case MANA_REGEN -> "+" + item.extraValue() + " " + drops.manaRegenWord();
-            case ATTACK_SPEED -> "+" + item.extraValue() + "% " + drops.attackSpeedWord();
+            case Stat.HEALTH_REGEN -> "+" + item.extraValue() + " " + drops.healthRegenWord();
+            case Stat.MANA_REGEN -> "+" + item.extraValue() + " " + drops.manaRegenWord();
+            case Stat.ATTACK_SPEED -> "+" + item.extraValue() + "% " + drops.attackSpeedWord();
+            default -> "";
         };
     }
 

@@ -4,11 +4,11 @@ import java.awt.Color;
 import uz.dukeengine.dungeon.ai.HeroBrain;
 import uz.dukeengine.dungeon.ai.Orders;
 import uz.dukeengine.dungeon.ai.MonsterBrain;
-import uz.dukeengine.dungeon.combat.ArrowUpdate;
-import uz.dukeengine.dungeon.combat.FallingUpdate;
-import uz.dukeengine.dungeon.combat.Bow;
-import uz.dukeengine.dungeon.combat.EyesOnly;
-import uz.dukeengine.dungeon.combat.Swing;
+import uz.dukeengine.rpg.fight.ArrowUpdate;
+import uz.dukeengine.rpg.fight.FallingUpdate;
+import uz.dukeengine.rpg.fight.Bow;
+import uz.dukeengine.rpg.fight.EyesOnly;
+import uz.dukeengine.rpg.fight.Swing;
 import uz.dukeengine.dungeon.content.Content;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.dungeon.content.Hero;
@@ -16,22 +16,23 @@ import uz.dukeengine.dungeon.content.Monster;
 import uz.dukeengine.dungeon.content.Projectile;
 import uz.dukeengine.dungeon.content.Prop;
 import uz.dukeengine.dungeon.gen.DungeonGenerator;
-import uz.dukeengine.dungeon.level.GrowableBody;
-import uz.dukeengine.dungeon.level.HeroAttributes;
-import uz.dukeengine.dungeon.level.HeroBuild;
-import uz.dukeengine.dungeon.level.HeroProgress;
-import uz.dukeengine.dungeon.level.Recovery;
-import uz.dukeengine.dungeon.loot.LootBag;
-import uz.dukeengine.dungeon.loot.LootTable;
-import uz.dukeengine.dungeon.loot.GroundItem;
-import uz.dukeengine.dungeon.skill.CastSkill;
-import uz.dukeengine.dungeon.skill.MendingUpdate;
-import uz.dukeengine.dungeon.skill.SummoningUpdate;
-import uz.dukeengine.dungeon.skill.SkillBook;
-import uz.dukeengine.dungeon.skill.Skills;
+import uz.dukeengine.rpg.hero.GrowableBody;
+import uz.dukeengine.rpg.hero.HeroAttributes;
+import uz.dukeengine.rpg.hero.HeroBuild;
+import uz.dukeengine.rpg.hero.HeroProgress;
+import uz.dukeengine.rpg.hero.Recovery;
+import uz.dukeengine.rpg.item.LootBag;
+import uz.dukeengine.rpg.item.LootTable;
+import uz.dukeengine.rpg.item.GroundItem;
+import uz.dukeengine.rpg.skill.CastSkill;
+import uz.dukeengine.rpg.skill.MendingUpdate;
+import uz.dukeengine.rpg.skill.SummoningUpdate;
+import uz.dukeengine.rpg.skill.SkillBook;
+import uz.dukeengine.rpg.skill.Skills;
 import uz.dukeengine.dungeon.run.DungeonRun;
 import uz.dukeengine.dungeon.run.Floors;
 import uz.dukeengine.dungeon.run.Seal;
+import uz.dukeengine.dungeon.run.Spawner;
 import uz.dukeengine.dungeon.stage.Stage;
 import uz.dukeengine.game.DukeGame;
 import uz.dukeengine.game.GamePlayer;
@@ -187,21 +188,21 @@ public final class Dungeon {
                     factory.register(Recovery.Data.class, (owner, data) -> new Recovery(owner));
                     // And the water at the way in, mending whoever stands near it -- on its own side of the keep's
                     // shut gate, as every mending is. See FountainUpdate.
-                    factory.register(uz.dukeengine.dungeon.level.FountainUpdate.Data.class,
-                            (owner, data) -> new uz.dukeengine.dungeon.level.FountainUpdate(owner, data, seal));
+                    factory.register(uz.dukeengine.rpg.hero.FountainUpdate.Data.class,
+                            (owner, data) -> new uz.dukeengine.rpg.hero.FountainUpdate(owner, data, seal));
                     // The keep's gate, which only the key given to it opens. See GateUpdate.
-                    factory.register(uz.dukeengine.dungeon.run.GateUpdate.Data.class,
-                            uz.dukeengine.dungeon.run.GateUpdate::new);
+                    factory.register(uz.dukeengine.rpg.mission.GateUpdate.Data.class,
+                            uz.dukeengine.rpg.mission.GateUpdate::new);
                     // Which skills a unit has is the Skill blocks written inside its own:
                     // the SkillBook block says only that it has some.
                     factory.register(SkillBook.Data.class, (owner, data) -> new SkillBook(owner,
-                            settings.skillsFor(owner.getTemplate().name()), settings, seal));
+                            settings.skillsFor(owner.getTemplate().name()), settings.skillRules(), seal));
                     // An archer's shots become things in the world. The engine's
                     // weapon still aims and reloads; these two decide what
                     // happens between letting go and landing.
-                    factory.register(Bow.Data.class, (owner, data) -> new Bow(owner, data, settings));
+                    factory.register(Bow.Data.class, (owner, data) -> new Bow(owner, data, settings.bowDefaults()));
                     // Stone stops his shots as well as his eyes.
-                    factory.register(EyesOnly.Data.class, (owner, data) -> new EyesOnly(owner, settings));
+                    factory.register(EyesOnly.Data.class, (owner, data) -> new EyesOnly(owner, settings.storeyHeight()));
                     // And what a creature a shot stuns wears while it stands dazed -- see ArrowUpdate.stun.
                     factory.register(ArrowUpdate.Data.class,
                             (owner, data) -> new ArrowUpdate(owner, settings.combat().stunLook(), seal));
@@ -215,7 +216,8 @@ public final class Dungeon {
                     // And a rift, which something of the dungeon's own climbs out of -- at its
                     // caller's level, which is what the settings say a level is worth.
                     factory.register(SummoningUpdate.Data.class,
-                            (owner, data) -> new SummoningUpdate(owner, settings));
+                            (owner, data) -> new SummoningUpdate(owner,
+                                    (risen, level) -> Spawner.scale(risen, level, settings)));
                     // A monster's blow lands where it stands, as it always did.
                     // This is how the brain finds out that it struck -- and where
                     // the keep's shut gate takes a blow struck through it.
@@ -310,11 +312,11 @@ public final class Dungeon {
      *
      * <p>One method for both kinds because everything below the floors is the same
      * game: the same creatures, the same hero, the same commands, the same loot
-     * table drawn from the same seed. A second copy of this for stages would drift,
+     * table drawn the same way. A second copy of this for stages would drift,
      * and what it drifted into would be a stage that no longer played like the
      * dungeon it was frozen from.
      *
-     * @param seed what the run's own dice are wound to — the loot and the floor's
+     * @param seed what the run's own dice are wound to — the floor's
      *             look. A stage carries the seed it was cut
      *             from so that it is the same run every time, not merely the same
      *             rooms
@@ -356,11 +358,11 @@ public final class Dungeon {
         // What each has put his levels into, and what each has picked up: a floor gives a hero a fresh body and a
         // fresh SkillBook, so both have to live somewhere that outlives both.
         var bags = new java.util.ArrayList<LootBag>();
-        var learnts = new java.util.ArrayList<uz.dukeengine.dungeon.skill.SkillRanks>();
+        var learnts = new java.util.ArrayList<uz.dukeengine.rpg.skill.SkillRanks>();
         for (int seat = 0; seat < heroes; seat++) {
             bags.add(new LootBag(settings.lootDrops().slots(), settings.lootDrops().joinCount(),
                     settings.lootDrops().topLevel()));
-            var learnt = new uz.dukeengine.dungeon.skill.SkillRanks(settings.progression().skillSpread());
+            var learnt = new uz.dukeengine.rpg.skill.SkillRanks(settings.progression().skillSpread());
             learnt.startWith(settings.skillsFor(settings.run().defaultHero()));
             learnts.add(learnt);
         }
@@ -380,15 +382,16 @@ public final class Dungeon {
         // see DefaultHero and Hero.
         var progresses = new java.util.ArrayList<HeroProgress>();
         for (int seat = 0; seat < heroes; seat++) {
-            var progress = new HeroProgress(arena.heroes().get(seat), settings.levelling(),
+            var player = arena.heroes().get(seat);
+            var progress = new HeroProgress(player::getIndex, banner(game, player), settings.levelling(),
                     settings.attributeRules(), settings.progression().levelUpBannerFrames(), bags.get(seat));
             progress.playing(settings.playedHeroLook());
             progress.manaPerKill(settings.progression().manaPerKill());
             progresses.add(progress);
         }
-        // Drawn from the run's seed as well, so a seed is the whole run: the same
-        // one drops the same things off the same monsters.
-        var drops = new LootTable(settings.loot(), seed, settings.lootDrops().dropPercent(),
+        // Drawn from the world's own chances, as the engine's weapons are: the same
+        // orders drop the same things off the same deaths, on every machine.
+        var drops = new LootTable(settings.loot(), settings.lootDrops().dropPercent(),
                 settings.lootDrops().bossDropPercent(), settings.lootDrops().valuePercentPerDepth());
         var run = new DungeonRun(arena.hero(), arena.dungeon(), floors, settings, progresses.getFirst(),
                 drops, arena.orders(), learnts.getFirst(), arena.seal());
@@ -418,7 +421,7 @@ public final class Dungeon {
                 }
                 // And spending one of those levels, which is a click on the little
                 // button beside a slot.
-                case uz.dukeengine.dungeon.skill.UpgradeSkill raise -> {
+                case uz.dukeengine.rpg.skill.UpgradeSkill raise -> {
                     var learnt = run.learntOf(raise.playerIndex());
                     if (learnt != null) {
                         Skills.raise(learnt, raise, run.progressOf(raise.playerIndex()).getLevel());
@@ -438,18 +441,18 @@ public final class Dungeon {
                 }
                 // Sent for something on the floor, or to put something of his
                 // down: the latest order wins, so a march he was on is over.
-                case uz.dukeengine.dungeon.loot.PickUp pick -> {
+                case uz.dukeengine.rpg.item.PickUp pick -> {
                     var progress = run.progressOf(pick.playerIndex());
-                    if (progress != null && uz.dukeengine.dungeon.loot.ItemErrand.pickUp(
+                    if (progress != null && uz.dukeengine.rpg.item.ItemErrand.pickUp(
                             Skills.heroOf(game.getLogic(), pick.playerIndex()),
                             game.getLogic().findObject(pick.item()), progress.getLoot(),
                             errandRules(settings, arena))) {
                         arena.orders().attackMove(pick.playerIndex(), null);
                     }
                 }
-                case uz.dukeengine.dungeon.loot.DropItem drop -> {
+                case uz.dukeengine.rpg.item.DropItem drop -> {
                     var progress = run.progressOf(drop.playerIndex());
-                    if (progress != null && uz.dukeengine.dungeon.loot.ItemErrand.drop(
+                    if (progress != null && uz.dukeengine.rpg.item.ItemErrand.drop(
                             Skills.heroOf(game.getLogic(), drop.playerIndex()), drop.slot(), drop.place(),
                             progress.getLoot(), errandRules(settings, arena))) {
                         arena.orders().attackMove(drop.playerIndex(), null);
@@ -458,7 +461,7 @@ public final class Dungeon {
                 // Sent up to the keep's gate: he walks there and says whether he has the key. See ItemErrand.
                 case uz.dukeengine.dungeon.run.ToTheGate gate -> {
                     var progress = run.progressOf(gate.playerIndex());
-                    if (progress != null && uz.dukeengine.dungeon.loot.ItemErrand.toTheGate(
+                    if (progress != null && uz.dukeengine.rpg.item.ItemErrand.toTheGate(
                             Skills.heroOf(game.getLogic(), gate.playerIndex()),
                             game.getLogic().findObject(gate.gate()), progress.getLoot(),
                             errandRules(settings, arena))) {
@@ -466,9 +469,9 @@ public final class Dungeon {
                     }
                 }
                 // Sent to use a thing of his on another: the key on the gate. See ItemErrand.
-                case uz.dukeengine.dungeon.loot.UseItem use -> {
+                case uz.dukeengine.rpg.item.UseItem use -> {
                     var progress = run.progressOf(use.playerIndex());
-                    if (progress != null && uz.dukeengine.dungeon.loot.ItemErrand.use(
+                    if (progress != null && uz.dukeengine.rpg.item.ItemErrand.use(
                             Skills.heroOf(game.getLogic(), use.playerIndex()), use.slot(),
                             game.getLogic().findObject(use.target()), progress.getLoot(),
                             errandRules(settings, arena))) {
@@ -514,10 +517,22 @@ public final class Dungeon {
         });
         game.onTick(run::tick);
         for (var progress : progresses) {
-            game.onTick(progress::tick);
+            game.onTick(ticked -> progress.tick(ticked.getLogic()));
         }
 
         return new Session(game, run, progresses.getFirst(), arena.orders());
+    }
+
+    /**
+     * Where {@code player}'s hero says he has levelled: across the screen of the machine that plays him, and on no
+     * other machine of a party.
+     */
+    public static java.util.function.Consumer<String> banner(DukeGame game, GamePlayer player) {
+        return words -> {
+            if (player.getIndex() == game.getLocalPlayerIndex()) {
+                game.setBanner(words);
+            }
+        };
     }
 
     /**
@@ -525,9 +540,9 @@ public final class Dungeon {
      * which time the dungeon's side has the number the engine gave it: whatever a hero puts down is the dungeon's,
      * so it is nobody's hero's to select.
      */
-    private static uz.dukeengine.dungeon.loot.ItemErrand.Rules errandRules(DungeonSettings settings, Arena arena) {
+    private static uz.dukeengine.rpg.item.ItemErrand.Rules errandRules(DungeonSettings settings, Arena arena) {
         var drops = settings.lootDrops();
-        return new uz.dukeengine.dungeon.loot.ItemErrand.Rules(drops.pickupRange(), drops.noteFrames(),
+        return new uz.dukeengine.rpg.item.ItemErrand.Rules(drops.pickupRange(), drops.noteFrames(),
                 drops.template(), arena.dungeon().getIndex(), drops.fullWord(), drops.noUseWord(), drops.noWayWord(),
                 drops.stuckFrames(), drops.stuckFightingFrames());
     }

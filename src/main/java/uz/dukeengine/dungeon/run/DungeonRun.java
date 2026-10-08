@@ -7,12 +7,13 @@ import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.core.thing.ObjectId;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.dungeon.gen.GeneratedDungeon;
-import uz.dukeengine.dungeon.level.HeroProgress;
-import uz.dukeengine.dungeon.loot.KeyDrop;
-import uz.dukeengine.dungeon.loot.LootKind;
-import uz.dukeengine.dungeon.loot.LootTable;
-import uz.dukeengine.dungeon.skill.SkillRanks;
-import uz.dukeengine.dungeon.skill.Skills;
+import uz.dukeengine.rpg.hero.HeroProgress;
+import uz.dukeengine.rpg.item.KeyDrop;
+import uz.dukeengine.rpg.item.ItemUse;
+import uz.dukeengine.rpg.mission.Mission;
+import uz.dukeengine.rpg.item.LootTable;
+import uz.dukeengine.rpg.skill.SkillRanks;
+import uz.dukeengine.rpg.skill.Skills;
 import uz.dukeengine.game.DukeGame;
 import uz.dukeengine.game.GamePlayer;
 
@@ -402,13 +403,13 @@ public final class DungeonRun {
         seal.floor(floor.keep(), placed.gate());
         for (int i = 0; i < seats.size(); i++) {
             var bag = seats.get(i).progress.getLoot();
-            bag.removeAll(LootKind.KEY);
+            bag.removeAll(ItemUse.UNLOCK);
             var hero = placed.heroes().get(i);
             if (hero != null) {
                 hero.addModule(new KeyDrop(hero, bag, settings.lootDrops().template(), dungeonPlayer.getIndex()));
             }
         }
-        mission = Mission.of(game.getLogic(), floor, placed, settings, dungeonPlayer.getIndex());
+        mission = missionOf(game.getLogic(), floor, placed, settings, dungeonPlayer.getIndex());
         track(game);
     }
 
@@ -419,8 +420,51 @@ public final class DungeonRun {
     private void track(DukeGame game) {
         step = mission == null ? Mission.Step.KILL
                 : mission.step(game.getLogic(), seats.stream().map(seat -> seat.progress.getLoot()).toList());
-        var words = mission == null ? settings.run().killBossWord() : mission.words(settings.run(), step);
+        var words = mission == null ? settings.run().killBossWord() : words(mission, settings.run(), step);
         tracker = descendAtFrame > 0 ? "" : words;
+    }
+
+    /**
+     * The mission of a floor just laid, or null for one with no keep — a stage, or a floor where none fitted — or a
+     * game with no key to give: the first item that unlocks, the monsters placed outside the keep counted, and with
+     * none there the key laid now where the first hero came in.
+     */
+    static Mission missionOf(uz.dukeengine.core.thing.World world, GeneratedDungeon floor, Spawner.Placed placed,
+            DungeonSettings settings, int floorOwner) {
+        var keep = floor.keep();
+        var key = settings.loot().stream().filter(item -> item.use() == ItemUse.UNLOCK).findFirst().orElse(null);
+        if (keep == null || key == null) {
+            return null;
+        }
+        var outside = new ArrayList<GameObject>();
+        for (var monster : placed.monsters()) {
+            var at = new GeneratedDungeon.Placement(monster.getPosition().x(), monster.getPosition().y());
+            if (!keep.holds(at.cellX(), at.cellY())) {
+                outside.add(monster);
+            }
+        }
+        return Mission.begin(world, key, settings.lootDrops().template(), floorOwner, placed.gate(), outside,
+                wayIn(floor, placed));
+    }
+
+    /** Where the heroes came in: where the first of them stands, or the floor's own way in. */
+    private static uz.dukeengine.core.math.Coord3D wayIn(GeneratedDungeon floor, Spawner.Placed placed) {
+        for (var hero : placed.heroes()) {
+            if (hero != null) {
+                return hero.getPosition();
+            }
+        }
+        return new uz.dukeengine.core.math.Coord3D(floor.hero().x(), floor.hero().y(), 0f);
+    }
+
+    /** What the tracker says at {@code step}, in the run's words: the count while there is one. */
+    static String words(Mission mission, uz.dukeengine.dungeon.world.Run run, Mission.Step step) {
+        return switch (step) {
+            case CLEAR -> run.clearWord(mission.killed(), mission.outside());
+            case TAKE -> run.takeKeyWord();
+            case GIVE -> run.giveKeyWord();
+            case KILL -> run.killBossWord();
+        };
     }
 
     /** Called every logic frame on the simulation thread. */
@@ -635,7 +679,7 @@ public final class DungeonRun {
             var seat = seats.get(i);
             seat.heroId = hero == null ? null : hero.getId();
             if (hero != null) {
-                seat.progress.carryOver(game, hero);
+                seat.progress.carryOver(game.getLogic(), hero);
             }
         }
         bossId = placed.boss() == null ? null : placed.boss().getId();

@@ -15,7 +15,7 @@ import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.dungeon.content.HeroLook;
 import uz.dukeengine.dungeon.world.Theme;
 import uz.dukeengine.dungeon.party.PartyOrders;
-import uz.dukeengine.dungeon.skill.CastSkill;
+import uz.dukeengine.rpg.skill.CastSkill;
 import uz.dukeengine.dungeon.stage.Stages;
 
 /**
@@ -194,7 +194,7 @@ public final class Main {
             }
             if (carried != null) {
                 visuals.effectReach(carried, skill.radius());
-                if (skill.effect() == uz.dukeengine.dungeon.skill.SkillEffect.METEOR
+                if (skill.effect() == uz.dukeengine.rpg.skill.SkillEffect.METEOR
                         && skill.windUpFrames() > 0) {
                     visuals.effectSeconds(carried, skill.windUpFrames() / perSecond);
                 }
@@ -793,7 +793,7 @@ public final class Main {
         // Spending a level on a slot. A click on the badge rather than a letter,
         // so it comes through a door of its own -- and it is a COMMAND like every
         // other decision, settled on a frame boundary where the rules live.
-        keys.onRaiseSkill((game, key) -> game.postCommand(PartyOrders.of(new uz.dukeengine.dungeon.skill.UpgradeSkill(
+        keys.onRaiseSkill((game, key) -> game.postCommand(PartyOrders.of(new uz.dukeengine.rpg.skill.UpgradeSkill(
                 game.getLocalPlayerIndex(), key))));
         orders(keys);
         // Which single creature he has picked out. The panel describes it, and
@@ -818,7 +818,7 @@ public final class Main {
      * draw "just him".
      */
     static uz.dukeengine.client3d.SkillRange rangeOf(
-            uz.dukeengine.dungeon.skill.Skill skill, float selfRadius) {
+            uz.dukeengine.rpg.skill.Skill skill, float selfRadius) {
         var shape = switch (skill.effect()) {
             // A mending is pointed at a creature as a strike is -- one of its own.
             case STRIKE, HEAL -> uz.dukeengine.client3d.SkillRange.Shape.AT_A_CREATURE;

@@ -1,16 +1,17 @@
 package uz.dukeengine.dungeon.run;
 
+import uz.dukeengine.rpg.mission.GateUpdate;
 import java.util.ArrayList;
 import java.util.List;
 import uz.dukeengine.core.math.Coord3D;
 import uz.dukeengine.core.thing.GameObject;
-import uz.dukeengine.dungeon.combat.LevelBonus;
+import uz.dukeengine.rpg.hero.LevelBonus;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.dungeon.gen.GeneratedDungeon;
-import uz.dukeengine.dungeon.level.GrowableBody;
-import uz.dukeengine.dungeon.loot.LootDrop;
-import uz.dukeengine.dungeon.loot.LootTable;
-import uz.dukeengine.dungeon.skill.SkillBook;
+import uz.dukeengine.rpg.hero.GrowableBody;
+import uz.dukeengine.rpg.item.LootDrop;
+import uz.dukeengine.rpg.item.LootTable;
+import uz.dukeengine.rpg.skill.SkillBook;
 import uz.dukeengine.dungeon.stage.StageCheck;
 import uz.dukeengine.game.DukeGame;
 import uz.dukeengine.game.GamePlayer;

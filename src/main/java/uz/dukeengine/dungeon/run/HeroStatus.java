@@ -4,14 +4,14 @@ import uz.dukeengine.core.module.MoveUpdate;
 import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.core.thing.ThingTemplate;
 import uz.dukeengine.dungeon.ai.Doing;
-import uz.dukeengine.dungeon.combat.LevelBonus;
+import uz.dukeengine.rpg.hero.LevelBonus;
 import uz.dukeengine.dungeon.content.DungeonSettings;
-import uz.dukeengine.dungeon.level.Attribute;
-import uz.dukeengine.dungeon.level.AttributeRules;
-import uz.dukeengine.dungeon.level.HeroFigures;
-import uz.dukeengine.dungeon.level.HeroProgress;
-import uz.dukeengine.dungeon.skill.SkillBook;
-import uz.dukeengine.dungeon.skill.Skills;
+import uz.dukeengine.rpg.hero.Attribute;
+import uz.dukeengine.rpg.hero.AttributeRules;
+import uz.dukeengine.rpg.hero.HeroFigures;
+import uz.dukeengine.rpg.hero.HeroProgress;
+import uz.dukeengine.rpg.skill.SkillBook;
+import uz.dukeengine.rpg.skill.Skills;
 
 /**
  * Everything the hero's panel shows, as one line of the status channel.
@@ -272,7 +272,7 @@ final class HeroStatus {
 
     static String of(GameObject hero, HeroProgress progress, int depth, int lastDepth,
             DungeonSettings settings, int frame, String look,
-            boolean holding, uz.dukeengine.dungeon.skill.SkillRanks learnt) {
+            boolean holding, uz.dukeengine.rpg.skill.SkillRanks learnt) {
         if (hero == null || hero.getBody() == null) {
             return "";
         }
@@ -310,7 +310,7 @@ final class HeroStatus {
             line.append(Skills.slots(book, learnt, level,
                     new Skills.Words(settings.hud().rankSuffix(), settings.hud().masterWord(),
                             settings.hud().lockedWord(),
-                            new uz.dukeengine.dungeon.skill.SkillTip.Words(
+                            new uz.dukeengine.rpg.skill.SkillTip.Words(
                                     settings.hud().damageWord(), settings.hud().cooldownWord(),
                                     settings.hud().radiusWord(), settings.hud().rangeWord(),
                                     settings.hud().boostWord(), settings.hud().raiseWord(),

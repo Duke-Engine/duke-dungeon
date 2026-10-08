@@ -11,17 +11,18 @@ import uz.dukeengine.client3d.MenuStyle;
 import uz.dukeengine.client3d.PanelLook;
 import uz.dukeengine.core.module.ModuleData;
 import uz.dukeengine.core.thing.ThingTemplateLoader;
-import uz.dukeengine.dungeon.loot.ItemUse;
-import uz.dukeengine.dungeon.loot.Loot;
-import uz.dukeengine.dungeon.loot.LootKind;
-import uz.dukeengine.dungeon.skill.Skill;
-import uz.dukeengine.dungeon.skill.SkillBook;
-import uz.dukeengine.dungeon.skill.SkillEffect;
-import uz.dukeengine.dungeon.level.Attribute;
-import uz.dukeengine.dungeon.level.AttributeRules;
-import uz.dukeengine.dungeon.level.Attributes;
-import uz.dukeengine.dungeon.level.HeroAttributes;
-import uz.dukeengine.dungeon.level.Levelling;
+import uz.dukeengine.rpg.item.ItemUse;
+import uz.dukeengine.rpg.item.Loot;
+import uz.dukeengine.rpg.item.Stat;
+import uz.dukeengine.rpg.fight.Bow;
+import uz.dukeengine.rpg.skill.Skill;
+import uz.dukeengine.rpg.skill.SkillBook;
+import uz.dukeengine.rpg.skill.SkillEffect;
+import uz.dukeengine.rpg.hero.Attribute;
+import uz.dukeengine.rpg.hero.AttributeRules;
+import uz.dukeengine.rpg.hero.Attributes;
+import uz.dukeengine.rpg.hero.HeroAttributes;
+import uz.dukeengine.rpg.hero.Levelling;
 import uz.dukeengine.dungeon.map.ProceduralMap;
 import uz.dukeengine.dungeon.world.Audio;
 import uz.dukeengine.client3d.Camera;
@@ -74,6 +75,15 @@ public final class DungeonSettings {
 
     /** The map the endless descent is drawn from. */
     private ProceduralMap map = ProceduralMap.DEFAULTS;
+
+    /** The Kind of a key: no figure's, and the one item the floor lays rather than drops. */
+    private static final String KEY = "KEY";
+    /** The words an item's Kind may be: those a hero's figures read, and a key's. */
+    private static final java.util.Set<String> KINDS =
+            java.util.Set.of(Stat.ATTACK, Stat.HEALTH, Stat.ARMOUR, Stat.MANA, Stat.ATTRIBUTE, KEY);
+    /** And its Extra, beside none. */
+    private static final java.util.Set<String> EXTRAS =
+            java.util.Set.of(Stat.HEALTH_REGEN, Stat.MANA_REGEN, Stat.ATTACK_SPEED);
 
     // ---- the world's own blocks, each the record its word names ----
 
@@ -776,18 +786,23 @@ public final class DungeonSettings {
                     "an item's DisplayName may not contain ',' or '|': " + item.id());
         }
         for (var item : loot) {
-            require(item.kind() != LootKind.KEY || item.weight() == 0,
+            require(!item.kind().equals(KEY) || item.weight() == 0,
                     "LootItem " + item.id() + " is a KEY, which is given and never found: its Weight is 0");
-            // A key is what opens a gate, and nothing else is. What clears the bags at each floor, what the tracker
-            // looks for, what the floor lays and what never joins all ask an item's Kind, and only the opening asks
-            // its Use: only the loader can keep the two sets equal, so it does, each way.
-            require(item.kind() != LootKind.KEY || item.use() == ItemUse.UNLOCK,
+            // A key is what opens a gate, and nothing else is. The engine knows one by its Use, and this file names
+            // it by its Kind as well: only the loader can keep the two sets equal, so it does, each way.
+            require(!item.kind().equals(KEY) || item.use() == ItemUse.UNLOCK,
                     "LootItem " + item.id() + " is a KEY, which opens a gate and does nothing else: its Use is UNLOCK");
-            require(item.use() != ItemUse.UNLOCK || item.kind() == LootKind.KEY,
+            require(item.use() != ItemUse.UNLOCK || item.kind().equals(KEY),
                     "LootItem " + item.id() + " has Use = UNLOCK and is not a KEY: only a key opens a gate");
+            // Any other Kind or Extra the hero's figures do not read would be carried and count for nothing: a
+            // misspelling, said here rather than found in play.
+            require(KINDS.contains(item.kind()),
+                    "LootItem " + item.id() + " has Kind = " + item.kind() + ", and no figure is called that");
+            require(item.extra().isEmpty() || EXTRAS.contains(item.extra()),
+                    "LootItem " + item.id() + " has Extra = " + item.extra() + ", and no figure is called that");
         }
         // The floor lays the first KEY there is: a keep needs one.
-        require(map.keep().sizes().isEmpty() || loot.stream().anyMatch(item -> item.kind() == LootKind.KEY),
+        require(map.keep().sizes().isEmpty() || loot.stream().anyMatch(item -> item.kind().equals(KEY)),
                 "a Keep's gate opens only to a key, and no LootItem has Kind = KEY to lay on its floor");
         for (var moment : moments) {
             require(!moment.effect().isBlank(), "Moment " + moment.name() + " plays no Effect");
@@ -951,7 +966,7 @@ public final class DungeonSettings {
         for (var item : loot) {
             var name = "LootItem " + item.id();
             require(item.extraStep() >= 0, name + ": ExtraValue cannot be negative");
-            if (item.kind() == LootKind.ATTRIBUTE) {
+            if (item.kind().equals(Stat.ATTRIBUTE)) {
                 require(rules.indexOf(item.attribute()) >= 0, name + " gives "
                         + item.attribute() + ", and no Attribute is called that");
             } else {
@@ -1071,6 +1086,18 @@ public final class DungeonSettings {
      */
     public float heavyArrowSpeed() {
         return heavyShot.speed();
+    }
+
+    /** What a skill book reads beside its skills: the Combat block's numbers and the heavy shot's speed. */
+    public SkillBook.Rules skillRules() {
+        return new SkillBook.Rules(combat.arrowMuzzleOffset(), heavyArrowSpeed(), combat.summonTurnDegrees(),
+                combat.summonTurns(), combat.auraPulseFrames(), combat.buffLifeFrames(), combat.auraMarkLooks(),
+                combat.auraMarkTickFrames());
+    }
+
+    /** What a bow takes where its block says nothing: the Combat block's arrow. */
+    public Bow.Defaults bowDefaults() {
+        return new Bow.Defaults(combat.arrowTemplate(), combat.arrowSpeed(), combat.arrowMuzzleOffset());
     }
 
     /**

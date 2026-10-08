@@ -1,5 +1,7 @@
 package uz.dukeengine.dungeon.ai;
 
+import uz.dukeengine.rpg.SightLine;
+import uz.dukeengine.rpg.Facing;
 import uz.dukeengine.core.math.Coord3D;
 import uz.dukeengine.core.module.MoveUpdate;
 import uz.dukeengine.core.player.Relationship;
@@ -7,8 +9,8 @@ import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.core.thing.ObjectId;
 import uz.dukeengine.core.thing.World;
 import uz.dukeengine.dungeon.content.DungeonSettings;
-import uz.dukeengine.dungeon.loot.ItemErrand;
-import uz.dukeengine.dungeon.skill.SkillBook;
+import uz.dukeengine.rpg.item.ItemErrand;
+import uz.dukeengine.rpg.skill.SkillBook;
 import uz.dukeengine.core.module.ModuleData;
 import uz.dukeengine.core.module.ModuleGroup;
 import uz.dukeengine.core.module.ModuleGroups;
@@ -28,7 +30,7 @@ import uz.dukeengine.combat.module.WeaponUpdate;
  *
  * <p><b>It also chooses what he shoots at.</b> The engine's own acquisition takes
  * the nearest enemy in range and knows nothing about walls, so
- * {@link uz.dukeengine.dungeon.combat.EyesOnly} switches it off and the choosing lands
+ * {@link uz.dukeengine.rpg.fight.EyesOnly} switches it off and the choosing lands
  * here — where the line of sight can be part of it. That turns out to simplify
  * rather than complicate: because every target is now either one this class named
  * or one the player did, telling an order from something noticed in passing is a

@@ -1,5 +1,6 @@
 package uz.dukeengine.dungeon.ai;
 
+import uz.dukeengine.rpg.SightLine;
 import uz.dukeengine.core.math.Coord3D;
 import uz.dukeengine.core.thing.World;
 
