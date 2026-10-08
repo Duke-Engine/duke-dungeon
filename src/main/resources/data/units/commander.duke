@@ -3,7 +3,8 @@
 ;
 ; A person rather than a fighter. She stands on the engine's neutral side, which
 ; no hero and no monster is the enemy of; she has no Body, so nothing targets her
-; and she never dies; and her Weight is 0, so no floor ever draws her. What she
+; and she never dies; and her Weight is 0, so no floor ever draws her. She has
+; legs (a MoveUpdate), so a story may walk her somewhere. What she
 ; says is her Npc block in data/story/story.duke; where she stands is a map's Npcs.
 ;
 ; Her look is a stand-in until her own model is made: the KayKit ranger, which no
@@ -18,6 +19,13 @@ Monster
     Height = 12
   End
   VisionRange = 0
+  ; Legs, so the story can walk her to a zone: see WALK in data/story/story.duke.
+  Modules = [
+    MoveUpdate
+      Speed = 15
+      TurnRate = 0
+    End
+  ]
   MinDepth = 99
   Weight = 0
   Colour = 0xE8C15A

@@ -10,12 +10,15 @@ import java.util.List;
  * files are read, never found in play.
  */
 public record Story(Dialogue dialogue, List<Speaker> speakers, List<Conversation> conversations, List<Npc> npcs,
-        List<Quest> quests, List<Trigger> triggers, List<Cutscene> cutscenes) {
+        List<Quest> quests, List<Trigger> triggers, List<Cutscene> cutscenes, Trade trade,
+        List<Merchant> merchants) {
 
     public static final Story NONE = new Story(Dialogue.DEFAULTS, List.of(), List.of(), List.of(), List.of());
 
     public Story {
         dialogue = dialogue == null ? Dialogue.DEFAULTS : dialogue;
+        trade = trade == null ? Trade.DEFAULTS : trade;
+        merchants = List.copyOf(merchants);
         speakers = List.copyOf(speakers);
         conversations = List.copyOf(conversations);
         npcs = List.copyOf(npcs);
@@ -27,7 +30,24 @@ public record Story(Dialogue dialogue, List<Speaker> speakers, List<Conversation
     /** A story with no triggers and no cutscenes. */
     public Story(Dialogue dialogue, List<Speaker> speakers, List<Conversation> conversations, List<Npc> npcs,
             List<Quest> quests) {
-        this(dialogue, speakers, conversations, npcs, quests, List.of(), List.of());
+        this(dialogue, speakers, conversations, npcs, quests, List.of(), List.of(), Trade.DEFAULTS, List.of());
+    }
+
+    /** The merchant of that name, or null for a person who does not trade. */
+    public Merchant merchant(String name) {
+        return merchants.stream().filter(each -> each.name().equals(name)).findFirst().orElse(null);
+    }
+
+    /** What one of {@code item} costs: the first merchant's price for it, or the Trade block's BasePrice. */
+    public int priceOf(String item) {
+        for (var merchant : merchants) {
+            for (var ware : merchant.stock()) {
+                if (ware.item().equals(item)) {
+                    return ware.price();
+                }
+            }
+        }
+        return trade.basePrice();
     }
 
     public Trigger trigger(String name) {
@@ -93,6 +113,23 @@ public record Story(Dialogue dialogue, List<Speaker> speakers, List<Conversation
         }
         for (var trigger : triggers) {
             trigger(trigger, monsters, items, wrong);
+        }
+        for (var merchant : merchants) {
+            var named = "Merchant " + merchant.name();
+            if (npc(merchant.name()) == null) {
+                wrong.add(named + " is no Npc: a merchant is a person of that Name");
+            }
+            for (var ware : merchant.stock()) {
+                if (!items.contains(ware.item())) {
+                    wrong.add(named + " sells " + ware.item() + ", and no LootItem is called that");
+                }
+                if (ware.price() < 0 || ware.count() < 1) {
+                    wrong.add(named + " sells " + ware.item() + " for less than nothing, or none of it");
+                }
+            }
+        }
+        if (trade.sellPercent() < 0 || trade.sellPercent() > 100 || trade.wanderFrames() < 1) {
+            wrong.add("Trade: SellPercent is 0 to 100, and WanderFrames at least 1");
         }
         for (var cutscene : cutscenes) {
             var named = "Cutscene " + cutscene.name();

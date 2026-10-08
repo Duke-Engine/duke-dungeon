@@ -62,6 +62,7 @@ StaticMap
   ; People: an Npc's name, then the cell they stand in.
   Npcs = [
     Commander 8 10,
+    Merchant 3 16,
   ]
   ; Named places, in cells: name x y width height, or name x y radius.
   Zones = [
@@ -69,6 +70,7 @@ StaticMap
     HallDoor 20 9 2 2,
     Chest 36 16 1,
     Ambush 3 3 3 2,
+    Wall 3 10 1,
   ]
   ; Things lying on the floor: a LootItem, then the cell.
   Items = [
