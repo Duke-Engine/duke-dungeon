@@ -1,0 +1,25 @@
+package uz.dukeengine.dungeon.story;
+
+/**
+ * Gold and trading: what a kill pays, what a thing sells for, how often people stroll, and every word the purse and
+ * the trade window say — see {@code docs/plan/2026-10-08-people-and-trade.md}.
+ *
+ * @param goldPerKill  what every kill of the dungeon's pays the killer
+ * @param goldPerLevel and more for each of its levels
+ * @param sellPercent  what a thing sells for, in percent of its price
+ * @param basePrice    the price of a thing no merchant stocks
+ * @param wanderFrames how often a wandering person picks somewhere new to stroll to
+ * @param gainWord     the hero's bubble as he is paid; {@code %d} the gold
+ */
+public record Trade(int goldPerKill, int goldPerLevel, int sellPercent, int basePrice, int wanderFrames,
+        String goldWord, String gainWord, String stockWord, String bagWord, String closeHint, String noGoldWord,
+        String fullWord, String soldOutWord, String cantSellWord) {
+
+    public static final Trade DEFAULTS = new Trade(4, 2, 40, 30, 150, "Oltin", "+%d oltin", "Sotiladi",
+            "Xaltangiz", "Esc — yopish", "Oltin yetmaydi", "Xalta to'la", "Qolmadi", "Buni sotib bo'lmaydi");
+
+    /** What a kill of a monster at {@code level} pays. */
+    public int goldFor(int level) {
+        return Math.max(0, goldPerKill + goldPerLevel * Math.max(1, level));
+    }
+}

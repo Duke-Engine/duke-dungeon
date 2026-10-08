@@ -1,0 +1,34 @@
+; ---------------------------------------------------------------------------
+; A merchant: a person who trades. Like the commander he is on the engine's
+; neutral side, has no Body and is never drawn into a floor (Weight 0); he has
+; legs, and strolls round where the map puts him (his Npc's Wander). What he
+; sells is his Merchant block in data/story/trade.duke.
+;
+; His look is a stand-in: the KayKit mage, tinted toward a merchant's brown.
+; ---------------------------------------------------------------------------
+Monster
+  Name = Merchant
+  DisplayName = Savdogar Botir
+  KindOf = [INFANTRY, SELECTABLE]
+  Geometry = Cylinder
+    Radius = 4
+    Height = 12
+  End
+  VisionRange = 0
+  Modules = [
+    MoveUpdate
+      Speed = 10
+      TurnRate = 0
+    End
+  ]
+  MinDepth = 99
+  Weight = 0
+  Colour = 0xB08850
+  Scale = 1.0
+  Model = models/heroes/mage.glb
+  Tint = 0xC8A070
+  ; The mage boxes about 2.655 tall: 12 / 2.655.
+  ModelScale = 4.5
+  Facing = 90
+  Animations = Humanoid
+End

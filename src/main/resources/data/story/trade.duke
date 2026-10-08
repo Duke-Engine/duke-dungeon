@@ -1,0 +1,89 @@
+; ---------------------------------------------------------------------------
+; Gold and trading — see docs/plan/2026-10-08-people-and-trade.md.
+;
+; Every kill of the dungeon's pays the killer GoldPerKill + GoldPerLevel x its
+; level. A merchant's Stock is "item price count" each; a map restocks him as its
+; floor is laid. A thing sells for SellPercent of its price (a merchant's price,
+; or BasePrice for one nobody stocks), times its level; quest things and keys do
+; not sell.
+; ---------------------------------------------------------------------------
+Trade
+  GoldPerKill = 4
+  GoldPerLevel = 2
+  SellPercent = 40
+  BasePrice = 30
+  ; How often, in frames, a wandering person picks somewhere new to stroll to.
+  WanderFrames = 150
+  GoldWord = Oltin
+  GainWord = "+%d oltin"
+  StockWord = Sotiladi
+  BagWord = Xaltangiz
+  CloseHint = "Esc — yopish"
+  NoGoldWord = Oltin yetmaydi
+  FullWord = Xalta to'la
+  SoldOutWord = Qolmadi
+  CantSellWord = Buni sotib bo'lmaydi
+End
+
+Speaker
+  Name = Merchant
+  DisplayName = Savdogar Botir
+  Picture =
+End
+
+Conversation
+  Name = MerchantGreets
+  Lines = [
+    Line
+      Speaker = Merchant
+      Text = "Xush kelibsiz! Oltiningiz bo'lsa, menda yaxshi mollar bor. Gaplashmoqchi bo'lsangiz, meni bosing."
+    End
+  ]
+End
+
+Npc
+  Name = Merchant
+  Talk = MerchantGreets
+  Radius = 30
+  Wander = 15
+End
+
+Merchant
+  Name = Merchant
+  Stock = [
+    Gauntlet 80 2,
+    Boots 80 2,
+    Tome 80 2,
+    Amulet 50 3,
+    Ring 50 3,
+    Whetstone 60 2,
+  ]
+End
+
+; His own: never found, only bought (Weight 0).
+LootItem
+  Name = Amulet
+  DisplayName = Hayot tumori
+  Icon = icons/stats/stat_health.png
+  Kind = HEALTH
+  Value = 40
+  Weight = 0
+End
+
+LootItem
+  Name = Ring
+  DisplayName = Mana uzugi
+  Icon = icons/stats/stat_intelligence.png
+  Kind = MANA
+  Value = 30
+  Weight = 0
+End
+
+LootItem
+  Name = Whetstone
+  DisplayName = Charx toshi
+  Icon = icons/stats/stat_attack.png
+  Kind = ATTACK
+  Value = 6
+  Weight = 0
+End

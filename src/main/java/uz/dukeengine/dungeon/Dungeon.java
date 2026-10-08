@@ -495,6 +495,9 @@ public final class Dungeon {
                 // Sent to talk to a person: talked to now if he is near, or walked over to. See DungeonRun.talkTo.
                 // A player skipped the cutscene: it is over for everybody. See DungeonRun.skipCutscene.
                 case uz.dukeengine.dungeon.run.SkipCutscene skip -> run.skipCutscene(game);
+                // Trading with a merchant he is near. See DungeonRun.buy and sell.
+                case uz.dukeengine.dungeon.run.Buy buy -> run.buy(game, buy.playerIndex(), buy.merchant(), buy.ware());
+                case uz.dukeengine.dungeon.run.Sell sell -> run.sell(game, sell.playerIndex(), sell.merchant(), sell.slot());
                 case uz.dukeengine.dungeon.run.TalkTo talk ->
                         run.talkTo(game, talk.playerIndex(), talk.person());
                 default -> {

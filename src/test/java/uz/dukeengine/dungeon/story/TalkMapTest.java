@@ -62,7 +62,8 @@ class TalkMapTest {
         var commander = named(game, "Commander");
         assertNotNull(commander, "she stands on the map");
         assertEquals(PlayerList.NEUTRAL_INDEX, commander.getPlayerIndex(), "on nobody's side");
-        assertEquals(List.of(new DungeonRun.Mark(commander.getId().value(), QuestLog.Mark.GIVE)), run.getMarks());
+        assertTrue(run.getMarks().contains(new DungeonRun.Mark(commander.getId().value(), QuestLog.Mark.GIVE)),
+                "a gold ! over her: " + run.getMarks());
         assertNotNull(named(game, "Chest"), "her locket lies in the far hall");
 
         var hero = named(game, SETTINGS.run().defaultHero());

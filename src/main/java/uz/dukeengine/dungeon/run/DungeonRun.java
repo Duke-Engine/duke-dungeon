@@ -99,6 +99,8 @@ public final class DungeonRun {
         ObjectId talkingTo;
         /** The experience a loaded save gives his next body, or -1 when there is none to give. */
         int loadedExperience = -1;
+        /** His purse: the gold his kills have paid him and his trading left him. */
+        int gold;
 
         Seat(GamePlayer player, HeroProgress progress, SkillRanks learnt, String hero) {
             this.player = player;
@@ -331,6 +333,7 @@ public final class DungeonRun {
         pick(seat, save.hero());
         save.restore(seat.progress.getLoot(), seat.learnt, settings);
         seat.loadedExperience = save.experience();
+        seat.gold = save.gold();
         // And its quests, before the floor is laid: the map's starting quests are then going or finished already,
         // and are not started again. A save from before quests were saved starts them, as a new run does.
         if (save.quests() == null) {
@@ -362,7 +365,7 @@ public final class DungeonRun {
             return null;
         }
         return SaveGame.of(floors.seed(), floors.stageName(), depth, seat.hero, seat.progress.getExperience(),
-                seat.learnt, seat.progress.getLoot(), quests.state(), script.state());
+                seat.learnt, seat.progress.getLoot(), quests.state(), script.state(), seat.gold);
     }
 
     /** Whoever the first player plays — the file's answer until somebody chooses. */
@@ -490,6 +493,14 @@ public final class DungeonRun {
             }
         }
         mission = missionOf(game.getLogic(), floor, placed, settings, dungeonPlayer.getIndex());
+        // Every monster the floor placed pays the hero who kills it, by its level. See Bounty.
+        var paying = new ArrayList<GameObject>(placed.monsters());
+        if (placed.boss() != null) {
+            paying.add(placed.boss());
+        }
+        for (var monster : paying) {
+            monster.addModule(new Bounty(monster, uz.dukeengine.rpg.hero.LevelBonus.levelOf(monster), this::pay));
+        }
         peopleOn(game);
         finished.clear();
         said = null;
@@ -577,6 +588,7 @@ public final class DungeonRun {
 
     /** Called every logic frame on the simulation thread. */
     public void tick(DukeGame game) {
+        lastLogic = game.getLogic();
         if (gathering != null) {
             return; // nobody is on the floor until everybody is
         }
@@ -744,6 +756,9 @@ public final class DungeonRun {
             seat.learnt.startWith(settings.skillsFor(seat.hero));
             seat.talkingTo = null;
         }
+        for (var seat : seats) {
+            seat.gold = 0; // and his purse: a run that ends keeps nothing
+        }
         quests.reset(); // and every quest: the map that starts them starts them again
         script.reset(); // and every trigger: the story begins again with the run
         endCutscene(game);
@@ -877,7 +892,7 @@ public final class DungeonRun {
     private final QuestLog quests;
 
     /** A person standing on this floor: the thing, and the Npc it is. In the order the map writes them. */
-    private record Person(ObjectId id, String npc) {
+    private record Person(ObjectId id, String npc, float homeX, float homeY) {
     }
 
     private final List<Person> people = new ArrayList<>();
@@ -899,6 +914,7 @@ public final class DungeonRun {
      */
     private void peopleOn(DukeGame game) {
         people.clear();
+        lastLogic = game.getLogic();
         var story = floors.story();
         var logic = game.getLogic();
         quests.frame(logic.getFrame());
@@ -907,7 +923,8 @@ public final class DungeonRun {
             if (template != null) {
                 var person = logic.spawn(template, ground(logic, placed),
                         uz.dukeengine.core.player.PlayerList.NEUTRAL_INDEX);
-                people.add(new Person(person.getId(), placed.kind()));
+                people.add(new Person(person.getId(), placed.kind(), person.getPosition().x(),
+                        person.getPosition().y()));
             }
         }
         for (var placed : story.items()) {
@@ -919,6 +936,7 @@ public final class DungeonRun {
         for (var quest : story.quests()) {
             quests.start(quest);
         }
+        restock(); // every merchant's stock is the data's again
         script.mapStarted(floors.stageName());
         marks();
     }
@@ -1004,21 +1022,27 @@ public final class DungeonRun {
                     if (person) {
                         var spawned = logic.spawn(template, ground(logic, placed),
                                 uz.dukeengine.core.player.PlayerList.NEUTRAL_INDEX);
-                        people.add(new Person(spawned.getId(), what));
+                        people.add(new Person(spawned.getId(), what, spawned.getPosition().x(),
+                                spawned.getPosition().y()));
                     } else {
                         var spawned = logic.spawn(template, ground(logic, placed), dungeonPlayer.getIndex());
                         Spawner.scale(spawned, settings.beforeBossLevel(depth), settings);
+                        spawned.addModule(new Bounty(spawned, settings.beforeBossLevel(depth), this::pay));
                     }
                 }
             }
             case WALK -> {
                 var zone = zoneNamed(action.zone());
-                for (var who : people) {
+                for (int at = 0; at < people.size(); at++) {
+                    var who = people.get(at);
                     var there = logic.findObject(who.id());
                     var legs = there == null ? null : there.getLocomotor();
                     if (zone != null && who.npc().equals(what) && legs != null) {
                         float cell = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
-                        legs.moveTo(new uz.dukeengine.core.math.Coord3D(zone.middleX(cell), zone.middleY(cell), 0f));
+                        float x = zone.middleX(cell);
+                        float y = zone.middleY(cell);
+                        legs.moveTo(new uz.dukeengine.core.math.Coord3D(x, y, 0f));
+                        people.set(at, new Person(who.id(), who.npc(), x, y)); // home is where she was sent
                     }
                 }
             }
@@ -1130,7 +1154,7 @@ public final class DungeonRun {
         quests.frame(game.getLogic().getFrame());
         if (near(hero, there, who)) {
             seat.talkingTo = null;
-            quests.talk(who.npc(), seat.progress.getLoot(), true);
+            spoke(game, seat, who, hero, there, true);
             marks();
             return;
         }
@@ -1148,6 +1172,7 @@ public final class DungeonRun {
      * the bags, the zones and the people looked at.
      */
     private void story(DukeGame game) {
+        stroll(game);
         var logic = game.getLogic();
         quests.frame(logic.getFrame());
         int paid = quests.takeExperience();
@@ -1193,12 +1218,232 @@ public final class DungeonRun {
                 if (asked) {
                     seat.talkingTo = null;
                 }
-                if (quests.talk(who.npc(), seat.progress.getLoot(), asked)) {
+                if (spoke(game, seat, who, hero, there, asked)) {
                     break; // one talk to a person at a time
                 }
             }
         }
         marks();
+    }
+
+    // ---- people who walk, gold and trade: see docs/plan/2026-10-08-people-and-trade.md ----
+
+    /**
+     * A hero talks to a person: what the quests make of it, the person turned to face him, and — asked, of a merchant —
+     * the trade window opened on his player's machine.
+     */
+    private boolean spoke(DukeGame game, Seat seat, Person who, GameObject hero, GameObject there, boolean asked) {
+        boolean said = quests.talk(who.npc(), seat.progress.getLoot(), asked);
+        if (said || asked) {
+            face(there, hero);
+        }
+        if (asked && settings.story().merchant(who.npc()) != null) {
+            var more = new ArrayList<>(trades);
+            more.add(new Opened(seat.player.getIndex(), who.id().value()));
+            trades = List.copyOf(more);
+        }
+        return said;
+    }
+
+    private static void face(GameObject person, GameObject hero) {
+        float dx = hero.getPosition().x() - person.getPosition().x();
+        float dy = hero.getPosition().y() - person.getPosition().y();
+        if (dx != 0f || dy != 0f) {
+            person.setOrientation((float) StrictMath.atan2(dy, dx));
+        }
+    }
+
+    /**
+     * A wandering person strolls: every WanderFrames — each person on a beat of their own — to a point within Wander of
+     * home, worked out from the frame and their id so no dice of the world's are drawn; and stands still while a hero
+     * is near.
+     */
+    private void stroll(DukeGame game) {
+        var logic = game.getLogic();
+        int every = settings.story().trade().wanderFrames();
+        for (var who : people) {
+            var npc = settings.story().npc(who.npc());
+            var there = logic.findObject(who.id());
+            var legs = there == null ? null : there.getLocomotor();
+            if (npc == null || legs == null || npc.wander() <= 0f) {
+                continue;
+            }
+            boolean heroNear = false;
+            for (var seat : seats) {
+                var hero = seat.heroId == null ? null : logic.findObject(seat.heroId);
+                heroNear |= hero != null && !hero.isEffectivelyDead() && near(hero, there, who);
+            }
+            if (heroNear) {
+                if (legs.isMoving()) {
+                    legs.stop();
+                }
+                continue;
+            }
+            int id = who.id().value();
+            if ((logic.getFrame() + id * 37) % every != 0) {
+                continue;
+            }
+            long hash = (logic.getFrame() * 0x9E3779B97F4A7C15L) ^ (id * 0xC2B2AE3D27D4EB4FL);
+            hash ^= hash >>> 29;
+            double angle = (hash & 0xFFFF) / 65536.0 * 2 * StrictMath.PI;
+            float reach = npc.wander() * (((hash >>> 16) & 0xFF) / 255f);
+            legs.moveTo(new uz.dukeengine.core.math.Coord3D(who.homeX() + (float) StrictMath.cos(angle) * reach,
+                    who.homeY() + (float) StrictMath.sin(angle) * reach, 0f));
+        }
+    }
+
+    /** A trade window asked for: whose player, and the merchant, by the id of the thing. */
+    public record Opened(int player, int merchant) {
+    }
+
+    /** Every trade window asked for this session, in order — the window opens the last of its player's. */
+    private volatile List<Opened> trades = List.of();
+
+    public List<Opened> getTrades() {
+        return trades;
+    }
+
+    /** A merchant's stock on this floor: the person, and how many of each of his wares are left. */
+    private record Shop(ObjectId id, uz.dukeengine.dungeon.story.Merchant merchant, int[] left) {
+    }
+
+    private final List<Shop> shops = new ArrayList<>();
+    /** The world the run ticks, for a death heard outside a tick: what the dead creature's level was. */
+    private uz.dukeengine.core.GameLogic lastLogic;
+    /** What each merchant has left, for the window, by the id of the person: written whole as it changes. */
+    private volatile java.util.Map<Integer, List<uz.dukeengine.dungeon.story.Merchant.Ware>> stock =
+            java.util.Map.of();
+
+    /** Every merchant on the floor stocked again from the data. */
+    private void restock() {
+        shops.clear();
+        for (var who : people) {
+            var merchant = settings.story().merchant(who.npc());
+            if (merchant != null) {
+                shops.add(new Shop(who.id(), merchant,
+                        merchant.stock().stream().mapToInt(uz.dukeengine.dungeon.story.Merchant.Ware::count).toArray()));
+            }
+        }
+        published();
+    }
+
+    private void published() {
+        var now = new java.util.TreeMap<Integer, List<uz.dukeengine.dungeon.story.Merchant.Ware>>();
+        for (var shop : shops) {
+            var wares = new ArrayList<uz.dukeengine.dungeon.story.Merchant.Ware>();
+            for (int i = 0; i < shop.left().length; i++) {
+                var ware = shop.merchant().stock().get(i);
+                wares.add(new uz.dukeengine.dungeon.story.Merchant.Ware(ware.item(), ware.price(), shop.left()[i]));
+            }
+            now.put(shop.id().value(), List.copyOf(wares));
+        }
+        stock = java.util.Collections.unmodifiableMap(now);
+    }
+
+    /** What the merchant {@code id} has left, each ware with its count now; empty for nobody who trades. */
+    public List<uz.dukeengine.dungeon.story.Merchant.Ware> stockOf(int id) {
+        return stock.getOrDefault(id, List.of());
+    }
+
+    /**
+     * A monster the floor placed died: the hero whose blow it was is paid, at once, and his bubble says so. A blow that
+     * names its killer but not his side is his killer's side.
+     */
+    private void pay(uz.dukeengine.core.module.Death death, int level) {
+        int player = death.killerPlayerIndex();
+        if (player < 0 && death.killer() != null && lastLogic != null) {
+            var killer = lastLogic.findObject(death.killer());
+            player = killer == null ? -1 : killer.getPlayerIndex();
+        }
+        var seat = seatOf(player);
+        if (seat == null) {
+            return;
+        }
+        int paid = settings.story().trade().goldFor(level);
+        seat.gold += paid;
+        if (lastLogic != null) {
+            seat.progress.getLoot().say(settings.story().trade().gainWord().replace("%d", Integer.toString(paid)),
+                    lastLogic.getFrame(), settings.lootDrops().noteFrames());
+        }
+    }
+
+    /** How much gold this player's hero has; 0 for a player with no seat. */
+    public int goldOf(int playerIndex) {
+        var seat = seatOf(playerIndex);
+        return seat == null ? 0 : seat.gold;
+    }
+
+    /** The shop of the merchant {@code id} whose hero of {@code seat} is near enough to trade, or null. */
+    private Shop shopNear(DukeGame game, Seat seat, ObjectId merchant) {
+        var shop = shops.stream().filter(each -> each.id().equals(merchant)).findFirst().orElse(null);
+        var who = people.stream().filter(each -> each.id().equals(merchant)).findFirst().orElse(null);
+        var hero = seat == null || seat.heroId == null ? null : game.getLogic().findObject(seat.heroId);
+        var there = game.getLogic().findObject(merchant);
+        if (shop == null || who == null || hero == null || there == null || hero.isEffectivelyDead()) {
+            return null;
+        }
+        var npc = settings.story().npc(who.npc());
+        float reach = npc == null ? 0f : npc.radius() * 2f;
+        float dx = hero.getPosition().x() - there.getPosition().x();
+        float dy = hero.getPosition().y() - there.getPosition().y();
+        return dx * dx + dy * dy <= reach * reach ? shop : null;
+    }
+
+    /** A player buys one of a merchant's wares: if the hero is near, the ware not sold out, the gold and the room there. */
+    public void buy(DukeGame game, int playerIndex, ObjectId merchant, int ware) {
+        var seat = seatOf(playerIndex);
+        var shop = shopNear(game, seat, merchant);
+        if (shop == null || ware < 0 || ware >= shop.left().length) {
+            return;
+        }
+        var trade = settings.story().trade();
+        var bag = seat.progress.getLoot();
+        int frame = game.getLogic().getFrame();
+        int notes = settings.lootDrops().noteFrames();
+        var sold = shop.merchant().stock().get(ware);
+        var item = settings.loot().stream().filter(loot -> loot.id().equals(sold.item())).findFirst().orElse(null);
+        if (item == null || shop.left()[ware] <= 0) {
+            bag.say(trade.soldOutWord(), frame, notes);
+        } else if (seat.gold < sold.price()) {
+            bag.say(trade.noGoldWord(), frame, notes);
+        } else if (!bag.take(item, frame, notes)) {
+            bag.say(trade.fullWord(), frame, notes);
+        } else {
+            seat.gold -= sold.price();
+            shop.left()[ware]--;
+            published();
+        }
+    }
+
+    /** A player sells what is in a slot of his bag to a merchant he is near: a quest thing or a key he cannot. */
+    public void sell(DukeGame game, int playerIndex, ObjectId merchant, int slot) {
+        var seat = seatOf(playerIndex);
+        if (shopNear(game, seat, merchant) == null) {
+            return;
+        }
+        var bag = seat.progress.getLoot();
+        var item = bag.at(slot);
+        if (item == null) {
+            return;
+        }
+        int worth = worth(item);
+        if (worth < 0) {
+            bag.say(settings.story().trade().cantSellWord(), game.getLogic().getFrame(),
+                    settings.lootDrops().noteFrames());
+            return;
+        }
+        bag.remove(slot);
+        seat.gold += worth;
+    }
+
+    /** What a thing sells for, or -1 for one that does not sell: a quest thing, or a key. */
+    public int worth(uz.dukeengine.rpg.item.Loot item) {
+        if ("QUEST".equals(item.kind()) || item.use() == ItemUse.UNLOCK) {
+            return -1;
+        }
+        var story = settings.story();
+        int joined = (int) Math.pow(Math.max(1, settings.lootDrops().joinCount()), item.level() - 1);
+        return story.priceOf(item.id()) * joined * story.trade().sellPercent() / 100;
     }
 
     private boolean near(GameObject hero, GameObject there, Person who) {

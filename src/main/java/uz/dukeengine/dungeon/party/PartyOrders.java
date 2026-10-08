@@ -56,6 +56,9 @@ public final class PartyOrders {
     public static final String TALK = "Talk";
     /** The cutscene playing skipped, for everybody. */
     static final String SKIP = "skip";
+    /** Buying one of a merchant's wares, and selling him a thing from the bag. */
+    static final String BUY = "buy";
+    static final String SELL = "sell";
 
     private PartyOrders() {
     }
@@ -76,6 +79,10 @@ public final class PartyOrders {
             case DropItem drop -> new GameOrder(drop.playerIndex(), DROP, List.of(), drop.place(), null, drop.slot());
             case ToTheGate gate -> new GameOrder(gate.playerIndex(), TO_THE_GATE, List.of(), null, gate.gate(), 0);
             case UseItem use -> new GameOrder(use.playerIndex(), USE, List.of(), null, use.target(), use.slot());
+            case uz.dukeengine.dungeon.run.Buy buy -> new GameOrder(buy.playerIndex(), BUY, List.of(), null,
+                    buy.merchant(), buy.ware());
+            case uz.dukeengine.dungeon.run.Sell sell -> new GameOrder(sell.playerIndex(), SELL, List.of(), null,
+                    sell.merchant(), sell.slot());
             case uz.dukeengine.dungeon.run.SkipCutscene skip -> new GameOrder(skip.playerIndex(), SKIP, List.of(), null,
                     null, 0);
             case uz.dukeengine.dungeon.run.TalkTo talk -> new GameOrder(talk.playerIndex(), TALK, List.of(), null,
@@ -106,6 +113,10 @@ public final class PartyOrders {
             case USE -> order.target() == null ? null
                     : new UseItem(order.playerIndex(), (int) order.number(), order.target());
             case SKIP -> new uz.dukeengine.dungeon.run.SkipCutscene(order.playerIndex());
+            case BUY -> order.target() == null ? null
+                    : new uz.dukeengine.dungeon.run.Buy(order.playerIndex(), order.target(), (int) order.number());
+            case SELL -> order.target() == null ? null
+                    : new uz.dukeengine.dungeon.run.Sell(order.playerIndex(), order.target(), (int) order.number());
             case TALK -> order.target() == null ? null
                     : new uz.dukeengine.dungeon.run.TalkTo(order.playerIndex(), order.target());
             default -> null;

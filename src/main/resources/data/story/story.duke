@@ -213,6 +213,12 @@ Trigger
       Target = Skeleton
       Count = 3
       Zone = Ambush
+    End,
+    Action
+      ; And she steps back to the wall, out of their way.
+      Act = WALK
+      Target = Commander
+      Zone = Wall
     End
   ]
 End
