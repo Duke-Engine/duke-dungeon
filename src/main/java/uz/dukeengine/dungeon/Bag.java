@@ -58,19 +58,11 @@ final class Bag {
     static void show(BagScreen bag, Dungeon.Session match, DungeonSettings settings) {
         bag.show(match.game(), () -> bagOf(match), PartyOrders::of,
                 canvas -> MissionScreen.paint(canvas, match, settings));
-        // And a click on a person is a talk. The bag's rule said again with it: the engine keeps one rule.
+        // And a click on a person is a talk, a rule beside the bag's own (E20).
         var story = settings.story();
-        match.game().contextOrder((selection, target) -> {
-            var item = target.findModule(uz.dukeengine.rpg.item.GroundItem.class);
-            if (item != null && item.getHolding() != null) {
-                return PartyOrders.PICK_UP;
-            }
-            if (target.findModule(uz.dukeengine.rpg.mission.GateUpdate.class) != null) {
-                return PartyOrders.TO_THE_GATE;
-            }
-            return target.getPlayerIndex() == uz.dukeengine.core.player.PlayerList.NEUTRAL_INDEX
-                    && story.npc(target.getTemplate().name()) != null ? PartyOrders.TALK : null;
-        });
+        match.game().addContextOrder((selection, target) ->
+                target.getPlayerIndex() == uz.dukeengine.core.player.PlayerList.NEUTRAL_INDEX
+                        && story.npc(target.getTemplate().name()) != null ? PartyOrders.TALK : null);
         DialogueScreen.show(match);
     }
 

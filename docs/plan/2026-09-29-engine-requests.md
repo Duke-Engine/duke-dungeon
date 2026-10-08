@@ -33,8 +33,8 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E17 | a thing that hides what is behind it from sight while it stands (`BlocksSight`) — the keep's shut gate | landed, d5db75c8 + 36f49f8e (on e17-blocks-sight) |
 | E18 | streaming the ground per map, not for the whole run | landed, 574011ae (on e16-painted-world); the game asks it per map |
 | E19 | a game's rows on the pause menu, and a word to the game before the client stops (saving) | landed, b66f00a7: `Shell.pauseRows`, `Duke3D.onLeaving`; the game saves with both |
-| E20 | a game adds its own right-click actions (talk to a person) without replacing the engine's pickup and gate rules | waiting (small) |
-| E21 | the move order's arrowheads lie on the ground's slope | waiting (small) |
+| E20 | a game adds its own right-click actions (talk to a person) without replacing the engine's pickup and gate rules | landed, 2a863ef9 (on e20-context-orders); the game adds its Talk rule beside the bag's |
+| E21 | the move order's arrowheads lie on the ground's slope | landed, b5fc663d |
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
 game builds against the local engine. E12–E15 reached it together at 668045f0 (their pull requests merged as
