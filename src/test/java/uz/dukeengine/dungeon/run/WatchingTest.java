@@ -122,9 +122,9 @@ class WatchingTest {
         assertFalse(line.contains("|skill="), "nor casting anything: " + line);
         assertFalse(line.contains("|it="), "nor carrying anything: " + line);
         // It DOES have orders -- it is walking or fighting or standing like
-        // anything else, and that is worth reading across the room. What it does
-        // not have is any of them the player may press.
-        assertTrue(line.contains("|cmds=theirs"), "it is not his to command: " + line);
+        // anything else, and that is worth reading across the room. Whether the
+        // buttons may be pressed is his hero's question, not the skeleton's: see
+        // withASkeletonPickedOutTheOrdersAreStillHis.
         assertTrue(line.contains("|cmd=D,icons/commands/"),
                 "but it is still doing something: " + line);
         assertFalse(line.contains("|rank="), "nor holding a level: " + line);
@@ -183,5 +183,38 @@ class WatchingTest {
 
         assertFalse(watched.line().contains("|hp="),
                 "a panel describing a corpse is a panel that looks broken");
+    }
+
+    /**
+     * Selecting anything shows it, and his orders always go to his own hero: with a skeleton picked out, the
+     * buttons and their keys are still his to press -- the client sends them to the hero the bars name -- while
+     * they show what the skeleton is doing.
+     */
+    @Test
+    void withASkeletonPickedOutTheOrdersAreStillHis() {
+        var watched = standoff();
+        watched.pickOut(watched.skeleton());
+
+        var line = watched.line();
+
+        assertTrue(line.contains("|cmds=mine"), "his orders go to his hero whatever he looks at: " + line);
+        assertTrue(line.contains("|hero=" + watched.hero().getId().value() + ","),
+                "and the bars name the hero they go to: " + line);
+    }
+
+    /**
+     * With no hero of his standing there is nobody to order, and the buttons go dim, as they always did: a party's
+     * player whose hero is down, while the others' still stand. (Alone, the run shows no card at all until he is
+     * back.) Asked of the card itself, which is told whether his hero stands.
+     */
+    @Test
+    void withNoHeroStandingTheOrdersAreNobodys() {
+        var watched = standoff();
+
+        var looked = HeroStatus.creature(watched.skeleton(), 1, 4, SETTINGS, "", false);
+        var nothing = HeroStatus.nothing(1, 4, SETTINGS, "", "", false);
+
+        assertTrue(looked.contains("|cmds=theirs"), "a skeleton looked at, nobody to order: " + looked);
+        assertTrue(nothing.contains("|cmds=theirs"), "nothing looked at, nobody to order: " + nothing);
     }
 }

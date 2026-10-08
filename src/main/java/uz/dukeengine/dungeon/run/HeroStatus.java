@@ -50,7 +50,7 @@ final class HeroStatus {
      * have the first floor drawn in the wrong kit until something was clicked.
      */
     static String nothing(int depth, int lastDepth, DungeonSettings settings, String note,
-            String look) {
+            String look, boolean his) {
         var card = HeroCard.named("")
                 .depth(howFarDown(depth, lastDepth), settings.hud().depthWord())
                 // The headings belong to the furniture rather than to whoever is
@@ -58,9 +58,9 @@ final class HeroStatus {
                 // grid with no heading over it is a hole rather than a bag.
                 .headings(settings.hud().skillsWord(), settings.hud().itemsWord());
         // The buttons are furniture too, and stay for the same reason the sockets
-        // do. Nothing is selected, so nothing is doing anything and none of them
-        // may be pressed -- but four dim buttons are a bar, and a gap is a hole.
-        orders(card, settings, null, false);
+        // do. Nothing is selected, so nothing is doing anything for them to show;
+        // they may be pressed while his hero stands, whose orders they give -- {@code his}.
+        orders(card, settings, null, his);
         if (note != null && !note.isEmpty()) {
             // Finding a sword is worth saying whether or not he is selected.
             card.note(note);
@@ -80,7 +80,8 @@ final class HeroStatus {
      * no bag — writing those fields with a monster's numbers in them would be
      * inventing a second hero. It does have ORDERS, which is not the same thing:
      * it is walking or fighting or standing whatever side it is on, and {@code his}
-     * is only whether the player may change that. What is left is what is actually worth
+     * is only whether the player may press the buttons -- which give his own hero's
+     * orders, whoever is looked at. What is left is what is actually worth
      * knowing about a thing across the room: how much of it there is and how hard
      * it hits.
      *
@@ -290,10 +291,11 @@ final class HeroStatus {
      * clicking them, so what earns them their space on the bar is what they can
      * tell him.
      *
-     * <p>{@code his} is whether the player may press them at all. A creature that
+     * <p>{@code his} is whether the player may press them at all: whether he has a
+     * hero standing, whose orders they give whatever is selected. A creature that
      * is not his still SHOWS what it is doing -- reading a skeleton's intent off
-     * the bar is worth as much as reading his own -- and the buttons go dim,
-     * because a lit button that does nothing is worse than no button.
+     * the bar is worth as much as reading his own -- and with no hero of his the
+     * buttons go dim, because a lit button that does nothing is worse than no button.
      */
     private static void orders(HeroCard card, DungeonSettings settings, Doing doing, boolean his) {
         var words = settings.hud().orderWords();

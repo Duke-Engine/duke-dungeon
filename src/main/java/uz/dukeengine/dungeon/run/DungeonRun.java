@@ -561,22 +561,25 @@ public final class DungeonRun {
         var picked = orders.watchedBy(player);
         var creature = picked == null ? null : game.getLogic().findObject(picked);
         boolean his = creature != null && creature.getPlayerIndex() == player;
-        if (his && Skills.heroOf(game.getLogic(), player) == creature) {
+        var hero = Skills.heroOf(game.getLogic(), player);
+        if (his && hero == creature) {
             return HeroStatus.of(creature, seat.progress, depth, floors.lastDepth(), settings,
                     game.getLogic().getFrame(), look, orders.isHolding(player), seat.learnt);
         }
+        // Selecting anything shows it, and his orders always go to his own hero: the client sends them to the hero
+        // the bars name whatever is picked out, so the buttons are his to press whenever that hero stands.
+        boolean heroStands = hero != null && !hero.isEffectivelyDead();
         if (creature != null && !creature.isEffectivelyDead()) {
-            // Somebody else's creature, or one of his that is not the hero: the
-            // card describes it, and the buttons are live only if he could give it
-            // an order.
+            // Somebody else's creature, or one of his that is not the hero: the card describes it, and what it is
+            // doing is on the buttons.
             return HeroStatus.creature(creature, depth, floors.lastDepth(), settings,
-                    look, his);
+                    look, his || heroStands);
         }
         // Nothing selected, or what was selected has died: the bar keeps the floor
         // and loses the creature. A panel describing a corpse until the player
         // thinks to click somewhere is a panel that looks broken.
         return HeroStatus.nothing(depth, floors.lastDepth(), settings,
-                seat.progress.getLoot().noteAt(game.getLogic().getFrame()), look);
+                seat.progress.getLoot().noteAt(game.getLogic().getFrame()), look, heroStands);
     }
 
     /**

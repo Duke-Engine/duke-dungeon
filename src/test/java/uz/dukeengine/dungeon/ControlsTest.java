@@ -302,4 +302,31 @@ class ControlsTest {
                 "the blast itself is still real, and still hurts -- it is only not drawn");
     }
 
+
+    /**
+     * With a monster picked out, S still stops his hero and holds him there: the order goes to his own hero, never
+     * to what he is looking at. (Whether the window lets the key through is the card's {@code cmds}, pinned in
+     * WatchingTest.)
+     */
+    @Test
+    void anOrderKeyWithAMonsterPickedOutOrdersHisHero() {
+        var session = Dungeon.newSession(7L, SHIPPED);
+        var game = session.game();
+        game.runHeadless(2);
+        var hero = game.getLogic().getObjects().stream()
+                .filter(thing -> thing.getTemplate().name().equals("Rogue")).findFirst().orElseThrow();
+        var monster = game.getLogic().getObjects().stream()
+                .filter(thing -> thing.getPlayerIndex() != hero.getPlayerIndex() && !thing.isEffectivelyDead()
+                        && thing.findModule(uz.dukeengine.combat.module.WeaponUpdate.class) != null)
+                .findFirst().orElseThrow();
+        session.orders().watch(hero.getPlayerIndex(), monster.getId());
+        assertFalse(session.orders().isHolding(hero.getPlayerIndex()), "the premise: he is not holding yet");
+
+        assertTrue(Main.controls(SHIPPED).pressNow(game, 'S'), "S is an order that acts at once");
+        game.runHeadless(2);
+
+        assertTrue(session.orders().isHolding(hero.getPlayerIndex()), "his hero holds his ground");
+        assertEquals(monster.getId(), session.orders().watchedBy(hero.getPlayerIndex()),
+                "and the monster is still the one shown");
+    }
 }
