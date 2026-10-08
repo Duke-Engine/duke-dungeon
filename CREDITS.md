@@ -32,6 +32,7 @@ written from there.
 | Skill, command and figure icons — all 22 | **Generated with Microsoft Copilot** (AI), cut and resized by `:dungeon:cutIcons` | see the note below | `icons/{skills,commands,stats}/` |
 | Attribute icons — strength, agility, intelligence | **AI-generated**, supplied by the owner as one sheet; cut and resized by `:dungeon:cutIcons` | see the note below | `icons/stats/stat_{strength,agility,intelligence}.png` |
 | The marks an aura's bearer wears on the floor — a ring of runes, ripples, and a sigil of eight points | made for this game, by `art/effects/AuraDecals.java` | CC0 | `effects/aura_{runes,ripples,sigil}.png` |
+| The ground a painted map is drawn with — grass, dirt, rock, snow and sand, a picture of noise and one of variation | made for this game, painted from a seed by `src/main/java/uz/dukeengine/dungeon/tools/GroundPictures.java` (`./gradlew writeGroundPictures`) | CC0 | `ground/*.png` |
 | Dungeon Pack — floors, walls, stairs | **KayKit** / Kay Lousberg ([kaylousberg.com](https://kaylousberg.com)) | CC0 | `models/tiles/dungeon/` |
 | …and its pillars, barrel and chest | KayKit | CC0 | `models/props/dungeon/` |
 | …and the dirt floors the forest is laid on | KayKit | CC0 | `models/tiles/forest/` |

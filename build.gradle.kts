@@ -152,6 +152,24 @@ tasks.register<JavaExec>("writeMapPreviews") {
     workingDir = rootProject.projectDir
 }
 
+// The pictures a painted map's ground is drawn with, painted from a seed into resources/ground.
+tasks.register<JavaExec>("writeGroundPictures") {
+    group = "application"
+    description = "Paint the ground pictures a painted map is drawn with"
+    mainClass.set("uz.dukeengine.dungeon.tools.GroundPictures")
+    classpath = sourceSets["main"].runtimeClasspath
+    workingDir = rootProject.projectDir
+}
+
+// The painted test map, written again from its seed: maps/painted and nothing else.
+tasks.register<JavaExec>("writePaintedMap") {
+    group = "application"
+    description = "Write the painted test map again from its seed"
+    mainClass.set("uz.dukeengine.dungeon.stage.PaintedMapWriter")
+    classpath = sourceSets["main"].runtimeClasspath
+    workingDir = rootProject.projectDir
+}
+
 tasks.register<JavaExec>("cutIcons") {
     group = "application"
     description = "Cut the icon sheets into the game's own icon folders"
