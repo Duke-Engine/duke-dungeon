@@ -25,6 +25,7 @@ class DialogueScreenTest {
 
         final List<String> text = new ArrayList<>();
         final List<String> pictures = new ArrayList<>();
+        final List<float[]> rects = new ArrayList<>();
 
         @Override
         public int width() {
@@ -43,6 +44,7 @@ class DialogueScreenTest {
 
         @Override
         public void fillRect(float x, float y, float w, float h, int argb) {
+            rects.add(new float[] {x, y, w, h, argb});
         }
 
         @Override
@@ -139,5 +141,32 @@ class DialogueScreenTest {
         var canvas = new Drawn();
         MissionScreen.marks(canvas, session, session.game().getSnapshot(), SETTINGS);
         assertEquals(List.of(SETTINGS.story().dialogue().giveMark()), canvas.pictures);
+    }
+
+    @Test
+    void aCutsceneLetterboxesTheScreenTakesHisHandAndEscSkipsIt() {
+        var session = Dungeon.newStageSession(Stages.load("talk", SETTINGS), SETTINGS);
+        var game = session.game();
+        game.runHeadless(1);
+        var screen = new DialogueScreen(null, (CanvasInput) event -> false, SETTINGS);
+        DialogueScreen.show(session);
+        var door = Stages.load("talk", SETTINGS).story().zones().stream().filter(z -> z.name().equals("HallDoor"))
+                .findFirst().orElseThrow();
+        var hero = named(game, SETTINGS.run().defaultHero());
+        hero.setPosition(new Coord3D(door.middleX(10f), door.middleY(10f), hero.getPosition().z()));
+        game.runHeadless(SETTINGS.story().dialogue().checkFrames() + 1);
+        assertTrue(session.run().inCutscene());
+
+        var canvas = painted(screen);
+        assertTrue(canvas.rects.stream().anyMatch(r -> r[1] == 0f && r[2] == 1600f && (int) r[4] == 0xFF000000),
+                "a black bar across the top");
+        assertTrue(screen.take(new CanvasInput.Button(10, 10, CanvasInput.Mouse.RIGHT, true, false)),
+                "no order goes to the world");
+        assertTrue(screen.take(new CanvasInput.Key(30, true, false)), "nor a key");
+
+        assertTrue(screen.take(new CanvasInput.Key(DialogueScreen.ESCAPE, true, false)));
+        game.runHeadless(2);
+        assertFalse(session.run().inCutscene(), "skipped");
+        assertFalse(screen.take(new CanvasInput.Key(30, true, false)), "and his hand is his again");
     }
 }

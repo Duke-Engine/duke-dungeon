@@ -166,6 +166,7 @@ public final class DungeonRun {
             SkillRanks learnt, Seal seal) {
         this.seal = seal;
         this.quests = new QuestLog(settings.story(), settings.loot(), settings.lootDrops().joinCount());
+        this.script = new uz.dukeengine.dungeon.story.Script(settings.story());
         this.orders = orders;
         this.dungeonPlayer = dungeonPlayer;
         this.floors = floors;
@@ -337,6 +338,11 @@ public final class DungeonRun {
         } else {
             quests.restore(save.quests());
         }
+        if (save.script() == null) {
+            script.reset();
+        } else {
+            script.restore(save.script());
+        }
         loading = true;
     }
 
@@ -356,7 +362,7 @@ public final class DungeonRun {
             return null;
         }
         return SaveGame.of(floors.seed(), floors.stageName(), depth, seat.hero, seat.progress.getExperience(),
-                seat.learnt, seat.progress.getLoot(), quests.state());
+                seat.learnt, seat.progress.getLoot(), quests.state(), script.state());
     }
 
     /** Whoever the first player plays — the file's answer until somebody chooses. */
@@ -625,6 +631,7 @@ public final class DungeonRun {
             game.setBanner("");
         }
         story(game);
+        scripted(game);
         track(game);
         showStatus(game);
     }
@@ -738,6 +745,8 @@ public final class DungeonRun {
             seat.talkingTo = null;
         }
         quests.reset(); // and every quest: the map that starts them starts them again
+        script.reset(); // and every trigger: the story begins again with the run
+        endCutscene(game);
         descend(game);
         runCount++;
         state = State.RUNNING;
@@ -910,6 +919,7 @@ public final class DungeonRun {
         for (var quest : story.quests()) {
             quests.start(quest);
         }
+        script.mapStarted(floors.stageName());
         marks();
     }
 
@@ -924,6 +934,185 @@ public final class DungeonRun {
     /** A death in the world, heard as it is reaped: every KILL of its kind counts it. */
     public void died(uz.dukeengine.core.event.ObjectDied death) {
         quests.died(death.templateName(), bags());
+        script.heard(uz.dukeengine.dungeon.story.Trigger.When.DIED, death.templateName(), 0);
+    }
+
+    // ---- triggers and cutscenes: see docs/plan/2026-10-08-story-scripting.md ----
+
+    /** The run's triggers: what has fired, the flags, what waits. */
+    private final uz.dukeengine.dungeon.story.Script script;
+    /** The cutscene playing, or null; the shot it is on, and that shot's frames left (-1 before it begins). */
+    private uz.dukeengine.dungeon.story.Cutscene cutscene;
+    private int shotAt;
+    private int shotLeft;
+    private volatile boolean inCutscene;
+    /** A map a trigger sent the heroes on to, laid once the frame's triggers are done; null for none. */
+    private String nextMap;
+
+    /**
+     * Every frame the floor is played, after the quests: what the quests told, heard; every trigger due, done; the
+     * cutscene a frame on; and a map a trigger asked for, laid.
+     */
+    private void scripted(DukeGame game) {
+        for (var event : quests.takeEvents()) {
+            script.heard(event.when(), event.target(), event.step());
+        }
+        for (var trigger : script.due()) {
+            for (var action : trigger.actions()) {
+                act(game, action);
+            }
+        }
+        for (var event : quests.takeEvents()) {
+            script.heard(event.when(), event.target(), event.step()); // what the actions did: due next frame
+        }
+        shoot(game);
+        marks();
+        if (nextMap != null) {
+            var name = nextMap;
+            nextMap = null;
+            try {
+                floors = Floors.ofStage(uz.dukeengine.dungeon.stage.Stages.load(name, settings));
+            } catch (RuntimeException e) {
+                java.util.logging.Logger.getLogger(DungeonRun.class.getName())
+                        .warning("a trigger asked for the map " + name + ", which cannot be played: " + e.getMessage());
+                return;
+            }
+            depth = floors.firstDepth();
+            endCutscene(game);
+            descend(game);
+        }
+    }
+
+    private void act(DukeGame game, uz.dukeengine.dungeon.story.Trigger.Action action) {
+        var logic = game.getLogic();
+        var what = action.target();
+        switch (action.act()) {
+            case SAY -> quests.play(what);
+            case START_QUEST -> quests.start(what);
+            case FINISH_QUEST -> quests.finishNow(what);
+            case SPAWN -> {
+                var zone = zoneNamed(action.zone());
+                var template = logic.getThingFactory().findTemplate(what);
+                if (zone == null || template == null) {
+                    return;
+                }
+                boolean person = settings.story().npc(what) != null;
+                var cells = zone.cells();
+                for (int i = 0; i < action.count(); i++) {
+                    var cell = cells.get(i % cells.size());
+                    var placed = new uz.dukeengine.dungeon.map.StaticMap.Placed(what, cell[0], cell[1]);
+                    if (person) {
+                        var spawned = logic.spawn(template, ground(logic, placed),
+                                uz.dukeengine.core.player.PlayerList.NEUTRAL_INDEX);
+                        people.add(new Person(spawned.getId(), what));
+                    } else {
+                        var spawned = logic.spawn(template, ground(logic, placed), dungeonPlayer.getIndex());
+                        Spawner.scale(spawned, settings.beforeBossLevel(depth), settings);
+                    }
+                }
+            }
+            case WALK -> {
+                var zone = zoneNamed(action.zone());
+                for (var who : people) {
+                    var there = logic.findObject(who.id());
+                    var legs = there == null ? null : there.getLocomotor();
+                    if (zone != null && who.npc().equals(what) && legs != null) {
+                        float cell = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
+                        legs.moveTo(new uz.dukeengine.core.math.Coord3D(zone.middleX(cell), zone.middleY(cell), 0f));
+                    }
+                }
+            }
+            case OPEN_GATE -> {
+                for (var thing : logic.getObjects()) {
+                    var gate = thing.findModule(uz.dukeengine.rpg.mission.GateUpdate.class);
+                    if (gate != null) {
+                        gate.open();
+                    }
+                }
+            }
+            case GIVE -> settings.loot().stream().filter(item -> item.id().equals(what)).findFirst()
+                    .ifPresent(item -> seats.getFirst().progress.getLoot().take(item, logic.getFrame(), 0));
+            case TAKE -> {
+                for (var bag : bags()) {
+                    for (int slot = 0; slot < bag.slots().size(); slot++) {
+                        if (bag.at(slot) != null && bag.at(slot).id().equals(what)) {
+                            bag.remove(slot);
+                            return;
+                        }
+                    }
+                }
+            }
+            case FLAG -> script.flag(what);
+            case MAP -> nextMap = what;
+            case CUTSCENE -> {
+                cutscene = settings.story().cutscene(what);
+                shotAt = 0;
+                shotLeft = -1;
+                inCutscene = cutscene != null;
+            }
+        }
+    }
+
+    private uz.dukeengine.dungeon.map.StaticMap.Zone zoneNamed(String name) {
+        return floors.story().zones().stream().filter(zone -> zone.name().equals(name)).findFirst().orElse(null);
+    }
+
+    /** The cutscene a frame on: a shot begun — the camera sent flying, its line said — or counted down. */
+    private void shoot(DukeGame game) {
+        if (cutscene == null) {
+            return;
+        }
+        var shot = cutscene.shots().get(shotAt);
+        if (shotLeft < 0) {
+            var zone = shot.zone().isBlank() ? null : zoneNamed(shot.zone());
+            if (zone != null) {
+                float cell = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
+                game.camera().moveTo(zone.middleX(cell), zone.middleY(cell), shot.frames());
+            }
+            if (!shot.says().isBlank()) {
+                quests.play(shot.says());
+            }
+            shotLeft = shot.length();
+        }
+        if (--shotLeft <= 0) {
+            shotAt++;
+            shotLeft = -1;
+            if (shotAt >= cutscene.shots().size()) {
+                endCutscene(game);
+            }
+        }
+    }
+
+    /** The cutscene over, or skipped: the camera given back, over the first hero standing. */
+    private void endCutscene(DukeGame game) {
+        if (cutscene == null) {
+            return;
+        }
+        cutscene = null;
+        inCutscene = false;
+        game.camera().release();
+        for (var seat : seats) {
+            var hero = seat.heroId == null ? null : game.getLogic().findObject(seat.heroId);
+            if (hero != null) {
+                game.moveView(hero.getPosition().x(), hero.getPosition().y());
+                return;
+            }
+        }
+    }
+
+    /** A player skipped the cutscene: for everybody, as every order is heard. */
+    public void skipCutscene(DukeGame game) {
+        endCutscene(game);
+    }
+
+    /** Whether a cutscene is playing — from any thread: the window letterboxes and takes the player's input. */
+    public boolean inCutscene() {
+        return inCutscene;
+    }
+
+    /** The run's triggers: what has fired, the flags, what waits. */
+    public uz.dukeengine.dungeon.story.Script getScript() {
+        return script;
     }
 
     /**
@@ -977,6 +1166,7 @@ public final class DungeonRun {
         }
         quests.holding(bags());
         float cell = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
+        var standing = new ArrayList<String>();
         for (var seat : seats) {
             var hero = seat.heroId == null ? null : logic.findObject(seat.heroId);
             if (hero == null || hero.isEffectivelyDead()) {
@@ -985,9 +1175,13 @@ public final class DungeonRun {
             for (var zone : floors.story().zones()) {
                 if (zone.holds(hero.getPosition().x(), hero.getPosition().y(), cell)) {
                     quests.reached(zone.name(), seat.progress.getLoot());
+                    if (!standing.contains(zone.name())) {
+                        standing.add(zone.name());
+                    }
                 }
             }
         }
+        script.standing(standing);
         for (var who : people) {
             var there = logic.findObject(who.id());
             for (var seat : seats) {

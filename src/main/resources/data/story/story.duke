@@ -143,3 +143,76 @@ LootItem
   Value = 0
   Weight = 0
 End
+
+; ---------------------------------------------------------------------------
+; The demo's story: a cutscene as he comes into the far hall, and an ambush once
+; her skeletons are dealt with. See docs/plan/2026-10-08-story-scripting.md.
+; ---------------------------------------------------------------------------
+
+Conversation
+  Name = CommanderSeesChest
+  Lines = [
+    Line
+      Speaker = Commander
+      Text = "Ana u — burchakdagi sandiq! Tumorim o'sha yerda bo'lishi kerak."
+    End
+  ]
+End
+
+Conversation
+  Name = AmbushLine
+  Lines = [
+    Line
+      Speaker = Commander
+      Text = "Ehtiyot bo'ling! Ular orqamizdan kelishdi!"
+    End
+  ]
+End
+
+Cutscene
+  Name = ChestReveal
+  Shots = [
+    Shot
+      ; Two seconds' flight to the chest in the far corner, and a second looking at it.
+      Zone = Chest
+      Frames = 60
+      Hold = 30
+    End,
+    Shot
+      Says = CommanderSeesChest
+      Hold = 15
+    End
+  ]
+End
+
+Trigger
+  Name = HallSeen
+  Map = talk
+  When = ZONE
+  Target = HallDoor
+  Actions = [
+    Action
+      Act = CUTSCENE
+      Target = ChestReveal
+    End
+  ]
+End
+
+Trigger
+  Name = Ambush
+  Map = talk
+  When = QUEST_DONE
+  Target = WallSkeletons
+  Actions = [
+    Action
+      Act = SAY
+      Target = AmbushLine
+    End,
+    Action
+      Act = SPAWN
+      Target = Skeleton
+      Count = 3
+      Zone = Ambush
+    End
+  ]
+End

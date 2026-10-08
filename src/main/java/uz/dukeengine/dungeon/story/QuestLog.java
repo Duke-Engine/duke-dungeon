@@ -53,12 +53,39 @@ public final class QuestLog {
         active.clear();
         finished.clear();
         heard.clear();
+        events.clear();
         experience = 0;
     }
 
     /** The frame it is now, for when a step begins. */
     public void frame(int frame) {
         now = frame;
+    }
+
+    /** Something that happened to the story, for the triggers: a step or a quest done, a conversation played. */
+    public record Event(Trigger.When when, String target, int step) {
+    }
+
+    private final List<Event> events = new ArrayList<>();
+
+    private void told(Event event) {
+        events.add(event);
+    }
+
+    /** What happened since last asked, in order; nothing the next time. */
+    public List<Event> takeEvents() {
+        var told = List.copyOf(events);
+        events.clear();
+        return told;
+    }
+
+    /** Finish {@code quest} at once, without what its steps give: a trigger's FINISH_QUEST. */
+    public void finishNow(String quest) {
+        if (active.removeIf(each -> each.quest().equals(quest)) || story.quest(quest) != null
+                && !finished.contains(quest)) {
+            finished.add(quest);
+            told(new Event(Trigger.When.QUEST_DONE, quest, 0));
+        }
     }
 
     /** Start {@code quest}, unless it is going or finished already. */
@@ -82,6 +109,7 @@ public final class QuestLog {
         var more = new ArrayList<>(said);
         more.add(conversation);
         said = List.copyOf(more);
+        told(new Event(Trigger.When.HEARD, conversation, 0));
         for (var quest : known.starts()) {
             start(quest);
         }
@@ -272,6 +300,10 @@ public final class QuestLog {
         } else {
             active.remove(at);
             finished.add(each.quest());
+        }
+        told(new Event(Trigger.When.STEP_DONE, each.quest(), each.step() + 1));
+        if (finished.contains(each.quest())) {
+            told(new Event(Trigger.When.QUEST_DONE, each.quest(), 0));
         }
         var done = quest.steps().get(each.step()).onDone();
         if (done == null) {

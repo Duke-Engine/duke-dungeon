@@ -106,6 +106,37 @@ public record StaticMap(String name, String displayName, String description, int
             return cx >= x && cx < x + width && cy >= y && cy < y + height;
         }
 
+        /** Its middle, in world units, a cell being {@code cell} across. */
+        public float middleX(float cell) {
+            return radius > 0 ? (x + 0.5f) * cell : (x + width / 2f) * cell;
+        }
+
+        public float middleY(float cell) {
+            return radius > 0 ? (y + 0.5f) * cell : (y + height / 2f) * cell;
+        }
+
+        /** Its cells, {@code [x, y]} each, in reading order: the middle's first for a circle. Never empty. */
+        public java.util.List<int[]> cells() {
+            var cells = new java.util.ArrayList<int[]>();
+            if (radius > 0) {
+                cells.add(new int[] {x, y});
+                for (int cy = y - radius; cy <= y + radius; cy++) {
+                    for (int cx = x - radius; cx <= x + radius; cx++) {
+                        if ((cx != x || cy != y) && (cx - x) * (cx - x) + (cy - y) * (cy - y) <= radius * radius) {
+                            cells.add(new int[] {cx, cy});
+                        }
+                    }
+                }
+            } else {
+                for (int cy = y; cy < y + Math.max(1, height); cy++) {
+                    for (int cx = x; cx < x + Math.max(1, width); cx++) {
+                        cells.add(new int[] {cx, cy});
+                    }
+                }
+            }
+            return cells;
+        }
+
         /** As a map file writes it. */
         public String written() {
             return radius > 0 ? name + " " + x + " " + y + " " + radius

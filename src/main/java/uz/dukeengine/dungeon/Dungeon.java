@@ -493,6 +493,8 @@ public final class Dungeon {
                 case uz.dukeengine.dungeon.party.ChooseHero pick ->
                         run.choose(game, pick.playerIndex(), pick.hero());
                 // Sent to talk to a person: talked to now if he is near, or walked over to. See DungeonRun.talkTo.
+                // A player skipped the cutscene: it is over for everybody. See DungeonRun.skipCutscene.
+                case uz.dukeengine.dungeon.run.SkipCutscene skip -> run.skipCutscene(game);
                 case uz.dukeengine.dungeon.run.TalkTo talk ->
                         run.talkTo(game, talk.playerIndex(), talk.person());
                 default -> {

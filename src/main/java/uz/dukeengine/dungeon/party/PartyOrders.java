@@ -54,6 +54,8 @@ public final class PartyOrders {
      * the word the game named, and the pointer over a person is the cursor of that name.
      */
     public static final String TALK = "Talk";
+    /** The cutscene playing skipped, for everybody. */
+    static final String SKIP = "skip";
 
     private PartyOrders() {
     }
@@ -74,6 +76,8 @@ public final class PartyOrders {
             case DropItem drop -> new GameOrder(drop.playerIndex(), DROP, List.of(), drop.place(), null, drop.slot());
             case ToTheGate gate -> new GameOrder(gate.playerIndex(), TO_THE_GATE, List.of(), null, gate.gate(), 0);
             case UseItem use -> new GameOrder(use.playerIndex(), USE, List.of(), null, use.target(), use.slot());
+            case uz.dukeengine.dungeon.run.SkipCutscene skip -> new GameOrder(skip.playerIndex(), SKIP, List.of(), null,
+                    null, 0);
             case uz.dukeengine.dungeon.run.TalkTo talk -> new GameOrder(talk.playerIndex(), TALK, List.of(), null,
                     talk.person(), 0);
             default -> throw new IllegalArgumentException("not one of this game's orders: " + command);
@@ -101,6 +105,7 @@ public final class PartyOrders {
             case TO_THE_GATE -> order.target() == null ? null : new ToTheGate(order.playerIndex(), order.target());
             case USE -> order.target() == null ? null
                     : new UseItem(order.playerIndex(), (int) order.number(), order.target());
+            case SKIP -> new uz.dukeengine.dungeon.run.SkipCutscene(order.playerIndex());
             case TALK -> order.target() == null ? null
                     : new uz.dukeengine.dungeon.run.TalkTo(order.playerIndex(), order.target());
             default -> null;
