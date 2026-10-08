@@ -102,8 +102,75 @@ final class DialogueScreen implements Painter, CanvasInput {
         }
         var now = showing();
         pause(now != null);
+        if (inCutscene()) {
+            letterbox(canvas);
+        }
         if (now != null) {
             box(canvas, now);
+        }
+    }
+
+    /** Whether the match's run is playing a cutscene. */
+    private static boolean inCutscene() {
+        var now = match;
+        return now != null && now.run().inCutscene();
+    }
+
+    /** The black bars across the top and the bottom of a cutscene. */
+    static void letterbox(Canvas canvas) {
+        float bar = canvas.height() * 0.11f;
+        canvas.fillRect(0f, 0f, canvas.width(), bar, 0xFF000000);
+        canvas.fillRect(0f, canvas.height() - bar, canvas.width(), bar, 0xFF000000);
+    }
+
+    /** The cutscene skipped, for everybody: this game's order, heard on every machine. */
+    private static void skipCutscene() {
+        var now = match;
+        if (now != null && now.game().getLogic() != null) {
+            now.game().postCommand(uz.dukeengine.dungeon.party.PartyOrders.of(
+                    new uz.dukeengine.dungeon.run.SkipCutscene(now.game().getLocalPlayerIndex())));
+        }
+    }
+
+    /**
+     * A cutscene takes the player's hand: no orders and no keys but Esc, which skips it — its lines with it — and
+     * Space, Enter or a click, which is the next line while one is shown and skips the cutscene when none is.
+     */
+    private boolean cutsceneTakes(Event event) {
+        boolean line = showing() != null;
+        switch (event) {
+            case Key key -> {
+                boolean on = key.code() == SPACE || key.code() == ENTER || key.code() == NUMPAD_ENTER;
+                if (key.down() && !key.repeat() && key.code() == ESCAPE) {
+                    if (line) {
+                        skip();
+                    }
+                    skipCutscene();
+                } else if (key.down() && !key.repeat() && on) {
+                    if (line) {
+                        next();
+                    } else {
+                        skipCutscene();
+                    }
+                }
+                return true;
+            }
+            case Button button -> {
+                if (button.down() && button.button() == Mouse.LEFT) {
+                    if (line) {
+                        next();
+                    } else {
+                        skipCutscene();
+                    }
+                }
+                return true;
+            }
+            case Pointer pointer -> {
+                return false; // where the pointer is, the cutscene does not mind
+            }
+            default -> {
+                return true;
+            }
         }
     }
 
@@ -116,6 +183,9 @@ final class DialogueScreen implements Painter, CanvasInput {
 
     @Override
     public boolean take(Event event) {
+        if (inCutscene()) {
+            return cutsceneTakes(event);
+        }
         if (showing() == null) {
             return underInput != null && underInput.take(event);
         }

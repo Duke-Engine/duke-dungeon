@@ -23,14 +23,23 @@ import uz.dukeengine.rpg.skill.SkillRanks;
  * @param bag        what he carries, by slot
  * @param quests     the run's quests — going, finished and heard — or {@code null} for a save written before quests
  *                   were saved, which loads with its map's starting quests
+ * @param script     the run's triggers — fired, flags, waiting — or {@code null} for a save written before they were
+ *                   saved, which loads with none fired
  */
 public record SaveGame(long seed, String stage, int depth, String hero, int experience, List<Rank> ranks,
-        List<Item> bag, uz.dukeengine.dungeon.story.QuestLog.State quests) {
+        List<Item> bag, uz.dukeengine.dungeon.story.QuestLog.State quests,
+        uz.dukeengine.dungeon.story.Script.State script) {
+
+    /** A save with quests and no triggers in it: as one written before triggers were saved. */
+    public SaveGame(long seed, String stage, int depth, String hero, int experience, List<Rank> ranks,
+            List<Item> bag, uz.dukeengine.dungeon.story.QuestLog.State quests) {
+        this(seed, stage, depth, hero, experience, ranks, bag, quests, null);
+    }
 
     /** A save with no quests in it: as one written before they were saved. */
     public SaveGame(long seed, String stage, int depth, String hero, int experience, List<Rank> ranks,
             List<Item> bag) {
-        this(seed, stage, depth, hero, experience, ranks, bag, null);
+        this(seed, stage, depth, hero, experience, ranks, bag, null, null);
     }
 
     /** The format this game writes and the only one it reads. */
@@ -58,12 +67,13 @@ public record SaveGame(long seed, String stage, int depth, String hero, int expe
     /** What this hero has, as a save. */
     public static SaveGame of(long seed, String stage, int depth, String hero, int experience, SkillRanks learnt,
             LootBag carried) {
-        return of(seed, stage, depth, hero, experience, learnt, carried, null);
+        return of(seed, stage, depth, hero, experience, learnt, carried, null, null);
     }
 
     /** The same, with the run's quests. */
     public static SaveGame of(long seed, String stage, int depth, String hero, int experience, SkillRanks learnt,
-            LootBag carried, uz.dukeengine.dungeon.story.QuestLog.State quests) {
+            LootBag carried, uz.dukeengine.dungeon.story.QuestLog.State quests,
+            uz.dukeengine.dungeon.story.Script.State script) {
         var ranks = new ArrayList<Rank>();
         for (var skill : learnt.getSkills()) {
             ranks.add(new Rank(skill.key(), learnt.rankOf(skill.key())));
@@ -76,7 +86,7 @@ public record SaveGame(long seed, String stage, int depth, String hero, int expe
                 bag.add(new Item(slot, item.id(), item.level(), item.value(), item.extraValue()));
             }
         }
-        return new SaveGame(seed, stage, depth, hero, experience, ranks, bag, quests);
+        return new SaveGame(seed, stage, depth, hero, experience, ranks, bag, quests, script);
     }
 
     /**
@@ -169,6 +179,20 @@ public record SaveGame(long seed, String stage, int depth, String hero, int expe
                 out.append("  End\n");
             }
         }
+        if (script != null) {
+            // The run's triggers: those fired, the flags set, the zones a hero stood in, and a Waiting block for each
+            // waiting out its delay. A save with no Script line was written before triggers were saved.
+            out.append("  Script = Yes\n");
+            out.append("  Fired = [").append(String.join(", ", script.fired())).append("]\n");
+            out.append("  Flags = [").append(String.join(", ", script.flags())).append("]\n");
+            out.append("  Occupied = [").append(String.join(", ", script.occupied())).append("]\n");
+            for (var waiting : script.waiting()) {
+                out.append("  Waiting\n");
+                out.append("    Trigger = ").append(waiting.trigger()).append('\n');
+                out.append("    Frames = ").append(waiting.framesLeft()).append('\n');
+                out.append("  End\n");
+            }
+        }
         return out.append("End\n").toString();
     }
 
@@ -204,7 +228,13 @@ public record SaveGame(long seed, String stage, int depth, String hero, int expe
             }
             var bag = new ArrayList<Item>();
             var going = new ArrayList<uz.dukeengine.dungeon.story.QuestLog.Active>();
+            var waiting = new ArrayList<uz.dukeengine.dungeon.story.Script.Waiting>();
             for (var item : save.blocks()) {
+                if (item.word().equals("Waiting")) {
+                    waiting.add(new uz.dukeengine.dungeon.story.Script.Waiting(word(item, "Trigger"),
+                            number(item, "Frames")));
+                    continue;
+                }
                 if (item.word().equals("Quest")) {
                     going.add(new uz.dukeengine.dungeon.story.QuestLog.Active(word(item, "Name"),
                             number(item, "Step"), number(item, "Count"), 0));
@@ -219,9 +249,13 @@ public record SaveGame(long seed, String stage, int depth, String hero, int expe
             var quests = field(save, "Quests") == null ? null
                     : new uz.dukeengine.dungeon.story.QuestLog.State(going, items(save, "Finished"),
                             items(save, "Heard"));
+            var script = field(save, "Script") == null ? null
+                    : new uz.dukeengine.dungeon.story.Script.State(items(save, "Fired"), items(save, "Flags"), waiting,
+                            items(save, "Occupied"));
             var stage = field(save, "Stage");
             return new SaveGame(Long.parseLong(word(save, "Seed")), stage == null ? null : text(stage, "Stage"),
-                    number(save, "Depth"), word(save, "Hero"), number(save, "Experience"), ranks, bag, quests);
+                    number(save, "Depth"), word(save, "Hero"), number(save, "Experience"), ranks, bag, quests,
+                    script);
         } catch (RuntimeException e) {
             throw new Refused(source + " cannot be loaded: " + e.getMessage(), e);
         }

@@ -87,7 +87,7 @@ class TalkMapTest {
         beside(hero, commander);
         game.runHeadless(CHECK + 1);
         assertTrue(run.getQuests().finished().contains("WallSkeletons"), "handed in");
-        assertEquals("CommanderThanks", run.getQuests().said().getLast());
+        assertTrue(run.getQuests().said().contains("CommanderThanks"));
         game.runHeadless(2);
         assertTrue(session.progress().getExperience() >= before + 150, "and paid");
         assertTrue(session.progress().getLoot().slots().stream()

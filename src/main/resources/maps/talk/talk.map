@@ -66,6 +66,9 @@ StaticMap
   ; Named places, in cells: name x y width height, or name x y radius.
   Zones = [
     Corridor 14 9 8 2,
+    HallDoor 20 9 2 2,
+    Chest 36 16 1,
+    Ambush 3 3 3 2,
   ]
   ; Things lying on the floor: a LootItem, then the cell.
   Items = [

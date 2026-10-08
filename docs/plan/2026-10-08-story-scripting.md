@@ -10,7 +10,7 @@ Choices the owner left open are marked **default**.
 
 ## Triggers
 
-A trigger is a block in the game's data: **when** something happens, **do** a list of actions, in order. Each fires
+A trigger is a block in the game's data: **when** something happens, do its **actions**, in order. Each fires
 once, unless it says `Repeat = Yes`. They run in the simulation, on the frame the event is heard, in file order, so a
 party sees the same story on every machine; what has fired is saved with the run, as the quest log is.
 
@@ -22,7 +22,7 @@ Trigger
   Target = WallSkeletons     ; what of
   Delay = 0                  ; frames after the event before it acts
   Repeat = No
-  Do = [
+  Actions = [
     Action
       Act = SAY
       Target = AmbushLine
