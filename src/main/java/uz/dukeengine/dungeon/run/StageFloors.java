@@ -49,4 +49,9 @@ final class StageFloors implements Floors {
     public int lastDepth() {
         return firstDepth();
     }
+
+    @Override
+    public uz.dukeengine.dungeon.story.MapStory story() {
+        return stage.story();
+    }
 }

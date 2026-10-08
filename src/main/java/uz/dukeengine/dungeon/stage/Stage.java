@@ -44,5 +44,15 @@ import uz.dukeengine.dungeon.gen.GeneratedDungeon;
  * @param floor       the dungeon itself, exactly as the generator handed it over
  */
 public record Stage(String id, String name, String description, int difficulty, int players,
-        long seed, GeneratedDungeon floor) {
+        long seed, GeneratedDungeon floor, uz.dukeengine.dungeon.story.MapStory story) {
+
+    public Stage {
+        story = story == null ? uz.dukeengine.dungeon.story.MapStory.NONE : story;
+    }
+
+    /** A stage with nobody on it to talk to, and no quests of its own. */
+    public Stage(String id, String name, String description, int difficulty, int players, long seed,
+            GeneratedDungeon floor) {
+        this(id, name, description, difficulty, players, seed, floor, null);
+    }
 }

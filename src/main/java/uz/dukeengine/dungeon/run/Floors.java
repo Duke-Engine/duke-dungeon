@@ -62,6 +62,11 @@ public interface Floors {
      */
     int lastDepth();
 
+    /** The people, places, things and quests the floor brings: none on the descent. */
+    default uz.dukeengine.dungeon.story.MapStory story() {
+        return uz.dukeengine.dungeon.story.MapStory.NONE;
+    }
+
     /** Floors drawn from a seed, each one deeper and nastier — the endless descent. */
     static Floors generated(long seed, DungeonSettings settings) {
         return new GeneratedFloors(seed, settings);

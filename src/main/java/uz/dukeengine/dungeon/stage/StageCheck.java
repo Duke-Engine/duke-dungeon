@@ -128,6 +128,26 @@ public final class StageCheck {
             }
         }
 
+        // People, things lying about and quests: each a name the files have, and each standing on the floor.
+        var story = settings.story();
+        for (var npc : stage.story().npcs()) {
+            if (story.npc(npc.kind()) == null) {
+                problems.add("there is no such person as " + npc.kind() + " — see the Npc blocks in data/story/");
+            }
+            standsOn(problems, grid, taken, npc.kind(), Placement.atCell(npc.x(), npc.y()));
+        }
+        for (var item : stage.story().items()) {
+            if (settings.loot().stream().noneMatch(loot -> loot.id().equals(item.kind()))) {
+                problems.add("there is no such thing as " + item.kind() + " — see the LootItem blocks");
+            }
+            standsOn(problems, grid, taken, "the " + item.kind(), Placement.atCell(item.x(), item.y()));
+        }
+        for (var quest : stage.story().quests()) {
+            if (story.quest(quest) == null) {
+                problems.add("the map starts " + quest + ", and no Quest is called that");
+            }
+        }
+
         if (entrance != null && inBounds(grid, entrance)) {
             problems.addAll(unreachable(grid, entrance, stage));
         }

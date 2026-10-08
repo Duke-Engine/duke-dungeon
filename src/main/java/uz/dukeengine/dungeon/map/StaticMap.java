@@ -40,12 +40,14 @@ public record StaticMap(String name, String displayName, String description, int
         float levelHeight,
         Cell entrance, @Grid List<String> cells, @Relief List<String> relief, List<Room> rooms, List<Link> links,
         @uz.dukeengine.core.data.Link(Monster.class) Placed boss, @uz.dukeengine.core.data.Link(Monster.class) List<Placed> monsters,
-        @uz.dukeengine.core.data.Link(Prop.class) List<Placed> props)
+        @uz.dukeengine.core.data.Link(Prop.class) List<Placed> props,
+        @uz.dukeengine.core.data.Link(Monster.class) List<Placed> npcs, List<Zone> zones, List<Placed> items,
+        List<String> quests)
         implements MapTemplate, Described, Peopled, Layered {
 
     /** What a block leaves out. */
     public static final StaticMap DEFAULTS = new StaticMap("", "", "", 1, 1, 0L, 0f, null, List.of(), List.of(),
-            List.of(), List.of(), null, List.of(), List.of());
+            List.of(), List.of(), null, List.of(), List.of(), List.of(), List.of(), List.of(), List.of());
 
     public StaticMap {
         cells = cells == null ? List.of() : List.copyOf(cells);
@@ -54,6 +56,47 @@ public record StaticMap(String name, String displayName, String description, int
         links = links == null ? List.of() : List.copyOf(links);
         monsters = monsters == null ? List.of() : List.copyOf(monsters);
         props = props == null ? List.of() : List.copyOf(props);
+        npcs = npcs == null ? List.of() : List.copyOf(npcs);
+        zones = zones == null ? List.of() : List.copyOf(zones);
+        items = items == null ? List.of() : List.copyOf(items);
+        quests = quests == null ? List.of() : List.copyOf(quests);
+    }
+
+    /**
+     * A named place, in cells, for a quest to send a hero to: {@code name x y width height}, a rectangle from its
+     * top-left cell, or {@code name x y radius}, a circle round a cell's middle. Zero {@code radius} is a rectangle.
+     */
+    public record Zone(String name, int x, int y, int width, int height, int radius) {
+
+        public static Zone of(String written) {
+            var words = written.strip().split("\\s+");
+            if (words.length != 4 && words.length != 5) {
+                throw new IllegalArgumentException("'" + written
+                        + "' is a name, then x y width height (a rectangle) or x y radius (a circle), in cells");
+            }
+            int x = Integer.parseInt(words[1]);
+            int y = Integer.parseInt(words[2]);
+            return words.length == 4 ? new Zone(words[0], x, y, 0, 0, Integer.parseInt(words[3]))
+                    : new Zone(words[0], x, y, Integer.parseInt(words[3]), Integer.parseInt(words[4]), 0);
+        }
+
+        /** Whether the world point {@code (px, py)} is in it, a cell being {@code cell} units across. */
+        public boolean holds(float px, float py, float cell) {
+            if (radius > 0) {
+                float dx = px - (x + 0.5f) * cell;
+                float dy = py - (y + 0.5f) * cell;
+                return dx * dx + dy * dy <= radius * cell * radius * cell;
+            }
+            int cx = (int) Math.floor(px / cell);
+            int cy = (int) Math.floor(py / cell);
+            return cx >= x && cx < x + width && cy >= y && cy < y + height;
+        }
+
+        /** As a map file writes it. */
+        public String written() {
+            return radius > 0 ? name + " " + x + " " + y + " " + radius
+                    : name + " " + x + " " + y + " " + width + " " + height;
+        }
     }
 
     /** A cell, written {@code [x, y]}. */

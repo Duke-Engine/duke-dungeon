@@ -64,6 +64,8 @@ Game
     data/units/reaper.duke,
     data/units/necromancer.duke,
     data/units/champion.duke,
+    ; People, who talk rather than fight: see data/story/.
+    data/units/commander.duke,
 
     data/projectiles/arrow.duke,
     data/projectiles/heavy_arrow.duke,
@@ -123,5 +125,8 @@ Game
     data/sounds/ui.duke,
     data/sounds/voice.duke,
     data/sounds/music.duke,
+
+    ; People, their talk and the quests.
+    data/story/story.duke,
   ]
 End

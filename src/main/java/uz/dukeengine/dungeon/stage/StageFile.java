@@ -92,6 +92,24 @@ public final class StageFile {
         list(out, "Monsters", floor.monsters().stream().map(monster -> placed(monster.kind(), monster.at())).toList());
         out.append("  ; Solid, and not alive — see data/props/.\n");
         list(out, "Props", floor.props().stream().map(prop -> placed(prop.kind(), prop.at())).toList());
+        // People, places and quests: written only by a map that has them, so every map drawn before is unchanged.
+        var story = stage.story();
+        if (!story.npcs().isEmpty()) {
+            out.append("  ; People: an Npc's name, then the cell they stand in.\n");
+            list(out, "Npcs", story.npcs().stream().map(p -> p.kind() + " " + p.x() + " " + p.y()).toList());
+        }
+        if (!story.zones().isEmpty()) {
+            out.append("  ; Named places, in cells: name x y width height, or name x y radius.\n");
+            list(out, "Zones", story.zones().stream().map(uz.dukeengine.dungeon.map.StaticMap.Zone::written).toList());
+        }
+        if (!story.items().isEmpty()) {
+            out.append("  ; Things lying on the floor: a LootItem, then the cell.\n");
+            list(out, "Items", story.items().stream().map(p -> p.kind() + " " + p.x() + " " + p.y()).toList());
+        }
+        if (!story.quests().isEmpty()) {
+            out.append("  ; The quests this map starts with.\n");
+            list(out, "Quests", story.quests());
+        }
         return out.append("End\n").toString();
     }
 
@@ -162,7 +180,7 @@ public final class StageFile {
         var floor = new GeneratedDungeon(walls, levels, entrance, monsters, boss, bossRoom(map), rooms, links, storeys,
                 props, reliefOf(map, source), map.levelHeight());
         return new Stage(map.name(), map.displayName(), map.description(), map.difficulty(), map.players(), map.seed(),
-                floor);
+                floor, new uz.dukeengine.dungeon.story.MapStory(map.npcs(), map.zones(), map.items(), map.quests()));
     }
 
     /** The map's relief, or null for none: one more row of corners than it has cells, and one more corner a row. */
