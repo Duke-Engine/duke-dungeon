@@ -463,6 +463,12 @@ public final class Main {
             visuals.paintCliffs(new Visuals.Cliffs(ground.cliffs(), ground.cliffSlope(), ground.cliffCoverage()));
         }
         visuals.paintInQuarters(ground.quarters());
+        if (ground.water() != null) {
+            // Standing water's picture drifting slowly, a copy every 15 cells; a river the same picture run down it.
+            visuals.water(new Visuals.WaterLook(ground.water(), 150f, 0.01f, 0.006f, null, 0f, 0f, 0f,
+                    ground.waterTint(), 3f, ground.water(), ground.riverFlow(), null));
+        }
+        visuals.minimapSpan(ground.minimapCells());
     }
 
     public static void main(String[] args) {

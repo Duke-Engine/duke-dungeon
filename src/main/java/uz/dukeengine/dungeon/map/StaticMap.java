@@ -46,6 +46,7 @@ import uz.dukeengine.dungeon.content.Prop;
  *     cells that has any: its pieces, each {@code model x y facing scale footprint} in cells, held apart by {@code ;}.
  *     A line rather than a piece a line, so a world of thirty thousand trees is read in a moment; drawn on painted
  *     ground only, and a footprint stands in the way
+ * @param water       its lakes and rivers, drawn on painted ground: see {@link Water}
  */
 public record StaticMap(String name, String displayName, String description, int difficulty, int players, long seed,
         float levelHeight,
@@ -54,13 +55,13 @@ public record StaticMap(String name, String displayName, String description, int
         @uz.dukeengine.core.data.Link(Prop.class) List<Placed> props,
         @Paint List<String> paint, Map<String, String> palette, Map<String, Float> coverage,
         @uz.dukeengine.core.data.Link(Monster.class) List<Placed> npcs, List<Zone> zones, List<Placed> items,
-        List<String> quests, List<String> scenery)
+        List<String> quests, List<String> scenery, List<Water> water)
         implements MapTemplate, Described, Peopled, Layered, Painted {
 
     /** What a block leaves out. */
     public static final StaticMap DEFAULTS = new StaticMap("", "", "", 1, 1, 0L, 0f, null, List.of(), List.of(),
             List.of(), List.of(), null, List.of(), List.of(), List.of(), Map.of(), Map.of(), List.of(), List.of(),
-            List.of(), List.of(), List.of());
+            List.of(), List.of(), List.of(), List.of());
 
     public StaticMap {
         cells = cells == null ? List.of() : List.copyOf(cells);
@@ -79,6 +80,7 @@ public record StaticMap(String name, String displayName, String description, int
         items = items == null ? List.of() : List.copyOf(items);
         quests = quests == null ? List.of() : List.copyOf(quests);
         scenery = scenery == null ? List.of() : List.copyOf(scenery);
+        water = water == null ? List.of() : List.copyOf(water);
     }
 
     /**
@@ -146,6 +148,51 @@ public record StaticMap(String name, String displayName, String description, int
         public String written() {
             return radius > 0 ? name + " " + x + " " + y + " " + radius
                     : name + " " + x + " " + y + " " + width + " " + height;
+        }
+    }
+
+    /**
+     * Water on the map, in cells: {@code name lake height x y x y …}, standing water over the cells inside its outline,
+     * or {@code name river height x y x y …}, a river drawn from its first two corners — its start — one bank on from
+     * the second and the other back from the first. {@code height} is its surface, in sixteenths of a cell as the
+     * relief is. Drawn only: what cannot be walked through is the map's {@code #} cells under it.
+     */
+    public record Water(String name, boolean river, float height, List<Float> points)
+            implements uz.dukeengine.core.map.MapArea {
+
+        public Water {
+            points = List.copyOf(points);
+        }
+
+        public static Water of(String written) {
+            var words = written.strip().split("\s+");
+            if (words.length < 9 || words.length % 2 == 0 || !words[1].equals("lake") && !words[1].equals("river")) {
+                throw new IllegalArgumentException("'" + written
+                        + "' is a name, lake or river, its height, then three corners or more: x y x y x y");
+            }
+            var points = new java.util.ArrayList<Float>();
+            for (int i = 3; i < words.length; i++) {
+                points.add(Float.parseFloat(words[i]));
+            }
+            return new Water(words[0], words[1].equals("river"), Float.parseFloat(words[2]), points);
+        }
+
+        /** As a map file writes it. */
+        public String written() {
+            var out = new StringBuilder(name).append(river ? " river " : " lake ").append(number(height));
+            for (var point : points) {
+                out.append(' ').append(number(point));
+            }
+            return out.toString();
+        }
+
+        private static String number(float value) {
+            return value == Math.rint(value) ? String.valueOf((int) value) : String.valueOf(value);
+        }
+
+        @Override
+        public boolean water() {
+            return true;
         }
     }
 

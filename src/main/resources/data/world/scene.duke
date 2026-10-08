@@ -192,6 +192,16 @@ PaintedGround
   ; How far round the camera the ground is built, a chunk of 16 cells at a time,
   ; when a painted map is the one the game opens on; 0 builds it whole.
   StreamCells = 48
+  ; A map's lakes and rivers: drawn with this picture, the ground's light times
+  ; WaterTint (0xAARRGGBB, its alpha how opaque deep water is), a river's picture
+  ; running down it RiverFlow of its lengths a second.
+  Water = ground/water.png
+  WaterTint = 0xC8B4C8D2
+  RiverFlow = 0.25
+  ; On a map wider than this many cells, the minimap shows the cells round the
+  ; camera rather than the whole map, which is too many cells to a pixel to find
+  ; the hero on. Every floor of the descent is narrower, and shown whole.
+  MinimapCells = 160
 End
 
 ; ---------------------------------------------------------------------------

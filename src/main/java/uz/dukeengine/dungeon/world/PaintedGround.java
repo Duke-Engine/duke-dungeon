@@ -24,14 +24,20 @@ import java.util.Map;
  * @param quarters          whether each cell is cut two by two, for smoother hills and a truer blend
  * @param streamCells       how far round the camera a painted map's ground is built, a chunk at a time; 0 builds it
  *     whole
+ * @param water             the picture a map's lakes and rivers are drawn with; none, and its water is not drawn
+ * @param waterTint         {@code 0xAARRGGBB}: the ground's light times this colour, and how opaque the water is deep
+ * @param riverFlow         how fast a river's picture runs down it, in its own lengths a second
+ * @param minimapCells      how many cells a side round the camera the minimap shows on a map wider than that; 0, and
+ *     every map is shown whole
  */
 public record PaintedGround(boolean blend, String noise, float raggedness, float sharpness, float noiseCoverage,
         String variation, float variationCoverage, Map<String, Integer> tints, Map<String, Float> variations,
-        String cliffs, float cliffSlope, float cliffCoverage, boolean quarters, int streamCells) {
+        String cliffs, float cliffSlope, float cliffCoverage, boolean quarters, int streamCells, String water,
+        int waterTint, float riverFlow, int minimapCells) {
 
     /** What a block leaves out: no blend, no cliffs, the ground drawn a surface a cell. */
     public static final PaintedGround DEFAULTS = new PaintedGround(false, null, 0f, 1f, 8f, null, 64f, Map.of(),
-            Map.of(), null, 40f, 4f, false, 0);
+            Map.of(), null, 40f, 4f, false, 0, null, 0xB4AFAFAF, 0.2f, 0);
 
     public PaintedGround {
         tints = tints == null ? Map.of() : Map.copyOf(tints);
