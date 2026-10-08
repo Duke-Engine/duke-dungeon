@@ -170,6 +170,18 @@ tasks.register<JavaExec>("writePaintedMap") {
     workingDir = rootProject.projectDir
 }
 
+// The campaign's open world, written again from a seed: maps/world and nothing else (never maps/first).
+//   ./gradlew writeWorldMap                  # its own seed
+//   ./gradlew writeWorldMap --args="42"      # another
+tasks.register<JavaExec>("writeWorldMap") {
+    group = "application"
+    description = "Write the open world again from a seed"
+    mainClass.set("uz.dukeengine.dungeon.stage.WorldMapWriter")
+    classpath = sourceSets["main"].runtimeClasspath
+    workingDir = rootProject.projectDir
+    maxHeapSize = "2g"
+}
+
 tasks.register<JavaExec>("cutIcons") {
     group = "application"
     description = "Cut the icon sheets into the game's own icon folders"
