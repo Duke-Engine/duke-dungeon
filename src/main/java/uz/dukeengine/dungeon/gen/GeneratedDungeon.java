@@ -82,6 +82,22 @@ public record GeneratedDungeon(
      */
     public record Piece(String model, float x, float y, float facing, float scale, int tint, float footprint)
             implements uz.dukeengine.core.map.MapScenery {
+
+        /** As a map file writes it: {@code model x y facing scale footprint}, in cells; read back white. */
+        public static Piece of(String written) {
+            var words = written.strip().split("\\s+");
+            if (words.length != 6) {
+                throw new IllegalArgumentException("'" + written
+                        + "' is a model, then x y facing scale footprint, in cells");
+            }
+            return new Piece(words[0], Float.parseFloat(words[1]), Float.parseFloat(words[2]),
+                    Float.parseFloat(words[3]), Float.parseFloat(words[4]), 0xFFFFFF, Float.parseFloat(words[5]));
+        }
+
+        /** As a map file writes it; the tint is not written. */
+        public String written() {
+            return model + " " + x + " " + y + " " + facing + " " + scale + " " + footprint;
+        }
     }
 
     /** A spot in the world, in world units (not cells). */

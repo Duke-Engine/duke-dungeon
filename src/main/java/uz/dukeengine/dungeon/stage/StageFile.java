@@ -119,6 +119,11 @@ public final class StageFile {
                     .map(entry -> entry.getKey() + " = \"" + entry.getValue() + "\"").toList());
             list(out, "Coverage", paint.palette().keySet().stream().filter(paint.coverage()::containsKey)
                     .map(key -> key + " = " + paint.coverage().get(key)).toList());
+            if (!paint.scenery().isEmpty()) {
+                out.append("  ; What stands about for the look, a line a row of cells: each piece a model, then x y\n");
+                out.append("  ; facing scale footprint, in cells, and the pieces held apart by ';'.\n");
+                list(out, "Scenery", sceneryLines(paint.scenery()));
+            }
         }
         return out.append("End\n").toString();
     }
@@ -256,7 +261,37 @@ public final class StageFile {
                         + "', which its Palette does not");
             }
         }
-        return new StagePaint(map.name(), map.paint(), map.palette(), map.coverage());
+        var scenery = new java.util.ArrayList<GeneratedDungeon.Piece>();
+        for (var line : map.scenery()) {
+            for (var piece : line.split(";")) {
+                try {
+                    scenery.add(GeneratedDungeon.Piece.of(piece));
+                } catch (IllegalArgumentException e) {
+                    throw new DataException(source, "the Scenery of " + map.name() + ": " + e.getMessage());
+                }
+            }
+        }
+        return new StagePaint(map.name(), map.paint(), map.palette(), map.coverage(), scenery);
+    }
+
+    /** Scenery as a map file writes it: the pieces in their order, a line each time the row of cells changes. */
+    private static List<String> sceneryLines(List<GeneratedDungeon.Piece> scenery) {
+        var lines = new java.util.ArrayList<String>();
+        var line = new StringBuilder();
+        int row = Integer.MIN_VALUE;
+        for (var piece : scenery) {
+            int at = (int) Math.floor(piece.y());
+            if (at != row && !line.isEmpty()) {
+                lines.add("\"" + line + "\"");
+                line.setLength(0);
+            }
+            row = at;
+            line.append(line.isEmpty() ? "" : "; ").append(piece.written());
+        }
+        if (!line.isEmpty()) {
+            lines.add("\"" + line + "\"");
+        }
+        return lines;
     }
 
     /** Which room the boss stands in: the one its cell is inside, so it is written once, as the cell. */

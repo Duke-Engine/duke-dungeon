@@ -24,7 +24,7 @@ class PaintedGroundTest {
         assertEquals("ground/rock.png", ground.cliffs());
         assertTrue(ground.cliffSlope() > 0f && ground.cliffSlope() < 45f,
                 "a cliff is drawn before the ground is too steep to walk, at 45 degrees");
-        assertEquals(5, ground.tints().size());
+        assertEquals(7, ground.tints().size());
         assertTrue(ground.streamCells() > 0);
     }
 
