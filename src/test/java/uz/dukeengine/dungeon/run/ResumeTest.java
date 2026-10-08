@@ -2,6 +2,7 @@ package uz.dukeengine.dungeon.run;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
@@ -94,5 +95,52 @@ class ResumeTest {
         defeatTheBoss(session);
         assertTrue(saved.getLast().experience() >= save.experience());
         assertEquals("Boots", saved.getLast().bag().getFirst().id());
+    }
+
+    // ---- a save taken mid-floor: Saqlash, and leaving the game ----
+
+    @Test
+    void aSaveMidFloorHoldsTheHeroAsHeIsNowOnTheFloorHeEntered() {
+        var session = Dungeon.newSession(11L, SHIPPED);
+        var entered = new ArrayList<SaveGame>();
+        session.run().onCheckpoint(entered::add);
+        session.game().runHeadless(1);
+        var earned = SHIPPED.levelling().totalXpFor(3);
+        find(session.game(), HERO).findModule(uz.dukeengine.combat.module.ExperienceModule.class)
+                .setExperience(earned);
+        var boots = SHIPPED.loot().stream().filter(loot -> loot.id().equals("Boots")).findFirst().orElseThrow();
+        session.progress().getLoot().take(boots, 0, 0);
+        session.game().runHeadless(1);
+
+        var now = session.run().saveNow();
+
+        assertEquals(earned, now.experience(), "what he earned on the floor is kept");
+        assertEquals("Boots", now.bag().getFirst().id());
+        assertEquals(entered.getFirst().seed(), now.seed(), "on the floor he entered");
+        assertEquals(entered.getFirst().depth(), now.depth());
+
+        var again = Dungeon.newSession(99L, SHIPPED);
+        again.run().resume(now, Floors.resumed(now, SHIPPED));
+        again.game().runHeadless(3);
+        assertEquals(3, again.progress().getLevel());
+        assertEquals("Boots", again.progress().getLoot().at(0).id());
+    }
+
+    @Test
+    void nothingIsSavedOnceTheRunIsLost() {
+        var session = Dungeon.newSession(11L, SHIPPED);
+        session.game().runHeadless(1);
+        session.game().getLogic().destroyObject(find(session.game(), HERO));
+        session.game().runHeadless(2);
+        assertEquals(DungeonRun.State.DEAD, session.run().getState());
+        assertNull(session.run().saveNow(), "the floor's entry save stands");
+    }
+
+    @Test
+    void aPartyIsNotSaved() {
+        var party = Dungeon.newPartySession(uz.dukeengine.dungeon.party.PartyMatch.endless(4242L), 2, null, SHIPPED,
+                HERO);
+        party.game().runHeadless(1);
+        assertNull(party.run().saveNow());
     }
 }

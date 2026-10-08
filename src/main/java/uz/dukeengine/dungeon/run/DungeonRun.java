@@ -329,6 +329,15 @@ public final class DungeonRun {
         loading = true;
     }
 
+    /**
+     * The run as a save this moment, mid-floor or not: the hero as he is now, on the floor he entered — Saqlash, and
+     * leaving the game. {@code null} for a party, and while the run is over or a party gathers: the save from the
+     * floor's entry stands. Asked with the simulation paused.
+     */
+    public SaveGame saveNow() {
+        return state == State.RUNNING && gathering == null ? save() : null;
+    }
+
     /** The run as a save, the first seat's hero in it; {@code null} for a party or a seat with no hero. */
     private SaveGame save() {
         var seat = seats.getFirst();
