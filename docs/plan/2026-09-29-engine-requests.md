@@ -654,3 +654,19 @@ creature, if the client draws them) the same way, if they share the placement.
 
 Done when: on a slope of 30° the heads lie on it (a test reads their rotation against the normal), level ground
 unchanged.
+
+## E23 — A long list is read in the time its length takes (2026-10-08, small)
+
+The open world (`maps/world`, 512 cells a side) was first written with a piece of scenery a line: some 30,000 lines in
+one `Scenery = [ … ]`. Reading it took 50 seconds, where the rest of the file — 1.5 MB of cells, relief and paint in
+about 1,500 long lines — takes 0.16. The cause is `DukeText.Reader.items` (core): every line appended to an open list
+is followed by `closingBracket(text, line)`, which scans the whole list read so far from its first character, so a list
+of n lines costs n² of its length. The game packs its scenery a line a row of cells (`;` between pieces) and reads the
+world in 0.65 s, so nothing is blocked — but the same scan is still paid by every long list, a 768-cell world's paint
+and relief already cost 1.9 s, and a hand-made map with a thing a line will meet it again.
+
+Asked: the scan for `]` resumes where the last line's stopped (carrying whether it was inside a quote), so a list is
+read in time linear in its length; the same for any other place a value is read on over lines. Nothing in the format
+changes.
+
+Done when: a list of 30,000 one-line items reads in well under a second, in a core test; every data test unchanged.
