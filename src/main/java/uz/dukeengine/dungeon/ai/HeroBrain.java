@@ -9,6 +9,7 @@ import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.core.thing.ObjectId;
 import uz.dukeengine.core.thing.World;
 import uz.dukeengine.dungeon.content.DungeonSettings;
+import uz.dukeengine.dungeon.run.Seal;
 import uz.dukeengine.rpg.item.ItemErrand;
 import uz.dukeengine.rpg.skill.SkillBook;
 import uz.dukeengine.core.module.ModuleData;
@@ -112,9 +113,17 @@ public final class HeroBrain extends UnitScript {
         this(settings, new Orders());
     }
 
+    /** The keep's shut gate, past which he sees nothing; null where a test builds him without one. */
+    private final Seal seal;
+
     public HeroBrain(DungeonSettings settings, Orders orders) {
+        this(settings, orders, null);
+    }
+
+    public HeroBrain(DungeonSettings settings, Orders orders, Seal seal) {
         this.settings = settings;
         this.orders = orders == null ? new Orders() : orders;
+        this.seal = seal;
     }
 
     @Override
@@ -458,12 +467,15 @@ public final class HeroBrain extends UnitScript {
 
     /**
      * Whether he can see a creature — near enough, nothing between, nothing
-     * standing higher.
+     * standing higher, and the keep's shut gate not across.
      *
      * <p>Three questions rather than one, and the one that used to be asked here
      * was only the middle of them. See {@link SightLine#sees}.
      */
     private boolean canSee(GameObject creature) {
+        if (seal != null && seal.parts(world(), unit().getPosition(), creature.getPosition())) {
+            return false; // the keep's shut gate hides what is behind it
+        }
         return SightLine.sees(unit(), creature, settings.storeyHeight());
     }
 

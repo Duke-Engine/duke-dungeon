@@ -3,6 +3,7 @@ package uz.dukeengine.dungeon.ai;
 import uz.dukeengine.rpg.SightLine;
 import uz.dukeengine.rpg.Facing;
 import uz.dukeengine.core.math.Coord3D;
+import uz.dukeengine.core.player.Relationship;
 import uz.dukeengine.core.module.MoveUpdate;
 import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.core.thing.World;
@@ -36,6 +37,9 @@ import uz.dukeengine.combat.module.WeaponUpdate;
  * about a room, so aggro spreads room by room, and the wider chase radius means a
  * fight does not break off the moment the hero steps back — but is finite, so
  * outrunning something slower than you is a real move.
+ *
+ * <p>Nothing across the keep's shut gate is sensed, in either direction: what is inside does not learn who came,
+ * gather at the gate or answer a fight outside it, and stands where it stood until the gate opens -- see {@link Seal}.
  *
  * <p>A kind the file gives skills decides for itself which to cast and when: the
  * first, in the order its block writes them, that its level has opened, that is
@@ -136,13 +140,13 @@ public final class MonsterBrain extends UnitScript {
         // hurt, it stops looking and simply comes.
         float reachOut = wounded ? THE_WHOLE_FLOOR
                 : chasing ? kind.chaseRadius() : kind.senseRadius();
-        var hero = findNearestEnemy(reachOut);
+        var hero = nearestEnemy(reachOut);
         if (hero == null && !chasing && somethingNearbyHasStarted()) {
             // Roused by a neighbour rather than by its own eyes, and then it looks
             // as far as it would once already in a fight. This is what makes a
             // room a room: the one at the door engages, the ones at the back hear
             // it, and the fight is with all of them instead of with a queue.
-            hero = findNearestEnemy(kind.chaseRadius());
+            hero = nearestEnemy(kind.chaseRadius());
         }
         if (hero == null) {
             if (chasing) {
@@ -378,6 +382,21 @@ public final class MonsterBrain extends UnitScript {
     }
 
     /**
+     * The engine's nearest enemy, but never one across the keep's shut gate: nothing on the far side of it is sensed,
+     * so a monster inside does not learn who came or gather at the gate, and one outside is not drawn in. The same
+     * search and tie-break as {@code findNearestEnemy}, with the seal added to what a candidate must pass.
+     */
+    private GameObject nearestEnemy(float range) {
+        return world().findClosest(unit().getPosition(), range, candidate ->
+                candidate != unit()
+                        && candidate.getBody() != null
+                        && !candidate.isEffectivelyDead()
+                        && world().getRelationship(unit().getPlayerIndex(), candidate.getPlayerIndex())
+                                == Relationship.ENEMIES
+                        && !seal.parts(world(), unit().getPosition(), candidate.getPosition()));
+    }
+
+    /**
      * Whether one of its own is already fighting, near enough and in plain sight.
      *
      * <p>"Fighting" is read off the weapon rather than out of another brain: a
@@ -400,6 +419,7 @@ public final class MonsterBrain extends UnitScript {
                         && other.getPlayerIndex() == unit().getPlayerIndex()
                         && !other.isEffectivelyDead()
                         && isFighting(other)
+                        && !seal.parts(world(), unit().getPosition(), other.getPosition())
                         && SightLine.clear(unit(), other)) != null;
     }
 

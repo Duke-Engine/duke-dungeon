@@ -162,7 +162,7 @@ public final class Dungeon {
                     // A brain is a module named by its class, like every other: the block word is the
                     // class, so the editor completes it, opens it and flags a typo. Which creature a
                     // MonsterBrain is the brain of is the block it was put on -- see MonsterBrain.onStart.
-                    ScriptModule.registerScript(factory, HeroBrain.Data.class, () -> new HeroBrain(settings, orders));
+                    ScriptModule.registerScript(factory, HeroBrain.Data.class, () -> new HeroBrain(settings, orders, seal));
                     ScriptModule.registerScript(factory, MonsterBrain.Data.class,
                             () -> new MonsterBrain(settings, seal));
                     // Hero and monsters alike need a body that can grow: levels
