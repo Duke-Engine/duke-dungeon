@@ -17,4 +17,8 @@ SaveMenu
   SlotWord = %s-joy
   ; %s is the hero, then his level, then the floor.
   AboutSave = %s, %d-daraja, %d-qavat
+  ; ---- in the game: ESC, then Saqlash ----
+  SaveWord = Saqlash
+  SaveBlurb = Faqat yolg'iz o'yin saqlanadi
+  SaveTitle = O'YINNI SAQLASH
 End

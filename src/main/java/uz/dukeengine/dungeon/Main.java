@@ -492,20 +492,16 @@ public final class Main {
         var bag = Bag.on(settings, duke);
         Bag.show(bag, session, settings);
         duke.canvas(bag).input(bag);
-        // The run saves itself as each floor is entered -- see docs/plan/2026-10-08-saving.md.
+        // The run saves itself as each floor is entered, as the game is left by any door, and into a slot from the
+        // pause menu -- see docs/plan/2026-10-08-saving.md.
         var saves = Saves.ofThePlayer();
-        session.run().onCheckpoint(save -> {
-            try {
-                saves.write(Saves.AUTOSAVE, save);
-            } catch (java.io.IOException e) {
-                java.util.logging.Logger.getLogger(Main.class.getName())
-                        .warning("the autosave could not be written: " + e);
-            }
-        });
+        session.run().onCheckpoint(save -> write(saves, Saves.AUTOSAVE, save));
+        duke.onLeaving(() -> saveTo(session, saves, Saves.AUTOSAVE));
         duke.shell(Shell.create()
                 .entry(Shell.Entry.PLAY, "Enter the dungeon")
                 .entry(Shell.Entry.SETTINGS)
                 .entry(Shell.Entry.QUIT)
+                .pauseRows(List.of(saveRow(settings, slot -> saveTo(session, saves, slot))))
                 // Which turns Play into a path rather than a start -- a save to go back to, then with whom,
                 // how, then where, then who. Nothing opens until it is walked. See whoGoesIn.
                 .asking(savedGames(settings, loadable(saves.list(), settings), him -> displayNameOf(session, him),
@@ -515,6 +511,39 @@ public final class Main {
                         },
                         whoGoesIn(session, settings, visuals, keys, duke, bag))));
         duke.launch();
+    }
+
+    /**
+     * Save the solo game as it is this moment into {@code slot}: whether anything was written. Nothing is for a game
+     * not started — a party's match is another game, and this one never starts beside it — nor while the run is over
+     * (see {@code DungeonRun.saveNow}). Called with the simulation paused.
+     */
+    static boolean saveTo(Dungeon.Session session, Saves saves, String slot) {
+        var save = session.game().getLogic() == null ? null : session.run().saveNow();
+        return save != null && write(saves, slot, save);
+    }
+
+    private static boolean write(Saves saves, String slot, SaveGame save) {
+        try {
+            saves.write(slot, save);
+            return true;
+        } catch (java.io.IOException e) {
+            java.util.logging.Logger.getLogger(Main.class.getName())
+                    .warning(slot + " could not be written: " + e);
+            return false;
+        }
+    }
+
+    /** Saqlash on the pause menu: the three manual slots, each saving into itself and going back to the menu. */
+    static Shell.Option saveRow(DungeonSettings settings, java.util.function.Consumer<String> saveInto) {
+        var words = settings.saveMenu();
+        var slots = new java.util.ArrayList<Shell.Option>();
+        for (var slot : Saves.SLOTS.subList(1, Saves.SLOTS.size())) {
+            slots.add(new Shell.Option(String.format(words.slotWord(), slot.replaceAll("\\D", "")), "",
+                    () -> saveInto.accept(slot), null));
+        }
+        return new Shell.Option(words.saveWord(), words.saveBlurb(), null,
+                new Shell.Question(words.saveTitle(), words.hint(), slots));
     }
 
     /** The saves this build can play: a hero it has, and floors it can lay — the rest are left out, and said so. */
