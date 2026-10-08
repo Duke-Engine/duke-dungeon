@@ -466,7 +466,9 @@ public final class Main {
         // out of it and put it down. Told of every match it is drawn over -- this one, and a party's that replaces it.
         var bag = Bag.on(settings, duke);
         Bag.show(bag, session, settings);
-        duke.canvas(bag).input(bag);
+        // And over it, the box a conversation is said in, which hands the bag whatever it does not take.
+        var talk = new DialogueScreen(bag, bag, settings);
+        duke.canvas(talk).input(talk);
         duke.shell(Shell.create()
                 .entry(Shell.Entry.PLAY, "Enter the dungeon")
                 .entry(Shell.Entry.SETTINGS)

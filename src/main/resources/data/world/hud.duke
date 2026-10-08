@@ -727,6 +727,15 @@ Cursor
   Tint = 0xE8A33D
 End
 
+; And a person, whom a click sends him over to talk to: a speech bubble.
+Cursor
+  Name = Talk
+  Image = ui/cursors/default/message_dots_round.png
+  HotX = 15
+  HotY = 15
+  Tint = 0xE8A33D
+End
+
 ; ---------------------------------------------------------------------------
 ; The hero's bar: which blocks it has, in what order, how big its sockets are,
 ; and every colour it is painted in.
