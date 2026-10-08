@@ -492,6 +492,9 @@ public final class Dungeon {
                 // A party's player saying who he goes in as.
                 case uz.dukeengine.dungeon.party.ChooseHero pick ->
                         run.choose(game, pick.playerIndex(), pick.hero());
+                // Sent to talk to a person: talked to now if he is near, or walked over to. See DungeonRun.talkTo.
+                case uz.dukeengine.dungeon.run.TalkTo talk ->
+                        run.talkTo(game, talk.playerIndex(), talk.person());
                 default -> {
                     // Not one of ours; rts has already said so.
                 }
@@ -509,6 +512,8 @@ public final class Dungeon {
         // deep floors nobody plays as often cannot drift from the first. A party's
         // waits for its heroes, and this machine says its own as the match starts.
         game.onStart(started -> {
+            // Every death, heard as it is reaped: what a quest's KILL counts.
+            started.getLogic().onDied(run::died);
             run.openOn(started, floor);
             if (localHero != null && started.getLocalPlayerIndex() > 0) {
                 started.postCommand(uz.dukeengine.dungeon.party.PartyOrders.of(

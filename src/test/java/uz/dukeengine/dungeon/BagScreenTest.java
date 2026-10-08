@@ -43,8 +43,8 @@ class BagScreenTest {
         for (var item : SETTINGS.loot()) {
             assertNotNull(Bag.class.getResource("/" + item.icon()), item.id() + " draws " + item.icon());
             var said = Bag.bonusOf(item, SETTINGS);
-            if (item.use() == ItemUse.UNLOCK) {
-                assertEquals("", said, "a key gives nothing, and says nothing of it");
+            if (item.use() == ItemUse.UNLOCK || "QUEST".equals(item.kind())) {
+                assertEquals("", said, "a key or a thing a quest asks for gives nothing, and says nothing of it");
                 continue;
             }
             assertTrue(said.startsWith("+" + item.value()) && !said.contains("null"), item.id() + ": " + said);

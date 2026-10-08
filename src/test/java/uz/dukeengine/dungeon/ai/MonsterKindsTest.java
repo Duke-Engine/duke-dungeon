@@ -66,7 +66,7 @@ class MonsterKindsTest {
     /** Every kind the file names can actually be built and behaves without error. */
     @Test
     void everyKindTheFileNamesCanBeSpawned() {
-        for (var kind : SETTINGS.monsters()) {
+        for (var kind : SETTINGS.monsters().stream().filter(k -> SETTINGS.story().npc(k.name()) == null).toList()) {
             // Far beyond anything notices, so this asks only whether it can be built.
             var fight = fight(kind.name(), 900f);
             assertNotNull(fight.monster(), kind.name() + " should have been spawned");
@@ -138,7 +138,7 @@ class MonsterKindsTest {
      */
     @Test
     void everyMonsterStopsInsideItsOwnReach() {
-        for (var kind : SETTINGS.monsters()) {
+        for (var kind : SETTINGS.monsters().stream().filter(k -> SETTINGS.story().npc(k.name()) == null).toList()) {
             float reach = Float.parseFloat(ShippedBlock.of(kind.name()).value("AttackRange"));
             assertTrue(kind.closeDistance() < reach,
                     kind.name() + " stops at " + kind.closeDistance()
@@ -161,7 +161,7 @@ class MonsterKindsTest {
     @Test
     void everyThrowerActuallyThrowsSomething() {
         int throwers = 0;
-        for (var kind : SETTINGS.monsters()) {
+        for (var kind : SETTINGS.monsters().stream().filter(k -> SETTINGS.story().npc(k.name()) == null).toList()) {
             var launcher = launcherOf(kind.name());
             if (launcher == null) {
                 continue; // a brawler; it has nothing to loose

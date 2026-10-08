@@ -1,0 +1,74 @@
+; Duke Dungeon — a map drawn once: a dungeon that has stopped changing.
+;
+; The demo of people and quests (docs/plan/2026-10-08-dialogue-and-quests.md):
+; the commander stands by the way in, greets the hero, and sends him at the
+; skeletons in the hall beyond the corridor and after her lost locket.
+
+StaticMap
+  Name = talk
+  DisplayName = "Qo'mondon"
+  Description = "Qo'mondon bilan tanishing: ikki topshiriq, bitta zal."
+  Difficulty = 1
+  Players = 1
+  Seed = 20261008
+  ; Where the hero comes in.
+  Entrance = [5, 14]
+  ; '#' is stone, a digit the storey a cell stands on, '/' a stair.
+  Cells = [
+    "########################################",
+    "########################################",
+    "##000000000000########0000000000000000##",
+    "##000000000000########0000000000000000##",
+    "##000000000000########0000000000000000##",
+    "##000000000000########0000000000000000##",
+    "##000000000000########0000000000000000##",
+    "##000000000000########0000000000000000##",
+    "##000000000000########0000000000000000##",
+    "##000000000000000000000000000000000000##",
+    "##000000000000000000000000000000000000##",
+    "##000000000000########0000000000000000##",
+    "##000000000000########0000000000000000##",
+    "##000000000000########0000000000000000##",
+    "##000000000000########0000000000000000##",
+    "##000000000000########0000000000000000##",
+    "##000000000000########0000000000000000##",
+    "##000000000000########0000000000000000##",
+    "########################################",
+    "########################################",
+  ]
+  ; x y width height storey, in the order they were placed: the first is where he starts.
+  Rooms = [
+    2 2 12 16 0,
+    22 2 16 16 0,
+  ]
+  ; The two rooms a corridor joins, by their place in Rooms.
+  Links = [
+    0 1,
+  ]
+  ; Killing it wins the map.
+  Boss = Warden 35 9
+  ; Each a kind, then the cell it stands in.
+  Monsters = [
+    Skeleton 25 4,
+    Skeleton 28 6,
+    Skeleton 25 14,
+    Skeleton 29 12,
+    Skeleton 31 8,
+    Skeleton 27 9,
+    Skeleton 30 15,
+  ]
+  ; Solid, and not alive — see data/props/.
+  Props = []
+  ; People: an Npc's name, then the cell they stand in.
+  Npcs = [
+    Commander 8 10,
+  ]
+  ; Named places, in cells: name x y width height, or name x y radius.
+  Zones = [
+    Corridor 14 9 8 2,
+  ]
+  ; Things lying on the floor: a LootItem, then the cell.
+  Items = [
+    Locket 36 16,
+  ]
+End

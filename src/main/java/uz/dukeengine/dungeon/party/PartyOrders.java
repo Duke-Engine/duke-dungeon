@@ -49,6 +49,11 @@ public final class PartyOrders {
      * thing -- the ring of the game's own orders, in their colour -- and not as an attack on it.
      */
     public static final String USE = "use";
+    /**
+     * What a click on a person gives the hero, as a click on the gate gives the walk up to it: sent by the engine as
+     * the word the game named, and the pointer over a person is the cursor of that name.
+     */
+    public static final String TALK = "Talk";
 
     private PartyOrders() {
     }
@@ -69,6 +74,8 @@ public final class PartyOrders {
             case DropItem drop -> new GameOrder(drop.playerIndex(), DROP, List.of(), drop.place(), null, drop.slot());
             case ToTheGate gate -> new GameOrder(gate.playerIndex(), TO_THE_GATE, List.of(), null, gate.gate(), 0);
             case UseItem use -> new GameOrder(use.playerIndex(), USE, List.of(), null, use.target(), use.slot());
+            case uz.dukeengine.dungeon.run.TalkTo talk -> new GameOrder(talk.playerIndex(), TALK, List.of(), null,
+                    talk.person(), 0);
             default -> throw new IllegalArgumentException("not one of this game's orders: " + command);
         };
     }
@@ -94,6 +101,8 @@ public final class PartyOrders {
             case TO_THE_GATE -> order.target() == null ? null : new ToTheGate(order.playerIndex(), order.target());
             case USE -> order.target() == null ? null
                     : new UseItem(order.playerIndex(), (int) order.number(), order.target());
+            case TALK -> order.target() == null ? null
+                    : new uz.dukeengine.dungeon.run.TalkTo(order.playerIndex(), order.target());
             default -> null;
         };
     }

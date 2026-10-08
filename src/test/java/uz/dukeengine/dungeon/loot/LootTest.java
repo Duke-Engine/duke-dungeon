@@ -447,7 +447,8 @@ class LootTest {
         assertEquals("Chest", SHIPPED.lootDrops().template());
         for (var item : SHIPPED.loot()) {
             assertFalse(item.name().isBlank(), item.id() + " has nothing to say for itself");
-            assertTrue(item.value() > 0 || item.use() == ItemUse.UNLOCK, item.id() + " is worth nothing");
+            assertTrue(item.value() > 0 || item.use() == ItemUse.UNLOCK || "QUEST".equals(item.kind()),
+                    item.id() + " is worth nothing");
         }
     }
 
