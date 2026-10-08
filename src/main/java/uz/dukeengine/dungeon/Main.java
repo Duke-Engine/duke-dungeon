@@ -462,16 +462,6 @@ public final class Main {
         visuals.paintInQuarters(ground.quarters());
     }
 
-    /**
-     * Whether the map the game opens on is painted. Building ground round the camera is the client's one switch for
-     * a kit's floor and painted ground alike, so it is thrown only for a painted map named at launch: the descent's
-     * floors are never built any other way than they always were.
-     */
-    static boolean opensPainted(uz.dukeengine.core.map.MapPackage opening) {
-        return opening != null
-                && uz.dukeengine.dungeon.stage.StageFile.read(opening.text(), opening.name()).paint() != null;
-    }
-
     public static void main(String[] args) {
         // Which map the game opens on is settled before its data is read, because a map brings blocks of its
         // own with it — see MapPackage — and they are part of the settings everything else is built from.
@@ -482,9 +472,10 @@ public final class Main {
         // Held rather than passed straight in: the question below reaches back
         // into it, because whose eyes open the map is part of who you chose.
         var visuals = looks(settings);
-        if (opensPainted(opening)) {
-            visuals.streamGround(settings.paintedGround().streamCells());
-        }
+        // Asked of each map as it is laid: a painted one is built round the camera, a kit floor whole.
+        visuals.streamGround(settings.paintedGround().streamCells(),
+                map -> map instanceof uz.dukeengine.core.map.Painted painted
+                        && painted.palette() != null && !painted.palette().isEmpty());
         // Both held rather than passed straight in, because the question below
         // reaches back into both: whose eyes open the map, what his four keys ask
         // the player to point at, and how far each of them reaches are all part of
