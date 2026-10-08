@@ -135,11 +135,16 @@ public final class DungeonRun {
     /** Where it stands, worked out every frame the floor is played: the last step on a floor with none. */
     private Mission.Step step = Mission.Step.KILL;
     /**
-     * The tracker's words for it, read by the window: written whole, on the simulation's thread, every frame the floor
-     * is played — and blank from the frame the run is lost or won, or the boss falls and the floor waits to close,
+     * The missions listed for it, read by the window: written whole, on the simulation's thread, every frame the floor
+     * is played — and empty from the frame the run is lost or won, or the boss falls and the floor waits to close,
      * until the next floor is laid.
      */
-    private volatile String tracker = "";
+    private volatile Tracker tracker = Tracker.NONE;
+    /** The steps of this floor already finished and still listed, each until its time is up; the simulation's alone. */
+    private final List<Tracker.Step> finished = new ArrayList<>();
+    /** The step said last frame, and the frame it began at; null before the floor says its first. */
+    private Mission.Step said;
+    private int saidSince;
 
     /** The keep's shut gate, as everything that hurts or mends asks it: told of each floor as it is laid. */
     private final Seal seal;
@@ -410,18 +415,40 @@ public final class DungeonRun {
             }
         }
         mission = missionOf(game.getLogic(), floor, placed, settings, dungeonPlayer.getIndex());
+        finished.clear();
+        said = null;
         track(game);
     }
 
     /**
-     * Where the mission stands this frame, and the tracker's words for it — none while the boss has fallen and the
-     * floor waits to close: the banner has the screen, and there is nothing left to tell him to do.
+     * Where the mission stands this frame, and the list that says it — empty while the boss has fallen and the floor
+     * waits to close: the banner has the screen, and there is nothing left to tell him to do. A step passed stays in
+     * it, done, for the run's {@code DoneFrames}; a step that comes back (the key dropped again) is not a step done.
      */
     private void track(DukeGame game) {
         step = mission == null ? Mission.Step.KILL
                 : mission.step(game.getLogic(), seats.stream().map(seat -> seat.progress.getLoot()).toList());
-        var words = mission == null ? settings.run().killBossWord() : words(mission, settings.run(), step);
-        tracker = descendAtFrame > 0 ? "" : words;
+        int frame = game.getLogic().getFrame();
+        var run = settings.run();
+        if (said == null || step != said) {
+            if (said != null && step.ordinal() > said.ordinal() && mission != null) {
+                finished.add(new Tracker.Step(doneWords(mission, run, said), true, frame));
+            }
+            said = step;
+            saidSince = frame;
+        }
+        finished.removeIf(done -> frame - done.since() >= run.doneFrames());
+        var words = mission == null ? run.killBossWord() : words(mission, run, step);
+        var steps = new ArrayList<>(finished);
+        steps.add(new Tracker.Step(words, false, saidSince));
+        tracker = descendAtFrame > 0 ? Tracker.NONE
+                : new Tracker(List.of(new Tracker.Entry(Tracker.Kind.MAIN, run.missionTitle(), steps)));
+    }
+
+    /** What a step said as it was finished: the count full where it counts. */
+    private static String doneWords(Mission mission, uz.dukeengine.dungeon.world.Run run, Mission.Step step) {
+        return step == Mission.Step.CLEAR ? run.clearWord(mission.outside(), mission.outside())
+                : words(mission, run, step);
     }
 
     /**
@@ -497,7 +524,7 @@ public final class DungeonRun {
         if (!standing) {
             state = State.DEAD;
             endedFrame = logic.getFrame();
-            tracker = ""; // the banner has the screen: the next floor says its step when it is laid
+            tracker = Tracker.NONE; // the banner has the screen: the next floor says its step when it is laid
             game.setBanner("lost|" + settings.run().diedWord());
             return;
         }
@@ -509,7 +536,7 @@ public final class DungeonRun {
             if (floors.lastDepth() > 0 && depth >= floors.lastDepth()) {
                 state = State.WON;
                 endedFrame = logic.getFrame();
-                tracker = "";
+                tracker = Tracker.NONE;
                 game.setBanner("won|" + settings.run().wonWord());
                 return;
             }
@@ -742,10 +769,10 @@ public final class DungeonRun {
     }
 
     /**
-     * The mission's step in words, as the tracker at the top of the window says it — from any thread — or blank
-     * while a run that was lost or won waits to start again, or the floor waits to close behind its fallen boss.
+     * The missions as the tracker at the window's right edge lists them — from any thread — or none while a run
+     * that was lost or won waits to start again, or the floor waits to close behind its fallen boss.
      */
-    public String getTracker() {
+    public Tracker getTracker() {
         return tracker;
     }
 }

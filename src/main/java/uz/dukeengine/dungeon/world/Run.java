@@ -21,14 +21,21 @@ package uz.dukeengine.dungeon.world;
  * @param takeKeyWord        and while the key lies on the floor
  * @param giveKeyWord        and while a hero carries it
  * @param killBossWord       and once the gate is open — or on a floor with no keep, all it ever says
+ * @param missionTitle       the floor's main mission, as the tracker titles it
+ * @param missionsTab        what the folded tracker says, the key that unfolds it in it
+ * @param foldKey            the letter that folds and unfolds the tracker
+ * @param doneFrames         how long a step finished stays listed, ticked off, in logic frames
+ * @param glowFrames         how long a step just begun glows, in logic frames
  */
 public record Run(int respawnDelayFrames, int descendDelayFrames, int victoryFrames, String defaultHero,
         String diedWord, String wonWord, String nextDepthWord, String wayIn, String clearWord, String takeKeyWord,
-        String giveKeyWord, String killBossWord) {
+        String giveKeyWord, String killBossWord, String missionTitle, String missionsTab, String foldKey,
+        int doneFrames, int glowFrames) {
 
     /** What a block leaves out. */
     public static final Run DEFAULTS = new Run(60, 75, 150, "Rogue", "You died", "You won", "Depth %d", "",
-            "Kill everything outside the keep — %d/%d", "Take the key", "Give the key to the gate", "Kill the boss");
+            "Kill everything outside the keep %d/%d", "Take the key", "Give the key to the gate", "Kill the boss",
+            "Boss keep", "Missions (J)", "J", 90, 20);
 
     /** What the banner says as he goes down to {@code depth}. */
     public String nextDepthWord(int depth) {

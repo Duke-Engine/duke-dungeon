@@ -110,12 +110,12 @@ class MissionTest {
 
         assertTrue(placed > 0, "a floor with nobody outside proves nothing here");
         assertEquals(placed, mission.outside(), "the floor's own outside the keep, the guard not among them");
-        assertEquals(SETTINGS.run().clearWord(0, placed), session.run().getTracker());
+        assertEquals(SETTINGS.run().clearWord(0, placed), session.run().getTracker().words());
 
         session.game().getLogic().destroyObject(outside(session).getFirst());
         session.game().runHeadless(1);
         assertEquals(1, mission.killed());
-        assertEquals(SETTINGS.run().clearWord(1, placed), session.run().getTracker(), "killed, of all");
+        assertEquals(SETTINGS.run().clearWord(1, placed), session.run().getTracker().words(), "killed, of all");
     }
 
     @Test
@@ -224,19 +224,19 @@ class MissionTest {
             game.runHeadless(1);
         }
         assertEquals(Mission.Step.TAKE, run.getStep(), "every one of them dead, and the key lying");
-        assertEquals(words.takeKeyWord(), run.getTracker());
+        assertEquals(words.takeKeyWord(), run.getTracker().words());
 
         var key = find(game, "Key");
         find(game, "Rogue").setPosition(key.getPosition());
         game.postCommand(PartyOrders.of(new PickUp(game.getLocalPlayerIndex(), key.getId())));
         game.runHeadless(3);
         assertEquals(Mission.Step.GIVE, run.getStep(), "the key in his bag");
-        assertEquals(words.giveKeyWord(), run.getTracker());
+        assertEquals(words.giveKeyWord(), run.getTracker().words());
 
         find(game, "Gate").findModule(GateUpdate.class).open();
         game.runHeadless(2);
         assertEquals(Mission.Step.KILL, run.getStep(), "the gate open");
-        assertEquals(words.killBossWord(), run.getTracker());
+        assertEquals(words.killBossWord(), run.getTracker().words());
     }
 
     /**
@@ -366,7 +366,7 @@ class MissionTest {
 
         assertEquals(Mission.Step.CLEAR, run.getStep());
         assertTrue(run.getMission().outside() > 0, "the premise: the floor puts somebody outside its keep");
-        assertEquals(SETTINGS.run().clearWord(0, run.getMission().outside()), run.getTracker(),
+        assertEquals(SETTINGS.run().clearWord(0, run.getMission().outside()), run.getTracker().words(),
                 "its own count of its own outside");
 
         var own = game.getLogic().getObjects().stream()
@@ -377,7 +377,7 @@ class MissionTest {
 
         assertEquals(1, keysLying(game), "the floor's own key lies where the last of them fell");
         assertEquals(Mission.Step.TAKE, run.getStep(), "and it is not in anybody's bag yet");
-        assertEquals(SETTINGS.run().takeKeyWord(), run.getTracker());
+        assertEquals(SETTINGS.run().takeKeyWord(), run.getTracker().words());
     }
 
     /** A key from the floor above opens nothing on this one: sent to the gate from its slot, he has none to give. */
@@ -436,10 +436,49 @@ class MissionTest {
     @Test
     void theTrackerSaysItInTheOwnersWords() {
         var words = SETTINGS.run();
-        assertEquals("Qal'adan tashqaridagi barcha monstrlarni o'ldiring — 12/40", words.clearWord(12, 40));
-        assertEquals("Kalitni oling", words.takeKeyWord());
-        assertEquals("Kalitni boss darvozasiga bering", words.giveKeyWord());
-        assertEquals("Bossni o'ldiring", words.killBossWord());
+        assertEquals("Monstrlarni qir 12/40", words.clearWord(12, 40));
+        assertEquals("Kalitni top", words.takeKeyWord());
+        assertEquals("Kalitni darvozaga ber", words.giveKeyWord());
+        assertEquals("Bossni o'ldir", words.killBossWord());
+    }
+
+    /**
+     * The tracker lists the floor's main mission by its title with its current step; a step passed stays under it,
+     * done and full, for the run's DoneFrames and then goes, and the step that follows is dated from the frame it
+     * began (it is what glows).
+     */
+    @Test
+    void aStepPassedStaysListedDoneForAWhileAndThenGoes() {
+        var session = opened(SETTINGS);
+        var game = session.game();
+        var run = session.run();
+        var words = SETTINGS.run();
+        var first = run.getTracker().entries();
+        assertEquals(1, first.size(), "one mission today");
+        assertEquals(Tracker.Kind.MAIN, first.getFirst().kind());
+        assertEquals(words.missionTitle(), first.getFirst().title());
+        assertEquals(1, first.getFirst().steps().size(), "only the step to do: " + first);
+
+        for (var monster : outside(session)) {
+            game.getLogic().destroyObject(monster);
+            game.runHeadless(1);
+        }
+        int outside = run.getMission().outside();
+        var steps = run.getTracker().entries().getFirst().steps();
+        assertEquals(2, steps.size(), steps.toString());
+        assertTrue(steps.get(0).done(), "the first is done");
+        assertEquals(words.clearWord(outside, outside), steps.get(0).text(), "with its count full");
+        assertFalse(steps.get(1).done());
+        assertEquals(words.takeKeyWord(), steps.get(1).text());
+        assertTrue(Math.abs(game.getLogic().getFrame() - steps.get(1).since()) <= 1, "and the new one begins this frame");
+
+        game.runHeadless(words.doneFrames() - 2);
+        assertEquals(2, run.getTracker().entries().getFirst().steps().size(), "still listed");
+        game.runHeadless(3);
+        var later = run.getTracker().entries().getFirst().steps();
+        assertEquals(1, later.size(), "gone once its time is up: " + later);
+        assertEquals(words.takeKeyWord(), later.getFirst().text());
+        assertEquals(steps.get(1).since(), later.getFirst().since(), "the step keeps the frame it began at");
     }
 
     /** A stage is cut without a keep, and so has no mission: its tracker says only the last line. */
@@ -452,6 +491,6 @@ class MissionTest {
 
         assertNull(session.run().getMission());
         assertEquals(Mission.Step.KILL, session.run().getStep());
-        assertEquals(SETTINGS.run().killBossWord(), session.run().getTracker());
+        assertEquals(SETTINGS.run().killBossWord(), session.run().getTracker().words());
     }
 }
