@@ -584,3 +584,11 @@ The game then adds `BlocksSight = Yes` to `Gate` and nothing else.
 Done when: a hero at the shut gate's threshold has the court's cells not in sight (its creatures not drawn); the gate
 opened, the next look shows them; a test in core pins a `BlocksSight` box hiding a cell behind it and unhiding it when
 removed. Announce the version and the key's name to the game.
+
+**E17, part 2 (2026-10-08).** Part 1 landed (d5db75c8) in core's `SightCells`, but the dungeon does not keep sight
+cells: its fog is client3d's `Discovery` (three states, line of sight from `grid.isTerrainBlocked` in `inSight`, ~line
+466–513), set through `visuals.fog(new Fog(lineOfSight, …))`. Asked: `Discovery`'s line of sight stops at the cells a
+standing `BlocksSight` thing covers, as it stops at stone — the cells seen, what is behind them not, and whoever stands
+there not drawn — read from the snapshot each frame, so an opened gate uncovers the court on the next frame. The game
+already says `BlocksSight = Yes` on its Gate (now a `Prop` block, since `Object`'s `RtsTemplate` has no such component —
+say if `RtsTemplate` should have one too).
