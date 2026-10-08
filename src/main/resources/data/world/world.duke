@@ -616,7 +616,7 @@ End
 
 ; The key to the boss's keep: given, never found. Nothing drops it at random --
 ; its Weight is 0 -- and the last monster a floor put outside its keep leaves it
-; where it fell (see run/Mission). It gives nothing and never joins with
+; where it fell (see DungeonRun.missionOf). It gives nothing and never joins with
 ; another. Its Use is what a left click on it in the bag does: UNLOCK, and the
 ; next click is on the thing he takes it to -- given to the keep's gate it opens
 ; it and is gone. It lies on the floor as its own thing, the Key in
