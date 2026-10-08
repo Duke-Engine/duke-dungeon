@@ -1,10 +1,13 @@
 package uz.dukeengine.dungeon.map;
 
 import java.util.List;
+import java.util.Map;
 import uz.dukeengine.core.data.Grid;
+import uz.dukeengine.core.data.Paint;
 import uz.dukeengine.core.data.Relief;
 import uz.dukeengine.core.map.Described;
 import uz.dukeengine.core.map.MapTemplate;
+import uz.dukeengine.core.map.Painted;
 import uz.dukeengine.core.map.Peopled;
 import uz.dukeengine.core.thing.Layered;
 import uz.dukeengine.dungeon.content.Monster;
@@ -35,19 +38,25 @@ import uz.dukeengine.dungeon.content.Prop;
  * @param levelHeight how tall one of its storeys is, in world units; 0 leaves the world's own. How WIDE a cell
  *     is stays the engine's here: a dungeon counts sight and placement in cells of {@code PathGrid.DEFAULT_CELL_SIZE},
  *     so a map at another width would be a map its own monsters could not see across
+ * @param paint       what the ground is painted with, a row of characters for each row of cells, each one the palette
+ *     names; none, and the floor is drawn by the kit of its look, as every floor of the descent is
+ * @param palette     what each character of the paint is: a picture's path under the game's resources, or a colour
+ * @param coverage    how many cells one copy of each picture covers, by the palette's characters
  */
 public record StaticMap(String name, String displayName, String description, int difficulty, int players, long seed,
         float levelHeight,
         Cell entrance, @Grid List<String> cells, @Relief List<String> relief, List<Room> rooms, List<Link> links,
         @uz.dukeengine.core.data.Link(Monster.class) Placed boss, @uz.dukeengine.core.data.Link(Monster.class) List<Placed> monsters,
         @uz.dukeengine.core.data.Link(Prop.class) List<Placed> props,
+        @Paint List<String> paint, Map<String, String> palette, Map<String, Float> coverage,
         @uz.dukeengine.core.data.Link(Monster.class) List<Placed> npcs, List<Zone> zones, List<Placed> items,
         List<String> quests)
-        implements MapTemplate, Described, Peopled, Layered {
+        implements MapTemplate, Described, Peopled, Layered, Painted {
 
     /** What a block leaves out. */
     public static final StaticMap DEFAULTS = new StaticMap("", "", "", 1, 1, 0L, 0f, null, List.of(), List.of(),
-            List.of(), List.of(), null, List.of(), List.of(), List.of(), List.of(), List.of(), List.of());
+            List.of(), List.of(), null, List.of(), List.of(), List.of(), Map.of(), Map.of(), List.of(), List.of(),
+            List.of(), List.of());
 
     public StaticMap {
         cells = cells == null ? List.of() : List.copyOf(cells);
@@ -56,7 +65,12 @@ public record StaticMap(String name, String displayName, String description, int
         links = links == null ? List.of() : List.copyOf(links);
         monsters = monsters == null ? List.of() : List.copyOf(monsters);
         props = props == null ? List.of() : List.copyOf(props);
-        npcs = npcs == null ? List.of() : List.copyOf(npcs);
+        paint = paint == null ? List.of() : List.copyOf(paint);
+        // Kept in the order written: the blend counts a corner's surfaces in the palette's order.
+        palette = palette == null ? Map.of()
+                : java.util.Collections.unmodifiableMap(new java.util.LinkedHashMap<>(palette));
+        coverage = coverage == null ? Map.of() : Map.copyOf(coverage);
+        npcs =npcs == null ? List.of() : List.copyOf(npcs);
         zones = zones == null ? List.of() : List.copyOf(zones);
         items = items == null ? List.of() : List.copyOf(items);
         quests = quests == null ? List.of() : List.copyOf(quests);

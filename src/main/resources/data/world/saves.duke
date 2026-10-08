@@ -1,0 +1,24 @@
+; Duke Dungeon — the saved games on the way in.
+;
+; The game saves as each floor is entered (the autosave, in ~/.duke-engine/saves/),
+; and "Enter the dungeon" asks first whether to go back to it. With no save it asks
+; nothing new. See docs/plan/2026-10-08-saving.md.
+SaveMenu
+  Title = ZINDON
+  Hint = YUQORI PAST tanlang    ENTER tanlash    ESC ortga
+  ContinueWord = Davom ettirish
+  LoadWord = Yuklash
+  LoadBlurb = Saqlangan o'yinlardan birini tanlang.
+  NewWord = Yangi o'yin
+  NewBlurb = Birinchi qavatdan yangi yurish.
+  LoadTitle = O'YINNI YUKLASH
+  AutosaveWord = Avtosaqlash
+  ; %s is the slot's number.
+  SlotWord = %s-joy
+  ; %s is the hero, then his level, then the floor.
+  AboutSave = %s, %d-daraja, %d-qavat
+  ; ---- in the game: ESC, then Saqlash ----
+  SaveWord = Saqlash
+  SaveBlurb = Faqat yolg'iz o'yin saqlanadi
+  SaveTitle = O'YINNI SAQLASH
+End

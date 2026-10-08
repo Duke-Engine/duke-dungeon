@@ -42,15 +42,22 @@ import uz.dukeengine.dungeon.gen.GeneratedDungeon;
  *                    run's seed, so a stage that did not carry one
  *                    would be the same rooms with different everything else
  * @param floor       the dungeon itself, exactly as the generator handed it over
+ * @param paint       what its ground is painted with, or null for a floor drawn by the kit of its look
  */
 public record Stage(String id, String name, String description, int difficulty, int players,
-        long seed, GeneratedDungeon floor, uz.dukeengine.dungeon.story.MapStory story) {
+        long seed, GeneratedDungeon floor, StagePaint paint, uz.dukeengine.dungeon.story.MapStory story) {
 
     public Stage {
         story = story == null ? uz.dukeengine.dungeon.story.MapStory.NONE : story;
     }
 
-    /** A stage with nobody on it to talk to, and no quests of its own. */
+    /** A painted stage with nobody on it to talk to, and no quests of its own. */
+    public Stage(String id, String name, String description, int difficulty, int players, long seed,
+            GeneratedDungeon floor, StagePaint paint) {
+        this(id, name, description, difficulty, players, seed, floor, paint, null);
+    }
+
+    /** A stage whose ground is drawn by the kit of its look, as every floor of the descent is. */
     public Stage(String id, String name, String description, int difficulty, int players, long seed,
             GeneratedDungeon floor) {
         this(id, name, description, difficulty, players, seed, floor, null);

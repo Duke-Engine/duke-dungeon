@@ -42,7 +42,68 @@ public final class MapPicture {
 
     /** The floor of {@code stage} from above. */
     public static BufferedImage of(Stage stage) {
-        return of(stage.floor());
+        var image = of(stage.floor());
+        return stage.paint() == null ? image : painted(image, stage.paint());
+    }
+
+    /**
+     * The picture of a painted stage: each cell in the colour of the surface it is painted with, as bright as the
+     * relief drawn under it. The marks of what stands on it are kept.
+     */
+    private static BufferedImage painted(BufferedImage image, StagePaint paint) {
+        var colours = new java.util.HashMap<Character, Color>();
+        for (var entry : paint.palette().entrySet()) {
+            colours.put(entry.getKey().charAt(0), surfaceColour(entry.getValue()));
+        }
+        int cell = image.getWidth() / paint.rows().getFirst().length();
+        float lit = groundOf('0', 0).getRed();
+        for (int y = 0; y < paint.rows().size(); y++) {
+            var row = paint.rows().get(y);
+            for (int x = 0; x < row.length(); x++) {
+                var colour = colours.get(row.charAt(x));
+                for (int py = y * cell; py < (y + 1) * cell; py++) {
+                    for (int px = x * cell; px < (x + 1) * cell; px++) {
+                        var under = new Color(image.getRGB(px, py));
+                        if (under.getRed() != under.getGreen()) {
+                            continue; // a mark of something standing there
+                        }
+                        float shade = Math.min(1.4f, 0.7f * under.getRed() / lit);
+                        image.setRGB(px, py, new Color(Math.min(255, (int) (colour.getRed() * shade)),
+                                Math.min(255, (int) (colour.getGreen() * shade)),
+                                Math.min(255, (int) (colour.getBlue() * shade))).getRGB());
+                    }
+                }
+            }
+        }
+        return image;
+    }
+
+    /** What a palette value looks like from far off: its colour, or the average of its picture. */
+    private static Color surfaceColour(String value) {
+        if (value.startsWith("#")) {
+            return new Color(Integer.parseInt(value.substring(1), 16));
+        }
+        try (var in = MapPicture.class.getClassLoader().getResourceAsStream(value)) {
+            var picture = in == null ? null : ImageIO.read(in);
+            if (picture == null) {
+                return FLOOR;
+            }
+            long r = 0;
+            long g = 0;
+            long b = 0;
+            for (int y = 0; y < picture.getHeight(); y++) {
+                for (int x = 0; x < picture.getWidth(); x++) {
+                    int rgb = picture.getRGB(x, y);
+                    r += rgb >> 16 & 0xFF;
+                    g += rgb >> 8 & 0xFF;
+                    b += rgb & 0xFF;
+                }
+            }
+            long count = (long) picture.getWidth() * picture.getHeight();
+            return new Color((int) (r / count), (int) (g / count), (int) (b / count));
+        } catch (IOException e) {
+            return FLOOR;
+        }
     }
 
     /**

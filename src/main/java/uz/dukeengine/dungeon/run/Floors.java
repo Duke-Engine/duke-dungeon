@@ -67,6 +67,16 @@ public interface Floors {
         return uz.dukeengine.dungeon.story.MapStory.NONE;
     }
 
+    /** What the floors' ground is painted with, or null for floors drawn by the kit of their look. */
+    default uz.dukeengine.dungeon.stage.StagePaint paint() {
+        return null;
+    }
+
+    /** The stage's name, for a save to find it again by (its map's folder); {@code null} for the descent. */
+    default String stageName() {
+        return null;
+    }
+
     /** Floors drawn from a seed, each one deeper and nastier — the endless descent. */
     static Floors generated(long seed, DungeonSettings settings) {
         return new GeneratedFloors(seed, settings);
@@ -75,5 +85,22 @@ public interface Floors {
     /** One floor, frozen, handed back however many times it is asked for. */
     static Floors ofStage(Stage stage) {
         return new StageFloors(stage);
+    }
+
+    /**
+     * The floors a save was made on, the first of them the floor he saved on: the descent's chain picked up at the
+     * saved seed, or the saved stage read again.
+     *
+     * @throws SaveGame.Refused when its stage is not to be found or cannot be played
+     */
+    static Floors resumed(SaveGame save, DungeonSettings settings) {
+        if (save.stage() == null) {
+            return new GeneratedFloors(save.seed(), settings, true);
+        }
+        try {
+            return ofStage(uz.dukeengine.dungeon.stage.Stages.load(save.stage(), settings));
+        } catch (RuntimeException e) {
+            throw new SaveGame.Refused("the stage " + save.stage() + " cannot be played: " + e.getMessage(), e);
+        }
     }
 }

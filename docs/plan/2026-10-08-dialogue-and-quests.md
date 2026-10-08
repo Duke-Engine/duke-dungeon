@@ -177,5 +177,12 @@ Try it: `./gradlew run --args="--map=talk"`, or Play → stages → Qo'mondon.
 - KILL of one *placed* creature by a name of its own, and REACH of a point not written as a zone.
 - Gold: the game has no money yet; a reward is experience and an item.
 - The tracker keeps no finished quest step on screen for a moment, as the floor's mission does.
-- A merchant, the city, saving the log (the saving branch picks the records up).
+- A merchant and the city.
+- **Next: saving the log.** `SaveGame` (docs/plan/2026-10-08-saving.md) writes the hero, his skills and his bag but
+  not the quests: a loaded run starts its map's quests again. The log's state is ready to write as it is —
+  `QuestLog.active()` (quest, step, count, since), `finished()` and `heard()`, plain record lists — and needs a block
+  in the save's text, its reading back, and a `QuestLog.restore` that `DungeonRun.resume` calls before the floor is
+  laid (so the map's `Quests` do not start again over it). Left for after the saving branch's pause-menu work lands.
+- The right-click rule: `Bag.show` repeats the bag's pickup and gate cases to add `Talk`, until the engine lets a game
+  add a rule of its own (E20 in docs/plan/2026-09-29-engine-requests.md).
 - Lifting the box, the person and the log into the engine's `rpg` module.

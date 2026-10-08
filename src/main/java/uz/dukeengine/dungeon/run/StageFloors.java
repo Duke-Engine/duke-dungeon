@@ -41,10 +41,20 @@ final class StageFloors implements Floors {
         return Math.max(1, stage.difficulty());
     }
 
+    @Override
+    public uz.dukeengine.dungeon.stage.StagePaint paint() {
+        return stage.paint();
+    }
+
     /**
      * The same depth it starts on: there is one floor, and the boss on it ends
      * the game rather than opening a door.
      */
+    @Override
+    public String stageName() {
+        return stage.id();
+    }
+
     @Override
     public int lastDepth() {
         return firstDepth();

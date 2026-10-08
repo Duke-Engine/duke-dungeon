@@ -29,8 +29,12 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E13 | an armed thing-aim's press marked as the game's own order, not an attack | landed, 308841ce |
 | E14 | a walk that stops short says so, and a way shut by bodies still goes as near as they let it | landed, b4c291c3: (1), (2), (3) and (5); (4) was only noted |
 | E15 | where the bottom panel stands, told to a game's painter | landed, 0adfc96c |
-| E16 | a painted world drawn as Warcraft III, Dota and Generals draw theirs: streamed in chunks, blends from the paint, mips, tint, cliffs by slope | waiting (big) |
-| E17 | a thing that hides what is behind it from sight while it stands (`BlocksSight`) — the keep's shut gate | waiting (small) |
+| E16 | a painted world drawn as Warcraft III, Dota and Generals draw theirs: streamed in chunks, blends from the paint, mips, tint, cliffs by slope | landed, 28fe3df5…822daabb (on e16-painted-world); the game draws its painted test map with it |
+| E17 | a thing that hides what is behind it from sight while it stands (`BlocksSight`) — the keep's shut gate | landed, d5db75c8 + 36f49f8e (on e17-blocks-sight) |
+| E18 | streaming the ground per map, not for the whole run | landed, 574011ae (on e16-painted-world); the game asks it per map |
+| E19 | a game's rows on the pause menu, and a word to the game before the client stops (saving) | landed, b66f00a7: `Shell.pauseRows`, `Duke3D.onLeaving`; the game saves with both |
+| E20 | a game adds its own right-click actions (talk to a person) without replacing the engine's pickup and gate rules | waiting (small) |
+| E21 | the move order's arrowheads lie on the ground's slope | waiting (small) |
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
 game builds against the local engine. E12–E15 reached it together at 668045f0 (their pull requests merged as
@@ -592,3 +596,61 @@ standing `BlocksSight` thing covers, as it stops at stone — the cells seen, wh
 there not drawn — read from the snapshot each frame, so an opened gate uncovers the court on the next frame. The game
 already says `BlocksSight = Yes` on its Gate (now a `Prop` block, since `Object`'s `RtsTemplate` has no such component —
 say if `RtsTemplate` should have one too).
+
+## E18 — Stream the ground per map (2026-10-08, small)
+
+`Visuals.streamGround(cells)` (E10) is one switch for the whole client: set once, every map the run lays streams its
+ground. The dungeon wants its painted open world streamed (E16's chunks) while its descent floors — small, kit-drawn —
+are built whole as today. Today the game can only set it when the map named at launch is painted, so a descent started
+from the menu in the same launch streams too.
+
+Asked: the switch can be given per map — e.g. `Visuals.streamGround(cells, Predicate<map>)`, or a map/look component
+saying it streams, or streaming on by default for painted maps only — whichever fits; the client asks it each time a
+map is laid. Done when a launch can lay a painted map streamed and then a kit floor built whole, with a test.
+## E19 — A game's rows on the pause menu, and a word before the client stops (2026-10-08, small)
+
+The game now saves (`docs/plan/2026-10-08-saving.md`): an autosave as each floor is entered, and "Davom ettirish" /
+"Yuklash" on the way in, through `Shell.Question`. Two things it cannot do from its side:
+
+1. **Saqlash from the game.** The pause menu is `DukeRtsApp.showPauseMenu` (~line 2412): its rows are fixed —
+   Resume, Settings, Abandon the run. Asked: a game may add rows to it, e.g. `Shell.pauseRows(List<Shell.Option>)`
+   (or `Duke3D.pauseRows`), each a label and a `Runnable` run on the client thread with the simulation paused; a row
+   may open a `Shell.Question` (for "which slot") and come back to the pause menu. The game adds "Saqlash" → slot 1–3.
+2. **Saving on quitting.** "Abandon the run" and Quit call jME's `stop()` and the game is told nothing. Asked: a hook
+   the game sets (`Duke3D.onLeaving(Runnable)`), run once before the match is let go of — on Abandon, on Quit, and on
+   the window closing — on the simulation thread or with it paused, so the game can write its save from a still world.
+
+Generic on purpose: any game with saves wants both. Done when: a game's row shows on the pause menu and runs; the
+hook runs once on each way out; a client3d test pins both. Tell the game the names they ended up as.
+
+## E20 — A game adds its own right-click actions beside the engine's (2026-10-08, small)
+
+The game now has people who talk (`docs/plan/2026-10-08-dialogue-and-quests.md`): a right-click on a person sends the
+hero over to talk to them, as the game's order `Talk`. The right-click word is `DukeGame.contextOrder(ContextOrder)`,
+which holds ONE rule, and `BagScreen.show` (rpg-client-3d) sets it to its own: a thing lying on the floor is
+`PickUp`, the keep's gate is `ToTheGate`. To add `Talk` the game sets the rule again after `BagScreen.show` and
+repeats the bag's two cases inside it (`Bag.show` in the game) — a copy that silently goes stale the day the bag's
+rule changes, and a second game with the bag would have to copy it too.
+
+Asked: a game may add its own context actions without replacing anyone else's — e.g. `DukeGame.contextOrder` keeps a
+list and asks each rule in the order added until one names a word (or `contextOrder(rule)` plus an
+`addContextOrder(rule)` that goes before or after the ones there); `BagScreen.show` adds its rule rather than setting
+it. The word still goes out as `GameOrder(player, word, selection, place, target, 0)` and its cursor is still the
+`Cursor` of that name. The same for the ground rule (`groundOrder`) if it is a single slot too.
+
+Done when: the bag's pickup/gate rule and a game's own rule (a word for some other target) both answer on one
+match, in a test; the game then deletes its copy of the bag's two cases from `Bag.show`.
+
+## E21 — The move order's mark lies on the slope it is on (2026-10-08, small)
+
+The owner, playtesting: the walk order's mark looks the same on any ground, and should tilt with the surface. Today
+`Chevrons.place` (client3d) lifts each arrowhead to `floorAt` under it but keeps it level, turned only about the
+vertical: on a hillside (E16's painted relief especially) the heads stick out of the slope on one side and sink into it
+on the other. Asked: each arrowhead (and the mark as a whole) is turned to lie in the ground's plane under it — the
+normal from `floorAt` sampled a little either side, or the relief's own normal where the client has it (E16's smooth
+normals) — still turned about that normal as it spins inward; level ground draws exactly as today. The attack ring
+(`AttackFlash`) and anything else drawn flat on the ground at a point (selection rings, the aura marks under a
+creature, if the client draws them) the same way, if they share the placement.
+
+Done when: on a slope of 30° the heads lie on it (a test reads their rotation against the normal), level ground
+unchanged.

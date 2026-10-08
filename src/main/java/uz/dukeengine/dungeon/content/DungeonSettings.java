@@ -31,6 +31,7 @@ import uz.dukeengine.client3d.Cursor;
 import uz.dukeengine.client3d.EffectBudget;
 import uz.dukeengine.client3d.EffectLayer;
 import uz.dukeengine.dungeon.world.Fog;
+import uz.dukeengine.dungeon.world.PaintedGround;
 import uz.dukeengine.client3d.HitFeel;
 import uz.dukeengine.dungeon.world.Hud;
 import uz.dukeengine.dungeon.world.LootDrops;
@@ -96,6 +97,7 @@ public final class DungeonSettings {
     private Camera camera = Camera.DEFAULTS;
     private Hud hud = Hud.DEFAULTS;
     private uz.dukeengine.dungeon.world.Party party = uz.dukeengine.dungeon.world.Party.DEFAULTS;
+    private uz.dukeengine.dungeon.world.SaveMenu saveMenu = uz.dukeengine.dungeon.world.SaveMenu.DEFAULTS;
     private UnitBar unitBar = UnitBar.DEFAULTS;
     private StatBlock statBlock = StatBlock.DEFAULTS;
     private SkillRing skillRing = SkillRing.DEFAULTS;
@@ -105,6 +107,7 @@ public final class DungeonSettings {
     private MenuStyle menu = MenuStyle.DEFAULTS;
     private Sun sun = Sun.DEFAULTS;
     private Fog fog = Fog.DEFAULTS;
+    private PaintedGround paintedGround = PaintedGround.DEFAULTS;
     private Tiles tiles = Tiles.DEFAULTS;
     private EffectBudget effectBudget = EffectBudget.DEFAULTS;
     private HitFeel hitFeel = HitFeel.DEFAULTS;
@@ -151,6 +154,11 @@ public final class DungeonSettings {
         return party;
     }
 
+    /** The words of the saved games on the way in: continue, load, a new game. */
+    public uz.dukeengine.dungeon.world.SaveMenu saveMenu() {
+        return saveMenu;
+    }
+
     public Hud hud() {
         return hud;
     }
@@ -185,6 +193,11 @@ public final class DungeonSettings {
 
     public Sun sun() {
         return sun;
+    }
+
+    /** How a painted map's ground is drawn — see {@link PaintedGround}. */
+    public PaintedGround paintedGround() {
+        return paintedGround;
     }
 
     public Fog fog() {
@@ -383,6 +396,7 @@ public final class DungeonSettings {
                 case uz.dukeengine.dungeon.story.Conversation conversation -> conversations.add(conversation);
                 case uz.dukeengine.dungeon.story.Npc npc -> npcs.add(npc);
                 case uz.dukeengine.dungeon.story.Quest quest -> quests.add(quest);
+                case uz.dukeengine.dungeon.world.SaveMenu block -> saveMenu = once(block, once);
                 case UnitBar block -> unitBar = once(block, once);
                 case StatBlock block -> statBlock = once(block, once);
                 case SkillRing block -> skillRing = once(block, once);
@@ -392,6 +406,7 @@ public final class DungeonSettings {
                 case MenuStyle block -> menu = once(block, once);
                 case Sun block -> sun = once(block, once);
                 case Fog block -> fog = once(block, once);
+                case PaintedGround block -> paintedGround = once(block, once);
                 case Tiles block -> tiles = once(block, once);
                 case EffectBudget block -> effectBudget = once(block, once);
                 case HitFeel block -> hitFeel = once(block, once);
@@ -779,6 +794,7 @@ public final class DungeonSettings {
                         && fog.rememberedPercent() <= fog.visiblePercent(),
                 "the three shades have to darken in that order, or the map reads backwards");
         require(fog.softenCells() >= 0, "the fog cannot be smeared over negative cells");
+        validatePaintedGround();
         require(fog.openPerSecond() > 0, "fog that never opens is a black screen");
         require(fog.textureSize() >= 8 && fog.textureSize() <= 2048,
                 "TextureSize is the fog sheet's own resolution, between 8 and 2048");
@@ -938,6 +954,27 @@ public final class DungeonSettings {
     private boolean wornAsAState(String look) {
         return look != null && (look.equals(combat.stunLook()) || skills.stream().anyMatch(skill ->
                 look.equals(skill.look()) && (skill.effect() == SkillEffect.HASTE || skill.effect().isAura())));
+    }
+
+    /** What a painted map's ground is drawn by: each number in the range the client draws it in. */
+    private void validatePaintedGround() {
+        var ground = paintedGround;
+        require(ground.raggedness() >= 0f && ground.raggedness() <= 1f,
+                "PaintedGround: Raggedness is how far across a cell the noise moves a border, 0 to 1");
+        require(ground.sharpness() >= 1f, "PaintedGround: Sharpness is 1 for a ramp across the cell, or more");
+        require(ground.noiseCoverage() > 0f && ground.variationCoverage() > 0f && ground.cliffCoverage() > 0f,
+                "PaintedGround: a picture's coverage is how many cells one copy of it covers, more than none");
+        require(ground.cliffSlope() > 0f && ground.cliffSlope() < 90f,
+                "PaintedGround: CliffSlope is a lean in degrees from level, between 0 and 90");
+        require(ground.streamCells() >= 0, "PaintedGround: StreamCells cannot be negative; 0 builds the ground whole");
+        for (var tint : ground.tints().entrySet()) {
+            require(tint.getValue() >= 0 && tint.getValue() <= 0xFFFFFF,
+                    "PaintedGround: the tint of " + tint.getKey() + " is a colour, 0xRRGGBB");
+        }
+        for (var variation : ground.variations().entrySet()) {
+            require(variation.getValue() >= 0f && variation.getValue() <= 1f,
+                    "PaintedGround: the variation of " + variation.getKey() + " is 0 to 1");
+        }
     }
 
     /**

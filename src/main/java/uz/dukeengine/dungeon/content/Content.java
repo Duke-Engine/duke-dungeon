@@ -110,12 +110,12 @@ public final class Content {
             named(Combat.class), named(Run.class), named(Progression.class), named(LootDrops.class),
             named(Camera.class), named(Hud.class), named(UnitBar.class), named(StatBlock.class),
             named(SkillRing.class), named(OrderMark.class), named(PanelLook.class), named(HitNumbers.class), named(MenuStyle.class), named(Sun.class),
-            named(Fog.class), named(Tiles.class), named(EffectBudget.class), named(HitFeel.class),
+            named(Fog.class), named(uz.dukeengine.dungeon.world.PaintedGround.class), named(Tiles.class), named(EffectBudget.class), named(HitFeel.class),
             named(Audio.class), named(World.class), named(ProceduralMap.class), named(StaticMap.class),
             named(uz.dukeengine.dungeon.world.Party.class),
             named(uz.dukeengine.dungeon.story.Speaker.class), named(uz.dukeengine.dungeon.story.Conversation.class),
             named(uz.dukeengine.dungeon.story.Npc.class), named(uz.dukeengine.dungeon.story.Quest.class),
-            named(uz.dukeengine.dungeon.story.Dialogue.class));
+            named(uz.dukeengine.dungeon.story.Dialogue.class), named(uz.dukeengine.dungeon.world.SaveMenu.class));
 
     /** The blocks a world builds things from. */
     private static final Set<String> TEMPLATES = Set.of("object", "monster", "hero", "projectile", "prop");
