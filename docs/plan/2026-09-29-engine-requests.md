@@ -29,13 +29,10 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E13 | an armed thing-aim's press marked as the game's own order, not an attack | landed, 308841ce |
 | E14 | a walk that stops short says so, and a way shut by bodies still goes as near as they let it | landed, b4c291c3: (1), (2), (3) and (5); (4) was only noted |
 | E15 | where the bottom panel stands, told to a game's painter | landed, 0adfc96c |
-| E16 | a painted world drawn as Warcraft III, Dota and Generals draw theirs: streamed in chunks, blends from the paint, mips, tint, cliffs by slope | waiting (big) |
-| E17 | a thing that hides what is behind it from sight while it stands (`BlocksSight`) — the keep's shut gate | waiting (small) |
-<<<<<<< HEAD
+| E16 | a painted world drawn as Warcraft III, Dota and Generals draw theirs: streamed in chunks, blends from the paint, mips, tint, cliffs by slope | landed, 28fe3df5…822daabb (on e16-painted-world); the game draws its painted test map with it |
+| E17 | a thing that hides what is behind it from sight while it stands (`BlocksSight`) — the keep's shut gate | landed, d5db75c8 + 36f49f8e (on e17-blocks-sight) |
 | E18 | streaming the ground per map, not for the whole run | landed, 574011ae (on e16-painted-world); the game asks it per map |
-=======
 | E19 | a game's rows on the pause menu, and a word to the game before the client stops (saving) | waiting (small) |
->>>>>>> saving
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
 game builds against the local engine. E12–E15 reached it together at 668045f0 (their pull requests merged as
@@ -598,7 +595,6 @@ there not drawn — read from the snapshot each frame, so an opened gate uncover
 already says `BlocksSight = Yes` on its Gate (now a `Prop` block, since `Object`'s `RtsTemplate` has no such component —
 say if `RtsTemplate` should have one too).
 
-<<<<<<< HEAD
 ## E18 — Stream the ground per map (2026-10-08, small)
 
 `Visuals.streamGround(cells)` (E10) is one switch for the whole client: set once, every map the run lays streams its
@@ -609,7 +605,6 @@ from the menu in the same launch streams too.
 Asked: the switch can be given per map — e.g. `Visuals.streamGround(cells, Predicate<map>)`, or a map/look component
 saying it streams, or streaming on by default for painted maps only — whichever fits; the client asks it each time a
 map is laid. Done when a launch can lay a painted map streamed and then a kit floor built whole, with a test.
-=======
 ## E19 — A game's rows on the pause menu, and a word before the client stops (2026-10-08, small)
 
 The game now saves (`docs/plan/2026-10-08-saving.md`): an autosave as each floor is entered, and "Davom ettirish" /
@@ -625,4 +620,3 @@ The game now saves (`docs/plan/2026-10-08-saving.md`): an autosave as each floor
 
 Generic on purpose: any game with saves wants both. Done when: a game's row shows on the pause menu and runs; the
 hook runs once on each way out; a client3d test pins both. Tell the game the names they ended up as.
->>>>>>> saving
