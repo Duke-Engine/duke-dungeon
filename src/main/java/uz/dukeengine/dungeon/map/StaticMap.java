@@ -42,6 +42,10 @@ import uz.dukeengine.dungeon.content.Prop;
  *     names; none, and the floor is drawn by the kit of its look, as every floor of the descent is
  * @param palette     what each character of the paint is: a picture's path under the game's resources, or a colour
  * @param coverage    how many cells one copy of each picture covers, by the palette's characters
+ * @param scenery     what stands about on painted ground for its look -- trees, rocks, grass -- a line for each row of
+ *     cells that has any: its pieces, each {@code model x y facing scale footprint} in cells, held apart by {@code ;}.
+ *     A line rather than a piece a line, so a world of thirty thousand trees is read in a moment; drawn on painted
+ *     ground only, and a footprint stands in the way
  */
 public record StaticMap(String name, String displayName, String description, int difficulty, int players, long seed,
         float levelHeight,
@@ -50,13 +54,13 @@ public record StaticMap(String name, String displayName, String description, int
         @uz.dukeengine.core.data.Link(Prop.class) List<Placed> props,
         @Paint List<String> paint, Map<String, String> palette, Map<String, Float> coverage,
         @uz.dukeengine.core.data.Link(Monster.class) List<Placed> npcs, List<Zone> zones, List<Placed> items,
-        List<String> quests)
+        List<String> quests, List<String> scenery)
         implements MapTemplate, Described, Peopled, Layered, Painted {
 
     /** What a block leaves out. */
     public static final StaticMap DEFAULTS = new StaticMap("", "", "", 1, 1, 0L, 0f, null, List.of(), List.of(),
             List.of(), List.of(), null, List.of(), List.of(), List.of(), Map.of(), Map.of(), List.of(), List.of(),
-            List.of(), List.of());
+            List.of(), List.of(), List.of());
 
     public StaticMap {
         cells = cells == null ? List.of() : List.copyOf(cells);
@@ -74,6 +78,7 @@ public record StaticMap(String name, String displayName, String description, int
         zones = zones == null ? List.of() : List.copyOf(zones);
         items = items == null ? List.of() : List.copyOf(items);
         quests = quests == null ? List.of() : List.copyOf(quests);
+        scenery = scenery == null ? List.of() : List.copyOf(scenery);
     }
 
     /**
