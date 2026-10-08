@@ -35,6 +35,7 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E19 | a game's rows on the pause menu, and a word to the game before the client stops (saving) | landed, b66f00a7: `Shell.pauseRows`, `Duke3D.onLeaving`; the game saves with both |
 | E20 | a game adds its own right-click actions (talk to a person) without replacing the engine's pickup and gate rules | landed, 2a863ef9 (on e20-context-orders); the game adds its Talk rule beside the bag's |
 | E21 | the move order's arrowheads lie on the ground's slope | landed, b5fc663d |
+| E22 | the story half lifted into rpg: zones, dialogue, quests, triggers and cutscenes, people and trade | waiting (big) |
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
 game builds against the local engine. E12–E15 reached it together at 668045f0 (their pull requests merged as
@@ -654,3 +655,32 @@ creature, if the client draws them) the same way, if they share the placement.
 
 Done when: on a slope of 30° the heads lie on it (a test reads their rotation against the normal), level ground
 unchanged.
+
+## E22 — The story half lifted into `rpg` (2026-10-08, big — E8's way, game first then lifted)
+
+The game built the campaign's foundations in its own code, as E8 asks ("build in the game first, lift later"), and they
+are now played and tested (master afe2ed9, 1212 tests). Each has its spec in this repo:
+
+| What | Spec | Game code |
+|---|---|---|
+| Dialogue: a box with a portrait, lines in sequence, pause alone / show in a party | `docs/plan/2026-10-08-dialogue-and-quests.md` | `story/` (Conversation, Line, DialogueScreen) |
+| People: neutral creatures who talk, wander within a radius, face the talker; the "!" over a giver | same | `story/` (Npc, people placement in maps) |
+| Quests: MAIN/SIDE, steps REACH / KILL / COLLECT / TALK / GIVE, OnDone (conversation, reward, next quest), the log saved | same | `story/` (Quest, QuestLog), run/SaveGame |
+| Zones: named rectangles/circles on a map | same | `map/StaticMap` zones |
+| Triggers and cutscenes: WHEN (zone entered, death, quest/step done, conversation, timer, flag, map start) → DO (lines, quests, spawn, walk, open gate, items, flags, next map, cutscene); letterbox + camera flight + lines | `docs/plan/2026-10-08-story-scripting.md` | `story/` (Trigger, Script, Cutscene) |
+| Gold and a merchant: a purse per hero, drops by level, a trade window, buy/sell as orders | `docs/plan/2026-10-08-people-and-trade.md` | `story/` (Purse, Merchant, TradeScreen) |
+| The quest tracker: a list of missions, MAIN ◆ / SIDE ◇, J folds it | — | `run/Tracker`, `MissionScreen` |
+
+Asked, in steps like E8's, each with an old→new map in the CHANGELOG:
+1. **core.map:** a zone type a map can list (a named rectangle or circle in cells) — a marker interface or annotation the
+   editor (duke-plugin) can recognise by type rather than by shape.
+2. **rpg:** conversations, people, quests and their log, triggers and their script, the purse and trade — the
+   mechanisms, generalised away from the dungeon's settings (the words stay the game's data), deterministic and
+   saveable (each with a state record a game writes into its save).
+3. **rpg-client-3d:** the dialogue box, the cutscene's letterbox and camera flight, the trade window and the tracker,
+   with the game's words handed in as `BagScreen.Words` is.
+4. Mark, for an editor, which record component names a zone, a person, a quest, a conversation (`@Link`-like), so a
+   quest step's target can be checked by kind.
+
+The game then deletes its copies, as it did for E8 step 3. Done when duke-generals builds without any of it and the
+game's 1212 tests pass on the lifted classes.
