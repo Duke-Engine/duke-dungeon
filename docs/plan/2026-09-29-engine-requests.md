@@ -37,6 +37,7 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E21 | the move order's arrowheads lie on the ground's slope | landed, b5fc663d |
 | E22 | the story half lifted into rpg: zones, dialogue, quests, triggers and cutscenes, people and trade | waiting (big) |
 | E23 | a long list in a .duke file read in linear time (the world map's scenery) | landed, e05164d8 (on e23-linear-lists) |
+| E24 | haze (and the world picture) chosen per map, as streaming is | waiting (small) |
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
 game builds against the local engine. E12–E15 reached it together at 668045f0 (their pull requests merged as
@@ -701,3 +702,11 @@ read in time linear in its length; the same for any other place a value is read 
 changes.
 
 Done when: a list of 30,000 one-line items reads in well under a second, in a core test; every data test unchanged.
+
+## E24 — Haze chosen per map (2026-10-08, small)
+
+E18 let the game stream the ground per map. The open world also wants the engine's haze (distance fog) and the
+world picture E10 offers, but they are one global setting on `Visuals`: turned on, they would fade the small descent
+floors too. Asked: the same shape as E18 — e.g. `Visuals.haze(look, Predicate<Object> forMap)` (and the world picture
+likewise), asked of each map's record as it is laid; the old one-argument form unchanged. Done when a launch can lay
+the hazy open world and then an unhazed floor, with a test.
