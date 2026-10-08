@@ -144,8 +144,11 @@ A map file writes them only when it has some, so every map drawn before reads an
 
 - **One quest log a run**, the run's own, in the simulation: plain records (`QuestLog.Active(quest, step, count)` in
   the order the quests were started; the finished ones' names; the conversations heard), iterated only as lists —
-  no hash order — so it is the same on every machine, and the saving branch can write it as it is. A run that ends
+  no hash order — so it is the same on every machine, and a save writes it as it is. A run that ends
   (lost or won) starts its log again, as it starts the hero again.
+- **Saved** with the run (autosave, slots, on leaving: docs/plan/2026-10-08-saving.md) and restored on load before the
+  floor is laid, so the map's starting quests are not started again and nothing heard is said again; a save from
+  before quests were saved loads with the map's starting quests.
 - **Events:** a death is heard from the engine's own `GameLogic.onDied` (KILL); bags, zones and the people's radii are
   looked at every `CheckFrames` (COLLECT, REACH, walking up); a right-click on a person is this game's order `Talk`
   (`TalkTo`), heard as every order is, on the same frame on every machine.
@@ -178,11 +181,6 @@ Try it: `./gradlew run --args="--map=talk"`, or Play → stages → Qo'mondon.
 - Gold: the game has no money yet; a reward is experience and an item.
 - The tracker keeps no finished quest step on screen for a moment, as the floor's mission does.
 - A merchant and the city.
-- **Next: saving the log.** `SaveGame` (docs/plan/2026-10-08-saving.md) writes the hero, his skills and his bag but
-  not the quests: a loaded run starts its map's quests again. The log's state is ready to write as it is —
-  `QuestLog.active()` (quest, step, count, since), `finished()` and `heard()`, plain record lists — and needs a block
-  in the save's text, its reading back, and a `QuestLog.restore` that `DungeonRun.resume` calls before the floor is
-  laid (so the map's `Quests` do not start again over it). Left for after the saving branch's pause-menu work lands.
 - The right-click rule: `Bag.show` repeats the bag's pickup and gate cases to add `Talk`, until the engine lets a game
   add a rule of its own (E20 in docs/plan/2026-09-29-engine-requests.md).
 - Lifting the box, the person and the log into the engine's `rpg` module.
