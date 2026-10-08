@@ -29,15 +29,19 @@ import java.util.Map;
  * @param riverFlow         how fast a river's picture runs down it, in its own lengths a second
  * @param minimapCells      how many cells a side round the camera the minimap shows on a map wider than that; 0, and
  *     every map is shown whole
+ * @param hazeFrom          on a wide world, how many cells round the camera the ground starts to fade into the fog's
+ *     colour
+ * @param hazeTo            and how many it has gone by, so the edge of the ground built round the camera is never seen;
+ *     0 for no haze. Every floor of the descent, and every small stage, is drawn whole to its walls
  */
 public record PaintedGround(boolean blend, String noise, float raggedness, float sharpness, float noiseCoverage,
         String variation, float variationCoverage, Map<String, Integer> tints, Map<String, Float> variations,
         String cliffs, float cliffSlope, float cliffCoverage, boolean quarters, int streamCells, String water,
-        int waterTint, float riverFlow, int minimapCells) {
+        int waterTint, float riverFlow, int minimapCells, float hazeFrom, float hazeTo) {
 
     /** What a block leaves out: no blend, no cliffs, the ground drawn a surface a cell. */
     public static final PaintedGround DEFAULTS = new PaintedGround(false, null, 0f, 1f, 8f, null, 64f, Map.of(),
-            Map.of(), null, 40f, 4f, false, 0, null, 0xB4AFAFAF, 0.2f, 0);
+            Map.of(), null, 40f, 4f, false, 0, null, 0xB4AFAFAF, 0.2f, 0, 0f, 0f);
 
     public PaintedGround {
         tints = tints == null ? Map.of() : Map.copyOf(tints);

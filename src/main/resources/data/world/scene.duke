@@ -202,6 +202,12 @@ PaintedGround
   ; camera rather than the whole map, which is too many cells to a pixel to find
   ; the hero on. Every floor of the descent is narrower, and shown whole.
   MinimapCells = 160
+  ; On a wide world (a painted map 256 cells or more) the ground fades into the
+  ; fog's colour from HazeFrom cells
+  ; round the camera to HazeTo, inside the StreamCells it builds, so its edge is
+  ; never seen. The descent's floors are drawn whole to their walls.
+  HazeFrom = 34
+  HazeTo = 46
 End
 
 ; ---------------------------------------------------------------------------
