@@ -31,6 +31,7 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E15 | where the bottom panel stands, told to a game's painter | landed, 0adfc96c |
 | E16 | a painted world drawn as Warcraft III, Dota and Generals draw theirs: streamed in chunks, blends from the paint, mips, tint, cliffs by slope | waiting (big) |
 | E17 | a thing that hides what is behind it from sight while it stands (`BlocksSight`) — the keep's shut gate | waiting (small) |
+| E18 | streaming the ground per map, not for the whole run | waiting (small) |
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
 game builds against the local engine. E12–E15 reached it together at 668045f0 (their pull requests merged as
@@ -592,3 +593,14 @@ standing `BlocksSight` thing covers, as it stops at stone — the cells seen, wh
 there not drawn — read from the snapshot each frame, so an opened gate uncovers the court on the next frame. The game
 already says `BlocksSight = Yes` on its Gate (now a `Prop` block, since `Object`'s `RtsTemplate` has no such component —
 say if `RtsTemplate` should have one too).
+
+## E18 — Stream the ground per map (2026-10-08, small)
+
+`Visuals.streamGround(cells)` (E10) is one switch for the whole client: set once, every map the run lays streams its
+ground. The dungeon wants its painted open world streamed (E16's chunks) while its descent floors — small, kit-drawn —
+are built whole as today. Today the game can only set it when the map named at launch is painted, so a descent started
+from the menu in the same launch streams too.
+
+Asked: the switch can be given per map — e.g. `Visuals.streamGround(cells, Predicate<map>)`, or a map/look component
+saying it streams, or streaming on by default for painted maps only — whichever fits; the client asks it each time a
+map is laid. Done when a launch can lay a painted map streamed and then a kit floor built whole, with a test.
