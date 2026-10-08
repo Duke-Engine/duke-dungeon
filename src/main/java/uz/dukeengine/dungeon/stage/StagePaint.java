@@ -45,6 +45,14 @@ public record StagePaint(String name, @Paint List<String> rows, Map<String, Stri
         this(name, rows, palette, coverage, List.of(), List.of());
     }
 
+    /**
+     * Whether {@code map} -- a map's record, as the client is asked about it -- is a wide world: one whose routes are
+     * sectored, whose things sleep far from its heroes and whose ground fades into haze. One answer for all three.
+     */
+    public static boolean isWide(Object map) {
+        return map instanceof StagePaint paint && paint.wide();
+    }
+
     /** Whether it is a world wide enough to be routed by sectors — and so to sleep, see {@code Dungeon.open}. */
     public boolean wide() {
         return !rows.isEmpty() && Math.max(rows.size(), rows.getFirst().length()) >= SECTORED_FROM;

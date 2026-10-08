@@ -380,7 +380,7 @@ public final class Dungeon {
         // A wide world sleeps far from its heroes: a camp a hero is nowhere near costs a frame nothing, and wakes as
         // he comes within SLEEP_CELLS -- further than he sees, so nothing is caught dozing. Every floor of the
         // descent, and every small stage, is awake as ever.
-        if (floors.paint() != null && floors.paint().wide()) {
+        if (uz.dukeengine.dungeon.stage.StagePaint.isWide(floors.paint())) {
             // Asked once the match runs, when a player has its index.
             var wakers = java.util.List.copyOf(arena.heroes());
             game.sleep(new uz.dukeengine.core.Sleep(

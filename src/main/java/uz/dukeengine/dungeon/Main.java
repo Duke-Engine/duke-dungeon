@@ -469,6 +469,9 @@ public final class Main {
                     ground.waterTint(), 3f, ground.water(), ground.riverFlow(), null));
         }
         visuals.minimapSpan(ground.minimapCells());
+        // The edge of the ground built round the camera, faded away -- on a wide world only, the one predicate its
+        // sleep and its sectors answer to.
+        visuals.haze(ground.hazeFrom(), ground.hazeTo(), uz.dukeengine.dungeon.stage.StagePaint::isWide);
     }
 
     public static void main(String[] args) {
