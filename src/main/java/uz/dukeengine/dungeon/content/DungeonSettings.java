@@ -8,7 +8,7 @@ import uz.dukeengine.core.content.Effect;
 import uz.dukeengine.client3d.OrderMark;
 import uz.dukeengine.client3d.HitNumbers;
 import uz.dukeengine.client3d.MenuStyle;
-import uz.dukeengine.client3d.PanelLook;
+import uz.dukeengine.client3d.rpg.PanelLook;
 import uz.dukeengine.core.module.ModuleData;
 import uz.dukeengine.core.thing.ThingTemplateLoader;
 import uz.dukeengine.rpg.item.ItemUse;

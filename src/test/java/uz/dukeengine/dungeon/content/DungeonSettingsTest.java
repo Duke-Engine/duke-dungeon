@@ -11,8 +11,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import uz.dukeengine.client3d.MenuStyle;
-import uz.dukeengine.client3d.PanelBlock;
-import uz.dukeengine.client3d.PanelLook;
+import uz.dukeengine.client3d.rpg.PanelBlock;
+import uz.dukeengine.client3d.rpg.PanelLook;
 import uz.dukeengine.dungeon.world.World;
 
 /**

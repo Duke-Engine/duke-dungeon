@@ -6,6 +6,7 @@ import uz.dukeengine.client3d.Duke3D;
 import uz.dukeengine.client3d.EdgeScroll;
 import uz.dukeengine.core.content.Effect;
 import uz.dukeengine.client3d.Fog;
+import uz.dukeengine.client3d.rpg.HeroLooks;
 import uz.dukeengine.client3d.Hotkeys;
 import uz.dukeengine.client3d.Shell;
 import uz.dukeengine.client3d.Tileset;
@@ -213,12 +214,12 @@ public final class Main {
     }
 
     /** One portrait block, in the words the client keeps them in. */
-    private static uz.dukeengine.client3d.PortraitLook portraitLook(
+    private static uz.dukeengine.client3d.rpg.PortraitLook portraitLook(
             uz.dukeengine.dungeon.content.PortraitArt art) {
-        return new uz.dukeengine.client3d.PortraitLook(
-                new uz.dukeengine.client3d.PortraitLook.Camera(art.head(), art.show(),
+        return new uz.dukeengine.client3d.rpg.PortraitLook(
+                new uz.dukeengine.client3d.rpg.PortraitLook.Camera(art.head(), art.show(),
                         art.yaw(), art.pitch(), art.fov()),
-                new uz.dukeengine.client3d.PortraitLook.Clips(art.calm(), art.fight(),
+                new uz.dukeengine.client3d.rpg.PortraitLook.Clips(art.calm(), art.fight(),
                         art.hurt(), art.dead(), art.levelUp()),
                 art.hurtBelowPercent(), art.hurtSpeed());
     }
@@ -1029,12 +1030,12 @@ public final class Main {
         // the libraries from the creature's own block, under the same name.
         var everyone = settings.everyPortrait();
         if (everyone != null) {
-            visuals.portraits(portraitLook(everyone));
+            HeroLooks.of(visuals).portraits(portraitLook(everyone));
         }
         for (var portrait : settings.portraits()) {
-            visuals.portrait(portrait.name(), portraitLook(portrait));
+            HeroLooks.of(visuals).portrait(portrait.name(), portraitLook(portrait));
         }
-        visuals.portraitFps(settings.hud().portraitFps());
+        HeroLooks.of(visuals).portraitFps(settings.hud().portraitFps());
         // What a dead monster leaves lying about. No chest in the kit, so it is
         // a box in torch colour -- which is what a thing worth walking over to
         // has to be, whatever it is eventually modelled as.
@@ -1134,12 +1135,13 @@ public final class Main {
         // Whether the panel may colour the skill pictures. It always did, which is
         // how one white drawing served three states; a painted set cannot take it
         // — see IconLook.
-        visuals.iconLook(new uz.dukeengine.client3d.IconLook(settings.hud().paintedSkillIcons()));
+        HeroLooks.of(visuals).iconLook(
+                new uz.dukeengine.client3d.rpg.IconLook(settings.hud().paintedSkillIcons()));
 
         // How the block under the experience bar is drawn -- see StatBlock. The
         // client knows where its three columns go; the file says how big and what colour.
         var statBlockArt = settings.statBlock();
-        visuals.statLook(new uz.dukeengine.client3d.StatLook(statBlockArt.figureIcon(),
+        HeroLooks.of(visuals).statLook(new uz.dukeengine.client3d.rpg.StatLook(statBlockArt.figureIcon(),
                 statBlockArt.primaryIcon(), statBlockArt.attributeIcon(), statBlockArt.iconShare(),
                 statBlockArt.rowGap(), statBlockArt.gapUnderBar(), statBlockArt.figureColumn(),
                 statBlockArt.primaryColumn(), statBlockArt.figureRows(),
@@ -1159,7 +1161,7 @@ public final class Main {
         // The three arrowheads that answer a click — the client's own OrderMark, which the
         // block of that name is read straight into.
         visuals.orderMark(settings.orderMark());
-        visuals.panelLook(settings.panelLook());
+        HeroLooks.of(visuals).panelLook(settings.panelLook());
         visuals.hitNumbers(settings.hitNumbers());
 
         // How far each skill reaches, so the client can draw it before it is spent

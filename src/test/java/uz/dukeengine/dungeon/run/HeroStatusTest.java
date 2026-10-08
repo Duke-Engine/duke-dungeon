@@ -13,7 +13,7 @@ import uz.dukeengine.dungeon.content.DungeonSettings;
 /**
  * The line the hero's panel is drawn from, written by a real run.
  *
- * <p>Its reader is {@code uz.dukeengine.client3d.HeroPanel}, which this module cannot
+ * <p>Its reader is {@code uz.dukeengine.client3d.rpg.HeroPanel}, which this module cannot
  * see and which cannot see this. Nothing but a test connects them, so this holds
  * the writing end of the format and {@code HeroPanelTest} holds the reading end.
  *

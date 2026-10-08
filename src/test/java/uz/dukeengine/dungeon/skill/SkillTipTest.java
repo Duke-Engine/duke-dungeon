@@ -1,12 +1,16 @@
 package uz.dukeengine.dungeon.skill;
 
-import uz.dukeengine.rpg.skill.SkillTip;
 import uz.dukeengine.rpg.skill.Skill;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
+import uz.dukeengine.client3d.rpg.HeroCard;
+import uz.dukeengine.dungeon.Dungeon;
+import uz.dukeengine.dungeon.content.Content;
 import uz.dukeengine.dungeon.content.DungeonSettings;
+import uz.dukeengine.rpg.skill.SkillBook;
+import uz.dukeengine.rpg.skill.SkillRanks;
 
 /**
  * What the card over a slot says, and — the only claim it really makes — that
@@ -29,9 +33,38 @@ class SkillTipTest {
                 .toList();
     }
 
-    private static final SkillTip.Words WORDS = new SkillTip.Words(
-            "Zarar", "Kuluar", "Radius", "Masofa", "Kuch",
-            "1 nuqta", "Ctrl+", "eng yuqori", "nuqta yo'q", "-daraja", "s", "Mana");
+    private static final HeroCard.Words WORDS = new HeroCard.Words("-daraja", "usta", "yopiq",
+            new HeroCard.TipWords("Zarar", "Kuluar", "Radius", "Masofa", "Kuch",
+                    "1 nuqta", "Ctrl+", "eng yuqori", "nuqta yo'q", "-daraja", "s", "Mana"));
+
+    /** A mage's book, on a body of the game's own world: the card is written off a book, as the bar is. */
+    private static final SkillBook MAGES_BOOK = magesBook();
+
+    private static SkillBook magesBook() {
+        var text = new StringBuilder();
+        for (int y = 0; y < 10; y++) {
+            text.append(y == 0 || y == 9 ? "##########" : "#........#").append('\n');
+        }
+        var world = Dungeon.world(text.toString(), SETTINGS, Content.units());
+        world.game().spawn("Mage", world.hero(), 50f, 50f);
+        world.game().runHeadless(1);
+        return world.game().getLogic().getObjects().stream()
+                .filter(thing -> thing.getTemplate().name().equals("Mage")).findFirst().orElseThrow()
+                .findModule(SkillBook.class);
+    }
+
+    /**
+     * The fireball's card, at {@code rank}, with a point to raise it or none: written through the engine's
+     * {@link HeroCard}, the one place a card is written, and read off the whole line.
+     */
+    private static String tip(Skill fireball, int rank, boolean canRaise) {
+        var ranks = new SkillRanks(1);
+        ranks.startWith(java.util.List.of(fireball));
+        for (int i = 0; i < rank; i++) {
+            assertTrue(ranks.raise(fireball.key(), 99), "the premise: rank " + (i + 1) + " can be bought");
+        }
+        return HeroCard.named("").skills(MAGES_BOOK, ranks, canRaise ? rank + 1 : rank, WORDS).toString();
+    }
 
     private static Skill fireball() {
         return SETTINGS.skillsFor("Mage").stream().filter(skill -> skill.key() == 'Q')
@@ -43,7 +76,7 @@ class SkillTipTest {
     /** A skill he owns and can raise shows both figures, and an offer at the foot. */
     @Test
     void aRaisableSkillShowsNowAndNext() {
-        var tip = SkillTip.of(fireball(), 2, true, WORDS);
+        var tip = tip(fireball(), 2, true);
 
         assertTrue(tip.contains("|tipName=Q,"), "it has no name: " + tip);
         assertTrue(tip.contains("|tipAt=Q,2-daraja · Q"),
@@ -66,7 +99,7 @@ class SkillTipTest {
      */
     @Test
     void aFigureThatDoesNotMoveIsShownOnce() {
-        var tip = SkillTip.of(fireball(), 2, true, WORDS);
+        var tip = tip(fireball(), 2, true);
 
         // Radius is fixed for now -- the row is written with nothing after the
         // comma, which is the client's cue to draw one value rather than two.
@@ -78,7 +111,7 @@ class SkillTipTest {
     /** At nothing yet, the first column is blank: a point buys the whole figure. */
     @Test
     void anUnlearntSkillShowsOnlyWhatItWouldBe() {
-        var tip = SkillTip.of(fireball(), 0, true, WORDS);
+        var tip = tip(fireball(), 0, true);
 
         assertTrue(tip.contains("|tipRow=Q,Zarar,,55"),
                 "an unbought skill should show nothing now and its first rank next: " + tip);
@@ -90,7 +123,7 @@ class SkillTipTest {
     @Test
     void aFullSkillOffersNothing() {
         var fireball = fireball();
-        var tip = SkillTip.of(fireball, fireball.maxRank(), false, WORDS);
+        var tip = tip(fireball, fireball.maxRank(), false);
 
         assertTrue(tip.contains("|tipFoot=Q,eng yuqori"), "the foot should say it is full");
         assertFalse(tip.matches("(?s).*\\|tipRow=Q,Zarar,\\d+,\\d+.*"),
@@ -100,7 +133,7 @@ class SkillTipTest {
     /** With no point to spend, the foot says that rather than offering. */
     @Test
     void withNoPointTheFootSaysSo() {
-        var tip = SkillTip.of(fireball(), 2, false, WORDS);
+        var tip = tip(fireball(), 2, false);
 
         assertTrue(tip.contains("|tipFoot=Q,nuqta yo'q"));
     }
