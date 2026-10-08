@@ -23,6 +23,7 @@ import uz.dukeengine.dungeon.gen.GeneratedDungeon.Piece;
 import uz.dukeengine.dungeon.gen.GeneratedDungeon.Placement;
 import uz.dukeengine.dungeon.gen.GeneratedDungeon.Prop;
 import uz.dukeengine.dungeon.gen.GeneratedDungeon.Room;
+import uz.dukeengine.dungeon.map.StaticMap;
 import uz.dukeengine.dungeon.map.StaticMap.Zone;
 import uz.dukeengine.dungeon.story.MapStory;
 import uz.dukeengine.dungeon.tools.GroundPictures;
@@ -93,6 +94,26 @@ public final class WorldMapWriter {
 
     /** How far a road may rise or fall in one cell, in sixteenths of a cell: half what a cliff is. */
     private static final int GRADE = 8;
+
+    /** How steep a ramp up to a shelf may be: a stair cut in the hillside, still short of a cliff. */
+    private static final int RAMP_GRADE = 13;
+
+    /** The lake's surface, in sixteenths of a cell, and its name and the river's. */
+    private static final int LAKE = 44;
+    private static final String LAKE_NAME = "Ko'l";
+    private static final String RIVER_NAME = "Daryo";
+
+    /** Where the river rises, as a share of the map: high in the snow. */
+    private static final double[] SPRING = {0.88, 0.34};
+
+    /** The bends it is drawn through on its way to the lake: round the south of the castle, then west. */
+    private static final double[][] BENDS = {{0.72, 0.40}, {0.46, 0.27}};
+
+    /** How many cells of ground a piece cut off from the rest may have before it is given a ramp. */
+    static final int SHELF = 32;
+
+    /** How many rounds of ramps are laid before what is still cut off is sealed. */
+    private static final int RAMP_ROUNDS = 24;
 
     /** The forest itself, named so a quest can send a hero into it. */
     private static final String FOREST_ZONE = "Qorong'i_o'rmon";
@@ -169,6 +190,16 @@ public final class WorldMapWriter {
         return new World(seed).region;
     }
 
+    /** The middle of the lake, in cells. */
+    static double[] lakeMiddle() {
+        return new double[] {BASIN[0] * SIZE, BASIN[1] * SIZE};
+    }
+
+    /** How many cells of shelves no ramp reached were sealed. */
+    static int sealedCells(long seed) {
+        return new World(seed).sealedCells;
+    }
+
     /** The cells the roads run over, row by row. */
     static boolean[] roads(long seed) {
         return new World(seed).road;
@@ -183,6 +214,17 @@ public final class WorldMapWriter {
         private final boolean[] road = new boolean[SIZE * SIZE];
         private final boolean[] kept = new boolean[SIZE * SIZE];
         private final boolean[] walked = new boolean[SIZE * SIZE];
+        /** Roads and the ramps up to the shelves: ground graded to be walked, which later grading leaves be. */
+        private final boolean[] graded = new boolean[SIZE * SIZE];
+        /** The river's channel, a cell either side of its course; and how high the water stands over each. */
+        private final boolean[] channel = new boolean[SIZE * SIZE];
+        private final float[] surface = new float[SIZE * SIZE];
+        /** Under water: cells nobody walks, written {@code #}. */
+        private boolean[] wet = new boolean[SIZE * SIZE];
+        /** Shelves no ramp reached, sealed: see {@link #reachTheShelves}. */
+        private final boolean[] sealed = new boolean[SIZE * SIZE];
+        private int sealedCells;
+        private final List<StaticMap.Water> waters = new ArrayList<>();
         private HeightMap relief;
 
         World(long seed) {
@@ -195,32 +237,415 @@ public final class WorldMapWriter {
             steps = ground();
             flattenSites();
             relief = new HeightMap(SIZE + 1, SIZE + 1, steps);
+            carveRiver();
+            waters.add(lake());
             for (var join : ROADS) {
                 var path = route(SITES.get(join[0]), SITES.get(join[1]));
                 grade(path);
                 for (var cell : path) {
                     road[cell[1] * SIZE + cell[0]] = true;
+                    graded[cell[1] * SIZE + cell[0]] = true;
                 }
             }
             smoothRoads();
+            soak();
+            reachTheShelves();
+        }
+
+        // ---- the water ----
+
+        /** Whether a cell is in the lake's basin, where no road goes. */
+        private boolean inTheLake(int x, int y) {
+            return Math.hypot(x + 0.5 - BASIN[0] * SIZE, y + 0.5 - BASIN[1] * SIZE) < BASIN_REACH - 4;
+        }
+
+        /** The lake: standing water at {@link #LAKE} over the basin, an outline of a circle round it. */
+        private StaticMap.Water lake() {
+            var points = new ArrayList<Float>();
+            int corners = 32;
+            double reach = BASIN_REACH - 2;
+            for (int i = 0; i < corners; i++) {
+                double angle = 2 * Math.PI * i / corners;
+                points.add(tenth(BASIN[0] * SIZE + reach * Math.cos(angle)));
+                points.add(tenth(BASIN[1] * SIZE + reach * Math.sin(angle)));
+            }
+            return new StaticMap.Water(LAKE_NAME, false, LAKE, points);
+        }
+
+        /**
+         * The river, from a spring high in the snow down to the lake: its course the cheapest way over the ground,
+         * keeping low and away from the sites; its bed never rising on the way down; a channel cut along it; and its
+         * water drawn as a chain of reaches, each level and a little lower than the one above, so it comes down a
+         * mountain in steps, as a river with rapids does, and never stands above its banks.
+         */
+        private void carveRiver() {
+            var course = riverCourse();
+            int n = course.size();
+            // The bed never rises downstream, and never sinks below what keeps it above the lake it runs into.
+            var bed = new int[n];
+            for (int i = 0; i < n; i++) {
+                var cell = course.get(i);
+                int ground = Math.min(Math.min(relief.at(cell[0], cell[1]), relief.at(cell[0] + 1, cell[1])),
+                        Math.min(relief.at(cell[0], cell[1] + 1), relief.at(cell[0] + 1, cell[1] + 1)));
+                bed[i] = Math.max(LAKE + 10, i == 0 ? ground : Math.min(bed[i - 1], ground));
+            }
+            // The reaches: a new one wherever the bed has fallen more than a little, or the last has run long.
+            var starts = new ArrayList<Integer>();
+            starts.add(0);
+            for (int i = 1; i < n - 1; i++) {
+                int from = starts.getLast();
+                if (bed[from] - bed[i] > 8 || i - from >= 24) {
+                    starts.add(i);
+                }
+            }
+            starts.add(n - 1);
+            var level = new float[n];
+            for (int s = 0; s + 1 < starts.size(); s++) {
+                int from = starts.get(s);
+                int to = starts.get(s + 1);
+                for (int i = from; i <= to; i++) {
+                    level[i] = bed[from] - 10;
+                }
+                waters.add(reach(course, from, to, bed[from] - 10, s));
+            }
+            // The channel: cut along the course, deepest in the middle, its banks the land as it was.
+            int corners = SIZE + 1;
+            for (int i = 0; i < n; i++) {
+                double mx = course.get(i)[0] + 0.5;
+                double my = course.get(i)[1] + 0.5;
+                for (int cy = (int) my - 3; cy <= (int) my + 3; cy++) {
+                    for (int cx = (int) mx - 3; cx <= (int) mx + 3; cx++) {
+                        if (cx < 0 || cy < 0 || cx > SIZE || cy > SIZE) {
+                            continue;
+                        }
+                        double away = Math.hypot(cx - mx, cy - my);
+                        int cut = (int) Math.round(bed[i] - 24 * smooth((2.6 - away) / 1.6));
+                        if (away < 2.6 && cut < steps[cy * corners + cx]) {
+                            steps[cy * corners + cx] = cut;
+                        }
+                    }
+                }
+                for (int dy = -1; dy <= 1; dy++) {
+                    for (int dx = -1; dx <= 1; dx++) {
+                        int at = (course.get(i)[1] + dy) * SIZE + course.get(i)[0] + dx;
+                        channel[at] = true;
+                        surface[at] = Math.max(surface[at], level[i]);
+                    }
+                }
+            }
+            relief = new HeightMap(corners, corners, steps);
+        }
+
+        /**
+         * The river's course: from its spring by its bends to the lake, each stretch the cheapest way over the ground
+         * -- a step costing more uphill, up high, near a site, and more or less as a field of noise says, so it winds.
+         * A diagonal step goes through the cell beside it, so the channel is whole.
+         */
+        private List<int[]> riverCourse() {
+            var course = new ArrayList<int[]>();
+            int[] from = {(int) (SPRING[0] * SIZE), (int) (SPRING[1] * SIZE)};
+            course.add(from);
+            for (int leg = 0; leg <= BENDS.length; leg++) {
+                boolean last = leg == BENDS.length;
+                int[] to = last ? null : new int[] {(int) (BENDS[leg][0] * SIZE), (int) (BENDS[leg][1] * SIZE)};
+                var stretch = riverStretch(course.getLast(), to);
+                course.addAll(stretch.subList(1, stretch.size()));
+            }
+            return course;
+        }
+
+        /** One stretch of the river, from {@code from} to {@code to}, or to the lake where {@code to} is null. */
+        private List<int[]> riverStretch(int[] from, int[] to) {
+            int start = from[1] * SIZE + from[0];
+            var cost = new long[SIZE * SIZE];
+            var came = new int[SIZE * SIZE];
+            Arrays.fill(cost, Long.MAX_VALUE);
+            cost[start] = 0;
+            var open = new PriorityQueue<long[]>((a, b) -> a[0] != b[0] ? Long.compare(a[0], b[0])
+                    : Long.compare(a[1], b[1]));
+            open.add(new long[] {0, start});
+            int[][] ways = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
+            int end = -1;
+            while (!open.isEmpty()) {
+                var head = open.poll();
+                int here = (int) head[1];
+                if (head[0] > cost[here]) {
+                    continue;
+                }
+                int hx = here % SIZE;
+                int hy = here / SIZE;
+                if (to == null ? inTheLake(hx, hy) : hx == to[0] && hy == to[1]) {
+                    end = here;
+                    break;
+                }
+                for (var way : ways) {
+                    int x = hx + way[0];
+                    int y = hy + way[1];
+                    if (x < 14 || y < 14 || x >= SIZE - 14 || y >= SIZE - 14) {
+                        continue;
+                    }
+                    int next = y * SIZE + x;
+                    double flat = 10 + relief.at(x, y) / 24.0
+                            + 160 * GroundPictures.fbm((x + 0.5) / SIZE, (y + 0.5) / SIZE, 24, 3, seed + 41)
+                            + (nearASite(x, y, 8) ? 5000 : 0);
+                    long step = Math.round(flat * (way[0] != 0 && way[1] != 0 ? 1.42 : 1))
+                            + Math.max(0, relief.at(x, y) - relief.at(hx, hy)) * 6L;
+                    if (cost[here] + step < cost[next]) {
+                        cost[next] = cost[here] + step;
+                        came[next] = here;
+                        open.add(new long[] {cost[next], next});
+                    }
+                }
+            }
+            if (end < 0) {
+                throw new IllegalStateException("the river finds no way to the lake");
+            }
+            var stretch = new ArrayList<int[]>();
+            for (int at = end; at != start; at = came[at]) {
+                int x = at % SIZE;
+                int y = at / SIZE;
+                stretch.add(new int[] {x, y});
+                if (came[at] % SIZE != x && came[at] / SIZE != y) {
+                    stretch.add(new int[] {came[at] % SIZE, y}); // the cell a diagonal step goes through
+                }
+            }
+            stretch.add(from);
+            return stretch.reversed();
+        }
+
+        private boolean nearASite(int x, int y, int margin) {
+            for (var site : SITES) {
+                if (Math.hypot(x - site.x(), y - site.y()) < site.radius() + margin) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /**
+         * One reach of the river, {@code from} to {@code to} along its course: two banks a cell and a half either side
+         * of the course smoothed, its first two corners its start, level at {@code height}.
+         */
+        private StaticMap.Water reach(List<int[]> course, int from, int to, float height, int number) {
+            var left = new ArrayList<double[]>();
+            var right = new ArrayList<double[]>();
+            var along = new ArrayList<Integer>();
+            along.add(from);
+            if (to - from >= 2) {
+                for (int i = from + 2; i < to; i += 2) {
+                    along.add(i);
+                }
+            } else {
+                along.add(from); // at least three pairs: a reach of one step is drawn a little short of nothing
+            }
+            along.add(to);
+            for (int i : along) {
+                var here = smoothed(course, i);
+                var before = smoothed(course, Math.max(0, i - 2));
+                var after = smoothed(course, Math.min(course.size() - 1, i + 2));
+                double dx = after[0] - before[0];
+                double dy = after[1] - before[1];
+                double length = Math.max(1e-6, Math.hypot(dx, dy));
+                double nx = -dy / length * 1.6;
+                double ny = dx / length * 1.6;
+                left.add(new double[] {here[0] + nx, here[1] + ny});
+                right.add(new double[] {here[0] - nx, here[1] - ny});
+            }
+            var points = new ArrayList<Float>();
+            // Its start, left bank then right; on down the right bank; back up the left.
+            add(points, left.getFirst());
+            for (var corner : right) {
+                add(points, corner);
+            }
+            for (int i = left.size() - 1; i >= 1; i--) {
+                add(points, left.get(i));
+            }
+            return new StaticMap.Water(RIVER_NAME + "_" + (number + 1), true, height, points);
+        }
+
+        /** The middle of the course at {@code i}, averaged with its neighbours so the banks do not zigzag. */
+        private static double[] smoothed(List<int[]> course, int i) {
+            double x = 0;
+            double y = 0;
+            int count = 0;
+            for (int k = Math.max(0, i - 2); k <= Math.min(course.size() - 1, i + 2); k++) {
+                x += course.get(k)[0] + 0.5;
+                y += course.get(k)[1] + 0.5;
+                count++;
+            }
+            return new double[] {x / count, y / count};
+        }
+
+        private static void add(List<Float> points, double[] corner) {
+            points.add(tenth(corner[0]));
+            points.add(tenth(corner[1]));
+        }
+
+        /**
+         * Which cells are under water, and so nobody's to walk: the lake's where all its ground lies under the
+         * surface, the river's where its channel is cut below its reach's -- but a road over the river is a ford.
+         */
+        private void soak() {
+            wet = new boolean[SIZE * SIZE];
+            for (int y = 0; y < SIZE; y++) {
+                for (int x = 0; x < SIZE; x++) {
+                    int at = y * SIZE + x;
+                    int top = highest(x, y);
+                    boolean lake = Math.hypot(x + 0.5 - BASIN[0] * SIZE, y + 0.5 - BASIN[1] * SIZE) < BASIN_REACH
+                            && top < LAKE - 2;
+                    boolean river = channel[at] && top < surface[at] - 2;
+                    wet[at] = sealed[at] || !graded[at] && (lake || river);
+                }
+            }
+        }
+
+        private int highest(int x, int y) {
+            int corners = SIZE + 1;
+            return Math.max(Math.max(steps[y * corners + x], steps[y * corners + x + 1]),
+                    Math.max(steps[(y + 1) * corners + x], steps[(y + 1) * corners + x + 1]));
+        }
+
+        // ---- the shelves ----
+
+        /**
+         * Every stretch of ground a hero could stand about on -- more than {@link #SHELF} cells of it -- reached from
+         * the city: a terrace the risers cut off, or a hollow among cliffs, is given a ramp graded up or down to the
+         * nearest road, as a road is graded. Pieces no larger are left as they are: a ledge on a cliff, not a place.
+         *
+         * <p>A ramp can cut a little of its own hillside off, so the rounds are counted: what is still cut off after
+         * {@link #RAMP_ROUNDS} of them is sealed -- written {@code #}, as water is, ground nobody walks on purpose --
+         * rather than left a place a hero sees and cannot reach. How much is sealed: {@link WorldMapWriter#sealedCells}.
+         */
+        private void reachTheShelves() {
+            for (int round = 0; ; round++) {
+                var piece = pieces();
+                int main = piece[SITES.get(CITY).y() * SIZE + SITES.get(CITY).x()];
+                var sizes = new int[SIZE * SIZE + 1];
+                for (int p : piece) {
+                    if (p >= 0) {
+                        sizes[p]++;
+                    }
+                }
+                if (round == RAMP_ROUNDS) {
+                    for (int at = 0; at < piece.length; at++) {
+                        if (piece[at] >= 0 && piece[at] != main && sizes[piece[at]] > SHELF) {
+                            sealed[at] = true;
+                            sealedCells++;
+                        }
+                    }
+                    soak();
+                    return;
+                }
+                boolean cut = false;
+                var done = new boolean[SIZE * SIZE + 1];
+                for (int at = 0; at < piece.length; at++) {
+                    int p = piece[at];
+                    if (p < 0 || p == main || sizes[p] <= SHELF || done[p]) {
+                        continue;
+                    }
+                    done[p] = true;
+                    cut = true;
+                    // From the shelf to the nearest road, the way a road would go, then graded to meet both.
+                    var nearest = rampFrom(piece, p, main);
+                    var shelf = nearest.getLast();
+                    var road = nearest.getFirst();
+                    var ramp = route(new Site("", (double) shelf[0] / SIZE, (double) shelf[1] / SIZE, 0),
+                            new Site("", (double) road[0] / SIZE, (double) road[1] / SIZE, 0));
+                    grade(ramp, true);
+                    for (var cell : ramp) {
+                        graded[cell[1] * SIZE + cell[0]] = true;
+                    }
+                }
+                if (!cut) {
+                    return;
+                }
+                smoothRoads();
+                soak();
+            }
+        }
+
+        /** Which piece of walkable ground every cell is in, by the walk's own rule; -1 for a cliff or water. */
+        private int[] pieces() {
+            var piece = new int[SIZE * SIZE];
+            Arrays.fill(piece, -1);
+            int next = 0;
+            var queue = new java.util.ArrayDeque<Integer>();
+            for (int first = 0; first < piece.length; first++) {
+                if (piece[first] >= 0 || !standable(first % SIZE, first / SIZE)) {
+                    continue;
+                }
+                piece[first] = next;
+                queue.add(first);
+                while (!queue.isEmpty()) {
+                    int here = queue.poll();
+                    for (int[] way : new int[][] {{1, 0}, {-1, 0}, {0, 1}, {0, -1}}) {
+                        int x = here % SIZE + way[0];
+                        int y = here / SIZE + way[1];
+                        if (x >= 0 && y >= 0 && x < SIZE && y < SIZE && piece[y * SIZE + x] < 0 && standable(x, y)) {
+                            piece[y * SIZE + x] = next;
+                            queue.add(y * SIZE + x);
+                        }
+                    }
+                }
+                next++;
+            }
+            return piece;
+        }
+
+        private boolean standable(int x, int y) {
+            return !wet[y * SIZE + x] && lean(x, y) < HeightMap.CLIFF_STEPS;
+        }
+
+        /** The shortest way from piece {@code p} to a road, over cliffs but never through water; the road end first. */
+        private List<int[]> rampFrom(int[] piece, int p, int main) {
+            var came = new int[SIZE * SIZE];
+            Arrays.fill(came, -2);
+            var queue = new java.util.ArrayDeque<Integer>();
+            for (int at = 0; at < piece.length; at++) {
+                if (piece[at] == p) {
+                    came[at] = -1;
+                    queue.add(at);
+                }
+            }
+            while (!queue.isEmpty()) {
+                int here = queue.poll();
+                if (piece[here] == main && graded[here]) {
+                    var ramp = new ArrayList<int[]>();
+                    for (int at = here; at >= 0; at = came[at]) {
+                        ramp.add(new int[] {at % SIZE, at / SIZE});
+                    }
+                    return ramp;
+                }
+                for (int[] way : new int[][] {{1, 0}, {-1, 0}, {0, 1}, {0, -1}}) {
+                    int x = here % SIZE + way[0];
+                    int y = here / SIZE + way[1];
+                    if (x >= 1 && y >= 1 && x < SIZE - 1 && y < SIZE - 1 && came[y * SIZE + x] == -2
+                            && !wet[y * SIZE + x]) {
+                        came[y * SIZE + x] = here;
+                        queue.add(y * SIZE + x);
+                    }
+                }
+            }
+            throw new IllegalStateException("a shelf has no way to the rest of the world but through water");
         }
 
         /**
          * Where two roads meet, or one folds back beside itself, a cell of one can be left leaning as far as a cliff.
          * Each such cell's corners are laid to their average, again until no cell of any road is a cliff: each pass
-         * only narrows what a cell's corners span, so it settles in a few.
+         * only narrows what a cell's corners span, so it settles in a few. A ramp, steeper by right, is eased only
+         * where it is a cliff, and as far as the passes go: a shelf it fails to reach is tried again.
          */
         private void smoothRoads() {
             int corners = SIZE + 1;
             for (int pass = 0; pass < 64; pass++) {
                 boolean steep = false;
-                for (int at = 0; at < road.length; at++) {
+                for (int at = 0; at < graded.length; at++) {
                     int x = at % SIZE;
                     int y = at / SIZE;
-                    if (!road[at] || lean(x, y) < HeightMap.CLIFF_STEPS - 4) {
+                    if (!graded[at] || lean(x, y) < (road[at] ? HeightMap.CLIFF_STEPS - 4 : HeightMap.CLIFF_STEPS)) {
                         continue;
                     }
-                    steep = true;
+                    steep |= road[at];
                     int mean = (steps[y * corners + x] + steps[y * corners + x + 1] + steps[(y + 1) * corners + x]
                             + steps[(y + 1) * corners + x + 1]) / 4;
                     for (int dy = 0; dy <= 1; dy++) {
@@ -245,20 +670,38 @@ public final class WorldMapWriter {
          * eased half way down or up to it: a cutting through a ridge, an embankment over a hollow.
          */
         private void grade(List<int[]> path) {
+            grade(path, false);
+        }
+
+        /**
+         * The same, {@code pinned} keeping both ends at their own heights where the way is long enough to climb
+         * between them at the grade: a ramp that must meet a shelf and a road where each stands.
+         */
+        private void grade(List<int[]> path, boolean pinned) {
+            int rise = pinned ? RAMP_GRADE : GRADE;
             int n = path.size();
             var along = new double[n];
             for (int i = 0; i < n; i++) {
                 along[i] = relief.at(path.get(i)[0], path.get(i)[1]);
             }
+            if (pinned) {
+                double first = along[0];
+                double last = along[n - 1];
+                for (int i = 0; i < n; i++) {
+                    double lowest = Math.max(first - rise * i, last - rise * (n - 1 - i));
+                    double highest = Math.min(first + rise * i, last + rise * (n - 1 - i));
+                    along[i] = lowest <= highest ? Math.clamp(along[i], lowest, highest) : (lowest + highest) / 2;
+                }
+            }
             var low = along.clone();
             var high = along.clone();
             for (int i = 1; i < n; i++) {
-                low[i] = Math.min(low[i], low[i - 1] + GRADE);
-                high[i] = Math.max(high[i], high[i - 1] - GRADE);
+                low[i] = Math.min(low[i], low[i - 1] + rise);
+                high[i] = Math.max(high[i], high[i - 1] - rise);
             }
             for (int i = n - 2; i >= 0; i--) {
-                low[i] = Math.min(low[i], low[i + 1] + GRADE);
-                high[i] = Math.max(high[i], high[i + 1] - GRADE);
+                low[i] = Math.min(low[i], low[i + 1] + rise);
+                high[i] = Math.max(high[i], high[i + 1] - rise);
             }
             int corners = SIZE + 1;
             var level = new int[corners * corners];
@@ -290,7 +733,7 @@ public final class WorldMapWriter {
                 int height = (int) Math.round((low[i] + high[i]) / 2);
                 int x = path.get(i)[0];
                 int y = path.get(i)[1];
-                if (road[y * SIZE + x]) {
+                if (graded[y * SIZE + x]) {
                     continue;
                 }
                 for (int dy = 0; dy <= 1; dy++) {
@@ -306,7 +749,7 @@ public final class WorldMapWriter {
         private boolean onARoad(int cx, int cy) {
             for (int y = cy - 1; y <= cy; y++) {
                 for (int x = cx - 1; x <= cx; x++) {
-                    if (x >= 0 && y >= 0 && x < SIZE && y < SIZE && road[y * SIZE + x]) {
+                    if (x >= 0 && y >= 0 && x < SIZE && y < SIZE && graded[y * SIZE + x]) {
                         return true;
                     }
                 }
@@ -387,7 +830,7 @@ public final class WorldMapWriter {
         private double basin(int x, int y, double height) {
             double away = Math.hypot(x - BASIN[0] * SIZE, y - BASIN[1] * SIZE);
             double wobble = 30 * (GroundPictures.fbm((double) x / SIZE, (double) y / SIZE, 5, 2, seed + 7) - 0.5);
-            return lerp(height, 30, smooth((BASIN_REACH + wobble - away) / 26));
+            return lerp(height, 20, smooth((BASIN_REACH + wobble - away) / 18));
         }
 
         /** The edge of the world: hills rising to cliffs, so it ends in something rather than in nothing. */
@@ -463,7 +906,9 @@ public final class WorldMapWriter {
                     double wander = 12 * GroundPictures.fbm((x + 0.5) / SIZE, (y + 0.5) / SIZE, 12, 3, seed + 31);
                     // A cliff is crossed only where nothing else will do: the road is cut through it after.
                     double step = (road[next] ? 4 : 6 + wander) + lean * lean / 2.0
-                            + (lean >= HeightMap.CLIFF_STEPS ? 400 : 0);
+                            + (lean >= HeightMap.CLIFF_STEPS ? 400 : 0)
+                            // Over the river where it must, by a ford, and round the lake always.
+                            + (channel[next] ? 300 : 0) + (inTheLake(x, y) ? 5000 : 0);
                     int total = cost[here] + (int) Math.round(way[0] != 0 && way[1] != 0 ? step * 1.42 : step);
                     if (total < cost[next]) {
                         cost[next] = total;
@@ -503,8 +948,12 @@ public final class WorldMapWriter {
             var levels = new ArrayList<String>();
             var walls = new ArrayList<String>();
             for (int y = 0; y < SIZE; y++) {
-                levels.add("0".repeat(SIZE));
-                walls.add(".".repeat(SIZE));
+                var row = new StringBuilder(SIZE);
+                for (int x = 0; x < SIZE; x++) {
+                    row.append(wet[y * SIZE + x] ? '#' : '0');
+                }
+                levels.add(row.toString());
+                walls.add(row.toString().replace('0', '.'));
             }
             var paint = paint();
             var taken = new HashSet<Long>();
@@ -576,7 +1025,7 @@ public final class WorldMapWriter {
                     monsters, boss, CASTLE, rooms, links, storeys, props, relief, 0f);
             return new Stage(NAME, "Ochiq dunyo",
                     "Butun qirollik bir xaritada: shahar, qorong'i o'rmon, ozod qilinadigan yerlar va malika qasri.",
-                    1, 1, seed, floor, new StagePaint(NAME, paint, PALETTE, COVERAGE, scenery()),
+                    1, 1, seed, floor, new StagePaint(NAME, paint, PALETTE, COVERAGE, scenery(), waters),
                     new MapStory(List.of(), zones, List.of(), List.of()));
         }
 
@@ -592,7 +1041,8 @@ public final class WorldMapWriter {
                 for (var way : ways) {
                     int x = here % SIZE + way[0];
                     int y = here / SIZE + way[1];
-                    if (x >= 0 && y >= 0 && x < SIZE && y < SIZE && !walked[y * SIZE + x] && !relief.isCliff(x, y)) {
+                    if (x >= 0 && y >= 0 && x < SIZE && y < SIZE && !walked[y * SIZE + x] && !relief.isCliff(x, y)
+                            && !wet[y * SIZE + x]) {
                         walked[y * SIZE + x] = true;
                         queue.add(y * SIZE + x);
                     }
@@ -631,6 +1081,9 @@ public final class WorldMapWriter {
             double v = (y + 0.5) / SIZE;
             int lean = lean(x, y);
             int height = relief.at(x, y);
+            if (wet[y * SIZE + x] && !sealed[y * SIZE + x] || channel[y * SIZE + x] && !road[y * SIZE + x]) {
+                return 'm'; // a bed of mud under the water, and the river's wet banks
+            }
             if (lean >= 13) {
                 return 'r';
             }
@@ -719,7 +1172,8 @@ public final class WorldMapWriter {
             var pieces = new ArrayList<Piece>();
             for (int y = 2; y < SIZE - 2; y++) {
                 for (int x = 2; x < SIZE - 2; x++) {
-                    if (kept[y * SIZE + x] || nearRoad(x, y, 2) || lean(x, y) >= 12) {
+                    if (kept[y * SIZE + x] || nearRoad(x, y, 2) || lean(x, y) >= 12 || wet[y * SIZE + x]
+                            || channel[y * SIZE + x]) {
                         continue;
                     }
                     for (var scatter : scattersAt(x, y)) {
@@ -791,6 +1245,11 @@ public final class WorldMapWriter {
     private static double smooth(double t) {
         double c = Math.clamp(t, 0, 1);
         return c * c * (3 - 2 * c);
+    }
+
+    /** A coordinate to a tenth of a cell, as the file writes it. */
+    private static float tenth(double value) {
+        return Math.round(value * 10) / 10f;
     }
 
     private static double lerp(double a, double b, double t) {

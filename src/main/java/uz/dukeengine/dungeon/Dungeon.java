@@ -326,6 +326,10 @@ public final class Dungeon {
         return open(floor, seed, floors, settings, subtitle, 1, null, null);
     }
 
+    /** How far round a hero a wide world's things stay awake, in cells, and how often who sleeps is decided. */
+    static final int SLEEP_CELLS = 40;
+    static final int SLEEP_EVERY_FRAMES = 15;
+
     /**
      * A party's game: the host's match, played by {@code heroes} players — every machine building the same one
      * from the same line, and each playing the seat its session gave it.
@@ -373,6 +377,16 @@ public final class Dungeon {
             arena.game().getTerrain().setLevelHeight(floor.levelHeight());
         }
         var game = arena.game().subtitle(subtitle);
+        // A wide world sleeps far from its heroes: a camp a hero is nowhere near costs a frame nothing, and wakes as
+        // he comes within SLEEP_CELLS -- further than he sees, so nothing is caught dozing. Every floor of the
+        // descent, and every small stage, is awake as ever.
+        if (floors.paint() != null && floors.paint().wide()) {
+            // Asked once the match runs, when a player has its index.
+            var wakers = java.util.List.copyOf(arena.heroes());
+            game.sleep(new uz.dukeengine.core.Sleep(
+                    thing -> wakers.stream().anyMatch(hero -> hero.getIndex() == thing.getPlayerIndex()),
+                    SLEEP_CELLS, SLEEP_EVERY_FRAMES));
+        }
         if (net != null) {
             // Before a frame is stepped: from here this machine plays the seat the session gave it.
             game.multiplayer(net);

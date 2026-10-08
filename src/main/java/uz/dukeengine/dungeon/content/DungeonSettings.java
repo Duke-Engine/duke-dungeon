@@ -976,6 +976,8 @@ public final class DungeonSettings {
         require(ground.cliffSlope() > 0f && ground.cliffSlope() < 90f,
                 "PaintedGround: CliffSlope is a lean in degrees from level, between 0 and 90");
         require(ground.streamCells() >= 0, "PaintedGround: StreamCells cannot be negative; 0 builds the ground whole");
+        require(ground.minimapCells() >= 0, "PaintedGround: MinimapCells cannot be negative; 0 shows every map whole");
+        require(ground.riverFlow() >= 0f, "PaintedGround: RiverFlow is how fast a river runs, not backwards");
         for (var tint : ground.tints().entrySet()) {
             require(tint.getValue() >= 0 && tint.getValue() <= 0xFFFFFF,
                     "PaintedGround: the tint of " + tint.getKey() + " is a colour, 0xRRGGBB");

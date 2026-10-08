@@ -41,6 +41,7 @@ public final class GroundPictures {
             "sand", GroundPictures::sand,
             "forest", GroundPictures::forest,
             "mud", GroundPictures::mud,
+            "water", GroundPictures::water,
             "noise", GroundPictures::noise,
             "variation", GroundPictures::variation);
 
@@ -150,6 +151,19 @@ public final class GroundPictures {
             var water = new double[] {52, 60, 60};
             return shade(new double[] {lerp(colour[0], water[0], wet), lerp(colour[1], water[1], wet),
                     lerp(colour[2], water[2], wet)}, 0.9 + 0.15 * grain);
+        });
+    }
+
+    /** Water for a lake or a river: deep blue-green, ripples a wind drew across it, and glints where the sky shows. */
+    static BufferedImage water(int size) {
+        return surface(size, (u, v) -> {
+            double body = fbm(u, v, 3, 4, SEED + 100);
+            double warp = fbm(u, v, 4, 2, SEED + 101);
+            double ripple = 0.5 + 0.5 * Math.sin(2 * Math.PI * (12 * v + 3 * u + 0.8 * warp));
+            double glint = speck(u, v, size, SEED + 102);
+            var colour = ramp(0.7 * body + 0.3 * ripple,
+                    new double[][] {{22, 52, 66}, {34, 74, 90}, {52, 98, 114}, {84, 132, 146}});
+            return glint > 0.985 ? shade(colour, 1.6) : colour;
         });
     }
 

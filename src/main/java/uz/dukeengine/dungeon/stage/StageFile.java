@@ -124,6 +124,11 @@ public final class StageFile {
                 out.append("  ; facing scale footprint, in cells, and the pieces held apart by ';'.\n");
                 list(out, "Scenery", sceneryLines(paint.scenery()));
             }
+            if (!paint.water().isEmpty()) {
+                out.append("  ; Lakes and rivers: a name, lake or river, the surface's height in sixteenths of a cell,\n");
+                out.append("  ; then its outline in cells; a river starts at its first two corners.\n");
+                list(out, "Water", paint.water().stream().map(w -> "\"" + w.written() + "\"").toList());
+            }
         }
         return out.append("End\n").toString();
     }
@@ -271,7 +276,7 @@ public final class StageFile {
                 }
             }
         }
-        return new StagePaint(map.name(), map.paint(), map.palette(), map.coverage(), scenery);
+        return new StagePaint(map.name(), map.paint(), map.palette(), map.coverage(), scenery, map.water());
     }
 
     /** Scenery as a map file writes it: the pieces in their order, a line each time the row of cells changes. */
