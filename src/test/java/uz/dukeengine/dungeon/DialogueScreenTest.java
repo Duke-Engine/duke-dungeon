@@ -169,4 +169,44 @@ class DialogueScreenTest {
         assertFalse(session.run().inCutscene(), "skipped");
         assertFalse(screen.take(new CanvasInput.Key(30, true, false)), "and his hand is his again");
     }
+
+    @Test
+    void theTradeWindowListsHisStockAndAClickBuys() {
+        var session = Dungeon.newStageSession(Stages.load("talk", SETTINGS), SETTINGS);
+        var game = session.game();
+        game.runHeadless(1);
+        var screen = new DialogueScreen(null, (CanvasInput) event -> false, SETTINGS);
+        DialogueScreen.show(session);
+        var hero = named(game, SETTINGS.run().defaultHero());
+        for (var skeleton : game.getLogic().getObjects().stream()
+                .filter(o -> o.getTemplate().name().equals("Skeleton")).toList()) {
+            skeleton.getBody().damage(1_000_000f, uz.dukeengine.core.module.DamageType.NORMAL,
+                    new uz.dukeengine.core.module.Death(uz.dukeengine.core.module.DeathType.NORMAL, hero.getId(),
+                            hero.getPlayerIndex()));
+        }
+        game.runHeadless(2);
+        var merchant = named(game, "Merchant");
+        hero.setPosition(new Coord3D(merchant.getPosition().x() + 12f, merchant.getPosition().y(),
+                merchant.getPosition().z()));
+        game.postCommand(uz.dukeengine.dungeon.party.PartyOrders.of(
+                new uz.dukeengine.dungeon.run.TalkTo(hero.getPlayerIndex(), merchant.getId())));
+        game.runHeadless(2);
+        int gold = session.run().goldOf(hero.getPlayerIndex());
+        assertTrue(screen.take(new CanvasInput.Key(DialogueScreen.ESCAPE, true, false)), "the greeting first");
+
+        var canvas = painted(screen);
+        assertTrue(canvas.text.contains("Savdogar Botir"), canvas.text.toString());
+        assertTrue(canvas.text.stream().anyMatch(t -> t.startsWith("Kuch qo'lqopi — 80")), canvas.text.toString());
+        assertTrue(canvas.text.contains(SETTINGS.story().trade().goldWord() + ": " + gold));
+
+        var ware = screen.trade().rows().stream().filter(row -> row.ware() && row.index() == 0).findFirst()
+                .orElseThrow();
+        assertTrue(screen.take(new CanvasInput.Button(Math.round(ware.x() + 5), Math.round(ware.y() + 5),
+                CanvasInput.Mouse.LEFT, true, false)));
+        game.runHeadless(2);
+        assertEquals(gold - 80, session.run().goldOf(hero.getPlayerIndex()), "bought, through the world");
+
+        assertTrue(screen.take(new CanvasInput.Key(DialogueScreen.ESCAPE, true, false)));
+        assertTrue(painted(screen).text.stream().noneMatch(t -> t.equals("Savdogar Botir")), "closed");
+    }
 }

@@ -23,12 +23,20 @@ import uz.dukeengine.rpg.skill.SkillRanks;
  * @param bag        what he carries, by slot
  * @param quests     the run's quests — going, finished and heard — or {@code null} for a save written before quests
  *                   were saved, which loads with its map's starting quests
+ * @param gold       what is in his purse
  * @param script     the run's triggers — fired, flags, waiting — or {@code null} for a save written before they were
  *                   saved, which loads with none fired
  */
 public record SaveGame(long seed, String stage, int depth, String hero, int experience, List<Rank> ranks,
         List<Item> bag, uz.dukeengine.dungeon.story.QuestLog.State quests,
-        uz.dukeengine.dungeon.story.Script.State script) {
+        uz.dukeengine.dungeon.story.Script.State script, int gold) {
+
+    /** A save with no gold in it: as one written before gold was. */
+    public SaveGame(long seed, String stage, int depth, String hero, int experience, List<Rank> ranks,
+            List<Item> bag, uz.dukeengine.dungeon.story.QuestLog.State quests,
+            uz.dukeengine.dungeon.story.Script.State script) {
+        this(seed, stage, depth, hero, experience, ranks, bag, quests, script, 0);
+    }
 
     /** A save with quests and no triggers in it: as one written before triggers were saved. */
     public SaveGame(long seed, String stage, int depth, String hero, int experience, List<Rank> ranks,
@@ -67,13 +75,13 @@ public record SaveGame(long seed, String stage, int depth, String hero, int expe
     /** What this hero has, as a save. */
     public static SaveGame of(long seed, String stage, int depth, String hero, int experience, SkillRanks learnt,
             LootBag carried) {
-        return of(seed, stage, depth, hero, experience, learnt, carried, null, null);
+        return of(seed, stage, depth, hero, experience, learnt, carried, null, null, 0);
     }
 
     /** The same, with the run's quests. */
     public static SaveGame of(long seed, String stage, int depth, String hero, int experience, SkillRanks learnt,
             LootBag carried, uz.dukeengine.dungeon.story.QuestLog.State quests,
-            uz.dukeengine.dungeon.story.Script.State script) {
+            uz.dukeengine.dungeon.story.Script.State script, int gold) {
         var ranks = new ArrayList<Rank>();
         for (var skill : learnt.getSkills()) {
             ranks.add(new Rank(skill.key(), learnt.rankOf(skill.key())));
@@ -86,7 +94,7 @@ public record SaveGame(long seed, String stage, int depth, String hero, int expe
                 bag.add(new Item(slot, item.id(), item.level(), item.value(), item.extraValue()));
             }
         }
-        return new SaveGame(seed, stage, depth, hero, experience, ranks, bag, quests, script);
+        return new SaveGame(seed, stage, depth, hero, experience, ranks, bag, quests, script, gold);
     }
 
     /**
@@ -152,6 +160,7 @@ public record SaveGame(long seed, String stage, int depth, String hero, int expe
         out.append("  Depth = ").append(depth).append('\n');
         out.append("  Hero = ").append(hero).append('\n');
         out.append("  Experience = ").append(experience).append('\n');
+        out.append("  Gold = ").append(gold).append('\n');
         out.append("  Skills = [").append(String.join(", ", ranks.stream().map(r -> "" + r.key()).toList()))
                 .append("]\n");
         out.append("  Ranks = [").append(String.join(", ", ranks.stream().map(r -> "" + r.rank()).toList()))
@@ -255,7 +264,7 @@ public record SaveGame(long seed, String stage, int depth, String hero, int expe
             var stage = field(save, "Stage");
             return new SaveGame(Long.parseLong(word(save, "Seed")), stage == null ? null : text(stage, "Stage"),
                     number(save, "Depth"), word(save, "Hero"), number(save, "Experience"), ranks, bag, quests,
-                    script);
+                    script, field(save, "Gold") == null ? 0 : number(save, "Gold"));
         } catch (RuntimeException e) {
             throw new Refused(source + " cannot be loaded: " + e.getMessage(), e);
         }

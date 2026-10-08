@@ -36,6 +36,8 @@ final class DialogueScreen implements Painter, CanvasInput {
     private final Painter under;
     private final CanvasInput underInput;
     private final DungeonSettings settings;
+    /** The trade window and the purse, drawn under the box. */
+    private final TradeScreen trade;
 
     /** The match the counts below are of; a new match is shown from its own first conversation. */
     private Dungeon.Session counted;
@@ -48,6 +50,12 @@ final class DialogueScreen implements Painter, CanvasInput {
         this.under = under;
         this.underInput = underInput;
         this.settings = settings;
+        this.trade = new TradeScreen(settings);
+    }
+
+    /** The trade window under the box, for a test to find its rows. */
+    TradeScreen trade() {
+        return trade;
     }
 
     static void show(Dungeon.Session now) {
@@ -99,6 +107,10 @@ final class DialogueScreen implements Painter, CanvasInput {
     public void paint(Canvas canvas) {
         if (under != null) {
             under.paint(canvas);
+        }
+        trade.purse(canvas, match);
+        if (!inCutscene()) {
+            trade.paint(canvas, match);
         }
         var now = showing();
         pause(now != null);
@@ -185,6 +197,9 @@ final class DialogueScreen implements Painter, CanvasInput {
     public boolean take(Event event) {
         if (inCutscene()) {
             return cutsceneTakes(event);
+        }
+        if (showing() == null && trade.take(event, match)) {
+            return true;
         }
         if (showing() == null) {
             return underInput != null && underInput.take(event);
