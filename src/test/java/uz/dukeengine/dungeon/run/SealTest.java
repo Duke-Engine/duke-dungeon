@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
@@ -305,6 +306,10 @@ class SealTest {
             }
             if (opened) {
                 floor.open();
+            } else {
+                // They no longer notice him across the shut gate, so they are set on him: the gate is what is tried.
+                aim(boss, hero);
+                guards.forEach(guard -> aim(guard, hero));
             }
 
             var fight = fight(floor, hero, boss.getPlayerIndex(), boss, A_WHILE);
@@ -365,6 +370,9 @@ class SealTest {
             floor.put(boss, -8, 0); // far back, and out of it
             floor.pressToGate(archer, -1);
             floor.pressToGate(hero, 1);
+            if (!opened) {
+                aim(archer, hero); // it no longer notices him across the shut gate, so it is set on him
+            }
 
             var fight = fight(floor, hero, archer.getPlayerIndex(), null, 90);
 
@@ -999,6 +1007,15 @@ class SealTest {
             var rifts = new HashSet<Integer>();
             var outside = new HashSet<Integer>();
             for (int frame = 0; frame < A_WHILE; frame++) {
+                if (!opened) {
+                    // It no longer notices him across the shut gate, so the cast its brain would make is made for it.
+                    var book = summoner.findModule(SkillBook.class);
+                    book.fillMana();
+                    var key = SETTINGS.skillsFor("SkeletonSummoner").getFirst().key();
+                    if (book.isReady(key)) {
+                        book.cast(key, 1, null, floor.hero().getPosition());
+                    }
+                }
                 floor.game().runHeadless(1);
                 for (var object : floor.game().getLogic().getObjects()) {
                     if (object.getTemplate().name().equals(rift)) {
@@ -1018,5 +1035,120 @@ class SealTest {
                 assertTrue(outside.isEmpty(), "the summoner opened a rift outside the shut gate");
             }
         }
+    }
+
+    // ---- sight ----
+
+    /** Set {@code monster} on {@code target} by its weapon, as its brain would had it noticed him. */
+    private static void aim(GameObject monster, GameObject target) {
+        monster.findModule(WeaponUpdate.class).attack(target.getId());
+    }
+
+    private static List<Coord3D> whereTheyStand(List<GameObject> creatures) {
+        return creatures.stream().map(GameObject::getPosition).toList();
+    }
+
+    /** Everything of the boss's side within the keep, the boss too. */
+    private static List<GameObject> insideTheKeep(Floor floor) {
+        var inside = new ArrayList<>(floor.guards());
+        inside.add(floor.boss());
+        return inside;
+    }
+
+    /** The hero walks about outside, right up to the threshold, with the gate shut: nobody in the keep stirs. */
+    @Test
+    void theKeepStandsStillWhileAHeroWalksAboutOutsideItsShutGate() {
+        var floor = floor("Rogue");
+        var inside = insideTheKeep(floor);
+        floor.hold();
+        var before = whereTheyStand(inside);
+
+        for (int[] spot : new int[][] {{6, 0}, {4, 0}, {3, 0}, {2, 0}, {1, 0}}) {
+            floor.put(floor.hero(), spot[0], spot[1]);
+            floor.game().runHeadless(40);
+        }
+
+        assertEquals(before, whereTheyStand(inside), "someone in the keep went toward a hero it cannot see");
+        for (var creature : inside) {
+            var weapon = creature.findModule(WeaponUpdate.class);
+            assertTrue(weapon == null || !weapon.isAttacking(), "someone in the keep took a target across the gate");
+        }
+    }
+
+    /** A fight right beside the keep's wall, the gate shut, does not rouse anyone within. */
+    @Test
+    void aFightOutsideBesideTheKeepWallRousesNobodyWithin() {
+        var floor = floor("Rogue");
+        var inside = insideTheKeep(floor);
+        var kind = floor.guards().get(0).getTemplate().name();
+        var foe = floor.spawn(kind, 2, 2);
+        var before = whereTheyStand(inside);
+        var hero = floor.put(floor.hero(), 2, 1);
+        floor.attack(hero, foe);
+
+        var fight = fight(floor, foe, hero.getPlayerIndex(), null, A_WHILE);
+
+        assertTrue(fight.shots() > 0 || fight.lost() > 0f, "no fight was fought, so this proves nothing");
+        assertEquals(before, whereTheyStand(inside), "a fight outside the wall roused someone within");
+    }
+
+    /** The same hero on the same spot, the gate opened: the monsters within, who can see him, come for him. */
+    @Test
+    void onceTheGateIsOpenTheKeepSeesTheHeroAndComes() {
+        var floor = floor("Rogue");
+        var inside = insideTheKeep(floor);
+        floor.hold();
+        floor.put(floor.hero(), 1, 0);
+        floor.game().runHeadless(40);
+        var before = whereTheyStand(inside);
+        floor.open();
+
+        floor.game().runHeadless(A_WHILE);
+
+        assertNotEquals(before, whereTheyStand(inside), "the gate open, nobody in the keep came for him");
+    }
+
+    /** His own brain picks no target across the shut gate, and picks the boss once it is open. */
+    @Test
+    void theHeroPicksNoTargetAcrossTheShutGate() {
+        for (boolean opened : new boolean[] {false, true}) {
+            var floor = floor("Rogue");
+            var boss = floor.boss();
+            floor.remove(floor.guards());
+            floor.put(floor.hero(), 1, 0);
+            floor.put(boss, -2, 0);
+            if (opened) {
+                floor.open();
+            }
+
+            floor.game().runHeadless(60);
+
+            var weapon = floor.hero().findModule(WeaponUpdate.class);
+            assertEquals(opened, weapon.isAttacking() && boss.getId().equals(weapon.getTarget()),
+                    opened ? "the gate open, he never picked the boss" : "he picked the boss across the shut gate");
+        }
+    }
+
+    /** From the threshold the court behind the shut gate is not in the hero's sight; once it is open, the next look has it. */
+    @Test
+    void theCourtBehindTheShutGateIsNotInSightFromTheThresholdUntilItIsOpened() {
+        var floor = floor("Rogue");
+        floor.hold();
+        var hero = floor.put(floor.hero(), 1, 0);
+        var court = floor.cell(-2, 0);
+        // The dungeon keeps no sight cells of its own yet, so the test lays them the way the engine's own test does.
+        floor.game().getLogic().setSightCells(PathGrid.DEFAULT_CELL_SIZE, 150);
+        floor.game().getLogic().setSightHiddenByStone(true);
+        floor.game().runHeadless(30);
+        var cells = floor.game().getLogic().getSightCells();
+
+        assertNotEquals(uz.dukeengine.core.SightCells.Sight.IN_SIGHT, cells.sight(hero.getPlayerIndex(), court),
+                "the court is in his sight through the shut gate");
+
+        floor.open();
+        floor.game().runHeadless(30);
+
+        assertEquals(uz.dukeengine.core.SightCells.Sight.IN_SIGHT, cells.sight(hero.getPlayerIndex(), court),
+                "the gate open, the court is still out of his sight");
     }
 }

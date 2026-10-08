@@ -13,6 +13,8 @@ import uz.dukeengine.rpg.mission.GateUpdate;
  * of the floor, and nobody goes over it. Every blow, shot, burst, falling meteor and mending asks {@link #parts} rather
  * than saying the rule again, and so does every dash, blink and rift — refused, or not opened, where it would come
  * down on the other side — and every haste and aura, which sight passes and which is not lent across.
+ * Nor is anything sensed across it: no monster and not the hero's own brain picks a target on the far side, and a
+ * fight on one side rouses nobody on the other, until it opens.
  *
  * <p>Within the keep is its square — the court, and the ring of wall with the doorway the gate stands in. The threshold
  * is outside, with the rest of the floor: a hero on it is on the gate's far side from the boss. The line between them

@@ -1,19 +1,23 @@
 ; The gate of the boss's keep: it stands across the keep's doorway, and nothing
 ; walks through it until it is opened -- see gen/Keep and run/GateUpdate.
+; It is a Prop block rather than an Object because only a Prop can say BlocksSight.
 ;
 ;   - no Body, so nothing ever shoots at it
 ;   - a Box as long as the doorway (three cells, 30 units) and thin across it;
 ;     the spawner turns it along the wall it stands in
+;   - BlocksSight, so while it stands nothing is seen past it, shut, and the
+;     keep stays dark to the hero until it is opened (the OpenGate says nothing)
 ;   - STRUCTURE, so it is drawn as a thing standing on the floor; SELECTABLE, so
 ;     the pointer finds it -- a click on it sends a hero up to it
 ;
 ; Nothing opens it but the key given to it: a hero walking up to it leaves it
 ; shut. What it looks like is the Keep theme's (data/world/themes/keep.duke).
-Object
+Prop
   Name = Gate
   DisplayName = Darvoza
   KindOf = [STRUCTURE, SELECTABLE]
   VisionRange = 0
+  BlocksSight = Yes
   Geometry = Box
     MajorRadius = 15
     MinorRadius = 2
@@ -30,6 +34,8 @@ Object
       WithKeyWord = Kalit menda — uni darvozaga berishim kerak
     End
   ]
+  ; Placed by the keep, never scattered through the rooms.
+  Weight = 0
 End
 
 ; The gate once it is open: the same model, its leaves swinging open as it
