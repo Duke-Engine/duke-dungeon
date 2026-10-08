@@ -685,6 +685,7 @@ Asked, in steps like E8's, each with an old→new map in the CHANGELOG:
 
 The game then deletes its copies, as it did for E8 step 3. Done when duke-generals builds without any of it and the
 game's 1212 tests pass on the lifted classes.
+
 ## E23 — A long list is read in the time its length takes (2026-10-08, small)
 
 The open world (`maps/world`, 512 cells a side) was first written with a piece of scenery a line: some 30,000 lines in
