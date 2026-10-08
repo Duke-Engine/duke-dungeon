@@ -15,15 +15,25 @@ final class GeneratedFloors implements Floors {
 
     private final DungeonSettings settings;
     private long seed;
+    /** Whether the next floor is the one {@link #seed} already names — a saved run picked up — not the next. */
+    private boolean standing;
 
     GeneratedFloors(long seed, DungeonSettings settings) {
+        this(seed, settings, false);
+    }
+
+    GeneratedFloors(long seed, DungeonSettings settings, boolean standing) {
         this.seed = seed;
         this.settings = settings;
+        this.standing = standing;
     }
 
     @Override
     public GeneratedDungeon next(int depth) {
-        seed = DungeonGenerator.nextSeed(seed);
+        if (!standing) {
+            seed = DungeonGenerator.nextSeed(seed);
+        }
+        standing = false;
         return DungeonGenerator.generate(seed, settings, depth);
     }
 

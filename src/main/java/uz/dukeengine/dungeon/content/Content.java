@@ -112,7 +112,7 @@ public final class Content {
             named(SkillRing.class), named(OrderMark.class), named(PanelLook.class), named(HitNumbers.class), named(MenuStyle.class), named(Sun.class),
             named(Fog.class), named(uz.dukeengine.dungeon.world.PaintedGround.class), named(Tiles.class), named(EffectBudget.class), named(HitFeel.class),
             named(Audio.class), named(World.class), named(ProceduralMap.class), named(StaticMap.class),
-            named(uz.dukeengine.dungeon.world.Party.class));
+            named(uz.dukeengine.dungeon.world.Party.class), named(uz.dukeengine.dungeon.world.SaveMenu.class));
 
     /** The blocks a world builds things from. */
     private static final Set<String> TEMPLATES = Set.of("object", "monster", "hero", "projectile", "prop");

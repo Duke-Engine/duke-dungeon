@@ -51,6 +51,11 @@ final class StageFloors implements Floors {
      * the game rather than opening a door.
      */
     @Override
+    public String stageName() {
+        return stage.id();
+    }
+
+    @Override
     public int lastDepth() {
         return firstDepth();
     }

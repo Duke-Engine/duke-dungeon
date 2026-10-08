@@ -20,8 +20,9 @@ import uz.dukeengine.game.GamePlayer;
 /**
  * The run loop: one dungeon at a time, and a fresh one the moment the hero dies.
  *
- * <p>Duke Dungeon is a roguelike in the oldest sense — there is no saving and no
- * carrying anything forward. A run is the stretch between spawning at full health
+ * <p>Duke Dungeon is a roguelike in the oldest sense — nothing is carried past a run's
+ * ending. (A run itself is saved as each floor is entered, and picked up there: see
+ * {@link #onCheckpoint} and {@link #resume}.) A run is the stretch between spawning at full health
  * and its ending, and it can end two ways: on a floor, or at the bottom of the
  * last one. Either way the world is torn down and rebuilt from a new seed and the
  * hero starts over with nothing but full health, because progress is not meant to
@@ -93,6 +94,8 @@ public final class DungeonRun {
          */
         String hero;
         ObjectId heroId;
+        /** The experience a loaded save gives his next body, or -1 when there is none to give. */
+        int loadedExperience = -1;
 
         Seat(GamePlayer player, HeroProgress progress, SkillRanks learnt, String hero) {
             this.player = player;
@@ -148,6 +151,11 @@ public final class DungeonRun {
 
     /** The keep's shut gate, as everything that hurts or mends asks it: told of each floor as it is laid. */
     private final Seal seal;
+
+    /** Told of the run as each floor is entered — the autosave; nothing until somebody asks. */
+    private java.util.function.Consumer<SaveGame> checkpoint = save -> { };
+    /** Whether the floor about to be laid is a loaded save's, which is not written back. */
+    private boolean loading;
 
     public DungeonRun(GamePlayer heroPlayer, GamePlayer dungeonPlayer, Floors floors,
             DungeonSettings settings, HeroProgress progress,
@@ -296,6 +304,41 @@ public final class DungeonRun {
     /** Whether the floor the world was built around belongs to a game nobody chose. */
     private boolean openingIsStale;
 
+    /**
+     * Where the run is told as each floor is entered, a game alone: the checkpoint the game saves. Called on the
+     * simulation thread, after the floor is laid and the last floor's keys are taken from the bag. A party is not
+     * saved — see {@code docs/plan/2026-10-08-saving.md}.
+     */
+    public void onCheckpoint(java.util.function.Consumer<SaveGame> told) {
+        this.checkpoint = told;
+    }
+
+    /**
+     * Pick up a saved run: its floors, its depth, its hero, and what he had learnt and carried — his experience goes
+     * into the body the floor gives him. Recorded, as {@link #playing} and {@link #startWith} are: answered on the
+     * menu, and the floor is laid when the game starts. A game alone; the first seat is his.
+     */
+    public void resume(SaveGame save, Floors floors) {
+        playing(floors);
+        depth = save.depth();
+        var seat = seats.getFirst();
+        seat.progress.reset();
+        pick(seat, save.hero());
+        save.restore(seat.progress.getLoot(), seat.learnt, settings);
+        seat.loadedExperience = save.experience();
+        loading = true;
+    }
+
+    /** The run as a save, the first seat's hero in it; {@code null} for a party or a seat with no hero. */
+    private SaveGame save() {
+        var seat = seats.getFirst();
+        if (seats.size() != 1 || seat.hero == null) {
+            return null;
+        }
+        return SaveGame.of(floors.seed(), floors.stageName(), depth, seat.hero, seat.progress.getExperience(),
+                seat.learnt, seat.progress.getLoot());
+    }
+
     /** Whoever the first player plays — the file's answer until somebody chooses. */
     public String getHeroTemplate() {
         return seats.getFirst().hero;
@@ -424,6 +467,11 @@ public final class DungeonRun {
         finished.clear();
         said = null;
         track(game);
+        var save = loading ? null : save();
+        loading = false;
+        if (save != null) {
+            checkpoint.accept(save);
+        }
     }
 
     /**
@@ -716,6 +764,14 @@ public final class DungeonRun {
             seat.heroId = hero == null ? null : hero.getId();
             if (hero != null) {
                 seat.progress.carryOver(game.getLogic(), hero);
+                // A loaded save's experience, given the way a kill gives it — on his body, which his progress reads
+                // and banks at the next floor. A hero's ranks are all at nothing (ExperienceRequired = [0, 0, 0]),
+                // so the body itself is no different for it.
+                var earned = hero.findModule(uz.dukeengine.combat.module.ExperienceModule.class);
+                if (seat.loadedExperience >= 0 && earned != null) {
+                    earned.setExperience(seat.loadedExperience);
+                }
+                seat.loadedExperience = -1;
             }
         }
         bossId = placed.boss() == null ? null : placed.boss().getId();
