@@ -216,6 +216,16 @@ class MissionScreenTest {
         MissionScreen.folded(false);
     }
 
+    /** The face the marks are drawn in can show every one of them (Georgia cannot), where it is installed. */
+    @Test
+    void theMarksAreDrawnInAFaceThatHasThem() {
+        var face = new java.awt.Font(MissionScreen.MARKS, java.awt.Font.PLAIN, 12);
+        org.junit.jupiter.api.Assumptions.assumeTrue(face.getFamily().equals(MissionScreen.MARKS), "not installed here");
+        for (var mark : new int[] {0x25C6, 0x25C7, 0x2022, 0x2713}) {
+            assertTrue(face.canDisplay(mark), Integer.toHexString(mark));
+        }
+    }
+
     /** The key is nobody else's: not a skill's (Q W E R), an order's (A S D F), nor one of the client's (WASD arrows H P). */
     @Test
     void theFoldKeyIsFree() {

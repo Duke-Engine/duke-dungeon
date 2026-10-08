@@ -27,6 +27,12 @@ final class MissionScreen {
     /** Whether the list is folded to its tab: the window's, flipped by a key on the window's thread. */
     private static volatile boolean folded;
 
+    /**
+     * The face the marks (diamonds, tick, dot) are drawn in: Georgia has none of them but the dot, and the font gives
+     * every code point from 256 up to its wide family. Present on every Windows since 7.
+     */
+    static final String MARKS = "Segoe UI Symbol";
+
     private MissionScreen() {
     }
 
@@ -126,7 +132,8 @@ final class MissionScreen {
             return;
         }
         var look = settings.menu();
-        var font = Canvas.Font.of("Georgia", Math.clamp(Math.round(canvas.height() * 0.018f), 12, 22));
+        var font = Canvas.Font.of("Georgia", Math.clamp(Math.round(canvas.height() * 0.018f), 12, 22))
+                .wideFamily(MARKS);
         List<Row> rows = folded
                 ? List.of(new Row(settings.run().missionsTab(), 0x90000000 | look.boneColour(), false))
                 : rows(tracker, frame, settings);
