@@ -79,9 +79,11 @@ public final class DungeonSettings {
 
     /** The Kind of a key: no figure's, and the one item the floor lays rather than drops. */
     private static final String KEY = "KEY";
+    /** The Kind of a thing a quest asks for: no figure's, and never dropped. */
+    private static final String QUEST = "QUEST";
     /** The words an item's Kind may be: those a hero's figures read, and a key's. */
     private static final java.util.Set<String> KINDS =
-            java.util.Set.of(Stat.ATTACK, Stat.HEALTH, Stat.ARMOUR, Stat.MANA, Stat.ATTRIBUTE, KEY);
+            java.util.Set.of(Stat.ATTACK, Stat.HEALTH, Stat.ARMOUR, Stat.MANA, Stat.ATTRIBUTE, KEY, QUEST);
     /** And its Extra, beside none. */
     private static final java.util.Set<String> EXTRAS =
             java.util.Set.of(Stat.HEALTH_REGEN, Stat.MANA_REGEN, Stat.ATTACK_SPEED);
@@ -110,6 +112,11 @@ public final class DungeonSettings {
     private EffectBudget effectBudget = EffectBudget.DEFAULTS;
     private HitFeel hitFeel = HitFeel.DEFAULTS;
     private Audio audio = Audio.DEFAULTS;
+    private uz.dukeengine.dungeon.story.Dialogue dialogue = uz.dukeengine.dungeon.story.Dialogue.DEFAULTS;
+    private final List<uz.dukeengine.dungeon.story.Speaker> speakers = new java.util.ArrayList<>();
+    private final List<uz.dukeengine.dungeon.story.Conversation> conversations = new java.util.ArrayList<>();
+    private final List<uz.dukeengine.dungeon.story.Npc> npcs = new java.util.ArrayList<>();
+    private final List<uz.dukeengine.dungeon.story.Quest> quests = new java.util.ArrayList<>();
 
     /** Every attribute, in file order — the order a hero's are held in and the panel draws them. */
     private final List<Attribute> attributes = new java.util.ArrayList<>();
@@ -212,6 +219,11 @@ public final class DungeonSettings {
 
     public Audio audio() {
         return audio;
+    }
+
+    /** People, their talk and the quests: see {@code docs/plan/2026-10-08-dialogue-and-quests.md}. */
+    public uz.dukeengine.dungeon.story.Story story() {
+        return new uz.dukeengine.dungeon.story.Story(dialogue, speakers, conversations, npcs, quests);
     }
 
     /** Every moment the files give a look, in the order they give them. */
@@ -379,6 +391,11 @@ public final class DungeonSettings {
                 case Camera block -> camera = once(block, once);
                 case Hud block -> hud = once(block, once);
                 case uz.dukeengine.dungeon.world.Party block -> party = once(block, once);
+                case uz.dukeengine.dungeon.story.Dialogue block -> dialogue = once(block, once);
+                case uz.dukeengine.dungeon.story.Speaker speaker -> speakers.add(speaker);
+                case uz.dukeengine.dungeon.story.Conversation conversation -> conversations.add(conversation);
+                case uz.dukeengine.dungeon.story.Npc npc -> npcs.add(npc);
+                case uz.dukeengine.dungeon.story.Quest quest -> quests.add(quest);
                 case uz.dukeengine.dungeon.world.SaveMenu block -> saveMenu = once(block, once);
                 case UnitBar block -> unitBar = once(block, once);
                 case StatBlock block -> statBlock = once(block, once);
@@ -802,6 +819,8 @@ public final class DungeonSettings {
                     "an item's DisplayName may not contain ',' or '|': " + item.id());
         }
         for (var item : loot) {
+            require(!item.kind().equals(QUEST) || item.weight() == 0,
+                    "LootItem " + item.id() + " is a QUEST thing, laid or given and never found: its Weight is 0");
             require(!item.kind().equals(KEY) || item.weight() == 0,
                     "LootItem " + item.id() + " is a KEY, which is given and never found: its Weight is 0");
             // A key is what opens a gate, and nothing else is. The engine knows one by its Use, and this file names
@@ -820,6 +839,11 @@ public final class DungeonSettings {
         // The floor lays the first KEY there is: a keep needs one.
         require(map.keep().sizes().isEmpty() || loot.stream().anyMatch(item -> item.kind().equals(KEY)),
                 "a Keep's gate opens only to a key, and no LootItem has Kind = KEY to lay on its floor");
+        // People and their talk: every name in it points at something the files have.
+        var story = story().problems(monsters.stream().map(MonsterKind::name).toList(),
+                loot.stream().map(Loot::id).toList());
+        require(story.isEmpty(), String.join("; ", story));
+        require(dialogue.checkFrames() >= 1, "Dialogue's CheckFrames is how often people are looked for: at least 1");
         for (var moment : moments) {
             require(!moment.effect().isBlank(), "Moment " + moment.name() + " plays no Effect");
             require(moment.scale() > 0f, "Moment " + moment.name() + " has to be drawn at some size");

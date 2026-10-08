@@ -7,6 +7,7 @@ import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.core.thing.ObjectId;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.dungeon.gen.GeneratedDungeon;
+import uz.dukeengine.dungeon.story.QuestLog;
 import uz.dukeengine.rpg.hero.HeroProgress;
 import uz.dukeengine.rpg.item.KeyDrop;
 import uz.dukeengine.rpg.item.ItemUse;
@@ -94,6 +95,8 @@ public final class DungeonRun {
          */
         String hero;
         ObjectId heroId;
+        /** The person his player right-clicked, whom he is walking over to talk to; null for nobody. */
+        ObjectId talkingTo;
         /** The experience a loaded save gives his next body, or -1 when there is none to give. */
         int loadedExperience = -1;
 
@@ -162,6 +165,7 @@ public final class DungeonRun {
             LootTable drops, uz.dukeengine.dungeon.ai.Orders orders,
             SkillRanks learnt, Seal seal) {
         this.seal = seal;
+        this.quests = new QuestLog(settings.story(), settings.loot(), settings.lootDrops().joinCount());
         this.orders = orders;
         this.dungeonPlayer = dungeonPlayer;
         this.floors = floors;
@@ -473,6 +477,7 @@ public final class DungeonRun {
             }
         }
         mission = missionOf(game.getLogic(), floor, placed, settings, dungeonPlayer.getIndex());
+        peopleOn(game);
         finished.clear();
         said = null;
         track(game);
@@ -505,7 +510,7 @@ public final class DungeonRun {
         var steps = new ArrayList<>(finished);
         steps.add(new Tracker.Step(words, false, saidSince));
         tracker = descendAtFrame > 0 ? Tracker.NONE
-                : new Tracker(List.of(new Tracker.Entry(Tracker.Kind.MAIN, run.missionTitle(), steps)));
+                : new Tracker(listed(new Tracker.Entry(Tracker.Kind.MAIN, run.missionTitle(), steps)));
     }
 
     /** What a step said as it was finished: the count full where it counts. */
@@ -612,6 +617,7 @@ public final class DungeonRun {
             descend(game);
             game.setBanner("");
         }
+        story(game);
         track(game);
         showStatus(game);
     }
@@ -722,7 +728,9 @@ public final class DungeonRun {
             // not earned and no decisions left to make. A build is the most valuable
             // thing a run has and a roguelike keeps nothing.
             seat.learnt.startWith(settings.skillsFor(seat.hero));
+            seat.talkingTo = null;
         }
+        quests.reset(); // and every quest: the map that starts them starts them again
         descend(game);
         runCount++;
         state = State.RUNNING;
@@ -845,5 +853,176 @@ public final class DungeonRun {
      */
     public Tracker getTracker() {
         return tracker;
+    }
+
+    // ---- people and quests: see docs/plan/2026-10-08-dialogue-and-quests.md ----
+
+    /** The run's quests: its state, and what has been said. */
+    private final QuestLog quests;
+
+    /** A person standing on this floor: the thing, and the Npc it is. In the order the map writes them. */
+    private record Person(ObjectId id, String npc) {
+    }
+
+    private final List<Person> people = new ArrayList<>();
+
+    /** What one person shows over their head, by the id of the thing: read by the window. */
+    public record Mark(int id, QuestLog.Mark mark) {
+    }
+
+    private volatile List<Mark> marks = List.of();
+
+    /** The floor's mission first, then every quest going: the MAIN ones first, then the SIDE. */
+    private List<Tracker.Entry> listed(Tracker.Entry floor) {
+        return java.util.stream.Stream.concat(java.util.stream.Stream.of(floor), quests.entries().stream()).toList();
+    }
+
+    /**
+     * The floor's people, on the engine's neutral side, which nobody is the enemy of; the things lying on its floor;
+     * and the quests it starts with.
+     */
+    private void peopleOn(DukeGame game) {
+        people.clear();
+        var story = floors.story();
+        var logic = game.getLogic();
+        quests.frame(logic.getFrame());
+        for (var placed : story.npcs()) {
+            var template = logic.getThingFactory().findTemplate(placed.kind());
+            if (template != null) {
+                var person = logic.spawn(template, ground(logic, placed),
+                        uz.dukeengine.core.player.PlayerList.NEUTRAL_INDEX);
+                people.add(new Person(person.getId(), placed.kind()));
+            }
+        }
+        for (var placed : story.items()) {
+            var item = settings.loot().stream().filter(loot -> loot.id().equals(placed.kind())).findFirst();
+            item.ifPresent(loot -> uz.dukeengine.rpg.item.GroundItem.lay(logic,
+                    loot.liesAs(settings.lootDrops().template()), loot, ground(logic, placed),
+                    dungeonPlayer.getIndex()));
+        }
+        for (var quest : story.quests()) {
+            quests.start(quest);
+        }
+        marks();
+    }
+
+    /** The middle of a placed thing's cell, on the ground. */
+    private static uz.dukeengine.core.math.Coord3D ground(uz.dukeengine.core.GameLogic logic,
+            uz.dukeengine.dungeon.map.StaticMap.Placed placed) {
+        var at = GeneratedDungeon.Placement.atCell(placed.x(), placed.y());
+        var flat = new uz.dukeengine.core.math.Coord3D(at.x(), at.y(), 0f);
+        return new uz.dukeengine.core.math.Coord3D(at.x(), at.y(), logic.groundHeight(flat));
+    }
+
+    /** A death in the world, heard as it is reaped: every KILL of its kind counts it. */
+    public void died(uz.dukeengine.core.event.ObjectDied death) {
+        quests.died(death.templateName(), bags());
+    }
+
+    /**
+     * The player right-clicked a person: his hero talks to them now if he is near enough, or walks over and talks
+     * when he is — and is told what they say even if he has heard it.
+     */
+    public void talkTo(DukeGame game, int playerIndex, ObjectId person) {
+        var seat = seatOf(playerIndex);
+        var who = people.stream().filter(each -> each.id().equals(person)).findFirst().orElse(null);
+        var hero = seat == null || seat.heroId == null ? null : game.getLogic().findObject(seat.heroId);
+        var there = who == null ? null : game.getLogic().findObject(person);
+        if (hero == null || there == null || hero.isEffectivelyDead()) {
+            return;
+        }
+        quests.frame(game.getLogic().getFrame());
+        if (near(hero, there, who)) {
+            seat.talkingTo = null;
+            quests.talk(who.npc(), seat.progress.getLoot(), true);
+            marks();
+            return;
+        }
+        seat.talkingTo = person;
+        orders.attackMove(playerIndex, null);
+        uz.dukeengine.combat.module.Errand.giveUpAll(hero);
+        var legs = hero.getLocomotor();
+        if (legs != null) {
+            legs.moveTo(there.getPosition());
+        }
+    }
+
+    /**
+     * Every frame the floor is played: experience earned paid to every hero standing, and every {@code CheckFrames}
+     * the bags, the zones and the people looked at.
+     */
+    private void story(DukeGame game) {
+        var logic = game.getLogic();
+        quests.frame(logic.getFrame());
+        int paid = quests.takeExperience();
+        if (paid > 0) {
+            for (var seat : seats) {
+                var hero = seat.heroId == null ? null : logic.findObject(seat.heroId);
+                var worth = hero == null ? null : hero.findModule(uz.dukeengine.combat.module.ExperienceModule.class);
+                if (worth != null) {
+                    worth.addExperience(paid);
+                }
+            }
+        }
+        if (logic.getFrame() % settings.story().dialogue().checkFrames() != 0) {
+            marks(); // a death this frame may have sent him back to somebody
+            return;
+        }
+        quests.holding(bags());
+        float cell = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
+        for (var seat : seats) {
+            var hero = seat.heroId == null ? null : logic.findObject(seat.heroId);
+            if (hero == null || hero.isEffectivelyDead()) {
+                continue;
+            }
+            for (var zone : floors.story().zones()) {
+                if (zone.holds(hero.getPosition().x(), hero.getPosition().y(), cell)) {
+                    quests.reached(zone.name(), seat.progress.getLoot());
+                }
+            }
+        }
+        for (var who : people) {
+            var there = logic.findObject(who.id());
+            for (var seat : seats) {
+                var hero = seat.heroId == null ? null : logic.findObject(seat.heroId);
+                if (there == null || hero == null || hero.isEffectivelyDead() || !near(hero, there, who)) {
+                    continue;
+                }
+                boolean asked = who.id().equals(seat.talkingTo);
+                if (asked) {
+                    seat.talkingTo = null;
+                }
+                if (quests.talk(who.npc(), seat.progress.getLoot(), asked)) {
+                    break; // one talk to a person at a time
+                }
+            }
+        }
+        marks();
+    }
+
+    private boolean near(GameObject hero, GameObject there, Person who) {
+        var npc = settings.story().npc(who.npc());
+        float reach = npc == null ? 0f : npc.radius();
+        float dx = hero.getPosition().x() - there.getPosition().x();
+        float dy = hero.getPosition().y() - there.getPosition().y();
+        return dx * dx + dy * dy <= reach * reach;
+    }
+
+    private void marks() {
+        marks = people.stream().map(who -> new Mark(who.id().value(), quests.markOf(who.npc()))).toList();
+    }
+
+    private List<uz.dukeengine.rpg.item.LootBag> bags() {
+        return seats.stream().map(seat -> seat.progress.getLoot()).toList();
+    }
+
+    /** The run's quests: what is going, finished and heard. */
+    public QuestLog getQuests() {
+        return quests;
+    }
+
+    /** What each person on the floor shows over their head — from any thread. */
+    public List<Mark> getMarks() {
+        return marks;
     }
 }

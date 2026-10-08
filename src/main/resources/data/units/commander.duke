@@ -1,0 +1,30 @@
+; ---------------------------------------------------------------------------
+; The kingdom's commander, a young woman: the first person in the game who talks.
+;
+; A person rather than a fighter. She stands on the engine's neutral side, which
+; no hero and no monster is the enemy of; she has no Body, so nothing targets her
+; and she never dies; and her Weight is 0, so no floor ever draws her. What she
+; says is her Npc block in data/story/story.duke; where she stands is a map's Npcs.
+;
+; Her look is a stand-in until her own model is made: the KayKit ranger, which no
+; hero wears any more (the rogue has his own mesh).
+; ---------------------------------------------------------------------------
+Monster
+  Name = Commander
+  DisplayName = Qo'mondon Laylo
+  KindOf = [INFANTRY, SELECTABLE]
+  Geometry = Cylinder
+    Radius = 4
+    Height = 12
+  End
+  VisionRange = 0
+  MinDepth = 99
+  Weight = 0
+  Colour = 0xE8C15A
+  Scale = 1.0
+  Model = models/heroes/ranger.glb
+  ; The kit's people box about 2.18 tall: 12 / 2.18, as the rogue's.
+  ModelScale = 5.5
+  Facing = 90
+  Animations = Humanoid
+End

@@ -54,6 +54,7 @@ final class MissionScreen {
         var look = settings.menu();
         var snapshot = match.game().getSnapshot();
         tracker(canvas, match.run().getTracker(), snapshot.frame(), folded, settings);
+        marks(canvas, match, snapshot, settings);
         var heroes = settings.heroes().stream().map(hero -> hero.name()).collect(Collectors.toUnmodifiableSet());
         for (var unit : snapshot.units()) {
             var progress = heroes.contains(unit.templateName()) ? match.run().progressOf(unit.playerIndex()) : null;
@@ -61,6 +62,35 @@ final class MissionScreen {
             var bar = said.isEmpty() ? null : canvas.barOf(unit.id());
             if (bar != null && seen(canvas, bar)) {
                 bubble(canvas, said, bar, look);
+            }
+        }
+    }
+
+    /**
+     * Over every person with something for the hero, a mark: ! for a quest to give, ? for one waiting on them — the
+     * Dialogue block's pictures, in its colour, standing over their head where the client puts it on the screen.
+     */
+    static void marks(Canvas canvas, Dungeon.Session match, uz.dukeengine.core.view.WorldSnapshot snapshot,
+            DungeonSettings settings) {
+        var marks = match.run().getMarks();
+        if (marks.isEmpty()) {
+            return;
+        }
+        var dialogue = settings.story().dialogue();
+        float size = Math.clamp(canvas.height() * 0.04f, 20f, 48f);
+        for (var unit : snapshot.units()) {
+            for (var mark : marks) {
+                if (mark.id() != unit.id() || mark.mark() == uz.dukeengine.dungeon.story.QuestLog.Mark.NONE) {
+                    continue;
+                }
+                var over = canvas.screenOf(unit.x(), unit.y(), unit.z() + 18f);
+                if (over == null) {
+                    continue;
+                }
+                var picture = mark.mark() == uz.dukeengine.dungeon.story.QuestLog.Mark.GIVE ? dialogue.giveMark()
+                        : dialogue.handInMark();
+                canvas.drawImage(Canvas.Image.of(picture), over.x() - size / 2f, over.y() - size, over.x() + size / 2f,
+                        over.y(), 0xFF000000 | dialogue.markColour(), Canvas.Blend.ALPHA);
             }
         }
     }

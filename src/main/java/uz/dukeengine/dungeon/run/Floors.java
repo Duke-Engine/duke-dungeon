@@ -62,6 +62,11 @@ public interface Floors {
      */
     int lastDepth();
 
+    /** The people, places, things and quests the floor brings: none on the descent. */
+    default uz.dukeengine.dungeon.story.MapStory story() {
+        return uz.dukeengine.dungeon.story.MapStory.NONE;
+    }
+
     /** What the floors' ground is painted with, or null for floors drawn by the kit of their look. */
     default uz.dukeengine.dungeon.stage.StagePaint paint() {
         return null;

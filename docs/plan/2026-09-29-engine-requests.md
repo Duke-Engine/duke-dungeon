@@ -33,6 +33,7 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E17 | a thing that hides what is behind it from sight while it stands (`BlocksSight`) — the keep's shut gate | landed, d5db75c8 + 36f49f8e (on e17-blocks-sight) |
 | E18 | streaming the ground per map, not for the whole run | landed, 574011ae (on e16-painted-world); the game asks it per map |
 | E19 | a game's rows on the pause menu, and a word to the game before the client stops (saving) | landed, b66f00a7: `Shell.pauseRows`, `Duke3D.onLeaving`; the game saves with both |
+| E20 | a game adds its own right-click actions (talk to a person) without replacing the engine's pickup and gate rules | waiting (small) |
 | E21 | the move order's arrowheads lie on the ground's slope | waiting (small) |
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
@@ -622,9 +623,25 @@ The game now saves (`docs/plan/2026-10-08-saving.md`): an autosave as each floor
 Generic on purpose: any game with saves wants both. Done when: a game's row shows on the pause menu and runs; the
 hook runs once on each way out; a client3d test pins both. Tell the game the names they ended up as.
 
-## E21 — The move order's mark lies on the slope it is on (2026-10-08, small)
+## E20 — A game adds its own right-click actions beside the engine's (2026-10-08, small)
 
-(E20 is held for the dialogue work's request, if it needs one.)
+The game now has people who talk (`docs/plan/2026-10-08-dialogue-and-quests.md`): a right-click on a person sends the
+hero over to talk to them, as the game's order `Talk`. The right-click word is `DukeGame.contextOrder(ContextOrder)`,
+which holds ONE rule, and `BagScreen.show` (rpg-client-3d) sets it to its own: a thing lying on the floor is
+`PickUp`, the keep's gate is `ToTheGate`. To add `Talk` the game sets the rule again after `BagScreen.show` and
+repeats the bag's two cases inside it (`Bag.show` in the game) — a copy that silently goes stale the day the bag's
+rule changes, and a second game with the bag would have to copy it too.
+
+Asked: a game may add its own context actions without replacing anyone else's — e.g. `DukeGame.contextOrder` keeps a
+list and asks each rule in the order added until one names a word (or `contextOrder(rule)` plus an
+`addContextOrder(rule)` that goes before or after the ones there); `BagScreen.show` adds its rule rather than setting
+it. The word still goes out as `GameOrder(player, word, selection, place, target, 0)` and its cursor is still the
+`Cursor` of that name. The same for the ground rule (`groundOrder`) if it is a single slot too.
+
+Done when: the bag's pickup/gate rule and a game's own rule (a word for some other target) both answer on one
+match, in a test; the game then deletes its copy of the bag's two cases from `Bag.show`.
+
+## E21 — The move order's mark lies on the slope it is on (2026-10-08, small)
 
 The owner, playtesting: the walk order's mark looks the same on any ground, and should tilt with the surface. Today
 `Chevrons.place` (client3d) lifts each arrowhead to `floorAt` under it but keeps it level, turned only about the

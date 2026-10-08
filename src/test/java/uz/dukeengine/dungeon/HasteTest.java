@@ -445,7 +445,7 @@ class HasteTest {
     void everyMonsterCarriesABook() {
         var bookless = new ArrayList<String>();
         for (var record : Content.records(Content.units(), "units")) {
-            if (record instanceof Monster monster
+            if (record instanceof Monster monster && SETTINGS.story().npc(monster.name()) == null // a person casts nothing
                     && monster.modules().stream().noneMatch(SkillBook.Data.class::isInstance)) {
                 bookless.add(monster.name());
             }
