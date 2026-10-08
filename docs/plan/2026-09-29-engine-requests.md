@@ -37,7 +37,7 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E21 | the move order's arrowheads lie on the ground's slope | landed, b5fc663d |
 | E22 | the story half lifted into rpg: zones, dialogue, quests, triggers and cutscenes, people and trade | waiting (big) |
 | E23 | a long list in a .duke file read in linear time (the world map's scenery) | landed, e05164d8 (on e23-linear-lists) |
-| E24 | haze (and the world picture) chosen per map, as streaming is | waiting (small) |
+| E24 | haze (and the world picture) chosen per map, as streaming is | landed, 60557fac (on e24-haze-per-map); the game hazes its wide worlds |
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
 game builds against the local engine. E12–E15 reached it together at 668045f0 (their pull requests merged as
