@@ -330,6 +330,13 @@ public final class DungeonRun {
         pick(seat, save.hero());
         save.restore(seat.progress.getLoot(), seat.learnt, settings);
         seat.loadedExperience = save.experience();
+        // And its quests, before the floor is laid: the map's starting quests are then going or finished already,
+        // and are not started again. A save from before quests were saved starts them, as a new run does.
+        if (save.quests() == null) {
+            quests.reset();
+        } else {
+            quests.restore(save.quests());
+        }
         loading = true;
     }
 
@@ -349,7 +356,7 @@ public final class DungeonRun {
             return null;
         }
         return SaveGame.of(floors.seed(), floors.stageName(), depth, seat.hero, seat.progress.getExperience(),
-                seat.learnt, seat.progress.getLoot());
+                seat.learnt, seat.progress.getLoot(), quests.state());
     }
 
     /** Whoever the first player plays — the file's answer until somebody chooses. */

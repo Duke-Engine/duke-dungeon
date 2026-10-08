@@ -215,6 +215,37 @@ public final class QuestLog {
         return List.copyOf(heard);
     }
 
+    /** The log as a save keeps it: the quests going, in the order started, the finished ones, what was heard. */
+    public record State(List<Active> active, List<String> finished, List<String> heard) {
+
+        public State {
+            active = List.copyOf(active);
+            finished = List.copyOf(finished);
+            heard = List.copyOf(heard);
+        }
+    }
+
+    public State state() {
+        return new State(active, finished, heard);
+    }
+
+    /**
+     * The log as {@code saved} left it, in place of what it holds: a loaded run. A quest the files no longer have, or a
+     * step past its last, is left out rather than refusing the save; every step begins again at frame 0.
+     */
+    public void restore(State saved) {
+        reset();
+        for (var each : saved.active()) {
+            var quest = story.quest(each.quest());
+            if (quest != null && each.step() >= 0 && each.step() < quest.steps().size()
+                    && active.stream().noneMatch(a -> a.quest().equals(each.quest()))) {
+                active.add(new Active(each.quest(), each.step(), Math.max(0, each.count()), 0));
+            }
+        }
+        saved.finished().stream().filter(name -> story.quest(name) != null).forEach(finished::add);
+        saved.heard().stream().filter(name -> story.conversation(name) != null).forEach(heard::add);
+    }
+
     // ---- inside ----
 
     private Quest.Step stepOf(Active each) {

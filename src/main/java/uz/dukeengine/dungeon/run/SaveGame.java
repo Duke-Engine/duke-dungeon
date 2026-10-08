@@ -21,9 +21,17 @@ import uz.dukeengine.rpg.skill.SkillRanks;
  * @param experience everything earned this run; his level is worked out from it
  * @param ranks      what he has learnt, by skill key
  * @param bag        what he carries, by slot
+ * @param quests     the run's quests — going, finished and heard — or {@code null} for a save written before quests
+ *                   were saved, which loads with its map's starting quests
  */
 public record SaveGame(long seed, String stage, int depth, String hero, int experience, List<Rank> ranks,
-        List<Item> bag) {
+        List<Item> bag, uz.dukeengine.dungeon.story.QuestLog.State quests) {
+
+    /** A save with no quests in it: as one written before they were saved. */
+    public SaveGame(long seed, String stage, int depth, String hero, int experience, List<Rank> ranks,
+            List<Item> bag) {
+        this(seed, stage, depth, hero, experience, ranks, bag, null);
+    }
 
     /** The format this game writes and the only one it reads. */
     public static final int VERSION = 1;
@@ -50,6 +58,12 @@ public record SaveGame(long seed, String stage, int depth, String hero, int expe
     /** What this hero has, as a save. */
     public static SaveGame of(long seed, String stage, int depth, String hero, int experience, SkillRanks learnt,
             LootBag carried) {
+        return of(seed, stage, depth, hero, experience, learnt, carried, null);
+    }
+
+    /** The same, with the run's quests. */
+    public static SaveGame of(long seed, String stage, int depth, String hero, int experience, SkillRanks learnt,
+            LootBag carried, uz.dukeengine.dungeon.story.QuestLog.State quests) {
         var ranks = new ArrayList<Rank>();
         for (var skill : learnt.getSkills()) {
             ranks.add(new Rank(skill.key(), learnt.rankOf(skill.key())));
@@ -62,7 +76,7 @@ public record SaveGame(long seed, String stage, int depth, String hero, int expe
                 bag.add(new Item(slot, item.id(), item.level(), item.value(), item.extraValue()));
             }
         }
-        return new SaveGame(seed, stage, depth, hero, experience, ranks, bag);
+        return new SaveGame(seed, stage, depth, hero, experience, ranks, bag, quests);
     }
 
     /**
@@ -141,6 +155,20 @@ public record SaveGame(long seed, String stage, int depth, String hero, int expe
             out.append("    Extra = ").append(item.extra()).append('\n');
             out.append("  End\n");
         }
+        if (quests != null) {
+            // The run's quests: a Quest block for each going, in the order started, and the names of those finished
+            // and the conversations heard. A save with no Quests line was written before quests were saved.
+            out.append("  Quests = Yes\n");
+            out.append("  Finished = [").append(String.join(", ", quests.finished())).append("]\n");
+            out.append("  Heard = [").append(String.join(", ", quests.heard())).append("]\n");
+            for (var going : quests.active()) {
+                out.append("  Quest\n");
+                out.append("    Name = ").append(going.quest()).append('\n');
+                out.append("    Step = ").append(going.step()).append('\n');
+                out.append("    Count = ").append(going.count()).append('\n');
+                out.append("  End\n");
+            }
+        }
         return out.append("End\n").toString();
     }
 
@@ -175,16 +203,25 @@ public record SaveGame(long seed, String stage, int depth, String hero, int expe
                 ranks.add(new Rank(keys.get(at).charAt(0), Integer.parseInt(levels.get(at))));
             }
             var bag = new ArrayList<Item>();
+            var going = new ArrayList<uz.dukeengine.dungeon.story.QuestLog.Active>();
             for (var item : save.blocks()) {
+                if (item.word().equals("Quest")) {
+                    going.add(new uz.dukeengine.dungeon.story.QuestLog.Active(word(item, "Name"),
+                            number(item, "Step"), number(item, "Count"), 0));
+                    continue;
+                }
                 if (!item.word().equals("Item")) {
                     throw new IllegalArgumentException("an unknown block: " + item.word());
                 }
                 bag.add(new Item(number(item, "Slot"), word(item, "Id"), number(item, "Level"),
                         number(item, "Value"), number(item, "Extra")));
             }
+            var quests = field(save, "Quests") == null ? null
+                    : new uz.dukeengine.dungeon.story.QuestLog.State(going, items(save, "Finished"),
+                            items(save, "Heard"));
             var stage = field(save, "Stage");
             return new SaveGame(Long.parseLong(word(save, "Seed")), stage == null ? null : text(stage, "Stage"),
-                    number(save, "Depth"), word(save, "Hero"), number(save, "Experience"), ranks, bag);
+                    number(save, "Depth"), word(save, "Hero"), number(save, "Experience"), ranks, bag, quests);
         } catch (RuntimeException e) {
             throw new Refused(source + " cannot be loaded: " + e.getMessage(), e);
         }
