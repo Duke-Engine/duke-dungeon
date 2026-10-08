@@ -15,12 +15,13 @@ import uz.dukeengine.core.thing.Titled;
 /**
  * A thing that stands about in a room, as one {@code Prop} block writes it: what the engine
  * builds it from, and how often a room draws it — {@code Weight}, against every other prop's.
+ * {@code BlocksSight = Yes} makes it stone to every line of sight while it stands, as the keep's gate is.
  */
 public record Prop(String name, String displayName, Set<Kind> kindOf, float visionRange, Geometry geometry,
-        List<ModuleData> modules, int weight) implements Solid, Sighted, Classified, Titled {
+        List<ModuleData> modules, int weight, boolean blocksSight) implements Solid, Sighted, Classified, Titled {
 
     /** What a block leaves out: drawn as often as anything else that says nothing. */
-    static final Prop DEFAULTS = new Prop("", "", Set.of(), 0f, Geometry.POINT, List.of(), 1);
+    static final Prop DEFAULTS = new Prop("", "", Set.of(), 0f, Geometry.POINT, List.of(), 1, false);
 
     public Prop {
         displayName = displayName == null ? "" : displayName;

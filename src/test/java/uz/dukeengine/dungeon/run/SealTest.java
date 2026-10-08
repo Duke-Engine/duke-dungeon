@@ -1128,4 +1128,27 @@ class SealTest {
                     opened ? "the gate open, he never picked the boss" : "he picked the boss across the shut gate");
         }
     }
+
+    /** From the threshold the court behind the shut gate is not in the hero's sight; once it is open, the next look has it. */
+    @Test
+    void theCourtBehindTheShutGateIsNotInSightFromTheThresholdUntilItIsOpened() {
+        var floor = floor("Rogue");
+        floor.hold();
+        var hero = floor.put(floor.hero(), 1, 0);
+        var court = floor.cell(-2, 0);
+        // The dungeon keeps no sight cells of its own yet, so the test lays them the way the engine's own test does.
+        floor.game().getLogic().setSightCells(PathGrid.DEFAULT_CELL_SIZE, 150);
+        floor.game().getLogic().setSightHiddenByStone(true);
+        floor.game().runHeadless(30);
+        var cells = floor.game().getLogic().getSightCells();
+
+        assertNotEquals(uz.dukeengine.core.SightCells.Sight.IN_SIGHT, cells.sight(hero.getPlayerIndex(), court),
+                "the court is in his sight through the shut gate");
+
+        floor.open();
+        floor.game().runHeadless(30);
+
+        assertEquals(uz.dukeengine.core.SightCells.Sight.IN_SIGHT, cells.sight(hero.getPlayerIndex(), court),
+                "the gate open, the court is still out of his sight");
+    }
 }
