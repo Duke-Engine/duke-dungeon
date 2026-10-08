@@ -19,6 +19,7 @@ import uz.dukeengine.dungeon.party.ChooseHero;
 import uz.dukeengine.dungeon.party.PartyMatch;
 import uz.dukeengine.dungeon.party.PartyOrders;
 import uz.dukeengine.dungeon.run.DungeonRun;
+import uz.dukeengine.dungeon.run.Tracker;
 import uz.dukeengine.dungeon.stage.Stage;
 import uz.dukeengine.game.DukeGame;
 
@@ -128,18 +129,111 @@ class MissionScreenTest {
     }
 
     @Test
-    void theTrackerSaysTheStepAtTheTopOfTheScreen() {
+    void theTrackerListsTheMissionAtTheRightEdgeOfTheScreen() {
         var session = Dungeon.newSession(21L);
         session.game().runHeadless(2);
+        MissionScreen.folded(false);
         var drawn = new Drawn(null);
 
         MissionScreen.paint(drawn, session, SETTINGS);
 
-        var tracker = drawn.line(session.run().getTracker());
-        assertNotNull(tracker, "the step is not drawn: " + drawn.lines);
-        assertTrue(tracker.y() < 90f, "and it is not at the top: " + tracker);
-        assertTrue(session.run().getTracker().endsWith("0/" + session.run().getMission().outside()),
-                "with its count: " + session.run().getTracker());
+        var title = drawn.line("◆ " + SETTINGS.run().missionTitle());
+        assertNotNull(title, "the mission is not listed: " + drawn.lines);
+        var step = drawn.line("• " + session.run().getTracker().words());
+        assertNotNull(step, "its step is not under it: " + drawn.lines);
+        assertTrue(title.y() < 90f && step.y() > title.y(), "the title above the step, near the top: " + drawn.lines);
+        assertTrue(title.x() > 1600f / 2f, "on the right of the window: " + title);
+        assertTrue(session.run().getTracker().words().endsWith("0/" + session.run().getMission().outside()),
+                "with its count: " + session.run().getTracker().words());
+    }
+
+    private static Tracker listed(Tracker.Kind kind, Tracker.Step... steps) {
+        return new Tracker(List.of(new Tracker.Entry(kind, "T", List.of(steps))));
+    }
+
+    /** A main mission is gold with a filled mark, a side one plain with an open mark, and the done step ticked and dimmer. */
+    @Test
+    void aMainMissionIsGoldASideOnePlainAndADoneStepTickedAndDimmed() {
+        int frame = 500;
+        var steps = new Tracker.Step[] {new Tracker.Step("old", true, 480), new Tracker.Step("now", false, 400)};
+
+        var main = MissionScreen.rows(listed(Tracker.Kind.MAIN, steps), frame, SETTINGS);
+        var side = MissionScreen.rows(listed(Tracker.Kind.SIDE, steps), frame, SETTINGS);
+
+        assertEquals(List.of("◆ T", "✓ old", "• now"), main.stream().map(row -> row.text()).toList());
+        assertEquals(List.of("◇ T", "✓ old", "• now"), side.stream().map(row -> row.text()).toList());
+        assertEquals(0xFF000000 | SETTINGS.menu().torchColour(), main.get(0).argb(), "gold");
+        assertEquals(0xFF000000 | SETTINGS.menu().boneColour(), side.get(0).argb(), "plain");
+        assertTrue((main.get(1).argb() >>> 24) < 0xFF, "the done step is dimmed");
+        assertEquals(0xFF000000 | SETTINGS.menu().boneColour(), main.get(2).argb(), "a step long begun is plain");
+        assertTrue(main.get(1).indented() && main.get(2).indented() && !main.get(0).indented());
+
+        var drawn = new Drawn(null);
+        MissionScreen.tracker(drawn, listed(Tracker.Kind.SIDE, steps), frame, false, SETTINGS);
+        assertNotNull(drawn.line("◇ T"), "the side mission is drawn: " + drawn.lines);
+    }
+
+    /** A step just begun is brighter than one begun a while ago, and goes back to plain when the glow is over. */
+    @Test
+    void aStepJustBegunGlowsAndThenSettles() {
+        int glow = SETTINGS.run().glowFrames();
+        var begun = new Tracker.Step("now", false, 100);
+        int plain = 0xFF000000 | SETTINGS.menu().boneColour();
+
+        int fresh = MissionScreen.rows(listed(Tracker.Kind.MAIN, begun), 100, SETTINGS).get(1).argb();
+        int half = MissionScreen.rows(listed(Tracker.Kind.MAIN, begun), 100 + glow / 2, SETTINGS).get(1).argb();
+        int over = MissionScreen.rows(listed(Tracker.Kind.MAIN, begun), 100 + glow, SETTINGS).get(1).argb();
+
+        assertEquals(0xFFFFFFFF, fresh, "white as it begins");
+        assertTrue((half & 0xFF) > (plain & 0xFF) && (half & 0xFF) < 0xFF, "between, half way");
+        assertEquals(plain, over, "plain once its glow is over");
+        assertEquals(1f, Tracker.glow(10, 10, 20));
+        assertEquals(0.5f, Tracker.glow(20, 10, 20));
+        assertEquals(0f, Tracker.glow(500, 10, 20));
+        assertEquals(0f, Tracker.glow(10, 10, 0), "no glow in the data, no glow");
+    }
+
+    /** Folded it is only its tab, and the fold key flips it. */
+    @Test
+    void foldedItIsOnlyItsTabAndTheFoldKeyFlipsIt() {
+        var session = Dungeon.newSession(21L);
+        session.game().runHeadless(2);
+        MissionScreen.folded(false);
+        var keys = Main.controls(SETTINGS);
+        assertTrue(keys.claimedKeys().contains(SETTINGS.run().foldKey().charAt(0)), "the fold key is claimed");
+
+        assertTrue(keys.pressNow(session.game(), SETTINGS.run().foldKey().charAt(0)));
+        assertTrue(MissionScreen.folded(), "one press folds it");
+        var drawn = new Drawn(null);
+        MissionScreen.paint(drawn, session, SETTINGS);
+        assertEquals(List.of(SETTINGS.run().missionsTab()), drawn.lines.stream().map(line -> line.text()).distinct().toList(),
+                "only the tab is drawn (once, and once more as its shadow)");
+        var tab = drawn.lines.getLast();
+        assertTrue(tab.x() > 1600f / 2f && tab.y() < 90f, "small, at the right top: " + tab);
+
+        keys.pressNow(session.game(), SETTINGS.run().foldKey().charAt(0));
+        assertFalse(MissionScreen.folded(), "a second press unfolds it");
+        MissionScreen.folded(false);
+    }
+
+    /** The key is nobody else's: not a skill's (Q W E R), an order's (A S D F), nor one of the client's (WASD arrows H P). */
+    @Test
+    void theFoldKeyIsFree() {
+        char fold = Character.toUpperCase(SETTINGS.run().foldKey().charAt(0));
+        assertEquals(-1, "WASDHPFQER".indexOf(fold), "taken: " + fold);
+    }
+
+    /** Wherever the window is, the list is wholly on it, against the right edge, and under the top. */
+    @Test
+    void theListStaysOnTheWindow() {
+        for (int[] window : new int[][] {{1600, 900}, {800, 600}, {320, 240}, {200, 100}}) {
+            var box = MissionScreen.boxOf(window[0], window[1], 150f, 60f);
+            assertTrue(box.x() >= 0f && box.y() >= 0f, "off the left or top at " + window[0] + ": " + box);
+            assertTrue(box.x() + box.width() <= Math.max(window[0], 150f) && box.y() + box.height() <= window[1],
+                    "off the right or foot at " + window[0] + "x" + window[1] + ": " + box);
+        }
+        var wide = MissionScreen.boxOf(1600, 900, 150f, 60f);
+        assertTrue(1600f - (wide.x() + wide.width()) < 40f && wide.y() < 90f, "at the right edge, high up: " + wide);
     }
 
     @Test
@@ -312,23 +406,23 @@ class MissionScreenTest {
         var game = session.game();
         game.runHeadless(2);
         var run = session.run();
-        assertFalse(run.getTracker().isEmpty(), "the premise: a step is said while he fights");
+        assertFalse(run.getTracker().words().isEmpty(), "the premise: a step is said while he fights");
 
         game.getLogic().destroyObject(find(game, "Rogue"));
         game.runHeadless(1);
         assertEquals(DungeonRun.State.DEAD, run.getState());
-        assertEquals("", run.getTracker(), "the floor he died on says nothing more");
+        assertEquals("", run.getTracker().words(), "the floor he died on says nothing more");
         var drawn = new Drawn(null);
         MissionScreen.paint(drawn, session, SETTINGS);
         assertTrue(drawn.lines.isEmpty(), "and nothing is drawn under the banner: " + drawn.lines);
 
         game.runHeadless(SETTINGS.run().respawnDelayFrames() / 2);
         assertEquals(DungeonRun.State.DEAD, run.getState(), "the premise: still waiting");
-        assertEquals("", run.getTracker(), "and still nothing to say");
+        assertEquals("", run.getTracker().words(), "and still nothing to say");
 
         game.runHeadless(SETTINGS.run().respawnDelayFrames());
         assertEquals(DungeonRun.State.RUNNING, run.getState());
-        assertFalse(run.getTracker().isEmpty(), "the next floor says its step");
+        assertFalse(run.getTracker().words().isEmpty(), "the next floor says its step");
     }
 
     /** The same for a win: the boss down, the banner up, and no "kill the boss" under it. */
@@ -340,23 +434,23 @@ class MissionScreenTest {
         var game = session.game();
         game.runHeadless(2);
         var run = session.run();
-        assertEquals(SETTINGS.run().killBossWord(), run.getTracker(), "the premise: the boss stands, and it is said");
+        assertEquals(SETTINGS.run().killBossWord(), run.getTracker().words(), "the premise: the boss stands, and it is said");
 
         game.getLogic().destroyObject(find(game, floor.boss().kind()));
         game.runHeadless(2);
         assertEquals(DungeonRun.State.WON, run.getState());
-        assertEquals("", run.getTracker(), "the boss is dead, and there is nothing left to tell him to do");
+        assertEquals("", run.getTracker().words(), "the boss is dead, and there is nothing left to tell him to do");
         var drawn = new Drawn(null);
         MissionScreen.paint(drawn, session, SETTINGS);
         assertTrue(drawn.lines.isEmpty(), "nothing is drawn under the banner: " + drawn.lines);
 
         game.runHeadless(SETTINGS.run().victoryFrames() / 2);
         assertEquals(DungeonRun.State.WON, run.getState(), "the premise: still looking at the word");
-        assertEquals("", run.getTracker(), "and still nothing to say");
+        assertEquals("", run.getTracker().words(), "and still nothing to say");
 
         game.runHeadless(SETTINGS.run().victoryFrames());
         assertEquals(DungeonRun.State.RUNNING, run.getState());
-        assertEquals(SETTINGS.run().killBossWord(), run.getTracker(), "the next run says its step again");
+        assertEquals(SETTINGS.run().killBossWord(), run.getTracker().words(), "the next run says its step again");
     }
 
     /**
@@ -369,7 +463,7 @@ class MissionScreenTest {
         var game = session.game();
         game.runHeadless(2);
         var run = session.run();
-        assertFalse(run.getTracker().isEmpty(), "the premise: a step is said while the boss stands");
+        assertFalse(run.getTracker().words().isEmpty(), "the premise: a step is said while the boss stands");
 
         game.getLogic().destroyObject(find(game, SETTINGS.bossKindAt(run.getDepth())));
         game.runHeadless(2);
@@ -377,17 +471,17 @@ class MissionScreenTest {
         assertEquals(1, run.getDepth(), "the premise: the floor is not left yet");
         assertTrue(game.getSnapshot().banner().contains(SETTINGS.run().nextDepthWord(2)),
                 "the premise: the banner names the next depth: " + game.getSnapshot().banner());
-        assertEquals("", run.getTracker(), "the boss is dead, and there is nothing left to tell him to do");
+        assertEquals("", run.getTracker().words(), "the boss is dead, and there is nothing left to tell him to do");
         var drawn = new Drawn(null);
         MissionScreen.paint(drawn, session, SETTINGS);
         assertTrue(drawn.lines.isEmpty(), "nothing is drawn under the banner: " + drawn.lines);
 
         game.runHeadless(SETTINGS.run().descendDelayFrames() / 2);
         assertEquals(1, run.getDepth(), "the premise: still waiting to close");
-        assertEquals("", run.getTracker(), "and still nothing to say");
+        assertEquals("", run.getTracker().words(), "and still nothing to say");
 
         game.runHeadless(SETTINGS.run().descendDelayFrames());
         assertEquals(2, run.getDepth());
-        assertFalse(run.getTracker().isEmpty(), "the next floor says its step");
+        assertFalse(run.getTracker().words().isEmpty(), "the next floor says its step");
     }
 }

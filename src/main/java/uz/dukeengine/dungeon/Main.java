@@ -797,6 +797,9 @@ public final class Main {
         // other decision, settled on a frame boundary where the rules live.
         keys.onRaiseSkill((game, key) -> game.postCommand(PartyOrders.of(new uz.dukeengine.rpg.skill.UpgradeSkill(
                 game.getLocalPlayerIndex(), key))));
+        // The mission list folds to its tab and unfolds again: a thing of the window, so it flips the window's own
+        // flag and sends nothing to the simulation.
+        keys.on(settings.run().foldKey().charAt(0), game -> MissionScreen.fold());
         orders(keys);
         // Which single creature he has picked out. The panel describes it, and
         // only the simulation can say what it is worth -- see Watching.

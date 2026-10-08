@@ -83,15 +83,25 @@ Run
   ; A floor with no room for it at the way in goes without. Empty for nothing.
   WayIn = Fountain
 
-  ; What the tracker at the top of the screen says of a floor's mission, a step
-  ; at a time -- see run/Mission. The first counts: %d the monsters the floor
+  ; What the mission tracker at the right edge of the screen says of a floor's
+  ; mission, a step at a time -- see run/Mission. MissionTitle heads the floor's
+  ; main mission in the list. The first step counts: %d the monsters the floor
   ; put outside its keep that are dead, then %d how many it put there. A floor
   ; with no keep -- a stage, or one where none fitted -- has no mission, and its
   ; tracker says only the last.
-  ClearWord = Qal'adan tashqaridagi barcha monstrlarni o'ldiring — %d/%d
-  TakeKeyWord = Kalitni oling
-  GiveKeyWord = Kalitni boss darvozasiga bering
-  KillBossWord = Bossni o'ldiring
+  MissionTitle = Boss qal'asi
+  ClearWord = Monstrlarni qir %d/%d
+  TakeKeyWord = Kalitni top
+  GiveKeyWord = Kalitni darvozaga ber
+  KillBossWord = Bossni o'ldir
+
+  ; The tracker folds and unfolds on FoldKey; folded it is only MissionsTab. A
+  ; step just passed stays listed, ticked off and dimmed, for DoneFrames (30 = one
+  ; second), and a step just begun glows for GlowFrames.
+  FoldKey = J
+  MissionsTab = Missiyalar (J)
+  DoneFrames = 90
+  GlowFrames = 20
 End
 
 Moment
