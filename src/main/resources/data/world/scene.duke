@@ -136,6 +136,61 @@ Tiles
 End
 
 ; ---------------------------------------------------------------------------
+; How a painted map's ground is drawn.
+;
+; A map that writes Paint rows and a Palette (maps/painted is one) is drawn as
+; painted ground rather than by a theme's kit: each corner shows the surfaces of
+; the cells round it by their share, Warcraft III style, the borders broken by a
+; picture of noise. Every picture here is painted from a seed by
+; ./gradlew writeGroundPictures (tools/GroundPictures), none downloaded.
+;
+; Look and nothing else, and only for painted ground: every floor of the descent
+; is laid by a kit and draws nothing of this.
+; ---------------------------------------------------------------------------
+PaintedGround
+  Blend = Yes
+  ; Four channels, each moving one surface's border; a copy every 8 cells.
+  Noise = ground/noise.png
+  ; How far the noise moves a border (0..1), and how narrow it is drawn (1 a
+  ; ramp across the whole cell). Ragged and fairly tight reads as grass torn
+  ; along a path rather than as two colours faded into each other.
+  Raggedness = 0.55
+  Sharpness = 3
+  NoiseCoverage = 8
+  ; One large picture, a copy every 64 cells, whose red channel lightens and
+  ; darkens each surface by its share below, so a field does not repeat.
+  Variation = ground/variation.png
+  VariationCoverage = 64
+  ; Each surface, by the picture the palette names: tinted (0xRRGGBB), and how
+  ; much the variation moves it (0..1).
+  Tints = [
+    ground/grass.png = 0xF2FFE6,
+    ground/dirt.png = 0xFFFFFF,
+    ground/rock.png = 0xFFFFFF,
+    ground/snow.png = 0xF4F8FF,
+    ground/sand.png = 0xFFF8EC,
+  ]
+  Variations = [
+    ground/grass.png = 0.6,
+    ground/dirt.png = 0.4,
+    ground/rock.png = 0.35,
+    ground/snow.png = 0.25,
+    ground/sand.png = 0.45,
+  ]
+  ; Ground leaning past CliffSlope degrees is drawn as rock, laid on the face
+  ; rather than down from above, a copy every CliffCoverage cells. A cell leaning
+  ; 45 degrees is too steep to walk; 38 shows the rock a little before that.
+  Cliffs = ground/rock.png
+  CliffSlope = 38
+  CliffCoverage = 4
+  ; Each cell cut two by two: smoother hills, a truer blend.
+  Quarters = Yes
+  ; How far round the camera the ground is built, a chunk of 16 cells at a time,
+  ; when a painted map is the one the game opens on; 0 builds it whole.
+  StreamCells = 48
+End
+
+; ---------------------------------------------------------------------------
 ; What all of it is allowed to cost.
 ;
 ; Ceilings, not targets. Fifty arrows in the air, each with a hundred sparks and
