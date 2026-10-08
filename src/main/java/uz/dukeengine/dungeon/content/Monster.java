@@ -18,7 +18,7 @@ import uz.dukeengine.core.thing.Kind;
 import uz.dukeengine.core.thing.Sighted;
 import uz.dukeengine.core.thing.Solid;
 import uz.dukeengine.core.thing.Titled;
-import uz.dukeengine.dungeon.skill.Skill;
+import uz.dukeengine.rpg.skill.Skill;
 
 /**
  * A monster, as one {@code Monster} block writes it — the whole of it, in the order a file

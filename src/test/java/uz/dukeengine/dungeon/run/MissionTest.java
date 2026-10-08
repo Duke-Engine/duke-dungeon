@@ -1,5 +1,8 @@
 package uz.dukeengine.dungeon.run;
 
+import uz.dukeengine.rpg.item.ItemUse;
+import uz.dukeengine.rpg.mission.GateUpdate;
+import uz.dukeengine.rpg.mission.Mission;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -16,11 +19,11 @@ import uz.dukeengine.dungeon.content.Content;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.dungeon.gen.DungeonGenerator;
 import uz.dukeengine.dungeon.gen.Layout;
-import uz.dukeengine.dungeon.loot.GroundItem;
-import uz.dukeengine.dungeon.loot.Loot;
-import uz.dukeengine.dungeon.loot.LootKind;
-import uz.dukeengine.dungeon.loot.PickUp;
-import uz.dukeengine.dungeon.loot.UseItem;
+import uz.dukeengine.rpg.item.GroundItem;
+import uz.dukeengine.rpg.item.Loot;
+import uz.dukeengine.rpg.item.Stat;
+import uz.dukeengine.rpg.item.PickUp;
+import uz.dukeengine.rpg.item.UseItem;
 import uz.dukeengine.dungeon.party.ChooseHero;
 import uz.dukeengine.dungeon.party.PartyMatch;
 import uz.dukeengine.dungeon.party.PartyOrders;
@@ -49,7 +52,7 @@ class MissionTest {
     }
 
     private static Loot key() {
-        return SETTINGS.loot().stream().filter(item -> item.kind() == LootKind.KEY).findFirst().orElseThrow();
+        return SETTINGS.loot().stream().filter(item -> item.use() == ItemUse.UNLOCK).findFirst().orElseThrow();
     }
 
     private static int cellOf(float at) {
@@ -93,7 +96,7 @@ class MissionTest {
     }
 
     private static long keysLying(DukeGame game) {
-        return lying(game).stream().filter(item -> item.kind() == LootKind.KEY).count();
+        return lying(game).stream().filter(item -> item.use() == ItemUse.UNLOCK).count();
     }
 
     @Test
@@ -266,7 +269,7 @@ class MissionTest {
         game.getLogic().destroyObject(hero);
         game.runHeadless(1);
 
-        assertFalse(bag.holds(LootKind.KEY), "he took it with him");
+        assertFalse(bag.holds(ItemUse.UNLOCK), "he took it with him");
         var key = find(game, "Key");
         assertNotNull(key, "it is nowhere");
         assertTrue(key.getPosition().distance(where) < 2f, "where he fell: " + key.getPosition());
@@ -279,7 +282,7 @@ class MissionTest {
         var session = opened(SETTINGS);
         var game = session.game();
         var bag = session.progress().getLoot();
-        var other = SETTINGS.loot().stream().filter(item -> item.kind() != LootKind.KEY).findFirst().orElseThrow();
+        var other = SETTINGS.loot().stream().filter(item -> item.use() != ItemUse.UNLOCK).findFirst().orElseThrow();
         bag.take(other, 0, 0);
         bag.take(key(), 0, 0);
 
@@ -297,12 +300,12 @@ class MissionTest {
         var session = opened(settings);
         var game = session.game();
         var bag = session.progress().getLoot();
-        bag.take(settings.loot().stream().filter(item -> item.kind() == LootKind.KEY).findFirst().orElseThrow(), 0, 0);
+        bag.take(settings.loot().stream().filter(item -> item.use() == ItemUse.UNLOCK).findFirst().orElseThrow(), 0, 0);
 
         game.getLogic().destroyObject(find(game, "Rogue"));
         game.runHeadless(1);
 
-        assertTrue(bag.holds(LootKind.KEY), "it left his bag and lies nowhere");
+        assertTrue(bag.holds(ItemUse.UNLOCK), "it left his bag and lies nowhere");
         assertEquals(0, keysLying(game));
     }
 
@@ -348,7 +351,7 @@ class MissionTest {
     void aKeyDoesNotOutliveItsFloorInTheBagOfAHeroWhoCarriesItDown() {
         var session = downWithAKey();
 
-        assertFalse(session.progress().getLoot().holds(LootKind.KEY), "he took the key down with him");
+        assertFalse(session.progress().getLoot().holds(ItemUse.UNLOCK), "he took the key down with him");
     }
 
     /**
@@ -398,7 +401,7 @@ class MissionTest {
         var session = opened(SETTINGS);
         var game = session.game();
         var bag = session.progress().getLoot();
-        var things = SETTINGS.loot().stream().filter(item -> item.kind() != LootKind.KEY).limit(2).toList();
+        var things = SETTINGS.loot().stream().filter(item -> item.use() != ItemUse.UNLOCK).limit(2).toList();
         bag.take(things.get(0), 0, 0);
         bag.take(key(), 0, 0);
         bag.take(things.get(1), 0, 0);
@@ -425,8 +428,8 @@ class MissionTest {
         game.runHeadless(SETTINGS.run().descendDelayFrames() + 4);
 
         assertEquals(2, session.run().getDepth(), "the premise: the party went down a floor, a key each");
-        assertFalse(session.run().progressOf(1).getLoot().holds(LootKind.KEY), "the first hero's");
-        assertFalse(session.run().progressOf(2).getLoot().holds(LootKind.KEY), "and the second's");
+        assertFalse(session.run().progressOf(1).getLoot().holds(ItemUse.UNLOCK), "the first hero's");
+        assertFalse(session.run().progressOf(2).getLoot().holds(ItemUse.UNLOCK), "and the second's");
     }
 
     /** The tracker's words are the owner's, as the spec writes them. */

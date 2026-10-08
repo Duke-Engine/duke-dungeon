@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.dungeon.Dungeon;
 import uz.dukeengine.dungeon.content.DungeonSettings;
-import uz.dukeengine.dungeon.loot.Loot;
+import uz.dukeengine.rpg.item.Loot;
 import uz.dukeengine.dungeon.run.DungeonRun;
 import uz.dukeengine.game.DukeGame;
 
@@ -124,12 +124,12 @@ class PartyTest {
         game.runHeadless(2);
         var chest = game.getLogic().getObjects().stream()
                 .filter(object -> object.getTemplate().name().equals("Chest")).findFirst().orElseThrow();
-        var item = chest.findModule(uz.dukeengine.dungeon.loot.GroundItem.class).getHolding();
+        var item = chest.findModule(uz.dukeengine.rpg.item.GroundItem.class).getHolding();
 
         // Both standing on it: whose it is, is whoever was sent.
         heroOf(game, 1, "Rogue").setPosition(where);
         heroOf(game, 2, "Knight").setPosition(where);
-        game.postCommand(PartyOrders.of(new uz.dukeengine.dungeon.loot.PickUp(2, chest.getId())));
+        game.postCommand(PartyOrders.of(new uz.dukeengine.rpg.item.PickUp(2, chest.getId())));
         game.runHeadless(3);
 
         assertEquals(List.of(item.id()),

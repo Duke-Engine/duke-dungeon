@@ -1,18 +1,20 @@
 package uz.dukeengine.dungeon.ai;
 
+import uz.dukeengine.rpg.SightLine;
+import uz.dukeengine.rpg.Facing;
 import uz.dukeengine.core.math.Coord3D;
 import uz.dukeengine.core.module.MoveUpdate;
 import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.core.thing.World;
-import uz.dukeengine.dungeon.combat.LevelBonus;
-import uz.dukeengine.dungeon.combat.Swing;
+import uz.dukeengine.rpg.hero.LevelBonus;
+import uz.dukeengine.rpg.fight.Swing;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.dungeon.content.MonsterKind;
 import uz.dukeengine.dungeon.run.Seal;
-import uz.dukeengine.dungeon.skill.Mending;
-import uz.dukeengine.dungeon.skill.Skill;
-import uz.dukeengine.dungeon.skill.SkillBook;
-import uz.dukeengine.dungeon.skill.SkillEffect;
+import uz.dukeengine.rpg.skill.Mending;
+import uz.dukeengine.rpg.skill.Skill;
+import uz.dukeengine.rpg.skill.SkillBook;
+import uz.dukeengine.rpg.skill.SkillEffect;
 import uz.dukeengine.core.module.ModuleData;
 import uz.dukeengine.core.module.ModuleGroup;
 import uz.dukeengine.core.module.ModuleGroups;

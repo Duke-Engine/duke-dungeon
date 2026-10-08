@@ -9,7 +9,7 @@ import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.core.thing.ObjectId;
 import uz.dukeengine.dungeon.content.Content;
 import uz.dukeengine.dungeon.content.DungeonSettings;
-import uz.dukeengine.dungeon.skill.SkillBook;
+import uz.dukeengine.rpg.skill.SkillBook;
 
 /**
  * What every skill looks like going off, checked against what the client can
@@ -31,7 +31,7 @@ class SkillLookTest {
     private static final DungeonSettings SETTINGS = DungeonSettings.load();
 
     /** The skills a player casts: a hero's. A monster's has no key, no card and no look. */
-    private static java.util.List<uz.dukeengine.dungeon.skill.Skill> playersSkills() {
+    private static java.util.List<uz.dukeengine.rpg.skill.Skill> playersSkills() {
         var heroes = SETTINGS.heroes().stream().map(uz.dukeengine.dungeon.content.HeroLook::name)
                 .collect(java.util.stream.Collectors.toSet());
         return SETTINGS.skills().stream().filter(skill -> heroes.contains(skill.heroTemplate()))
@@ -119,7 +119,7 @@ class SkillLookTest {
     /** Nothing that opens a ring draws it in black. */
     @Test
     void everyRingIsSomeColour() {
-        var looks = playersSkills().stream().map(uz.dukeengine.dungeon.skill.Skill::look).collect(java.util.stream.Collectors.toSet());
+        var looks = playersSkills().stream().map(uz.dukeengine.rpg.skill.Skill::look).collect(java.util.stream.Collectors.toSet());
         for (var layer : SETTINGS.effectLayers()) {
             if (!looks.contains(layer.effect()) || !"RING".equals(layer.fields().get("type"))) {
                 continue;
@@ -247,7 +247,7 @@ class SkillLookTest {
         return world.game();
     }
 
-    private static uz.dukeengine.dungeon.skill.Skill skillOf(String hero, char key) {
+    private static uz.dukeengine.rpg.skill.Skill skillOf(String hero, char key) {
         return SETTINGS.skillsFor(hero).stream().filter(skill -> skill.key() == key)
                 .findFirst().orElseThrow();
     }

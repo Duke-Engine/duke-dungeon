@@ -24,7 +24,7 @@ class PartyFrontTest {
         var visuals = Visuals.create();
         var keys = Main.controls(settings);
         var duke = Duke3D.of(session.game(), visuals);
-        return Main.whoGoesIn(session, settings, visuals, keys, duke, new BagScreen(settings, duke));
+        return Main.whoGoesIn(session, settings, visuals, keys, duke, Bag.on(settings, duke));
     }
 
     /** The last question down a path, following the first row of each: one with no rows, or whose row starts. */

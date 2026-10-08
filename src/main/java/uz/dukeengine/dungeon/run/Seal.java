@@ -6,6 +6,7 @@ import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.core.thing.ObjectId;
 import uz.dukeengine.core.thing.World;
 import uz.dukeengine.dungeon.gen.Keep;
+import uz.dukeengine.rpg.mission.GateUpdate;
 
 /**
  * The keep's shut gate, as a rule: while it stands, nothing that hurts or mends passes between the keep and the rest
@@ -29,7 +30,7 @@ import uz.dukeengine.dungeon.gen.Keep;
  * <p>Deterministic and cheap, being asked on every blow: two cells tested against the keep's square, and only where
  * they fall either side of it, the gate looked up by its id. No clock, and nothing iterated.
  */
-public final class Seal {
+public final class Seal implements uz.dukeengine.rpg.Seal {
 
     private Keep keep;
     /** The gate across its doorway: standing, not opened, is what seals it. */
@@ -42,6 +43,7 @@ public final class Seal {
     }
 
     /** Whether the shut gate parts {@code a} from {@code b}: one within the keep and one outside, the gate standing. */
+    @Override
     public boolean parts(World world, Coord3D a, Coord3D b) {
         return keep != null && gate != null && within(a) != within(b) && GateUpdate.stands(world, gate);
     }

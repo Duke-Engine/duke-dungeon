@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 import uz.dukeengine.core.module.ActiveBody;
 import uz.dukeengine.core.thing.ThingTemplate;
 import uz.dukeengine.dungeon.content.DungeonSettings;
-import uz.dukeengine.dungeon.level.GrowableBody;
+import uz.dukeengine.rpg.hero.GrowableBody;
 
 /**
  * The marks on a creature's bar, as the settings file draws them.
@@ -95,10 +95,10 @@ class DungeonUnitBarTest {
             // His block is what his strength is added to, so the bar is sized by the
             // two together -- at his first level and at the last.
             for (int level : new int[] {1, top}) {
-                sizes.add(new float[] {uz.dukeengine.dungeon.level.HeroFigures.of(
-                        uz.dukeengine.dungeon.level.HeroBase.of(template), hero.maxMana(),
+                sizes.add(new float[] {uz.dukeengine.rpg.hero.HeroFigures.of(
+                        uz.dukeengine.rpg.hero.HeroBase.of(template), hero.maxMana(),
                         hero.attributes(), SETTINGS.attributeRules(), level,
-                        uz.dukeengine.dungeon.level.HeroFigures.Found.NOTHING).maxHealth(), level});
+                        uz.dukeengine.rpg.hero.HeroFigures.Found.NOTHING).maxHealth(), level});
             }
         }
         return sizes;

@@ -1,5 +1,6 @@
 package uz.dukeengine.dungeon.ai;
 
+import uz.dukeengine.rpg.SightLine;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -12,7 +13,7 @@ import uz.dukeengine.core.module.MoveUpdate;
 import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.dungeon.Dungeon;
 import uz.dukeengine.dungeon.content.DungeonSettings;
-import uz.dukeengine.dungeon.skill.CastSkill;
+import uz.dukeengine.rpg.skill.CastSkill;
 import uz.dukeengine.game.DukeGame;
 import uz.dukeengine.combat.message.CombatOrder;
 import uz.dukeengine.combat.module.WeaponUpdate;
@@ -95,7 +96,7 @@ class SightTest {
 
     private static Dungeon.Arena flatWorld(String creaturesIni) {
         return Dungeon.world(arena(NO_WALL), null, SETTINGS, creaturesIni,
-                new uz.dukeengine.dungeon.loot.LootBag());
+                new uz.dukeengine.rpg.item.LootBag());
     }
 
     /**
@@ -120,7 +121,7 @@ class SightTest {
             int skeletonCell) {
         return arena(Dungeon.world(arena(NO_WALL), storeys(raisedFrom, withStair), SETTINGS,
                 uz.dukeengine.dungeon.content.Content.units(),
-                new uz.dukeengine.dungeon.loot.LootBag()), heroCell, skeletonCell);
+                new uz.dukeengine.rpg.item.LootBag()), heroCell, skeletonCell);
     }
 
     private static boolean sees(Arena arena) {
@@ -365,7 +366,7 @@ class SightTest {
      * would make, one step further in.
      */
     private static void cast(Arena arena, char key) {
-        var book = arena.hero().findModule(uz.dukeengine.dungeon.skill.SkillBook.class);
+        var book = arena.hero().findModule(uz.dukeengine.rpg.skill.SkillBook.class);
         assertNotNull(book);
         assertTrue(book.cast(key, 1), "the skill should have gone off");
         arena.game().runHeadless(3);

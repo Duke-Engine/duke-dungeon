@@ -18,10 +18,10 @@ import uz.dukeengine.core.thing.Kind;
 import uz.dukeengine.core.thing.Sighted;
 import uz.dukeengine.core.thing.Solid;
 import uz.dukeengine.core.thing.Titled;
-import uz.dukeengine.dungeon.level.AttributeRules;
-import uz.dukeengine.dungeon.level.Attributes;
-import uz.dukeengine.dungeon.level.HeroAttributes;
-import uz.dukeengine.dungeon.skill.Skill;
+import uz.dukeengine.rpg.hero.AttributeRules;
+import uz.dukeengine.rpg.hero.Attributes;
+import uz.dukeengine.rpg.hero.HeroAttributes;
+import uz.dukeengine.rpg.skill.Skill;
 
 /**
  * A hero, as one {@code Hero} block writes him — the whole of him: what the engine builds

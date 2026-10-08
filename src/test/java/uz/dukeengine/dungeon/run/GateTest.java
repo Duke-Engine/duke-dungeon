@@ -1,5 +1,7 @@
 package uz.dukeengine.dungeon.run;
 
+import uz.dukeengine.rpg.item.ItemUse;
+import uz.dukeengine.rpg.mission.GateUpdate;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -17,11 +19,11 @@ import uz.dukeengine.dungeon.content.Content;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.dungeon.content.ShippedBlock;
 import uz.dukeengine.dungeon.gen.DungeonGenerator;
-import uz.dukeengine.dungeon.loot.ItemErrand;
-import uz.dukeengine.dungeon.loot.Loot;
-import uz.dukeengine.dungeon.loot.LootBag;
-import uz.dukeengine.dungeon.loot.LootKind;
-import uz.dukeengine.dungeon.loot.UseItem;
+import uz.dukeengine.rpg.item.ItemErrand;
+import uz.dukeengine.rpg.item.Loot;
+import uz.dukeengine.rpg.item.LootBag;
+import uz.dukeengine.rpg.item.Stat;
+import uz.dukeengine.rpg.item.UseItem;
 import uz.dukeengine.dungeon.party.PartyOrders;
 import uz.dukeengine.game.DukeGame;
 
@@ -100,7 +102,7 @@ class GateTest {
     }
 
     private static Loot key() {
-        return SETTINGS.loot().stream().filter(item -> item.kind() == LootKind.KEY).findFirst().orElseThrow();
+        return SETTINGS.loot().stream().filter(item -> item.use() == ItemUse.UNLOCK).findFirst().orElseThrow();
     }
 
     @Test
@@ -175,7 +177,7 @@ class GateTest {
 
         assertEquals("Kalit menda — uni darvozaga berishim kerak", bag.noteAt(game.getLogic().getFrame()));
         assertNotNull(find(game, "Gate"), "it opened without being given the key");
-        assertTrue(bag.holds(LootKind.KEY), "and the key is still his");
+        assertTrue(bag.holds(ItemUse.UNLOCK), "and the key is still his");
     }
 
     /**
@@ -323,7 +325,7 @@ class GateTest {
         assertNull(find(game, "Gate"), "the key did not open it");
         assertNotNull(find(game, "OpenGate"), "and nothing stands where it stood");
         assertNull(bag.at(0), "the key stayed in his bag");
-        assertFalse(bag.holds(LootKind.KEY));
+        assertFalse(bag.holds(ItemUse.UNLOCK));
     }
 
     /** Used on anything else it does nothing: he says so, and keeps it. */
@@ -371,7 +373,7 @@ class GateTest {
         assertTrue(Math.sqrt(dx * dx + dy * dy) > reach,
                 "he is beyond the reach, or this is not the walk that ends there: " + hero.getPosition());
         assertNull(find(game, "Gate"), "it stayed shut: he was not counted as there");
-        assertFalse(bag.holds(LootKind.KEY), "and the key is still his");
+        assertFalse(bag.holds(ItemUse.UNLOCK), "and the key is still his");
     }
 
     /** He takes it there: a moment after he is sent, from across the hall, it is still his and the gate still shut. */
@@ -388,7 +390,7 @@ class GateTest {
         game.runHeadless(10);
 
         assertNotNull(find(game, "Gate"), "it opened from across the hall");
-        assertTrue(bag.holds(LootKind.KEY), "and the key is his still");
+        assertTrue(bag.holds(ItemUse.UNLOCK), "and the key is his still");
         game.runHeadless(150);
         assertNull(find(game, "Gate"), "and once he is there it opens");
     }
@@ -415,7 +417,7 @@ class GateTest {
 
         assertNull(find(game, "Gate"), "the key did not open it");
         assertNotNull(find(game, "OpenGate"), "and nothing stands where it stood");
-        assertFalse(bag.holds(LootKind.KEY), "the key stayed in his bag");
+        assertFalse(bag.holds(ItemUse.UNLOCK), "the key stayed in his bag");
         assertEquals(gauntlet, bag.at(0), "and what he carried beside it went with it");
     }
 

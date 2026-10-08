@@ -1,5 +1,8 @@
 package uz.dukeengine.dungeon.level;
 
+import uz.dukeengine.rpg.hero.HeroProgress;
+import uz.dukeengine.rpg.hero.Attributes;
+import uz.dukeengine.rpg.hero.Attribute;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -103,11 +106,12 @@ class HeroProgressTest {
         var arena = Dungeon.world(ARENA, settings, STOUT_HERO);
         var game = arena.game();
         game.spawn("Rogue", arena.hero(), 200f, 150f);
-        var progress = new HeroProgress(arena.hero(), settings.levelling(),
+        var progress = new HeroProgress(arena.hero()::getIndex,
+                uz.dukeengine.dungeon.Dungeon.banner(arena.game(), arena.hero()), settings.levelling(),
                 settings.attributeRules(), settings.progression().levelUpBannerFrames(),
-                new uz.dukeengine.dungeon.loot.LootBag());
+                new uz.dukeengine.rpg.item.LootBag());
         progress.playing(settings.heroNamed("Rogue"));
-        game.onTick(progress::tick);
+        game.onTick(ticked -> progress.tick(ticked.getLogic()));
         game.runHeadless(1);
         return new Fight(arena, progress);
     }

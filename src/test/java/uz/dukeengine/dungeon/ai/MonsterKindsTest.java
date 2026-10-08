@@ -193,10 +193,10 @@ class MonsterKindsTest {
     }
 
     /** The {@code Bow} a kind's template carries, or {@code null} if it has none. */
-    private static uz.dukeengine.dungeon.combat.Bow.Data launcherOf(String kind) {
+    private static uz.dukeengine.rpg.fight.Bow.Data launcherOf(String kind) {
         var fight = fight(kind, 900f);
         for (var module : fight.monster().getTemplate().modules()) {
-            if (module instanceof uz.dukeengine.dungeon.combat.Bow.Data bow) {
+            if (module instanceof uz.dukeengine.rpg.fight.Bow.Data bow) {
                 return bow;
             }
         }

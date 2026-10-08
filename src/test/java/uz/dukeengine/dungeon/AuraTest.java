@@ -1,5 +1,6 @@
 package uz.dukeengine.dungeon;
 
+import uz.dukeengine.client3d.rpg.BuffScreen;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -26,12 +27,12 @@ import uz.dukeengine.core.thing.ObjectStatus;
 import uz.dukeengine.dungeon.content.Content;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.dungeon.content.ShippedBlock;
-import uz.dukeengine.dungeon.level.GrowableBody;
+import uz.dukeengine.rpg.hero.GrowableBody;
 import uz.dukeengine.dungeon.run.Spawner;
-import uz.dukeengine.dungeon.skill.Skill;
-import uz.dukeengine.dungeon.skill.SkillBook;
-import uz.dukeengine.dungeon.skill.SkillEffect;
-import uz.dukeengine.dungeon.skill.Summoned;
+import uz.dukeengine.rpg.skill.Skill;
+import uz.dukeengine.rpg.skill.SkillBook;
+import uz.dukeengine.rpg.skill.SkillEffect;
+import uz.dukeengine.rpg.skill.Summoned;
 import uz.dukeengine.game.DukeGame;
 
 /**
@@ -1098,7 +1099,7 @@ public class AuraTest {
      */
     @Test
     void whatIsOnTheCreatureThePlayerPicksIsHandedOverWhole() {
-        var screen = new BuffScreen(SETTINGS);
+        var screen = Bag.buffs(SETTINGS);
         var mighty = beside(SETTINGS, screen::show, SUMMONER);
         aBuffsLife(mighty.game());
         picked(mighty.game(), lastOf(mighty));
@@ -1106,7 +1107,7 @@ public class AuraTest {
         assertEquals(List.of(new BuffScreen.Buff(might, 50, 0)), screen.buffs().get(lastOf(mighty).getId().value()),
                 "the might, at its 50");
 
-        var shown = new BuffScreen(SETTINGS);
+        var shown = Bag.buffs(SETTINGS);
         var both = beside(SETTINGS, shown::show, SUMMONER, HEALER);
         bookOf(lastOf(both)).resize(50, 0);
         aBuffsLife(both.game());
@@ -1114,7 +1115,7 @@ public class AuraTest {
         assertEquals(List.of(new BuffScreen.Buff(might, 50, 0), new BuffScreen.Buff(auraOf(both.get(1)), 50, 0)),
                 shown.buffs().get(lastOf(both).getId().value()), "the might, and the mana in tenths a second");
 
-        var its = new BuffScreen(SETTINGS);
+        var its = Bag.buffs(SETTINGS);
         var hastened = beside(SETTINGS, its::show, SUMMONER);
         var skeleton = lastOf(hastened);
         aBuffsLife(hastened.game());
@@ -1140,7 +1141,7 @@ public class AuraTest {
      */
     @Test
     void theHastesFramesCountDownInWhatIsHandedOverUntilItsLastIsGone() {
-        var screen = new BuffScreen(SETTINGS);
+        var screen = Bag.buffs(SETTINGS);
         var room = beside(SETTINGS, screen::show, SUMMONER);
         var skeleton = lastOf(room);
         var game = room.game();
@@ -1166,7 +1167,7 @@ public class AuraTest {
      */
     @Test
     void ofTwoHastesWhatIsHandedOverIsTheStrongestAndItsOwnFrames() {
-        var screen = new BuffScreen(SETTINGS);
+        var screen = Bag.buffs(SETTINGS);
         var room = beside(SETTINGS, screen::show, SUMMONER);
         var skeleton = lastOf(room);
         var game = room.game();
@@ -1197,7 +1198,7 @@ public class AuraTest {
     void aHeroAPoollessSkeletonBesideAHealerAndAFallenOneHoldNone() {
         var arena = Dungeon.world(room(NO_WALL), unseeingInWhole(SUMMONER), unarmedRogue());
         var game = arena.game();
-        var beheld = new BuffScreen(SETTINGS);
+        var beheld = Bag.buffs(SETTINGS);
         beheld.show(game);
         game.spawn(SUMMONER, arena.dungeon(), 100f, 150f);
         game.spawn("Rogue", arena.hero(), 115f, 150f);
@@ -1209,14 +1210,14 @@ public class AuraTest {
         picked(game, hero);
         assertEquals(List.of(), handedOver(beheld, hero), "a hero, 15 from a summoner");
 
-        var dry = new BuffScreen(SETTINGS);
+        var dry = Bag.buffs(SETTINGS);
         var poolless = beside(SETTINGS, dry::show, HEALER);
         aBuffsLife(poolless.game());
         assertEquals(50, SkillBook.auraOn(lastOf(poolless), SkillEffect.MANA_AURA), "the premise: the aura reaches it");
         picked(poolless.game(), lastOf(poolless));
         assertEquals(List.of(), handedOver(dry, lastOf(poolless)), "a Skeleton with no pool beside a healer");
 
-        var fallen = new BuffScreen(SETTINGS);
+        var fallen = Bag.buffs(SETTINGS);
         var killed = new java.util.concurrent.atomic.AtomicReference<GameObject>();
         var room = beside(SETTINGS, world -> {
             world.onTick(ticked -> {
@@ -1247,7 +1248,7 @@ public class AuraTest {
      */
     @Test
     void theRowLetsTheMightGoWithinABuffsLifeOfItsBearersFall() {
-        var screen = new BuffScreen(SETTINGS);
+        var screen = Bag.buffs(SETTINGS);
         var room = beside(SETTINGS, screen::show, SUMMONER);
         var skeleton = lastOf(room);
         aBuffsLife(room.game());
@@ -1268,7 +1269,7 @@ public class AuraTest {
      */
     @Test
     void theOneThePointerRestsOnIsHandedOverTooAndKeptWhenItLeaves() {
-        var screen = new BuffScreen(SETTINGS);
+        var screen = Bag.buffs(SETTINGS);
         var room = beside(SETTINGS, screen::show, SUMMONER);
         var game = room.game();
         var summoner = room.get(0);

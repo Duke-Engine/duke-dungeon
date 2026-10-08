@@ -30,6 +30,13 @@ dependencies {
     implementation("uz.duke-engine:client3d")
     // The starter set: the effects every game may use, and the art they are drawn with.
     implementation("uz.duke-engine:kit")
+    // The RPG's mechanisms: skills, items, a hero's levels, the bow and the swing, the keep's mission.
+    implementation("uz.duke-engine:rpg")
+    // The RPG's part of the window: the hero panel, the bag and the buffs, the card, one hero's orders.
+    // The client finds it on the classpath.
+    implementation("uz.duke-engine:rpg-client-3d")
+    // The RTS's flavour, which the dungeon still runs on, and its players and orders.
+    implementation("uz.duke-engine:rts")
 
     testImplementation(platform("org.junit:junit-bom:5.11.3"))
     testImplementation("org.junit.jupiter:junit-jupiter")

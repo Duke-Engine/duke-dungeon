@@ -4,13 +4,13 @@ import java.util.List;
 import uz.dukeengine.core.message.Command;
 import uz.dukeengine.dungeon.ai.AttackMove;
 import uz.dukeengine.dungeon.ai.HoldGround;
-import uz.dukeengine.dungeon.loot.DropItem;
-import uz.dukeengine.dungeon.loot.PickUp;
-import uz.dukeengine.dungeon.loot.UseItem;
+import uz.dukeengine.rpg.item.DropItem;
+import uz.dukeengine.rpg.item.PickUp;
+import uz.dukeengine.rpg.item.UseItem;
 import uz.dukeengine.dungeon.run.ToTheGate;
 import uz.dukeengine.dungeon.run.Watching;
-import uz.dukeengine.dungeon.skill.CastSkill;
-import uz.dukeengine.dungeon.skill.UpgradeSkill;
+import uz.dukeengine.rpg.skill.CastSkill;
+import uz.dukeengine.rpg.skill.UpgradeSkill;
 import uz.dukeengine.combat.message.GameOrder;
 
 /**

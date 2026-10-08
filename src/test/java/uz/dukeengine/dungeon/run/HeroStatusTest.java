@@ -1,5 +1,6 @@
 package uz.dukeengine.dungeon.run;
 
+import uz.dukeengine.rpg.item.Stat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -12,7 +13,7 @@ import uz.dukeengine.dungeon.content.DungeonSettings;
 /**
  * The line the hero's panel is drawn from, written by a real run.
  *
- * <p>Its reader is {@code uz.dukeengine.client3d.HeroPanel}, which this module cannot
+ * <p>Its reader is {@code uz.dukeengine.client3d.rpg.HeroPanel}, which this module cannot
  * see and which cannot see this. Nothing but a test connects them, so this holds
  * the writing end of the format and {@code HeroPanelTest} holds the reading end.
  *
@@ -72,10 +73,11 @@ class HeroStatusTest {
         assertFalse(line.contains("|hp="), "nothing has health: " + line);
         assertFalse(line.contains("|skill="), "nothing has skills: " + line);
         // The buttons stay -- they are furniture, like the empty sockets beside
-        // them -- but nothing is selected, so nothing may be pressed and nothing
-        // is doing anything for them to show.
-        assertTrue(line.contains("|cmds=theirs"),
-                "there is nothing to give orders to: " + line);
+        // them -- and nothing selected is doing anything for them to show. They are
+        // his to press all the same: his orders go to his hero, whatever is selected.
+        assertTrue(line.contains("|hero="), "the premise: his hero stands: " + line);
+        assertTrue(line.contains("|cmds=mine"),
+                "his orders go to his hero with nothing selected too: " + line);
         assertFalse(line.contains(",on"), "and nothing is doing anything: " + line);
         assertTrue(line.contains("|depth="), "the floor is still the floor: " + line);
         assertTrue(line.contains("|look="),
@@ -327,8 +329,8 @@ class HeroStatusTest {
         var game = session.game();
         game.runHeadless(2);
         pickOutTheHero(session);
-        session.progress().getLoot().take(new uz.dukeengine.dungeon.loot.Loot("Tome", "Tome", "flask",
-                uz.dukeengine.dungeon.loot.LootKind.ATTRIBUTE, 5, 1, 1, "STR"),
+        session.progress().getLoot().take(new uz.dukeengine.rpg.item.Loot("Tome", "Tome", "flask",
+                Stat.ATTRIBUTE, 5, 1, 1, "STR"),
                 game.getLogic().getFrame(), 60);
         game.runHeadless(2);
 
@@ -427,7 +429,7 @@ class HeroStatusTest {
 
         var settings = DungeonSettings.load();
         var blade = settings.loot().stream()
-                .filter(item -> item.kind() == uz.dukeengine.dungeon.loot.LootKind.ATTRIBUTE)
+                .filter(item -> Stat.ATTRIBUTE.equals(item.kind()))
                 .findFirst().orElseThrow();
         session.progress().getLoot().take(blade, game.getLogic().getFrame(), 60);
         game.runHeadless(2);

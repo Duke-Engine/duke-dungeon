@@ -473,7 +473,7 @@ class DungeonMonsterArtTest {
     private static boolean shoots(String template) {
         var found = templates().findTemplate(template);
         for (var module : found.modules()) {
-            if (module instanceof uz.dukeengine.dungeon.combat.Bow.Data) {
+            if (module instanceof uz.dukeengine.rpg.fight.Bow.Data) {
                 return true;
             }
         }

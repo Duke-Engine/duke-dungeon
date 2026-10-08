@@ -4,27 +4,21 @@ import uz.dukeengine.core.module.MoveUpdate;
 import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.core.thing.ThingTemplate;
 import uz.dukeengine.dungeon.ai.Doing;
-import uz.dukeengine.dungeon.combat.LevelBonus;
+import uz.dukeengine.rpg.hero.LevelBonus;
 import uz.dukeengine.dungeon.content.DungeonSettings;
-import uz.dukeengine.dungeon.level.Attribute;
-import uz.dukeengine.dungeon.level.AttributeRules;
-import uz.dukeengine.dungeon.level.HeroFigures;
-import uz.dukeengine.dungeon.level.HeroProgress;
-import uz.dukeengine.dungeon.skill.SkillBook;
-import uz.dukeengine.dungeon.skill.Skills;
+import uz.dukeengine.rpg.hero.Attribute;
+import uz.dukeengine.rpg.hero.AttributeRules;
+import uz.dukeengine.rpg.hero.HeroFigures;
+import uz.dukeengine.rpg.hero.HeroProgress;
+import uz.dukeengine.rpg.skill.SkillBook;
+import uz.dukeengine.client3d.rpg.HeroCard;
 
 /**
  * Everything the hero's panel shows, as one line of the status channel.
  *
- * <p>The channel is a string the engine carries and never reads, so this is the
- * game talking to its own client and the format is theirs to agree on. It is read
- * by {@code uz.dukeengine.client3d.HeroPanel}, and the two have to be changed together.
- *
- * <pre>
- * name=Erika|rank=7-daraja|hp=128/200|xp=38/100|depth=III|depthWord=CHUQURLIK
- *   |skill=Q,icons/skills/arrowhead.png,ready|skill=W,icons/skills/arrow_cluster.png,cool,72,165
- *   |skill=E,icons/skills/sprint.png,ready|skill=R,icons/skills/hood.png,lock,5-daraja
- * </pre>
+ * <p>Written through the engine's {@link HeroCard}, which owns the format beside the panel that reads it
+ * ({@code uz.dukeengine.client3d.rpg.HeroPanel}). What goes on the card — whose it is, its words, its
+ * pictures — is this game's, and is decided here.
  *
  * <p>The split between the two halves is: whatever is <em>words</em> is finished
  * here, and whatever is <em>drawn</em> is sent as numbers. So the client never
@@ -42,49 +36,6 @@ final class HeroStatus {
     }
 
     /**
-     * Where his last cast wants drawing, and as what.
-     *
-     * <p>The one thing on this line that is not about the panel. It is here
-     * because this IS the game's channel to its own client -- a string the engine
-     * carries and never reads -- and because the alternative was widening the
-     * engine's own {@code WeaponFired} event, which is shared with games that have
-     * never heard of a skill. That event says who fired and where, which is all a
-     * muzzle flash needs; it cannot tell a nova from a blink, and the whole point
-     * of the effects is that a player can.
-     *
-     * <p>The frame travels with it so that one cast is drawn once. The line is
-     * rebuilt and sent every frame whether or not anything happened, so without
-     * it a nova would open its ring thirty times a second for as long as nothing
-     * else was cast.
-     *
-     * <p>Only the hero's. A skeleton mage's fire is drawn by the fire, which is a
-     * thing in the world and needs nobody to say so.
-     *
-     * <p>The last field is WHOSE it is, or 0 for a mark that belongs to the floor.
-     * A spot is enough for most of them -- a nova went off there and there it
-     * stays -- but not for the ones that draw a state rather than an event: a
-     * guard is round the man for as long as it lasts, and one pinned to the
-     * flagstone he cast it from stays behind the moment he walks away.
-     *
-     * <p>And then WHO cast it, which is not the same question. The field above
-     * says where the mark belongs and is nobody for a meteor, since a meteor
-     * belongs to the patch of floor it is going to land on -- so it cannot also
-     * say which creature to draw making the gesture. They are two facts and they
-     * are different for every skill that is aimed away from the caster.
-     */
-    private static void appendCast(StringBuilder line, SkillBook book, GameObject caster) {
-        for (var mark : book.getCastMarks()) {
-            line.append("|cast=").append(mark.look())
-                    .append(',').append(book.getCastMarkFrame())
-                    .append(',').append(mark.x())
-                    .append(',').append(mark.y())
-                    .append(',').append(mark.radius())
-                    .append(',').append(mark.on().value())
-                    .append(',').append(caster == null ? 0 : caster.getId().value());
-        }
-    }
-
-    /**
      * The card for nobody: the floor, and nothing else.
      *
      * <p>What the bar says when the player has selected nothing. It is not a
@@ -99,28 +50,25 @@ final class HeroStatus {
      * have the first floor drawn in the wrong kit until something was clicked.
      */
     static String nothing(int depth, int lastDepth, DungeonSettings settings, String note,
-            String look) {
-        var line = new StringBuilder()
-                .append("name=")
-                .append("|depth=").append(howFarDown(depth, lastDepth))
-                .append("|depthWord=").append(settings.hud().depthWord())
+            String look, boolean his) {
+        var card = HeroCard.named("")
+                .depth(howFarDown(depth, lastDepth), settings.hud().depthWord())
                 // The headings belong to the furniture rather than to whoever is
                 // selected: the sockets under them are drawn empty, and an empty
                 // grid with no heading over it is a hole rather than a bag.
-                .append("|itWord=").append(settings.hud().itemsWord())
-                .append("|skWord=").append(settings.hud().skillsWord());
+                .headings(settings.hud().skillsWord(), settings.hud().itemsWord());
         // The buttons are furniture too, and stay for the same reason the sockets
-        // do. Nothing is selected, so nothing is doing anything and none of them
-        // may be pressed -- but four dim buttons are a bar, and a gap is a hole.
-        appendOrders(line, settings, null, false);
+        // do. Nothing is selected, so nothing is doing anything for them to show;
+        // they may be pressed while his hero stands, whose orders they give -- {@code his}.
+        orders(card, settings, null, his);
         if (note != null && !note.isEmpty()) {
             // Finding a sword is worth saying whether or not he is selected.
-            line.append("|note=").append(note);
+            card.note(note);
         }
         if (look != null && !look.isBlank()) {
-            line.append("|look=").append(look);
+            card.field("look", look);
         }
-        return line.toString();
+        return card.toString();
     }
 
     /**
@@ -132,7 +80,8 @@ final class HeroStatus {
      * no bag — writing those fields with a monster's numbers in them would be
      * inventing a second hero. It does have ORDERS, which is not the same thing:
      * it is walking or fighting or standing whatever side it is on, and {@code his}
-     * is only whether the player may change that. What is left is what is actually worth
+     * is only whether the player may press the buttons -- which give his own hero's
+     * orders, whoever is looked at. What is left is what is actually worth
      * knowing about a thing across the room: how much of it there is and how hard
      * it hits.
      *
@@ -150,40 +99,34 @@ final class HeroStatus {
         if (creature == null || creature.getBody() == null) {
             return "";
         }
-        var line = new StringBuilder()
-                .append("name=").append(nameOf(creature))
-                .append("|hp=").append(Math.round(creature.getBody().getHealth()))
-                .append('/').append(Math.round(creature.getBody().getMaxHealth()))
-                .append("|depth=").append(howFarDown(depth, lastDepth))
-                .append("|depthWord=").append(settings.hud().depthWord())
+        var card = HeroCard.named(nameOf(creature))
+                .health(Math.round(creature.getBody().getHealth()), Math.round(creature.getBody().getMaxHealth()))
+                .depth(howFarDown(depth, lastDepth), settings.hud().depthWord())
                 // Headings again: a skeleton has no bag and no skills, and the
                 // empty sockets under these words say so better than a gap would.
-                .append("|itWord=").append(settings.hud().itemsWord())
-                .append("|skWord=").append(settings.hud().skillsWord());
+                .headings(settings.hud().skillsWord(), settings.hud().itemsWord());
         // It is not his, so he cannot order it -- and it is still DOING something,
         // and that is worth as much across the room as it is under his own feet.
         // Reading a skeleton off the bar is how a player learns to read the bar.
-        appendOrders(line, settings, Doing.of(creature, false), his);
+        orders(card, settings, Doing.of(creature, false), his);
         if (!settings.hud().monsterFace().isBlank()) {
-            line.append("|face=").append(settings.hud().monsterFace());
+            card.face(settings.hud().monsterFace());
         }
         var pictures = settings.hud().statIcons();
         // Its weapon's figure and what its own level makes of it -- a boss's as a skeleton's.
         var level = creature.findModule(LevelBonus.class);
         float damage = weaponDamage(creature.getTemplate()) * (level == null ? 1f : level.damageMultiplier());
         if (damage > 0f) {
-            stat(line, settings.hud().attackWord(), Math.round(damage), Math.round(damage),
-                    pictures.get(0));
+            card.stat(settings.hud().attackWord(), Math.round(damage), Math.round(damage), pictures.get(0));
         }
         float speed = walkingSpeed(creature.getTemplate());
         if (speed > 0f) {
-            stat(line, settings.hud().speedWord(), Math.round(speed), Math.round(speed),
-                    pictures.get(2));
+            card.stat(settings.hud().speedWord(), Math.round(speed), Math.round(speed), pictures.get(2));
         }
         if (look != null && !look.isBlank()) {
-            line.append("|look=").append(look);
+            card.field("look", look);
         }
-        return line.toString();
+        return card.toString();
     }
 
     /**
@@ -272,73 +215,64 @@ final class HeroStatus {
 
     static String of(GameObject hero, HeroProgress progress, int depth, int lastDepth,
             DungeonSettings settings, int frame, String look,
-            boolean holding, uz.dukeengine.dungeon.skill.SkillRanks learnt) {
+            boolean holding, uz.dukeengine.rpg.skill.SkillRanks learnt) {
         if (hero == null || hero.getBody() == null) {
             return "";
         }
         int level = progress.getLevel();
-        var line = new StringBuilder()
-                .append("name=").append(nameOf(hero))
-                .append("|title=").append(titleOf(hero, settings))
-                .append("|rank=").append(level).append(settings.hud().rankSuffix())
-                .append("|hp=").append(Math.round(hero.getBody().getHealth()))
-                .append('/').append(Math.round(hero.getBody().getMaxHealth()))
-                .append("|xp=").append(progress.getExperienceIntoLevel())
-                .append('/').append(progress.getExperienceForNextLevel())
-                .append("|depth=").append(howFarDown(depth, lastDepth))
-                .append("|depthWord=").append(settings.hud().depthWord());
-        appendStats(line, hero, progress, settings);
-        appendOrders(line, settings, Doing.of(hero, holding), true);
-        appendItems(line, progress, settings);
+        var card = HeroCard.named(nameOf(hero))
+                .title(titleOf(hero, settings))
+                .rank(level + settings.hud().rankSuffix())
+                .health(Math.round(hero.getBody().getHealth()), Math.round(hero.getBody().getMaxHealth()))
+                .experience(progress.getExperienceIntoLevel(), progress.getExperienceForNextLevel())
+                .depth(howFarDown(depth, lastDepth), settings.hud().depthWord());
+        stats(card, hero, progress, settings);
+        orders(card, settings, Doing.of(hero, holding), true);
+        card.headings(settings.hud().skillsWord(), settings.hud().itemsWord());
+        items(card, progress);
         var book = hero.findModule(SkillBook.class);
         if (book != null && book.getMaxMana() > 0) {
             // Beside the health, and read the same way. A hero whose file gives
             // him no pool sends no field, and the panel draws no bar -- which is
             // every hero in the game until one of them was given one.
-            line.append("|mana=").append(book.getMana())
-                    .append('/').append(book.getMaxMana());
+            card.mana(book.getMana(), book.getMaxMana());
             // And the moment he asked for something he could not pay for. A
             // stamp rather than a flag, because the line is rebuilt and sent
             // every frame: without it the refusal would sound thirty times a
             // second for as long as nothing else happened.
             if (book.getRefusedForManaFrame() > 0) {
-                line.append("|noMana=").append(book.getRefusedForManaFrame());
+                card.refusedForMana(book.getRefusedForManaFrame());
             }
         }
         if (book != null) {
-            line.append("|skWord=").append(settings.hud().skillsWord());
-            line.append(Skills.slots(book, learnt, level,
-                    new Skills.Words(settings.hud().rankSuffix(), settings.hud().masterWord(),
-                            settings.hud().lockedWord(),
-                            new uz.dukeengine.dungeon.skill.SkillTip.Words(
-                                    settings.hud().damageWord(), settings.hud().cooldownWord(),
-                                    settings.hud().radiusWord(), settings.hud().rangeWord(),
-                                    settings.hud().boostWord(), settings.hud().raiseWord(),
-                                    settings.hud().raiseKeyWord(),
-                                    settings.hud().maxedWord(), settings.hud().noPointsWord(),
-                                    settings.hud().rankSuffix(), settings.hud().secondsWord(),
-                                    settings.hud().manaWord()))));
+            var hud = settings.hud();
+            card.skills(book, learnt, level, new HeroCard.Words(hud.rankSuffix(), hud.masterWord(),
+                    hud.lockedWord(), new HeroCard.TipWords(hud.damageWord(), hud.cooldownWord(),
+                            hud.radiusWord(), hud.rangeWord(), hud.boostWord(), hud.raiseWord(),
+                            hud.raiseKeyWord(), hud.maxedWord(), hud.noPointsWord(), hud.rankSuffix(),
+                            hud.secondsWord(), hud.manaWord())));
             // How many levels he has not spent yet, and the word for them. Beside
             // the heading rather than on a slot, because it belongs to none of
             // them: it is what the four are competing for.
-            line.append("|pts=").append(learnt.unspent(level))
-                    .append(',').append(settings.hud().pointsWord());
-            appendCast(line, book, hero);
+            card.points(learnt.unspent(level), hud.pointsWord());
+            // Where his last cast wants drawing, and as what -- only the hero's: a skeleton mage's fire is drawn by
+            // the fire, which is a thing in the world and needs nobody to say so.
+            card.casts(book, hero);
         }
         // What he just picked up, for as long as it is worth saying. A line rather
         // than a banner: the banner interrupts, and finding a sword is news, not
         // an interruption.
         var found = progress.getLoot().noteAt(frame);
         if (!found.isEmpty()) {
-            line.append("|note=").append(found);
+            card.note(found);
         }
         // How this floor is drawn: a theme and one of its variations, by name. The
         // client keeps every look it was given at launch and is only ever told
         // which of them is current -- see Visuals.theme.
         if (look != null && !look.isBlank()) {
-            line.append("|look=").append(look);
+            card.field("look", look);
         }
-        return line.toString();
+        return card.toString();
     }
 
     /**
@@ -357,13 +291,13 @@ final class HeroStatus {
      * clicking them, so what earns them their space on the bar is what they can
      * tell him.
      *
-     * <p>{@code his} is whether the player may press them at all. A creature that
+     * <p>{@code his} is whether the player may press them at all: whether he has a
+     * hero standing, whose orders they give whatever is selected. A creature that
      * is not his still SHOWS what it is doing -- reading a skeleton's intent off
-     * the bar is worth as much as reading his own -- and the buttons go dim,
-     * because a lit button that does nothing is worse than no button.
+     * the bar is worth as much as reading his own -- and with no hero of his the
+     * buttons go dim, because a lit button that does nothing is worse than no button.
      */
-    private static void appendOrders(StringBuilder line, DungeonSettings settings,
-            Doing doing, boolean his) {
+    private static void orders(HeroCard card, DungeonSettings settings, Doing doing, boolean his) {
         var words = settings.hud().orderWords();
         var pictures = settings.hud().orderIcons();
         // Drawn in this order and read in this order — walk, attack, stop, guard —
@@ -378,18 +312,15 @@ final class HeroStatus {
         // like is not: that used to be a drawing named here by a word the client
         // held a mesh for, so changing how an order looked meant editing two
         // modules. It comes out of the file now, beside the word.
-        String[] keys = {"F", "A", "S", "D"};
-        line.append("|cmds=").append(his ? "mine" : "theirs");
+        char[] keys = {'F', 'A', 'S', 'D'};
+        card.ordersAreHis(his);
         for (int i = 0; i < keys.length; i++) {
             String word = i < words.size() ? words.get(i) : "";
             if (word.isBlank()) {
                 continue; // a game that does not name an order does not offer it
             }
-            line.append("|cmd=").append(keys[i])
-                    .append(',').append(i < pictures.size() ? pictures.get(i) : "")
-                    .append(',').append(word)
-                    .append(',')
-                    .append(doing != null && doing.button() == i ? "on" : "off");
+            card.order(keys[i], i < pictures.size() ? pictures.get(i) : "", word,
+                    doing != null && doing.button() == i);
         }
     }
 
@@ -397,13 +328,11 @@ final class HeroStatus {
      * What he is carrying, as one field per kind of thing with how many of it: grouped and counted, three of the
      * same sword one picture reading three.
      *
-     * <p>For the client's own grid of his bag, which can only be looked at. The game draws a bag of its own that
-     * can be used — see {@code BagScreen} — and leaves the client's off the bar; the line still says what is in it,
+     * <p>For the client's own grid of his bag, which can only be looked at. The bag that can be used is the
+     * engine's {@code BagScreen}, and the client's grid is left off the bar; the line still says what is in it,
      * as it says everything else about him.
      */
-    private static void appendItems(StringBuilder line, HeroProgress progress,
-            DungeonSettings settings) {
-        line.append("|itWord=").append(settings.hud().itemsWord());
+    private static void items(HeroCard card, HeroProgress progress) {
         var held = new java.util.LinkedHashMap<String, int[]>();
         var icons = new java.util.LinkedHashMap<String, String>();
         for (var item : progress.getLoot().getFound()) {
@@ -411,8 +340,7 @@ final class HeroStatus {
             icons.putIfAbsent(item.id(), item.icon());
         }
         for (var entry : held.entrySet()) {
-            line.append("|it=").append(icons.get(entry.getKey()))
-                    .append(',').append(entry.getValue()[0]);
+            card.item(icons.get(entry.getKey()), entry.getValue()[0]);
         }
     }
 
@@ -436,8 +364,7 @@ final class HeroStatus {
      * worth. His speed is not a figure any more: it is what an attribute became, and it
      * is read on that one's card.
      */
-    private static void appendStats(StringBuilder line, GameObject hero, HeroProgress progress,
-            DungeonSettings settings) {
+    private static void stats(HeroCard card, GameObject hero, HeroProgress progress, DungeonSettings settings) {
         var now = progress.figuresOf(hero, progress.found());
         var bare = progress.figuresOf(hero, HeroFigures.Found.NOTHING);
         var his = progress.getHero();
@@ -446,12 +373,9 @@ final class HeroStatus {
             var art = settings.attributeArt();
             for (int i = 0; i < art.size(); i++) {
                 boolean primary = i == his.attributes().primary();
-                figure(line, "attr", art.get(i).word(), now.attributes().whole(i),
-                        bare.attributes().whole(i), art.get(i).icon());
-                if (primary) {
-                    line.append(",primary");
-                }
-                attributeCard(line, i, art.get(i).word(), rules.attributes().get(i), primary,
+                card.attribute(art.get(i).word(), now.attributes().whole(i), bare.attributes().whole(i),
+                        art.get(i).icon(), primary);
+                attributeCard(card, i, art.get(i).word(), rules.attributes().get(i), primary,
                         rules, Math.round(now.speed()), settings);
             }
         }
@@ -466,9 +390,8 @@ final class HeroStatus {
                 worn + progress.getLoot().armourPercent())) * 100f);
         int bareArmour = Math.round((1f - levelling.damageTakenWith(level, worn)) * 100f);
         var pictures = settings.hud().statIcons();
-        stat(line, settings.hud().attackWord(), Math.round(now.attack()), Math.round(bare.attack()),
-                pictures.get(0));
-        stat(line, settings.hud().armourWord(), armour, bareArmour, pictures.get(1));
+        card.stat(settings.hud().attackWord(), Math.round(now.attack()), Math.round(bare.attack()), pictures.get(0));
+        card.stat(settings.hud().armourWord(), armour, bareArmour, pictures.get(1));
     }
 
     /**
@@ -480,66 +403,35 @@ final class HeroStatus {
      * written the way the file wrote them, and only a figure a point actually moves gets
      * a row, so an attribute the file adds next describes itself.
      */
-    private static void attributeCard(StringBuilder line, int index, String word,
+    private static void attributeCard(HeroCard card, int index, String word,
             Attribute attribute, boolean primary, AttributeRules rules, int speedNow,
             DungeonSettings settings) {
-        line.append("|atTipName=").append(index).append(',').append(word);
-        line.append("|atTipAt=").append(index).append(',')
-                .append(primary ? settings.hud().primaryWord() : "");
-        var rows = new StringBuilder();
-        cardRow(rows, index, settings.hud().healthWord(), attribute.healthPerPoint().value());
-        cardRow(rows, index, settings.hud().speedWord(), attribute.speedPerPoint().value());
-        cardRow(rows, index, settings.hud().manaWord(), attribute.manaPerPoint().value());
+        var hud = settings.hud();
+        var rows = new java.util.ArrayList<HeroCard.Row>();
+        cardRow(rows, hud.healthWord(), attribute.healthPerPoint().value());
+        cardRow(rows, hud.speedWord(), attribute.speedPerPoint().value());
+        cardRow(rows, hud.manaWord(), attribute.manaPerPoint().value());
         if (primary) {
-            cardRow(rows, index, settings.hud().attackWord(), rules.damagePerPrimary());
+            cardRow(rows, hud.attackWord(), rules.damagePerPrimary());
         }
-        if (!rows.isEmpty() && !settings.hud().eachPointWord().isEmpty()) {
-            line.append("|atTipText=").append(index).append(',')
-                    .append(settings.hud().eachPointWord());
-        }
-        line.append(rows);
         // His speed was a figure beside the others. It is what this attribute became,
         // so it is said here, under what a point of it is worth.
-        if (attribute.speedPerPoint().value() > 0 && !settings.hud().speedNowWord().isEmpty()) {
-            line.append("|atTipFoot=").append(index).append(',')
-                    .append(settings.hud().speedNowWord()).append(' ').append(speedNow);
-        }
+        boolean speedy = attribute.speedPerPoint().value() > 0 && !hud.speedNowWord().isEmpty();
+        card.attributeTip(index, word, primary ? hud.primaryWord() : "",
+                rows.isEmpty() ? "" : hud.eachPointWord(), rows,
+                speedy ? hud.speedNowWord() + " " + speedNow : "");
     }
 
     /** One figure a point gives; nothing for a figure it does not move. */
-    private static void cardRow(StringBuilder line, int index, String label, int hundredths) {
-        if (hundredths == 0) {
-            return;
+    private static void cardRow(java.util.List<HeroCard.Row> rows, String label, int hundredths) {
+        if (hundredths != 0) {
+            rows.add(new HeroCard.Row(label, "+" + hundredths(hundredths), ""));
         }
-        line.append("|atTipRow=").append(index).append(',').append(label)
-                .append(",+").append(hundredths(hundredths)).append(',');
     }
 
     /** A coefficient as the file wrote it: 15 is "0.15", 1200 is "12", 150 is "1.5". */
     static String hundredths(int value) {
         return java.math.BigDecimal.valueOf(value, 2).stripTrailingZeros().toPlainString();
-    }
-
-    /**
-     * One figure: its word, what it is now, how much of that is borrowed, and the
-     * picture beside it.
-     *
-     * <p>Four fields always, even where a field is empty. The picture is last and
-     * the panel reads it by position, so a figure that lends nothing still has to
-     * leave the gap where the lending would have gone.
-     */
-    private static void stat(StringBuilder line, String word, int now, int bare, String icon) {
-        figure(line, "stat", word, now, bare, icon);
-    }
-
-    /** The same four fields under either name: a figure's, or an attribute's. */
-    private static void figure(StringBuilder line, String field, String word, int now, int bare,
-            String icon) {
-        line.append('|').append(field).append('=').append(word).append(',').append(now).append(',');
-        if (now != bare) {
-            line.append(now > bare ? "+" : "").append(now - bare);
-        }
-        line.append(',').append(icon);
     }
 
     private static float weaponDamage(ThingTemplate template) {

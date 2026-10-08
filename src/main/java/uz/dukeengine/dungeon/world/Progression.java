@@ -1,7 +1,7 @@
 package uz.dukeengine.dungeon.world;
 
 import uz.dukeengine.core.math.Hundredths;
-import uz.dukeengine.dungeon.level.Levelling;
+import uz.dukeengine.rpg.hero.Levelling;
 
 /**
  * How a hero grows: what each level costs and gives, and what a point of his primary attribute

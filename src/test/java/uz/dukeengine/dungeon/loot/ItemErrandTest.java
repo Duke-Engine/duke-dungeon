@@ -1,5 +1,11 @@
 package uz.dukeengine.dungeon.loot;
 
+import uz.dukeengine.rpg.item.ItemUse;
+import uz.dukeengine.rpg.item.Stat;
+import uz.dukeengine.rpg.item.LootBag;
+import uz.dukeengine.rpg.item.Loot;
+import uz.dukeengine.rpg.item.ItemErrand;
+import uz.dukeengine.rpg.item.GroundItem;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -24,8 +30,8 @@ import uz.dukeengine.combat.message.CombatOrder;
 class ItemErrandTest {
 
     private static final DungeonSettings SETTINGS = DungeonSettings.load();
-    private static final Loot BLADE = new Loot("Blade", "Blade", "", LootKind.ATTACK, 8, 10, 1);
-    private static final Loot SHIELD = new Loot("Shield", "Shield", "", LootKind.ARMOUR, 4, 10, 1);
+    private static final Loot BLADE = new Loot("Blade", "Blade", "", Stat.ATTACK, 8, 10, 1);
+    private static final Loot SHIELD = new Loot("Shield", "Shield", "", Stat.ARMOUR, 4, 10, 1);
 
     /** How long he stands getting nowhere before he gives an errand up, here: four seconds, so a test need not wait. */
     private static final int STUCK = 120;
@@ -175,7 +181,7 @@ class ItemErrandTest {
     void theKeyPutDownLiesAsAKey() {
         var room = room(100f);
         var bag = new LootBag();
-        var key = SETTINGS.loot().stream().filter(item -> item.kind() == LootKind.KEY).findFirst().orElseThrow();
+        var key = SETTINGS.loot().stream().filter(item -> item.use() == ItemUse.UNLOCK).findFirst().orElseThrow();
         bag.take(key, 0, 0);
 
         assertTrue(ItemErrand.drop(room.hero(), 0, new Coord3D(250f, 150f, 0f), bag, room.rules()));
@@ -538,8 +544,8 @@ class ItemErrandTest {
 
     /** The Rogue's E: a dash, cast as the player's key casts it -- an order, come in between frames. */
     private static void castHisDash(Room room) {
-        var order = new uz.dukeengine.dungeon.skill.CastSkill(room.hero().getPlayerIndex(), 'E');
-        assertTrue(uz.dukeengine.dungeon.skill.Skills.cast(room.game().getLogic(), order, 1),
+        var order = new uz.dukeengine.rpg.skill.CastSkill(room.hero().getPlayerIndex(), 'E');
+        assertTrue(uz.dukeengine.rpg.skill.Skills.cast(room.game().getLogic(), order, 1),
                 "the dash did not go off, so this tells nothing");
     }
 
@@ -560,7 +566,7 @@ class ItemErrandTest {
     void aSlotWithNothingToUseOrNothingToUseItOnIsNoErrand() {
         var room = room(100f);
         var chest = room.chestAt(200f, SHIELD);
-        var key = SETTINGS.loot().stream().filter(item -> item.kind() == LootKind.KEY).findFirst().orElseThrow();
+        var key = SETTINGS.loot().stream().filter(item -> item.use() == ItemUse.UNLOCK).findFirst().orElseThrow();
         var bag = new LootBag();
         bag.take(BLADE, 0, 0);
         bag.take(key, 0, 0);

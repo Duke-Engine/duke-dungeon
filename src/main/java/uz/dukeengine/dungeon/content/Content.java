@@ -19,26 +19,26 @@ import uz.dukeengine.core.content.Effect;
 import uz.dukeengine.client3d.OrderMark;
 import uz.dukeengine.client3d.HitNumbers;
 import uz.dukeengine.client3d.MenuStyle;
-import uz.dukeengine.client3d.PanelLook;
+import uz.dukeengine.client3d.rpg.PanelLook;
 import uz.dukeengine.core.data.Binder;
 import uz.dukeengine.core.data.DataException;
 import uz.dukeengine.core.data.DukeText;
 import uz.dukeengine.core.module.ModuleData;
 import uz.dukeengine.core.module.ModuleFactory;
-import uz.dukeengine.dungeon.combat.ArrowUpdate;
-import uz.dukeengine.dungeon.combat.Bow;
-import uz.dukeengine.dungeon.combat.EyesOnly;
-import uz.dukeengine.dungeon.combat.FallingUpdate;
-import uz.dukeengine.dungeon.combat.Swing;
-import uz.dukeengine.dungeon.level.Attribute;
-import uz.dukeengine.dungeon.level.GrowableBody;
-import uz.dukeengine.dungeon.level.Recovery;
-import uz.dukeengine.dungeon.loot.GroundItem;
+import uz.dukeengine.rpg.fight.ArrowUpdate;
+import uz.dukeengine.rpg.fight.Bow;
+import uz.dukeengine.rpg.fight.EyesOnly;
+import uz.dukeengine.rpg.fight.FallingUpdate;
+import uz.dukeengine.rpg.fight.Swing;
+import uz.dukeengine.rpg.hero.Attribute;
+import uz.dukeengine.rpg.hero.GrowableBody;
+import uz.dukeengine.rpg.hero.Recovery;
+import uz.dukeengine.rpg.item.GroundItem;
 import uz.dukeengine.dungeon.map.ProceduralMap;
 import uz.dukeengine.dungeon.map.StaticMap;
-import uz.dukeengine.dungeon.skill.MendingUpdate;
-import uz.dukeengine.dungeon.skill.SkillBook;
-import uz.dukeengine.dungeon.skill.SummoningUpdate;
+import uz.dukeengine.rpg.skill.MendingUpdate;
+import uz.dukeengine.rpg.skill.SkillBook;
+import uz.dukeengine.rpg.skill.SummoningUpdate;
 import uz.dukeengine.game.script.ScriptModule;
 import uz.dukeengine.dungeon.world.Audio;
 import uz.dukeengine.client3d.Camera;
@@ -96,8 +96,8 @@ public final class Content {
                     Recovery.Data.class, SkillBook.Data.class, Bow.Data.class, EyesOnly.Data.class,
                     ArrowUpdate.Data.class, FallingUpdate.Data.class, MendingUpdate.Data.class,
                     SummoningUpdate.Data.class, Swing.Data.class, GroundItem.Data.class,
-                    uz.dukeengine.dungeon.level.FountainUpdate.Data.class,
-                    uz.dukeengine.dungeon.run.GateUpdate.Data.class))
+                    uz.dukeengine.rpg.hero.FountainUpdate.Data.class,
+                    uz.dukeengine.rpg.mission.GateUpdate.Data.class))
             .flatMap(List::stream).toList();
 
     /** The record each block of a data file is, by the word it opens with: its own name, but for Object. */

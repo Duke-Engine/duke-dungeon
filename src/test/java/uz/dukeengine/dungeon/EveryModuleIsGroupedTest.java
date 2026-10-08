@@ -19,7 +19,8 @@ import org.junit.jupiter.api.Test;
 import uz.dukeengine.core.module.Module;
 import uz.dukeengine.core.module.ModuleData;
 import uz.dukeengine.core.module.ModuleGroups;
-import uz.dukeengine.dungeon.skill.SkillBook;
+import uz.dukeengine.rpg.skill.SkillBook;
+import uz.dukeengine.rpg.RpgModuleGroups;
 import uz.dukeengine.rts.module.RtsModuleGroups;
 
 /**
@@ -35,7 +36,7 @@ class EveryModuleIsGroupedTest {
 
     private static final Set<String> SPELLED = Set.of(
             ModuleGroups.MOVEMENT, ModuleGroups.BODY, ModuleGroups.COMBAT, ModuleGroups.EFFECT,
-            ModuleGroups.SCRIPT, RtsModuleGroups.ECONOMY, RtsModuleGroups.PROGRESSION);
+            ModuleGroups.SCRIPT, RtsModuleGroups.ECONOMY, RtsModuleGroups.PROGRESSION, RpgModuleGroups.ITEMS);
 
     @Test
     void everyModuleIsFiledUnderAGroupThatIsSpelledSomewhere() throws Exception {

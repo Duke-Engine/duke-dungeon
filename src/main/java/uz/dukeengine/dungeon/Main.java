@@ -3,9 +3,11 @@ package uz.dukeengine.dungeon;
 import java.util.List;
 
 import uz.dukeengine.client3d.Duke3D;
+import uz.dukeengine.client3d.rpg.BagScreen;
 import uz.dukeengine.client3d.EdgeScroll;
 import uz.dukeengine.core.content.Effect;
 import uz.dukeengine.client3d.Fog;
+import uz.dukeengine.client3d.rpg.HeroLooks;
 import uz.dukeengine.client3d.Hotkeys;
 import uz.dukeengine.client3d.Shell;
 import uz.dukeengine.client3d.Tileset;
@@ -15,7 +17,7 @@ import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.dungeon.content.HeroLook;
 import uz.dukeengine.dungeon.world.Theme;
 import uz.dukeengine.dungeon.party.PartyOrders;
-import uz.dukeengine.dungeon.skill.CastSkill;
+import uz.dukeengine.rpg.skill.CastSkill;
 import uz.dukeengine.dungeon.stage.Stages;
 
 /**
@@ -194,7 +196,7 @@ public final class Main {
             }
             if (carried != null) {
                 visuals.effectReach(carried, skill.radius());
-                if (skill.effect() == uz.dukeengine.dungeon.skill.SkillEffect.METEOR
+                if (skill.effect() == uz.dukeengine.rpg.skill.SkillEffect.METEOR
                         && skill.windUpFrames() > 0) {
                     visuals.effectSeconds(carried, skill.windUpFrames() / perSecond);
                 }
@@ -213,12 +215,12 @@ public final class Main {
     }
 
     /** One portrait block, in the words the client keeps them in. */
-    private static uz.dukeengine.client3d.PortraitLook portraitLook(
+    private static uz.dukeengine.client3d.rpg.PortraitLook portraitLook(
             uz.dukeengine.dungeon.content.PortraitArt art) {
-        return new uz.dukeengine.client3d.PortraitLook(
-                new uz.dukeengine.client3d.PortraitLook.Camera(art.head(), art.show(),
+        return new uz.dukeengine.client3d.rpg.PortraitLook(
+                new uz.dukeengine.client3d.rpg.PortraitLook.Camera(art.head(), art.show(),
                         art.yaw(), art.pitch(), art.fov()),
-                new uz.dukeengine.client3d.PortraitLook.Clips(art.calm(), art.fight(),
+                new uz.dukeengine.client3d.rpg.PortraitLook.Clips(art.calm(), art.fight(),
                         art.hurt(), art.dead(), art.levelUp()),
                 art.hurtBelowPercent(), art.hurtSpeed());
     }
@@ -460,10 +462,10 @@ public final class Main {
         // Held too: a party is a match of its own, built once its players have met, and
         // it is the client that is asked to play it — see PartyFront.
         var duke = Duke3D.of(session.game(), visuals).hotkeys(keys);
-        // His bag, drawn and handled by the game: what he carries, and a hand to take a thing out of it and put it
-        // down. Told of every match it is drawn over -- this one, and a party's that replaces it.
-        var bag = new BagScreen(settings, duke);
-        bag.show(session);
+        // His bag, the engine's RPG part in the game's words: what he carries, and a hand to take a thing
+        // out of it and put it down. Told of every match it is drawn over -- this one, and a party's that replaces it.
+        var bag = Bag.on(settings, duke);
+        Bag.show(bag, session, settings);
         duke.canvas(bag).input(bag);
         duke.shell(Shell.create()
                 .entry(Shell.Entry.PLAY, "Enter the dungeon")
@@ -793,7 +795,7 @@ public final class Main {
         // Spending a level on a slot. A click on the badge rather than a letter,
         // so it comes through a door of its own -- and it is a COMMAND like every
         // other decision, settled on a frame boundary where the rules live.
-        keys.onRaiseSkill((game, key) -> game.postCommand(PartyOrders.of(new uz.dukeengine.dungeon.skill.UpgradeSkill(
+        keys.onRaiseSkill((game, key) -> game.postCommand(PartyOrders.of(new uz.dukeengine.rpg.skill.UpgradeSkill(
                 game.getLocalPlayerIndex(), key))));
         orders(keys);
         // Which single creature he has picked out. The panel describes it, and
@@ -818,7 +820,7 @@ public final class Main {
      * draw "just him".
      */
     static uz.dukeengine.client3d.SkillRange rangeOf(
-            uz.dukeengine.dungeon.skill.Skill skill, float selfRadius) {
+            uz.dukeengine.rpg.skill.Skill skill, float selfRadius) {
         var shape = switch (skill.effect()) {
             // A mending is pointed at a creature as a strike is -- one of its own.
             case STRIKE, HEAL -> uz.dukeengine.client3d.SkillRange.Shape.AT_A_CREATURE;
@@ -1029,12 +1031,12 @@ public final class Main {
         // the libraries from the creature's own block, under the same name.
         var everyone = settings.everyPortrait();
         if (everyone != null) {
-            visuals.portraits(portraitLook(everyone));
+            HeroLooks.of(visuals).portraits(portraitLook(everyone));
         }
         for (var portrait : settings.portraits()) {
-            visuals.portrait(portrait.name(), portraitLook(portrait));
+            HeroLooks.of(visuals).portrait(portrait.name(), portraitLook(portrait));
         }
-        visuals.portraitFps(settings.hud().portraitFps());
+        HeroLooks.of(visuals).portraitFps(settings.hud().portraitFps());
         // What a dead monster leaves lying about. No chest in the kit, so it is
         // a box in torch colour -- which is what a thing worth walking over to
         // has to be, whatever it is eventually modelled as.
@@ -1134,12 +1136,13 @@ public final class Main {
         // Whether the panel may colour the skill pictures. It always did, which is
         // how one white drawing served three states; a painted set cannot take it
         // — see IconLook.
-        visuals.iconLook(new uz.dukeengine.client3d.IconLook(settings.hud().paintedSkillIcons()));
+        HeroLooks.of(visuals).iconLook(
+                new uz.dukeengine.client3d.rpg.IconLook(settings.hud().paintedSkillIcons()));
 
         // How the block under the experience bar is drawn -- see StatBlock. The
         // client knows where its three columns go; the file says how big and what colour.
         var statBlockArt = settings.statBlock();
-        visuals.statLook(new uz.dukeengine.client3d.StatLook(statBlockArt.figureIcon(),
+        HeroLooks.of(visuals).statLook(new uz.dukeengine.client3d.rpg.StatLook(statBlockArt.figureIcon(),
                 statBlockArt.primaryIcon(), statBlockArt.attributeIcon(), statBlockArt.iconShare(),
                 statBlockArt.rowGap(), statBlockArt.gapUnderBar(), statBlockArt.figureColumn(),
                 statBlockArt.primaryColumn(), statBlockArt.figureRows(),
@@ -1159,7 +1162,7 @@ public final class Main {
         // The three arrowheads that answer a click — the client's own OrderMark, which the
         // block of that name is read straight into.
         visuals.orderMark(settings.orderMark());
-        visuals.panelLook(settings.panelLook());
+        HeroLooks.of(visuals).panelLook(settings.panelLook());
         visuals.hitNumbers(settings.hitNumbers());
 
         // How far each skill reaches, so the client can draw it before it is spent

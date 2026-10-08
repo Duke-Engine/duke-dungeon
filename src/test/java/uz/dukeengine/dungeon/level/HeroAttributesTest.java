@@ -1,5 +1,8 @@
 package uz.dukeengine.dungeon.level;
 
+import uz.dukeengine.rpg.hero.HeroProgress;
+import uz.dukeengine.rpg.hero.HeroFigures;
+import uz.dukeengine.rpg.hero.Attribute;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
@@ -14,14 +17,14 @@ import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.dungeon.Dungeon;
 import uz.dukeengine.dungeon.content.Content;
 import uz.dukeengine.dungeon.content.DungeonSettings;
-import uz.dukeengine.dungeon.loot.Loot;
-import uz.dukeengine.dungeon.loot.LootBag;
-import uz.dukeengine.dungeon.loot.LootKind;
-import uz.dukeengine.dungeon.skill.SkillBook;
+import uz.dukeengine.rpg.item.Loot;
+import uz.dukeengine.rpg.item.LootBag;
+import uz.dukeengine.rpg.item.Stat;
+import uz.dukeengine.rpg.skill.SkillBook;
 import uz.dukeengine.game.DukeGame;
 import uz.dukeengine.combat.message.CombatOrder;
 import uz.dukeengine.combat.module.ExperienceModule;
-import uz.dukeengine.rts.player.RtsPlayer;
+import uz.dukeengine.rpg.hero.AttackBonus;
 
 /**
  * The attributes in the world he is played in: in his body, his weapon, his legs and
@@ -53,10 +56,11 @@ class HeroAttributesTest {
         var bag = new LootBag();
         var arena = Dungeon.world(room(60, 40), settings, Content.units(), bag);
         var game = arena.game();
-        var progress = new HeroProgress(arena.hero(), settings.levelling(),
+        var progress = new HeroProgress(arena.hero()::getIndex,
+                uz.dukeengine.dungeon.Dungeon.banner(arena.game(), arena.hero()), settings.levelling(),
                 settings.attributeRules(), settings.progression().levelUpBannerFrames(), bag);
         progress.playing(settings.heroNamed(template));
-        game.onTick(progress::tick);
+        game.onTick(ticked -> progress.tick(ticked.getLogic()));
         game.spawn(template, arena.hero(), 150f, 200f);
         game.runHeadless(2);
         assertNotNull(find(game, template), template + " was not spawned");
@@ -300,12 +304,11 @@ class HeroAttributesTest {
                 }
             }
             var book = hero.findModule(SkillBook.class);
-            var player = RtsPlayer.of(game.getLogic(), game.getLocalPlayerIndex());
             signature.append(frame).append(':').append(game.getLogic().checksum())
                     .append(":H").append(Float.floatToIntBits(hero.getBody().getMaxHealth()))
                     .append(":M").append(book.getMana()).append('/').append(book.getMaxMana())
                     .append(":L").append(session.progress().getLevel())
-                    .append(":W").append(Float.floatToIntBits(player.getWeaponDamageBonus()))
+                    .append(":W").append(Float.floatToIntBits(blowOf(hero)))
                     .append('|');
         }
         return signature.toString();
@@ -341,8 +344,13 @@ class HeroAttributesTest {
     }
 
     private static float bonusOf(Played it) {
-        return RtsPlayer.of(it.game().getLogic(), it.game().getLocalPlayerIndex())
-                .getWeaponDamageBonus();
+        return blowOf(it.body());
+    }
+
+    /** What his blow is worth now, as a share of the one his weapon was built with: 1 until it is more. */
+    private static float blowOf(GameObject hero) {
+        var bonus = hero.findModule(AttackBonus.class);
+        return bonus == null ? 1f : bonus.damageMultiplier();
     }
 
     private static void take(Played it, String attribute, int value) {
@@ -352,7 +360,7 @@ class HeroAttributesTest {
 
     /** Whole points of the attribute the file calls {@code attribute}. */
     private static Loot item(String attribute, int value) {
-        return new Loot(attribute, attribute, "", LootKind.ATTRIBUTE, value, 1, 1, attribute);
+        return new Loot(attribute, attribute, "", Stat.ATTRIBUTE, value, 1, 1, attribute);
     }
 
     private static GameObject nearestMonster(DukeGame game, GameObject hero) {

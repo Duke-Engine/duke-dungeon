@@ -1,5 +1,13 @@
 package uz.dukeengine.dungeon.level;
 
+import uz.dukeengine.rpg.hero.HeroFigures;
+import uz.dukeengine.rpg.hero.HeroBuild;
+import uz.dukeengine.rpg.hero.HeroBase;
+import uz.dukeengine.rpg.hero.HeroAttributes;
+import uz.dukeengine.rpg.hero.GrowableBody;
+import uz.dukeengine.rpg.hero.Attributes;
+import uz.dukeengine.rpg.hero.AttributeRules;
+import uz.dukeengine.rpg.hero.Attribute;
 import uz.dukeengine.core.math.Hundredths;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;

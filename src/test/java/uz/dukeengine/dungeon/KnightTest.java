@@ -14,10 +14,10 @@ import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.core.thing.ThingTemplate;
 import uz.dukeengine.dungeon.content.Content;
 import uz.dukeengine.dungeon.content.DungeonSettings;
-import uz.dukeengine.dungeon.level.GrowableBody;
-import uz.dukeengine.dungeon.level.HeroProgress;
-import uz.dukeengine.dungeon.skill.SkillBook;
-import uz.dukeengine.dungeon.skill.SkillEffect;
+import uz.dukeengine.rpg.hero.GrowableBody;
+import uz.dukeengine.rpg.hero.HeroProgress;
+import uz.dukeengine.rpg.skill.SkillBook;
+import uz.dukeengine.rpg.skill.SkillEffect;
 import uz.dukeengine.combat.module.WeaponUpdate;
 
 /**
@@ -369,11 +369,12 @@ class KnightTest {
         game.spawn(template, world.hero(), 150f, 150f);
         game.runHeadless(1);
         var him = find(game, template);
-        var progress = new HeroProgress(world.hero(), SETTINGS.levelling(),
+        var progress = new HeroProgress(world.hero()::getIndex,
+                uz.dukeengine.dungeon.Dungeon.banner(world.game(), world.hero()), SETTINGS.levelling(),
                 SETTINGS.attributeRules(), SETTINGS.progression().levelUpBannerFrames(),
-                new uz.dukeengine.dungeon.loot.LootBag());
+                new uz.dukeengine.rpg.item.LootBag());
         progress.playing(SETTINGS.heroNamed(template));
-        progress.carryOver(game, him);
+        progress.carryOver(game.getLogic(), him);
 
         float before = him.getBody().getHealth();
         him.getBody().damage(100f);
@@ -532,7 +533,7 @@ class KnightTest {
                 .findFirst().orElse(null);
     }
 
-    private static uz.dukeengine.dungeon.skill.Skill skillOf(String hero, char key) {
+    private static uz.dukeengine.rpg.skill.Skill skillOf(String hero, char key) {
         return SETTINGS.skillsFor(hero).stream()
                 .filter(skill -> skill.key() == key)
                 .findFirst().orElseThrow(() -> new AssertionError(hero + " has no " + key));
@@ -562,12 +563,12 @@ class KnightTest {
      * the way the game builds him. The block alone is only what the attributes are
      * added to.
      */
-    private static uz.dukeengine.dungeon.level.HeroFigures firstLevel(String template) {
+    private static uz.dukeengine.rpg.hero.HeroFigures firstLevel(String template) {
         var look = SETTINGS.heroNamed(template);
-        return uz.dukeengine.dungeon.level.HeroFigures.of(
-                uz.dukeengine.dungeon.level.HeroBase.of(templateOf(template)), look.maxMana(),
+        return uz.dukeengine.rpg.hero.HeroFigures.of(
+                uz.dukeengine.rpg.hero.HeroBase.of(templateOf(template)), look.maxMana(),
                 look.attributes(), SETTINGS.attributeRules(), 1,
-                uz.dukeengine.dungeon.level.HeroFigures.Found.NOTHING);
+                uz.dukeengine.rpg.hero.HeroFigures.Found.NOTHING);
     }
 
     private static float health(String template) {

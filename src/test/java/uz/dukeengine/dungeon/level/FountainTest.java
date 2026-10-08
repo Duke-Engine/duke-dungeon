@@ -10,7 +10,7 @@ import uz.dukeengine.core.math.Coord3D;
 import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.dungeon.Dungeon;
 import uz.dukeengine.dungeon.content.DungeonSettings;
-import uz.dukeengine.dungeon.skill.SkillBook;
+import uz.dukeengine.rpg.skill.SkillBook;
 import uz.dukeengine.game.DukeGame;
 
 /**

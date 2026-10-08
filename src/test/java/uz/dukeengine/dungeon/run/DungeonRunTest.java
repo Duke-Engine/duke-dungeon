@@ -128,7 +128,7 @@ class DungeonRunTest {
 
     /** Run the world on until the hero has died and the loop has started him over. */
     private static void kill(uz.dukeengine.game.DukeGame game, Dungeon.Session session) {
-        var hero = uz.dukeengine.dungeon.skill.Skills.heroOf(game.getLogic(),
+        var hero = uz.dukeengine.rpg.skill.Skills.heroOf(game.getLogic(),
                 game.getLocalPlayerIndex());
         hero.getBody().damage(hero.getBody().getMaxHealth() * 2f);
         // Long enough for the death to be noticed and the next run to be laid.
