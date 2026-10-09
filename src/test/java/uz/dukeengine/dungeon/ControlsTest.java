@@ -329,4 +329,13 @@ class ControlsTest {
         assertEquals(monster.getId(), session.orders().watchedBy(hero.getPlayerIndex()),
                 "and the monster is still the one shown");
     }
+
+    /**
+     * A drag across the screen is never a box: one hero and nobody else to gather, so a press is a click where the
+     * mouse lets go, and picks the one thing under it to look at -- never a group.
+     */
+    @Test
+    void aDragNeverSelectsABox() {
+        assertEquals(Float.MAX_VALUE, Main.looks(SHIPPED).getDragDistance());
+    }
 }

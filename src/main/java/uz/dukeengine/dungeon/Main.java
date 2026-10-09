@@ -1218,6 +1218,10 @@ public final class Main {
         }
         visuals.effectBudget(settings.effectBudget().maxLights(), settings.effectBudget().maxDistance());
         visuals.particleBudget(settings.effectBudget().maxParticles());
+        // One hero and nobody else to command, so there is no group to draw a box round: a press is a click wherever
+        // the mouse lets go, and picks the one thing under it to look at. ponytail: the engine's drag distance set
+        // past any window; a named "no box" switch is asked of the engine as E26.
+        visuals.dragDistance(Float.MAX_VALUE);
         visuals.shakeScale(settings.hitFeel().shakeScale());
         visuals.hitFlash(new Visuals.HitFlashLook(settings.hitFeel().hitFlashColour(),
                 settings.hitFeel().hitFlashSeconds(), settings.hitFeel().hitFlashStrength()));
