@@ -1,6 +1,5 @@
 package uz.dukeengine.dungeon.run;
 
-import uz.dukeengine.core.module.MoveUpdate;
 import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.core.thing.ThingTemplate;
 import uz.dukeengine.dungeon.ai.Doing;
@@ -71,71 +70,6 @@ final class HeroStatus {
         return card.toString();
     }
 
-    /**
-     * The card for a creature that is not his: name, what is left of it, and what
-     * it hits for.
-     *
-     * <p>Deliberately shorter than the hero's, and not because it was easier. A
-     * skeleton has no experience the player is earning, no skills he can cast and
-     * no bag — writing those fields with a monster's numbers in them would be
-     * inventing a second hero. It does have ORDERS, which is not the same thing:
-     * it is walking or fighting or standing whatever side it is on, and {@code his}
-     * is only whether the player may press the buttons -- which give his own hero's
-     * orders, whoever is looked at. What is left is what is actually worth
-     * knowing about a thing across the room: how much of it there is and how hard
-     * it hits.
-     *
-     * <p>The floor's own line stays. Depth belongs to the dungeon rather than to
-     * whatever happens to be selected, and a panel whose corner went blank when
-     * the player clicked a skeleton would look broken.
-     *
-     * <p>Worked out here rather than read off the creature because the engine's
-     * weapon and locomotor do not hand their numbers back — the same reason the
-     * hero's three are worked out — and because what its level multiplies a monster
-     * by is this game's arithmetic. See {@code Spawner.scale}.
-     */
-    static String creature(GameObject creature, int depth, int lastDepth,
-            DungeonSettings settings, String look, boolean his) {
-        if (creature == null || creature.getBody() == null) {
-            return "";
-        }
-        var card = HeroCard.named(nameOf(creature))
-                .health(Math.round(creature.getBody().getHealth()), Math.round(creature.getBody().getMaxHealth()))
-                .depth(howFarDown(depth, lastDepth), settings.hud().depthWord())
-                // Headings again: a skeleton has no bag and no skills, and the
-                // empty sockets under these words say so better than a gap would.
-                .headings(settings.hud().skillsWord(), settings.hud().itemsWord());
-        // It is not his, so he cannot order it -- and it is still DOING something,
-        // and that is worth as much across the room as it is under his own feet.
-        // Reading a skeleton off the bar is how a player learns to read the bar.
-        orders(card, settings, Doing.of(creature, false), his);
-        if (!settings.hud().monsterFace().isBlank()) {
-            card.face(settings.hud().monsterFace());
-        }
-        var pictures = settings.hud().statIcons();
-        // Its weapon's figure and what its own level makes of it -- a boss's as a skeleton's.
-        var level = creature.findModule(LevelBonus.class);
-        float damage = weaponDamage(creature.getTemplate()) * (level == null ? 1f : level.damageMultiplier());
-        if (damage > 0f) {
-            card.stat(settings.hud().attackWord(), Math.round(damage), Math.round(damage), pictures.get(0));
-        }
-        float speed = walkingSpeed(creature.getTemplate());
-        if (speed > 0f) {
-            card.stat(settings.hud().speedWord(), Math.round(speed), Math.round(speed), pictures.get(2));
-        }
-        if (look != null && !look.isBlank()) {
-            card.field("look", look);
-        }
-        return card.toString();
-    }
-
-    /**
-     * The same, told whether he has been ordered to hold his ground.
-     *
-     * <p>The one thing on the panel that is neither a number on the hero nor a
-     * word in the file: a standing order lives beside the brain that obeys it —
-     * see {@code uz.dukeengine.dungeon.ai.Orders} — and has to be carried in from there.
-     */
     /**
      * What the bars over everybody's heads need, which is not much.
      *
@@ -379,19 +313,40 @@ final class HeroStatus {
                         rules, Math.round(now.speed()), settings);
             }
         }
-        var levelling = settings.levelling();
-        int level = progress.getLevel();
-        // What he was born in counts with what he has found, exactly as the body
-        // counts it -- otherwise the figure on the panel is not the one taking the
-        // blows, and a knight reads as an archer in a shirt. His own plate is not
-        // borrowed, so it belongs on both sides of the sum.
-        int worn = his.armourPercent();
-        int armour = Math.round((1f - levelling.damageTakenWith(level,
-                worn + progress.getLoot().armourPercent())) * 100f);
-        int bareArmour = Math.round((1f - levelling.damageTakenWith(level, worn)) * 100f);
+        int armour = armourOf(progress, settings, true);
+        int bareArmour = armourOf(progress, settings, false);
         var pictures = settings.hud().statIcons();
         card.stat(settings.hud().attackWord(), Math.round(now.attack()), Math.round(bare.attack()), pictures.get(0));
         card.stat(settings.hud().armourWord(), armour, bareArmour, pictures.get(1));
+    }
+
+    /**
+     * What a hero shrugs off, in percent: with what he has found, or bare.
+     *
+     * <p>What he was born in counts with what he has found, exactly as the body
+     * counts it -- otherwise the figure on the panel is not the one taking the
+     * blows, and a knight reads as an archer in a shirt. His own plate is not
+     * borrowed, so it belongs on both sides of the sum.
+     */
+    static int armourOf(HeroProgress progress, DungeonSettings settings, boolean found) {
+        int worn = progress.getHero().armourPercent();
+        return Math.round((1f - settings.levelling().damageTakenWith(progress.getLevel(),
+                worn + (found ? progress.getLoot().armourPercent() : 0))) * 100f);
+    }
+
+    /** What a hero hits for, with everything he has found. */
+    static int attackOf(GameObject hero, HeroProgress progress) {
+        return Math.round(progress.figuresOf(hero, progress.found()).attack());
+    }
+
+    /**
+     * What a creature that is not a hero hits for: its weapon's figure and what its own level makes of it -- a boss's
+     * as a skeleton's. Worked out rather than read off it because the engine's weapon does not hand its number back,
+     * and what a level multiplies a monster by is this game's arithmetic: see {@code Spawner.scale}.
+     */
+    static int blowOf(GameObject creature) {
+        var level = creature.findModule(LevelBonus.class);
+        return Math.round(weaponDamage(creature.getTemplate()) * (level == null ? 1f : level.damageMultiplier()));
     }
 
     /**
@@ -438,15 +393,6 @@ final class HeroStatus {
         for (var entry : template.modules()) {
             if (entry instanceof uz.dukeengine.combat.module.WeaponUpdate.Data weapon) {
                 return weapon.damage();
-            }
-        }
-        return 0f;
-    }
-
-    private static float walkingSpeed(ThingTemplate template) {
-        for (var entry : template.modules()) {
-            if (entry instanceof MoveUpdate.Data move) {
-                return move.speed();
             }
         }
         return 0f;

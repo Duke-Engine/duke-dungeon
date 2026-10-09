@@ -521,16 +521,15 @@ class MonsterLevelTest {
         }
     }
 
-    /** The card shows its own blow: its weapon's figure times its own level's share -- not the floor's. */
+    /** The target frame shows its own blow: its weapon's figure times its own level's share -- not the floor's. */
     @Test
-    void theCardShowsItsOwnBlow() {
+    void theTargetFrameShowsItsOwnBlow() {
         var skeleton = alone("Skeleton");
         Spawner.scale(skeleton, 8, SETTINGS);
+        var target = Target.of(skeleton, null, null, SETTINGS);
 
-        var line = HeroStatus.creature(skeleton, 4, 4, SETTINGS, "", false);
-
-        assertTrue(line.contains("|stat=" + SETTINGS.hud().attackWord() + ","
-                + Math.round(shipped("Skeleton", "Damage") * 1.35f) + ","), line);
+        assertEquals(Math.round(shipped("Skeleton", "Damage") * 1.35f), target.attack(), target.toString());
+        assertEquals(8, target.level(), "and its own level");
     }
 
     /** Placed for real: the first floor's boss stands at 10 with 1.9 times its health, and every monster at 1 to 8. */

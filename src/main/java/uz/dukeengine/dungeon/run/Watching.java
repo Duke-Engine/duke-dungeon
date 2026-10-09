@@ -20,13 +20,13 @@ import uz.dukeengine.core.thing.ObjectId;
  * them, which is not slower or uglier but simply wrong.
  *
  * <p>Nothing in the world changes when this arrives. It moves one number that the
- * status line is written from, and the status line is the one part of the
- * snapshot the engine carries without reading. No frame differs because of it,
+ * target frame is worked out from ({@link Target}) -- the hero's own panel stays his -- and that frame is
+ * the window's alone. No frame of the world differs because of it,
  * which is exactly why a selection may be a command at all.
  *
  * @param unit the one thing he has picked out, or {@code null} for nothing and
- *             for a whole box of them at once — either way the panel goes back to
- *             describing his own hero
+ *             for a whole box of them at once — either way the target frame is put
+ *             away
  */
 public record Watching(int playerIndex, ObjectId unit) implements Command {
 }

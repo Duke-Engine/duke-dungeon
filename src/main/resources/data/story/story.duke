@@ -4,7 +4,7 @@
 ; A Speaker is who a line may be said by (Hero needs no block: it is whoever the
 ; player plays). A Conversation is lines said in turn, and the quests it hands
 ; out. An Npc is a Monster template that talks: what it says and how near a hero
-; comes before it does. A Quest is steps done in order, each a Goal — REACH a
+; comes before it does, and its Role -- the word under its name in the target frame. A Quest is steps done in order, each a Goal — REACH a
 ; zone of the map, KILL Count of a Monster, COLLECT Count of a LootItem, TALK to
 ; an Npc, GIVE an Item to an Npc — its tracker Text (%d/%d the count so far and
 ; the count asked), and OnDone: a conversation, experience, an item, the next quest.
@@ -87,6 +87,7 @@ End
 Npc
   Name = Commander
   Talk = CommanderGreets
+  Role = "Qo'mondon"
   Radius = 30
 End
 

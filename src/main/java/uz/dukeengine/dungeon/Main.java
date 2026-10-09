@@ -950,7 +950,7 @@ public final class Main {
         // flag and sends nothing to the simulation.
         keys.on(settings.run().foldKey().charAt(0), game -> MissionScreen.fold());
         orders(keys);
-        // Which single creature he has picked out. The panel describes it, and
+        // Which single creature he has picked out. The target frame describes it, and
         // only the simulation can say what it is worth -- see Watching.
         keys.onWatch((game, id) -> game.postCommand(PartyOrders.of(new uz.dukeengine.dungeon.run.Watching(
                 game.getLocalPlayerIndex(), id < 0 ? null : new ObjectId(id)))));

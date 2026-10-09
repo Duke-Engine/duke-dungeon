@@ -599,6 +599,9 @@ public final class DungeonRun {
             case DEAD -> whileDead(game);
             case WON -> whileWon(game);
         }
+        if (state != State.RUNNING) {
+            target = null; // the banner has the screen, as the tracker gives it up
+        }
     }
 
     private void whileRunning(DukeGame game) {
@@ -666,44 +669,39 @@ public final class DungeonRun {
         game.setStatus(card(game, mine) + HeroStatus.world(game.getLogic(),
                 Skills.heroOf(game.getLogic(), mine.player.getIndex()), mine.progress, depth,
                 bossId, settings));
+        var picked = orders.watchedBy(mine.player.getIndex());
+        var creature = picked == null ? null : game.getLogic().findObject(picked);
+        var fellow = creature == null ? null : seatOf(creature.getPlayerIndex());
+        target = Target.of(creature, Skills.heroOf(game.getLogic(), mine.player.getIndex()),
+                fellow != null && Skills.heroOf(game.getLogic(), fellow.player.getIndex()) == creature
+                        ? fellow.progress : null, settings);
+    }
+
+    /** What the target frame shows: this machine's player's pick, worked out each frame, or null for nothing. */
+    private volatile Target target;
+
+    /** What the target frame shows now, or null: read by the window. */
+    public Target getTarget() {
+        return target;
     }
 
     /**
-     * The card itself — the panel's half of the line, about whatever is selected.
+     * The card itself — the panel's half of the line, and always about his own hero, whatever he has picked out to
+     * look at: that is the target frame's ({@link Target}). A single-hero game's panel is the hero's, as WoW's and
+     * Diablo's are.
      *
-     * <p>Split from the floor's half above because the two answer different
-     * questions. This one changes with every click; the bars over everybody's
-     * heads are drawn whether anything is selected or not.
-     *
-     * <p>Three answers and they are tried in this order, which is the order of
-     * what is most specific. His own is asked first and asked before the creature
-     * is looked at at all: a dying hero is still the hero the bar is about, and
-     * the run has a screen of its own for what happens next.
+     * <p>With no hero of his on the floor — a party's player whose hero has gone — the bar keeps the floor and
+     * loses the creature, and its buttons go dim. A dying hero is still the hero the bar is about.
      */
     private String card(DukeGame game, Seat seat) {
         int player = seat.player.getIndex();
-        var picked = orders.watchedBy(player);
-        var creature = picked == null ? null : game.getLogic().findObject(picked);
-        boolean his = creature != null && creature.getPlayerIndex() == player;
         var hero = Skills.heroOf(game.getLogic(), player);
-        if (his && hero == creature) {
-            return HeroStatus.of(creature, seat.progress, depth, floors.lastDepth(), settings,
+        if (hero != null) {
+            return HeroStatus.of(hero, seat.progress, depth, floors.lastDepth(), settings,
                     game.getLogic().getFrame(), look, orders.isHolding(player), seat.learnt);
         }
-        // Selecting anything shows it, and his orders always go to his own hero: the client sends them to the hero
-        // the bars name whatever is picked out, so the buttons are his to press whenever that hero stands.
-        boolean heroStands = hero != null && !hero.isEffectivelyDead();
-        if (creature != null && !creature.isEffectivelyDead()) {
-            // Somebody else's creature, or one of his that is not the hero: the card describes it, and what it is
-            // doing is on the buttons.
-            return HeroStatus.creature(creature, depth, floors.lastDepth(), settings,
-                    look, his || heroStands);
-        }
-        // Nothing selected, or what was selected has died: the bar keeps the floor
-        // and loses the creature. A panel describing a corpse until the player
-        // thinks to click somewhere is a panel that looks broken.
         return HeroStatus.nothing(depth, floors.lastDepth(), settings,
-                seat.progress.getLoot().noteAt(game.getLogic().getFrame()), look, heroStands);
+                seat.progress.getLoot().noteAt(game.getLogic().getFrame()), look, false);
     }
 
     /**

@@ -13,7 +13,6 @@ import uz.dukeengine.dungeon.content.PortraitArt;
  * @param rankSuffix        what turns a level into the words beside his name — added straight onto
  *     the number, so "-daraja" makes "7-daraja" and " lv" would make "7 lv"
  * @param pointsWord        what an unspent level is called, beside the skill heading
- * @param monsterFace       the drawing that stands in the portrait for something that is not his
  * @param heroTitle         what he is, drawn under his name
  * @param chooseModeWord    the first screen: which of the two games is being played
  * @param chooseStageWord   the screen after it, when he chose the frozen kind
@@ -41,7 +40,7 @@ import uz.dukeengine.dungeon.content.PortraitArt;
 public record Hud(String depthWord, String rankSuffix, String skillsWord, String pointsWord, String masterWord,
         String damageWord, String cooldownWord, String radiusWord, String rangeWord, String boostWord,
         String secondsWord, String raiseKeyWord, String raiseWord, String maxedWord, String noPointsWord,
-        String lockedWord, String itemsWord, String heroTitle, String monsterFace, String cmdMoveWord,
+        String lockedWord, String itemsWord, String heroTitle, String cmdMoveWord,
         String cmdAttackWord, String cmdStopWord, String cmdGuardWord, String chooseHeroWord,
         String chooseHeroHint, String chooseModeWord, String chooseModeHint, String endlessWord,
         String endlessBlurb, String stagesWord, String stagesBlurb, String chooseStageWord,
@@ -53,7 +52,7 @@ public record Hud(String depthWord, String rankSuffix, String skillsWord, String
 
     /** What a block leaves out. */
     public static final Hud DEFAULTS = new Hud("DEPTH", "-lv", "", "", "", "", "", "", "", "", "", "", "", "",
-            "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
+            "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
             "", "", false, "", "", "", "", "", "", "", 24, null, 20f, "");
 
     /** The four orders on the buttons beside the map, in the order they are drawn. */
