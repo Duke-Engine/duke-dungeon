@@ -481,16 +481,48 @@ class MissionTest {
         assertEquals(steps.get(1).since(), later.getFirst().since(), "the step keeps the frame it began at");
     }
 
-    /** A stage is cut without a keep, and so has no mission: its tracker says only the last line. */
+    /**
+     * A stage runs no floor mission unless its file asks for one (the owner, 2026-10-09: every map had a "kill the
+     * boss" left over): no mission, and nothing in its tracker but its own quests — here none.
+     */
     @Test
-    void aStageHasNoMission() {
+    void aStageHasNoFloorMissionUnlessItAsks() {
         var floor = DungeonGenerator.generate(SEED, SETTINGS, 1,
                 Layout.sized(SETTINGS, SETTINGS.mapWidth(), SETTINGS.mapHeight(), SETTINGS.maxRooms()));
         var session = Dungeon.newStageSession(new Stage("test", "Test", "", 1, 1, SEED, floor), SETTINGS);
         session.game().runHeadless(2);
 
         assertNull(session.run().getMission());
+        assertTrue(session.run().getTracker().entries().isEmpty(), "no MAIN entry: " + session.run().getTracker());
+    }
+
+    /** A stage whose file says FloorMission = Yes — the two arenas — says kill the boss, its keep cut or not. */
+    @Test
+    void aStageThatAsksSaysKillTheBoss() {
+        var floor = DungeonGenerator.generate(SEED, SETTINGS, 1,
+                Layout.sized(SETTINGS, SETTINGS.mapWidth(), SETTINGS.mapHeight(), SETTINGS.maxRooms()));
+        var arena = new uz.dukeengine.dungeon.story.MapStory(List.of(), List.of(), List.of(), List.of(), true);
+        var session = Dungeon.newStageSession(new Stage("test", "Test", "", 1, 1, SEED, floor, null, arena), SETTINGS);
+        session.game().runHeadless(2);
+
+        assertNull(session.run().getMission(), "a stage is cut without a keep");
         assertEquals(Mission.Step.KILL, session.run().getStep());
         assertEquals(SETTINGS.run().killBossWord(), session.run().getTracker().words());
+        for (var map : List.of("first", "deep")) {
+            assertTrue(uz.dukeengine.dungeon.stage.Stages.load(map, SETTINGS).story().floorMission(),
+                    map + " asks for it in its file");
+        }
+    }
+
+    /** Every floor of the descent runs it, its MAIN entry first. */
+    @Test
+    void aDescentFloorRunsTheFloorMission() {
+        var session = Dungeon.newSession(SEED);
+        session.game().runHeadless(2);
+
+        var entries = session.run().getTracker().entries();
+        assertFalse(entries.isEmpty());
+        assertEquals(uz.dukeengine.dungeon.run.Tracker.Kind.MAIN, entries.getFirst().kind());
+        assertEquals(SETTINGS.run().missionTitle(), entries.getFirst().title());
     }
 }

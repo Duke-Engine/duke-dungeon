@@ -47,6 +47,8 @@ import uz.dukeengine.dungeon.content.Prop;
  *     A line rather than a piece a line, so a world of thirty thousand trees is read in a moment; drawn on painted
  *     ground only, and a footprint stands in the way
  * @param water       its lakes and rivers, drawn on painted ground: see {@link Water}
+ * @param floorMission whether it runs the descent's floor mission as its tracker's main entry ({@code FloorMission =
+ *     Yes}); left out, the map's tracker shows only its own quests
  */
 public record StaticMap(String name, String displayName, String description, int difficulty, int players, long seed,
         float levelHeight,
@@ -55,13 +57,13 @@ public record StaticMap(String name, String displayName, String description, int
         @uz.dukeengine.core.data.Link(Prop.class) List<Placed> props,
         @Paint List<String> paint, Map<String, String> palette, Map<String, Float> coverage,
         @uz.dukeengine.core.data.Link(Monster.class) List<Placed> npcs, List<Zone> zones, List<Placed> items,
-        List<String> quests, List<String> scenery, List<Water> water)
+        List<String> quests, List<String> scenery, List<Water> water, boolean floorMission)
         implements MapTemplate, Described, Peopled, Layered, Painted {
 
     /** What a block leaves out. */
     public static final StaticMap DEFAULTS = new StaticMap("", "", "", 1, 1, 0L, 0f, null, List.of(), List.of(),
             List.of(), List.of(), null, List.of(), List.of(), List.of(), Map.of(), Map.of(), List.of(), List.of(),
-            List.of(), List.of(), List.of(), List.of());
+            List.of(), List.of(), List.of(), List.of(), false);
 
     public StaticMap {
         cells = cells == null ? List.of() : List.copyOf(cells);

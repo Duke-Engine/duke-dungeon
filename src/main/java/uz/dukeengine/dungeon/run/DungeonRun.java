@@ -511,7 +511,7 @@ public final class DungeonRun {
                 hero.addModule(new KeyDrop(hero, bag, settings.lootDrops().template(), dungeonPlayer.getIndex()));
             }
         }
-        mission = missionOf(game.getLogic(), floor, placed, settings, dungeonPlayer.getIndex());
+        mission = floorMission() ? missionOf(game.getLogic(), floor, placed, settings, dungeonPlayer.getIndex()) : null;
         // Every monster the floor placed pays the hero who kills it, by its level. See Bounty.
         var paying = new ArrayList<GameObject>(placed.monsters());
         if (placed.boss() != null) {
@@ -553,7 +553,16 @@ public final class DungeonRun {
         var steps = new ArrayList<>(finished);
         steps.add(new Tracker.Step(words, false, saidSince));
         tracker = descendAtFrame > 0 ? Tracker.NONE
-                : new Tracker(listed(new Tracker.Entry(Tracker.Kind.MAIN, run.missionTitle(), steps)));
+                : new Tracker(floorMission() ? listed(new Tracker.Entry(Tracker.Kind.MAIN, run.missionTitle(), steps))
+                        : quests.entries());
+    }
+
+    /**
+     * Whether this map runs the floor mission — key, gate, boss — as its tracker's main entry: every floor of the
+     * descent does, and a stage only when its file says {@code FloorMission = Yes}. A story map lists its own quests.
+     */
+    private boolean floorMission() {
+        return floors.stageName() == null || floors.story().floorMission();
     }
 
     /** What a step said as it was finished: the count full where it counts. */
