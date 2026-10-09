@@ -28,6 +28,7 @@ class TargetFrameTest {
     private static final class Drawn implements Canvas {
 
         final List<String> text = new ArrayList<>();
+        final List<Integer> portraits = new ArrayList<>();
         final List<String> pictures = new ArrayList<>();
 
         @Override
@@ -76,6 +77,11 @@ class TargetFrameTest {
         @Override
         public void drawText(Font font, String said, float x, float y, int argb) {
             text.add(said);
+        }
+
+        @Override
+        public void drawPortrait(int unitId, float x0, float y0, float x1, float y1) {
+            portraits.add(unitId);
         }
 
         @Override
@@ -160,5 +166,6 @@ class TargetFrameTest {
         assertTrue(drawn.pictures.contains(SETTINGS.hud().statIcons().get(0)), "the blow's picture");
         assertTrue(!drawn.pictures.contains(SETTINGS.hud().statIcons().get(1)), "no armour, no armour picture");
         assertTrue(drawn.pictures.contains(aura.icon()), "what is on it: " + drawn.pictures);
+        assertTrue(drawn.portraits.equals(List.of(9)), "its live portrait, over the letter: " + drawn.portraits);
     }
 }

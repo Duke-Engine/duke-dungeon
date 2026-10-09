@@ -336,6 +336,6 @@ class ControlsTest {
      */
     @Test
     void aDragNeverSelectsABox() {
-        assertEquals(Float.MAX_VALUE, Main.looks(SHIPPED).getDragDistance());
+        assertFalse(Main.looks(SHIPPED).isDragSelecting());
     }
 }

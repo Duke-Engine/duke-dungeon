@@ -39,7 +39,7 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E23 | a long list in a .duke file read in linear time (the world map's scenery) | landed, e05164d8 (on e23-linear-lists) |
 | E24 | haze (and the world picture) chosen per map, as streaming is | landed, 60557fac (on e24-haze-per-map); the game hazes its wide worlds |
 | E25 | a hero's worn slots by kind and a backpack that gives nothing | waiting (medium) |
-| E26 | single-hero selection: the hero bar's portrait follows the hero the status names, not the pick; a named "no drag box" switch; (later) a live portrait a game's painter may hang in its own frame | waiting (small) |
+| E26 | single-hero selection: the hero bar's portrait follows the hero the status names, not the pick; a named "no drag box" switch; (later) a live portrait a game's painter may hang in its own frame | landed, 3f606061 (on e26-single-hero); the game draws the pick's live portrait |
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
 game builds against the local engine. E12–E15 reached it together at 668045f0 (their pull requests merged as

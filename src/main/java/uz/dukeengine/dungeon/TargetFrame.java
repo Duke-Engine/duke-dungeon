@@ -16,8 +16,8 @@ import uz.dukeengine.dungeon.run.Target;
  * {@link BuffScreen}'s, which reads what is on the creature picked alone after every frame. Nothing is drawn when
  * nothing (or the hero himself) is picked.
  *
- * <p>The face is the first letter of its name, framed, as the dialogue box frames a speaker with no picture: the
- * engine's live portrait renders into the hero bar's own frame and cannot be hung here (asked of it as E26).
+ * <p>The face is the creature alive in its portrait, as the hero bar draws his (E26's {@code Canvas.drawPortrait}),
+ * over the first letter of its name, which shows for one with no portrait look.
  */
 final class TargetFrame {
 
@@ -50,7 +50,7 @@ final class TargetFrame {
         canvas.fillRect(left, top, wide, high, 0xD8000000 | look.stoneDeepColour());
         canvas.openRect(left, top, wide, high, 2f, edge);
 
-        // The face: the first letter of its name in a frame.
+        // The face: its live portrait in a frame, over the first letter of its name for one that has none.
         float fx = left + pad;
         float fy = top + pad;
         canvas.fillRect(fx, fy, face, face, 0xFF000000 | look.stoneColour());
@@ -59,6 +59,7 @@ final class TargetFrame {
         var letter = canvas.measure(big, target.letter());
         canvas.drawText(big, target.letter(), fx + (face - letter.width()) / 2f,
                 fy + (face - letter.lineHeight()) / 2f, 0xFF000000 | look.torchColour());
+        canvas.drawPortrait(target.id(), fx + 2f, fy + 2f, fx + face - 2f, fy + face - 2f);
 
         // Its name, and beside it its level; under it a person's role.
         float x = fx + face + pad;
