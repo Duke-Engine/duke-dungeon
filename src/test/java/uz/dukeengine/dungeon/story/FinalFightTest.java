@@ -138,7 +138,7 @@ class FinalFightTest {
     void theQueenCallsHimToHerSideAndTakesNothingWhileHeStands() {
         var session = session("hall", SETTINGS);
         var game = session.game();
-        var queen = one(game, "Queen");
+        var queen = one(game, "QueenBoss");
         var him = one(game, "CursedHero");
         float far = gap(queen, him);
 
@@ -193,10 +193,10 @@ class FinalFightTest {
         assertTrue(run.getQuests().said().contains("HeroSpares"), "spared");
         assertTrue(run.getQuests().said().contains("QueenAlone"), "and she fights herself");
 
-        var queen = one(game, "Queen");
+        var queen = one(game, "QueenBoss");
         queen.getBody().damage(10_000_000f);
         game.runHeadless(3);
-        assertTrue(all(game, "Queen").isEmpty(), "her blows are hers to take now: she falls");
+        assertTrue(all(game, "QueenBoss").isEmpty(), "her blows are hers to take now: she falls");
         assertTrue(run.getScript().flagged("MedallionBroken"), "the medallion breaks");
         assertEquals(DungeonRun.State.RUNNING, run.getState(), "the ending first");
         game.runHeadless(SETTINGS.story().dialogue().readWaitFrames() + 200);

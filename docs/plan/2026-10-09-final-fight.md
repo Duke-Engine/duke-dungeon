@@ -67,7 +67,7 @@ Every name is checked when the files are read: a Boss that is no Monster, a `Bea
   while he fights for her.
 - **He is beaten** (`BEATEN CursedHero`): the heroine says she will not kill him, flag `CursedBeaten`; phase 3: the
   queen fights herself — every blow hers to take, every skill hers (Q fire, W meteor) — with a violet flash.
-- **She dies** (`DIED Queen`): flag `MedallionBroken` (the story event the medallion's own work may hear), the souls
+- **She dies** (`DIED QueenBoss`): flag `MedallionBroken` (the story event the medallion's own work may hear), the souls
   rise (`SoulsRise`: three waves of pale wisps out of the throne into the sky, a column of light and its glow — all
   data), and the ending cutscene (`QueenEnd`: the camera to the throne, her last words, the heroine's, and his — himself
   again). Seen, `WIN` with the words *La'nat ko'tarildi*.
@@ -82,7 +82,7 @@ pillars and two statues by the throne. The queen stands on the throne (the map's
 hall's far corner until she calls. Coming through the hall's door (zone `HallDoor`) plays the intro (`QueenIntro`:
 the camera to the throne, she and the heroine speak).
 
-Stand-in looks, until the owner's models: **the queen** is the KayKit mage (`models/heroes/mage.glb`, as the merchant
+Stand-in looks, until the owner's models: **the queen** (`QueenBoss`, beside the talking `Queen` of the medallion) is the KayKit mage (`models/heroes/mage.glb`, as the merchant
 is) tinted violet, with the mage's staff; **the cursed hero** is the KayKit knight (`models/heroes/knight.glb`)
 darkened by `Tint`, the merchant's way, with the knight's sword. Neither is ever drawn into a floor (`MinDepth = 99`,
 `Weight = 0`).

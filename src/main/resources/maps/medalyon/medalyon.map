@@ -1,0 +1,70 @@
+; Duke Dungeon — a map drawn once: the medallion's demo (docs/plan/2026-10-09-medallion.md).
+;
+; The queen sits on her throne by the way in and gives the hero her medallion;
+; the hall beyond the corridor holds a few skeletons whose souls it drinks; and
+; at the hall's far end, the altar, it drinks him whole: the turning.
+
+StaticMap
+  Name = medalyon
+  DisplayName = Medalyon
+  Description = "Malikaning medalyoni: jonlarni yutadi, oxirida esa sizni."
+  Difficulty = 1
+  Players = 1
+  Seed = 20261009
+  ; Where the hero comes in.
+  Entrance = [7, 14]
+  ; '#' is stone, a digit the storey a cell stands on, '/' a stair.
+  Cells = [
+    "########################################",
+    "########################################",
+    "##000000000000########0000000000000000##",
+    "##000000000000########0000000000000000##",
+    "##000000000000########0000000000000000##",
+    "##000000000000########0000000000000000##",
+    "##000000000000########0000000000000000##",
+    "##000000000000########0000000000000000##",
+    "##000000000000########0000000000000000##",
+    "##000000000000000000000000000000000000##",
+    "##000000000000000000000000000000000000##",
+    "##000000000000###############00#########",
+    "##000000000000###############00#########",
+    "##000000000000########0000000000000000##",
+    "##000000000000########0000000000000000##",
+    "##000000000000########0000000000000000##",
+    "##000000000000########0000000000000000##",
+    "##000000000000########0000000000000000##",
+    "########################################",
+    "########################################",
+  ]
+  ; x y width height storey, in the order they were placed: the first is where he starts.
+  Rooms = [
+    2 2 12 16 0,
+    22 2 16 9 0,
+    22 13 16 5 0,
+  ]
+  ; The rooms a way joins, by their place in Rooms.
+  Links = [
+    0 1,
+    1 2,
+  ]
+  ; Killing it wins the map: a skeleton keeping the room below the hall.
+  Boss = Skeleton 35 16
+  ; Each a kind, then the cell it stands in: the souls the medallion drinks.
+  Monsters = [
+    Skeleton 26 4,
+    Skeleton 28 8,
+    Skeleton 31 3,
+    Skeleton 33 7,
+  ]
+  Props = []
+  ; People: an Npc's name, then the cell they stand in.
+  Npcs = [
+    Queen 7 5,
+  ]
+  ; Named places, in cells: name x y width height, or name x y radius.
+  Zones = [
+    Throne 7 5 1,
+    Altar 35 4 2 2,
+  ]
+  Items = []
+End

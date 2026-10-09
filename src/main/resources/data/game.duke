@@ -68,8 +68,9 @@ Game
     ; People, who talk rather than fight: see data/story/.
     data/units/commander.duke,
     data/units/merchant.duke,
-    ; The last fight's two, whom only a map puts: see data/story/final.duke.
     data/units/queen.duke,
+    ; The last fight's two, whom only a map puts: see data/story/final.duke.
+    data/units/queen_boss.duke,
     data/units/cursed_hero.duke,
 
     data/projectiles/arrow.duke,
@@ -134,6 +135,7 @@ Game
     ; People, their talk and the quests.
     data/story/story.duke,
     data/story/trade.duke,
+    data/story/medallion.duke,
     data/story/final.duke,
   ]
 End

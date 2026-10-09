@@ -273,6 +273,11 @@ public record Story(Dialogue dialogue, List<Speaker> speakers, List<Conversation
                     wrong.add(named + " has a " + action.act() + " that names none");
                 }
             }
+            case CURSE -> {
+                if (npc(what) == null) {
+                    wrong.add(named + " gives the medallion to " + what + ", who is no Npc");
+                }
+            }
             case CUTSCENE -> {
                 if (cutscene(what) == null) {
                     wrong.add(named + " plays " + what + ", and no Cutscene is called that");

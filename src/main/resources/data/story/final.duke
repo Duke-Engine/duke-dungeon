@@ -13,12 +13,6 @@
 ; ---------------------------------------------------------------------------
 
 Speaker
-  Name = Queen
-  DisplayName = Malika
-  Picture =
-End
-
-Speaker
   Name = CursedHero
   DisplayName = La'natlangan qahramon
   Picture =
@@ -32,7 +26,7 @@ Boss
 End
 
 Boss
-  Name = Queen
+  Name = QueenBoss
   Phases = [
     ; On her throne before the fight: no blow takes anything from her.
     Phase
@@ -225,7 +219,7 @@ Trigger
   Name = QueenDies
   Map = hall
   When = DIED
-  Target = Queen
+  Target = QueenBoss
   Actions = [
     Action
       Act = FLAG

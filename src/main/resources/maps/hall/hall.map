@@ -62,7 +62,7 @@ StaticMap
     0 1,
   ]
   ; Her death ends the game -- by the story's WIN, once the ending is played (data/story/final.duke).
-  Boss = Queen 15 4
+  Boss = QueenBoss 15 4
   ; Each a kind, then the cell it stands in: he waits in the hall's far corner until she calls.
   Monsters = [
     CursedHero 4 3,

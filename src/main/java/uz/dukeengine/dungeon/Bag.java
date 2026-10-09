@@ -68,6 +68,13 @@ final class Bag {
 
     /** The match now being played: this machine's hero's bag in it, its orders wrapped as a party's, its mission. */
     static void show(BagScreen bag, Dungeon.Session match, DungeonSettings settings) {
+        souls = () -> {
+            try {
+                return match.game().getLogic() == null ? 0 : match.run().soulsOf(match.game().getLocalPlayerIndex());
+            } catch (IllegalStateException notNumberedYet) {
+                return 0;
+            }
+        };
         bag.show(match.game(), () -> bagOf(match), PartyOrders::of,
                 canvas -> {
                     MissionScreen.paint(canvas, match, settings);
@@ -116,7 +123,24 @@ final class Bag {
         if (!extra.isEmpty()) {
             said.add(extra);
         }
+        said.addAll(medallionOf(item, settings, souls.getAsInt()));
         return said;
+    }
+
+    /** The souls this machine's hero's medallion has drunk, as the match being played says: read by its card. */
+    private static volatile java.util.function.IntSupplier souls = () -> 0;
+
+    /**
+     * The medallion's card: its passive's name, the souls it holds ({@code Jonlar: 37}) and what they add to his
+     * blows; nothing for any other thing. See docs/plan/2026-10-09-medallion.md.
+     */
+    static List<String> medallionOf(Loot item, DungeonSettings settings, int souls) {
+        var medallion = settings.medallion();
+        if (medallion.item().isBlank() || !item.id().equals(medallion.item())) {
+            return List.of();
+        }
+        return List.of(medallion.skillName(), medallion.soulsWord().replace("%d", Integer.toString(souls)),
+                "+" + medallion.percentFor(souls) + "% " + settings.hud().attackWord());
     }
 
     /** What a thing gives, as the pointer says it: {@code +8% Zarba}, {@code +3 Kuch} — and of a key, nothing. */

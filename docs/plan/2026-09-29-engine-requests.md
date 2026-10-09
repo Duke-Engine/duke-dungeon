@@ -40,6 +40,7 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E24 | haze (and the world picture) chosen per map, as streaming is | landed, 60557fac (on e24-haze-per-map); the game hazes its wide worlds |
 | E26 | single-hero selection: the hero bar's portrait follows the hero the status names, not the pick; a named "no drag box" switch; (later) a live portrait a game's painter may hang in its own frame | landed, 3f606061 (on e26-single-hero); the game draws the pick's live portrait |
 | E25 | a hero's worn slots by kind and a backpack that gives nothing | landed, 831641bd (on e25-worn-slots); the game wears six slots and carries ten |
+| E27 | the rpg module's blows name their dealer; a passive that drinks its bearer's kills (`SOUL_DRINK`); a worn item lends its skills | asked (medium) — the medallion; the game counts souls and lends the bonus as a buff meanwhile |
 | E28 | a passive that cannot be killed, only beaten (`UNYIELDING`); and `GrowableBody` honouring the damage scale | waiting (small); the game carries a stand-in meanwhile |
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
@@ -758,6 +759,34 @@ target frame of its own on the canvas for the pick (`TargetFrame`, fed by `Dunge
 3. **(Later, optional)** a live portrait a game's painter may hang: a second `HeroPortrait` for a unit the game names,
    its texture drawable on the `Canvas` (e.g. `drawPortrait(unitId, box)`), so the target frame shows the creature
    breathing rather than the first letter of its name. Not needed for the rule above.
+
+## E27 — The medallion's passive in the skill system, and blows that name their dealer (2026-10-09, medium)
+
+The campaign's medallion (`docs/plan/2026-10-09-medallion.md`): worn in the Tumor slot, it drinks the soul of every
+enemy its wearer kills and every so many souls make his blows harder. The owner's rule is that whatever a skill or a
+passive does lives in the skill system, never in a module of a game's own. Today the game counts the souls itself
+(`DungeonRun.drunk`) and lends the bonus through the hero's `SkillBook` as a `DAMAGE_AURA` buff of his own, renewed
+each frame — it works, but the strongest damage aura counts, never the sum, and the buff row shows it as some
+monster's aura. Three things are asked:
+
+1. **rpg's blows name their dealer.** `ArrowUpdate.strike` and its splash, and `SkillBook`'s damage (strike, area,
+   meteor, dash, burst) call `getBody().damage(amount[, type])`, so the `ObjectDied` of such a kill names no killer
+   and no side (`killerPlayerIndex = -1`): only `WeaponUpdate`'s blows (the Knight's swing) say whose they were. The
+   game's gold for a kill (`DungeonRun.pay`) is therefore never paid for the Rogue's arrows or any skill's kill, and
+   the medallion has to guess the killer from whose experience rose. Asked: each of those passes a `Death` with the
+   shooter/caster and his side (as `WeaponUpdate.blow` does). Done when an rpg test pins an arrow's and a skill's
+   kill naming the archer and his side.
+2. **A passive `SOUL_DRINK`.** Never cast (`isPassive`), on a hero's skill allowed: its book counts every kill its
+   bearer makes (`souls`, readable and settable for a save), and every `SoulsPerStep` (a new Skill field, or reuse
+   `TickFrames`) of them add `BoostPercent` to `damageMultiplier`, up to a cap (`MaxPercent`, or `Damage` as the cap).
+   Summed with an aura, not maxed. Shown in `BuffScreen` with its own words (`+3% Zarba`, `Jonlar: 37`).
+3. **A worn item lends its skills.** A `Loot`'s optional `Skills` (skill blocks headed by the item's id): while it is
+   worn (E25), they are in its wearer's book; taken off, gone (the souls stay with the book's owner, not the item).
+   A hero's file may name no passive, as today; an item worn by a hero may.
+
+The game then: the medallion's `LootItem` carries a `Skill` block (`Effect = SOUL_DRINK`), its own soul counting and
+buff go, and gold is paid for every kill. Done when the rpg tests pin each, and the game's `MedallionTest` and
+`TradeTest` pass with the game's counting deleted.
 
 ## E28 — A passive that cannot be killed, only beaten (2026-10-09, small)
 
