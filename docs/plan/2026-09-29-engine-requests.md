@@ -44,7 +44,8 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E28 | a passive that cannot be killed, only beaten (`UNYIELDING`); and `GrowableBody` honouring the damage scale | landed, 0da97768; the cursed hero is beaten by UNYIELDING, and the stand-in is gone |
 | E29 | the pause menu in the game's words, with a Quit to the main menu and a Quit to the desktop; the shell's rows laid at a side | landed, cf0062a2; the game says every word in Uzbek (data/world/menu.duke) and lays its menus at the left |
 | E30 | the backdrop behind the client's own stone menus, not only behind a game-drawn front end; the questions' "Back" said by the game; the game's own front rows | landed, 0aeeec88; the scene runs behind the menu, Orqaga is said, and the front rows stand on the menu itself |
-| E31 | four new skill shapes for the knight: a piercing wave, a shield charge that drags and stuns, armour and regeneration as a passive, a pull to one point that stuns | waiting (medium) |
+| E31 | four new skill shapes for the knight: a piercing wave, a shield charge that drags and stuns, armour and regeneration as a passive, a pull to one point that stuns | landed, dba15f52 + 1d0bcfd3 (the charge frame by frame); the knight is Qilich to'lqini, Qalqon bilan surish, Ajdar qoni and Teskari qutb |
+| E32 | the knight's skills as played: a charge that carries two, their looks drawn, an unlearnt passive that is off | waiting (small) |
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
 game builds against the local engine. E12–E15 reached it together at 668045f0 (their pull requests merged as
@@ -881,3 +882,26 @@ E Guard = GUARD, R …). Everything a skill does lives in the skill system (his 
 
 Deterministic as every skill (victims in id order, no clock), saved as the others, previewable in the editor by
 their aims. Each with a test. The game then rewrites the knight's four Skill blocks in data (words, icons, numbers).
+
+## E32 — The knight's skills as played: a charge that carries two, their looks drawn, an unlearnt passive off (2026-10-09, small)
+
+Found taking E31 (1d0bcfd3) into the knight (`units/knight.duke`, `KnightTest`, `SkillLookTest`). Three gaps, each
+pinned by the game's tests:
+
+1. **A charge that has caught two ends itself on them.** `driveTheCharge` holds the caught at his front by
+   `placeNear`, which spreads the second round the first — at 135° or 180° off his heading, i.e. beside or behind his
+   shoulder — and the next step's `findBlocker(owner, next)` takes that carried body for one in his way, so the drive
+   stops after 2–3 frames (two skeletons side by side at (100,146) and (100,154) before a knight at (80,150): he stops at
+   89.6 of 125). One caught is carried the whole way. Asked: the caught pass his step (`findBlocker(owner, next,
+   caught::contains)`), and the spread laid ahead of him — rings in front, never behind his front. A test: two and three
+   caught are carried the whole `Distance`. The game then adds a second skeleton to `theChargeCarriesWhatItMeetsAndStunsIt`.
+2. **WAVE, SKEWER and PULL draw no look.** `SKEWER` and `PULL` mark inside `apply`, and `cast` then calls
+   `rememberTheCast`, which clears every mark and has no case for the three; `WAVE` is never marked at all. So the
+   knight's `Look = CastFlash / Charge / Whirlwind` draw nothing. Asked: `rememberTheCast` keeps what `apply` marked (or
+   marks the three itself): WAVE on him (0), SKEWER both ends as DASH, PULL on him at its Radius. The game un-disables
+   `SkillLookTest.aChargeLeavesItsDustBehindAndBringsHimselfAlong`.
+3. **An unlearnt passive is rank 1.** `SkillBook.rankOf` is `max(1, …)`, so `setRank('E', 0)` — a knight who has put
+   no point in his blood — still gets rank 1 of `DRAGON_BLOOD` (8% and 3 a second). Asked: a rank the game has SAID is
+   0 means not held (the scale let go, nothing mended); "the first where nothing says" stays for a book nobody ranks.
+
+Done when: the three tests above, and the game's suite green with the second skeleton and the look test back.
