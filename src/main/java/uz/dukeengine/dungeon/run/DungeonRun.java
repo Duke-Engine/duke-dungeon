@@ -101,6 +101,13 @@ public final class DungeonRun {
         int loadedExperience = -1;
         /** His purse: the gold his kills have paid him and his trading left him. */
         int gold;
+        /** The souls his medallion has drunk: one for every enemy he killed wearing it. See {@link #souls}. */
+        int souls;
+        /** Whether the medallion has drunk him whole: his look is darkened. See the CURSE act. */
+        boolean cursed;
+        /** His experience when the story last looked, and the frame it last rose: who an unnamed kill was. */
+        int experienceSeen;
+        int earnedAt = Integer.MIN_VALUE / 2;
         /** How many of the conversations said this run his machine has shown to the end (or had skipped). */
         int read;
 
@@ -336,6 +343,9 @@ public final class DungeonRun {
         save.restore(seat.progress.getLoot(), seat.learnt, settings);
         seat.loadedExperience = save.experience();
         seat.gold = save.gold();
+        seat.souls = save.souls();
+        seat.cursed = !save.givenTo().isBlank();
+        givenTo = save.givenTo();
         // And its quests, before the floor is laid: the map's starting quests are then going or finished already,
         // and are not started again. A save from before quests were saved starts them, as a new run does.
         if (save.quests() == null) {
@@ -367,7 +377,8 @@ public final class DungeonRun {
             return null;
         }
         return SaveGame.of(floors.seed(), floors.stageName(), depth, seat.hero, seat.progress.getExperience(),
-                seat.learnt, seat.progress.getLoot(), quests.state(), script.state(), seat.gold);
+                seat.learnt, seat.progress.getLoot(), quests.state(), script.state(), seat.gold)
+                .withMedallion(seat.souls, givenTo);
     }
 
     /** Whoever the first player plays — the file's answer until somebody chooses. */
@@ -779,7 +790,10 @@ public final class DungeonRun {
         }
         for (var seat : seats) {
             seat.gold = 0; // and his purse: a run that ends keeps nothing
+            seat.souls = 0; // and his souls, and his curse
+            seat.cursed = false;
         }
+        givenTo = "";
         quests.reset(); // and every quest: the map that starts them starts them again
         script.reset(); // and every trigger: the story begins again with the run
         cued.clear();
@@ -979,6 +993,7 @@ public final class DungeonRun {
     /** A death in the world, heard as it is reaped: every KILL of its kind counts it. */
     public void died(uz.dukeengine.core.event.ObjectDied death) {
         quests.died(death.templateName(), bags());
+        drunk(death);
         script.heard(uz.dukeengine.dungeon.story.Trigger.When.DIED, death.templateName(), 0);
     }
 
@@ -1109,6 +1124,7 @@ public final class DungeonRun {
                     cued.add(new Cued(asked, quests.said().size()));
                 }
             }
+            case CURSE -> curse(game, what);
         }
     }
 
@@ -1285,6 +1301,7 @@ public final class DungeonRun {
      */
     private void story(DukeGame game) {
         stroll(game);
+        medallion(game);
         glow(game);
         var logic = game.getLogic();
         quests.frame(logic.getFrame());
@@ -1586,5 +1603,200 @@ public final class DungeonRun {
     /** What each person on the floor shows over their head — from any thread. */
     public List<Mark> getMarks() {
         return marks;
+    }
+
+    // ---- the medallion and the turning: see docs/plan/2026-10-09-medallion.md ----
+
+    /** The person the turning gave the medallion to, by Npc name; blank while no hero has lost it. */
+    private String givenTo = "";
+
+    /** A soul risen from a corpse, to fly to the hero who drank it: spawned at the next frame's story. */
+    private record Soul(uz.dukeengine.core.math.Coord3D from, ObjectId to) {
+    }
+
+    private final List<Soul> rising = new ArrayList<>();
+
+    /** A soul in flight, and the hero it flies to. */
+    private record Wisp(ObjectId id, ObjectId to) {
+    }
+
+    private final List<Wisp> flying = new ArrayList<>();
+
+    /**
+     * Whether {@code seat}'s hero wears the medallion: in its worn slot, not carried in the backpack — or, in a bag that
+     * wears nothing (every slot acting), anywhere in it.
+     */
+    private boolean wears(Seat seat) {
+        var id = settings.medallion().item();
+        var bag = seat.progress.getLoot();
+        if (id.isBlank()) {
+            return false;
+        }
+        if (!bag.wears()) {
+            return bag.slots().stream().anyMatch(item -> item != null && item.id().equals(id));
+        }
+        var base = settings.loot().stream().filter(item -> item.id().equals(id)).findFirst().orElse(null);
+        var worn = base == null ? null : bag.at(bag.wornPlace(base.slot()));
+        return worn != null && worn.id().equals(id);
+    }
+
+    /**
+     * A death heard as it is reaped: a monster killed by a hero who wears the medallion is a soul of his — "Jon
+     * yutish". Only a hero's (a Hero template's) kill, and only of the dungeon's side; the soul flies to him next frame.
+     */
+    private void drunk(uz.dukeengine.core.event.ObjectDied death) {
+        if (settings.medallion().item().isBlank() || death.playerIndex() != dungeonPlayer.getIndex()
+                || lastLogic == null) {
+            return;
+        }
+        Seat seat = null;
+        for (var each : seats) {
+            // A blow that names its dealer is his when he dealt it. One that names nobody -- the rpg module's arrows and
+            // skills say no killer yet (E27) -- is his whose experience rose for it: a kill pays the killer at once.
+            if (death.killer() != null ? death.killer().equals(each.heroId) : earned(each)) {
+                seat = each;
+                break;
+            }
+        }
+        var hero = seat == null || seat.heroId == null ? null : lastLogic.findObject(seat.heroId);
+        if (hero == null || hero.getPlayerIndex() != seat.player.getIndex()
+                || !(hero.getTemplate() instanceof uz.dukeengine.dungeon.content.Hero) || !wears(seat)) {
+            return;
+        }
+        seat.souls++;
+        rising.add(new Soul(death.position(), seat.heroId));
+    }
+
+    /** Whether {@code seat}'s hero has earned experience since the story last looked, or the frame before. */
+    private boolean earned(Seat seat) {
+        var hero = seat.heroId == null ? null : lastLogic.findObject(seat.heroId);
+        var experience = hero == null ? null : hero.findModule(uz.dukeengine.combat.module.ExperienceModule.class);
+        return experience != null && (experience.getExperience() > seat.experienceSeen
+                || lastLogic.getFrame() - seat.earnedAt <= 1);
+    }
+
+    /**
+     * Every frame the floor is played: what each hero's souls add to his blows, lent him through his skill book while he
+     * wears it; a cursed hero's look kept dark; and the souls risen, flown to their heroes.
+     */
+    private void medallion(DukeGame game) {
+        var medallion = settings.medallion();
+        if (medallion.item().isBlank()) {
+            return;
+        }
+        var logic = game.getLogic();
+        int frame = logic.getFrame();
+        for (var seat : seats) {
+            var hero = seat.heroId == null ? null : logic.findObject(seat.heroId);
+            if (hero == null) {
+                continue;
+            }
+            if (seat.cursed) {
+                hero.setCondition(medallion.cursedWord());
+            }
+            var experience = hero.findModule(uz.dukeengine.combat.module.ExperienceModule.class);
+            if (experience != null) {
+                if (experience.getExperience() > seat.experienceSeen) {
+                    seat.earnedAt = frame;
+                }
+                seat.experienceSeen = experience.getExperience();
+            }
+            // ponytail: lent as a DAMAGE_AURA buff of his own until the engine has a SOUL_DRINK passive (E27); the
+            // strongest damage aura counts, never the sum, so a real aura stronger than his souls hides them.
+            int percent = wears(seat) ? medallion.percentFor(seat.souls) : 0;
+            var book = hero.findModule(uz.dukeengine.rpg.skill.SkillBook.class);
+            if (book != null && percent > 0) {
+                book.give(uz.dukeengine.rpg.skill.SkillEffect.DAMAGE_AURA, hero.getId().value(), percent, frame + 1);
+            }
+        }
+        var wisp = medallion.wisp().isBlank() ? null : logic.getThingFactory().findTemplate(medallion.wisp());
+        for (var soul : rising) {
+            if (wisp != null) {
+                var spawned = logic.spawn(wisp, soul.from(), uz.dukeengine.core.player.PlayerList.NEUTRAL_INDEX);
+                flying.add(new Wisp(spawned.getId(), soul.to()));
+            }
+        }
+        rising.clear();
+        for (var each = flying.iterator(); each.hasNext(); ) {
+            var wisping = each.next();
+            var thing = logic.findObject(wisping.id());
+            var to = logic.findObject(wisping.to());
+            if (thing == null || to == null) {
+                if (thing != null) {
+                    logic.destroyObject(thing);
+                }
+                each.remove();
+                continue;
+            }
+            var here = thing.getPosition();
+            var there = to.getPosition();
+            float dx = there.x() - here.x();
+            float dy = there.y() - here.y();
+            float far = (float) Math.sqrt(dx * dx + dy * dy);
+            if (far <= medallion.wispSpeed()) {
+                logic.destroyObject(thing); // into him
+                each.remove();
+            } else {
+                thing.setPosition(new uz.dukeengine.core.math.Coord3D(here.x() + dx / far * medallion.wispSpeed(),
+                        here.y() + dy / far * medallion.wispSpeed(), there.z()));
+            }
+        }
+    }
+
+    /**
+     * The turning, a story's CURSE: the medallion leaves the bag that holds it and appears in {@code to}'s hand (her
+     * GivenLook played on her), the hero who held it darkens and goes over to the monsters' side, out of his player's
+     * hands, and the act is over — the banner says so and the map stays won, its story going on (a MAP may follow).
+     */
+    private void curse(DukeGame game, String to) {
+        var logic = game.getLogic();
+        var medallion = settings.medallion();
+        Seat holder = null;
+        for (var seat : seats) {
+            var bag = seat.progress.getLoot();
+            for (int place = 0; place < bag.slots().size(); place++) {
+                var item = bag.at(place);
+                if (item != null && item.id().equals(medallion.item())) {
+                    bag.remove(place);
+                    holder = holder == null ? seat : holder;
+                }
+            }
+        }
+        holder = holder == null ? seats.getFirst() : holder;
+        givenTo = to;
+        holder.cursed = true;
+        var hero = holder.heroId == null ? null : logic.findObject(holder.heroId);
+        if (hero != null) {
+            hero.setCondition(medallion.cursedWord());
+            uz.dukeengine.combat.module.Errand.giveUpAll(hero);
+            hero.setPlayerIndex(dungeonPlayer.getIndex());
+        }
+        for (var who : people) {
+            var there = logic.findObject(who.id());
+            if (there != null && who.npc().equals(to) && !medallion.givenLook().isBlank()) {
+                logic.effect(medallion.givenLook(), there);
+            }
+        }
+        state = State.WON;
+        endedFrame = logic.getFrame();
+        tracker = Tracker.NONE;
+        game.setBanner("lost|" + medallion.turnedWord());
+    }
+
+    /** The souls this player's hero's medallion has drunk; 0 for a player with no seat. From any thread. */
+    public int soulsOf(int playerIndex) {
+        var seat = seatOf(playerIndex);
+        return seat == null ? 0 : seat.souls;
+    }
+
+    /** Whether this player's hero has been cursed by the turning. */
+    public boolean isCursed(int playerIndex) {
+        var seat = seatOf(playerIndex);
+        return seat != null && seat.cursed;
+    }
+
+    /** The person the turning gave the medallion to; blank while it has not been given. */
+    public String medallionGivenTo() {
+        return givenTo;
     }
 }

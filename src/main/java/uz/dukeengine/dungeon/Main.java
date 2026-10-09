@@ -217,6 +217,11 @@ public final class Main {
         if (!dialogue.glowLook().isBlank()) {
             visuals.effectSeconds(dialogue.glowLook(), 2 * dialogue.glowFrames() / perSecond);
         }
+        // The medallion appearing in the hand it is given to glows this long.
+        var medallion = settings.medallion();
+        if (!medallion.givenLook().isBlank()) {
+            visuals.effectSeconds(medallion.givenLook(), medallion.givenLookFrames() / perSecond);
+        }
         for (var mark : settings.combat().auraMarkLooks()) {
             visuals.effectSeconds(mark, 2 * settings.combat().auraMarkTickFrames() / perSecond);
         }
@@ -1162,6 +1167,10 @@ public final class Main {
                     unit.texture(hero.texture());
                 }
                 carry(unit, hero.held());
+                // The turning darkens him: a tint while he holds the medallion's CursedWord.
+                var medallion = settings.medallion();
+                unit.tint(java.util.Set.of(medallion.cursedWord()), medallion.cursedRed(), medallion.cursedGreen(),
+                        medallion.cursedBlue(), medallion.cursedEaseFrames());
                 // Whatever his own skills say he casts with. Gathered from the
                 // skill blocks rather than listed again in his, so the clip is
                 // named once -- a name in two files is two names waiting to

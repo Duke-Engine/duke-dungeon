@@ -25,10 +25,19 @@ import uz.dukeengine.rpg.skill.SkillRanks;
  * @param gold       what is in his purse
  * @param script     the run's triggers — fired, flags, waiting — or {@code null} for a save written before they were
  *                   saved, which loads with none fired
+ * @param souls      the souls his medallion has drunk (docs/plan/2026-10-09-medallion.md)
+ * @param givenTo    the person the turning gave the medallion to, which makes him cursed; blank while it never was
  */
 public record SaveGame(long seed, String stage, int depth, String hero, int experience, List<Rank> ranks,
         List<Item> bag, uz.dukeengine.dungeon.story.QuestLog.State quests,
-        uz.dukeengine.dungeon.story.Script.State script, int gold) {
+        uz.dukeengine.dungeon.story.Script.State script, int gold, int souls, String givenTo) {
+
+    /** A save with no souls in it: as one written before the medallion was. */
+    public SaveGame(long seed, String stage, int depth, String hero, int experience, List<Rank> ranks,
+            List<Item> bag, uz.dukeengine.dungeon.story.QuestLog.State quests,
+            uz.dukeengine.dungeon.story.Script.State script, int gold) {
+        this(seed, stage, depth, hero, experience, ranks, bag, quests, script, gold, 0, "");
+    }
 
     /** A save with no gold in it: as one written before gold was. */
     public SaveGame(long seed, String stage, int depth, String hero, int experience, List<Rank> ranks,
@@ -76,6 +85,12 @@ public record SaveGame(long seed, String stage, int depth, String hero, int expe
     public SaveGame {
         ranks = List.copyOf(ranks);
         bag = List.copyOf(bag);
+        givenTo = givenTo == null ? "" : givenTo;
+    }
+
+    /** The same save, with what the medallion has drunk and whom the turning gave it to. */
+    public SaveGame withMedallion(int souls, String givenTo) {
+        return new SaveGame(seed, stage, depth, hero, experience, ranks, bag, quests, script, gold, souls, givenTo);
     }
 
     /** What this hero has, as a save. */
@@ -159,6 +174,10 @@ public record SaveGame(long seed, String stage, int depth, String hero, int expe
         out.append("  Hero = ").append(hero).append('\n');
         out.append("  Experience = ").append(experience).append('\n');
         out.append("  Gold = ").append(gold).append('\n');
+        out.append("  Souls = ").append(souls).append('\n');
+        if (!givenTo.isBlank()) {
+            out.append("  GivenTo = ").append(givenTo).append('\n');
+        }
         out.append("  Skills = [").append(String.join(", ", ranks.stream().map(r -> "" + r.key()).toList()))
                 .append("]\n");
         out.append("  Ranks = [").append(String.join(", ", ranks.stream().map(r -> "" + r.rank()).toList()))
@@ -263,7 +282,9 @@ public record SaveGame(long seed, String stage, int depth, String hero, int expe
             var stage = field(save, "Stage");
             return new SaveGame(Long.parseLong(word(save, "Seed")), stage == null ? null : text(stage, "Stage"),
                     number(save, "Depth"), word(save, "Hero"), number(save, "Experience"), ranks, bag, quests,
-                    script, field(save, "Gold") == null ? 0 : number(save, "Gold"));
+                    script, field(save, "Gold") == null ? 0 : number(save, "Gold"),
+                    field(save, "Souls") == null ? 0 : number(save, "Souls"),
+                    field(save, "GivenTo") == null ? "" : word(save, "GivenTo"));
         } catch (RuntimeException e) {
             throw new Refused(source + " cannot be loaded: " + e.getMessage(), e);
         }

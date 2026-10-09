@@ -121,6 +121,7 @@ public final class DungeonSettings {
     private final List<uz.dukeengine.dungeon.story.Cutscene> cutscenes = new java.util.ArrayList<>();
     private final List<uz.dukeengine.dungeon.story.Merchant> merchants = new java.util.ArrayList<>();
     private uz.dukeengine.dungeon.story.Trade trade = uz.dukeengine.dungeon.story.Trade.DEFAULTS;
+    private uz.dukeengine.dungeon.story.Medallion medallion = uz.dukeengine.dungeon.story.Medallion.DEFAULTS;
 
     /** Every attribute, in file order — the order a hero's are held in and the panel draws them. */
     private final List<Attribute> attributes = new java.util.ArrayList<>();
@@ -229,6 +230,11 @@ public final class DungeonSettings {
     public uz.dukeengine.dungeon.story.Story story() {
         return new uz.dukeengine.dungeon.story.Story(dialogue, speakers, conversations, npcs, quests, triggers,
                 cutscenes, trade, merchants);
+    }
+
+    /** The queen's medallion and its passive: see {@code docs/plan/2026-10-09-medallion.md}. */
+    public uz.dukeengine.dungeon.story.Medallion medallion() {
+        return medallion;
     }
 
     /** Every moment the files give a look, in the order they give them. */
@@ -405,6 +411,7 @@ public final class DungeonSettings {
                 case uz.dukeengine.dungeon.story.Cutscene cutscene -> cutscenes.add(cutscene);
                 case uz.dukeengine.dungeon.story.Merchant merchant -> merchants.add(merchant);
                 case uz.dukeengine.dungeon.story.Trade block -> trade = once(block, once);
+                case uz.dukeengine.dungeon.story.Medallion block -> medallion = once(block, once);
                 case uz.dukeengine.dungeon.world.SaveMenu block -> saveMenu = once(block, once);
                 case UnitBar block -> unitBar = once(block, once);
                 case StatBlock block -> statBlock = once(block, once);
@@ -861,6 +868,18 @@ public final class DungeonSettings {
         var story = story().problems(monsters.stream().map(MonsterKind::name).toList(),
                 loot.stream().map(Loot::id).toList());
         require(story.isEmpty(), String.join("; ", story));
+        if (!medallion.item().isBlank()) {
+            var named = "Medallion " + medallion.item();
+            var item = loot.stream().filter(each -> each.id().equals(medallion.item())).findFirst().orElse(null);
+            require(item != null && !item.slot().isEmpty(), named + ": no LootItem is called that, or it names no Slot");
+            require(medallion.soulsPerStep() >= 1 && medallion.percentPerStep() >= 0 && medallion.maxPercent() >= 0,
+                    named + ": SoulsPerStep at least 1, and no step or cap below nothing");
+            require(medallion.wisp().isBlank()
+                    || projectiles.stream().anyMatch(each -> each.name().equals(medallion.wisp())),
+                    named + ": its Wisp " + medallion.wisp() + " is no Projectile");
+            require(!medallion.cursedWord().isBlank() && sayable(medallion.cursedWord()),
+                    named + ": CursedWord is a word, without ',' or '|'");
+        }
         require(dialogue.checkFrames() >= 1, "Dialogue's CheckFrames is how often people are looked for: at least 1");
         require(dialogue.glowLook().isBlank()
                 || effects.stream().anyMatch(effect -> effect.name().equals(dialogue.glowLook())),

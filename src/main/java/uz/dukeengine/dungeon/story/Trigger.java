@@ -27,7 +27,9 @@ public record Trigger(String name, String map, When when, String target, int ste
 
     /** What a trigger does. */
     public enum Act {
-        SAY, START_QUEST, FINISH_QUEST, SPAWN, WALK, OPEN_GATE, GIVE, TAKE, FLAG, MAP, CUTSCENE
+        SAY, START_QUEST, FINISH_QUEST, SPAWN, WALK, OPEN_GATE, GIVE, TAKE, FLAG, MAP, CUTSCENE,
+        /** The turning: the medallion leaves the hero for the Npc named, his look darkens, he goes to the monsters. */
+        CURSE
     }
 
     /**
