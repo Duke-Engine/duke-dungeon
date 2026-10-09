@@ -42,7 +42,8 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E25 | a hero's worn slots by kind and a backpack that gives nothing | landed, 831641bd (on e25-worn-slots); the game wears six slots and carries ten |
 | E27 | the rpg module's blows name their dealer; a passive that drinks its bearer's kills (`SOUL_DRINK`); a worn item lends its skills | landed, f369b940 (in 0da97768); the medallion lends the engine's SOUL_DRINK, and an arrow's kill pays its archer |
 | E28 | a passive that cannot be killed, only beaten (`UNYIELDING`); and `GrowableBody` honouring the damage scale | landed, 0da97768; the cursed hero is beaten by UNYIELDING, and the stand-in is gone |
-| E29 | the pause menu in the game's words, with a Quit to the main menu and a Quit to the desktop; the shell's rows laid at a side | waiting (small) |
+| E29 | the pause menu in the game's words, with a Quit to the main menu and a Quit to the desktop; the shell's rows laid at a side | landed, cf0062a2; the game says every word in Uzbek (data/world/menu.duke) and lays its menus at the left |
+| E30 | the backdrop behind the client's own stone menus, not only behind a game-drawn front end; the questions' "Back" said by the game | waiting (small) |
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
 game builds against the local engine. E12–E15 reached it together at 668045f0 (their pull requests merged as
@@ -829,3 +830,30 @@ Asked:
 
 Done when: a game can set the words and the side; both quit rows work (onLeaving runs once); a client3d test pins the
 words handed in and the side's layout; generals unchanged by default.
+
+## E30 — The live scene behind the client's own menus (2026-10-09, small)
+
+E29 lays the stone menus at the left and dims only their strip "so a live backdrop is seen across the rest" — but the
+backdrop (`Duke3D.backdrop`) is only ever made and drawn on the game-drawn front end (`Screen.FRONT`, under
+`Shell.drawnByTheGame()`), which shows none of the client's menus, pause menu, settings or HUD. A game that keeps the
+client's stone menus (the dungeon: its whole HUD, its pause menu with Saqlash, its settings) therefore never sees its
+backdrop: in `DukeRtsApp`, `keepTheBackdropGoing()` and `backdropShown()` answer only `screen == Screen.FRONT`, and
+`showMainMenu()` for a stone shell sets `Screen.MENU` and returns from `update` before the world is drawn.
+
+The game is ready: `MenuScene` (a real fight of its own soldiers and skeletons in a forest clearing, the fallen coming
+back, the camera drifting; 0.2 ms a frame headless) is handed to `duke.backdrop(...)` and waits for this.
+
+Asked:
+1. **The backdrop behind the stone front menu.** With a backdrop set and a shell that is not drawn by the game, the
+   front menu, the questions it opens (`Shell.Question`) and the Settings screen opened from it run and draw the backdrop
+   behind them — made when the front menu is first shown, kept while the player walks its questions, torn down when a
+   match starts (`startGame`/`startMatch`) and made fresh when the front menu comes back (Quit to the main menu). The
+   menu draws dimmed over it as E29 already does when `backdropShown()`.
+2. **"Back".** The questions' and the skirmish menu's `Back` row (`DukeRtsApp.showQuestion`, `showSkirmishMenu`) said
+   through `Shell.word` like the other fixed words.
+3. *Optional, later:* top-level front rows of the game's own (`Shell.frontRows(List<Option>)`, like `pauseRows`), so
+   Continue · New game · Load · Credits stand on the front menu itself rather than behind its Play row.
+
+Done when: a stone-shell game with a backdrop shows it running behind its front menu and its questions; a played match
+and Quit to the main menu bring a fresh one; generals unchanged; a client3d test pins that the backdrop is kept going on
+`Screen.MENU`.
