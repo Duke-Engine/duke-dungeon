@@ -233,9 +233,14 @@ public final class MonsterBrain extends UnitScript {
         if (book == null || midBlow() || midCast()) {
             return;
         }
+        // A boss's phase says which of its skills it casts now: see Boss.Phase. Empty, or no boss, all of them.
+        var fighting = unit().findModule(uz.dukeengine.dungeon.run.Fighting.class);
+        var castOnly = fighting == null ? java.util.List.<String>of() : fighting.castOnly();
         for (var skill : book.getSkills()) {
             int rank = LevelBonus.rankOf(unit(), skill);
-            if (rank == 0 || skill.effect().isPassive() || !book.isReady(skill.key())
+            if (rank == 0 || skill.effect().isPassive()
+                    || !castOnly.isEmpty() && !castOnly.contains(String.valueOf(skill.key()))
+                    || !book.isReady(skill.key())
                     || !book.canAfford(skill.key(), rank)) {
                 continue;
             }

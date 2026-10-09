@@ -11,7 +11,7 @@ import java.util.List;
  */
 public record Story(Dialogue dialogue, List<Speaker> speakers, List<Conversation> conversations, List<Npc> npcs,
         List<Quest> quests, List<Trigger> triggers, List<Cutscene> cutscenes, Trade trade,
-        List<Merchant> merchants) {
+        List<Merchant> merchants, List<Boss> bosses) {
 
     public static final Story NONE = new Story(Dialogue.DEFAULTS, List.of(), List.of(), List.of(), List.of());
 
@@ -19,6 +19,7 @@ public record Story(Dialogue dialogue, List<Speaker> speakers, List<Conversation
         dialogue = dialogue == null ? Dialogue.DEFAULTS : dialogue;
         trade = trade == null ? Trade.DEFAULTS : trade;
         merchants = List.copyOf(merchants);
+        bosses = bosses == null ? List.of() : List.copyOf(bosses);
         speakers = List.copyOf(speakers);
         conversations = List.copyOf(conversations);
         npcs = List.copyOf(npcs);
@@ -30,7 +31,13 @@ public record Story(Dialogue dialogue, List<Speaker> speakers, List<Conversation
     /** A story with no triggers and no cutscenes. */
     public Story(Dialogue dialogue, List<Speaker> speakers, List<Conversation> conversations, List<Npc> npcs,
             List<Quest> quests) {
-        this(dialogue, speakers, conversations, npcs, quests, List.of(), List.of(), Trade.DEFAULTS, List.of());
+        this(dialogue, speakers, conversations, npcs, quests, List.of(), List.of(), Trade.DEFAULTS, List.of(),
+                List.of());
+    }
+
+    /** The Boss block of that Monster, or null for one the story does not fight. */
+    public Boss boss(String name) {
+        return bosses.stream().filter(each -> each.name().equals(name)).findFirst().orElse(null);
     }
 
     /** The merchant of that name, or null for a person who does not trade. */
@@ -114,6 +121,25 @@ public record Story(Dialogue dialogue, List<Speaker> speakers, List<Conversation
         for (var trigger : triggers) {
             trigger(trigger, monsters, items, wrong);
         }
+        for (var boss : bosses) {
+            var named = "Boss " + boss.name();
+            if (!monsters.contains(boss.name())) {
+                wrong.add(named + " is no Monster: a boss is a Monster block of that Name");
+            }
+            if (boss.beaten() < 0 || boss.beaten() >= 100) {
+                wrong.add(named + " is beaten at " + boss.beaten() + "% of its health: 0 (it dies) to 99");
+            }
+            for (int i = 0; i < boss.phases().size(); i++) {
+                var phase = boss.phases().get(i);
+                var which = named + " phase " + (i + 1);
+                if (phase.below() < 1 || phase.below() > 100 || phase.damageTaken() < 0) {
+                    wrong.add(which + ": Below is 1 to 100, and DamageTaken at least 0");
+                }
+                for (var action : phase.actions()) {
+                    action(which, action, true, monsters, items, wrong);
+                }
+            }
+        }
         for (var merchant : merchants) {
             var named = "Merchant " + merchant.name();
             if (npc(merchant.name()) == null) {
@@ -166,9 +192,14 @@ public record Story(Dialogue dialogue, List<Speaker> speakers, List<Conversation
                     wrong.add(named + " waits on a " + trigger.when() + " and names none");
                 }
             }
-            case DIED -> {
+            case DIED, BEATEN -> {
                 if (!monsters.contains(target)) {
-                    wrong.add(named + " waits for a " + target + " to die, and no Monster is called that");
+                    wrong.add(named + " waits for a " + target + " to fall, and no Monster is called that");
+                }
+            }
+            case SEEN -> {
+                if (cutscene(target) == null) {
+                    wrong.add(named + " waits for " + target + " to be seen, and no Cutscene is called that");
                 }
             }
             case QUEST_STARTED, QUEST_DONE, STEP_DONE -> {
@@ -192,49 +223,80 @@ public record Story(Dialogue dialogue, List<Speaker> speakers, List<Conversation
             wrong.add(named + " does nothing: it has no Actions");
         }
         for (var action : trigger.actions()) {
-            if (action.act() == null) {
-                wrong.add(named + " has an Action with no Act");
-                continue;
+            action(named, action, false, monsters, items, wrong);
+        }
+        for (var condition : trigger.If()) {
+            var what = condition.target();
+            boolean known = condition.is() != null && switch (condition.is()) {
+                case FLAG_SET, FLAG_UNSET -> !what.isBlank();
+                case HOLDS, WEARS -> items.contains(what);
+                case QUEST_ACTIVE, QUEST_DONE -> quest(what) != null;
+                case ALIVE, DEAD -> monsters.contains(what);
+            };
+            if (!known) {
+                wrong.add(named + " asks If " + condition.is() + " " + what + ", and the files have no such thing: "
+                        + "a flag, a LootItem, a Quest or a Monster, by what it asks");
             }
-            var what = action.target();
-            switch (action.act()) {
-                case SAY -> conversation(what, named, wrong);
-                case START_QUEST, FINISH_QUEST -> quest(what, named, wrong);
-                case SPAWN -> {
-                    if (!monsters.contains(what)) {
-                        wrong.add(named + " spawns " + what + ", and no Monster is called that");
-                    }
-                    if (action.zone().isBlank() || action.count() < 1) {
-                        wrong.add(named + " spawns " + what + " with no Zone, or fewer than one");
-                    }
+        }
+    }
+
+    /** What is wrong with one action: a trigger's, or ({@code inPhase}) a phase's, whose CALL and EFFECT need no Zone. */
+    private void action(String named, Trigger.Action action, boolean inPhase, Collection<String> monsters,
+            Collection<String> items, List<String> wrong) {
+        if (action.act() == null) {
+            wrong.add(named + " has an Action with no Act");
+            return;
+        }
+        var what = action.target();
+        switch (action.act()) {
+            case CALL -> {
+                if (!monsters.contains(what) || !inPhase && action.zone().isBlank()) {
+                    wrong.add(named + " calls " + what + ", who is no Monster, or to no Zone");
                 }
-                case WALK -> {
-                    if (npc(what) == null || action.zone().isBlank()) {
-                        wrong.add(named + " walks " + what + ", who is no Npc, or to no Zone");
-                    }
+            }
+            case EFFECT -> {
+                if (what.isBlank() || !inPhase && action.zone().isBlank()) {
+                    wrong.add(named + " plays an EFFECT that names none, or at no Zone");
                 }
-                case GIVE, TAKE -> {
-                    if (!items.contains(what)) {
-                        wrong.add(named + " gives or takes " + what + ", and no LootItem is called that");
-                    }
+            }
+            case WIN -> {
+            }
+            case SAY -> conversation(what, named, wrong);
+            case START_QUEST, FINISH_QUEST -> quest(what, named, wrong);
+            case SPAWN -> {
+                if (!monsters.contains(what)) {
+                    wrong.add(named + " spawns " + what + ", and no Monster is called that");
                 }
-                case FLAG, MAP -> {
-                    if (what.isBlank()) {
-                        wrong.add(named + " has a " + action.act() + " that names none");
-                    }
+                if (action.zone().isBlank() || action.count() < 1) {
+                    wrong.add(named + " spawns " + what + " with no Zone, or fewer than one");
                 }
-                case CUTSCENE -> {
-                    if (cutscene(what) == null) {
-                        wrong.add(named + " plays " + what + ", and no Cutscene is called that");
-                    }
+            }
+            case WALK -> {
+                if (npc(what) == null || action.zone().isBlank()) {
+                    wrong.add(named + " walks " + what + ", who is no Npc, or to no Zone");
                 }
-                case CURSE -> {
-                    if (npc(what) == null) {
-                        wrong.add(named + " gives the medallion to " + what + ", who is no Npc");
-                    }
+            }
+            case GIVE, TAKE -> {
+                if (!items.contains(what)) {
+                    wrong.add(named + " gives or takes " + what + ", and no LootItem is called that");
                 }
-                case OPEN_GATE -> {
+            }
+            case FLAG, MAP -> {
+                if (what.isBlank()) {
+                    wrong.add(named + " has a " + action.act() + " that names none");
                 }
+            }
+            case CURSE -> {
+                if (npc(what) == null) {
+                    wrong.add(named + " gives the medallion to " + what + ", who is no Npc");
+                }
+            }
+            case CUTSCENE -> {
+                if (cutscene(what) == null) {
+                    wrong.add(named + " plays " + what + ", and no Cutscene is called that");
+                }
+            }
+            case OPEN_GATE -> {
             }
         }
     }

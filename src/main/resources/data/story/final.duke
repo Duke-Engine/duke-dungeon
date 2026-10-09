@@ -1,0 +1,394 @@
+; ---------------------------------------------------------------------------
+; The end: the queen's hall (maps/hall) -- see docs/plan/2026-10-09-final-fight.md.
+;
+; A Boss block is a Monster the story fights: Beaten is the share of its health,
+; in percent, it is beaten at instead of dying (it kneels, fights no more, nobody's
+; enemy, and a trigger's When = BEATEN hears it); BeatenLook the Effect it wears as
+; it is. Its Phases are begun in order, each once, the next only after the one
+; before: a phase begins the first frame the boss's health is at or below Below
+; percent of its most and its AfterFlag, if it names one, is set. Begun, the boss
+; takes DamageTaken percent of every blow, casts only the skills of its own whose
+; keys Skills lists (none listed: all of them), and does the phase's Actions --
+; a trigger's actions, where a CALL or an EFFECT with no Zone is to the boss.
+; ---------------------------------------------------------------------------
+
+Speaker
+  Name = CursedHero
+  DisplayName = La'natlangan qahramon
+  Picture =
+End
+
+; He cannot be killed: at a quarter of his health he is beaten.
+Boss
+  Name = CursedHero
+  Beaten = 25
+  BeatenLook = Beaten
+End
+
+Boss
+  Name = QueenBoss
+  Phases = [
+    ; On her throne before the fight: no blow takes anything from her.
+    Phase
+      Below = 100
+      DamageTaken = 0
+      Skills = [Q]
+    End,
+    ; The fight begun (the intro seen): she calls him to her side, and fights from afar behind him.
+    Phase
+      AfterFlag = FightBegins
+      DamageTaken = 0
+      Skills = [Q]
+      Actions = [
+        Action
+          Act = SAY
+          Target = QueenCalls
+        End,
+        Action
+          Act = CALL
+          Target = CursedHero
+        End
+      ]
+    End,
+    ; He beaten: she fights herself, every skill hers, and her blows are hers to take.
+    Phase
+      AfterFlag = CursedBeaten
+      DamageTaken = 100
+      Skills = []
+      Actions = [
+        Action
+          Act = SAY
+          Target = QueenAlone
+        End,
+        Action
+          Act = EFFECT
+          Target = QueenWrath
+        End
+      ]
+    End
+  ]
+End
+
+Conversation
+  Name = QueenGreets
+  Lines = [
+    Line
+      Speaker = Queen
+      Text = "Demak, sen ham keldingmi, qizaloq. Uning qalbi endi meniki."
+    End,
+    Line
+      Speaker = Hero
+      Text = "U mening yigitim. Uni uyga olib ketaman."
+    End,
+    Line
+      Speaker = Queen
+      Text = "Olib ket — agar uni yenga olsang."
+    End
+  ]
+End
+
+Conversation
+  Name = QueenCalls
+  Lines = [
+    Line
+      Speaker = Queen
+      Text = "Ritsarim! Yonimga kel — uni to'xtat!"
+    End
+  ]
+End
+
+Conversation
+  Name = HeroSpares
+  Lines = [
+    Line
+      Speaker = Hero
+      Text = "Seni o'ldirmayman. Bu sen emassan — bu medalyon."
+    End
+  ]
+End
+
+Conversation
+  Name = QueenAlone
+  Lines = [
+    Line
+      Speaker = Queen
+      Text = "Yaroqsiz qul! Unda o'zim tugataman."
+    End
+  ]
+End
+
+Conversation
+  Name = QueenFalls
+  Lines = [
+    Line
+      Speaker = Queen
+      Text = "Yo'q... yoshligim... jonlar..."
+    End,
+    Line
+      Speaker = Hero
+      Text = "Medalyon sindi. Ular endi ozod."
+    End,
+    Line
+      Speaker = CursedHero
+      Text = "Men... qayerdaman? Sen... sen meni izlab kelding."
+    End,
+    Line
+      Speaker = Hero
+      Text = "Uyga ketamiz."
+    End
+  ]
+End
+
+Cutscene
+  Name = QueenIntro
+  Shots = [
+    Shot
+      ; Two seconds' flight to the throne, and a moment on her.
+      Zone = Throne
+      Frames = 60
+      Hold = 20
+    End,
+    Shot
+      Says = QueenGreets
+      Hold = 15
+    End
+  ]
+End
+
+Cutscene
+  Name = QueenEnd
+  Shots = [
+    Shot
+      ; To the throne, where the souls rise.
+      Zone = Throne
+      Frames = 45
+      Hold = 45
+    End,
+    Shot
+      Says = QueenFalls
+      Hold = 30
+    End
+  ]
+End
+
+Trigger
+  Name = HallEntered
+  Map = hall
+  When = ZONE
+  Target = HallDoor
+  Actions = [
+    Action
+      Act = CUTSCENE
+      Target = QueenIntro
+    End
+  ]
+End
+
+Trigger
+  Name = FightBegins
+  Map = hall
+  When = SEEN
+  Target = QueenIntro
+  Actions = [
+    Action
+      Act = FLAG
+      Target = FightBegins
+    End
+  ]
+End
+
+Trigger
+  Name = CursedBeaten
+  Map = hall
+  When = BEATEN
+  Target = CursedHero
+  Actions = [
+    Action
+      Act = SAY
+      Target = HeroSpares
+    End,
+    Action
+      Act = FLAG
+      Target = CursedBeaten
+    End
+  ]
+End
+
+; Her death: the medallion breaks, the souls it held rise, and the ending is played.
+Trigger
+  Name = QueenDies
+  Map = hall
+  When = DIED
+  Target = QueenBoss
+  Actions = [
+    Action
+      Act = FLAG
+      Target = MedallionBroken
+    End,
+    Action
+      Act = EFFECT
+      Target = SoulsRise
+      Zone = Throne
+    End,
+    Action
+      Act = CUTSCENE
+      Target = QueenEnd
+    End
+  ]
+End
+
+Trigger
+  Name = TheEnd
+  Map = hall
+  When = SEEN
+  Target = QueenEnd
+  Actions = [
+    Action
+      Act = WIN
+      Target = "La'nat ko'tarildi"
+    End
+  ]
+End
+
+; ---------------------------------------------------------------------------
+; Looks.
+; ---------------------------------------------------------------------------
+
+; Beaten: dust as he goes down on one knee, and a dim ring where he kneels.
+Effect
+  Name = Beaten
+  Layers = [
+    Layer
+      Name = Dust
+      Type = BURST
+      Texture = kit/effects/particles/smoke_01.png
+      Blend = Alpha
+      Cover = 0.6
+      Count = 14
+      Life = [0.8, 1.3]
+      Size = [3, 7]
+      Colour = [0x9A9080, 0x605850]
+      Alpha = [0.6, 0]
+      Speed = [4, 9]
+      Direction = OUT
+      Spread = 20
+      Radius = 3
+      Height = 1
+      TurnJitter = 360
+    End,
+    Layer
+      Name = Ring
+      Type = RING
+      Texture = kit/effects/particles/circle_05.png
+      Blend = Additive
+      Count = 1
+      Life = [0.7, 0.7]
+      Size = [6, 26]
+      Colour = [0xC8C0E8, 0x8070A0]
+      Alpha = [0.6, 0]
+      Height = 0.2
+    End
+  ]
+End
+
+; Her wrath as she rises to fight herself: a violet flash about her.
+Effect
+  Name = QueenWrath
+  Layers = [
+    Layer
+      Name = Flash
+      Type = IMPACT
+      Texture = kit/effects/particles/light_02.png
+      Blend = Additive
+      Count = 1
+      Life = [0.6, 0.6]
+      Size = [10, 34]
+      Colour = [0xE0B0FF, 0x7030C0]
+      Alpha = [0.9, 0]
+      Height = 7
+    End,
+    Layer
+      Name = Glow
+      Type = LIGHT
+      LightColour = 0xB060FF
+      LightPower = 2
+      LightRadius = 30
+      Seconds = 0.8
+      Height = 8
+    End
+  ]
+End
+
+; The souls the medallion held, rising from where she fell into the sky: three waves
+; of pale wisps, slow, and a glow under them. Drawn as stuff, not light: the rules
+; keep light that happens at once short, and these take seconds to rise away.
+Effect
+  Name = SoulsRise
+  Layers = [
+    Layer
+      Name = FirstSouls
+      Type = BURST
+      Texture = kit/effects/particles/light_02.png
+      Blend = Alpha
+      Cover = 0.3
+      Count = 30
+      Life = [3, 4.5]
+      Size = [2.4, 0.8]
+      Colour = [0xF0FAFF, 0x9FD8FF]
+      Alpha = [0.9, 0]
+      Speed = [6, 12]
+      Direction = UP
+      Spread = 30
+      Gravity = -3
+      Radius = 12
+      Height = 3
+    End,
+    Layer
+      Name = MoreSouls
+      Type = BURST
+      Texture = kit/effects/particles/light_02.png
+      Blend = Alpha
+      Cover = 0.3
+      Delay = 0.8
+      Count = 30
+      Life = [3, 4.5]
+      Size = [2.4, 0.8]
+      Colour = [0xF0FAFF, 0x9FD8FF]
+      Alpha = [0.9, 0]
+      Speed = [6, 12]
+      Direction = UP
+      Spread = 30
+      Gravity = -3
+      Radius = 14
+      Height = 3
+    End,
+    Layer
+      Name = LastSouls
+      Type = BURST
+      Texture = kit/effects/particles/star_01.png
+      Blend = Alpha
+      Cover = 0.3
+      Delay = 1.6
+      Count = 30
+      Life = [3, 4.5]
+      Size = [2, 0.6]
+      Colour = [0xFFFFFF, 0xB8E4FF]
+      Alpha = [0.9, 0]
+      Speed = [6, 12]
+      Direction = UP
+      Spread = 30
+      Gravity = -3
+      Radius = 10
+      Height = 3
+    End,
+    Layer
+      Name = Glow
+      Type = LIGHT
+      LightColour = 0xBFE6FF
+      LightPower = 2.5
+      LightRadius = 40
+      Seconds = 3
+      Height = 10
+    End
+  ]
+End

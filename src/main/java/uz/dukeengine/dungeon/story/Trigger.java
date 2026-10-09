@@ -10,24 +10,63 @@ import java.util.List;
  * @param step    for {@link When#STEP_DONE}, which step, 1 its first
  * @param delay   frames after the event before it acts
  * @param repeat  whether it fires every time, rather than once
+ * @param If      what must hold, every one, the moment its When is heard; one that does not leaves it unfired, and a
+ *                once-only trigger waits for the next time. Named as the file writes it, {@code If = [...]}
  */
 public record Trigger(String name, String map, When when, String target, int step, int delay, boolean repeat,
-        List<Action> actions) {
+        List<Condition> If, List<Action> actions) {
 
-    public static final Trigger DEFAULTS = new Trigger("", "", null, "", 0, 0, false, List.of());
+    public static final Trigger DEFAULTS = new Trigger("", "", null, "", 0, 0, false, List.of(), List.of());
 
     public Trigger {
+        If = If == null ? List.of() : List.copyOf(If);
         actions = actions == null ? List.of() : List.copyOf(actions);
+    }
+
+    /** What a condition asks. Of a party, any hero holding or wearing it will do. */
+    public enum Is {
+        /** The flag is set. */
+        FLAG_SET,
+        /** The flag is not set. */
+        FLAG_UNSET,
+        /** A hero carries the LootItem, worn or in his backpack. */
+        HOLDS,
+        /** A hero wears the LootItem. */
+        WEARS,
+        /** The quest is going. */
+        QUEST_ACTIVE,
+        /** The quest is finished. */
+        QUEST_DONE,
+        /** One of the Monster stands alive on the floor. */
+        ALIVE,
+        /** None of the Monster stands alive on the floor. */
+        DEAD
+    }
+
+    /** One thing that must hold: {@code Is}, of {@code Target} — a flag, a LootItem, a quest or a Monster. */
+    public record Condition(Is is, String target) {
+
+        public static final Condition DEFAULTS = new Condition(null, "");
     }
 
     /** What a trigger waits for. */
     public enum When {
-        MAP_START, ZONE, DIED, QUEST_STARTED, QUEST_DONE, STEP_DONE, HEARD, AFTER, FLAG
+        MAP_START, ZONE, DIED, QUEST_STARTED, QUEST_DONE, STEP_DONE, HEARD, AFTER, FLAG,
+        /** A Monster that cannot be killed is beaten — see {@link Boss#beaten}. */
+        BEATEN,
+        /** A cutscene has played to its end, or was skipped. */
+        SEEN
     }
 
     /** What a trigger does. */
     public enum Act {
         SAY, START_QUEST, FINISH_QUEST, SPAWN, WALK, OPEN_GATE, GIVE, TAKE, FLAG, MAP, CUTSCENE,
+        /** Every one of a Monster standing on the floor walks to the zone — in a boss's phase, with no Zone, to it. */
+        CALL,
+        /** An Effect played at the zone's middle — in a boss's phase, with no Zone, on it. */
+        EFFECT,
+        /** The run ends won, the banner saying the Target's words (blank: the Run block's WonWord). */
+        WIN,
         /** The turning: the medallion leaves the hero for the Npc named, his look darkens, he goes to the monsters. */
         CURSE
     }
@@ -35,9 +74,10 @@ public record Trigger(String name, String map, When when, String target, int ste
     /**
      * One thing done.
      *
-     * @param target what: a conversation, quest, Monster, Npc, LootItem, flag, map or cutscene — by {@link #act}
+     * @param target what: a conversation, quest, Monster, Npc, LootItem, flag, map, cutscene, Effect or a banner's
+     *               words — by {@link #act}
      * @param count  how many, for SPAWN
-     * @param zone   where, for SPAWN and WALK
+     * @param zone   where, for SPAWN, WALK, CALL and EFFECT
      */
     public record Action(Act act, String target, int count, String zone) {
 

@@ -69,6 +69,9 @@ Game
     data/units/commander.duke,
     data/units/merchant.duke,
     data/units/queen.duke,
+    ; The last fight's two, whom only a map puts: see data/story/final.duke.
+    data/units/queen_boss.duke,
+    data/units/cursed_hero.duke,
 
     data/projectiles/arrow.duke,
     data/projectiles/heavy_arrow.duke,
@@ -133,5 +136,6 @@ Game
     data/story/story.duke,
     data/story/trade.duke,
     data/story/medallion.duke,
+    data/story/final.duke,
   ]
 End

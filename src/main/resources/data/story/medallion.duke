@@ -200,6 +200,13 @@ Trigger
   Map = medalyon
   When = ZONE
   Target = Altar
+  ; Only a hero who wears the medallion is taken: one who carries it in his pack, or has none, walks by.
+  If = [
+    Condition
+      Is = WEARS
+      Target = Medallion
+    End
+  ]
   Actions = [
     Action
       Act = CURSE

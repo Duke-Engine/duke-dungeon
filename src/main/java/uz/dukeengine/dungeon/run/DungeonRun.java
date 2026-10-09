@@ -178,6 +178,8 @@ public final class DungeonRun {
         this.seal = seal;
         this.quests = new QuestLog(settings.story(), settings.loot(), settings.lootDrops().joinCount());
         this.script = new uz.dukeengine.dungeon.story.Script(settings.story());
+        this.fight = new BossFight(settings.story());
+        script.judgedBy(this::holds);
         this.orders = orders;
         this.dungeonPlayer = dungeonPlayer;
         this.floors = floors;
@@ -367,7 +369,9 @@ public final class DungeonRun {
      * floor's entry stands. Asked with the simulation paused.
      */
     public SaveGame saveNow() {
-        return state == State.RUNNING && gathering == null ? save() : null;
+        // Nor mid-fight: a boss's phase or a beaten foe is not saved, and the save from the hall's entry stands —
+        // see docs/plan/2026-10-09-final-fight.md.
+        return state == State.RUNNING && gathering == null && !fight.on() ? save() : null;
     }
 
     /** The run as a save, the first seat's hero in it; {@code null} for a party or a seat with no hero. */
@@ -497,6 +501,7 @@ public final class DungeonRun {
      */
     private void onTheFloor(DukeGame game, GeneratedDungeon floor, Spawner.Placed placed) {
         seal.floor(floor.keep(), placed.gate());
+        fight.reset();
         for (int i = 0; i < seats.size(); i++) {
             var bag = seats.get(i).progress.getLoot();
             bag.removeAll(ItemUse.UNLOCK);
@@ -637,6 +642,9 @@ public final class DungeonRun {
             game.setBanner("lost|" + settings.run().diedWord());
             return;
         }
+        if (bossId != null && logic.findObject(bossId) == null && descendAtFrame == 0 && winsByStory()) {
+            bossId = null; // the story says when this map is won: its WIN, once whatever her fall began is played
+        }
         if (bossId != null && logic.findObject(bossId) == null && descendAtFrame == 0) {
             // Nothing below this one: the last boss is the end of the game rather
             // than the door to the next floor. The banner is the whole of what
@@ -660,8 +668,47 @@ public final class DungeonRun {
         }
         story(game);
         scripted(game);
+        if (state != State.RUNNING) {
+            return; // a trigger won it: the banner has the screen
+        }
         track(game);
         showStatus(game);
+    }
+
+    /**
+     * Whether a trigger's condition holds this moment: a flag, what a hero carries or wears (any hero of a party), a
+     * quest going or done, a creature standing on the floor or none.
+     */
+    private boolean holds(uz.dukeengine.dungeon.story.Trigger.Condition condition) {
+        var what = condition.target();
+        return switch (condition.is()) {
+            case FLAG_SET, FLAG_UNSET -> script.flagsAlone(condition);
+            case HOLDS, WEARS -> bags().stream().anyMatch(bag -> {
+                for (int place = 0; place < bag.slots().size(); place++) {
+                    var item = bag.at(place);
+                    boolean worn = !bag.wears() || place >= bag.backpackSize();
+                    if (item != null && item.id().equals(what)
+                            && (condition.is() == uz.dukeengine.dungeon.story.Trigger.Is.HOLDS || worn)) {
+                        return true;
+                    }
+                }
+                return false;
+            });
+            case QUEST_ACTIVE -> quests.active().stream().anyMatch(each -> each.quest().equals(what));
+            case QUEST_DONE -> quests.finished().contains(what);
+            case ALIVE, DEAD -> {
+                boolean alive = lastLogic != null && lastLogic.getObjects().stream().anyMatch(thing ->
+                        thing.getTemplate().name().equals(what) && !thing.isEffectivelyDead());
+                yield alive == (condition.is() == uz.dukeengine.dungeon.story.Trigger.Is.ALIVE);
+            }
+        };
+    }
+
+    /** Whether this map's own triggers say WIN: then it is won by them, and not by its boss falling. */
+    private boolean winsByStory() {
+        var name = floors.stageName();
+        return name != null && settings.story().triggers().stream().anyMatch(each -> each.map().equals(name)
+                && each.actions().stream().anyMatch(action -> action.act() == uz.dukeengine.dungeon.story.Trigger.Act.WIN));
     }
 
     /**
@@ -1001,6 +1048,8 @@ public final class DungeonRun {
 
     /** The run's triggers: what has fired, the flags, what waits. */
     private final uz.dukeengine.dungeon.story.Script script;
+    /** The floor's bosses: who is beaten, and which phase each is in. See docs/plan/2026-10-09-final-fight.md. */
+    private final BossFight fight;
     /** The cutscene playing, or null; the shot it is on, and that shot's frames left (-1 before it begins). */
     private uz.dukeengine.dungeon.story.Cutscene cutscene;
     private int shotAt;
@@ -1017,6 +1066,8 @@ public final class DungeonRun {
         for (var event : quests.takeEvents()) {
             script.heard(event.when(), event.target(), event.step());
         }
+        fight.tick(game.getLogic(), script, (action, caller) -> act(game, action, caller),
+                uz.dukeengine.core.player.PlayerList.NEUTRAL_INDEX);
         for (var trigger : script.due()) {
             for (var action : trigger.actions()) {
                 act(game, action);
@@ -1050,9 +1101,47 @@ public final class DungeonRun {
     }
 
     private void act(DukeGame game, uz.dukeengine.dungeon.story.Trigger.Action action) {
+        act(game, action, null);
+    }
+
+    /** One action done: a trigger's, or — {@code caller} the boss — a phase's. */
+    private void act(DukeGame game, uz.dukeengine.dungeon.story.Trigger.Action action, GameObject caller) {
         var logic = game.getLogic();
         var what = action.target();
         switch (action.act()) {
+            case CALL -> {
+                // Every one of it on the floor, on the dungeon's side — a beaten one is nobody's — walks to her side.
+                var zone = zoneNamed(action.zone());
+                float cell = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
+                var to = zone != null ? new uz.dukeengine.core.math.Coord3D(zone.middleX(cell), zone.middleY(cell), 0f)
+                        : caller != null ? caller.getPosition() : null;
+                for (var thing : logic.getObjects()) {
+                    var legs = thing.getLocomotor();
+                    if (to != null && legs != null && thing.getTemplate().name().equals(what)
+                            && thing.getPlayerIndex() == dungeonPlayer.getIndex() && !thing.isEffectivelyDead()) {
+                        legs.moveTo(to);
+                    }
+                }
+            }
+            case EFFECT -> {
+                var zone = zoneNamed(action.zone());
+                if (zone != null) {
+                    float cell = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
+                    var flat = new uz.dukeengine.core.math.Coord3D(zone.middleX(cell), zone.middleY(cell), 0f);
+                    logic.effect(what, new uz.dukeengine.core.math.Coord3D(flat.x(), flat.y(), logic.groundHeight(flat)),
+                            0f);
+                } else if (caller != null) {
+                    logic.effect(what, caller);
+                }
+            }
+            case WIN -> {
+                if (state == State.RUNNING) {
+                    state = State.WON;
+                    endedFrame = logic.getFrame();
+                    tracker = Tracker.NONE;
+                    game.setBanner("won|" + (what.isBlank() ? settings.run().wonWord() : what));
+                }
+            }
             case SAY -> quests.play(what);
             case START_QUEST -> quests.start(what);
             case FINISH_QUEST -> quests.finishNow(what);
@@ -1192,7 +1281,7 @@ public final class DungeonRun {
             shotAt++;
             shotLeft = -1;
             if (shotAt >= cutscene.shots().size()) {
-                endCutscene(game);
+                seen(game);
             }
         }
     }
@@ -1216,6 +1305,14 @@ public final class DungeonRun {
 
     /** A player skipped the cutscene: for everybody, as every order is heard. */
     public void skipCutscene(DukeGame game) {
+        seen(game);
+    }
+
+    /** The cutscene played to its end, or skipped: over, and heard as SEEN. */
+    private void seen(DukeGame game) {
+        if (cutscene != null) {
+            script.heard(uz.dukeengine.dungeon.story.Trigger.When.SEEN, cutscene.name(), 0);
+        }
         endCutscene(game);
     }
 
