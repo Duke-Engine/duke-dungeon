@@ -153,7 +153,7 @@ public record SaveGame(long seed, String stage, int depth, String hero, int expe
             if (base.id().equals(saved.id())) {
                 return new Loot(base.id(), base.name(), base.icon(), base.kind(), saved.value(), base.weight(),
                         base.minTier(), base.attribute(), base.extra(), saved.extra(), base.extraStep(),
-                        saved.level(), base.use(), base.liesAs(), base.slot());
+                        saved.level(), base.use(), base.liesAs(), base.slot(), base.skills());
             }
         }
         return null;

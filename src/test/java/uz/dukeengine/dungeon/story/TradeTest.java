@@ -88,6 +88,25 @@ class TradeTest {
         assertEquals(SETTINGS.story().trade().goldFor(level), session.run().goldOf(player), "nobody's kill pays nobody");
     }
 
+    /** E27: an arrow names its archer, so the Rogue's arrow kill pays him — it paid nobody before. */
+    @Test
+    void aRoguesArrowKillPaysHim() {
+        var session = session();
+        var game = session.game();
+        var hero = hero(game);
+        var skeleton = all(game, "Skeleton").getFirst();
+        int level = LevelBonus.levelOf(skeleton);
+        var at = hero.getPosition();
+        skeleton.setPosition(new Coord3D(at.x() + 30f, at.y(), at.z()));
+        skeleton.getBody().setHealth(1f);
+        game.postCommand(new uz.dukeengine.combat.message.CombatOrder.AttackObject(hero.getPlayerIndex(),
+                List.of(hero.getId()), skeleton.getId()));
+        game.runHeadless(120);
+        assertTrue(!all(game, "Skeleton").contains(skeleton), "shot dead");
+        assertEquals(SETTINGS.story().trade().goldFor(level), session.run().goldOf(hero.getPlayerIndex()),
+                "and the arrow's kill is his gold");
+    }
+
     @Test
     void buyingAndSellingAreOrdersCheckedInTheWorld() {
         var session = session();

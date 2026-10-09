@@ -21,17 +21,25 @@ import uz.dukeengine.rpg.item.Stat;
  * @param liesAs      the template it lies on the floor as; blank for the chest everything else lies in
  * @param slot        the worn slot it goes in, one of LootDrops' WornSlots; blank for a thing only carried — a key, a
  *     quest thing, a thing to sell — which acts on nothing
+ * @param skills      the passives it lends whoever wears it, while he wears it (the engine's {@code Loot.skills}): the
+ *     medallion's soul drink
  */
 public record LootItem(String name, String displayName, String icon, String kind, int value, int weight,
-        int minTier, String attribute, String extra, int extraValue, ItemUse use, String liesAs, String slot) {
+        int minTier, String attribute, String extra, int extraValue, ItemUse use, String liesAs, String slot,
+        java.util.List<uz.dukeengine.rpg.skill.Skill> skills) {
 
     /** What a block leaves out. */
     public static final LootItem DEFAULTS = new LootItem("", "", "", Stat.ATTACK, 0, 10, 1, "", "",
-            0, ItemUse.NONE, "", "");
+            0, ItemUse.NONE, "", "", java.util.List.of());
+
+    public LootItem {
+        skills = skills == null ? java.util.List.of() : java.util.List.copyOf(skills);
+    }
 
     /** The thing as it is found: at the first level, with its extra still to come. */
     public Loot loot() {
         return new Loot(name, displayName == null || displayName.isBlank() ? name : displayName, icon, kind, value,
-                weight, minTier, attribute, extra, 0, extraValue, 1, use, liesAs, slot);
+                weight, minTier, attribute, extra, 0, extraValue, 1, use, liesAs, slot,
+                skills.stream().map(skill -> skill.ownedBy(name)).toList());
     }
 }

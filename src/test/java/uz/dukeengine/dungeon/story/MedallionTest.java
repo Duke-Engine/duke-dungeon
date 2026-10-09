@@ -128,8 +128,8 @@ class MedallionTest {
     }
 
     /**
-     * Fought for real: the Rogue's arrow names no killer (the rpg module's blows say none yet, E27), and the kill is
-     * still his soul — his experience rose for it.
+     * Fought for real: the Rogue's arrow names its archer (E27), so the kill the engine reaps is his — a soul of the
+     * soul drink his medallion lends him.
      */
     @Test
     void anArrowsKillIsASoulToo() {
@@ -159,12 +159,22 @@ class MedallionTest {
         assertTrue(all(game, MEDALLION.wisp()).isEmpty(), "and flew into him");
     }
 
+    /** "Jon yutish" is the engine's SOUL_DRINK, lent by the worn medallion: 1% for every 10 souls, up to 20%. */
     @Test
     void theBonusStepsWithTheSoulsAndStopsAtItsCap() {
-        assertEquals(0, MEDALLION.percentFor(9));
-        assertEquals(MEDALLION.percentPerStep(), MEDALLION.percentFor(MEDALLION.soulsPerStep()));
-        assertEquals(3 * MEDALLION.percentPerStep(), MEDALLION.percentFor(3 * MEDALLION.soulsPerStep() + 5));
-        assertEquals(MEDALLION.maxPercent(), MEDALLION.percentFor(1_000_000));
+        var session = session();
+        given(session);
+        var book = hero(session.game()).findModule(SkillBook.class);
+        assertNotNull(book.soulDrink(), "worn, its soul drink is lent him");
+        assertEquals(SkillEffect.SOUL_DRINK, book.soulDrink().effect());
+        book.setSouls(9);
+        assertEquals(0, book.soulPercent());
+        book.setSouls(10);
+        assertEquals(1, book.soulPercent());
+        book.setSouls(35);
+        assertEquals(3, book.soulPercent());
+        book.setSouls(1_000_000);
+        assertEquals(20, book.soulPercent(), "its cap");
     }
 
     @Test
@@ -172,17 +182,18 @@ class MedallionTest {
         var session = session();
         var game = session.game();
         given(session);
-        var save = session.run().saveNow().withMedallion(3 * MEDALLION.soulsPerStep(), "");
+        var save = session.run().saveNow().withMedallion(30, "");
         var loaded = Dungeon.newStageSession(Stages.load("medalyon", SETTINGS), SETTINGS);
         loaded.run().resume(save, Floors.ofStage(Stages.load("medalyon", SETTINGS)));
         loaded.game().runHeadless(3);
         var book = hero(loaded.game()).findModule(SkillBook.class);
-        assertEquals(3 * MEDALLION.percentPerStep(), SkillBook.auraOn(hero(loaded.game()), SkillEffect.DAMAGE_AURA));
-        assertEquals(1f + 3 * MEDALLION.percentPerStep() / 100f, book.damageMultiplier(), 1e-5f);
+        assertEquals(30, book.getSouls(), "his souls put back in his book");
+        assertEquals(3, book.soulPercent());
+        assertEquals(1.03f, book.damageMultiplier(), 1e-5f);
 
         bag(loaded).shift(wornPlace(loaded));
         loaded.game().runHeadless(3);
-        assertEquals(0, SkillBook.auraOn(hero(loaded.game()), SkillEffect.DAMAGE_AURA), "taken off, it adds nothing");
+        assertEquals(0, book.soulPercent(), "taken off, it adds nothing");
     }
 
     @Test
