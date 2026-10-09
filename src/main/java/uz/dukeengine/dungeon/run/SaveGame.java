@@ -9,7 +9,6 @@ import uz.dukeengine.core.data.Value;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.rpg.item.Loot;
 import uz.dukeengine.rpg.item.LootBag;
-import uz.dukeengine.rpg.item.ItemUse;
 import uz.dukeengine.rpg.skill.SkillRanks;
 
 /**
@@ -20,7 +19,7 @@ import uz.dukeengine.rpg.skill.SkillRanks;
  * @param stage      the stage's name, or {@code null} for the descent
  * @param experience everything earned this run; his level is worked out from it
  * @param ranks      what he has learnt, by skill key
- * @param bag        what he carries, by slot
+ * @param bag        what he carries, by place: the backpack's, then the worn slots'
  * @param quests     the run's quests — going, finished and heard — or {@code null} for a save written before quests
  *                   were saved, which loads with its map's starting quests
  * @param gold       what is in his purse
@@ -50,13 +49,20 @@ public record SaveGame(long seed, String stage, int depth, String hero, int expe
         this(seed, stage, depth, hero, experience, ranks, bag, null, null);
     }
 
-    /** The format this game writes and the only one it reads. */
-    public static final int VERSION = 1;
+    /**
+     * The format this game writes: 2, where a Slot is a place of a bag that wears things — the backpack's, then the
+     * worn slots'. It reads 1 as well, written when every slot acted: those things go back as pick-ups do, worn where
+     * their slot is free and otherwise into the backpack.
+     */
+    public static final int VERSION = 2;
 
     public record Rank(char key, int rank) {
     }
 
-    /** A thing in his bag: which, at what level and worth, in which slot. The rest is read from its block by id. */
+    /**
+     * A thing in his bag: which, at what level and worth, in which place — or -1, from a save of version 1, for
+     * wherever a pick-up would put it. The rest is read from its block by id.
+     */
     public record Item(int slot, String id, int level, int value, int extra) {
     }
 
@@ -102,8 +108,8 @@ public record SaveGame(long seed, String stage, int depth, String hero, int expe
      *
      * <p>Only through what the engine offers anyone: a rank is raised the way a click raises it, round the skills
      * until each stands where it was — so a save no level could have reached raises no further than the rules allow —
-     * and a thing goes into the bag the way a pick-up puts it there, each slot in order, an empty one held by a
-     * stand-in taken out again. A thing the data no longer has is left out.
+     * and a thing goes back into the place it was saved in. One with no place — a save of version 1 — or whose place
+     * the bag no longer has goes in as a pick-up would, after the rest. A thing the data no longer has is left out.
      */
     public void restore(LootBag into, SkillRanks learnt, DungeonSettings settings) {
         learnt.startWith(settings.skillsFor(hero));
@@ -117,30 +123,22 @@ public record SaveGame(long seed, String stage, int depth, String hero, int expe
             }
         }
         into.clear();
-        var holder = new Loot("", "", "", "", 0, 0, 0, "", "", 0, 0, 1, ItemUse.UNLOCK, "");
-        int last = bag.stream().mapToInt(Item::slot).max().orElse(-1);
-        var held = new ArrayList<Integer>();
-        for (int slot = 0; slot <= last; slot++) {
-            var item = itemAt(slot, settings);
-            into.take(item == null ? holder : item, 0, 0);
-            if (item == null) {
-                held.add(slot);
+        var homeless = new ArrayList<Loot>();
+        for (var saved : bag) {
+            var item = loot(saved, settings);
+            if (item != null && !into.put(saved.slot(), item)) {
+                homeless.add(item);
             }
         }
-        held.forEach(into::remove);
+        homeless.forEach(item -> into.take(item, 0, 0));
     }
 
-    private Loot itemAt(int slot, DungeonSettings settings) {
-        for (var saved : bag) {
-            if (saved.slot() != slot) {
-                continue;
-            }
-            for (var base : settings.loot()) {
-                if (base.id().equals(saved.id())) {
-                    return new Loot(base.id(), base.name(), base.icon(), base.kind(), saved.value(), base.weight(),
-                            base.minTier(), base.attribute(), base.extra(), saved.extra(), base.extraStep(),
-                            saved.level(), base.use(), base.liesAs());
-                }
+    private static Loot loot(Item saved, DungeonSettings settings) {
+        for (var base : settings.loot()) {
+            if (base.id().equals(saved.id())) {
+                return new Loot(base.id(), base.name(), base.icon(), base.kind(), saved.value(), base.weight(),
+                        base.minTier(), base.attribute(), base.extra(), saved.extra(), base.extraStep(),
+                        saved.level(), base.use(), base.liesAs(), base.slot());
             }
         }
         return null;
@@ -219,9 +217,9 @@ public record SaveGame(long seed, String stage, int depth, String hero, int expe
             }
             var save = blocks.getFirst();
             int version = number(save, "Version");
-            if (version != VERSION) {
+            if (version != VERSION && version != 1) {
                 throw new IllegalArgumentException("it was written as version " + version
-                        + ", and this game reads version " + VERSION);
+                        + ", and this game reads versions 1 and " + VERSION);
             }
             var keys = items(save, "Skills");
             var levels = items(save, "Ranks");
@@ -252,7 +250,8 @@ public record SaveGame(long seed, String stage, int depth, String hero, int expe
                 if (!item.word().equals("Item")) {
                     throw new IllegalArgumentException("an unknown block: " + item.word());
                 }
-                bag.add(new Item(number(item, "Slot"), word(item, "Id"), number(item, "Level"),
+                // Version 1's slots were all acting ones, which a bag that wears things numbers otherwise.
+                bag.add(new Item(version == 1 ? -1 : number(item, "Slot"), word(item, "Id"), number(item, "Level"),
                         number(item, "Value"), number(item, "Extra")));
             }
             var quests = field(save, "Quests") == null ? null
