@@ -1,0 +1,84 @@
+; Duke Dungeon — a map drawn once: a dungeon that has stopped changing.
+;
+; The end (docs/plan/2026-10-09-final-fight.md): the queen's hall. The heroine comes
+; in through the antechamber; at the hall's door the queen is shown on her throne
+; and speaks; she calls the cursed hero to her side, and fights from afar behind
+; him. He cannot be killed, only beaten -- spared, he kneels -- and then she fights
+; herself. Her death breaks the medallion: the souls rise, and the run is won.
+
+StaticMap
+  Name = hall
+  DisplayName = "Malika zali"
+  Description = "Oxirgi jang: la'natlangan qahramon va malika."
+  Difficulty = 4
+  Players = 1
+  Seed = 20261009
+  ; Where the heroine comes in.
+  Entrance = [15, 29]
+  ; '#' is stone, a digit the storey a cell stands on.
+  Cells = [
+    "##############################",
+    "##############################",
+    "###000000000000000000000000###",
+    "###000000000000000000000000###",
+    "###000000000000000000000000###",
+    "###000000000000000000000000###",
+    "###000000000000000000000000###",
+    "###000000000000000000000000###",
+    "###000000000000000000000000###",
+    "###000000000000000000000000###",
+    "###000000000000000000000000###",
+    "###000000000000000000000000###",
+    "###000000000000000000000000###",
+    "###000000000000000000000000###",
+    "###000000000000000000000000###",
+    "###000000000000000000000000###",
+    "###000000000000000000000000###",
+    "###000000000000000000000000###",
+    "##############00##############",
+    "##############00##############",
+    "##############00##############",
+    "##############00##############",
+    "##############00##############",
+    "##############00##############",
+    "#########000000000000#########",
+    "#########000000000000#########",
+    "#########000000000000#########",
+    "#########000000000000#########",
+    "#########000000000000#########",
+    "#########000000000000#########",
+    "#########000000000000#########",
+    "#########000000000000#########",
+    "##############################",
+    "##############################",
+  ]
+  ; x y width height storey, in the order they were placed: the first is where she starts.
+  Rooms = [
+    9 24 12 8 0,
+    3 2 24 16 0,
+  ]
+  ; The two rooms a corridor joins, by their place in Rooms.
+  Links = [
+    0 1,
+  ]
+  ; Her death ends the game -- by the story's WIN, once the ending is played (data/story/final.duke).
+  Boss = Queen 15 4
+  ; Each a kind, then the cell it stands in: he waits in the hall's far corner until she calls.
+  Monsters = [
+    CursedHero 4 3,
+  ]
+  ; Solid, and not alive — see data/props/.
+  Props = [
+    Pillar 8 7,
+    Pillar 21 7,
+    Pillar 8 13,
+    Pillar 21 13,
+    Statue 11 3,
+    Statue 18 3,
+  ]
+  ; Named places, in cells: name x y width height, or name x y radius.
+  Zones = [
+    HallDoor 14 17 2 2,
+    Throne 15 4 2,
+  ]
+End

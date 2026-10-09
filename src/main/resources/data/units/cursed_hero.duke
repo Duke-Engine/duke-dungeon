@@ -1,0 +1,80 @@
+; ---------------------------------------------------------------------------
+; The cursed hero: act 1's hero, the medallion's soul-drinker, the queen's to command.
+; He cannot be killed, only beaten -- his Boss block in data/story/final.duke: at a
+; quarter of his health he kneels, fights no more, and the story hears it.
+;
+; His look is a stand-in until his own model: the KayKit knight, darkened by the tint
+; the merchant's look is made with.
+; ---------------------------------------------------------------------------
+Monster
+  Name = CursedHero
+  DisplayName = La'natlangan qahramon
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 5
+    Height = 12
+  End
+  VisionRange = 130
+  Modules = [
+    GrowableBody
+      MaxHealth = 700
+    End,
+    MoveUpdate
+      Speed = 19
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 22
+      AttackRange = 10
+      ReloadFrames = 30
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 300
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 60
+  ChaseRadius = 220
+  CloseDistance = 4
+  AlertRadius = 120
+  RepathFrames = 6
+  SwingFrames = 16
+  Idle = Melee_Blocking
+  Attack = Melee_1H_Attack_Chop
+  ; Never drawn into a floor: a map puts him.
+  MinDepth = 99
+  Weight = 0
+  Colour = 0x50505A
+  Scale = 1.0
+  Model = models/heroes/knight.glb
+  ; Darkened: the medallion's.
+  Tint = 0x5A5068
+  ModelScale = 4.72
+  Facing = 90
+  Animations = Humanoid
+  Held = Held
+    Model = models/heroes/sword_1handed.gltf
+    Bone = handslot.r
+    Scale = 1
+  End
+
+  Skills = [
+    Skill
+      Key = Q
+      ; The medallion drinks for him: a quarter of every blow back, never cast.
+      Effect = LIFESTEAL
+      BoostPercent = 25
+      MaxRank = 1
+      Name = Qon so'rish
+    End
+  ]
+End

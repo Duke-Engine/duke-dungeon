@@ -1,0 +1,115 @@
+; ---------------------------------------------------------------------------
+; The queen: the true villain, and the last boss (docs/plan/2026-10-09-final-fight.md).
+; She fights in phases -- her Boss block in data/story/final.duke: first from afar,
+; no blow taking anything from her, while the cursed hero fights for her; then, once
+; he is beaten, herself, every skill hers. Her death breaks the medallion.
+;
+; Her look is a stand-in until the owner picks a free model: the KayKit mage, as the
+; merchant is, tinted toward a queen's violet.
+; ---------------------------------------------------------------------------
+Monster
+  Name = Queen
+  DisplayName = Malika
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 5
+    Height = 13
+  End
+  VisionRange = 130
+  Modules = [
+    GrowableBody
+      MaxHealth = 900
+    End,
+    MoveUpdate
+      Speed = 12
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 22
+      AttackRange = 62
+      ReloadFrames = 45
+      AttackOnTheMove = No
+    End,
+    Bow
+      Projectile = MageBolt
+      Speed = 200
+      MuzzleOffset = 8
+    End,
+    EyesOnly
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 400
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 70
+  ChaseRadius = 220
+  CloseDistance = 50
+  AlertRadius = 120
+  RepathFrames = 8
+  SwingFrames = 18
+  ; She fights from afar: she keeps her distance and casts across it.
+  SkillDistance = [20, 70]
+  KeepDistance = [40, 60]
+  Attack = Ranged_Magic_Shoot
+  Idle = Ranged_Magic_Spellcasting_Long
+  ; Never drawn into a floor: a map puts her.
+  MinDepth = 99
+  Weight = 0
+  Colour = 0x9A5AC8
+  Scale = 1.0
+  Model = models/heroes/mage.glb
+  Tint = 0xB48CE6
+  ; The mage boxes about 2.655 tall: 13 / 2.655.
+  ModelScale = 4.9
+  Facing = 90
+  Animations = Humanoid
+  Held = Held
+    Model = models/heroes/staff.gltf
+    Bone = handslot.r
+  End
+
+  MaxMana = 120
+  ManaRegen = 40
+
+  ; Which of these she casts is her phase's (Skills = [...] in her Boss block).
+  Skills = [
+    Skill
+      Key = Q
+      Effect = SKILLSHOT
+      Damage = 50
+      Range = 70
+      Radius = 16
+      HitWidth = 6
+      ProjectileSpeed = 130
+      Projectile = SkullFireball
+      StunFrames = 30
+      CooldownFrames = 150
+      ManaCost = 20
+      MaxRank = 1
+      Name = Olov shari
+    End,
+    Skill
+      Key = W
+      Effect = METEOR
+      Damage = 110
+      Radius = 30
+      Range = 70
+      WindUpFrames = 45
+      Projectile = SkullMeteorMark
+      CooldownFrames = 420
+      ManaCost = 50
+      MaxRank = 1
+      Name = Meteor
+    End
+  ]
+End
