@@ -407,8 +407,9 @@ class GateTest {
         game.runHeadless(2);
         var bag = session.progress().getLoot();
         var gauntlet = SETTINGS.loot().stream().filter(item -> item.id().equals("Gauntlet")).findFirst().orElseThrow();
-        bag.take(gauntlet, 0, 0);
-        bag.take(key(), 0, 0); // the slot after it, so it is the slot the order names that counts
+        bag.take(gauntlet, 0, 0); // worn as his Zirh
+        bag.take(gauntlet, 0, 0); // and the second carried, in the backpack's first place
+        bag.take(key(), 0, 0); // the place after it in the backpack, so it is the place the order names that counts
         var gate = find(game, "Gate");
         find(game, "Rogue").setPosition(gate.getPosition());
 
@@ -418,7 +419,8 @@ class GateTest {
         assertNull(find(game, "Gate"), "the key did not open it");
         assertNotNull(find(game, "OpenGate"), "and nothing stands where it stood");
         assertFalse(bag.holds(ItemUse.UNLOCK), "the key stayed in his bag");
-        assertEquals(gauntlet, bag.at(0), "and what he carried beside it went with it");
+        assertEquals(gauntlet, bag.at(0), "and what he carried beside it did not go with it");
+        assertEquals(gauntlet, bag.at(bag.wornPlace("Zirh")), "nor what he wears");
     }
 
     /**

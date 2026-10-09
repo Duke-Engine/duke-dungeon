@@ -51,7 +51,7 @@ class QuestLogTest {
     }
 
     private static LootBag bag() {
-        return new LootBag(6, 3, 3);
+        return SETTINGS.lootDrops().bag(); // a hero's, which wears things and carries the rest
     }
 
     private static Loot item(String id) {
@@ -98,7 +98,7 @@ class QuestLogTest {
         assertEquals(List.of("WallSkeletons"), log.finished());
         assertEquals(150, log.takeExperience());
         assertEquals(0, log.takeExperience(), "paid once");
-        assertEquals("Gauntlet", bag.slots().getFirst().id(), "the reward is in his bag");
+        assertEquals("Gauntlet", bag.at(bag.wornPlace("Zirh")).id(), "the reward is on him, its slot free");
         assertEquals("CommanderThanks", log.said().getLast());
     }
 
@@ -111,6 +111,7 @@ class QuestLogTest {
         log.talk("Commander", bag, false);
         assertEquals(0, of(log, "LostLocket").step());
         bag.take(item("Locket"), 0, 0);
+        assertEquals("Locket", bag.at(0).id(), "a quest thing is carried in the backpack, worn nowhere");
         log.talk("Commander", bag, false);
         assertEquals(0, of(log, "LostLocket").step(), "held is not counted until the bags are looked at");
         log.holding(List.of(bag(), bag));

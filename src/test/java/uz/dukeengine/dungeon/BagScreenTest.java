@@ -362,10 +362,55 @@ class BagScreenTest {
         assertEquals(List.of(
                 new CommandButton("use:0", key.icon(), key.name(), null, true, CommandButton.Aim.UNIT, null)
                         .answeredAs("use"),
-                new CommandButton("drop:1", gauntlet.icon(), gauntlet.name(), null, true, CommandButton.Aim.GROUND,
+                new CommandButton("drop:" + session.progress().getLoot().wornPlace("Zirh"), gauntlet.icon(),
+                        gauntlet.name(), null, true, CommandButton.Aim.GROUND,
                         null)),
                 armed, "the key's aim answered as the game's use, and the drop's as nothing, the rest as it was");
         assertNull(armed.getLast().answeredAs(), "a drop aims at the floor, where the game's orders are not given");
+    }
+
+    /**
+     * A thing worn says, in the file's words, the slot it is worn in and how to take it off; a left click takes it off
+     * into the backpack, and there it says how to put it on.
+     */
+    @Test
+    void aThingWornSaysItsSlotAndALeftClickTakesItOff() {
+        var session = Dungeon.newSession(21L);
+        var game = session.game();
+        var bag = bagOver(game);
+        Bag.show(bag, session, SETTINGS);
+        game.runHeadless(2);
+        var drops = SETTINGS.lootDrops();
+        assertEquals("Kiyiladi: ", drops.wornIn(), "the file says it, not the default");
+        var gauntlet = SETTINGS.loot().stream().filter(item -> item.id().equals("Gauntlet")).findFirst().orElseThrow();
+        var carried = session.progress().getLoot();
+        carried.take(gauntlet, 0, 30);
+        assertEquals(gauntlet, carried.at(carried.wornPlace("Zirh")));
+        var drawn = new Drawn();
+        bag.paint(drawn);
+        var on = drawn.picture(gauntlet.icon());
+        assertNotNull(on, "drawn in its worn slot: " + drawn.pictures);
+
+        bag.take(new uz.dukeengine.client3d.CanvasInput.Pointer(on.middleX(), on.middleY()));
+        drawn.clear();
+        bag.paint(drawn);
+        assertTrue(drawn.text.stream().anyMatch(line -> line.contains(drops.wornIn() + "Zirh")),
+                "its card says where it is worn: " + drawn.text);
+        assertTrue(drawn.text.contains(drops.offHint()), "and how to take it off: " + drawn.text);
+
+        assertTrue(bag.take(new uz.dukeengine.client3d.CanvasInput.Button(on.middleX(), on.middleY(),
+                uz.dukeengine.client3d.CanvasInput.Mouse.LEFT, true, false)), "a left click on it is the bag's");
+        game.runHeadless(3);
+        assertEquals(gauntlet, carried.at(0), "taken off into the backpack");
+        assertNull(carried.at(carried.wornPlace("Zirh")));
+
+        drawn.clear();
+        bag.paint(drawn);
+        on = drawn.picture(gauntlet.icon());
+        bag.take(new uz.dukeengine.client3d.CanvasInput.Pointer(on.middleX(), on.middleY()));
+        drawn.clear();
+        bag.paint(drawn);
+        assertTrue(drawn.text.contains(drops.wearHint()), "carried, it says how to put it on: " + drawn.text);
     }
 
     /** A key gives nothing, so the pointer on it says what it is and how to take it, with no empty row for a figure. */
@@ -435,7 +480,7 @@ class BagScreenTest {
 
         // Put down, the key lies on the floor, and the pointer on it there says only how to take it.
         var hero = find(game, "Rogue");
-        game.pressCommand("drop:1", hero.getPosition(), 0f, -1);
+        game.pressCommand("drop:0", hero.getPosition(), 0f, -1);
         game.runHeadless(4);
         var lying = find(game, "Key");
         assertNotNull(lying, "the key is not on the floor");
@@ -459,7 +504,9 @@ class BagScreenTest {
         var hero = find(game, "Rogue");
         var blade = SETTINGS.loot().stream().filter(item -> item.id().equals("Gauntlet")).findFirst().orElseThrow();
         session.progress().getLoot().take(blade, 0, 30);
-        game.pressCommand("drop:0", hero.getPosition(), 0f, -1);
+        // Worn as his Zirh, where it went as it was taken.
+        game.pressCommand("drop:" + session.progress().getLoot().wornPlace("Zirh"), hero.getPosition(), 0f,
+                -1);
         game.runHeadless(4);
         var chest = find(game, "Chest");
         assertNotNull(chest);
@@ -490,7 +537,9 @@ class BagScreenTest {
         var hero = find(game, "Rogue");
         var blade = SETTINGS.loot().stream().filter(item -> item.id().equals("Gauntlet")).findFirst().orElseThrow();
         session.progress().getLoot().take(blade, 0, 30);
-        game.pressCommand("drop:0", hero.getPosition(), 0f, -1);
+        // Worn as his Zirh, where it went as it was taken.
+        game.pressCommand("drop:" + session.progress().getLoot().wornPlace("Zirh"), hero.getPosition(), 0f,
+                -1);
         game.runHeadless(4);
         var chest = find(game, "Chest");
         assertNotNull(chest);

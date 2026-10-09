@@ -38,7 +38,8 @@ class PartyOrdersTest {
             new PickUp(3, new ObjectId(88)),
             new DropItem(2, 5, new Coord3D(31.75f, 402.5f, 0f)),
             new ToTheGate(1, new ObjectId(64)),
-            new UseItem(2, 3, new ObjectId(64)));
+            new UseItem(2, 3, new ObjectId(64)),
+            new uz.dukeengine.rpg.item.ShiftItem(1, 12));
 
     @Test
     void anOrderIsTheCommandItCarries() {

@@ -19,17 +19,19 @@ import uz.dukeengine.rpg.item.Stat;
  * @param use         what a left click on it in the bag does; {@code NONE}, the default, for a thing that only
  *     counts while it is carried, and {@code UNLOCK} for a key
  * @param liesAs      the template it lies on the floor as; blank for the chest everything else lies in
+ * @param slot        the worn slot it goes in, one of LootDrops' WornSlots; blank for a thing only carried — a key, a
+ *     quest thing, a thing to sell — which acts on nothing
  */
 public record LootItem(String name, String displayName, String icon, String kind, int value, int weight,
-        int minTier, String attribute, String extra, int extraValue, ItemUse use, String liesAs) {
+        int minTier, String attribute, String extra, int extraValue, ItemUse use, String liesAs, String slot) {
 
     /** What a block leaves out. */
     public static final LootItem DEFAULTS = new LootItem("", "", "", Stat.ATTACK, 0, 10, 1, "", "",
-            0, ItemUse.NONE, "");
+            0, ItemUse.NONE, "", "");
 
     /** The thing as it is found: at the first level, with its extra still to come. */
     public Loot loot() {
         return new Loot(name, displayName == null || displayName.isBlank() ? name : displayName, icon, kind, value,
-                weight, minTier, attribute, extra, 0, extraValue, 1, use, liesAs);
+                weight, minTier, attribute, extra, 0, extraValue, 1, use, liesAs, slot);
     }
 }

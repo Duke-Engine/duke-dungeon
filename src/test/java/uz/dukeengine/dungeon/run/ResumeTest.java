@@ -123,7 +123,7 @@ class ResumeTest {
         again.run().resume(now, Floors.resumed(now, SHIPPED));
         again.game().runHeadless(3);
         assertEquals(3, again.progress().getLevel());
-        assertEquals("Boots", again.progress().getLoot().at(0).id());
+        assertEquals("Boots", again.progress().getLoot().at(again.progress().getLoot().wornPlace("Etik")).id());
     }
 
     @Test
