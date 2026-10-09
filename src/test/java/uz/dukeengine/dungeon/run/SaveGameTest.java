@@ -50,14 +50,15 @@ class SaveGameTest {
 
     @Test
     void aBagAndASkillBookComeBackAsTheyWere() {
-        var bag = new LootBag(SHIPPED.lootDrops().slots(), SHIPPED.lootDrops().joinCount(),
-                SHIPPED.lootDrops().topLevel());
+        var bag = SHIPPED.lootDrops().bag();
         var gauntlet = item("Gauntlet");
         var boots = item("Boots");
-        bag.take(gauntlet, 0, 0);
-        bag.take(item("Tome"), 0, 0);
-        bag.take(boots.worth(7), 0, 0);
-        bag.remove(1); // a gap, which comes back a gap
+        bag.take(gauntlet, 0, 0); // worn
+        bag.take(gauntlet.worth(5), 0, 0); // carried, in the backpack's first place
+        bag.take(item("Key"), 0, 0); // carried, in its second
+        bag.take(boots.worth(7), 0, 0); // worn
+        bag.remove(0); // a gap, which comes back a gap
+        assertEquals(gauntlet, bag.at(bag.wornPlace("Zirh")));
         var learnt = new SkillRanks(SHIPPED.progression().skillSpread());
         learnt.startWith(SHIPPED.skillsFor("Rogue"));
         var keys = SHIPPED.skillsFor("Rogue").stream().filter(skill -> !skill.isUltimate()).toList();
@@ -67,17 +68,40 @@ class SaveGameTest {
 
         var saved = SaveGame.read(SaveGame.of(1L, null, 1, "Rogue", SHIPPED.levelling().totalXpFor(5), learnt, bag)
                 .text(), "test");
-        var bagAgain = new LootBag(SHIPPED.lootDrops().slots(), SHIPPED.lootDrops().joinCount(),
-                SHIPPED.lootDrops().topLevel());
+        var bagAgain = SHIPPED.lootDrops().bag();
         var learntAgain = new SkillRanks(SHIPPED.progression().skillSpread());
         saved.restore(bagAgain, learntAgain, SHIPPED);
 
-        assertEquals(bag.slots(), bagAgain.slots());
-        assertNull(bagAgain.at(1), "the gap is where it was");
+        assertEquals(bag.slots(), bagAgain.slots(), "worn where it was worn, carried where it was carried");
+        assertNull(bagAgain.at(0), "the gap is where it was");
+        assertEquals(bag.attributes(SHIPPED.attributeRules()), bagAgain.attributes(SHIPPED.attributeRules()),
+                "and what he wears acts as it did");
         for (var skill : SHIPPED.skillsFor("Rogue")) {
             assertEquals(learnt.rankOf(skill.key()), learntAgain.rankOf(skill.key()), "rank of " + skill.key());
         }
         assertEquals("", bagAgain.noteAt(0), "putting things back says nothing");
+    }
+
+    /**
+     * A save of version 1 was written when his six slots all acted: each thing goes back as a pick-up would, worn
+     * where its slot is free and otherwise carried — so what he had on is on, and a second of a kind is carried.
+     */
+    @Test
+    void aSaveFromBeforeWornSlotsPutsOnWhatItCanAndCarriesTheRest() {
+        var old = new SaveGame(1L, null, 1, "Rogue", 0, List.of(),
+                List.of(new SaveGame.Item(0, "Gauntlet", 1, 3, 0), new SaveGame.Item(1, "Key", 1, 0, 0),
+                        new SaveGame.Item(3, "Gauntlet", 2, 9, 2), new SaveGame.Item(5, "Ring", 1, 30, 0)))
+                .text().replace("Version = " + SaveGame.VERSION, "Version = 1");
+        var saved = SaveGame.read(old, "old.duke");
+        var bag = SHIPPED.lootDrops().bag();
+        saved.restore(bag, new SkillRanks(2), SHIPPED);
+
+        assertEquals("Gauntlet", bag.at(bag.wornPlace("Zirh")).id(), "the first gauntlet put on");
+        assertEquals(1, bag.at(bag.wornPlace("Zirh")).level());
+        assertEquals("Key", bag.at(0).id(), "the key carried");
+        assertEquals(2, bag.at(1).level(), "the second gauntlet carried, as it was");
+        assertEquals(30, bag.at(bag.wornPlace("Uzuk")).value(), "the ring on");
+        assertEquals("", bag.noteAt(0), "putting things back says nothing");
     }
 
     @Test

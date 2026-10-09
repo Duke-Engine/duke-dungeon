@@ -67,6 +67,7 @@ LootItem
   DisplayName = Hayot tumori
   Icon = icons/stats/stat_health.png
   Kind = HEALTH
+  Slot = Tumor
   Value = 40
   Weight = 0
 End
@@ -76,6 +77,7 @@ LootItem
   DisplayName = Mana uzugi
   Icon = icons/stats/stat_intelligence.png
   Kind = MANA
+  Slot = Uzuk
   Value = 30
   Weight = 0
 End
@@ -85,6 +87,7 @@ LootItem
   DisplayName = Charx toshi
   Icon = icons/stats/stat_attack.png
   Kind = ATTACK
+  Slot = Qurol
   Value = 6
   Weight = 0
 End

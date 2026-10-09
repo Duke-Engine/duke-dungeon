@@ -1528,14 +1528,17 @@ public final class DungeonRun {
         }
     }
 
-    /** A player sells what is in a slot of his bag to a merchant he is near: a quest thing or a key he cannot. */
+    /**
+     * A player sells what is in a place of his backpack to a merchant he is near: a quest thing or a key he cannot,
+     * and nothing he wears — he takes it off first.
+     */
     public void sell(DukeGame game, int playerIndex, ObjectId merchant, int slot) {
         var seat = seatOf(playerIndex);
         if (shopNear(game, seat, merchant) == null) {
             return;
         }
         var bag = seat.progress.getLoot();
-        var item = bag.at(slot);
+        var item = slot < bag.backpackSize() ? bag.at(slot) : null;
         if (item == null) {
             return;
         }

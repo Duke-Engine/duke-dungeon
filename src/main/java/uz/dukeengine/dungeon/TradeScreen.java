@@ -126,7 +126,8 @@ final class TradeScreen {
         float column = (wide - pad * 3f) / 2f;
         var wares = match.run().stockOf(merchant);
         var bag = Bag.bagOf(match);
-        int bagRows = bag == null ? 0 : bag.slots().size();
+        // Only the backpack is offered: what he wears he takes off first.
+        int bagRows = bag == null ? 0 : bag.backpackSize();
         float high = pad * 3f + line * (2 + Math.max(wares.size(), bagRows)) + line;
         float left = (canvas.width() - wide) / 2f;
         float top = Math.max(8f, (canvas.height() - high) / 2.5f);

@@ -6,6 +6,7 @@ import uz.dukeengine.dungeon.ai.AttackMove;
 import uz.dukeengine.dungeon.ai.HoldGround;
 import uz.dukeengine.rpg.item.DropItem;
 import uz.dukeengine.rpg.item.PickUp;
+import uz.dukeengine.rpg.item.ShiftItem;
 import uz.dukeengine.rpg.item.UseItem;
 import uz.dukeengine.dungeon.run.ToTheGate;
 import uz.dukeengine.dungeon.run.Watching;
@@ -38,6 +39,8 @@ public final class PartyOrders {
      */
     public static final String PICK_UP = "PickUp";
     static final String DROP = "drop";
+    /** A thing put on out of the backpack, or taken off into it: the order's number is its place. */
+    static final String SHIFT = "shift";
     /**
      * What a click on the keep's gate gives the hero, as a click on a thing lying on the floor gives a pickup: sent
      * by the engine as the word the game named, and the pointer over the gate is the cursor of that name.
@@ -79,6 +82,7 @@ public final class PartyOrders {
             case ChooseHero pick -> new GameOrder(pick.playerIndex(), HERO + pick.hero(), List.of(), null, null, 0);
             case PickUp pick -> new GameOrder(pick.playerIndex(), PICK_UP, List.of(), null, pick.item(), 0);
             case DropItem drop -> new GameOrder(drop.playerIndex(), DROP, List.of(), drop.place(), null, drop.slot());
+            case ShiftItem shift -> new GameOrder(shift.playerIndex(), SHIFT, List.of(), null, null, shift.place());
             case ToTheGate gate -> new GameOrder(gate.playerIndex(), TO_THE_GATE, List.of(), null, gate.gate(), 0);
             case UseItem use -> new GameOrder(use.playerIndex(), USE, List.of(), null, use.target(), use.slot());
             case uz.dukeengine.dungeon.run.Read read -> new GameOrder(read.playerIndex(), READ, List.of(), null, null,
@@ -113,6 +117,7 @@ public final class PartyOrders {
             case PICK_UP -> order.target() == null ? null : new PickUp(order.playerIndex(), order.target());
             case DROP -> order.place() == null ? null
                     : new DropItem(order.playerIndex(), (int) order.number(), order.place());
+            case SHIFT -> new ShiftItem(order.playerIndex(), (int) order.number());
             case TO_THE_GATE -> order.target() == null ? null : new ToTheGate(order.playerIndex(), order.target());
             case USE -> order.target() == null ? null
                     : new UseItem(order.playerIndex(), (int) order.number(), order.target());

@@ -541,9 +541,11 @@ LootDrops
   ; How long what he says is said -- what he found, why he left it lying, what he makes of
   ; the gate -- on the panel and in the bubble over his head, in logic frames (30 = one second).
   NoteFrames = 90
-  ; How many things his bag holds. A full bag leaves the next one lying -- unless
+  ; How many things his backpack holds: what he carries and does not wear -- keys,
+  ; quest things, things to sell, a second ring -- which acts on nothing. A full one
+  ; leaves the next thing lying -- unless
   ; it is the third of a set, which joins as it comes in.
-  Slots = 6
+  Slots = 10
   JoinCount = 3
   TopLevel = 3
   FullWord = Sumka to'la
@@ -578,6 +580,15 @@ LootDrops
   StuckFightingFrames = 6000
   ; What he says when he gives up an errand to a thing he cannot get to.
   NoWayWord = U yerga yetib bora olmadim
+  ; What he wears, a slot for each kind, in the order the bag draws them. A LootItem's
+  ; Slot names one of these; only what is worn acts on him. A thing is put on as it
+  ; is picked up when its slot is empty, and otherwise goes into the backpack.
+  WornSlots = [Qurol, Zirh, Dubulg'a, Etik, Tumor, Uzuk]
+  ; On a thing's card before the slot it goes in, and how a left click puts it on
+  ; or takes it off.
+  WornIn = "Kiyiladi: "
+  WearHint = Chap tugma: kiyish
+  OffHint = Chap tugma: yechish
 End
 
 ; Icon is the picture his bag draws it with, a path from the resource root.
@@ -589,6 +600,7 @@ LootItem
   Icon = icons/stats/stat_strength.png
   Kind = ATTRIBUTE
   Attribute = Strength
+  Slot = Zirh
   Value = 3
   Weight = 10
   Extra = HEALTH_REGEN
@@ -605,6 +617,7 @@ LootItem
   Icon = icons/stats/stat_agility.png
   Kind = ATTRIBUTE
   Attribute = Agility
+  Slot = Etik
   Value = 3
   Weight = 10
   Extra = ATTACK_SPEED
@@ -618,6 +631,7 @@ LootItem
   Icon = icons/stats/stat_intelligence.png
   Kind = ATTRIBUTE
   Attribute = Intelligence
+  Slot = Dubulg'a
   Value = 3
   Weight = 10
   Extra = MANA_REGEN

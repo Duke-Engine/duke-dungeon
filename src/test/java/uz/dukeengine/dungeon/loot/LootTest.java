@@ -322,13 +322,14 @@ class LootTest {
         game.runHeadless(1);
         var hero = find(game, "Rogue");
         float plain = blowOf(game);
-        var blade = new Loot("Blade", "Blade", "", Stat.ATTACK, 25, 10, 1);
+        var blade = worn(new Loot("Blade", "Blade", "", Stat.ATTACK, 25, 10, 1), "Qurol");
         session.progress().getLoot().take(blade, 0, 30);
         game.runHeadless(2);
-        assertTrue(blowOf(game) > plain, "a sword in his bag is a sword in his hand");
+        assertTrue(blowOf(game) > plain, "a sword he wears is a sword in his hand");
 
         game.postCommand(uz.dukeengine.dungeon.party.PartyOrders.of(
-                new DropItem(game.getLocalPlayerIndex(), 0, hero.getPosition())));
+                new DropItem(game.getLocalPlayerIndex(), session.progress().getLoot().wornPlace("Qurol"),
+                        hero.getPosition())));
         game.runHeadless(3);
 
         assertTrue(session.progress().getLoot().getFound().isEmpty(), "out of his bag");
@@ -350,7 +351,7 @@ class LootTest {
         game.runHeadless(1);
         var body = find(game, "Rogue").getBody();
         var bag = session.progress().getLoot();
-        var heart = new Loot("Heart", "Heart", "", Stat.HEALTH, 90, 10, 1);
+        var heart = worn(new Loot("Heart", "Heart", "", Stat.HEALTH, 90, 10, 1), "Tumor");
         float bare = body.getMaxHealth();
 
         bag.take(heart, 0, 30);
@@ -359,7 +360,7 @@ class LootTest {
         body.setHealth(body.getMaxHealth() * 0.4f);
         float wounded = body.getHealth();
 
-        bag.remove(0);
+        bag.remove(bag.wornPlace("Tumor"));
         game.runHeadless(2);
         assertEquals(bare, body.getMaxHealth(), 0.01f, "the room goes with it");
         bag.take(heart, 0, 30);
@@ -377,7 +378,7 @@ class LootTest {
         float plain = blowOf(game);
 
         session.progress().getLoot().take(
-                new Loot("Blade", "Blade", "", Stat.ATTACK, 25, 10, 1), 0, 30);
+                worn(new Loot("Blade", "Blade", "", Stat.ATTACK, 25, 10, 1), "Qurol"), 0, 30);
         game.runHeadless(2);
         assertTrue(blowOf(game) > plain,
                 "a sword he found should reach the arrow he looses");
@@ -388,6 +389,88 @@ class LootTest {
                 "a new run starts with nothing, what he found included");
         assertEquals(plain, blowOf(game), 0.0001f,
                 "and the bonus goes with it rather than outliving him");
+    }
+
+    // ---- worn and carried ----
+
+    /** A hero's bag wears a Qurol, a Zirh and the rest, and a whetstone is worn as a Qurol where his is free. */
+    @Test
+    void onlyWhatHeWearsActsOnHim() {
+        var bag = SHIPPED.lootDrops().bag();
+        var stone = shipped("Whetstone");
+        assertEquals(List.of("Qurol", "Zirh", "Dubulg'a", "Etik", "Tumor", "Uzuk"), bag.wornSlots());
+        assertEquals(10, bag.backpackSize());
+
+        assertTrue(bag.take(stone, 0, 0));
+        assertEquals(stone, bag.at(bag.wornPlace("Qurol")), "put on as it is picked up, its slot free");
+        assertEquals(stone.value(), bag.attackPercent(), "and worn, it counts");
+
+        assertTrue(bag.take(stone, 0, 0));
+        assertEquals(stone, bag.at(0), "a second has its slot taken: into the backpack");
+        assertEquals(stone.value(), bag.attackPercent(), "where it counts for nothing");
+
+        assertTrue(bag.take(shipped("Key"), 0, 0));
+        assertEquals("Key", bag.at(1).id(), "a key is worn in no slot, and carried");
+    }
+
+    /** The order puts a thing on out of the backpack, swapping what was worn back, and takes one off again. */
+    @Test
+    void aThingIsPutOnAndTakenOffByTheOrder() {
+        var session = Dungeon.newSession(21L);
+        var game = session.game();
+        game.runHeadless(1);
+        float plain = blowOf(game);
+        var bag = session.progress().getLoot();
+        var stone = shipped("Whetstone");
+        var blade = worn(new Loot("Blade", "Blade", "", Stat.ATTACK, 25, 10, 1), "Qurol");
+        bag.take(stone, 0, 30);
+        bag.take(blade, 0, 30);
+        game.runHeadless(2);
+        float whetted = blowOf(game);
+        assertTrue(whetted > plain, "the whetstone is worn");
+        assertEquals(blade, bag.at(0), "and the blade carried");
+
+        game.postCommand(uz.dukeengine.dungeon.party.PartyOrders.of(
+                new uz.dukeengine.rpg.item.ShiftItem(game.getLocalPlayerIndex(), 0)));
+        game.runHeadless(3);
+        assertEquals(blade, bag.at(bag.wornPlace("Qurol")), "the blade put on");
+        assertEquals(stone, bag.at(0), "the whetstone back where the blade was");
+        assertTrue(blowOf(game) > whetted, "and the blade's blow is his");
+
+        game.postCommand(uz.dukeengine.dungeon.party.PartyOrders.of(
+                new uz.dukeengine.rpg.item.ShiftItem(game.getLocalPlayerIndex(), bag.wornPlace("Qurol"))));
+        game.runHeadless(3);
+        assertNull(bag.at(bag.wornPlace("Qurol")), "taken off");
+        assertEquals(blade, bag.at(1), "into the first empty place of the backpack");
+        assertEquals(plain, blowOf(game), 0.0001f, "and nothing worn, nothing felt");
+    }
+
+    /** Taken off into a full backpack, a thing stays on, and he says the bag is full. */
+    @Test
+    void aFullBackpackKeepsItOnAndSaysSo() {
+        var session = Dungeon.newSession(21L);
+        var game = session.game();
+        game.runHeadless(1);
+        var bag = session.progress().getLoot();
+        var stone = shipped("Whetstone");
+        bag.take(stone, 0, 30);
+        for (int key = 0; key < bag.backpackSize(); key++) {
+            assertTrue(bag.take(shipped("Key"), 0, 30), "keys never join, a place each");
+        }
+        assertFalse(bag.take(shipped("Key"), 0, 30), "the backpack full");
+
+        game.postCommand(uz.dukeengine.dungeon.party.PartyOrders.of(
+                new uz.dukeengine.rpg.item.ShiftItem(game.getLocalPlayerIndex(), bag.wornPlace("Qurol"))));
+        game.runHeadless(3);
+        assertEquals(stone, bag.at(bag.wornPlace("Qurol")), "still worn");
+        assertEquals(SHIPPED.lootDrops().fullWord(), bag.noteAt(game.getLogic().getFrame()));
+    }
+
+    /** {@code item}, worn in {@code slot}: only what is worn acts on him. */
+    static Loot worn(Loot item, String slot) {
+        return new Loot(item.id(), item.name(), item.icon(), item.kind(), item.value(), item.weight(), item.minTier(),
+                item.attribute(), item.extra(), item.extraValue(), item.extraStep(), item.level(), item.use(),
+                item.liesAs(), slot);
     }
 
     private static Loot shipped(String id) {

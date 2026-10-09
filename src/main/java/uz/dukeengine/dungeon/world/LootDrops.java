@@ -1,5 +1,8 @@
 package uz.dukeengine.dungeon.world;
 
+import java.util.List;
+import uz.dukeengine.rpg.item.LootBag;
+
 /**
  * When a floor gives something up, how it is picked up, what a hero carries it in, and how alike things join.
  *
@@ -11,7 +14,7 @@ package uz.dukeengine.dungeon.world;
  * @param valuePercentPerDepth how much more an item is worth each floor down
  * @param noteFrames           how long what he says is said, on the panel and in the bubble over his head — what he
  *     just found, why he left it lying, what he makes of the gate — in logic frames
- * @param slots                how many things his bag holds
+ * @param slots                how many things his backpack holds — carried, not worn, acting on nothing
  * @param fullWord             what the panel and the bubble say when he was sent for something and has no room for it
  * @param takeHint             under a thing the pointer is on: how to take it
  * @param dropHint             beside the pointer while a thing is in his hand: how to put it down
@@ -29,14 +32,30 @@ package uz.dukeengine.dungeon.world;
  *     nearer to where he was sent, before he gives it up, in logic frames
  * @param stuckFightingFrames  and how long without getting nearer however he spends it: a fight in his way that never
  *     ends, legs shuffling between two bodies, end the errand too
+ * @param wornSlots            what he wears, a slot for each kind, in the order the bag draws them: a LootItem's Slot
+ *     names one, and only what is worn acts on him; none is a bag that wears nothing, every slot acting
+ * @param wornIn               on a thing's card, before the slot it goes in: {@code "Kiyiladi: "}
+ * @param wearHint             under a thing in the backpack that can be worn: how to put it on
+ * @param offHint              under a thing worn: how to take it off
  */
 public record LootDrops(String template, int dropPercent, int bossDropPercent, float pickupRange,
         int valuePercentPerDepth, int noteFrames, int slots, String fullWord, String takeHint, String dropHint,
         String useHint, int joinCount, int topLevel, String healthRegenWord, String manaRegenWord,
-        String attackSpeedWord, String noUseWord, String noWayWord, int stuckFrames, int stuckFightingFrames) {
+        String attackSpeedWord, String noUseWord, String noWayWord, int stuckFrames, int stuckFightingFrames,
+        List<String> wornSlots, String wornIn, String wearHint, String offHint) {
 
     /** What a block leaves out. */
     public static final LootDrops DEFAULTS = new LootDrops("", 20, 100, 14f, 20, 90, 6, "The bag is full",
             "Right button: take", "Left button: put it down", "Left button: use it", 3, 3, "Health/s", "Mana/s",
-            "Attack speed", "It does nothing here", "I cannot get there", 900, 6000);
+            "Attack speed", "It does nothing here", "I cannot get there", 900, 6000, List.of(), "Worn as: ",
+            "Left button: put it on", "Left button: take it off");
+
+    public LootDrops {
+        wornSlots = wornSlots == null ? List.of() : List.copyOf(wornSlots);
+    }
+
+    /** A hero's bag as this block has it: its worn slots, its backpack, how alike things join. */
+    public LootBag bag() {
+        return new LootBag(wornSlots, slots, joinCount, topLevel);
+    }
 }

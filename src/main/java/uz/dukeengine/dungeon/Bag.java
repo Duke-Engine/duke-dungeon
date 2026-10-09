@@ -62,7 +62,8 @@ final class Bag {
     static BagScreen.Words words(DungeonSettings settings) {
         var drops = settings.lootDrops();
         return new BagScreen.Words(settings.hud().itemsWord(), drops.dropHint(), drops.takeHint(), drops.useHint(),
-                PartyOrders.PICK_UP, PartyOrders.TO_THE_GATE, PartyOrders.USE);
+                PartyOrders.PICK_UP, PartyOrders.TO_THE_GATE, PartyOrders.USE, drops.wornIn(), drops.wearHint(),
+                drops.offHint());
     }
 
     /** The match now being played: this machine's hero's bag in it, its orders wrapped as a party's, its mission. */

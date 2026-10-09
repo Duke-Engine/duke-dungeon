@@ -844,7 +844,16 @@ public final class DungeonSettings {
                     "LootItem " + item.id() + " has Kind = " + item.kind() + ", and no figure is called that");
             require(item.extra().isEmpty() || EXTRAS.contains(item.extra()),
                     "LootItem " + item.id() + " has Extra = " + item.extra() + ", and no figure is called that");
+            // A Slot the bag does not wear would be carried and never worn: a misspelling, said here. A bag that wears
+            // nothing — a test's, with no LootDrops of its own — has every slot act, and a Slot means nothing to it.
+            require(item.slot().isEmpty() || lootDrops.wornSlots().isEmpty()
+                            || lootDrops.wornSlots().contains(item.slot()),
+                    "LootItem " + item.id() + " has Slot = " + item.slot() + ", and LootDrops wears no slot called that");
         }
+        require(lootDrops.wornSlots().stream().distinct().count() == lootDrops.wornSlots().size(),
+                "LootDrops: each of WornSlots is named once");
+        require(lootDrops.wornSlots().stream().allMatch(slot -> !slot.isBlank() && sayable(slot)),
+                "LootDrops: a worn slot is a word, without ',' or '|'");
         // The floor lays the first KEY there is: a keep needs one.
         require(map.keep().sizes().isEmpty() || loot.stream().anyMatch(item -> item.kind().equals(KEY)),
                 "a Keep's gate opens only to a key, and no LootItem has Kind = KEY to lay on its floor");

@@ -364,8 +364,7 @@ public final class Dungeon {
         var bags = new java.util.ArrayList<LootBag>();
         var learnts = new java.util.ArrayList<uz.dukeengine.rpg.skill.SkillRanks>();
         for (int seat = 0; seat < heroes; seat++) {
-            bags.add(new LootBag(settings.lootDrops().slots(), settings.lootDrops().joinCount(),
-                    settings.lootDrops().topLevel()));
+            bags.add(settings.lootDrops().bag());
             var learnt = new uz.dukeengine.rpg.skill.SkillRanks(settings.progression().skillSpread());
             learnt.startWith(settings.skillsFor(settings.run().defaultHero()));
             learnts.add(learnt);
@@ -470,6 +469,16 @@ public final class Dungeon {
                             Skills.heroOf(game.getLogic(), drop.playerIndex()), drop.slot(), drop.place(),
                             progress.getLoot(), errandRules(settings, arena))) {
                         arena.orders().attackMove(drop.playerIndex(), null);
+                    }
+                }
+                // A thing put on out of the backpack or taken off into it, where he stands and at once; a full
+                // backpack keeps it on, and he says so.
+                case uz.dukeengine.rpg.item.ShiftItem shift -> {
+                    var progress = run.progressOf(shift.playerIndex());
+                    if (progress != null && progress.getLoot().shift(shift.place())
+                            == uz.dukeengine.rpg.item.LootBag.Shift.FULL) {
+                        progress.getLoot().say(settings.lootDrops().fullWord(), game.getLogic().getFrame(),
+                                settings.lootDrops().noteFrames());
                     }
                 }
                 // Sent up to the keep's gate: he walks there and says whether he has the key. See ItemErrand.

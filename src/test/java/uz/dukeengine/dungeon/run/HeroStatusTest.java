@@ -324,7 +324,7 @@ class HeroStatusTest {
         game.runHeadless(2);
         pickOutTheHero(session);
         session.progress().getLoot().take(new uz.dukeengine.rpg.item.Loot("Tome", "Tome", "flask",
-                Stat.ATTRIBUTE, 5, 1, 1, "STR"),
+                Stat.ATTRIBUTE, 5, 1, 1, "STR", "", 0, 0, 1, uz.dukeengine.rpg.item.ItemUse.NONE, "", "Zirh"), // worn
                 game.getLogic().getFrame(), 60);
         game.runHeadless(2);
 
