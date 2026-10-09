@@ -10,14 +10,43 @@ import java.util.List;
  * @param step    for {@link When#STEP_DONE}, which step, 1 its first
  * @param delay   frames after the event before it acts
  * @param repeat  whether it fires every time, rather than once
+ * @param If      what must hold, every one, the moment its When is heard; one that does not leaves it unfired, and a
+ *                once-only trigger waits for the next time. Named as the file writes it, {@code If = [...]}
  */
 public record Trigger(String name, String map, When when, String target, int step, int delay, boolean repeat,
-        List<Action> actions) {
+        List<Condition> If, List<Action> actions) {
 
-    public static final Trigger DEFAULTS = new Trigger("", "", null, "", 0, 0, false, List.of());
+    public static final Trigger DEFAULTS = new Trigger("", "", null, "", 0, 0, false, List.of(), List.of());
 
     public Trigger {
+        If = If == null ? List.of() : List.copyOf(If);
         actions = actions == null ? List.of() : List.copyOf(actions);
+    }
+
+    /** What a condition asks. Of a party, any hero holding or wearing it will do. */
+    public enum Is {
+        /** The flag is set. */
+        FLAG_SET,
+        /** The flag is not set. */
+        FLAG_UNSET,
+        /** A hero carries the LootItem, worn or in his backpack. */
+        HOLDS,
+        /** A hero wears the LootItem. */
+        WEARS,
+        /** The quest is going. */
+        QUEST_ACTIVE,
+        /** The quest is finished. */
+        QUEST_DONE,
+        /** One of the Monster stands alive on the floor. */
+        ALIVE,
+        /** None of the Monster stands alive on the floor. */
+        DEAD
+    }
+
+    /** One thing that must hold: {@code Is}, of {@code Target} — a flag, a LootItem, a quest or a Monster. */
+    public record Condition(Is is, String target) {
+
+        public static final Condition DEFAULTS = new Condition(null, "");
     }
 
     /** What a trigger waits for. */

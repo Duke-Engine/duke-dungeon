@@ -34,8 +34,25 @@ public final class Script {
     /** The map now played, by its name: null for the descent. */
     private String map;
 
+    /** Whether a trigger's condition holds now: the run's, which has the world; the flags alone until it says. */
+    private java.util.function.Predicate<Trigger.Condition> holds = this::flagsAlone;
+
     public Script(Story story) {
         this.story = story;
+    }
+
+    /** Who judges a trigger's {@code If}: asked the moment its When is heard. */
+    public void judgedBy(java.util.function.Predicate<Trigger.Condition> judge) {
+        holds = judge;
+    }
+
+    /** A condition as the script alone can judge it: a flag's; anything else holds. */
+    public boolean flagsAlone(Trigger.Condition condition) {
+        return switch (condition.is()) {
+            case FLAG_SET -> flagged(condition.target());
+            case FLAG_UNSET -> !flagged(condition.target());
+            default -> true;
+        };
     }
 
     /** Everything back to nothing: a run has ended. */
@@ -59,7 +76,8 @@ public final class Script {
             if (trigger.when() == when && (when == Trigger.When.MAP_START || trigger.target().equals(target))
                     && (when != Trigger.When.STEP_DONE || trigger.step() == step)
                     && (trigger.map().isBlank() || trigger.map().equals(map))
-                    && (trigger.repeat() || !fired.contains(trigger.name()))) {
+                    && (trigger.repeat() || !fired.contains(trigger.name()))
+                    && trigger.If().stream().allMatch(holds)) {
                 if (!fired.contains(trigger.name())) {
                     fired.add(trigger.name());
                 }

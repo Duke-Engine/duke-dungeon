@@ -63,6 +63,13 @@ End
 | `MAP` | a map | | the next chapter: the heroes go on to that map with all they have, as down a floor |
 | `CUTSCENE` | a cutscene | | plays it |
 
+**Conditions (2026-10-09).** A trigger may say `If = [Condition Is = … Target = … End, …]`: every one must hold the
+moment its When is heard, or it does not fire — and a once-only trigger has not spent its once, so the next time the
+event comes it is asked again. `Is` is one of `FLAG_SET`, `FLAG_UNSET` (a flag), `HOLDS`, `WEARS` (a LootItem a hero
+carries anywhere, or wears; of a party, any hero), `QUEST_ACTIVE`, `QUEST_DONE` (a quest), `ALIVE`, `DEAD` (a Monster
+standing on the floor, or none). Each Target is checked when the files are read. The medalyon map's altar curses only
+a hero wearing the medallion.
+
 The final fight adds `When = BEATEN` and `SEEN`, and `Act = CALL`, `EFFECT` and `WIN`, with a boss's phases: see
 `docs/plan/2026-10-09-final-fight.md`.
 
@@ -134,6 +141,6 @@ fired, as a new run.
 
 - Scripted moves of the heroes and knock-backs (the hero's landing, the commander's leap); WALK moves people only.
 - Camera turns, zoom and pitch in a shot; easing.
-- Conditions beyond one event (AND/OR of flags), and a trigger's actions waiting on each other inside one trigger
+- OR of conditions (an If is every one of them), and a trigger's actions waiting on each other inside one trigger
   (use `AFTER` with a `Delay`).
 - Saving a cutscene in progress.

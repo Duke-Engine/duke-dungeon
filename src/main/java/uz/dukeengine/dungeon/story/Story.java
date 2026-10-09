@@ -225,6 +225,19 @@ public record Story(Dialogue dialogue, List<Speaker> speakers, List<Conversation
         for (var action : trigger.actions()) {
             action(named, action, false, monsters, items, wrong);
         }
+        for (var condition : trigger.If()) {
+            var what = condition.target();
+            boolean known = condition.is() != null && switch (condition.is()) {
+                case FLAG_SET, FLAG_UNSET -> !what.isBlank();
+                case HOLDS, WEARS -> items.contains(what);
+                case QUEST_ACTIVE, QUEST_DONE -> quest(what) != null;
+                case ALIVE, DEAD -> monsters.contains(what);
+            };
+            if (!known) {
+                wrong.add(named + " asks If " + condition.is() + " " + what + ", and the files have no such thing: "
+                        + "a flag, a LootItem, a Quest or a Monster, by what it asks");
+            }
+        }
     }
 
     /** What is wrong with one action: a trigger's, or ({@code inPhase}) a phase's, whose CALL and EFFECT need no Zone. */

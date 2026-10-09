@@ -179,6 +179,7 @@ public final class DungeonRun {
         this.quests = new QuestLog(settings.story(), settings.loot(), settings.lootDrops().joinCount());
         this.script = new uz.dukeengine.dungeon.story.Script(settings.story());
         this.fight = new BossFight(settings.story());
+        script.judgedBy(this::holds);
         this.orders = orders;
         this.dungeonPlayer = dungeonPlayer;
         this.floors = floors;
@@ -672,6 +673,35 @@ public final class DungeonRun {
         }
         track(game);
         showStatus(game);
+    }
+
+    /**
+     * Whether a trigger's condition holds this moment: a flag, what a hero carries or wears (any hero of a party), a
+     * quest going or done, a creature standing on the floor or none.
+     */
+    private boolean holds(uz.dukeengine.dungeon.story.Trigger.Condition condition) {
+        var what = condition.target();
+        return switch (condition.is()) {
+            case FLAG_SET, FLAG_UNSET -> script.flagsAlone(condition);
+            case HOLDS, WEARS -> bags().stream().anyMatch(bag -> {
+                for (int place = 0; place < bag.slots().size(); place++) {
+                    var item = bag.at(place);
+                    boolean worn = !bag.wears() || place >= bag.backpackSize();
+                    if (item != null && item.id().equals(what)
+                            && (condition.is() == uz.dukeengine.dungeon.story.Trigger.Is.HOLDS || worn)) {
+                        return true;
+                    }
+                }
+                return false;
+            });
+            case QUEST_ACTIVE -> quests.active().stream().anyMatch(each -> each.quest().equals(what));
+            case QUEST_DONE -> quests.finished().contains(what);
+            case ALIVE, DEAD -> {
+                boolean alive = lastLogic != null && lastLogic.getObjects().stream().anyMatch(thing ->
+                        thing.getTemplate().name().equals(what) && !thing.isEffectivelyDead());
+                yield alive == (condition.is() == uz.dukeengine.dungeon.story.Trigger.Is.ALIVE);
+            }
+        };
     }
 
     /** Whether this map's own triggers say WIN: then it is won by them, and not by its boss falling. */
