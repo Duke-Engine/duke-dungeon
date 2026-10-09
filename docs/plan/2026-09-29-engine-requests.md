@@ -44,6 +44,7 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E28 | a passive that cannot be killed, only beaten (`UNYIELDING`); and `GrowableBody` honouring the damage scale | landed, 0da97768; the cursed hero is beaten by UNYIELDING, and the stand-in is gone |
 | E29 | the pause menu in the game's words, with a Quit to the main menu and a Quit to the desktop; the shell's rows laid at a side | landed, cf0062a2; the game says every word in Uzbek (data/world/menu.duke) and lays its menus at the left |
 | E30 | the backdrop behind the client's own stone menus, not only behind a game-drawn front end; the questions' "Back" said by the game; the game's own front rows | landed, 0aeeec88; the scene runs behind the menu, Orqaga is said, and the front rows stand on the menu itself |
+| E31 | four new skill shapes for the knight: a piercing wave, a shield charge that drags and stuns, armour and regeneration as a passive, a pull to one point that stuns | waiting (medium) |
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
 game builds against the local engine. E12–E15 reached it together at 668045f0 (their pull requests merged as
@@ -857,3 +858,26 @@ Asked:
 Done when: a stone-shell game with a backdrop shows it running behind its front menu and its questions; a played match
 and Quit to the main menu bring a fresh one; generals unchanged; a client3d test pins that the backdrop is kept going on
 `Screen.MENU`.
+
+## E31 — The knight's new skills: wave, shield charge, dragon blood, pull (2026-10-09, medium)
+
+The owner, 2026-10-09, reworking the Knight (data `units/knight.duke`; today Q Cleave = AREA_AT_SPOT, W Charge = DASH,
+E Guard = GUARD, R …). Everything a skill does lives in the skill system (his rule). Four shapes the rpg module lacks:
+
+1. **Q — Sword wave** (Warcraft/Dota "Shockwave"): aimed at GROUND, a wave leaves the caster along the line for
+   `Distance`, `Width` wide, at `Speed`; it **passes through** and damages every enemy it crosses once (`Damage`,
+   `DamagePerLevel`), stops at stone and at the keep's seal. Today's SKILLSHOT stops at the first thing hit — either a
+   `Pierce = Yes` on SKILLSHOT or its own effect (WAVE); its look a moving effect along the line (data).
+2. **W — Shield charge** (Magnataur's Skewer): aimed at OPEN_GROUND like DASH, the caster drives forward `Distance` at
+   `Speed`; every enemy his front meets is **caught and carried** with him (held at his front, not walking, not
+   attacking), damaged once (`Damage`), and when he stops they are dropped at his front and **stunned** for
+   `StunFrames` (the existing stun). Stops at stone/seal as DASH does; the carried are never pushed into stone.
+3. **E — Dragon blood** (Dragon Knight's passive): a passive, ranked like the others: `+Armour` and `+HP per second`
+   per rank (`ArmourPerLevel`, `RegenPerLevel` or the usual fields), applied while he has it. Today GUARD is a timed
+   cast; this is permanent.
+4. **R — Pull** (Magnataur's Reverse Polarity): self-cast; every enemy within `Radius` is **pulled to one point** in
+   front of the caster (moved, not walked; never into stone, spread so they don't overlap), damaged (`Damage`) and
+   **stunned** for `StunFrames`. Through the seal never.
+
+Deterministic as every skill (victims in id order, no clock), saved as the others, previewable in the editor by
+their aims. Each with a test. The game then rewrites the knight's four Skill blocks in data (words, icons, numbers).
