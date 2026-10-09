@@ -42,6 +42,7 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E25 | a hero's worn slots by kind and a backpack that gives nothing | landed, 831641bd (on e25-worn-slots); the game wears six slots and carries ten |
 | E27 | the rpg module's blows name their dealer; a passive that drinks its bearer's kills (`SOUL_DRINK`); a worn item lends its skills | landed, f369b940 (in 0da97768); the medallion lends the engine's SOUL_DRINK, and an arrow's kill pays its archer |
 | E28 | a passive that cannot be killed, only beaten (`UNYIELDING`); and `GrowableBody` honouring the damage scale | landed, 0da97768; the cursed hero is beaten by UNYIELDING, and the stand-in is gone |
+| E29 | the pause menu in the game's words, with a Quit to the main menu and a Quit to the desktop; the shell's rows laid at a side | waiting (small) |
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
 game builds against the local engine. E12–E15 reached it together at 668045f0 (their pull requests merged as
@@ -809,3 +810,22 @@ Done when an rpg test pins: a bearer of `HealBelowPercent = 25` struck for ten t
 beaten, and no death is posted; a second blow takes nothing below it; and a GrowableBody scaled to 0 takes nothing.
 The game then: the Boss block's `Beaten` becomes a Skill in the Monster's own block, and `Fighting` keeps only the
 phase's skill keys.
+
+## E29 — The pause and main menus in the game's words, and laid at a side (2026-10-09, small)
+
+The owner, 2026-10-09: the menus say "Abandon the run" in English; he wants a Quit, and the menu's buttons at one side
+of the screen rather than in the middle (as Generals, WC3 and most Steam games lay them), over a live scene.
+
+Asked:
+1. **Words.** Every fixed word of the pause menu (`DukeRtsApp.showPauseMenu`: "PAUSED", "Resume", "Settings", "Abandon
+   the run", "ESC resume", the abandon question) and of the Settings screen comes from the game (a `Shell.Words` record
+   or `MenuStyle` words, English by default), so the dungeon can say them in Uzbek.
+2. **Two ways out on the pause menu:** "Quit to the main menu" (the match let go, onLeaving run, the front end shown —
+   what Abandon does now, renamed by the game) and "Quit to the desktop" (onLeaving, then the app closes). Both asked to
+   confirm, as Abandon is.
+3. **Placement.** `StoneMenu` lays its rows at a side the game chooses — left (default for a game that asks), right or
+   middle (today's, the default) — with a margin from the edge, the title above the rows on that side, so a live
+   backdrop (`Duke3D.backdrop`) is seen across the rest of the screen. The pause menu and the front end both.
+
+Done when: a game can set the words and the side; both quit rows work (onLeaving runs once); a client3d test pins the
+words handed in and the side's layout; generals unchanged by default.
