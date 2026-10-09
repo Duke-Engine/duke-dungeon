@@ -29,9 +29,9 @@ class HeroStatusTest {
      * One frame of a real dungeon with the hero picked out, which is what the
      * player does before he reads anything about him.
      *
-     * <p>Selecting him first is not scaffolding: the bar describes whatever is
-     * selected, and with nothing selected it describes nobody on purpose. See
-     * {@link #withNothingSelectedTheBarIsEmpty}.
+     * <p>Selecting him first changes nothing now -- the bar is his whatever is
+     * selected -- and is kept as the player's own first move. See
+     * {@link #withNothingSelectedTheBarIsHis}.
      */
     private static String lineFrom(long seed) {
         var session = Dungeon.newSession(seed);
@@ -54,31 +54,25 @@ class HeroStatusTest {
     }
 
     /**
-     * With nothing selected the bar is about the floor and nobody else.
+     * With nothing selected the bar is still his: a single-hero game's panel is the hero's, whatever is picked.
      *
      * <p>Which is the first thing a run ever says: nothing is selected when one
-     * begins. So the line has to carry what belongs to the screen rather than to a
-     * creature -- and in particular the floor's LOOK, because this is the line the
-     * client learns which stone to build the first floor out of from.
+     * begins. So the line has to carry what belongs to the screen as well as him
+     * -- and in particular the floor's LOOK, because this is the line the client
+     * learns which stone to build the first floor out of from.
      */
     @Test
-    void withNothingSelectedTheBarIsEmpty() {
+    void withNothingSelectedTheBarIsHis() {
         var session = Dungeon.newSession(4321L);
         session.game().runHeadless(1);
         var line = session.game().getSnapshot().status();
 
-        assertTrue(line.startsWith("name="), "the panel reads nothing else: " + line);
-        assertTrue(line.startsWith("name=|") || line.equals("name="),
-                "nobody is selected, so nobody is named: " + line);
-        assertFalse(line.contains("|hp="), "nothing has health: " + line);
-        assertFalse(line.contains("|skill="), "nothing has skills: " + line);
-        // The buttons stay -- they are furniture, like the empty sockets beside
-        // them -- and nothing selected is doing anything for them to show. They are
-        // his to press all the same: his orders go to his hero, whatever is selected.
+        assertTrue(line.startsWith("name=Erika"), "nothing is selected, and the bar is his: " + line);
+        assertTrue(line.contains("|hp="), "his health: " + line);
+        assertTrue(line.contains("|skill="), "his skills: " + line);
         assertTrue(line.contains("|hero="), "the premise: his hero stands: " + line);
         assertTrue(line.contains("|cmds=mine"),
                 "his orders go to his hero with nothing selected too: " + line);
-        assertFalse(line.contains(",on"), "and nothing is doing anything: " + line);
         assertTrue(line.contains("|depth="), "the floor is still the floor: " + line);
         assertTrue(line.contains("|look="),
                 "and the client learns the floor's stone from this line: " + line);
@@ -495,7 +489,7 @@ class HeroStatusTest {
      * somebody else is selected.
      *
      * <p>Separate from the {@code mana=} on his own card, which is the panel's and
-     * goes when he is not the one selected. The two carry the same figures and
+     * stays whatever is selected. The two carry the same figures and
      * answer different questions: one is the bar at the bottom of the screen, the
      * other is the thin bar over his head in the middle of a fight.
      */
@@ -508,7 +502,7 @@ class HeroStatusTest {
         game.runHeadless(2);
 
         var line = game.getSnapshot().status();
-        assertFalse(line.contains("|mana="), "the card is the skeleton's: " + line);
+        assertTrue(line.contains("|mana="), "the card is his, pool and all, whatever is picked: " + line);
         var hero = line.substring(line.indexOf("|hero=") + 6);
         hero = hero.contains("|") ? hero.substring(0, hero.indexOf('|')) : hero;
         assertEquals(6, hero.split(",").length, "id, level, mana, pool, xp, needed: " + hero);

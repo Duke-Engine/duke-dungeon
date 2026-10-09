@@ -28,14 +28,25 @@ final class Bag {
 
     /** The bag, with the buffs under it, its things taken in hand armed by {@code duke}. */
     static BagScreen on(DungeonSettings settings, Duke3D duke) {
-        return BagScreen.on(duke, settings.menu(), words(settings), item -> gives(item, settings), buffs(settings));
+        return BagScreen.on(duke, settings.menu(), words(settings), item -> gives(item, settings), shown(settings));
     }
 
     /** The same, arming what is taken in hand by {@code arm}, on {@code clock}: for a test, with no window. */
     static BagScreen of(DungeonSettings settings,
             BiConsumer<CommandButton, Consumer<AimOutcome>> arm, LongSupplier clock) {
-        return new BagScreen(settings.menu(), words(settings), item -> gives(item, settings), buffs(settings), arm,
+        return new BagScreen(settings.menu(), words(settings), item -> gives(item, settings), shown(settings), arm,
                 clock);
+    }
+
+    /**
+     * The buffs the bag draws over the bars, kept for the target frame, which draws the same pictures of the creature
+     * picked: one screen, read once a frame, for both.
+     */
+    private static volatile BuffScreen shown;
+
+    private static BuffScreen shown(DungeonSettings settings) {
+        shown = buffs(settings);
+        return shown;
     }
 
     /** What is on the creature he picks, over its bar, in the game's words. */
@@ -57,13 +68,24 @@ final class Bag {
     /** The match now being played: this machine's hero's bag in it, its orders wrapped as a party's, its mission. */
     static void show(BagScreen bag, Dungeon.Session match, DungeonSettings settings) {
         bag.show(match.game(), () -> bagOf(match), PartyOrders::of,
-                canvas -> MissionScreen.paint(canvas, match, settings));
+                canvas -> {
+                    MissionScreen.paint(canvas, match, settings);
+                    targetFrame(canvas, match, settings);
+                });
         // And a click on a person is a talk, a rule beside the bag's own (E20).
         var story = settings.story();
         match.game().addContextOrder((selection, target) ->
                 target.getPlayerIndex() == uz.dukeengine.core.player.PlayerList.NEUTRAL_INDEX
                         && story.npc(target.getTemplate().name()) != null ? PartyOrders.TALK : null);
         DialogueScreen.show(match);
+    }
+
+    /** The target frame over {@code match}: the run's pick, with what the buffs say is on it. */
+    static void targetFrame(uz.dukeengine.client3d.Canvas canvas, Dungeon.Session match, DungeonSettings settings) {
+        var target = match.run().getTarget();
+        var buffs = shown;
+        TargetFrame.paint(canvas, target, target == null || buffs == null ? List.of()
+                : buffs.buffs().getOrDefault(target.id(), List.of()), settings);
     }
 
     /**

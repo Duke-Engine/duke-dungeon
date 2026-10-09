@@ -1,6 +1,8 @@
 package uz.dukeengine.dungeon.run;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
@@ -10,28 +12,27 @@ import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.game.DukeGame;
 
 /**
- * The bar describes whatever is selected, not always the hero.
+ * A single-hero game: the bar is always the hero's, and what he picks out to look at goes to the target frame.
  *
- * <p>Two halves that cannot see each other: the client knows <em>which</em>
- * creature, because selection is a fact about a screen, and the simulation knows
- * <em>what it is worth</em>, because damage is a template times whatever this
- * floor multiplies by. They meet over one command — see {@link Watching} — and
- * this holds the meeting still.
- *
- * <p>A creature's card is deliberately shorter than his. The fields it leaves out
- * are as much the point as the ones it carries: a skeleton with an experience bar
- * and an empty bag drawn under it would be a second hero rather than a monster.
+ * <p>Two halves that cannot see each other: the client knows <em>which</em> creature, because selection is a fact
+ * about a screen, and the simulation knows <em>what it is worth</em>, because damage is a template times whatever its
+ * level multiplies by. They meet over one command — see {@link Watching} — and this holds the meeting still.
  */
 class WatchingTest {
 
     private static final DungeonSettings SETTINGS = DungeonSettings.load();
 
-    private record Watched(DukeGame game, GameObject hero, GameObject skeleton,
-            uz.dukeengine.dungeon.ai.Orders orders) {
+    private record Watched(DukeGame game, GameObject hero, GameObject skeleton, GameObject another,
+            uz.dukeengine.dungeon.ai.Orders orders, DungeonRun run) {
 
         String line() {
             game.runHeadless(1);
             return game.getSnapshot().status();
+        }
+
+        Target target() {
+            game.runHeadless(1);
+            return run.getTarget();
         }
 
         void pickOut(GameObject creature) {
@@ -39,13 +40,7 @@ class WatchingTest {
         }
     }
 
-    /**
-     * A real dungeon, with the hero and the first creature in it that is not his.
-     *
-     * <p>The generated game rather than a purpose-built room, because the thing
-     * being tested is the whole chain — command to standing order to status line —
-     * and a hand-wired run would prove only that this test can wire one.
-     */
+    /** A real dungeon, with the hero and the first two creatures in it that are not his and carry a weapon. */
     private static Watched standoff() {
         var session = Dungeon.newSession(7L, SETTINGS);
         var game = session.game();
@@ -53,142 +48,100 @@ class WatchingTest {
         var hero = game.getLogic().getObjects().stream()
                 .filter(o -> o.getTemplate().name().equals("Rogue"))
                 .findFirst().orElseThrow();
-        var skeleton = game.getLogic().getObjects().stream()
+        var armed = game.getLogic().getObjects().stream()
                 .filter(o -> o.getPlayerIndex() != hero.getPlayerIndex())
                 .filter(o -> o.getBody() != null && !o.isEffectivelyDead())
                 .filter(o -> o.findModule(uz.dukeengine.combat.module.WeaponUpdate.class) != null)
-                .findFirst().orElseThrow();
-        return new Watched(game, hero, skeleton, session.orders());
+                .limit(2).toList();
+        return new Watched(game, hero, armed.get(0), armed.get(1), session.orders(), session.run());
     }
 
-    /**
-     * With nothing picked out the bar is about nobody.
-     *
-     * <p>Not about him either. The bar describes what is selected, and at the
-     * start of a run nothing is -- so it keeps the map and the floor and drops
-     * everything that belongs to a creature.
-     */
+    /** With nothing picked out the bar is his, entire, and there is no target frame. */
     @Test
-    void withNothingPickedOutTheBarIsAboutNobody() {
+    void withNothingPickedOutTheBarIsHis() {
         var watched = standoff();
-
-        var line = watched.line();
-
-        assertTrue(line.startsWith("name=|") || line.equals("name="), line);
-        assertFalse(line.contains("|skill="), "nobody has skills: " + line);
-        assertTrue(line.contains("|depth="), "but the floor is still the floor: " + line);
-    }
-
-    /** And picking him out is what puts his own card up. */
-    @Test
-    void pickingHimOutPutsHisCardUp() {
-        var watched = standoff();
-        watched.pickOut(watched.hero());
 
         var line = watched.line();
 
         assertTrue(line.startsWith("name=Erika"), line);
         assertTrue(line.contains("|skill="), "his own card carries his skills: " + line);
+        assertNull(watched.run().getTarget(), "nothing picked, no frame");
     }
 
+    /** Picking a skeleton leaves the bar his and puts the skeleton in the target frame. */
     @Test
-    void pickingOutASkeletonDescribesTheSkeleton() {
+    void pickingOutASkeletonLeavesTheBarHisAndFramesTheSkeleton() {
         var watched = standoff();
         watched.pickOut(watched.skeleton());
 
         var line = watched.line();
+        var target = watched.run().getTarget();
 
-        assertTrue(line.startsWith("name="), line);
-        assertFalse(line.startsWith("name=Erika"), "it should have stopped being about him: " + line);
-        assertTrue(line.contains("|hp="), "how much of it there is: " + line);
-        assertTrue(line.contains("|stat="), "and what it hits for: " + line);
+        assertTrue(line.startsWith("name=Erika"), "the bar never stops being about him: " + line);
+        assertTrue(line.contains("|skill=") && line.contains("|xp="), "his skills and his experience: " + line);
+        assertNotNull(target, "the skeleton is framed");
+        assertEquals(watched.skeleton().getId().value(), target.id());
+        assertEquals(uz.dukeengine.core.thing.Titled.of(watched.skeleton().getTemplate()), target.name());
+        assertEquals(Math.round(watched.skeleton().getBody().getMaxHealth()), target.maxHealth());
+        assertTrue(target.health() > 0, "how much of it there is: " + target);
+        assertTrue(target.attack() > 0, "what it hits for: " + target);
+        assertTrue(target.level() >= 1, "its level: " + target);
+        assertEquals("", target.role(), "a monster has no role");
+        assertEquals(0, target.armour(), "a monster shrugs nothing off");
     }
 
-    /**
-     * And it leaves out everything that is his rather than the creature's.
-     *
-     * <p>The half of the feature that is easy to get wrong by doing nothing: a
-     * card built by copying the hero's and changing the numbers would carry his
-     * skills, his bag and his experience under a skeleton's name.
-     */
+    /** Picking himself out is no target at all: his own panel already says it all. */
     @Test
-    void aSkeletonsCardCarriesNothingThatIsHis() {
-        var watched = standoff();
-        watched.pickOut(watched.skeleton());
-
-        var line = watched.line();
-
-        assertFalse(line.contains("|xp="), "a skeleton is not earning anything: " + line);
-        assertFalse(line.contains("|skill="), "nor casting anything: " + line);
-        assertFalse(line.contains("|it="), "nor carrying anything: " + line);
-        // It DOES have orders -- it is walking or fighting or standing like
-        // anything else, and that is worth reading across the room. Whether the
-        // buttons may be pressed is his hero's question, not the skeleton's: see
-        // withASkeletonPickedOutTheOrdersAreStillHis.
-        assertTrue(line.contains("|cmd=D,icons/commands/"),
-                "but it is still doing something: " + line);
-        assertFalse(line.contains("|rank="), "nor holding a level: " + line);
-    }
-
-    /** The floor is the floor, whoever is being looked at. */
-    @Test
-    void theDepthStaysOnTheBar() {
-        var watched = standoff();
-        watched.pickOut(watched.skeleton());
-
-        var line = watched.line();
-
-        assertTrue(line.contains("|depth="), "the corner should not go blank: " + line);
-        assertTrue(line.contains("|face="), "and the frame should stop showing an archer: " + line);
-    }
-
-    /** Letting go empties the bar rather than falling back to him. */
-    @Test
-    void lettingGoEmptiesTheBar() {
-        var watched = standoff();
-        watched.pickOut(watched.skeleton());
-        assertTrue(watched.line().contains("|hp="));
-
-        watched.pickOut(null);
-
-        assertFalse(watched.line().contains("|hp="),
-                "nothing is selected, so there is nothing to have health");
-    }
-
-    /**
-     * Picking out one of his own is not a creature card at all.
-     *
-     * <p>Clicking the hero is the ordinary case and must give the whole bar —
-     * skills, bag and all — rather than a two-figure card about himself.
-     */
-    @Test
-    void pickingOutHisOwnHeroIsStillTheWholeBar() {
+    void pickingHimOutFramesNothing() {
         var watched = standoff();
         watched.pickOut(watched.hero());
 
-        var line = watched.line();
-
-        assertTrue(line.startsWith("name=Erika"), line);
-        assertTrue(line.contains("|skill="), "his own card, entire: " + line);
+        assertNull(watched.target());
+        assertTrue(watched.line().startsWith("name=Erika"));
     }
 
-    /** And a creature that dies empties the bar rather than leaving a corpse on it. */
+    /** The frame follows the pick, and its health follows the creature. */
     @Test
-    void aDeadCreatureEmptiesTheBar() {
+    void theFrameFollowsThePick() {
         var watched = standoff();
         watched.pickOut(watched.skeleton());
-        assertTrue(watched.line().contains("|hp="));
+        assertEquals(watched.skeleton().getId().value(), watched.target().id());
+
+        watched.pickOut(watched.another());
+        assertEquals(watched.another().getId().value(), watched.target().id(), "it follows a new pick");
+
+        int before = watched.target().health();
+        watched.another().getBody().damage(1f, uz.dukeengine.core.module.DamageType.EXPLOSION);
+        assertTrue(watched.target().health() < before, "and what is left of it");
+    }
+
+    /** Letting go puts the frame away. */
+    @Test
+    void lettingGoPutsTheFrameAway() {
+        var watched = standoff();
+        watched.pickOut(watched.skeleton());
+        assertNotNull(watched.target());
+
+        watched.pickOut(null);
+
+        assertNull(watched.target());
+    }
+
+    /** And a creature that dies takes its frame with it rather than leaving a corpse in it. */
+    @Test
+    void aDeadCreatureClearsTheFrame() {
+        var watched = standoff();
+        watched.pickOut(watched.skeleton());
+        assertNotNull(watched.target());
 
         watched.skeleton().getBody().damage(100000f, uz.dukeengine.core.module.DamageType.EXPLOSION);
 
-        assertFalse(watched.line().contains("|hp="),
-                "a panel describing a corpse is a panel that looks broken");
+        assertNull(watched.target(), "a frame describing a corpse looks broken");
     }
 
     /**
-     * Selecting anything shows it, and his orders always go to his own hero: with a skeleton picked out, the
-     * buttons and their keys are still his to press -- the client sends them to the hero the bars name -- while
-     * they show what the skeleton is doing.
+     * His orders always go to his own hero: with a skeleton picked out, the buttons and their keys are his to press
+     * -- the client sends them to the hero the bars name -- and the bars name him.
      */
     @Test
     void withASkeletonPickedOutTheOrdersAreStillHis() {
@@ -203,18 +156,13 @@ class WatchingTest {
     }
 
     /**
-     * With no hero of his standing there is nobody to order, and the buttons go dim, as they always did: a party's
-     * player whose hero is down, while the others' still stand. (Alone, the run shows no card at all until he is
-     * back.) Asked of the card itself, which is told whether his hero stands.
+     * With no hero of his standing there is nobody to order, and the buttons go dim: a party's player whose hero is
+     * down, while the others' still stand. Asked of the card itself.
      */
     @Test
     void withNoHeroStandingTheOrdersAreNobodys() {
-        var watched = standoff();
-
-        var looked = HeroStatus.creature(watched.skeleton(), 1, 4, SETTINGS, "", false);
         var nothing = HeroStatus.nothing(1, 4, SETTINGS, "", "", false);
 
-        assertTrue(looked.contains("|cmds=theirs"), "a skeleton looked at, nobody to order: " + looked);
-        assertTrue(nothing.contains("|cmds=theirs"), "nothing looked at, nobody to order: " + nothing);
+        assertTrue(nothing.contains("|cmds=theirs"), "nobody to order: " + nothing);
     }
 }

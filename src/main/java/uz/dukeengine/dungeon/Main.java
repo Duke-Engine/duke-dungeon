@@ -950,7 +950,7 @@ public final class Main {
         // flag and sends nothing to the simulation.
         keys.on(settings.run().foldKey().charAt(0), game -> MissionScreen.fold());
         orders(keys);
-        // Which single creature he has picked out. The panel describes it, and
+        // Which single creature he has picked out. The target frame describes it, and
         // only the simulation can say what it is worth -- see Watching.
         keys.onWatch((game, id) -> game.postCommand(PartyOrders.of(new uz.dukeengine.dungeon.run.Watching(
                 game.getLocalPlayerIndex(), id < 0 ? null : new ObjectId(id)))));
@@ -1218,6 +1218,10 @@ public final class Main {
         }
         visuals.effectBudget(settings.effectBudget().maxLights(), settings.effectBudget().maxDistance());
         visuals.particleBudget(settings.effectBudget().maxParticles());
+        // One hero and nobody else to command, so there is no group to draw a box round: a press is a click wherever
+        // the mouse lets go, and picks the one thing under it to look at. ponytail: the engine's drag distance set
+        // past any window; a named "no box" switch is asked of the engine as E26.
+        visuals.dragDistance(Float.MAX_VALUE);
         visuals.shakeScale(settings.hitFeel().shakeScale());
         visuals.hitFlash(new Visuals.HitFlashLook(settings.hitFeel().hitFlashColour(),
                 settings.hitFeel().hitFlashSeconds(), settings.hitFeel().hitFlashStrength()));
