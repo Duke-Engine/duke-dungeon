@@ -113,11 +113,22 @@ class TradeTest {
         assertEquals(List.of(new uz.dukeengine.dungeon.run.DungeonRun.Opened(player, merchant.getId().value())),
                 run.getTrades(), "a right-click on him opens his window");
 
+        // He wears a gauntlet already: the one he buys is carried.
+        var bag = session.progress().getLoot();
+        int zirh = bag.wornPlace("Zirh");
+        var worn = SETTINGS.loot().stream().filter(item -> item.id().equals("Gauntlet")).findFirst().orElseThrow();
+        bag.take(worn, 0, 0);
         game.postCommand(PartyOrders.of(new Buy(player, merchant.getId(), 0)));
         game.runHeadless(2);
         assertEquals(rich - 80, run.goldOf(player));
-        assertEquals("Gauntlet", session.progress().getLoot().at(0).id());
+        assertEquals("Gauntlet", bag.at(0).id(), "bought as a pick-up is: into the backpack, its slot taken");
+        assertEquals(worn, bag.at(zirh), "what he wears as it was");
         assertEquals(1, run.stockOf(merchant.getId().value()).getFirst().count(), "one left");
+
+        game.postCommand(PartyOrders.of(new Sell(player, merchant.getId(), zirh)));
+        game.runHeadless(2);
+        assertEquals(rich - 80, run.goldOf(player), "what he wears is not for sale");
+        assertEquals(worn, bag.at(zirh));
 
         game.postCommand(PartyOrders.of(new Sell(player, merchant.getId(), 0)));
         game.runHeadless(2);
