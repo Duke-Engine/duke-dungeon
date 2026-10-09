@@ -342,7 +342,7 @@ Hero
       CooldownPerLevel = -8
       MaxRank = 4
       ; A flash at his hand as he throws it, as the mage's fire leaves his -- see Effect
-      ; CastFlash; drawn once the engine marks a WAVE on its caster (E32). The wave's
+      ; CastFlash, marked on him as he throws (E32). The wave's
       ; own look is the SwordWave it flies as (data/projectiles/sword_wave.duke).
       Look = CastFlash
       Name = Qilich to'lqini
@@ -396,8 +396,8 @@ Hero
       ; resting after a room and walking on into the next.
       ;
       ; Its rank is told to his book every frame from the points he has put in (see
-      ; DungeonRun.tellTheRanks). ★ Until the engine reads a rank of 0 as "not
-      ; held", an unlearnt blood counts as rank 1 -- E32 in the engine requests.
+      ; DungeonRun.tellTheRanks); with no point in it he has none of it (rank 0 is
+      ; not held, E32).
       Effect = DRAGON_BLOOD
       BoostPercent = 8
       BoostPerLevel = 5
