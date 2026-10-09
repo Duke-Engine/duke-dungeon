@@ -39,6 +39,7 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E23 | a long list in a .duke file read in linear time (the world map's scenery) | landed, e05164d8 (on e23-linear-lists) |
 | E24 | haze (and the world picture) chosen per map, as streaming is | landed, 60557fac (on e24-haze-per-map); the game hazes its wide worlds |
 | E25 | a hero's worn slots by kind and a backpack that gives nothing | waiting (medium) |
+| E26 | single-hero selection: the hero bar's portrait follows the hero the status names, not the pick; a named "no drag box" switch; (later) a live portrait a game's painter may hang in its own frame | waiting (small) |
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
 game builds against the local engine. E12–E15 reached it together at 668045f0 (their pull requests merged as
@@ -735,3 +736,24 @@ needs to carry things that do nothing until put on. Decided with him:
 The game then: slot words and each item's `Slot` in data, the merchant buying from and selling to the backpack, saving
 both, its loot drops unchanged. Done when the rpg tests pin each move and the old single-list mode, and the game's suite
 passes with its items given slots.
+
+## E26 — Single-hero selection: the portrait stays the hero's, and no drag box (2026-10-09, small)
+
+The owner, 2026-10-09: in the game only the hero is commanded; picking anything else never takes him away, and what
+was picked is shown in a smaller window of its own. The game now writes the hero's card whatever is picked, draws a
+target frame of its own on the canvas for the pick (`TargetFrame`, fed by `DungeonRun.getTarget` and the engine's
+`BuffScreen`), and E8 step 4 already sends every order to the hero the status line names. Two things it cannot do:
+
+1. **The hero bar's live portrait follows the pick, not the card.** `DukeRtsApp.portraitSubject()` hands
+   `RpgHud.show` the single selected unit, so a picked skeleton (or a party fellow) stands in the hero's own frame —
+   beside the hero's name, health and skills — and with nothing picked the frame is empty. Asked: when the status
+   line names a hero (`hero=`, as `RpgHud.ordered` already reads it), the portrait shows that unit whatever is
+   selected; with no hero named, the pick, as now (generals, other games). Done when an rpg-client-3d test pins: a
+   monster picked, the portrait's subject is the named hero; nothing picked, still him; no `hero=`, the pick.
+2. **A named switch for no drag box.** A single-hero game has no group to gather. The game sets
+   `Visuals.dragDistance(Float.MAX_VALUE)` meanwhile, so every press is a click where the mouse lets go — it works,
+   but says "far" where it means "never". Asked: `Visuals.dragSelects(false)` (default true): no rectangle drawn and
+   a release is a click. Done when a client test pins it; the game swaps its knob for it.
+3. **(Later, optional)** a live portrait a game's painter may hang: a second `HeroPortrait` for a unit the game names,
+   its texture drawable on the `Canvas` (e.g. `drawPortrait(unitId, box)`), so the target frame shows the creature
+   breathing rather than the first letter of its name. Not needed for the rule above.
