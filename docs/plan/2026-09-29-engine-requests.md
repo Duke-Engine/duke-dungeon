@@ -40,6 +40,7 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E24 | haze (and the world picture) chosen per map, as streaming is | landed, 60557fac (on e24-haze-per-map); the game hazes its wide worlds |
 | E26 | single-hero selection: the hero bar's portrait follows the hero the status names, not the pick; a named "no drag box" switch; (later) a live portrait a game's painter may hang in its own frame | landed, 3f606061 (on e26-single-hero); the game draws the pick's live portrait |
 | E25 | a hero's worn slots by kind and a backpack that gives nothing | landed, 831641bd (on e25-worn-slots); the game wears six slots and carries ten |
+| E28 | a passive that cannot be killed, only beaten (`UNYIELDING`); and `GrowableBody` honouring the damage scale | waiting (small); the game carries a stand-in meanwhile |
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
 game builds against the local engine. E12–E15 reached it together at 668045f0 (their pull requests merged as
@@ -757,3 +758,25 @@ target frame of its own on the canvas for the pick (`TargetFrame`, fed by `Dunge
 3. **(Later, optional)** a live portrait a game's painter may hang: a second `HeroPortrait` for a unit the game names,
    its texture drawable on the `Canvas` (e.g. `drawPortrait(unitId, box)`), so the target frame shows the creature
    breathing rather than the first letter of its name. Not needed for the rule above.
+
+## E28 — A passive that cannot be killed, only beaten (2026-10-09, small)
+
+The campaign's final fight (`docs/plan/2026-10-09-final-fight.md`): the cursed hero cannot be killed, only beaten.
+The owner's rule is that passives are skills, and `SkillEffect` is closed to a game, so the game carries a stand-in
+(`run/Fighting`, a module heard through `DamageListener`) and asks for the passive:
+
+1. **`SkillEffect.UNYIELDING(Aim.SELF, true)`** — a passive. Its bearer's body never falls below `HealBelowPercent`
+   (the field a mending already reads as "below this share") of its most health: the blow that would take it lower
+   leaves it there, inside `BodyModule.damage`, before any death is reaped — so no `ObjectDied`, no `onDie`, no kill
+   credit. The bearer is then **beaten**: say so where a game can read it — `SkillBook.isBeaten()` (or a condition word
+   the thing wears) — set on the frame it happened; what being beaten does (side, stun, story) stays the game's.
+   Refused on a hero, as every passive is today.
+2. **`GrowableBody` honours `BodyModule.setDamageScale`.** `ActiveBody.damage` takes `scaled(...)`; `GrowableBody`
+   does not, while `worthOf` (what `ObjectHurt` and the listeners are told) does — so on a GrowableBody a scale of 0
+   reports a blow worth nothing and still takes it whole. The game sets `GrowableBody.setDamageTaken` on monsters
+   meanwhile (only a hero's armour uses it).
+
+Done when an rpg test pins: a bearer of `HealBelowPercent = 25` struck for ten times its health stands at a quarter,
+beaten, and no death is posted; a second blow takes nothing below it; and a GrowableBody scaled to 0 takes nothing.
+The game then: the Boss block's `Beaten` becomes a Skill in the Monster's own block, and `Fighting` keeps only the
+phase's skill keys.
