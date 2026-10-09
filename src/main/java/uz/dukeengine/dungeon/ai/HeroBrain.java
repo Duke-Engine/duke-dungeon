@@ -133,6 +133,10 @@ public final class HeroBrain extends UnitScript {
         if (weapon == null || move == null) {
             return;
         }
+        var book = unit().findModule(SkillBook.class);
+        if (book != null && book.keepsBusy()) {
+            return; // a shield charge under way has his legs until it ends (SKEWER)
+        }
         if (standingStill(weapon, move)) {
             return;
         }

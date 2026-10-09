@@ -1397,11 +1397,33 @@ public final class DungeonRun {
     }
 
     /**
+     * Every frame the floor is played: each hero's book told the rank of every passive he has put points into — the
+     * knight's dragon blood — as his {@link SkillRanks} say, for a passive is never cast with one. Every frame rather
+     * than on a raise, so a point spent, a save loaded and a new body (a floor laid, a book made fresh) all agree.
+     */
+    private void tellTheRanks(DukeGame game) {
+        var logic = game.getLogic();
+        for (var seat : seats) {
+            var hero = seat.heroId == null ? null : logic.findObject(seat.heroId);
+            var book = hero == null ? null : hero.findModule(uz.dukeengine.rpg.skill.SkillBook.class);
+            if (book == null) {
+                continue;
+            }
+            for (var skill : seat.learnt.getSkills()) {
+                if (skill.effect().isPassive()) {
+                    book.setRank(skill.key(), seat.learnt.rankOf(skill.key()));
+                }
+            }
+        }
+    }
+
+    /**
      * Every frame the floor is played: experience earned paid to every hero standing, and every {@code CheckFrames}
      * the bags, the zones and the people looked at.
      */
     private void story(DukeGame game) {
         stroll(game);
+        tellTheRanks(game);
         medallion(game);
         glow(game);
         var logic = game.getLogic();

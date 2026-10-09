@@ -84,6 +84,9 @@ public final class DungeonSettings {
     /** The words an item's Kind may be: those a hero's figures read, and a key's. */
     private static final java.util.Set<String> KINDS =
             java.util.Set.of(Stat.ATTACK, Stat.HEALTH, Stat.ARMOUR, Stat.MANA, Stat.ATTRIBUTE, KEY, QUEST);
+    /** The skills whose StunFrames something reads. */
+    private static final java.util.Set<SkillEffect> STUNNERS =
+            java.util.EnumSet.of(SkillEffect.SKILLSHOT, SkillEffect.WAVE, SkillEffect.SKEWER, SkillEffect.PULL);
     /** And its Extra, beside none. */
     private static final java.util.Set<String> EXTRAS =
             java.util.Set.of(Stat.HEALTH_REGEN, Stat.MANA_REGEN, Stat.ATTACK_SPEED);
@@ -921,20 +924,22 @@ public final class DungeonSettings {
             // the line is split on those two characters.
             require(sayable(skill.icon()),
                     "a skill's Icon may not contain ',' or '|': " + skill.key());
-            // A stun rides what a skillshot throws, and nothing else a skill does carries
-            // one: written on any other, it would be a number nothing read.
+            // A stun rides what a skillshot throws, a wave, the shield charge and the pull, and nothing else a skill
+            // does carries one: written on any other, it would be a number nothing read.
             require(skill.stunFrames() == 0
-                            || skill.stunFrames() > 0 && skill.effect() == SkillEffect.SKILLSHOT,
+                            || skill.stunFrames() > 0 && STUNNERS.contains(skill.effect()),
                     skill.heroTemplate() + "'s Skill " + skill.key() + " has StunFrames = " + skill.stunFrames()
-                            + ": only a SKILLSHOT stuns, and for no fewer than no frames");
-            // Passives are monsters' — but a SOUL_DRINK, a hero's own or lent by what he wears (the medallion's): a hero's
-            // slots, aims, rings and tips know nothing of a skill that is not cast. Asked first, so that a hero's is
-            // refused for that and not for what else it has.
+                            + ": only a SKILLSHOT, WAVE, SKEWER or PULL stuns, and for no fewer than no frames");
+            // Passives are monsters' — but a SOUL_DRINK, a hero's own or lent by what he wears (the medallion's), and
+            // the knight's DRAGON_BLOOD, its rank told the book from his SkillRanks (DungeonRun.tellTheRanks): a hero's
+            // slots, aims, rings and tips know nothing else of a skill that is not cast. Asked first, so that a hero's
+            // is refused for that and not for what else it has.
             require(!skill.effect().isPassive() || skill.effect() == SkillEffect.SOUL_DRINK
+                            || skill.effect() == SkillEffect.DRAGON_BLOOD
                             || heroes.stream().noneMatch(hero -> hero.name().equals(skill.heroTemplate())),
                     skill.heroTemplate() + "'s Skill " + skill.key() + " is a " + skill.effect()
-                            + ", never cast: only a monster may have one but a SOUL_DRINK -- a hero's bar has no place"
-                            + " for it");
+                            + ", never cast: only a monster may have one but a SOUL_DRINK or a DRAGON_BLOOD -- a"
+                            + " hero's bar has no place for it");
             // A passive is never cast, so what only a cast reads would be a number nothing read -- but an aura is worn,
             // and may say what it looks like: its bearer plays it on itself.
             // A SOUL_DRINK's Damage is its cap, read.
@@ -996,6 +1001,13 @@ public final class DungeonSettings {
                 case DAMAGE_AURA -> require(skill.boostPercent() >= 1,
                         skill.heroTemplate() + "'s Skill " + skill.key() + "'s BoostPercent is what it adds to every"
                                 + " blow round it, at least 1");
+                case WAVE -> require(skill.hasProjectile() && skill.distance() > 0f && skill.hitWidth() > 0f,
+                        skill.heroTemplate() + "'s Skill " + skill.key() + " is a WAVE: it needs a Projectile to"
+                                + " be seen by, a Distance to run and a HitWidth to hurt across");
+                case DRAGON_BLOOD -> require(skill.boostPercent() >= 1 && skill.boostPercent() <= 100
+                                && skill.heal() >= 0f,
+                        skill.heroTemplate() + "'s Skill " + skill.key() + "'s BoostPercent is the share of every"
+                                + " blow its blood turns aside, from 1 to 100, and its Heal no less than none");
                 case MANA_AURA -> require(skill.manaRegen() >= 1,
                         skill.heroTemplate() + "'s Skill " + skill.key() + "'s ManaRegen is what it adds to every"
                                 + " pool round it, in tenths of a point a second, at least 1");

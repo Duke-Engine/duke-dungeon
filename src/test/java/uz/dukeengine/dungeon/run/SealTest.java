@@ -894,10 +894,34 @@ class SealTest {
         overTheGate("Rogue", 'E', 1, -6);
     }
 
-    /** The Knight's charge from the threshold into the court: refused while the gate stands, made once it is open. */
+    /**
+     * The Knight's shield charge from the threshold toward the court. It drives frame by frame (SKEWER), so it is not
+     * refused at the press as a dash is: it goes off, and the shut gate ends it on the road. Once the gate is open it
+     * carries him into the court. On a floor with the gate on each of the four sides.
+     */
     @Test
     void theKnightsChargeNeverCarriesHimOverTheShutGate() {
-        overTheGate("Knight", 'W', 1, -6);
+        for (long seed : new long[] {21, 24, 25, 29}) {
+            for (boolean opened : new boolean[] {false, true}) {
+                var floor = floor("Knight", seed);
+                var keep = floor.dungeon().keep();
+                var him = floor.hero();
+                var book = floor.book();
+                floor.hold();
+                if (opened) {
+                    floor.open();
+                }
+                floor.put(him, 1, 0);
+
+                assertTrue(book.cast('W', 1, null, floor.cell(-6, 0)), "seed " + seed + ": his charge was refused");
+                floor.game().runHeadless(60);
+
+                var landed = cellOf(him);
+                assertFalse(book.keepsBusy(), "seed " + seed + ": the charge never ended");
+                assertEquals(opened, keep.isCourt(landed[0], landed[1]), "seed " + seed + (opened
+                        ? ": the gate open, his charge did not carry him in" : ": his charge carried him over the shut gate"));
+            }
+        }
     }
 
     /** The Mage's blink from the threshold into the court: refused while the gate stands, made once it is open. */

@@ -9,8 +9,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
+import uz.dukeengine.core.math.Coord3D;
 import uz.dukeengine.core.module.MoveUpdate;
 import uz.dukeengine.core.thing.GameObject;
+import uz.dukeengine.core.thing.ObjectStatus;
 import uz.dukeengine.core.thing.ThingTemplate;
 import uz.dukeengine.dungeon.content.Content;
 import uz.dukeengine.dungeon.content.DungeonSettings;
@@ -170,39 +172,46 @@ class KnightTest {
                 + " against the archer's " + archersLongest);
     }
 
-    /** He has the one shape the archer has not, and it is his answer to being surrounded. */
+    /** His four are the owner's four (2026-10-09), in their keys, and none of them is the archer's. */
     @Test
-    void heHasSomethingTheArcherDoesNot() {
-        var his = SETTINGS.skillsFor(KNIGHT).stream().map(skill -> skill.effect()).toList();
+    void hisFourAreTheWaveTheChargeTheBloodAndThePull() {
+        assertEquals(SkillEffect.WAVE, skillOf(KNIGHT, 'Q').effect());
+        assertEquals(SkillEffect.SKEWER, skillOf(KNIGHT, 'W').effect());
+        assertEquals(SkillEffect.DRAGON_BLOOD, skillOf(KNIGHT, 'E').effect());
+        assertEquals(SkillEffect.PULL, skillOf(KNIGHT, 'R').effect());
         var archers = SETTINGS.skillsFor(ARCHER).stream().map(skill -> skill.effect()).toList();
-
-        assertTrue(his.contains(SkillEffect.GUARD), "the knight cannot survive being reached");
-        assertFalse(archers.contains(SkillEffect.GUARD),
-                "the archer was given the knight's answer as well");
+        for (var skill : SETTINGS.skillsFor(KNIGHT)) {
+            assertFalse(archers.contains(skill.effect()), "the archer was given the knight's " + skill.effect());
+            assertFalse(skill.name().isBlank() || skill.blurb().isBlank(), skill.key() + " has no words");
+            assertFalse(skill.icon().isBlank(), skill.key() + " has no picture");
+        }
+        assertTrue(SETTINGS.projectiles().stream().anyMatch(each -> each.name().equals(skillOf(KNIGHT, 'Q')
+                .projectile())), "the wave flies as nothing the file describes");
     }
 
-    /** His ultimate lasts, where the archer's is a window for other things. */
+    /** His ultimate is earned, grows fewer times, and holds a room longer than his charge holds a line. */
     @Test
-    void hisUltimateGoesOnHappening() {
+    void hisUltimateIsEarnedAndHoldsLongest() {
         var ultimate = skillOf(KNIGHT, 'R');
 
-        assertTrue(ultimate.lasts(), "his whirlwind lands once and is over");
-        assertTrue(ultimate.durationFrames() > ultimate.tickFrames(),
-                "it lands once and calls itself lasting");
         assertTrue(ultimate.isUltimate(), "an ultimate has to be earned");
         assertTrue(ultimate.maxRank() < skillOf(KNIGHT, 'Q').maxRank(),
                 "and it grows fewer times than an ordinary skill");
+        assertTrue(ultimate.stunFrames() > skillOf(KNIGHT, 'W').stunFrames(),
+                "the pull holds a room no longer than the charge holds a line");
     }
 
-    /** And his charge goes through what is in the way, where the archer's sprint does not. */
+    /** And his charge carries and stuns, where the archer's sprint hurts nothing. */
     @Test
-    void hisChargeHurtsAndTheArchersSprintDoesNot() {
+    void hisChargeCarriesWhereTheArchersSprintDoesNot() {
         var charge = skillOf(KNIGHT, 'W');
         var sprint = skillOf(ARCHER, 'E');
 
-        assertEquals(SkillEffect.DASH, charge.effect());
         assertEquals(SkillEffect.DASH, sprint.effect());
-        assertTrue(charge.damage() > 0f, "a charge that hurts nothing is a sprint");
+        assertTrue(charge.damage() > 0f && charge.stunFrames() > 0, "a charge that hurts and holds nothing is a sprint");
+        assertTrue(charge.projectileSpeed() > speed(KNIGHT) * 1.4f && charge.projectileSpeed() < speed(KNIGHT) * 2.2f,
+                "the push is driven at " + charge.projectileSpeed() + " against his walk of " + speed(KNIGHT)
+                        + ": a charge, and slow enough to be seen");
         assertEquals(0f, sprint.damage(), 0.001f,
                 "the archer's sprint was given damage it never had");
     }
@@ -383,55 +392,207 @@ class KnightTest {
 
     // ---- the shapes themselves, cast in a real world ----
 
-    /** Guard turns blows aside while it lasts, and stops when it runs out. */
+    /**
+     * Q: the wave runs down the line and cuts all three skeletons in it, once each, and not the one beside the line.
+     * They are held still, so this is about the wave and not about who walked where.
+     */
     @Test
-    void guardTurnsBlowsAsideAndThenStops() {
-        var guard = skillOf(KNIGHT, 'E');
+    void theWaveCutsEveryoneInItsLineOnce() {
+        var wave = skillOf(KNIGHT, 'Q');
         var world = Dungeon.world(room(), SETTINGS, Content.units());
         var game = world.game();
-        game.spawn(KNIGHT, world.hero(), 150f, 150f);
+        game.spawn(KNIGHT, world.hero(), 100f, 150f);
+        for (float x : new float[] {124f, 134f, 144f}) { // past his sword's reach, inside the wave's
+            game.spawn("Skeleton", world.dungeon(), x, 150f);
+        }
+        game.spawn("Skeleton", world.dungeon(), 132f, 150f + wave.hitWidth() + 20f); // beside the line
         game.runHeadless(1);
+        var skeletons = all(game, "Skeleton");
+        skeletons.forEach(KnightTest::sturdy);
+        skeletons.forEach(KnightTest::holdStill);
+        world.orders().hold(world.hero().getIndex(), true); // his sword picks no fights: the skill alone
         var book = find(game, KNIGHT).findModule(SkillBook.class);
+        var full = skeletons.stream().map(each -> each.getBody().getHealth()).toList();
 
-        assertEquals(0, book.getGuardPercent(), "he is guarding before he cast anything");
-        book.cast('E', 1, null, null);
-        assertTrue(book.getGuardPercent() > 0, "the guard did not go up");
+        assertTrue(book.cast('Q', 1, null, new Coord3D(250f, 150f, 0f)), "the wave was not thrown");
+        game.runHeadless(45); // long past the end of its Distance
 
-        game.runHeadless(guard.durationFrames() + 2);
-        assertEquals(0, book.getGuardPercent(), "the guard never came down");
+        for (int i = 0; i < 3; i++) {
+            assertEquals(full.get(i) - wave.damage(), skeletons.get(i).getBody().getHealth(), 0.5f,
+                    "skeleton " + i + " in the line was not cut exactly once");
+        }
+        assertEquals(full.get(3), skeletons.get(3).getBody().getHealth(), 0.001f, "the one beside the line was cut");
     }
 
-    /** The whirlwind lands again while it turns, and stops when it is over. */
+    /**
+     * W: the shield charge catches what it meets, carries it along at his front while it drives its whole Distance,
+     * and drops it there stunned and hurt when it ends.
+     *
+     * <p>One skeleton: two caught at once end the drive within a few frames today, the second set down where his next
+     * step is and taken for a body in his way -- E32 in the engine requests. Add a second here when that lands.
+     */
     @Test
-    void theWhirlwindGoesOnLandingAndThenStops() {
-        var ultimate = skillOf(KNIGHT, 'R');
+    void theChargeCarriesWhatItMeetsAndStunsIt() {
+        var charge = skillOf(KNIGHT, 'W');
+        var world = Dungeon.world(room(), SETTINGS, Content.units());
+        var game = world.game();
+        game.spawn(KNIGHT, world.hero(), 80f, 150f);
+        game.spawn("Skeleton", world.dungeon(), 100f, 150f);
+        game.runHeadless(1);
+        var knight = find(game, KNIGHT);
+        var skeleton = find(game, "Skeleton");
+        sturdy(skeleton);
+        var book = knight.findModule(SkillBook.class);
+        float full = skeleton.getBody().getHealth();
+
+        assertTrue(book.cast('W', 1, null, new Coord3D(250f, 150f, 0f)), "he did not charge");
+        game.runHeadless(20);
+        assertTrue(book.keepsBusy(), "the charge was over in two-thirds of a second: it is meant to be seen");
+        float ahead = skeleton.getPosition().x() - knight.getPosition().x();
+        assertTrue(ahead > 0f && ahead < 20f, "the caught one is " + ahead + " from him, not at his front");
+        assertTrue(skeleton.getPosition().x() > 110f, "it was not carried along");
+
+        int frames = 0;
+        while (book.keepsBusy() && frames++ < 120) {
+            game.runHeadless(1);
+        }
+        game.runHeadless(1); // the stun's timer is read on the creature's own next frame
+        assertEquals(80f + charge.distance(), knight.getPosition().x(), 1f, "he did not drive its whole Distance");
+        assertTrue(skeleton.getPosition().x() > knight.getPosition().x(), "it was not dropped at his front");
+        assertTrue(skeleton.getBody().getHealth() <= full - charge.damage() + 0.5f, "it was not hurt");
+        assertTrue(skeleton.hasStatus(ObjectStatus.DISABLED), "dropped at his front, it was not stunned");
+        game.runHeadless(charge.stunFrames() + 2);
+        assertFalse(skeleton.hasStatus(ObjectStatus.DISABLED), "the stun outlasted its StunFrames");
+    }
+
+    /**
+     * E: the dragon blood turns aside a share of every blow and mends him every second, both rising with the rank his
+     * points say -- told to his book by setRank.
+     */
+    @Test
+    void dragonBloodCutsBlowsAndMendsMoreWithEachRank() {
+        var blood = skillOf(KNIGHT, 'E');
+        float[] lost = new float[5];
+        float[] mended = new float[5];
+        for (int rank : new int[] {1, 4}) {
+            var world = Dungeon.world(room(), SETTINGS, Content.units());
+            var game = world.game();
+            game.spawn(KNIGHT, world.hero(), 150f, 150f);
+            game.runHeadless(1);
+            var knight = find(game, KNIGHT);
+            knight.findModule(SkillBook.class).setRank('E', rank);
+            game.runHeadless(1);
+            var body = knight.getBody();
+
+            assertEquals(1f - blood.boostAt(rank) / 100f, body.getDamageScale(), 0.001f,
+                    "rank " + rank + " of his blood is not what his body's blows are scaled by");
+            float before = body.getHealth();
+            body.damage(400f);
+            lost[rank] = before - body.getHealth();
+            float hurt = body.getHealth();
+            game.runHeadless(60); // two seconds
+            mended[rank] = body.getHealth() - hurt;
+        }
+        assertTrue(lost[4] < lost[1], "rank 4 turns aside no more than rank 1: " + lost[1] + " against " + lost[4]);
+        // His own regeneration is the same at both ranks: what differs is the blood's, 3 more a second for each rank.
+        float more = (4 - 1) * blood.heal() * 2f;
+        assertEquals(more, mended[4] - mended[1], 2f, "the blood mends " + mended[1] + " at rank 1 and "
+                + mended[4] + " at rank 4 over two seconds");
+    }
+
+    /** And the run tells his book the rank he bought, so a point in E is a point in his blood. */
+    @Test
+    void thePointsHeSpendsReachHisBlood() {
+        var session = Dungeon.newSession(11L, DungeonSettings.parse(withDefaultHero(KNIGHT)));
+        session.game().runHeadless(2);
+        var learnt = session.run().getLearnt();
+        assertTrue(learnt.raise('E', 5) && learnt.raise('E', 5), "the premise: two points went into his blood");
+        session.game().runHeadless(2);
+
+        assertEquals(1f - skillOf(KNIGHT, 'E').boostAt(2) / 100f,
+                find(session.game(), KNIGHT).getBody().getDamageScale(), 0.001f,
+                "his book was not told the rank he bought");
+    }
+
+    /** And a save puts it back: the ranks restored are the ranks his book is told. */
+    @Test
+    void aLoadedRunKeepsHisBloodsRank() {
+        var asKnight = DungeonSettings.parse(withDefaultHero(KNIGHT));
+        var save = new uz.dukeengine.dungeon.run.SaveGame(11L, null, 1, KNIGHT, asKnight.levelling().totalXpFor(6),
+                java.util.List.of(new uz.dukeengine.dungeon.run.SaveGame.Rank('Q', 1),
+                        new uz.dukeengine.dungeon.run.SaveGame.Rank('W', 1),
+                        new uz.dukeengine.dungeon.run.SaveGame.Rank('E', 3)),
+                java.util.List.of());
+        var session = Dungeon.newSession(99L, asKnight);
+        session.run().resume(save, uz.dukeengine.dungeon.run.Floors.resumed(save, asKnight));
+        session.game().runHeadless(3);
+
+        assertEquals(3, session.run().getLearnt().rankOf('E'), "the premise: the save put three points back");
+        assertEquals(1f - skillOf(KNIGHT, 'E').boostAt(3) / 100f,
+                find(session.game(), KNIGHT).getBody().getDamageScale(), 0.001f,
+                "loaded, his blood runs at a rank the save never had");
+    }
+
+    /**
+     * R: everything within its Radius is moved to one point in front of him, hurt and stunned; what stands further
+     * off is left where it is.
+     */
+    @Test
+    void thePullGathersTheRoomToOnePointAndStunsIt() {
+        var pull = skillOf(KNIGHT, 'R');
         var world = Dungeon.world(room(), SETTINGS, Content.units());
         var game = world.game();
         game.spawn(KNIGHT, world.hero(), 150f, 150f);
-        // Close enough to be inside it and standing still: a skeleton that walked
-        // out would make this a test about pathfinding.
-        game.spawn("Skeleton", world.dungeon(), 150f + ultimate.radius() / 3f, 150f);
+        float near = pull.radius() - 6f;
+        game.spawn("Skeleton", world.dungeon(), 150f, 150f + near);
+        game.spawn("Skeleton", world.dungeon(), 150f - near, 150f);
+        game.spawn("Skeleton", world.dungeon(), 150f, 150f - near);
+        game.spawn("Skeleton", world.dungeon(), 150f + pull.radius() + 30f, 150f); // out of reach
         game.runHeadless(1);
-        var book = find(game, KNIGHT).findModule(SkillBook.class);
-        var victim = find(game, "Skeleton");
+        var knight = find(game, KNIGHT);
+        var skeletons = all(game, "Skeleton");
+        skeletons.forEach(KnightTest::sturdy);
+        world.orders().hold(world.hero().getIndex(), true); // his sword picks no fights: the skill alone
+        var far = skeletons.getLast().getPosition();
+        var full = skeletons.stream().map(each -> each.getBody().getHealth()).toList();
 
-        float full = victim.getBody().getHealth();
-        // The rank he has put into it, which for a test is simply "he has it".
-        book.cast('R', 1, null, null);
-        game.runHeadless(1);
-        float afterFirst = victim.getBody().getHealth();
-        game.runHeadless(ultimate.tickFrames() * 3);
-        float afterTurning = victim.getBody().getHealth();
+        assertTrue(knight.findModule(SkillBook.class).cast('R', 1), "the pull did not go off");
+        // Read before a frame runs: gathered in front of him, they are inside his sword's reach.
+        var hurt = skeletons.stream().map(each -> each.getBody().getHealth()).toList();
+        game.runHeadless(1); // the stun's timer is read on each creature's own next frame
 
-        assertTrue(afterFirst < full, "it did not land at all");
-        assertTrue(afterTurning < afterFirst, "it landed once and stopped: that is not a whirlwind");
+        var at = knight.getPosition();
+        var point = new Coord3D(at.x() + (float) Math.cos(knight.getOrientation()) * pull.range(),
+                at.y() + (float) Math.sin(knight.getOrientation()) * pull.range(), 0f);
+        for (int i = 0; i < 3; i++) {
+            var each = skeletons.get(i);
+            float off = (float) Math.hypot(each.getPosition().x() - point.x(), each.getPosition().y() - point.y());
+            assertTrue(off < near - 10f, "skeleton " + i + " stands " + off + " from the point: not gathered");
+            assertTrue(each.hasStatus(ObjectStatus.DISABLED), "skeleton " + i + " was gathered and not stunned");
+            assertEquals(full.get(i) - pull.damage(), hurt.get(i), 0.5f, "skeleton " + i + " not hurt");
+        }
+        assertEquals(far, skeletons.getLast().getPosition(), "the one out of its reach was pulled");
+        assertEquals(full.getLast(), skeletons.getLast().getBody().getHealth(), 0.001f, "the one out of reach was hurt");
+    }
 
-        // And it ends. Run well past its duration and nothing more comes off.
-        game.runHeadless(ultimate.durationFrames() + 10);
-        float atRest = victim.getBody().getHealth();
-        game.runHeadless(ultimate.tickFrames() * 3);
-        assertEquals(atRest, victim.getBody().getHealth(), 0.001f,
-                "the whirlwind is still turning long after it should have stopped");
+    private static java.util.List<GameObject> all(uz.dukeengine.game.DukeGame game, String template) {
+        return game.getLogic().getObjects().stream()
+                .filter(object -> object.getTemplate().name().equals(template)).toList();
+    }
+
+    /** Health enough that no single skill kills it, so what each one takes can be read off what is left. */
+    private static void sturdy(GameObject creature) {
+        ((GrowableBody) creature.getBody()).setMaxHealth(500f);
+        creature.getBody().setHealth(500f);
+    }
+
+    /** Stunned for good: it neither walks nor swings, so what happens to it is the skill's alone. */
+    private static void holdStill(GameObject creature) {
+        var timers = creature.findModule(uz.dukeengine.combat.module.StatusUpdate.class);
+        if (timers != null) {
+            timers.apply(ObjectStatus.DISABLED, Integer.MAX_VALUE);
+        }
+        creature.setStatus(ObjectStatus.DISABLED);
     }
 
     // ---- what each of them carries ----

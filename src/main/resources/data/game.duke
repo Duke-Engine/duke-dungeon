@@ -88,6 +88,7 @@ Game
     data/projectiles/summoning_rift.duke,
     data/projectiles/meteor_mark.duke,
     data/projectiles/skull_meteor_mark.duke,
+    data/projectiles/sword_wave.duke,
 
     ; The effects, from the kit: its starter set, by what each one is. A block of this
     ; game's own with the Name of one of them, in a file listed after these, is
@@ -112,11 +113,9 @@ Game
     kit/data/effects/strike/sprint.duke,
     kit/data/effects/strike/volley.duke,
     kit/data/effects/strike/charge.duke,
-    kit/data/effects/strike/cleave.duke,
     kit/data/effects/strike/whirlwind.duke,
     kit/data/effects/aura/focus.duke,
     kit/data/effects/aura/ember_eyes.duke,
-    kit/data/effects/aura/guard.duke,
     kit/data/effects/moments/arrival.duke,
     kit/data/effects/moments/golden_pillar.duke,
 

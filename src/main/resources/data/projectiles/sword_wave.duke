@@ -1,0 +1,81 @@
+; The knight's Q, the wave his sword sends out -- see the Q skill of the Knight.
+; A thing in flight like every arrow, so it is a creature with one ArrowUpdate;
+; unlike an arrow it is never stopped by a body: the engine's WAVE carries it on
+; through everything in the lane and hurts each one once. Stone, the keep's shut
+; gate or the end of its Distance is what stops it.
+Projectile
+  Name = SwordWave
+  DisplayName = Qilich to'lqini
+  VisionRange = 0
+  Modules = [
+    ArrowUpdate
+    End
+  ]
+
+
+; No model: a white-steel crescent and the sparks it sheds, both drawn by the
+; effect below. Waist height, as a swing is.
+  Height = 6
+  Tint = 0xDDEBFF
+  Effect = SwordWave
+  EffectOffset = 0
+End
+
+; ---------------------------------------------------------------------------
+; The kit's ArcaneBolt, layer for layer, made a blade: the core is the slash the
+; kit's Cleave cuts with rather than a ball, wider, and white-steel and gold where
+; the bolt is blue -- the same colours as Cleave, so the wave reads as the swing
+; thrown on. No light of its own: it crosses a room, and a moving light down
+; every corridor is the costliest thing an effect can do.
+; ---------------------------------------------------------------------------
+Effect
+  Name = SwordWave
+  Layers = [
+    Layer
+      Name = Blade
+      Type = AURA
+      Texture = kit/effects/particles/slash_04.png
+      Blend = Additive
+      Cover = 0.3
+      Count = 6
+      Rate = 40
+      Life = [0.1, 0.16]
+      Size = [9, 7]
+      Colour = [0xFFFFFF, 0xCFE4FF]
+      Alpha = [1, 0.5]
+    End,
+    Layer
+      Name = Sparks
+      Type = TRAIL
+      Texture = kit/effects/particles/star_04.png
+      Blend = Additive
+      Cover = 0.3
+      Count = 26
+      Rate = 65
+      Life = [0.24, 0.4]
+      Size = [3.5, 0.6]
+      SizeEase = 2
+      Colour = [0xFFE6B0, 0x5A4A30]
+      Alpha = [1, 0]
+      Speed = [2, 6]
+      Direction = ALL
+      Drag = 2
+      Spin = 90
+    End,
+    Layer
+      Name = Burst
+      Type = BURST
+      Texture = kit/effects/particles/circle_05.png
+      Blend = Additive
+      Cover = 0.3
+      Count = 18
+      Life = [0.18, 0.3]
+      Size = [2.88, 0.48]
+      Colour = [0xFFFFFF, 0x6A7A90]
+      Alpha = [1, 0]
+      Speed = [8, 20]
+      Direction = ALL
+      Drag = 3
+    End
+  ]
+End

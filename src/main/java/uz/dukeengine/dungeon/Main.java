@@ -81,7 +81,7 @@ public final class Main {
      * <p>Only what was said, because the defaults are the client's and are written down once,
      * in {@code EffectLayer.Builder}. Renewing is said too, layer by layer: an AURA layer that
      * {@code Renews} is carried on to the new end when it is cast again on somebody it still
-     * burns on, where one that does not is dropped, as the knight's Whirlwind — cast again at
+     * burns on, where one that does not is dropped, as a lasting AREA_DAMAGE — cast again at
      * each landing — must be. A look worn as a state is played again as the state is given
      * again: the stun's count starts again at each stun, a second haste starts the haste again,
      * and an aura is played on its bearer again at every beat. So every AURA layer such a look
@@ -675,8 +675,8 @@ public final class Main {
      * <p>One hero's four, never the file's twelve. A key belongs to a SLOT rather
      * than to a skill — all three of them cast on Q, W, E and R — so binding every
      * skill in the file would leave whichever hero was read last deciding what Q
-     * asks for. That is not a small wrongness: the rogue's Q wants a creature, the
-     * knight's wants a patch of floor and the mage's wants a direction.
+     * asks for. That is not a small wrongness: the rogue's Q wants a creature, and the
+     * knight's and the mage's want a direction.
      *
      * <p><b>Called again every time a hero is chosen</b>, and that is the whole
      * point of it being a method. Settled once at startup it was settled from
@@ -1008,28 +1008,31 @@ public final class Main {
             // A mending is pointed at a creature as a strike is -- one of its own.
             case STRIKE, HEAL -> uz.dukeengine.client3d.SkillRange.Shape.AT_A_CREATURE;
             case AREA_AT_SPOT -> uz.dukeengine.client3d.SkillRange.Shape.AT_A_SPOT;
-            case SKILLSHOT -> uz.dukeengine.client3d.SkillRange.Shape.DOWN_A_LANE;
+            // A wave runs down a lane as a shot does, only on through what it meets.
+            case SKILLSHOT, WAVE -> uz.dukeengine.client3d.SkillRange.Shape.DOWN_A_LANE;
             // A blink is pointed at a spot exactly as a dash is. That it does not
             // cross what is between is the simulation's business; what the player
             // has to do with the mouse is the same thing, so the ring is the same.
-            case DASH, BLINK -> uz.dukeengine.client3d.SkillRange.Shape.AT_A_SPOT;
+            // The knight's shield charge too: he drives toward the spot.
+            case DASH, BLINK, SKEWER -> uz.dukeengine.client3d.SkillRange.Shape.AT_A_SPOT;
             case METEOR -> uz.dukeengine.client3d.SkillRange.Shape.AT_A_SPOT;
             // A summoning calls them up round him, as far out as its Radius; a haste finds one of
-            // his own round him, as far out as its Range.
-            case AREA_DAMAGE, SUMMON, HASTE -> uz.dukeengine.client3d.SkillRange.Shape.AROUND_HIM;
+            // his own round him, as far out as its Range; a pull gathers whoever is within its Radius.
+            case AREA_DAMAGE, SUMMON, HASTE, PULL -> uz.dukeengine.client3d.SkillRange.Shape.AROUND_HIM;
             // None of these is aimed past him: one sharpens his sword, one thickens
             // his skin, and the passives -- never cast -- drink from his blows or
             // lend round him.
-            case EMPOWER, GUARD, LIFESTEAL, DAMAGE_AURA, MANA_AURA, LIFESTEAL_AURA, SOUL_DRINK, UNYIELDING ->
-                    uz.dukeengine.client3d.SkillRange.Shape.ON_HIMSELF;
+            case EMPOWER, GUARD, LIFESTEAL, DAMAGE_AURA, MANA_AURA, LIFESTEAL_AURA, SOUL_DRINK, UNYIELDING,
+                    DRAGON_BLOOD -> uz.dukeengine.client3d.SkillRange.Shape.ON_HIMSELF;
         };
         float reach = switch (skill.effect()) {
             case STRIKE, AREA_AT_SPOT, SKILLSHOT, HEAL -> skill.range();
-            case DASH, BLINK -> skill.distance();
+            case DASH, BLINK, SKEWER, WAVE -> skill.distance();
             case METEOR -> skill.range();
-            case AREA_DAMAGE, SUMMON -> skill.radius();
+            case AREA_DAMAGE, SUMMON, PULL -> skill.radius();
             case HASTE -> skill.range();
-            case EMPOWER, GUARD, LIFESTEAL, DAMAGE_AURA, MANA_AURA, LIFESTEAL_AURA, SOUL_DRINK, UNYIELDING -> selfRadius;
+            case EMPOWER, GUARD, LIFESTEAL, DAMAGE_AURA, MANA_AURA, LIFESTEAL_AURA, SOUL_DRINK, UNYIELDING,
+                    DRAGON_BLOOD -> selfRadius;
         };
         // What it LEAVES where it lands: a blast's radius, a lane's width. A dash
         // leaves a man, and a circle round a man-sized spot is a second ring saying
