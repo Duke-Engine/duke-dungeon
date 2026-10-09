@@ -106,6 +106,14 @@ Zones are the map's `Zones` (the dialogue spec). Triggers name their map with `M
   far corner (zone `Chest`) and the commander says one line about her locket.
 - Her MAIN quest handed in, an ambush: she says a line, and three skeletons rise at zone `Ambush` in the first room.
 
+## Winning a story map
+
+A map with a story — people, zones, things laid or quests of its own, or a trigger naming it (the talk map, the open
+world) — is won when its boss falls and **stays won** (the owner's playtest, 2026-10-09: it used to start again by
+itself after `VictoryFrames`, as the descent and a plain stage still do). The banner holds; the story goes on, so a
+trigger on the boss's death (`DIED`, its template) may say what follows — `MAP` takes the heroes to the next chapter
+and the run plays on there. With no such trigger the player leaves by the menu.
+
 ## Saved
 
 The trigger log's state goes into the save beside the quests: the triggers fired, the flags set, the timers waiting

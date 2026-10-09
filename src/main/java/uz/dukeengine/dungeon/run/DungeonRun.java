@@ -731,10 +731,31 @@ public final class DungeonRun {
      * to have been a win rather than an interruption.
      */
     private void whileWon(DukeGame game) {
+        if (storied()) {
+            // ★ A map with a story is won and stays won: the banner holds, and nothing starts again by itself — the
+            // owner's playtest of the talk map, where a won run cleared away its own story five seconds later. The
+            // story goes on meanwhile, so a trigger on the boss's death may say what follows (the next map), and the
+            // player leaves by the menu.
+            story(game);
+            scripted(game);
+            return;
+        }
         if (game.getLogic().getFrame() - endedFrame < settings.run().victoryFrames()) {
             return;
         }
         begin(game);
+    }
+
+    /**
+     * Whether the map being played has a story: people, zones, things laid or quests of its own, or a trigger that
+     * names it. The descent and a plain stage have none — a stage is learnt and won again — and the open world has one.
+     */
+    private boolean storied() {
+        var story = floors.story();
+        var name = floors.stageName();
+        return !story.npcs().isEmpty() || !story.zones().isEmpty() || !story.items().isEmpty()
+                || !story.quests().isEmpty()
+                || name != null && settings.story().triggers().stream().anyMatch(each -> each.map().equals(name));
     }
 
     /** A fresh run: the first floor, heroes with nothing, and the banner cleared. */
@@ -864,6 +885,11 @@ public final class DungeonRun {
     }
 
     /** Which floor the hero is on. One at the start of every run.  */
+    /** The map being played, by its name, or null for the descent. */
+    public String getStageName() {
+        return floors.stageName();
+    }
+
     public int getDepth() {
         return depth;
     }
@@ -998,6 +1024,11 @@ public final class DungeonRun {
             depth = floors.firstDepth();
             endCutscene(game);
             descend(game);
+            if (state == State.WON) {
+                // A won map's story sent the heroes on: the next chapter is played, not watched.
+                state = State.RUNNING;
+                game.setBanner("");
+            }
         }
     }
 
