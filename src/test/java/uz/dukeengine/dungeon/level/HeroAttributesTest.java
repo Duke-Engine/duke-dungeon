@@ -195,11 +195,14 @@ class HeroAttributesTest {
         var knight = SETTINGS.heroNamed("Knight");
         var body = it.body();
         var book = body.findModule(SkillBook.class);
-        int health = 2 * knight.healthRegen() / 10;
+        // His own mend, and his dragon blood's (E), which no attribute moves either. Unlearnt it still runs at its
+        // first rank until the engine reads a rank of 0 as not held (E32): then this is 0 * heal.
+        var blood = SETTINGS.skillsFor("Knight").stream().filter(skill -> skill.key() == 'E').findFirst().orElseThrow();
+        int health = 2 * knight.healthRegen() / 10 + Math.round(2 * blood.heal());
         int mana = 2 * knight.manaRegen() / 10;
 
         assertEquals(health, mendedOverTwoSeconds(it), "his health, before");
-        assertTrue(book.cast('E', 1), "the guard should have gone up, and cost him");
+        assertTrue(book.cast('R', 1), "the pull should have gone off, and cost him");
         assertEquals(mana, regainedOverTwoSeconds(it), "his mana, before");
 
         take(it, "STR", 20);

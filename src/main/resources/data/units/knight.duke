@@ -293,143 +293,153 @@ Hero
   End
 
   ; ---------------------------------------------------------------------------
-  ; The knight's four, and they are the archer's four asked backwards.
+  ; The knight's four, as the owner drew them on 2026-10-09: a wave off his sword,
+  ; a charge behind his shield that carries what it meets, dragon's blood in his
+  ; veins, and a pull that gathers a room to one point.
   ;
-  ; His are about not being reached: a shot that outranges everything, a panic
-  ; button, a way out, and a window in which to spend the first two. This one has
-  ; already been reached by the time any of his matter, so his are about what to do
-  ; once you are standing in it — hit several things at once, arrive, survive, and
-  ; keep hitting while they surround you.
+  ; Still the archer's opposite. His four are about not being reached; these are
+  ; about what to do once everything has reached HIM -- line them up and cut the
+  ; line (Q), drive the line back and pin it (W), outlast it (E), and when the room
+  ; is too wide to fight, bring the room to his sword (R).
   ;
-  ; None of them reaches: the longest is 34, against the archer's 68. That is the
-  ; whole shape of him and it is the first thing to change if he plays too safely.
+  ; None of them reaches across a room: the longest is the wave's 50, against the
+  ; archer's 68. That is still the first number to change if he plays too safely.
   ;
-  ; NO ICONS NAMED YET. A slot with no picture draws the letter of its key, which
-  ; is what every slot did before there were any pictures — so he is playable now
-  ; and the four lines are added when the files are. See the note over Hero
-  ; Knight below for which four and where they go.
+  ; ICONS. Q is the cleave's blade, W the charge's, R the whirlwind's vortex -- the
+  ; owner's own sheet (art/icons/skills_sheet.png). E is the guard's shield
+  ; recoloured blood-red, made from skill_guard.png by hue alone, so it is the same
+  ; drawing and no new art: see the knight-skills report of 2026-10-09.
+  ;
+  ; Numbers to start from, balanced against his own swing (30 every 34 frames, about
+  ; 26 a second) and a floor-one skeleton (60 health, 7 a blow). Each says why.
   ; ---------------------------------------------------------------------------
 
   Skills = [
     Skill
       Key = Q
-      ; Cleave. His bread and butter: one swing that lands on the group rather than
-      ; on one of them, and the reason wading in is worth doing at all.
+      ; Qilich to'lqini. He swings and the swing goes on without him: a wave that
+      ; runs Distance down the way he pointed and cuts EVERY enemy within HitWidth/2
+      ; of its line, once each. It is not stopped by a body -- only by stone, the
+      ; keep's shut gate or its own end -- so a corridor of skeletons is one cast.
       ;
-      ; AREA_AT_SPOT rather than a cone, because a cone is a shape the game does not
-      ; have and this plays as one: he aims a short way in front of himself and
-      ; everything around that spot is hit. Range is how far in front he can put it —
-      ; barely past his own sword — and Radius is how much of the room it covers.
-      Effect = AREA_AT_SPOT
-      Damage = 34
-      DamagePerLevel = 6
-      Range = 22
-      Radius = 26
-      ; Short, because it is what he does rather than something he saves.
-      CooldownFrames = 75
-      CooldownPerLevel = -2
-      ; Four points may go into it, and it waits for nothing but one of them.
+      ; 40 is two-thirds of a floor-one skeleton, so it never kills a fresh one
+      ; alone: it softens a line for his sword, it does not replace it. +15 a rank
+      ; makes the fourth 85, which does kill a line of them.
+      Effect = WAVE
+      Damage = 40
+      DamagePerLevel = 15
+      ; Five of his own reaches, and well short of the archer's 68.
+      Distance = 50
+      ; About a skeleton's width each side of the line: what it runs THROUGH, not a
+      ; cone.
+      HitWidth = 14
+      ; Fast enough to read as a swing thrown on, slow enough to see cross the room.
+      ProjectileSpeed = 110
+      Projectile = SwordWave
+      ; No stun: the charge and the pull are the knight's stuns, and a cheap
+      ; spammable stun would make them pointless.
+      CooldownFrames = 150
+      CooldownPerLevel = -8
       MaxRank = 4
-      ; What it looks like going off -- see Effect Cleave.
-      Look = Cleave
-      Name = Kesish
+      ; A flash at his hand as he throws it, as the mage's fire leaves his -- see Effect
+      ; CastFlash; drawn once the engine marks a WAVE on its caster (E32). The wave's
+      ; own look is the SwordWave it flies as (data/projectiles/sword_wave.duke).
+      Look = CastFlash
+      Name = Qilich to'lqini
       Icon = icons/skills/skill_cleave.png
-      Blurb = Oldidagi bir joyga zarba beradi va o'sha yerdagi hamma dushmanga tegadi. Bittasiga emas — to'daga. Uning eng tez-tez ishlatadigan mahorati.
-      ManaCost = 7
+      Blurb = Qilichini siltaydi va undan to'lqin otilib chiqadi. To'lqin yo'lidagi har bir dushmanni bir martadan kesib o'tadi — tanaga urilib to'xtamaydi, faqat devor yoki o'z masofasi tugaganda to'xtaydi.
+      ManaCost = 10
       ManaCostPerLevel = 1
     End,
 
     Skill
       Key = W
-      ; Charge. How a man with eleven of reach gets to the thing he wants to hit, and
-      ; the only fast thing he owns.
+      ; Qalqon bilan surish. The Magnataur's charge: shield up, he drives Distance
+      ; toward where he pointed at ProjectileSpeed, and every enemy he meets within
+      ; Radius of his shield is caught, hurt once, and carried along at his front --
+      ; then dropped there, stunned, when the drive ends (its distance run, stone, the
+      ; shut gate, or a body too big to carry in his way).
       ;
-      ; The archer's E is the same effect saying nothing about damage, and that is
-      ; the whole difference between a sprint and a charge: name a Damage and he goes
-      ; THROUGH what is in the way instead of past it. Radius is how wide that path
-      ; is -- a body's width, so it is the things he actually ran into.
-      ;
-      ; It does not shove anything aside. Pushing a body is a question about the
-      ; navigation grid rather than about a skill.
-      Effect = DASH
-      Distance = 52
-      Damage = 22
-      DamagePerLevel = 4
-      Radius = 14
-      CooldownFrames = 165
-      CooldownPerLevel = -5
-      ; Four points may go into it, and it waits for nothing but one of them.
+      ; 36 a second is 1.7 times his walk of 21: plainly a charge, slow enough that
+      ; the push itself is seen. 45 of it is a second and a quarter of driving.
+      Effect = SKEWER
+      Distance = 45
+      ProjectileSpeed = 36
+      ; His shield's width past his own body: the things he actually runs into.
+      Radius = 8
+      Damage = 30
+      DamagePerLevel = 10
+      ; A second and a quarter of nobody hitting back, at every rank: it is what
+      ; he spends it for -- the line he gathered stands still for his sword.
+      StunFrames = 38
+      CooldownFrames = 330
+      CooldownPerLevel = -15
       MaxRank = 4
-      ; What it looks like going off -- see Effect Charge.
+      ; Dust where he pushed off and himself at the end -- see Effect Charge.
       Look = Charge
-      Name = Hujum
+      Name = Qalqon bilan surish
       Icon = icons/skills/skill_dash.png
-      Blurb = Oldinga otiladi va yo'lida uchraganlarni ham urib o'tadi. Qo'li kalta odamning nishoniga yetadigan yagona yo'li.
-      ManaCost = 12
+      Blurb = Qalqonini oldinga tutib, ko'rsatilgan tomonga yugurib ketadi. Yo'lida uchragan har bir dushmanni ilib, o'zi bilan birga suradi, to'xtaganda esa ularni oldiga tashlab, gangitib qo'yadi.
+      ManaCost = 14
       ManaCostPerLevel = 1
     End,
 
     Skill
       Key = E
-      ; Guard. The archer has nothing like it and should not: his answer to being
-      ; surrounded is to not be there. This one cannot leave, so his answer is to be
-      ; worth less to hit for a few seconds.
+      ; Ajdar qoni -- Dragon Knight's third, never cast. While he has it, every blow
+      ; that reaches him is cut by BoostPercent (BoostPerLevel more each rank past
+      ; the first): 8, 13, 18 and 23 percent. On top of his plate, not instead of it
+      ; -- his ArmourPercent above is a separate cut, so the two multiply.
       ;
-      ; BoostPercent is what the skill is worth, as it is for EMPOWER — there it is
-      ; damage added and here it is damage avoided. Half of every blow, which sounds
-      ; enormous and is four seconds long against a cooldown of eight.
-      Effect = GUARD
-      BoostPercent = 50
-      BoostPerLevel = 2
-      DurationFrames = 120
-      CooldownFrames = 240
-      CooldownPerLevel = -6
-      ; Four points may go into it, and it waits for nothing but one of them.
+      ; And he mends: Heal health a second for each rank -- 3, 6, 9, 12 a second.
+      ; Against his own 2 a second of HealthRegen that is the difference between
+      ; resting after a room and walking on into the next.
+      ;
+      ; Its rank is told to his book every frame from the points he has put in (see
+      ; DungeonRun.tellTheRanks). ★ Until the engine reads a rank of 0 as "not
+      ; held", an unlearnt blood counts as rank 1 -- E32 in the engine requests.
+      Effect = DRAGON_BLOOD
+      BoostPercent = 8
+      BoostPerLevel = 5
+      Heal = 3
       MaxRank = 4
-      ; What it looks like going off -- see Effect Guard.
-      Look = Guard
-      Name = Qalqon
-      Icon = icons/skills/skill_guard.png
-      Blurb = Bir necha soniya har zarbadan kamroq zarar oladi. Kamonchida bunaqasi yo'q va bo'lmasligi ham kerak: uning javobi — o'sha yerda bo'lmaslik.
-      ManaCost = 14
-      ManaCostPerLevel = 0
+      Name = Ajdar qoni
+      Icon = icons/skills/skill_dragon_blood.png
+      Blurb = Tomirlarida ajdar qoni oqadi: har bir zarbadan kamroq zarar oladi va har soniyada o'zi tuzalib boradi. Har bir darajada ikkalasi ham kuchayadi. Bosilmaydi — doim ishlaydi.
     End,
 
     Skill
       Key = R
-      ; Whirlwind. The ultimate, and the archer's opposite again: his is a window in
-      ; which everything else he does is worth more, and this one IS the thing being
-      ; done — he turns for four seconds and everything near him bleeds.
+      ; Teskari qutb -- Reverse Polarity. Every enemy within Radius of him is pulled
+      ; -- moved, not walked -- to one point Range in front of him, spread so none
+      ; stands in another, hurt and stunned. Then his Q runs through all of them.
       ;
-      ; Damage is per landing, not per cast: TickFrames says how often it lands, so
-      ; this is 14 twice a second for four seconds — 112 to anything that stays in it
-      ; for the whole turn, and much less to anything that walks out. Which is the
-      ; point: an ultimate that could be stepped out of is one the monsters get a say
-      ; in.
-      ;
-      ; It follows him. Measured from wherever he is standing each time it lands, so
-      ; he can carry it into the next group.
-      Effect = AREA_DAMAGE
-      Damage = 14
-      DamagePerLevel = 2
-      Radius = 34
-      DurationFrames = 120
-      TickFrames = 15
-      CooldownFrames = 900
-      CooldownPerLevel = -30
+      ; 36 is a room's worth round him and still short of the archer's reach.
+      ; Range 12 puts the pile just past his sword's 11 -- in front of him, where his
+      ; next swing lands.
+      Effect = PULL
+      Radius = 36
+      Range = 12
+      Damage = 60
+      DamagePerLevel = 40
+      ; Two and a half seconds of a room standing still, at every rank: long enough
+      ; for a wave and a few swings, too short to clear a room of brutes with.
+      StunFrames = 75
+      CooldownFrames = 1200
+      CooldownPerLevel = -150
       ; Half way up the ladder, as the archer's is: the run has to be earned.
       ; Three points, and each waits for the hero: the first at level 4, the second
       ; at 8, the third at 12. A MINIMUM rather than an appointment -- pass on it at
       ; 8 and it is still there at 9.
       MaxRank = 3
       LevelPerRank = 4
-      ; What it looks like going off -- see Effect Whirlwind.
+      ; A turn of the air round him as wide as the pull -- see Effect Whirlwind.
       Look = Whirlwind
-      Name = Girdob
+      Name = Teskari qutb
       Icon = icons/skills/skill_whirlwind.png
-      Blurb = To'rt soniya aylanadi va atrofidagi hamma sekin-asta qonaydi. Zarar har tushishiga hisoblanadi, shuning uchun ichida turgan ko'p oladi, chiqib ketgan kam.
-      ManaCost = 30
-      ManaCostPerLevel = 2
+      Blurb = Atrofidagi barcha dushmanlarni bir nuqtaga — o'zining ro'parasiga — tortib keladi, ularga zarar yetkazadi va gangitib qo'yadi. To'plangan dushmanlarni bitta to'lqin bilan kesish mumkin.
+      ManaCost = 35
+      ManaCostPerLevel = 5
     End
   ]
 End

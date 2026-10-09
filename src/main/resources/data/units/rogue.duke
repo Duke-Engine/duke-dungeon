@@ -386,6 +386,22 @@ Hero
   ;                 as DAMAGE_AURA, but everyone of your own round you drinks
   ;                 BoostPercent of every blow it lands, added to a LIFESTEAL of its
   ;                 own. A share from 1 to 100, as a LIFESTEAL's is.
+  ;   WAVE          the knight's Q: throw a Projectile Distance down the way you
+  ;                 point, at ProjectileSpeed, and it cuts every enemy within
+  ;                 HitWidth of its line once -- it goes THROUGH bodies and stops only
+  ;                 at stone, a keep's shut gate or its Distance. StunFrames stuns
+  ;                 whoever it cuts. Needs a Projectile, a Distance and a HitWidth.
+  ;   SKEWER        the knight's W: drive Distance toward a spot at ProjectileSpeed
+  ;                 a second (0 = all at once, as a DASH), catching every enemy
+  ;                 within Radius of your front -- hurt once, carried along -- and
+  ;                 drop them at your front stunned StunFrames when it ends.
+  ;   DRAGON_BLOOD  the knight's E, never cast: every blow you take is cut by
+  ;                 BoostPercent (BoostPerLevel more each rank past the first), and
+  ;                 you mend Heal health a second for each rank. The one passive a
+  ;                 hero may have besides SOUL_DRINK; its rank is his points in it.
+  ;   PULL          the knight's R: every enemy within Radius of you is moved to one
+  ;                 point Range in front of you, spread, hurt and stunned StunFrames.
+  ;                 Nothing to point at.
   ;
   ; An aura reaches everyone of your own side within its Radius of you, middle to
   ; middle, through walls but never through a keep's shut gate -- you too, and whatever
@@ -401,8 +417,8 @@ Hero
   ; Each one already knows what the player must point at, so binding its key and
   ; drawing its ring both follow from the effect and neither is written twice.
   ;
-  ; The heroes use STRIKE through METEOR; everything from HEAL on is for monsters
-  ; and bosses so far. A spear thrown down a corridor is one SKILLSHOT block and not a
+  ; The heroes use STRIKE through METEOR, and the knight WAVE through PULL; the rest
+  ; from HEAL on is for monsters and bosses so far. A spear thrown down a corridor is one SKILLSHOT block and not a
   ; line of Java.
   ;
   ; ★ A KEY BELONGS TO A SLOT, NOT TO A SKILL. Both heroes cast on Q, W, E and R,

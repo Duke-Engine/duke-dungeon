@@ -84,7 +84,7 @@ class ManaTest {
     /**
      * Casting takes the skill's price out of the pool.
      *
-     * <p>The knight's guard throughout, wherever a cast has to actually go off:
+     * <p>The knight's pull throughout, wherever a cast has to actually go off:
      * it aims at himself, so it cannot be refused for want of a target and the
      * test stays about the mana. Everything aimed somewhere -- a meteor, a
      * skillshot -- refuses on its own terms when there is nowhere to put it, and
@@ -94,9 +94,9 @@ class ManaTest {
     void castingCosts() {
         var it = arena("Knight");
         pool(it.book(), 200, 0);
-        int cost = skillOf("Knight", 'E').manaAt(1);
+        int cost = skillOf("Knight", 'R').manaAt(1);
 
-        assertTrue(it.book().cast('E', 1), "the knight should have been able to guard");
+        assertTrue(it.book().cast('R', 1), "the knight should have been able to pull");
 
         assertEquals(200 - cost, it.book().getMana(), "the cast should have cost him " + cost);
         assertTrue(cost > 0, "and the file should be charging something for it");
@@ -114,13 +114,13 @@ class ManaTest {
     @Test
     void withoutTheManaNothingHappensAtAll() {
         var it = arena("Knight");
-        int cost = skillOf("Knight", 'E').manaAt(1);
+        int cost = skillOf("Knight", 'R').manaAt(1);
         pool(it.book(), cost - 1, 0);
 
-        assertFalse(it.book().cast('E', 1), "he cannot afford it");
+        assertFalse(it.book().cast('R', 1), "he cannot afford it");
 
-        assertEquals(0, it.book().cooldownOf('E'), "and the cooldown must not have started");
-        assertTrue(it.book().isReady('E'), "the slot is still ready, it is the purse that is not");
+        assertEquals(0, it.book().cooldownOf('R'), "and the cooldown must not have started");
+        assertTrue(it.book().isReady('R'), "the slot is still ready, it is the purse that is not");
         assertEquals(cost - 1, it.book().getMana(), "and nothing was taken from him");
     }
 
@@ -131,7 +131,7 @@ class ManaTest {
         pool(it.book(), 1, 0);
 
         assertEquals(0, it.book().getRefusedForManaFrame(), "nothing refused yet");
-        it.book().cast('E', 1);
+        it.book().cast('R', 1);
 
         assertTrue(it.book().getRefusedForManaFrame() > 0,
                 "a refusal nobody is told about is a key that did not work");
@@ -213,7 +213,7 @@ class ManaTest {
     void agrowingPoolIsAGiftRatherThanARefill() {
         var it = arena("Knight");
         pool(it.book(), 100, 0);
-        assertTrue(it.book().cast('E', 1), "the guard should have gone up");
+        assertTrue(it.book().cast('R', 1), "the pull should have gone off");
         int after = it.book().getMana();
         assertTrue(after < 100, "and it should have cost him something");
 
@@ -230,8 +230,8 @@ class ManaTest {
         var it = arena("Knight");
         it.book().poolOf(0, 0);
 
-        assertTrue(it.book().canAfford('E', 1), "no pool, no price");
-        assertTrue(it.book().cast('E', 1), "and the cast goes through");
+        assertTrue(it.book().canAfford('R', 1), "no pool, no price");
+        assertTrue(it.book().cast('R', 1), "and the cast goes through");
         assertEquals(0, it.book().getMana());
     }
 
@@ -334,6 +334,9 @@ class ManaTest {
             assertTrue(hero.maxMana() > 0, hero.name() + " has no mana at all");
             assertTrue(hero.manaRegen() > 0, hero.name() + " never gets any back");
             for (var skill : SETTINGS.skillsFor(hero.name())) {
+                if (skill.effect().isPassive()) {
+                    continue; // never cast, so never paid for: the knight's dragon blood
+                }
                 assertTrue(skill.manaAt(1) > 0,
                         hero.name() + "'s " + skill.key() + " is free to cast");
             }
@@ -425,7 +428,7 @@ class ManaTest {
         for (int step = 0; step < 20; step++) {
             // Pressed every step whether or not he can pay, which is the point:
             // half of these are refusals and a refusal has to cost nothing.
-            book.cast('E', 1);
+            book.cast('R', 1);
             game.runHeadless(20);
             game.getSnapshot();
             signature.append(book.getMana()).append(':')
@@ -447,6 +450,9 @@ class ManaTest {
         for (var hero : SETTINGS.heroes()) {
             Skill cheapest = null;
             for (var skill : SETTINGS.skillsFor(hero.name())) {
+                if (skill.effect().isPassive()) {
+                    continue; // never cast, so never paid for: the knight's dragon blood
+                }
                 if (cheapest == null || skill.manaAt(1) < cheapest.manaAt(1)) {
                     cheapest = skill;
                 }
