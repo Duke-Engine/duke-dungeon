@@ -652,19 +652,19 @@ public final class DungeonRun {
             game.setBanner("lost|" + settings.run().diedWord());
             return;
         }
-        if (bossId != null && logic.findObject(bossId) == null && descendAtFrame == 0 && winsByStory()) {
-            bossId = null; // the story says when this map is won: its WIN, once whatever her fall began is played
+        if (bossId != null && logic.findObject(bossId) == null && descendAtFrame == 0 && storied()) {
+            // ★ A map with a story is not won by its boss falling: the story says what follows — a trigger on her
+            // death, its WIN, a MAP — and no banner says "won" for it (the owner, 2026-10-09).
+            bossId = null;
         }
         if (bossId != null && logic.findObject(bossId) == null && descendAtFrame == 0) {
             // Nothing below this one: the last boss is the end of the game rather
-            // than the door to the next floor. The banner is the whole of what
-            // says so, and it is the only thing in this run loop that is not a
-            // beginning of something.
+            // than the door to the next floor. It ends with no banner (the owner, 2026-10-09): the run holds for
+            // its VictoryFrames and starts again.
             if (floors.lastDepth() > 0 && depth >= floors.lastDepth()) {
                 state = State.WON;
                 endedFrame = logic.getFrame();
                 tracker = Tracker.NONE;
-                game.setBanner("won|" + settings.run().wonWord());
                 return;
             }
             // The floor is finished, but not left yet — see below.
@@ -712,13 +712,6 @@ public final class DungeonRun {
                 yield alive == (condition.is() == uz.dukeengine.dungeon.story.Trigger.Is.ALIVE);
             }
         };
-    }
-
-    /** Whether this map's own triggers say WIN: then it is won by them, and not by its boss falling. */
-    private boolean winsByStory() {
-        var name = floors.stageName();
-        return name != null && settings.story().triggers().stream().anyMatch(each -> each.map().equals(name)
-                && each.actions().stream().anyMatch(action -> action.act() == uz.dukeengine.dungeon.story.Trigger.Act.WIN));
     }
 
     /**
@@ -800,9 +793,9 @@ public final class DungeonRun {
      */
     private void whileWon(DukeGame game) {
         if (storied()) {
-            // ★ A map with a story is won and stays won: the banner holds, and nothing starts again by itself — the
+            // ★ A map with a story, won by its WIN, stays won: nothing starts again by itself — the
             // owner's playtest of the talk map, where a won run cleared away its own story five seconds later. The
-            // story goes on meanwhile, so a trigger on the boss's death may say what follows (the next map), and the
+            // story goes on meanwhile, so a trigger may still say what follows (the next map), and the
             // player leaves by the menu.
             story(game);
             scripted(game);
@@ -1149,7 +1142,8 @@ public final class DungeonRun {
                     state = State.WON;
                     endedFrame = logic.getFrame();
                     tracker = Tracker.NONE;
-                    game.setBanner("won|" + (what.isBlank() ? settings.run().wonWord() : what));
+                    // The story's own words, or nothing: there is no generic "won" (the owner, 2026-10-09).
+                    game.setBanner(what.isBlank() ? "" : "won|" + what);
                 }
             }
             case SAY -> quests.play(what);

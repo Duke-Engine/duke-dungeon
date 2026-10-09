@@ -1,6 +1,7 @@
 package uz.dukeengine.dungeon.story;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 import uz.dukeengine.core.thing.GameObject;
@@ -12,8 +13,9 @@ import uz.dukeengine.dungeon.stage.Stages;
 import uz.dukeengine.game.DukeGame;
 
 /**
- * The owner's playtest of the talk map: "after the boss dies, the game restarts by itself". A won run used to start
- * again once its VictoryFrames were up, on every map; a map with a story is won and stays won — or its story goes on.
+ * What a boss's fall does, map by map. The owner, 2026-10-09: "remove the 'you won' text after the boss dies". A
+ * story map is not won by its boss at all — its story says what follows (a trigger on the death, its WIN, a MAP) — and
+ * no boss's fall puts up a banner anywhere. A plain stage is still won by it, quietly, and played again.
  */
 class StoryWinTest {
 
@@ -24,27 +26,41 @@ class StoryWinTest {
                 .orElseThrow();
     }
 
-    private static Dungeon.Session wonOn(String map, DungeonSettings settings) {
+    /** The map's boss struck down, and a few frames for its fall to be seen. */
+    private static Dungeon.Session felled(String map, DungeonSettings settings) {
         var stage = Stages.load(map, settings);
         var session = Dungeon.newStageSession(stage, settings);
         session.game().runHeadless(1);
         boss(session.game(), stage.floor().boss().kind()).getBody().damage(10_000_000f);
         session.game().runHeadless(3);
-        assertEquals(DungeonRun.State.WON, session.run().getState(), map + ": the boss down wins it");
-        session.game().runHeadless(settings.run().victoryFrames() + 30);
         return session;
     }
 
-    @Test
-    void aStoryMapStaysWonAfterItsBossFalls() {
-        var session = wonOn("talk", SETTINGS);
-        assertEquals(DungeonRun.State.WON, session.run().getState(), "won, and still won");
-        assertEquals(0, session.run().getRunCount(), "nothing started again");
+    private static void noWinOnTheBoss(String map) {
+        var session = felled(map, SETTINGS);
+        assertEquals(DungeonRun.State.RUNNING, session.run().getState(), map + ": her fall is not the end of it");
+        assertEquals("", session.game().getSnapshot().banner(), map + ": and no banner says won");
+        session.game().runHeadless(SETTINGS.run().victoryFrames() + 30);
+        assertEquals(DungeonRun.State.RUNNING, session.run().getState());
+        assertEquals(0, session.run().getRunCount(), map + ": nothing started again");
     }
 
     @Test
-    void aPlainStageIsStillWonAndPlayedAgain() {
-        var session = wonOn("first", SETTINGS);
+    void aStoryMapIsNotWonByItsBoss() {
+        noWinOnTheBoss("talk");
+    }
+
+    @Test
+    void norTheOpenWorld() {
+        noWinOnTheBoss("world");
+    }
+
+    @Test
+    void aPlainStageIsStillWonQuietlyAndPlayedAgain() {
+        var session = felled("first", SETTINGS);
+        assertEquals(DungeonRun.State.WON, session.run().getState(), "the boss down wins it");
+        assertEquals("", session.game().getSnapshot().banner(), "with no banner");
+        session.game().runHeadless(SETTINGS.run().victoryFrames() + 30);
         assertEquals(DungeonRun.State.RUNNING, session.run().getState(), "learn it, win it, and again");
         assertEquals(1, session.run().getRunCount());
     }
@@ -76,10 +92,31 @@ class StoryWinTest {
         assertEquals(0, session.run().getRunCount(), "on, not again");
     }
 
+    /** A WIN that gives no words ends the map with no banner, and it stays ended. */
     @Test
-    void theOpenWorldStaysWonToo() {
-        var session = wonOn("world", SETTINGS);
-        assertEquals(DungeonRun.State.WON, session.run().getState(), "the queen's castle taken is not a new game");
-        assertEquals(0, session.run().getRunCount());
+    void aWinWithNoWordsHasNoBanner() {
+        var settings = DungeonSettings.parse(Content.data() + "\n" + """
+                Trigger
+                  Name = Done
+                  Map = talk
+                  When = DIED
+                  Target = Warden
+                  Actions = [
+                    Action
+                      Act = WIN
+                    End
+                  ]
+                End
+                """);
+        var stage = Stages.load("talk", settings);
+        var session = Dungeon.newStageSession(stage, settings);
+        session.game().runHeadless(1);
+        boss(session.game(), "Warden").getBody().damage(10_000_000f);
+        session.game().runHeadless(30);
+        assertEquals(DungeonRun.State.WON, session.run().getState(), "the story ended it");
+        assertEquals("", session.game().getSnapshot().banner());
+        session.game().runHeadless(SETTINGS.run().victoryFrames() + 30);
+        assertEquals(DungeonRun.State.WON, session.run().getState(), "and it stays ended");
+        assertTrue(session.run().getTracker().entries().isEmpty());
     }
 }

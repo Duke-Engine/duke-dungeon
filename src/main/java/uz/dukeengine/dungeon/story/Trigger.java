@@ -65,7 +65,7 @@ public record Trigger(String name, String map, When when, String target, int ste
         CALL,
         /** An Effect played at the zone's middle — in a boss's phase, with no Zone, on it. */
         EFFECT,
-        /** The run ends won, the banner saying the Target's words (blank: the Run block's WonWord). */
+        /** The run ends won, the banner saying the Target's words (blank: no banner at all). */
         WIN,
         /** The turning: the medallion leaves the hero for the Npc named, his look darkens, he goes to the monsters. */
         CURSE

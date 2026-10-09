@@ -435,12 +435,16 @@ class MissionScreenTest {
         assertFalse(run.getTracker().words().isEmpty(), "the next floor says its step");
     }
 
-    /** The same for a win: the boss down, the banner up, and no "kill the boss" under it. */
+    /**
+     * The same for a win: the boss down, no "kill the boss" left in the list — and no banner saying "won" either
+     * (the owner, 2026-10-09): the run holds a while and starts again.
+     */
     @Test
     void theStepIsNotLeftUnderTheBannerOfAWin() {
         var floor = DungeonGenerator.generate(21L, SETTINGS, 1,
                 Layout.sized(SETTINGS, SETTINGS.mapWidth(), SETTINGS.mapHeight(), SETTINGS.maxRooms()));
-        var session = Dungeon.newStageSession(new Stage("test", "Test", "", 1, 1, 21L, floor), SETTINGS);
+        var arena = new uz.dukeengine.dungeon.story.MapStory(List.of(), List.of(), List.of(), List.of(), true);
+        var session = Dungeon.newStageSession(new Stage("test", "Test", "", 1, 1, 21L, floor, null, arena), SETTINGS);
         var game = session.game();
         game.runHeadless(2);
         var run = session.run();
@@ -449,6 +453,7 @@ class MissionScreenTest {
         game.getLogic().destroyObject(find(game, floor.boss().kind()));
         game.runHeadless(2);
         assertEquals(DungeonRun.State.WON, run.getState());
+        assertEquals("", game.getSnapshot().banner(), "no banner says won");
         assertEquals("", run.getTracker().words(), "the boss is dead, and there is nothing left to tell him to do");
         var drawn = new Drawn(null);
         MissionScreen.paint(drawn, session, SETTINGS);
