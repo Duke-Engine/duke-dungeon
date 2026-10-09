@@ -425,11 +425,8 @@ class KnightTest {
     }
 
     /**
-     * W: the shield charge catches what it meets, carries it along at his front while it drives its whole Distance,
-     * and drops it there stunned and hurt when it ends.
-     *
-     * <p>One skeleton: two caught at once end the drive within a few frames today, the second set down where his next
-     * step is and taken for a body in his way -- E32 in the engine requests. Add a second here when that lands.
+     * W: the shield charge catches what it meets -- three skeletons, two side by side and one further on -- carries
+     * them along at his front while it drives its whole Distance, and drops them there stunned and hurt when it ends.
      */
     @Test
     void theChargeCarriesWhatItMeetsAndStunsIt() {
@@ -437,20 +434,24 @@ class KnightTest {
         var world = Dungeon.world(room(), SETTINGS, Content.units());
         var game = world.game();
         game.spawn(KNIGHT, world.hero(), 80f, 150f);
-        game.spawn("Skeleton", world.dungeon(), 100f, 150f);
+        game.spawn("Skeleton", world.dungeon(), 100f, 146f);
+        game.spawn("Skeleton", world.dungeon(), 100f, 154f);
+        game.spawn("Skeleton", world.dungeon(), 112f, 150f);
         game.runHeadless(1);
         var knight = find(game, KNIGHT);
-        var skeleton = find(game, "Skeleton");
-        sturdy(skeleton);
+        var skeletons = all(game, "Skeleton");
+        skeletons.forEach(KnightTest::sturdy);
         var book = knight.findModule(SkillBook.class);
-        float full = skeleton.getBody().getHealth();
+        var full = skeletons.stream().map(each -> each.getBody().getHealth()).toList();
 
         assertTrue(book.cast('W', 1, null, new Coord3D(250f, 150f, 0f)), "he did not charge");
         game.runHeadless(20);
         assertTrue(book.keepsBusy(), "the charge was over in two-thirds of a second: it is meant to be seen");
-        float ahead = skeleton.getPosition().x() - knight.getPosition().x();
-        assertTrue(ahead > 0f && ahead < 20f, "the caught one is " + ahead + " from him, not at his front");
-        assertTrue(skeleton.getPosition().x() > 110f, "it was not carried along");
+        for (int i = 0; i < skeletons.size(); i++) {
+            float ahead = skeletons.get(i).getPosition().x() - knight.getPosition().x();
+            assertTrue(ahead > 0f && ahead < 30f, "skeleton " + i + " is " + ahead + " from him, not at his front");
+            assertTrue(skeletons.get(i).getPosition().x() > 112f, "skeleton " + i + " was not carried along");
+        }
 
         int frames = 0;
         while (book.keepsBusy() && frames++ < 120) {
@@ -458,11 +459,45 @@ class KnightTest {
         }
         game.runHeadless(1); // the stun's timer is read on the creature's own next frame
         assertEquals(80f + charge.distance(), knight.getPosition().x(), 1f, "he did not drive its whole Distance");
-        assertTrue(skeleton.getPosition().x() > knight.getPosition().x(), "it was not dropped at his front");
-        assertTrue(skeleton.getBody().getHealth() <= full - charge.damage() + 0.5f, "it was not hurt");
-        assertTrue(skeleton.hasStatus(ObjectStatus.DISABLED), "dropped at his front, it was not stunned");
+        for (int i = 0; i < skeletons.size(); i++) {
+            var each = skeletons.get(i);
+            assertTrue(each.getPosition().x() > knight.getPosition().x(), "skeleton " + i + " was not dropped at his front");
+            assertTrue(each.getBody().getHealth() <= full.get(i) - charge.damage() + 0.5f, "skeleton " + i + " not hurt");
+            assertTrue(each.hasStatus(ObjectStatus.DISABLED), "skeleton " + i + " was dropped and not stunned");
+        }
         game.runHeadless(charge.stunFrames() + 2);
-        assertFalse(skeleton.hasStatus(ObjectStatus.DISABLED), "the stun outlasted its StunFrames");
+        assertTrue(skeletons.stream().noneMatch(each -> each.hasStatus(ObjectStatus.DISABLED)),
+                "the stun outlasted its StunFrames");
+    }
+
+    /**
+     * E unlearnt: a knight who has put no point in his blood has none of it -- no blow turned aside, nothing mended
+     * past his own regeneration. A run tells his book rank 0 (see thePointsHeSpendsReachHisBlood); here it is said
+     * straight to the book, so the mend is his alone to compare against.
+     */
+    @Test
+    void anUnlearntDragonBloodDoesNothing() {
+        var session = Dungeon.newSession(11L, DungeonSettings.parse(withDefaultHero(KNIGHT)));
+        session.game().runHeadless(3);
+        assertEquals(0, session.run().getLearnt().rankOf('E'), "the premise: no point in his blood");
+        assertEquals(1f, find(session.game(), KNIGHT).getBody().getDamageScale(), 0.0001f,
+                "in a run, an unlearnt blood turned a blow aside");
+
+        var world = Dungeon.world(room(), SETTINGS, Content.units());
+        var game = world.game();
+        game.spawn(KNIGHT, world.hero(), 150f, 150f);
+        game.runHeadless(1);
+        var knight = find(game, KNIGHT);
+        knight.findModule(SkillBook.class).setRank('E', 0);
+        game.runHeadless(1);
+        var body = knight.getBody();
+        assertEquals(1f, body.getDamageScale(), 0.0001f, "an unlearnt blood turned a blow aside");
+        body.damage(400f);
+        float hurt = body.getHealth();
+        game.runHeadless(60); // two seconds
+        float ownMend = 2f * SETTINGS.heroNamed(KNIGHT).healthRegen() / 10f;
+        // No more than his own mend (none at all in a bare world, which gives him no HealthRegen): rank 1 would be 6.
+        assertTrue(body.getHealth() - hurt <= ownMend + 1f, "an unlearnt blood mended him " + (body.getHealth() - hurt));
     }
 
     /**
