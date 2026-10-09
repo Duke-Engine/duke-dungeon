@@ -98,6 +98,7 @@ public final class DungeonSettings {
     private Hud hud = Hud.DEFAULTS;
     private uz.dukeengine.dungeon.world.Party party = uz.dukeengine.dungeon.world.Party.DEFAULTS;
     private uz.dukeengine.dungeon.world.SaveMenu saveMenu = uz.dukeengine.dungeon.world.SaveMenu.DEFAULTS;
+    private uz.dukeengine.dungeon.world.MainMenu mainMenu = uz.dukeengine.dungeon.world.MainMenu.DEFAULTS;
     private UnitBar unitBar = UnitBar.DEFAULTS;
     private StatBlock statBlock = StatBlock.DEFAULTS;
     private SkillRing skillRing = SkillRing.DEFAULTS;
@@ -163,6 +164,11 @@ public final class DungeonSettings {
     /** The words of the saved games on the way in: continue, load, a new game. */
     public uz.dukeengine.dungeon.world.SaveMenu saveMenu() {
         return saveMenu;
+    }
+
+    /** The front menu's rows, the client's menu words, and the live scene behind them. */
+    public uz.dukeengine.dungeon.world.MainMenu mainMenu() {
+        return mainMenu;
     }
 
     public Hud hud() {
@@ -424,6 +430,7 @@ public final class DungeonSettings {
                 case uz.dukeengine.dungeon.story.Trade block -> trade = once(block, once);
                 case uz.dukeengine.dungeon.story.Medallion block -> medallion = once(block, once);
                 case uz.dukeengine.dungeon.world.SaveMenu block -> saveMenu = once(block, once);
+                case uz.dukeengine.dungeon.world.MainMenu block -> mainMenu = once(block, once);
                 case UnitBar block -> unitBar = once(block, once);
                 case StatBlock block -> statBlock = once(block, once);
                 case SkillRing block -> skillRing = once(block, once);

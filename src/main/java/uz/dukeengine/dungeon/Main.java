@@ -13,6 +13,7 @@ import uz.dukeengine.client3d.Shell;
 import uz.dukeengine.client3d.Tileset;
 import uz.dukeengine.client3d.Visuals;
 import uz.dukeengine.core.thing.ObjectId;
+import uz.dukeengine.dungeon.content.Content;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.dungeon.content.HeroLook;
 import uz.dukeengine.dungeon.world.Theme;
@@ -490,7 +491,9 @@ public final class Main {
         var wanted = Stages.chosen(args);
         var opening = wanted == null ? null : Stages.found(wanted);
         var settings = DungeonSettings.of(opening);
-        var session = chosenGame(opening, settings);
+        // The match the window opens with, and after Quit to the main menu a fresh one: a match is played once.
+        var current = new java.util.concurrent.atomic.AtomicReference<>(chosenGame(opening, settings));
+        var session = current.get();
         // Held rather than passed straight in: the question below reaches back
         // into it, because whose eyes open the map is part of who you chose.
         var visuals = looks(settings);
@@ -517,20 +520,31 @@ public final class Main {
         // pause menu -- see docs/plan/2026-10-08-saving.md.
         var saves = Saves.ofThePlayer();
         session.run().onCheckpoint(save -> write(saves, Saves.AUTOSAVE, save));
-        duke.onLeaving(() -> saveTo(session, saves, Saves.AUTOSAVE));
-        duke.shell(Shell.create()
-                .entry(Shell.Entry.PLAY, "Enter the dungeon")
-                .entry(Shell.Entry.SETTINGS)
-                .entry(Shell.Entry.QUIT)
-                .pauseRows(List.of(saveRow(settings, slot -> saveTo(session, saves, slot))))
-                // Which turns Play into a path rather than a start -- a save to go back to, then with whom,
-                // how, then where, then who. Nothing opens until it is walked. See whoGoesIn.
-                .asking(savedGames(settings, loadable(saves.list(), settings), him -> displayNameOf(session, him),
-                        saved -> {
-                            heroChosen(session, settings, visuals, keys, saved.game().hero());
-                            session.run().resume(saved.game(), Floors.resumed(saved.game(), settings));
-                        },
-                        whoGoesIn(session, settings, visuals, keys, duke, bag))));
+        // Play turns into a path rather than a start -- continue, a new game (with whom, how, where, who), load,
+        // the credits. Nothing opens until it is walked. See savedGames and whoGoesIn.
+        var credits = FrontMenu.credits(settings, Content.read("CREDITS.md"));
+        java.util.function.Function<Dungeon.Session, Shell.Question> wayIn = match -> savedGames(settings,
+                loadable(saves.list(), settings), him -> displayNameOf(match, him),
+                saved -> {
+                    heroChosen(match, settings, visuals, keys, saved.game().hero());
+                    match.run().resume(saved.game(), Floors.resumed(saved.game(), settings));
+                },
+                whoGoesIn(match, settings, visuals, keys, duke, bag), credits);
+        var shell = FrontMenu.shell(settings, wayIn.apply(session),
+                List.of(saveRow(settings, slot -> saveTo(current.get(), saves, slot))));
+        duke.onLeaving(() -> {
+            saveTo(current.get(), saves, Saves.AUTOSAVE);
+            // Back at the front menu, the next game is a new match, its way in read afresh (a save just made is
+            // there to continue).
+            var next = chosenGame(opening, settings);
+            next.run().onCheckpoint(save -> write(saves, Saves.AUTOSAVE, save));
+            Bag.show(bag, next, settings);
+            current.set(next);
+            shell.asking(FrontMenu.startingFresh(wayIn.apply(next), () -> duke.startMatch(next.game())));
+        });
+        // The live scene behind the front menu: the kingdom's soldiers holding a clearing against the skeletons.
+        duke.backdrop(() -> MenuScene.of(settings).game());
+        duke.shell(shell);
         duke.launch();
     }
 
@@ -588,8 +602,8 @@ public final class Main {
     }
 
     /**
-     * The first question on the way in when there is a save to go back to: continue the newest, load one of them,
-     * or a new game down the path the game always had — {@code fresh}, which is all there is with no save at all.
+     * The way in, the front menu's Play: continue the newest save (only with one), a new game down the path the game
+     * always had — {@code fresh} — load one of the saves (only with some), and the credits.
      *
      * @param saves newest first, as {@link Saves#list} reads them
      * @param named what the player calls a hero, by his template
@@ -597,24 +611,27 @@ public final class Main {
      */
     static Shell.Question savedGames(DungeonSettings settings, List<Saves.Saved> saves,
             java.util.function.UnaryOperator<String> named, java.util.function.Consumer<Saves.Saved> load,
-            Shell.Question fresh) {
-        if (saves.isEmpty()) {
-            return fresh;
-        }
+            Shell.Question fresh, Shell.Option credits) {
         var words = settings.saveMenu();
-        var rows = new java.util.ArrayList<Shell.Option>();
-        for (var saved : saves) {
-            var slot = saved.slot().equals(Saves.AUTOSAVE) ? words.autosaveWord()
-                    : String.format(words.slotWord(), saved.slot().replaceAll("\\D", ""));
-            rows.add(new Shell.Option(slot, about(settings, saved, named), () -> load.accept(saved), null));
+        var front = new java.util.ArrayList<Shell.Option>();
+        if (!saves.isEmpty()) {
+            var newest = saves.getFirst();
+            front.add(new Shell.Option(words.continueWord(), about(settings, newest, named),
+                    () -> load.accept(newest), null));
         }
-        var newest = saves.getFirst();
-        return new Shell.Question(words.title(), words.hint(), List.of(
-                new Shell.Option(words.continueWord(), about(settings, newest, named), () -> load.accept(newest),
-                        null),
-                new Shell.Option(words.loadWord(), words.loadBlurb(), null,
-                        new Shell.Question(words.loadTitle(), words.hint(), rows)),
-                new Shell.Option(words.newWord(), words.newBlurb(), null, fresh)));
+        front.add(new Shell.Option(words.newWord(), words.newBlurb(), null, fresh));
+        if (!saves.isEmpty()) {
+            var rows = new java.util.ArrayList<Shell.Option>();
+            for (var saved : saves) {
+                var slot = saved.slot().equals(Saves.AUTOSAVE) ? words.autosaveWord()
+                        : String.format(words.slotWord(), saved.slot().replaceAll("\\D", ""));
+                rows.add(new Shell.Option(slot, about(settings, saved, named), () -> load.accept(saved), null));
+            }
+            front.add(new Shell.Option(words.loadWord(), words.loadBlurb(), null,
+                    new Shell.Question(words.loadTitle(), words.hint(), rows)));
+        }
+        front.add(credits);
+        return new Shell.Question(words.title(), words.hint(), front);
     }
 
     /** The line under a save: its hero, his level and the floor. */
@@ -763,7 +780,12 @@ public final class Main {
         if (map == null) {
             // The seed is the one thing the clock touches, and it is outside the
             // simulation: it chooses WHICH deterministic dungeon to play.
-            return Dungeon.newSession(System.nanoTime(), settings);
+            var session = Dungeon.newSession(System.nanoTime(), settings);
+            var under = settings.mainMenu().subtitle();
+            if (under != null && !under.isBlank()) {
+                session.game().subtitle(under); // the line under the title, in the game's words
+            }
+            return session;
         }
         return Dungeon.newStageSession(Stages.load(map, settings), settings);
     }

@@ -15,7 +15,7 @@ import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.dungeon.run.SaveGame;
 import uz.dukeengine.dungeon.run.Saves;
 
-/** "Enter the dungeon" with a save to go back to: continue, load, or a new game — and with none, nothing new. */
+/** The way in: continue (only with a save), a new game, load (only with saves), the credits; and saving in play. */
 class SaveMenuTest {
 
     private static final DungeonSettings SETTINGS = DungeonSettings.load();
@@ -26,9 +26,15 @@ class SaveMenuTest {
                 FileTime.fromMillis(when));
     }
 
+    private static final Shell.Option CREDITS = new Shell.Option("CREDITS", "", null,
+            new Shell.Question("C", "", List.of()));
+
     @Test
-    void withNoSaveTheWayInIsAsItWas() {
-        assertSame(FRESH, Main.savedGames(SETTINGS, List.of(), name -> name, saved -> { }, FRESH));
+    void withNoSaveThereIsNoContinueAndNoLoad() {
+        var question = Main.savedGames(SETTINGS, List.of(), name -> name, saved -> { }, FRESH, CREDITS);
+        assertEquals(List.of(SETTINGS.saveMenu().newWord(), "CREDITS"),
+                question.options().stream().map(Shell.Option::label).toList());
+        assertSame(FRESH, question.options().getFirst().next(), "a new game walks the path it always did");
     }
 
     @Test
@@ -39,9 +45,9 @@ class SaveMenuTest {
         var words = SETTINGS.saveMenu();
 
         var question = Main.savedGames(SETTINGS, List.of(newest, older), name -> name, s -> loaded.add(s.slot()),
-                FRESH);
+                FRESH, CREDITS);
 
-        assertEquals(List.of(words.continueWord(), words.loadWord(), words.newWord()),
+        assertEquals(List.of(words.continueWord(), words.newWord(), words.loadWord(), "CREDITS"),
                 question.options().stream().map(Shell.Option::label).toList());
         var go = question.options().getFirst();
         assertEquals(String.format(words.aboutSave(), "Rogue", 1, 3), go.blurb());
@@ -49,12 +55,12 @@ class SaveMenuTest {
         go.taken().run();
         assertEquals(List.of(Saves.AUTOSAVE), loaded);
 
-        var slots = question.options().get(1).next();
+        var slots = question.options().get(2).next();
         assertEquals(List.of(words.autosaveWord(), String.format(words.slotWord(), "1")),
                 slots.options().stream().map(Shell.Option::label).toList());
         slots.options().get(1).taken().run();
         assertEquals(List.of(Saves.AUTOSAVE, "slot1"), loaded);
-        assertSame(FRESH, question.options().get(2).next(), "a new game walks the path it always did");
+        assertSame(FRESH, question.options().get(1).next(), "a new game walks the path it always did");
     }
 
     // ---- in the game: Saqlash, and leaving ----

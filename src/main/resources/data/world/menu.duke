@@ -1,0 +1,56 @@
+; Duke Dungeon — the front menu: its rows, every fixed word of the client's menus in the game's own,
+; and the live scene behind them. See docs/plan/2026-09-30-main-menu.md.
+MainMenu
+  ; The line under the title.
+  Subtitle = "Har safar boshqa zindon"
+  ; The front menu's own rows. The first opens the way in: continue, a new game, load, the credits.
+  PlayWord = "O'ynash"
+  SettingsWord = Sozlamalar
+  QuitWord = Chiqish
+  ; The owner, 2026-10-09: the rows at one side, the scene seen across the rest.
+  Side = LEFT
+  Margin = 64
+  CreditsWord = Mualliflar
+  CreditsBlurb = "O'yin kimlarning ishidan yasalgan"
+  CreditsTitle = MUALLIFLAR
+  CreditsHint = "YUQORI PAST tanlang    ESC ortga"
+  ; The client's fixed words, each "the English it says when a game names none = what this game says".
+  Words = [
+    "PAUSED = TO'XTATILDI",
+    "Resume = Davom etish",
+    "Settings = Sozlamalar",
+    "Quit to the main menu = Bosh menyuga chiqish",
+    "Quit to the desktop = O'yindan chiqish",
+    "ESC resume = ESC davom etish",
+    "QUIT TO THE MAIN MENU? = BOSH MENYUGA CHIQILSINMI?",
+    "QUIT TO THE DESKTOP? = O'YINDAN CHIQILSINMI?",
+    "everything on this floor is lost = bu qavatdagi hamma narsa yo'qoladi",
+    "Keep playing = O'ynashda davom etish",
+    "Quit = Chiqish",
+    "ESC keep playing = ESC o'ynashda davom etish",
+    "SETTINGS = SOZLAMALAR",
+    "Fullscreen = To'liq ekran",
+    "NO = YO'Q",
+    "YES = HA",
+    "Size = O'lcham",
+    "MONITOR = MONITOR",
+    "Anti-aliasing = Silliqlash",
+    "OFF = O'CHIQ",
+    "Volume = Ovoz",
+    "Effects = Effektlar",
+    "Voice = Nutq",
+    "Music = Musiqa",
+    "Track = Kuy",
+    "Save = Saqlash",
+    "Cancel = Bekor qilish",
+    "anti-aliasing from the next launch = silliqlash keyingi ishga tushirishda",
+    "unsaved changes = saqlanmagan o'zgarishlar",
+    "UP DOWN choose    LEFT RIGHT change    ESC back = YUQORI PAST tanlang    CHAP O'NG o'zgartiring    ESC ortga",
+    "UP DOWN choose    ENTER take = YUQORI PAST tanlang    ENTER tanlash",
+  ]
+  ; ---- the scene behind the menu: the kingdom's soldiers holding a clearing against the skeletons ----
+  ; A real fight of the game's own creatures and brains, the fallen coming back, so it never ends.
+  SceneLook = "Forest,Wooded"
+  Soldiers = [Knight, Knight, Rogue, Rogue, Mage]
+  Foes = [Skeleton, Skeleton, Skeleton, Runner, Brute, SkeletonMage]
+End

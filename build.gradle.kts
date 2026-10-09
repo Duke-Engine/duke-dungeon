@@ -20,6 +20,11 @@ tasks.withType<Test>().configureEach {
     useJUnitPlatform()
 }
 
+// The credits the front menu rolls are CREDITS.md's own rows, shipped beside the game's data.
+tasks.processResources {
+    from("CREDITS.md")
+}
+
 dependencies {
     // The engine, from Maven Central. The BOM names the version once and the modules below take it, so
     // there is one number to change and no way to mix two of them. See settings.gradle.kts for building
