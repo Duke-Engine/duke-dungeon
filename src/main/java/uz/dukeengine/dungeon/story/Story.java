@@ -126,9 +126,6 @@ public record Story(Dialogue dialogue, List<Speaker> speakers, List<Conversation
             if (!monsters.contains(boss.name())) {
                 wrong.add(named + " is no Monster: a boss is a Monster block of that Name");
             }
-            if (boss.beaten() < 0 || boss.beaten() >= 100) {
-                wrong.add(named + " is beaten at " + boss.beaten() + "% of its health: 0 (it dies) to 99");
-            }
             for (int i = 0; i < boss.phases().size(); i++) {
                 var phase = boss.phases().get(i);
                 var which = named + " phase " + (i + 1);

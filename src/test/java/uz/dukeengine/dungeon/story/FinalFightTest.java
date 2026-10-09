@@ -10,7 +10,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import uz.dukeengine.core.math.Coord3D;
-import uz.dukeengine.core.module.DamageType;
 import uz.dukeengine.core.pathfind.PathGrid;
 import uz.dukeengine.core.player.PlayerList;
 import uz.dukeengine.core.thing.GameObject;
@@ -110,7 +109,7 @@ class FinalFightTest {
         var game = session.game();
         var warden = one(game, "Warden");
         var body = warden.getBody();
-        assertEquals(50f, body.estimateDamage(100f, DamageType.NORMAL), "the first phase, begun at the start: half of every blow");
+        assertEquals(0.5f, body.getDamageScale(), "the first phase, begun at the start: half of every blow");
         assertEquals(List.of("Q"), warden.findModule(Fighting.class).castOnly(), "and only its Q");
         int skeletons = all(game, "Skeleton").size();
 
@@ -124,7 +123,7 @@ class FinalFightTest {
         assertFalse(session.run().getScript().flagged("Low"), "one phase a frame: the third waits for it");
         game.runHeadless(2);
         assertTrue(session.run().getScript().flagged("Low"), "then the third");
-        assertEquals(100f, body.estimateDamage(100f, DamageType.NORMAL), "a phase that says nothing takes every blow whole");
+        assertEquals(1f, body.getDamageScale(), "a phase that says nothing takes every blow whole");
         assertEquals(List.of(), warden.findModule(Fighting.class).castOnly(), "and casts all");
 
         body.setHealth(body.getMaxHealth());
@@ -163,7 +162,7 @@ class FinalFightTest {
         assertThrows(IllegalArgumentException.class, () -> DungeonSettings.parse(Content.data() + "\n" + """
                 Boss
                   Name = Nobody
-                  Beaten = 25
+                  BeatenLook = Beaten
                 End
                 """));
     }
