@@ -101,6 +101,8 @@ public final class DungeonRun {
         int loadedExperience = -1;
         /** His purse: the gold his kills have paid him and his trading left him. */
         int gold;
+        /** How many of the conversations said this run his machine has shown to the end (or had skipped). */
+        int read;
 
         Seat(GamePlayer player, HeroProgress progress, SkillRanks learnt, String hero) {
             this.player = player;
@@ -731,10 +733,31 @@ public final class DungeonRun {
      * to have been a win rather than an interruption.
      */
     private void whileWon(DukeGame game) {
+        if (storied()) {
+            // ★ A map with a story is won and stays won: the banner holds, and nothing starts again by itself — the
+            // owner's playtest of the talk map, where a won run cleared away its own story five seconds later. The
+            // story goes on meanwhile, so a trigger on the boss's death may say what follows (the next map), and the
+            // player leaves by the menu.
+            story(game);
+            scripted(game);
+            return;
+        }
         if (game.getLogic().getFrame() - endedFrame < settings.run().victoryFrames()) {
             return;
         }
         begin(game);
+    }
+
+    /**
+     * Whether the map being played has a story: people, zones, things laid or quests of its own, or a trigger that
+     * names it. The descent and a plain stage have none — a stage is learnt and won again — and the open world has one.
+     */
+    private boolean storied() {
+        var story = floors.story();
+        var name = floors.stageName();
+        return !story.npcs().isEmpty() || !story.zones().isEmpty() || !story.items().isEmpty()
+                || !story.quests().isEmpty()
+                || name != null && settings.story().triggers().stream().anyMatch(each -> each.map().equals(name));
     }
 
     /** A fresh run: the first floor, heroes with nothing, and the banner cleared. */
@@ -761,6 +784,7 @@ public final class DungeonRun {
         }
         quests.reset(); // and every quest: the map that starts them starts them again
         script.reset(); // and every trigger: the story begins again with the run
+        cued.clear();
         endCutscene(game);
         descend(game);
         runCount++;
@@ -864,6 +888,11 @@ public final class DungeonRun {
     }
 
     /** Which floor the hero is on. One at the start of every run.  */
+    /** The map being played, by its name, or null for the descent. */
+    public String getStageName() {
+        return floors.stageName();
+    }
+
     public int getDepth() {
         return depth;
     }
@@ -983,6 +1012,7 @@ public final class DungeonRun {
         for (var event : quests.takeEvents()) {
             script.heard(event.when(), event.target(), event.step()); // what the actions did: due next frame
         }
+        cue(game);
         shoot(game);
         marks();
         if (nextMap != null) {
@@ -998,6 +1028,11 @@ public final class DungeonRun {
             depth = floors.firstDepth();
             endCutscene(game);
             descend(game);
+            if (state == State.WON) {
+                // A won map's story sent the heroes on: the next chapter is played, not watched.
+                state = State.RUNNING;
+                game.setBanner("");
+            }
         }
     }
 
@@ -1069,16 +1104,57 @@ public final class DungeonRun {
             case FLAG -> script.flag(what);
             case MAP -> nextMap = what;
             case CUTSCENE -> {
-                cutscene = settings.story().cutscene(what);
-                shotAt = 0;
-                shotLeft = -1;
-                inCutscene = cutscene != null;
+                // Queued behind every conversation said before it: a cutscene never starts while a line is on a
+                // screen. See cue.
+                var asked = settings.story().cutscene(what);
+                if (asked != null) {
+                    cued.add(new Cued(asked, quests.said().size()));
+                }
             }
         }
     }
 
     private uz.dukeengine.dungeon.map.StaticMap.Zone zoneNamed(String name) {
         return floors.story().zones().stream().filter(zone -> zone.name().equals(name)).findFirst().orElse(null);
+    }
+
+    /** A cutscene asked for, and how many conversations had been said when it was: it waits until they are read. */
+    private record Cued(uz.dukeengine.dungeon.story.Cutscene cutscene, int after) {
+    }
+
+    private final List<Cued> cued = new ArrayList<>();
+    /** Frames the first cutscene in the queue has waited, the world going on. */
+    private int cueWaited;
+
+    /**
+     * The first cutscene queued begins once none plays and every player's machine has shown to the end every
+     * conversation said before it was asked for — told by the {@code Read} order each window sends as it closes one —
+     * or, at the latest, once it has waited the Dialogue block's ReadWaitFrames: a machine with no window, or a player
+     * gone from his keys. Alone, the world is paused while a line is on his screen, so the wait does not run then.
+     */
+    private void cue(DukeGame game) {
+        if (cutscene != null || cued.isEmpty()) {
+            return;
+        }
+        var next = cued.getFirst();
+        boolean read = seats.stream().allMatch(seat -> seat.read >= next.after());
+        if (!read && ++cueWaited < settings.story().dialogue().readWaitFrames()) {
+            return;
+        }
+        cued.removeFirst();
+        cueWaited = 0;
+        cutscene = next.cutscene();
+        shotAt = 0;
+        shotLeft = -1;
+        inCutscene = true;
+    }
+
+    /** A player's machine has shown to the end the first {@code count} conversations said. */
+    public void read(int playerIndex, int count) {
+        var seat = seatOf(playerIndex);
+        if (seat != null) {
+            seat.read = Math.max(seat.read, count);
+        }
     }
 
     /** The cutscene a frame on: a shot begun — the camera sent flying, its line said — or counted down. */
@@ -1168,11 +1244,50 @@ public final class DungeonRun {
     }
 
     /**
+     * Every GlowFrames, the Dialogue block's GlowLook played on the target of every quest step that says Glow, for as
+     * long as the step wants it: the thing lying that it asks for, the creature it asks to kill, the person it sends
+     * him to. An event, which the client plays riding the thing; nothing in the world reads it.
+     */
+    private void glow(DukeGame game) {
+        var dialogue = settings.story().dialogue();
+        var logic = game.getLogic();
+        if (dialogue.glowLook().isBlank() || logic.getFrame() % dialogue.glowFrames() != 0) {
+            return;
+        }
+        for (var each : quests.active()) {
+            var step = settings.story().quest(each.quest()).steps().get(each.step());
+            if (!step.glow()) {
+                continue;
+            }
+            for (var thing : logic.getObjects()) {
+                if (glows(step, thing)) {
+                    logic.effect(dialogue.glowLook(), thing);
+                }
+            }
+        }
+    }
+
+    /** Whether {@code thing} is what {@code step} asks for. */
+    private static boolean glows(uz.dukeengine.dungeon.story.Quest.Step step, GameObject thing) {
+        return switch (step.goal()) {
+            case COLLECT -> {
+                var lying = thing.findModule(uz.dukeengine.rpg.item.GroundItem.class);
+                yield lying != null && lying.getHolding() != null && lying.getHolding().id().equals(step.target());
+            }
+            case KILL -> thing.getTemplate().name().equals(step.target()) && !thing.isEffectivelyDead();
+            case TALK, GIVE -> thing.getTemplate().name().equals(step.target())
+                    && thing.getPlayerIndex() == uz.dukeengine.core.player.PlayerList.NEUTRAL_INDEX;
+            case REACH -> false;
+        };
+    }
+
+    /**
      * Every frame the floor is played: experience earned paid to every hero standing, and every {@code CheckFrames}
      * the bags, the zones and the people looked at.
      */
     private void story(DukeGame game) {
         stroll(game);
+        glow(game);
         var logic = game.getLogic();
         quests.frame(logic.getFrame());
         int paid = quests.takeExperience();

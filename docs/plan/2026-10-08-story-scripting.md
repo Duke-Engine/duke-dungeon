@@ -42,6 +42,7 @@ End
 | `MAP_START` | — | the map's floor is laid (a load lays it again, but a trigger that fired stays fired) |
 | `ZONE` | a zone of the map | a hero comes into it — from outside it: a Repeat fires again only after every hero has left it |
 | `DIED` | a Monster template | one of it dies — a unique boss's template is "a named creature" |
+| `QUEST_STARTED` | a quest | it is started (by a conversation, a map, a step or a trigger; not by a load) |
 | `QUEST_DONE` | a quest | its last step is done |
 | `STEP_DONE` | a quest, with `Step` (1 = its first) | that step is done |
 | `HEARD` | a conversation | it is played (**default**: "a conversation ends" is when the simulation plays it; alone the world is paused until the box is closed, so what follows waits for it) |
@@ -92,6 +93,12 @@ End
   shown, and skips the cutscene when none is. A skip is this game's order `skip`, heard on every machine: in a party
   any player's skip skips it for all (**default**), and nobody is paused.
 - At its end the camera is given back and put over the first hero.
+- **A cutscene never starts while a line is on a screen.** It queues behind every conversation said before it was
+  asked for, and begins once every player's machine has shown those to the end (or had them skipped) — each window
+  says so as this game's order `read` — or, at the latest, after the `Dialogue` block's `ReadWaitFrames` (**default**
+  300) of the world going on: for a machine with no window, or a player away from his keys. Alone the world is
+  paused while a line is shown, so that wait does not run then. (The owner's playtest: the locket's cutscene,
+  begun by her greeting, put its black bars over the greeting.)
 - A shot's camera flight is linear (the engine's `GameCamera.moveTo`); turning, pitch and zoom are not used yet.
 - A cutscene is not saved: a load mid-cutscene comes back without it.
 
@@ -105,6 +112,14 @@ Zones are the map's `Zones` (the dialogue spec). Triggers name their map with `M
 - Coming through the corridor into the far hall (zone `HallDoor`), a cutscene: the camera flies to the chest in the
   far corner (zone `Chest`) and the commander says one line about her locket.
 - Her MAIN quest handed in, an ambush: she says a line, and three skeletons rise at zone `Ambush` in the first room.
+
+## Winning a story map
+
+A map with a story — people, zones, things laid or quests of its own, or a trigger naming it (the talk map, the open
+world) — is won when its boss falls and **stays won** (the owner's playtest, 2026-10-09: it used to start again by
+itself after `VictoryFrames`, as the descent and a plain stage still do). The banner holds; the story goes on, so a
+trigger on the boss's death (`DIED`, its template) may say what follows — `MAP` takes the heroes to the next chapter
+and the run plays on there. With no such trigger the player leaves by the menu.
 
 ## Saved
 

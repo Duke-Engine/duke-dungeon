@@ -853,6 +853,10 @@ public final class DungeonSettings {
                 loot.stream().map(Loot::id).toList());
         require(story.isEmpty(), String.join("; ", story));
         require(dialogue.checkFrames() >= 1, "Dialogue's CheckFrames is how often people are looked for: at least 1");
+        require(dialogue.glowLook().isBlank()
+                || effects.stream().anyMatch(effect -> effect.name().equals(dialogue.glowLook())),
+                "Dialogue's GlowLook names " + dialogue.glowLook() + ", and no Effect block describes it");
+        require(dialogue.glowFrames() >= 1, "Dialogue's GlowFrames is how often a quest's target glows again: at least 1");
         for (var moment : moments) {
             require(!moment.effect().isBlank(), "Moment " + moment.name() + " plays no Effect");
             require(moment.scale() > 0f, "Moment " + moment.name() + " has to be drawn at some size");

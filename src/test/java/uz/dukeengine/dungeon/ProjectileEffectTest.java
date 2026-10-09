@@ -107,7 +107,7 @@ class ProjectileEffectTest {
 
     /**
      * The same files with every top-level Effect block cut out of them -- and the Combat block's AuraMarkLooks, which a
-     * file may not write without the Effects it names.
+     * file may not write without the Effects it names, and the Dialogue block's GlowLook for the same reason.
      */
     private static String withoutTheBurning(String file) {
         var kept = new StringBuilder();
@@ -116,7 +116,7 @@ class ProjectileEffectTest {
             if (line.equals("Effect")) {
                 inside = true;
             }
-            if (!inside && !line.trim().startsWith("AuraMarkLooks = ")) {
+            if (!inside && !line.trim().startsWith("AuraMarkLooks = ") && !line.trim().startsWith("GlowLook = ")) {
                 kept.append(line).append('\n');
             }
             if (inside && line.equals("End")) {

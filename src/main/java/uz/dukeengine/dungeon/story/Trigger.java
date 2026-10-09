@@ -22,7 +22,7 @@ public record Trigger(String name, String map, When when, String target, int ste
 
     /** What a trigger waits for. */
     public enum When {
-        MAP_START, ZONE, DIED, QUEST_DONE, STEP_DONE, HEARD, AFTER, FLAG
+        MAP_START, ZONE, DIED, QUEST_STARTED, QUEST_DONE, STEP_DONE, HEARD, AFTER, FLAG
     }
 
     /** What a trigger does. */
