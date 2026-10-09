@@ -3,8 +3,8 @@
 MainMenu
   ; The line under the title.
   Subtitle = "Har safar boshqa zindon"
-  ; The front menu's own rows. The first opens the way in: continue, a new game, load, the credits.
-  PlayWord = "O'ynash"
+  ; The front menu: Davom ettirish (with a save), Yangi o'yin, Yuklash (with saves), Mualliflar -- the game's own
+  ; rows -- then the engine's Settings and Quit, worded here.
   SettingsWord = Sozlamalar
   QuitWord = Chiqish
   ; The owner, 2026-10-09: the rows at one side, the scene seen across the rest.
@@ -24,7 +24,7 @@ MainMenu
     "ESC resume = ESC davom etish",
     "QUIT TO THE MAIN MENU? = BOSH MENYUGA CHIQILSINMI?",
     "QUIT TO THE DESKTOP? = O'YINDAN CHIQILSINMI?",
-    "everything on this floor is lost = bu qavatdagi hamma narsa yo'qoladi",
+    "everything on this floor is lost = o'yin saqlanadi, qaytib davom ettirasiz",
     "Keep playing = O'ynashda davom etish",
     "Quit = Chiqish",
     "ESC keep playing = ESC o'ynashda davom etish",
@@ -43,6 +43,7 @@ MainMenu
     "Track = Kuy",
     "Save = Saqlash",
     "Cancel = Bekor qilish",
+    "Back = Orqaga",
     "anti-aliasing from the next launch = silliqlash keyingi ishga tushirishda",
     "unsaved changes = saqlanmagan o'zgarishlar",
     "UP DOWN choose    LEFT RIGHT change    ESC back = YUQORI PAST tanlang    CHAP O'NG o'zgartiring    ESC ortga",

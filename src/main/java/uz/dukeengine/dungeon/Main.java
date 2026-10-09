@@ -520,27 +520,28 @@ public final class Main {
         // pause menu -- see docs/plan/2026-10-08-saving.md.
         var saves = Saves.ofThePlayer();
         session.run().onCheckpoint(save -> write(saves, Saves.AUTOSAVE, save));
-        // Play turns into a path rather than a start -- continue, a new game (with whom, how, where, who), load,
-        // the credits. Nothing opens until it is walked. See savedGames and whoGoesIn.
+        // The front menu's own rows -- continue, a new game (with whom, how, where, who), load, the credits -- then
+        // Settings and Quit. Nothing opens until one is walked. See frontRows and whoGoesIn.
         var credits = FrontMenu.credits(settings, Content.read("CREDITS.md"));
-        java.util.function.Function<Dungeon.Session, Shell.Question> wayIn = match -> savedGames(settings,
+        java.util.function.Function<Dungeon.Session, List<Shell.Option>> rows = match -> frontRows(settings,
                 loadable(saves.list(), settings), him -> displayNameOf(match, him),
                 saved -> {
                     heroChosen(match, settings, visuals, keys, saved.game().hero());
                     match.run().resume(saved.game(), Floors.resumed(saved.game(), settings));
                 },
+                () -> duke.startMatch(match.game()),
                 whoGoesIn(match, settings, visuals, keys, duke, bag), credits);
-        var shell = FrontMenu.shell(settings, wayIn.apply(session),
+        var shell = FrontMenu.shell(settings, rows.apply(session),
                 List.of(saveRow(settings, slot -> saveTo(current.get(), saves, slot))));
         duke.onLeaving(() -> {
             saveTo(current.get(), saves, Saves.AUTOSAVE);
-            // Back at the front menu, the next game is a new match, its way in read afresh (a save just made is
-            // there to continue).
+            // Back at the front menu, the next game is a new match, its rows read afresh (a save just made is there
+            // to continue). Built here, before the menu is shown -- about 60 ms, also spent when the window closes.
             var next = chosenGame(opening, settings);
             next.run().onCheckpoint(save -> write(saves, Saves.AUTOSAVE, save));
             Bag.show(bag, next, settings);
             current.set(next);
-            shell.asking(FrontMenu.startingFresh(wayIn.apply(next), () -> duke.startMatch(next.game())));
+            shell.frontRows(FrontMenu.startingFresh(rows.apply(next), () -> duke.startMatch(next.game())));
         });
         // The live scene behind the front menu: the kingdom's soldiers holding a clearing against the skeletons.
         duke.backdrop(() -> MenuScene.of(settings).game());
@@ -602,22 +603,25 @@ public final class Main {
     }
 
     /**
-     * The way in, the front menu's Play: continue the newest save (only with one), a new game down the path the game
+     * The game's rows on the front menu: continue the newest save (only with one), a new game down the path the game
      * always had — {@code fresh} — load one of the saves (only with some), and the credits.
      *
      * @param saves newest first, as {@link Saves#list} reads them
      * @param named what the player calls a hero, by his template
-     * @param load  picks up a save and starts it
+     * @param load  picks up a save, for the match that is then started
+     * @param play  starts that match: Continue has no question after it, so it starts its own
      */
-    static Shell.Question savedGames(DungeonSettings settings, List<Saves.Saved> saves,
+    static List<Shell.Option> frontRows(DungeonSettings settings, List<Saves.Saved> saves,
             java.util.function.UnaryOperator<String> named, java.util.function.Consumer<Saves.Saved> load,
-            Shell.Question fresh, Shell.Option credits) {
+            Runnable play, Shell.Question fresh, Shell.Option credits) {
         var words = settings.saveMenu();
         var front = new java.util.ArrayList<Shell.Option>();
         if (!saves.isEmpty()) {
             var newest = saves.getFirst();
-            front.add(new Shell.Option(words.continueWord(), about(settings, newest, named),
-                    () -> load.accept(newest), null));
+            front.add(new Shell.Option(words.continueWord(), about(settings, newest, named), () -> {
+                load.accept(newest);
+                play.run();
+            }, null));
         }
         front.add(new Shell.Option(words.newWord(), words.newBlurb(), null, fresh));
         if (!saves.isEmpty()) {
@@ -631,7 +635,7 @@ public final class Main {
                     new Shell.Question(words.loadTitle(), words.hint(), rows)));
         }
         front.add(credits);
-        return new Shell.Question(words.title(), words.hint(), front);
+        return List.copyOf(front);
     }
 
     /** The line under a save: its hero, his level and the floor. */
