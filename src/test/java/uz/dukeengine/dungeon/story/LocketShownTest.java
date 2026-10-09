@@ -14,6 +14,8 @@ import uz.dukeengine.core.pathfind.PathGrid;
 import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.dungeon.Dungeon;
 import uz.dukeengine.dungeon.content.DungeonSettings;
+import uz.dukeengine.dungeon.party.PartyOrders;
+import uz.dukeengine.dungeon.run.Read;
 import uz.dukeengine.dungeon.stage.Stages;
 import uz.dukeengine.game.DukeGame;
 import uz.dukeengine.rpg.item.GroundItem;
@@ -70,7 +72,13 @@ class LocketShownTest {
     void givingTheLocketQuestShowsTheChestAndComesBack() {
         var session = greeted();
         var game = session.game();
-        assertTrue(session.run().inCutscene(), "she points the chest out");
+        assertFalse(session.run().inCutscene(), "not while her greeting is on the screen");
+        game.runHeadless(60);
+        assertFalse(session.run().inCutscene(), "however long he reads it");
+        int hero = all(game, SETTINGS.run().defaultHero()).getFirst().getPlayerIndex();
+        game.postCommand(PartyOrders.of(new Read(hero, session.run().getQuests().said().size())));
+        game.runHeadless(2); // an order is heard a frame after it is posted
+        assertTrue(session.run().inCutscene(), "read: she points the chest out");
         game.runHeadless(46);
         var chest = Stages.load("talk", SETTINGS).story().zones().stream().filter(z -> z.name().equals("Chest"))
                 .findFirst().orElseThrow();
@@ -97,5 +105,13 @@ class LocketShownTest {
         session.progress().getLoot().take(locket, 0, 0);
         game.runHeadless(CHECK + 1);
         assertEquals(Set.of(), glowing(game, 70), "taken: the quest wants it no more");
+    }
+
+    @Test
+    void aMachineThatNeverSaysItHasReadStillGetsTheCutsceneInTime() {
+        var session = greeted();
+        session.game().runHeadless(SETTINGS.story().dialogue().readWaitFrames() + 1);
+        assertTrue(session.run().inCutscene() || session.run().getQuests().said().contains("LocketHint"),
+                "a window that never answers holds it no longer than ReadWaitFrames");
     }
 }

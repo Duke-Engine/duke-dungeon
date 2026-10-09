@@ -57,6 +57,8 @@ public final class PartyOrders {
     /** The cutscene playing skipped, for everybody. */
     static final String SKIP = "skip";
     /** Buying one of a merchant's wares, and selling him a thing from the bag. */
+    /** A machine has shown the conversations said, so far, to the end. */
+    static final String READ = "read";
     static final String BUY = "buy";
     static final String SELL = "sell";
 
@@ -79,6 +81,8 @@ public final class PartyOrders {
             case DropItem drop -> new GameOrder(drop.playerIndex(), DROP, List.of(), drop.place(), null, drop.slot());
             case ToTheGate gate -> new GameOrder(gate.playerIndex(), TO_THE_GATE, List.of(), null, gate.gate(), 0);
             case UseItem use -> new GameOrder(use.playerIndex(), USE, List.of(), null, use.target(), use.slot());
+            case uz.dukeengine.dungeon.run.Read read -> new GameOrder(read.playerIndex(), READ, List.of(), null, null,
+                    read.count());
             case uz.dukeengine.dungeon.run.Buy buy -> new GameOrder(buy.playerIndex(), BUY, List.of(), null,
                     buy.merchant(), buy.ware());
             case uz.dukeengine.dungeon.run.Sell sell -> new GameOrder(sell.playerIndex(), SELL, List.of(), null,
@@ -113,6 +117,7 @@ public final class PartyOrders {
             case USE -> order.target() == null ? null
                     : new UseItem(order.playerIndex(), (int) order.number(), order.target());
             case SKIP -> new uz.dukeengine.dungeon.run.SkipCutscene(order.playerIndex());
+            case READ -> new uz.dukeengine.dungeon.run.Read(order.playerIndex(), (int) order.number());
             case BUY -> order.target() == null ? null
                     : new uz.dukeengine.dungeon.run.Buy(order.playerIndex(), order.target(), (int) order.number());
             case SELL -> order.target() == null ? null

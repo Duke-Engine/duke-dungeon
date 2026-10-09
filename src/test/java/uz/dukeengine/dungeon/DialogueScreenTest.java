@@ -117,6 +117,8 @@ class DialogueScreenTest {
         assertTrue(first.text.contains("Qo'mondon Laylo"), first.text.toString());
         assertTrue(first.text.stream().anyMatch(t -> t.startsWith("Nihoyat")), first.text.toString());
         assertTrue(first.text.contains(SETTINGS.story().dialogue().continueHint()));
+        assertTrue(first.rects.stream().noneMatch(r -> r[1] == 0f && r[2] == 1600f),
+                "no black bars while her greeting is on the screen");
         assertTrue(game.getLogic().isGamePaused(), "alone, the world waits for her");
 
         assertTrue(screen.take(new CanvasInput.Key(DialogueScreen.SPACE, true, false)));
@@ -130,7 +132,11 @@ class DialogueScreenTest {
         var after = painted(screen);
         assertFalse(after.text.contains(SETTINGS.story().dialogue().continueHint()), "skipped");
         assertFalse(game.getLogic().isGamePaused(), "and the world goes on");
-        game.runHeadless(2); // Esc skipped the locket's cutscene that her greeting began, too: heard next frame
+        game.runHeadless(2); // her greeting read, the locket's cutscene begins — only now: see LocketShownTest
+        assertTrue(session.run().inCutscene());
+        assertTrue(painted(screen).rects.stream().anyMatch(r -> r[1] == 0f && r[2] == 1600f), "now the bars");
+        assertTrue(screen.take(new CanvasInput.Key(DialogueScreen.ESCAPE, true, false)));
+        game.runHeadless(2);
         assertFalse(screen.take(new CanvasInput.Key(DialogueScreen.SPACE, true, false)),
                 "with nothing said, a key is the game's again");
     }

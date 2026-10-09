@@ -93,6 +93,12 @@ End
   shown, and skips the cutscene when none is. A skip is this game's order `skip`, heard on every machine: in a party
   any player's skip skips it for all (**default**), and nobody is paused.
 - At its end the camera is given back and put over the first hero.
+- **A cutscene never starts while a line is on a screen.** It queues behind every conversation said before it was
+  asked for, and begins once every player's machine has shown those to the end (or had them skipped) — each window
+  says so as this game's order `read` — or, at the latest, after the `Dialogue` block's `ReadWaitFrames` (**default**
+  300) of the world going on: for a machine with no window, or a player away from his keys. Alone the world is
+  paused while a line is shown, so that wait does not run then. (The owner's playtest: the locket's cutscene,
+  begun by her greeting, put its black bars over the greeting.)
 - A shot's camera flight is linear (the engine's `GameCamera.moveTo`); turning, pitch and zoom are not used yet.
 - A cutscene is not saved: a load mid-cutscene comes back without it.
 

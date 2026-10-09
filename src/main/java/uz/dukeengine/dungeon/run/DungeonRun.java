@@ -101,6 +101,8 @@ public final class DungeonRun {
         int loadedExperience = -1;
         /** His purse: the gold his kills have paid him and his trading left him. */
         int gold;
+        /** How many of the conversations said this run his machine has shown to the end (or had skipped). */
+        int read;
 
         Seat(GamePlayer player, HeroProgress progress, SkillRanks learnt, String hero) {
             this.player = player;
@@ -782,6 +784,7 @@ public final class DungeonRun {
         }
         quests.reset(); // and every quest: the map that starts them starts them again
         script.reset(); // and every trigger: the story begins again with the run
+        cued.clear();
         endCutscene(game);
         descend(game);
         runCount++;
@@ -1009,6 +1012,7 @@ public final class DungeonRun {
         for (var event : quests.takeEvents()) {
             script.heard(event.when(), event.target(), event.step()); // what the actions did: due next frame
         }
+        cue(game);
         shoot(game);
         marks();
         if (nextMap != null) {
@@ -1100,16 +1104,57 @@ public final class DungeonRun {
             case FLAG -> script.flag(what);
             case MAP -> nextMap = what;
             case CUTSCENE -> {
-                cutscene = settings.story().cutscene(what);
-                shotAt = 0;
-                shotLeft = -1;
-                inCutscene = cutscene != null;
+                // Queued behind every conversation said before it: a cutscene never starts while a line is on a
+                // screen. See cue.
+                var asked = settings.story().cutscene(what);
+                if (asked != null) {
+                    cued.add(new Cued(asked, quests.said().size()));
+                }
             }
         }
     }
 
     private uz.dukeengine.dungeon.map.StaticMap.Zone zoneNamed(String name) {
         return floors.story().zones().stream().filter(zone -> zone.name().equals(name)).findFirst().orElse(null);
+    }
+
+    /** A cutscene asked for, and how many conversations had been said when it was: it waits until they are read. */
+    private record Cued(uz.dukeengine.dungeon.story.Cutscene cutscene, int after) {
+    }
+
+    private final List<Cued> cued = new ArrayList<>();
+    /** Frames the first cutscene in the queue has waited, the world going on. */
+    private int cueWaited;
+
+    /**
+     * The first cutscene queued begins once none plays and every player's machine has shown to the end every
+     * conversation said before it was asked for — told by the {@code Read} order each window sends as it closes one —
+     * or, at the latest, once it has waited the Dialogue block's ReadWaitFrames: a machine with no window, or a player
+     * gone from his keys. Alone, the world is paused while a line is on his screen, so the wait does not run then.
+     */
+    private void cue(DukeGame game) {
+        if (cutscene != null || cued.isEmpty()) {
+            return;
+        }
+        var next = cued.getFirst();
+        boolean read = seats.stream().allMatch(seat -> seat.read >= next.after());
+        if (!read && ++cueWaited < settings.story().dialogue().readWaitFrames()) {
+            return;
+        }
+        cued.removeFirst();
+        cueWaited = 0;
+        cutscene = next.cutscene();
+        shotAt = 0;
+        shotLeft = -1;
+        inCutscene = true;
+    }
+
+    /** A player's machine has shown to the end the first {@code count} conversations said. */
+    public void read(int playerIndex, int count) {
+        var seat = seatOf(playerIndex);
+        if (seat != null) {
+            seat.read = Math.max(seat.read, count);
+        }
     }
 
     /** The cutscene a frame on: a shot begun — the camera sent flying, its line said — or counted down. */

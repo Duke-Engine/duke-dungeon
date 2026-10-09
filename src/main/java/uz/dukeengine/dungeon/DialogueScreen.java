@@ -75,17 +75,35 @@ final class DialogueScreen implements Painter, CanvasInput {
             counted = now;
             shown = 0;
             line = 0;
+            told = 0;
         }
         var said = now.run().getQuests().said();
         while (shown < said.size()) {
             var conversation = settings.story().conversation(said.get(shown));
             if (conversation != null && line < conversation.lines().size()) {
+                tell(now);
                 return new Showing(conversation, line);
             }
             shown++;
             line = 0;
         }
+        tell(now);
         return null;
+    }
+
+    /** How many conversations this machine has told the run it has shown to the end. */
+    private int told;
+
+    /**
+     * Tell the run, as this game's order, every time another conversation has been shown to the end (or skipped): a
+     * cutscene waits on it, so it never starts while a line is on the screen. See {@code DungeonRun.cue}.
+     */
+    private void tell(Dungeon.Session now) {
+        if (shown > told) {
+            told = shown;
+            now.game().postCommand(uz.dukeengine.dungeon.party.PartyOrders.of(
+                    new uz.dukeengine.dungeon.run.Read(now.game().getLocalPlayerIndex(), shown)));
+        }
     }
 
     /** The next line, or the end of the conversation. */

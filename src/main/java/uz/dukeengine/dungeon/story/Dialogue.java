@@ -11,10 +11,13 @@ package uz.dukeengine.dungeon.story;
  * @param glowLook     the effect a quest step's target wears while the step wants it (a step that says Glow); blank for
  *                     none
  * @param glowFrames   how often it is played on them again
+ * @param readWaitFrames how long, in frames the world goes on, a cutscene waits for every player to have read what
+ *                     was said before it, at most — for a machine with no window, or a player away from his keys
  */
 public record Dialogue(String continueHint, String giveMark, String handInMark, int markColour, int checkFrames,
-        String glowLook, int glowFrames) {
+        String glowLook, int glowFrames, int readWaitFrames) {
 
     public static final Dialogue DEFAULTS = new Dialogue("Davom etish uchun bosing / Space",
-            "ui/cursors/default/mark_exclamation.png", "ui/cursors/default/mark_question.png", 0xE8C15A, 10, "", 30);
+            "ui/cursors/default/mark_exclamation.png", "ui/cursors/default/mark_question.png", 0xE8C15A, 10, "", 30,
+            300);
 }
