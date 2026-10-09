@@ -68,6 +68,7 @@ Game
     ; People, who talk rather than fight: see data/story/.
     data/units/commander.duke,
     data/units/merchant.duke,
+    data/units/queen.duke,
 
     data/projectiles/arrow.duke,
     data/projectiles/heavy_arrow.duke,
@@ -131,5 +132,6 @@ Game
     ; People, their talk and the quests.
     data/story/story.duke,
     data/story/trade.duke,
+    data/story/medallion.duke,
   ]
 End

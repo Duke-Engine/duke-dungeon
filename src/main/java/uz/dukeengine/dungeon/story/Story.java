@@ -228,6 +228,11 @@ public record Story(Dialogue dialogue, List<Speaker> speakers, List<Conversation
                         wrong.add(named + " plays " + what + ", and no Cutscene is called that");
                     }
                 }
+                case CURSE -> {
+                    if (npc(what) == null) {
+                        wrong.add(named + " gives the medallion to " + what + ", who is no Npc");
+                    }
+                }
                 case OPEN_GATE -> {
                 }
             }

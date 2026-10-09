@@ -1,0 +1,34 @@
+; ---------------------------------------------------------------------------
+; The queen: a person, on the engine's neutral side like the commander, never
+; drawn into a floor (Weight 0). She gives the hero the medallion, and the
+; turning puts it back in her hand -- see docs/plan/2026-10-09-medallion.md.
+;
+; Her look is a stand-in until the owner picks a free model: the KayKit mage,
+; tinted toward a queen's violet.
+; ---------------------------------------------------------------------------
+Monster
+  Name = Queen
+  DisplayName = Malika
+  KindOf = [INFANTRY, SELECTABLE]
+  Geometry = Cylinder
+    Radius = 4
+    Height = 12
+  End
+  VisionRange = 0
+  Modules = [
+    MoveUpdate
+      Speed = 10
+      TurnRate = 0
+    End
+  ]
+  MinDepth = 99
+  Weight = 0
+  Colour = 0x9A5AC8
+  Scale = 1.0
+  Model = models/heroes/mage.glb
+  Tint = 0xB08AD8
+  ; The mage boxes about 2.655 tall: 12 / 2.655.
+  ModelScale = 4.8
+  Facing = 90
+  Animations = Humanoid
+End
