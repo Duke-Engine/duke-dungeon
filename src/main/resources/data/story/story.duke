@@ -19,6 +19,10 @@ Dialogue
   MarkColour = 0xE8C15A
   ; How often, in frames, bags, zones and people's radii are looked at.
   CheckFrames = 10
+  ; What a quest step's target wears while the step wants it (a Step with Glow = Yes): the thing lying it
+  ; asks for, the creature, the person. Played on it again every GlowFrames. See QuestGlow below.
+  GlowLook = QuestGlow
+  GlowFrames = 30
 End
 
 Speaker
@@ -120,6 +124,8 @@ Quest
       Target = Locket
       Count = 1
       Text = "Uzoq zalda tumorni toping"
+      ; The chest it lies in glows until he has it.
+      Glow = Yes
     End,
     Step
       Goal = GIVE
@@ -219,6 +225,102 @@ Trigger
       Act = WALK
       Target = Commander
       Zone = Wall
+    End
+  ]
+End
+
+; ---------------------------------------------------------------------------
+; The locket's chest, shown as she asks for it, and lit while the quest wants it.
+; ---------------------------------------------------------------------------
+
+Conversation
+  Name = LocketHint
+  Lines = [
+    Line
+      Speaker = Commander
+      Text = "Ana o'sha sandiq, uzoq zalning burchagida. Tumorim ichida."
+    End
+  ]
+End
+
+Cutscene
+  Name = LocketShown
+  Shots = [
+    Shot
+      ; The camera flies to the chest — a second and a half — and stays on it...
+      Zone = Chest
+      Frames = 45
+      Hold = 15
+    End,
+    Shot
+      ; ...while she says where it is; then it comes back to him.
+      Says = LocketHint
+      Hold = 15
+    End
+  ]
+End
+
+Trigger
+  Name = LocketAsked
+  Map = talk
+  When = QUEST_STARTED
+  Target = LostLocket
+  Actions = [
+    Action
+      Act = CUTSCENE
+      Target = LocketShown
+    End
+  ]
+End
+
+; The glow a quest's target wears: a warm halo on the thing itself and a few
+; motes rising off it, and a light no wider than the thing — it lights the chest,
+; not the room round it.
+Effect
+  Name = QuestGlow
+
+  Layers = [
+    Layer
+      Name = Halo
+      Type = AURA
+      Texture = kit/effects/particles/light_02.png
+      Blend = Additive
+      Cover = 0.1
+      Count = 1
+      Size = [14, 14]
+      Colour = [0xFFE27A, 0xFFC040]
+      Alpha = [0.55, 0.55]
+      FadeIn = 0.1
+      FadeOut = 0.3
+      PulseRate = 2
+      PulseDepth = 0.4
+      Height = 4
+    End,
+
+    Layer
+      Name = Motes
+      Type = AURA
+      Texture = kit/effects/particles/star_01.png
+      Blend = Additive
+      Count = 6
+      Rate = 4
+      Radius = 4
+      Life = [0.8, 1.2]
+      Size = [1.6, 0.3]
+      Colour = [0xFFF0A0, 0xFFB020]
+      Speed = [2, 4]
+      Direction = UP
+      Spread = 20
+      Height = 2
+    End,
+
+    Layer
+      Name = Light
+      Type = LIGHT
+      LightColour = 0xFFD070
+      LightPower = 1.2
+      LightRadius = 10
+      Height = 6
     End
   ]
 End

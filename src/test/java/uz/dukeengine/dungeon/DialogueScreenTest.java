@@ -130,6 +130,7 @@ class DialogueScreenTest {
         var after = painted(screen);
         assertFalse(after.text.contains(SETTINGS.story().dialogue().continueHint()), "skipped");
         assertFalse(game.getLogic().isGamePaused(), "and the world goes on");
+        game.runHeadless(2); // Esc skipped the locket's cutscene that her greeting began, too: heard next frame
         assertFalse(screen.take(new CanvasInput.Key(DialogueScreen.SPACE, true, false)),
                 "with nothing said, a key is the game's again");
     }

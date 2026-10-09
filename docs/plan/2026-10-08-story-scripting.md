@@ -42,6 +42,7 @@ End
 | `MAP_START` | — | the map's floor is laid (a load lays it again, but a trigger that fired stays fired) |
 | `ZONE` | a zone of the map | a hero comes into it — from outside it: a Repeat fires again only after every hero has left it |
 | `DIED` | a Monster template | one of it dies — a unique boss's template is "a named creature" |
+| `QUEST_STARTED` | a quest | it is started (by a conversation, a map, a step or a trigger; not by a load) |
 | `QUEST_DONE` | a quest | its last step is done |
 | `STEP_DONE` | a quest, with `Step` (1 = its first) | that step is done |
 | `HEARD` | a conversation | it is played (**default**: "a conversation ends" is when the simulation plays it; alone the world is paused until the box is closed, so what follows waits for it) |

@@ -35,10 +35,12 @@ public record Quest(String name, Tracker.Kind kind, String title, List<Step> ste
      * @param target a zone (REACH), a Monster (KILL), a LootItem (COLLECT) or an Npc (TALK, GIVE)
      * @param item   what a GIVE hands over
      * @param onDone what finishing it does, or null for nothing
+     * @param glow   whether its target — the thing lying, the creature, the person — wears the Dialogue block's
+     *               GlowLook while the step wants it
      */
-    public record Step(Goal goal, String target, int count, String item, String text, Done onDone) {
+    public record Step(Goal goal, String target, int count, String item, String text, Done onDone, boolean glow) {
 
-        public static final Step DEFAULTS = new Step(null, "", 1, "", "", null);
+        public static final Step DEFAULTS = new Step(null, "", 1, "", "", null, false);
 
         /** The tracker's line at {@code so far}. */
         public String said(int soFar) {

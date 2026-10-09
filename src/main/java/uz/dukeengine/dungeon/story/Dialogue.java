@@ -8,9 +8,13 @@ package uz.dukeengine.dungeon.story;
  * @param handInMark   the picture over a person a quest waits on
  * @param markColour   both marks' colour, RGB
  * @param checkFrames  how often, in frames, bags, zones and people's radii are looked at
+ * @param glowLook     the effect a quest step's target wears while the step wants it (a step that says Glow); blank for
+ *                     none
+ * @param glowFrames   how often it is played on them again
  */
-public record Dialogue(String continueHint, String giveMark, String handInMark, int markColour, int checkFrames) {
+public record Dialogue(String continueHint, String giveMark, String handInMark, int markColour, int checkFrames,
+        String glowLook, int glowFrames) {
 
     public static final Dialogue DEFAULTS = new Dialogue("Davom etish uchun bosing / Space",
-            "ui/cursors/default/mark_exclamation.png", "ui/cursors/default/mark_question.png", 0xE8C15A, 10);
+            "ui/cursors/default/mark_exclamation.png", "ui/cursors/default/mark_question.png", 0xE8C15A, 10, "", 30);
 }

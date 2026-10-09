@@ -1199,11 +1199,50 @@ public final class DungeonRun {
     }
 
     /**
+     * Every GlowFrames, the Dialogue block's GlowLook played on the target of every quest step that says Glow, for as
+     * long as the step wants it: the thing lying that it asks for, the creature it asks to kill, the person it sends
+     * him to. An event, which the client plays riding the thing; nothing in the world reads it.
+     */
+    private void glow(DukeGame game) {
+        var dialogue = settings.story().dialogue();
+        var logic = game.getLogic();
+        if (dialogue.glowLook().isBlank() || logic.getFrame() % dialogue.glowFrames() != 0) {
+            return;
+        }
+        for (var each : quests.active()) {
+            var step = settings.story().quest(each.quest()).steps().get(each.step());
+            if (!step.glow()) {
+                continue;
+            }
+            for (var thing : logic.getObjects()) {
+                if (glows(step, thing)) {
+                    logic.effect(dialogue.glowLook(), thing);
+                }
+            }
+        }
+    }
+
+    /** Whether {@code thing} is what {@code step} asks for. */
+    private static boolean glows(uz.dukeengine.dungeon.story.Quest.Step step, GameObject thing) {
+        return switch (step.goal()) {
+            case COLLECT -> {
+                var lying = thing.findModule(uz.dukeengine.rpg.item.GroundItem.class);
+                yield lying != null && lying.getHolding() != null && lying.getHolding().id().equals(step.target());
+            }
+            case KILL -> thing.getTemplate().name().equals(step.target()) && !thing.isEffectivelyDead();
+            case TALK, GIVE -> thing.getTemplate().name().equals(step.target())
+                    && thing.getPlayerIndex() == uz.dukeengine.core.player.PlayerList.NEUTRAL_INDEX;
+            case REACH -> false;
+        };
+    }
+
+    /**
      * Every frame the floor is played: experience earned paid to every hero standing, and every {@code CheckFrames}
      * the bags, the zones and the people looked at.
      */
     private void story(DukeGame game) {
         stroll(game);
+        glow(game);
         var logic = game.getLogic();
         quests.frame(logic.getFrame());
         int paid = quests.takeExperience();

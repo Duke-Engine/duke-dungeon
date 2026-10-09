@@ -171,7 +171,7 @@ public record Story(Dialogue dialogue, List<Speaker> speakers, List<Conversation
                     wrong.add(named + " waits for a " + target + " to die, and no Monster is called that");
                 }
             }
-            case QUEST_DONE, STEP_DONE -> {
+            case QUEST_STARTED, QUEST_DONE, STEP_DONE -> {
                 var quest = quest(target);
                 if (quest == null) {
                     wrong.add(named + " waits on " + target + ", and no Quest is called that");

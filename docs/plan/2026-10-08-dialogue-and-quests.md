@@ -103,6 +103,13 @@ The goals, and the one event each advances on — and only on it:
 
 `Text` is the tracker's line; a `%d/%d` in it is the count so far and the count asked (KILL and COLLECT).
 
+A step may say `Glow = Yes`: while it is the step a quest is on, its target — the thing lying that a COLLECT asks for,
+the creatures of a KILL, the person of a TALK or GIVE — wears the `Dialogue` block's `GlowLook` (an Effect: the
+demo's `QuestGlow` is a halo, a few motes and a light no wider than the thing), played on it again every
+`GlowFrames`. Only that thing glows, and only until the step is done. The demo's locket chest glows so, and the
+moment her side quest starts a cutscene shows it (`LocketShown`: the camera to the chest while she says where it
+is, then back).
+
 A quest starts from a conversation's `Starts`, a map's `Quests` list, or a step's `OnDone.Starts`. Starting one that
 is already going or already finished does nothing. A quest's last step done, it is finished and leaves the tracker.
 

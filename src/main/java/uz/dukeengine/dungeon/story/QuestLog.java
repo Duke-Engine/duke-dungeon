@@ -95,6 +95,7 @@ public final class QuestLog {
             return;
         }
         active.add(new Active(quest, 0, 0, now));
+        told(new Event(Trigger.When.QUEST_STARTED, quest, 0));
     }
 
     /** Play {@code conversation}: heard, said, and its quests started. */

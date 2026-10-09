@@ -212,6 +212,11 @@ public final class Main {
         if (longestStun > 0 && !settings.combat().stunLook().isBlank()) {
             visuals.effectSeconds(settings.combat().stunLook(), longestStun / perSecond);
         }
+        // A quest's target glows from one beat to the next, so each glow lasts two of them. See DungeonRun.glow.
+        var dialogue = settings.story().dialogue();
+        if (!dialogue.glowLook().isBlank()) {
+            visuals.effectSeconds(dialogue.glowLook(), 2 * dialogue.glowFrames() / perSecond);
+        }
         for (var mark : settings.combat().auraMarkLooks()) {
             visuals.effectSeconds(mark, 2 * settings.combat().auraMarkTickFrames() / perSecond);
         }
