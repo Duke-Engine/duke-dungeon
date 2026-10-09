@@ -15,12 +15,12 @@ import java.util.Map;
  * @param soldiers  the kingdom's side of the scene, one creature per entry
  * @param foes      the skeletons' side, one creature per entry
  */
-public record MainMenu(String subtitle, String playWord, String settingsWord, String quitWord, String side,
+public record MainMenu(String subtitle, String settingsWord, String quitWord, String side,
         float margin, String creditsWord, String creditsBlurb, String creditsTitle, String creditsHint,
         List<String> words, String sceneLook, List<String> soldiers, List<String> foes) {
 
     /** What a block leaves out: the client's English, in the middle, and no scene. */
-    public static final MainMenu DEFAULTS = new MainMenu("", "Play", "Settings", "Quit", "MIDDLE", 0f, "Credits",
+    public static final MainMenu DEFAULTS = new MainMenu("", "Settings", "Quit", "MIDDLE", 0f, "Credits",
             "Who made what this game is drawn with", "CREDITS", "ESC back", List.of(), null, List.of(), List.of());
 
     public MainMenu {

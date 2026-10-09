@@ -17,16 +17,18 @@ final class FrontMenu {
     private FrontMenu() {
     }
 
-    /** The shell the client is launched with: the front rows, every fixed word, the side, the way in. */
-    static Shell shell(DungeonSettings settings, Shell.Question wayIn, List<Shell.Option> pauseRows) {
+    /**
+     * The shell the client is launched with: the game's rows on the front menu (continue, a new game, load, the
+     * credits), then Settings and Quit — no Play — every fixed word, and the side.
+     */
+    static Shell shell(DungeonSettings settings, List<Shell.Option> frontRows, List<Shell.Option> pauseRows) {
         var menu = settings.mainMenu();
         var shell = Shell.create()
-                .entry(Shell.Entry.PLAY, menu.playWord())
+                .frontRows(frontRows)
                 .entry(Shell.Entry.SETTINGS, menu.settingsWord())
                 .entry(Shell.Entry.QUIT, menu.quitWord())
                 .menuAt(MenuSide.valueOf(menu.side()), menu.margin())
-                .pauseRows(pauseRows)
-                .asking(wayIn);
+                .pauseRows(pauseRows);
         menu.said().forEach(shell::word);
         return shell;
     }
@@ -81,12 +83,15 @@ final class FrontMenu {
     }
 
     /**
-     * The same way in, for a match that is not the one the window opened with: every answer that would start the
-     * game also asks the client to play {@code start}'s fresh match — a match is played once, so after Quit to the
-     * main menu the next game is always a new one. Questions shared by two branches stay shared.
+     * The same front rows, for a match that is not the one the window opened with: every answer in their questions
+     * that would start the game also asks the client to play {@code start}'s fresh match — a match is played once, so
+     * after Quit to the main menu the next game is always a new one. A row with no question (Continue) starts its own
+     * match and is left as it is; questions shared by two branches stay shared.
      */
-    static Shell.Question startingFresh(Shell.Question question, Runnable start) {
-        return fresh(question, start, new IdentityHashMap<>());
+    static List<Shell.Option> startingFresh(List<Shell.Option> rows, Runnable start) {
+        var done = new IdentityHashMap<Shell.Question, Shell.Question>();
+        return rows.stream().map(row -> row.next() == null ? row : new Shell.Option(row.label(), row.blurb(),
+                row.taken(), fresh(row.next(), start, done), row.picture())).toList();
     }
 
     private static Shell.Question fresh(Shell.Question question, Runnable start,

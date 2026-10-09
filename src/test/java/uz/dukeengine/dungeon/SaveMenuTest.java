@@ -31,10 +31,10 @@ class SaveMenuTest {
 
     @Test
     void withNoSaveThereIsNoContinueAndNoLoad() {
-        var question = Main.savedGames(SETTINGS, List.of(), name -> name, saved -> { }, FRESH, CREDITS);
+        var rows = Main.frontRows(SETTINGS, List.of(), name -> name, saved -> { }, () -> { }, FRESH, CREDITS);
         assertEquals(List.of(SETTINGS.saveMenu().newWord(), "CREDITS"),
-                question.options().stream().map(Shell.Option::label).toList());
-        assertSame(FRESH, question.options().getFirst().next(), "a new game walks the path it always did");
+                rows.stream().map(Shell.Option::label).toList());
+        assertSame(FRESH, rows.getFirst().next(), "a new game walks the path it always did");
     }
 
     @Test
@@ -44,23 +44,24 @@ class SaveMenuTest {
         var older = saved("slot1", 1, 1);
         var words = SETTINGS.saveMenu();
 
-        var question = Main.savedGames(SETTINGS, List.of(newest, older), name -> name, s -> loaded.add(s.slot()),
+        var rows = Main.frontRows(SETTINGS, List.of(newest, older), name -> name, s -> loaded.add(s.slot()),
+                () -> loaded.add("play"),
                 FRESH, CREDITS);
 
         assertEquals(List.of(words.continueWord(), words.newWord(), words.loadWord(), "CREDITS"),
-                question.options().stream().map(Shell.Option::label).toList());
-        var go = question.options().getFirst();
+                rows.stream().map(Shell.Option::label).toList());
+        var go = rows.getFirst();
         assertEquals(String.format(words.aboutSave(), "Rogue", 1, 3), go.blurb());
         assertNull(go.next(), "continuing starts the game");
         go.taken().run();
-        assertEquals(List.of(Saves.AUTOSAVE), loaded);
+        assertEquals(List.of(Saves.AUTOSAVE, "play"), loaded, "Continue has no question after it: it starts its match");
 
-        var slots = question.options().get(2).next();
+        var slots = rows.get(2).next();
         assertEquals(List.of(words.autosaveWord(), String.format(words.slotWord(), "1")),
                 slots.options().stream().map(Shell.Option::label).toList());
         slots.options().get(1).taken().run();
-        assertEquals(List.of(Saves.AUTOSAVE, "slot1"), loaded);
-        assertSame(FRESH, question.options().get(1).next(), "a new game walks the path it always did");
+        assertEquals(List.of(Saves.AUTOSAVE, "play", "slot1"), loaded);
+        assertSame(FRESH, rows.get(1).next(), "a new game walks the path it always did");
     }
 
     // ---- in the game: Saqlash, and leaving ----
