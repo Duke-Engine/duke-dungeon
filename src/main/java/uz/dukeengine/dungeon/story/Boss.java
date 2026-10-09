@@ -3,18 +3,17 @@ package uz.dukeengine.dungeon.story;
 import java.util.List;
 
 /**
- * A Monster the story fights: one that may be beaten rather than killed, and the phases it goes through — see
- * {@code docs/plan/2026-10-09-final-fight.md}.
+ * A Monster the story fights, and the phases it goes through — see {@code docs/plan/2026-10-09-final-fight.md}. One
+ * that cannot be killed, only beaten, says so in its own Monster block: an {@code UNYIELDING} passive (E28). Beaten, it
+ * kneels, fights no more, nobody's enemy, and BEATEN is heard.
  *
  * @param name       the Monster template
- * @param beaten     the share of its most health, in percent, it is beaten at instead of dying: it kneels, fights no
- *                   more, nobody's enemy, and BEATEN is heard. 0 dies as anything does
  * @param beatenLook an Effect played on it as it is beaten; blank for none
  * @param phases     in order, each begun once, the next only after the one before it
  */
-public record Boss(String name, int beaten, String beatenLook, List<Phase> phases) {
+public record Boss(String name, String beatenLook, List<Phase> phases) {
 
-    public static final Boss DEFAULTS = new Boss("", 0, "", List.of());
+    public static final Boss DEFAULTS = new Boss("", "", List.of());
 
     public Boss {
         phases = phases == null ? List.of() : List.copyOf(phases);

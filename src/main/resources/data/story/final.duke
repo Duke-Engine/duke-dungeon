@@ -1,10 +1,11 @@
 ; ---------------------------------------------------------------------------
 ; The end: the queen's hall (maps/hall) -- see docs/plan/2026-10-09-final-fight.md.
 ;
-; A Boss block is a Monster the story fights: Beaten is the share of its health,
-; in percent, it is beaten at instead of dying (it kneels, fights no more, nobody's
-; enemy, and a trigger's When = BEATEN hears it); BeatenLook the Effect it wears as
-; it is. Its Phases are begun in order, each once, the next only after the one
+; A Boss block is a Monster the story fights. One that cannot be killed, only
+; beaten, has an UNYIELDING passive in its own Monster block (HealBelowPercent the
+; share of its health it is held at): beaten, it kneels, fights no more, nobody's
+; enemy, and a trigger's When = BEATEN hears it; BeatenLook is the Effect it wears
+; as it is. Its Phases are begun in order, each once, the next only after the one
 ; before: a phase begins the first frame the boss's health is at or below Below
 ; percent of its most and its AfterFlag, if it names one, is set. Begun, the boss
 ; takes DamageTaken percent of every blow, casts only the skills of its own whose
@@ -18,10 +19,9 @@ Speaker
   Picture =
 End
 
-; He cannot be killed: at a quarter of his health he is beaten.
+; He cannot be killed (his UNYIELDING, data/units/cursed_hero.duke): beaten, he kneels.
 Boss
   Name = CursedHero
-  Beaten = 25
   BeatenLook = Beaten
 End
 

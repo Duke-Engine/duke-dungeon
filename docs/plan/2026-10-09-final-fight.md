@@ -8,10 +8,13 @@ the medallion breaks, the souls rise, the ending. Built on the story scripting o
 
 ## A boss that cannot be killed, only beaten
 
-A `Boss` block names a Monster the story fights. `Beaten = 25` (**default** for the cursed hero) is the share of its
-most health, in percent, it is beaten at instead of dying:
+A Monster that cannot be killed, only beaten, says so in its own block, in the skill system (the owner's rule:
+passives are skills): an **`UNYIELDING`** passive (the engine's, E28), its `HealBelowPercent` the share of its most
+health it is held at (**default** 25 for the cursed hero). A `Boss` block names a Monster the story fights. Beaten —
+its book's `SkillBook.isBeaten()` —
 
-- the blow that would take it lower leaves it there — a killing blow never kills it;
+- the blow that would take it lower leaves it there (the engine's `BodyModule.setLeastHealth`): a killing blow never
+  kills it, and no death is posted;
 - it fights no more: it goes over to nobody's side (the engine's neutral player, as the city's people stand on), so
   nothing is its enemy or takes it for one; it is disabled for good (the stun's own status), so its legs, weapon and
   skills stand still; and no blow takes anything from it after;
@@ -19,12 +22,6 @@ most health, in percent, it is beaten at instead of dying:
 - the story hears it: a trigger's `When = BEATEN`, `Target` the Monster;
 - it stays in the world, standing where it was beaten (no kneeling animation yet — the KayKit set has none named;
   **default** it stands disabled).
-
-**The skill system.** The owner's rule is that passives are skills. The engine's `SkillEffect` is closed to a game,
-so the game carries this as a stand-in — the `Fighting` module the fight puts on a boss, heard through the engine's
-own `DamageListener` seam — and asks the engine for the passive (E28 in `2026-09-29-engine-requests.md`). When E28
-lands, `Beaten` moves out of the Boss block into the Monster's own `Skills` as `Effect = UNYIELDING`, and the stand-in
-goes.
 
 ## Phases
 
@@ -34,7 +31,7 @@ begins the first frame the boss's health is at or below `Below` percent of its m
 
 | Field | Does |
 |---|---|
-| `DamageTaken` | the percent of every blow it takes from now on (**default** 100; 0 is unhurtable) |
+| `DamageTaken` | the percent of every blow it takes from now on — its body's damage scale (**default** 100; 0 is unhurtable) |
 | `Skills` | the keys of the skills of its own it casts from now on; empty is all of them. Gaining and losing skills is choosing among those its Monster block writes |
 | `Actions` | a trigger's actions, done once, in order. In a phase a `CALL` or an `EFFECT` with no `Zone` is to the boss |
 
@@ -56,7 +53,7 @@ New for triggers and phases:
 **A map whose own triggers say `WIN` is won by them, not by its boss falling**: its boss's death is a story event
 (`DIED`), and the map is won when the story says so. As every story map, it stays won.
 
-Every name is checked when the files are read: a Boss that is no Monster, a `Beaten` outside 0–99, a `Below` outside
+Every name is checked when the files are read: a Boss that is no Monster, a `Below` outside
 1–100, a CALL of no Monster, an EFFECT naming no Effect block, and — outside a phase — a CALL or EFFECT with no Zone.
 
 ## The queen's fight
@@ -100,7 +97,6 @@ writes nothing either.
 
 ## Deferred
 
-- The passive in the skill system (E28); then the stand-in goes.
 - A kneeling or fallen animation for the beaten.
 - The cursed hero as the player's own act-1 hero — his level, skills and things from the act-1 save
   (`2026-10-08-saving.md`, "what act 1 left for act 2").

@@ -43,9 +43,9 @@ class BagScreenTest {
         var medallion = SETTINGS.medallion();
         var item = SETTINGS.loot().stream().filter(each -> each.id().equals(medallion.item())).findFirst()
                 .orElseThrow();
-        assertEquals(List.of(medallion.skillName(), "Jonlar: 37", "+3% " + SETTINGS.hud().attackWord()),
-                Bag.medallionOf(item, SETTINGS, 37));
-        assertEquals(List.of(), Bag.medallionOf(new Loot("Blade", "Blade", "", Stat.ATTACK, 8, 1, 1), SETTINGS, 37));
+        assertEquals(List.of("Jon yutish", "Jonlar: 37", "+3% " + SETTINGS.hud().attackWord()),
+                Bag.medallionOf(item, SETTINGS, 37, 3));
+        assertEquals(List.of(), Bag.medallionOf(new Loot("Blade", "Blade", "", Stat.ATTACK, 8, 1, 1), SETTINGS, 37, 3));
     }
 
     /** Every shipped thing has a picture that is there to be drawn, and something to say for itself. */

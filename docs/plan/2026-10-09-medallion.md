@@ -12,17 +12,19 @@ Every number and word is in `data/story/medallion.duke`; choices the owner left 
   dropped (Weight 0) and never sold. Only a hero carries a bag, so only a hero can wear it; and only a kill by a hero
   (a `Hero` template) who **wears** it — not one carrying it in the backpack — feeds it. A monster, or anything else
   of his side, never does.
-- Its passive, **"Jon yutish"**: every enemy (the dungeon's side) its wearer kills is one soul, counted on the hero
-  (his seat in the run, beside his gold) and saved with the run. Every `SoulsPerStep` souls (**default** 10) make his
-  blows and skills `PercentPerStep` harder (**default** 1 %), up to `MaxPercent` (**default** 20 %, so 200 souls).
-- **In the skill system:** the bonus is lent to the hero through his own `SkillBook` — a `DAMAGE_AURA` buff of his
-  own, renewed each frame while he wears it — so the engine's `damageMultiplier` multiplies it into every blow and
-  skill as it does an aura's. The buff row over his bar shows it as `+3% Zarba`. What the engine cannot hold yet — a
-  passive that counts its bearer's kills, carried by a worn item — is **E27**; once it lands, "Jon yutish" becomes a
-  `Skill` block on the item and the game's counting goes.
-- **Its card** (the bag's pointer card): `Jon yutish`, `Jonlar: 37`, `+3% Zarba`.
-- **Who killed:** a blow that names its dealer (the Knight's swing) is his; one that names nobody — the rpg module's
-  arrows and skills say no killer yet (E27) — is the hero's whose experience rose for it that frame.
+- Its passive, **"Jon yutish"**, is the engine's **`SOUL_DRINK`** (E27): a `Skill` block on the medallion's
+  `LootItem`, which the worn thing lends its wearer's `SkillBook` (`SkillBook.lendFrom(bag)`) while he wears it and
+  takes back when it comes off. Every enemy its bearer kills is a soul, counted by his book
+  (`SkillBook.reaped`, from the run's watcher of deaths); every `TickFrames` souls (**default** 10) make his blows and
+  skills `BoostPercent` harder (**default** 1 %), up to `Damage` percent (**default** 20 %, so 200 souls) — added to
+  any damage aura, not maxed with it. The souls are his, not the thing's: the run carries them from body to body
+  (each floor's new hero is given them) and saves them (`getSouls`/`setSouls`).
+- **The buff row** over his bar shows it, the engine's own: `+3% Zarba · Jonlar: 37` (the `SoulsWord`, `Jonlar`).
+- **Its card** (the bag's pointer card): `Jon yutish`, `Jonlar: 37`, `+3% Zarba` — the skill's name, his souls and
+  what his book says they add.
+- **Who killed:** every blow names its dealer now — a swing, an arrow and its burst, a meteor, every skill (E27) — so
+  the kill is the killer's, his gold paid and his soul drunk. (The game used to guess an arrow's killer by whose
+  experience rose; the guess is gone.)
 
 ## A soul, seen
 
@@ -89,6 +91,6 @@ Try it: `./gradlew run --args="--map=medalyon"`.
 ## Deferred
 
 - The turning at the castle's boss itself (a `DIED` trigger on the boss calling `CURSE`) — the demo uses a zone.
-- A condition on a trigger (the altar before the medallion is given turns a hero who never had it).
+- (Done: the altar asks `If WEARS Medallion`, a trigger condition.)
 - What the cursed hero does on his new side (Act 2: the final fight's).
 - The medallion's own model at his neck and in her hand.

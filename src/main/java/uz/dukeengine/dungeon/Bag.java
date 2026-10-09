@@ -55,7 +55,7 @@ final class Bag {
         var drops = settings.lootDrops();
         return new BuffScreen(settings.skills(), settings.effects(), settings.menu(), settings.panelLook(),
                 hud.buffIcon(), new BuffScreen.Words(hud.attackWord(), drops.manaRegenWord(), hud.lifestealWord(),
-                        drops.attackSpeedWord(), hud.secondsWord()));
+                        drops.attackSpeedWord(), hud.secondsWord(), settings.medallion().soulsWord()));
     }
 
     /** The bag's words: its heading, its hints, and the order words a click on the floor is answered as. */
@@ -70,9 +70,11 @@ final class Bag {
     static void show(BagScreen bag, Dungeon.Session match, DungeonSettings settings) {
         souls = () -> {
             try {
-                return match.game().getLogic() == null ? 0 : match.run().soulsOf(match.game().getLocalPlayerIndex());
+                return match.game().getLogic() == null ? new int[2] : new int[] {
+                    match.run().soulsOf(match.game().getLocalPlayerIndex()),
+                    match.run().soulPercentOf(match.game().getLocalPlayerIndex())};
             } catch (IllegalStateException notNumberedYet) {
-                return 0;
+                return new int[2];
             }
         };
         bag.show(match.game(), () -> bagOf(match), PartyOrders::of,
@@ -123,24 +125,30 @@ final class Bag {
         if (!extra.isEmpty()) {
             said.add(extra);
         }
-        said.addAll(medallionOf(item, settings, souls.getAsInt()));
+        var held = souls.get();
+        said.addAll(medallionOf(item, settings, held[0], held[1]));
         return said;
     }
 
-    /** The souls this machine's hero's medallion has drunk, as the match being played says: read by its card. */
-    private static volatile java.util.function.IntSupplier souls = () -> 0;
+    /**
+     * The souls this machine's hero has drunk and what they add to his blows, in percent, as the match being played
+     * says: read by the medallion's card.
+     */
+    private static volatile java.util.function.Supplier<int[]> souls = () -> new int[2];
 
     /**
-     * The medallion's card: its passive's name, the souls it holds ({@code Jonlar: 37}) and what they add to his
-     * blows; nothing for any other thing. See docs/plan/2026-10-09-medallion.md.
+     * The medallion's card: its soul drink's name, the souls he holds ({@code Jonlar: 37}) and what they add to his
+     * blows ({@code percent}, his book's); nothing for any other thing. See docs/plan/2026-10-09-medallion.md.
      */
-    static List<String> medallionOf(Loot item, DungeonSettings settings, int souls) {
+    static List<String> medallionOf(Loot item, DungeonSettings settings, int souls, int percent) {
         var medallion = settings.medallion();
         if (medallion.item().isBlank() || !item.id().equals(medallion.item())) {
             return List.of();
         }
-        return List.of(medallion.skillName(), medallion.soulsWord().replace("%d", Integer.toString(souls)),
-                "+" + medallion.percentFor(souls) + "% " + settings.hud().attackWord());
+        var drink = item.skills().stream()
+                .filter(skill -> skill.effect() == uz.dukeengine.rpg.skill.SkillEffect.SOUL_DRINK).findFirst();
+        return List.of(drink.map(skill -> skill.name()).orElse(""), medallion.soulsWord() + ": " + souls,
+                "+" + percent + "% " + settings.hud().attackWord());
     }
 
     /** What a thing gives, as the pointer says it: {@code +8% Zarba}, {@code +3 Kuch} — and of a key, nothing. */

@@ -1,11 +1,12 @@
 ; ---------------------------------------------------------------------------
 ; The queen's medallion and the hero's turning — see docs/plan/2026-10-09-medallion.md.
 ;
-; Worn in the Tumor slot, it drinks the soul of every enemy its wearer kills
-; ("Jon yutish"): each soul is counted on the hero and saved with the run, and
-; every SoulsPerStep of them make his blows and skills PercentPerStep harder, up
-; to MaxPercent — while he wears it, never while it is only carried. A soul is
-; seen: a Wisp rises from the corpse and flies into him.
+; Worn in the Tumor slot, it lends its wearer its passive, "Jon yutish" — the
+; engine's SOUL_DRINK, its Skill block below: his book counts the soul of every
+; enemy he kills, and every TickFrames souls make his blows and skills
+; BoostPercent harder, up to Damage percent — while he wears it, never while it is
+; only carried. The souls stay his, and are saved with the run. A soul is seen: a
+; Wisp rises from the corpse and flies into him.
 ;
 ; The turning is the story's CURSE act (Target = the person it goes to): the
 ; medallion leaves his bag and appears in her hand (GivenLook played on her),
@@ -15,11 +16,8 @@
 ; ---------------------------------------------------------------------------
 Medallion
   Item = Medallion
-  SkillName = "Jon yutish"
-  SoulsWord = "Jonlar: %d"
-  SoulsPerStep = 10
-  PercentPerStep = 1
-  MaxPercent = 20
+  ; The card's and the buff row's word for the souls: "Jonlar: 37".
+  SoulsWord = Jonlar
   Wisp = SoulWisp
   ; World units a frame: a cell (10) every two and a half frames.
   WispSpeed = 4
@@ -41,6 +39,19 @@ LootItem
   Icon = icons/stats/stat_lifesteal.png
   Kind = QUEST
   Slot = Tumor
+  ; Its passive, lent while it is worn: a soul for every enemy its wearer kills,
+  ; every 10 souls 1% harder blows and skills, up to 20% (200 souls).
+  Skills = [
+    Skill
+      Key = M
+      Effect = SOUL_DRINK
+      Name = "Jon yutish"
+      TickFrames = 10
+      BoostPercent = 1
+      Damage = 20
+      MaxRank = 1
+    End
+  ]
   Value = 0
   Weight = 0
 End

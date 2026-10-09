@@ -388,7 +388,12 @@ public final class DungeonSettings {
                 }
                 case Sound sound -> sounds.add(sound);
                 case Attribute attribute -> attributes.add(attribute);
-                case LootItem item -> loot.add(item.loot());
+                case LootItem item -> {
+                    loot.add(item.loot());
+                    // What it lends its wearer (the medallion's soul drink) is the item's, not a unit's: no key binds it.
+                    item.skills().forEach(skill -> require(skill.effect() != null && skill.effect().isPassive(),
+                            "LootItem " + item.name() + " lends a " + skill.effect() + ": a worn thing lends passives only"));
+                }
                 case Moment moment -> moments.add(moment);
                 case Cursor cursor -> cursors.add(cursor);
                 case Skin skin -> skins.add(skin);
@@ -878,8 +883,6 @@ public final class DungeonSettings {
             var named = "Medallion " + medallion.item();
             var item = loot.stream().filter(each -> each.id().equals(medallion.item())).findFirst().orElse(null);
             require(item != null && !item.slot().isEmpty(), named + ": no LootItem is called that, or it names no Slot");
-            require(medallion.soulsPerStep() >= 1 && medallion.percentPerStep() >= 0 && medallion.maxPercent() >= 0,
-                    named + ": SoulsPerStep at least 1, and no step or cap below nothing");
             require(medallion.wisp().isBlank()
                     || projectiles.stream().anyMatch(each -> each.name().equals(medallion.wisp())),
                     named + ": its Wisp " + medallion.wisp() + " is no Projectile");
@@ -917,15 +920,19 @@ public final class DungeonSettings {
                             || skill.stunFrames() > 0 && skill.effect() == SkillEffect.SKILLSHOT,
                     skill.heroTemplate() + "'s Skill " + skill.key() + " has StunFrames = " + skill.stunFrames()
                             + ": only a SKILLSHOT stuns, and for no fewer than no frames");
-            // Passives are monsters' for now: a hero's slots, aims, rings and tips know nothing of a skill that is
-            // not cast. Asked first, so that a hero's is refused for that and not for what else it has.
-            require(!skill.effect().isPassive()
+            // Passives are monsters' — but a SOUL_DRINK, a hero's own or lent by what he wears (the medallion's): a hero's
+            // slots, aims, rings and tips know nothing of a skill that is not cast. Asked first, so that a hero's is
+            // refused for that and not for what else it has.
+            require(!skill.effect().isPassive() || skill.effect() == SkillEffect.SOUL_DRINK
                             || heroes.stream().noneMatch(hero -> hero.name().equals(skill.heroTemplate())),
                     skill.heroTemplate() + "'s Skill " + skill.key() + " is a " + skill.effect()
-                            + ", never cast: only a monster may have one, for now -- a hero's bar has no place for it");
+                            + ", never cast: only a monster may have one but a SOUL_DRINK -- a hero's bar has no place"
+                            + " for it");
             // A passive is never cast, so what only a cast reads would be a number nothing read -- but an aura is worn,
             // and may say what it looks like: its bearer plays it on itself.
-            require(!skill.effect().isPassive() || skill.damage() == 0f && skill.manaCost() == 0
+            // A SOUL_DRINK's Damage is its cap, read.
+            require(!skill.effect().isPassive() || (skill.damage() == 0f || skill.effect() == SkillEffect.SOUL_DRINK)
+                            && skill.manaCost() == 0
                             && skill.windUpFrames() == 0 && !skill.hasProjectile()
                             && (!skill.hasLook() || skill.effect().isAura()),
                     skill.heroTemplate() + "'s Skill " + skill.key() + " is a " + skill.effect()

@@ -65,7 +65,7 @@ final class BossFight {
             var boss = story.boss(thing.getTemplate().name());
             if (boss != null && !thing.isEffectivelyDead() && thing.getBody() != null
                     && fighters.stream().noneMatch(each -> each.id.equals(thing.getId()))) {
-                var held = new Fighting(thing, boss.beaten());
+                var held = new Fighting(thing);
                 thing.addModule(held);
                 fighters.add(new Fighter(thing.getId(), boss, held));
             }
@@ -79,7 +79,9 @@ final class BossFight {
             if (fighter.beaten) {
                 continue;
             }
-            if (fighter.held.beaten()) {
+            // Beaten: its UNYIELDING (a passive in its Monster block) held it at its floor — the engine says so (E28).
+            var book = thing.findModule(uz.dukeengine.rpg.skill.SkillBook.class);
+            if (book != null && book.isBeaten()) {
                 fighter.beaten = true;
                 beat(logic, thing, fighter.boss, nobodysSide);
                 script.heard(Trigger.When.BEATEN, fighter.boss.name(), 0);
@@ -91,7 +93,7 @@ final class BossFight {
                 if (body.getHealth() * 100f <= phase.below() * body.getMaxHealth()
                         && (phase.afterFlag().isBlank() || script.flagged(phase.afterFlag()))) {
                     fighter.next++;
-                    takes(body, phase.damageTaken() / 100f);
+                    body.setDamageScale(phase.damageTaken() / 100f);
                     fighter.held.castOnly(phase.skills());
                     for (var action : phase.actions()) {
                         acts.act(action, thing);
@@ -107,7 +109,7 @@ final class BossFight {
      */
     private static void beat(GameLogic logic, GameObject thing, Boss boss, int nobodysSide) {
         thing.setPlayerIndex(nobodysSide);
-        takes(thing.getBody(), 0f);
+        thing.getBody().setDamageScale(0f);
         var timers = thing.findModule(uz.dukeengine.combat.module.StatusUpdate.class);
         if (timers != null) {
             timers.apply(ObjectStatus.DISABLED, Integer.MAX_VALUE); // a stun burning on it would lift this as it ends
@@ -120,18 +122,6 @@ final class BossFight {
         }
         if (!boss.beatenLook().isBlank()) {
             logic.effect(boss.beatenLook(), thing);
-        }
-    }
-
-    /**
-     * Take {@code share} of every blow from now on: a GrowableBody by its own multiplier, which a monster's is free
-     * for (only a hero's armour sets it) — it does not read the engine's damage scale — and any other body by that.
-     */
-    private static void takes(uz.dukeengine.core.module.BodyModule body, float share) {
-        if (body instanceof uz.dukeengine.rpg.hero.GrowableBody growable) {
-            growable.setDamageTaken(share);
-        } else {
-            body.setDamageScale(share);
         }
     }
 }

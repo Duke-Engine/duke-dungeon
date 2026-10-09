@@ -1,6 +1,6 @@
 ; ---------------------------------------------------------------------------
 ; The cursed hero: act 1's hero, the medallion's soul-drinker, the queen's to command.
-; He cannot be killed, only beaten -- his Boss block in data/story/final.duke: at a
+; He cannot be killed, only beaten -- his UNYIELDING passive below: at a
 ; quarter of his health he kneels, fights no more, and the story hears it.
 ;
 ; His look is a stand-in until his own model: the KayKit knight, darkened by the tint
@@ -30,7 +30,7 @@ Monster
     End,
     Swing
     End,
-    ; No skills of his own yet: the act-1 hero's come with him once a save carries them.
+    ; His one skill is a passive: he cannot be killed. The act-1 hero's own come once a save carries them.
     SkillBook
     End,
     StatusUpdate
@@ -67,4 +67,16 @@ Monster
     Bone = handslot.r
     Scale = 1
   End
+
+  Skills = [
+    Skill
+      Key = Q
+      ; Mag'lub bo'ladi, o'lmaydi: no blow takes him below a quarter of his health;
+      ; held there he is beaten (the engine's SkillBook.isBeaten), and the story hears it.
+      Effect = UNYIELDING
+      HealBelowPercent = 25
+      MaxRank = 1
+      Name = "Mag'lub bo'ladi, o'lmaydi"
+    End
+  ]
 End
