@@ -30,6 +30,9 @@ Monster
     End,
     Swing
     End,
+    ; No skills of his own yet: the act-1 hero's come with him once a save carries them.
+    SkillBook
+    End,
     StatusUpdate
     End,
     MonsterBrain
