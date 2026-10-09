@@ -120,6 +120,7 @@ public final class DungeonSettings {
     private final List<uz.dukeengine.dungeon.story.Trigger> triggers = new java.util.ArrayList<>();
     private final List<uz.dukeengine.dungeon.story.Cutscene> cutscenes = new java.util.ArrayList<>();
     private final List<uz.dukeengine.dungeon.story.Merchant> merchants = new java.util.ArrayList<>();
+    private final List<uz.dukeengine.dungeon.story.Boss> bosses = new java.util.ArrayList<>();
     private uz.dukeengine.dungeon.story.Trade trade = uz.dukeengine.dungeon.story.Trade.DEFAULTS;
 
     /** Every attribute, in file order — the order a hero's are held in and the panel draws them. */
@@ -228,7 +229,7 @@ public final class DungeonSettings {
     /** People, their talk and the quests: see {@code docs/plan/2026-10-08-dialogue-and-quests.md}. */
     public uz.dukeengine.dungeon.story.Story story() {
         return new uz.dukeengine.dungeon.story.Story(dialogue, speakers, conversations, npcs, quests, triggers,
-                cutscenes, trade, merchants);
+                cutscenes, trade, merchants, bosses);
     }
 
     /** Every moment the files give a look, in the order they give them. */
@@ -404,6 +405,11 @@ public final class DungeonSettings {
                 case uz.dukeengine.dungeon.story.Trigger trigger -> triggers.add(trigger);
                 case uz.dukeengine.dungeon.story.Cutscene cutscene -> cutscenes.add(cutscene);
                 case uz.dukeengine.dungeon.story.Merchant merchant -> merchants.add(merchant);
+                case uz.dukeengine.dungeon.story.Boss boss -> {
+                    // A later Boss block of a name is the one fought: a map's or a test's own over the shipped.
+                    bosses.removeIf(earlier -> earlier.name().equals(boss.name()));
+                    bosses.add(boss);
+                }
                 case uz.dukeengine.dungeon.story.Trade block -> trade = once(block, once);
                 case uz.dukeengine.dungeon.world.SaveMenu block -> saveMenu = once(block, once);
                 case UnitBar block -> unitBar = once(block, once);
@@ -865,6 +871,17 @@ public final class DungeonSettings {
         require(dialogue.glowLook().isBlank()
                 || effects.stream().anyMatch(effect -> effect.name().equals(dialogue.glowLook())),
                 "Dialogue's GlowLook names " + dialogue.glowLook() + ", and no Effect block describes it");
+        // The looks the story plays: a boss's as it is beaten, and every EFFECT a trigger or a phase plays.
+        var looks = new java.util.ArrayList<String>();
+        for (var boss : bosses) {
+            looks.add(boss.beatenLook());
+            boss.phases().forEach(phase -> phase.actions().forEach(action -> looks.add(effectOf(action))));
+        }
+        triggers.forEach(trigger -> trigger.actions().forEach(action -> looks.add(effectOf(action))));
+        for (var look : looks) {
+            require(look.isBlank() || effects.stream().anyMatch(effect -> effect.name().equals(look)),
+                    "the story plays the Effect " + look + ", and no Effect block describes it");
+        }
         require(dialogue.glowFrames() >= 1, "Dialogue's GlowFrames is how often a quest's target glows again: at least 1");
         for (var moment : moments) {
             require(!moment.effect().isBlank(), "Moment " + moment.name() + " plays no Effect");
@@ -1105,6 +1122,11 @@ public final class DungeonSettings {
 
     private static boolean sayable(String words) {
         return words != null && words.indexOf(',') < 0 && words.indexOf('|') < 0;
+    }
+
+    /** The Effect an EFFECT action plays, or blank for an action of another Act. */
+    private static String effectOf(uz.dukeengine.dungeon.story.Trigger.Action action) {
+        return action.act() == uz.dukeengine.dungeon.story.Trigger.Act.EFFECT ? action.target() : "";
     }
 
     private static void require(boolean condition, String message) {

@@ -63,6 +63,9 @@ End
 | `MAP` | a map | | the next chapter: the heroes go on to that map with all they have, as down a floor |
 | `CUTSCENE` | a cutscene | | plays it |
 
+The final fight adds `When = BEATEN` and `SEEN`, and `Act = CALL`, `EFFECT` and `WIN`, with a boss's phases: see
+`docs/plan/2026-10-09-final-fight.md`.
+
 Every name is checked when the files are read (an unknown When or Act is the reader's own message; a conversation,
 quest, Monster, Npc, LootItem, cutscene or trigger that does not exist is refused, naming the trigger). A zone and a
 map are checked when that map is loaded.
