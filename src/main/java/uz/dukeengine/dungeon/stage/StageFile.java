@@ -66,6 +66,10 @@ public final class StageFile {
                   ; rather than merely having the same shape.
                 """);
         field(out, "Seed", String.valueOf(stage.seed()));
+        if (stage.story().floorMission()) {
+            out.append("  ; The descent's floor mission is this map's main one: kill the boss.\n");
+            field(out, "FloorMission", "Yes");
+        }
         if (floor.hero() != null) {
             out.append("  ; Where the hero comes in.\n");
             field(out, "Entrance", "[" + floor.hero().cellX() + ", " + floor.hero().cellY() + "]");
@@ -201,7 +205,8 @@ public final class StageFile {
                 props, reliefOf(map, source), map.levelHeight());
         return new Stage(map.name(), map.displayName(), map.description(), map.difficulty(), map.players(), map.seed(),
                 floor, paintOf(map, source),
-                new uz.dukeengine.dungeon.story.MapStory(map.npcs(), map.zones(), map.items(), map.quests()));
+                new uz.dukeengine.dungeon.story.MapStory(map.npcs(), map.zones(), map.items(), map.quests(),
+                        map.floorMission()));
     }
 
     /** The map's relief, or null for none: one more row of corners than it has cells, and one more corner a row. */

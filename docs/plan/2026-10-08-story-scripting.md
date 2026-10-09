@@ -126,10 +126,15 @@ Zones are the map's `Zones` (the dialogue spec). Triggers name their map with `M
 ## Winning a story map
 
 A map with a story — people, zones, things laid or quests of its own, or a trigger naming it (the talk map, the open
-world) — is won when its boss falls and **stays won** (the owner's playtest, 2026-10-09: it used to start again by
-itself after `VictoryFrames`, as the descent and a plain stage still do). The banner holds; the story goes on, so a
-trigger on the boss's death (`DIED`, its template) may say what follows — `MAP` takes the heroes to the next chapter
-and the run plays on there. With no such trigger the player leaves by the menu.
+world) — **is not won by its boss falling** (the owner, 2026-10-09: "remove the 'you won' text after the boss
+dies"). Her fall puts up no banner and changes no state: the run plays on, and the story says what follows — a
+trigger on the boss's death (`DIED`, its template) may `MAP` the heroes to the next chapter, or `WIN`. A `WIN` ends
+the run won and it **stays won** (the owner's playtest, 2026-10-09: it used to start again by itself after
+`VictoryFrames`); the banner says the `WIN`'s own words, or nothing when it gives none — there is no generic "won".
+The player leaves by the menu.
+
+The descent and a plain stage are still won by their last boss, with no banner either: the run holds for
+`VictoryFrames` and starts again. A descent floor's boss still opens the next floor under its `NextDepthWord`.
 
 ## Saved
 

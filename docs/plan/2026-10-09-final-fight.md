@@ -48,9 +48,9 @@ New for triggers and phases:
 |---|---|---|---|
 | `CALL` | a Monster | `Zone` | every one of it standing on the dungeon's side walks to the zone's middle; in a phase with no Zone, to the boss's side. It fights from there as it always does: it answers whoever comes near |
 | `EFFECT` | an Effect | `Zone` | played at the zone's middle, on the ground; in a phase with no Zone, on the boss |
-| `WIN` | the banner's words, or blank | | the run ends won, the banner saying them (blank: the Run block's `WonWord`) |
+| `WIN` | the banner's words, or blank | | the run ends won, the banner saying them (blank: no banner — there is no generic "won", 2026-10-09) |
 
-**A map whose own triggers say `WIN` is won by them, not by its boss falling**: its boss's death is a story event
+**A story map is won by its triggers, never by its boss falling** (2026-10-09): its boss's death is a story event
 (`DIED`), and the map is won when the story says so. As every story map, it stays won.
 
 Every name is checked when the files are read: a Boss that is no Monster, a `Below` outside

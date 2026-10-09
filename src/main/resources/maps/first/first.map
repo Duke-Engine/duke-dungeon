@@ -16,6 +16,8 @@ StaticMap
   ; are still drawn from it, so a map plays the same way every time
   ; rather than merely having the same shape.
   Seed = 20260911
+  ; The descent's floor mission is this map's main one: kill the boss.
+  FloorMission = Yes
   Entrance = [8, 28]
   ; Where the hero comes in.
   ; '#' is stone, a digit the storey a cell stands on, '/' a stair.
