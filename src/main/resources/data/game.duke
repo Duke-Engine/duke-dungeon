@@ -33,6 +33,7 @@ Game
     data/world/hud.duke,
     data/world/party.duke,
     data/world/saves.duke,
+    data/world/menu.duke,
     data/world/scene.duke,
     data/world/themes/dungeon.duke,
     data/world/themes/forest.duke,
