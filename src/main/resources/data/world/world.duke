@@ -52,8 +52,8 @@ Run
   ; walk to it. It also gives the fight a moment to have been won in.
   DescendDelayFrames = 75
 
-  ; And how long the last one stays up, which is longer on purpose: a death is an
-  ; interruption and a win is an ending, and an ending wants looking at.
+  ; And how long a won run holds before it starts again (no banner says "won"):
+  ; longer than a death on purpose, for an ending wants looking at.
   VictoryFrames = 150
 
   ; What the banner says at either. The rest of the words the player reads are in
@@ -72,7 +72,6 @@ Run
   DefaultHero = Rogue
 
   DiedWord = You died
-  WonWord = You won
   ; And between floors. %d is the floor he is going down to. A word rather than a
   ; string built in Java, which is what it was -- the only thing the player read
   ; that was written in English in a source file.

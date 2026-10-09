@@ -167,6 +167,7 @@ class DepthTest {
         assertEquals(DungeonRun.State.WON, session.run().getState(), "the run should be won");
         assertEquals(BRISK.finalDepth(), session.run().getDepth(),
                 "and there is no fifth floor to be sent to");
+        assertEquals("", session.game().getSnapshot().banner(), "with no banner saying won (the owner, 2026-10-09)");
     }
 
     /** And a won run, like a lost one, starts again with nothing. */

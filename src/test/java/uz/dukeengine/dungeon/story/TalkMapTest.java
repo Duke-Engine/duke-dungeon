@@ -71,8 +71,8 @@ class TalkMapTest {
         game.runHeadless(CHECK + 1);
         assertEquals(List.of("CommanderGreets"), run.getQuests().said(), "walking up, she greets him");
         var titles = run.getTracker().entries().stream().map(Tracker.Entry::title).toList();
-        assertEquals(List.of(SETTINGS.run().missionTitle(), "Devordagi skeletlar", "Yo'qolgan tumor"), titles,
-                "the floor's own first, then her MAIN, then her SIDE");
+        assertEquals(List.of("Devordagi skeletlar", "Yo'qolgan tumor"), titles,
+                "her MAIN, then her SIDE: a story map runs no floor mission");
 
         int before = session.progress().getExperience();
         var skeletons = all(game, "Skeleton");
@@ -81,7 +81,7 @@ class TalkMapTest {
             skeleton.getBody().setHealth(0f);
         }
         game.runHeadless(2);
-        assertEquals("Qo'mondonga qayting", run.getTracker().entries().get(1).steps().getFirst().text());
+        assertEquals("Qo'mondonga qayting", run.getTracker().entries().getFirst().steps().getFirst().text());
         assertEquals(QuestLog.Mark.HAND_IN, run.getMarks().getFirst().mark());
 
         hero = named(game, SETTINGS.run().defaultHero());

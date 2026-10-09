@@ -22,9 +22,12 @@ Choices the owner left open are marked **default**; they hold until he says othe
   pause, the one Esc's menu uses, set from the window). In a party it is **not** paused — pausing one machine of a
   lock-step game stalls them all, and the others would wait on a box they cannot close — so the box is only shown,
   on every machine of the party, and the fight goes on under it. A party shares its quests and its story.
-- **The tracker.** The compact list at the right edge lists every quest the run has going, under the floor's own
-  mission: the MAIN ones (◆ gold) first — the floor's mission (key → gate → boss) the first of them — then the SIDE
-  ones (◇), each in the order it was started, each with its current step (`Skeletlarni qiring 3/5`).
+- **The tracker.** The compact list at the right edge lists every quest the run has going: the MAIN ones (◆ gold)
+  first, then the SIDE ones (◇), each in the order it was started, each with its current step
+  (`Skeletlarni qiring 3/5`). **Each map has its own missions** (the owner, 2026-10-09): the floor mission
+  (key → gate → boss, titled `MissionTitle`) heads the list only on a map that runs it — every floor of the descent,
+  and a stage whose file says `FloorMission = Yes` (the two arenas, `first` and `deep`). A story map lists only its
+  own quests: no "Bossni o'ldir" left over.
 
 ## The data
 

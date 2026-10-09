@@ -104,7 +104,11 @@ public final class MapWriter {
         int depth = Math.max(1, drawn.difficulty());
         var floor = DungeonGenerator.generate(drawn.seed(), settings, depth,
                 Layout.sized(settings, drawn.width(), drawn.height(), drawn.rooms()));
-        var stage = new Stage(drawn.name(), drawn.displayName(), drawn.description(), depth, 1, drawn.seed(), floor);
+        // The two arenas run the descent's floor mission (kill the boss); a new map is drawn without it.
+        boolean arena = drawn.equals(FIRST) || drawn.equals(DEEP);
+        var stage = new Stage(drawn.name(), drawn.displayName(), drawn.description(), depth, 1, drawn.seed(), floor,
+                null, arena ? new uz.dukeengine.dungeon.story.MapStory(java.util.List.of(), java.util.List.of(),
+                        java.util.List.of(), java.util.List.of(), true) : null);
         var problems = StageCheck.problems(stage, settings);
         if (!problems.isEmpty()) {
             throw new IllegalStateException(drawn.name() + " is broken: " + problems);
