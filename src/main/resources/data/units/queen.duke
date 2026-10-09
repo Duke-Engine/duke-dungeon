@@ -18,7 +18,7 @@ Monster
   VisionRange = 130
   Modules = [
     GrowableBody
-      MaxHealth = 900
+      MaxHealth = 600
     End,
     MoveUpdate
       Speed = 12
@@ -78,9 +78,6 @@ Monster
     Bone = handslot.r
   End
 
-  MaxMana = 120
-  ManaRegen = 40
-
   ; Which of these she casts is her phase's (Skills = [...] in her Boss block).
   Skills = [
     Skill
@@ -94,7 +91,7 @@ Monster
       Projectile = SkullFireball
       StunFrames = 30
       CooldownFrames = 150
-      ManaCost = 20
+      ManaCost = 0
       MaxRank = 1
       Name = Olov shari
     End,
@@ -107,7 +104,7 @@ Monster
       WindUpFrames = 45
       Projectile = SkullMeteorMark
       CooldownFrames = 420
-      ManaCost = 50
+      ManaCost = 0
       MaxRank = 1
       Name = Meteor
     End

@@ -17,7 +17,7 @@ Monster
   VisionRange = 130
   Modules = [
     GrowableBody
-      MaxHealth = 700
+      MaxHealth = 600
     End,
     MoveUpdate
       Speed = 19
@@ -29,8 +29,6 @@ Monster
       ReloadFrames = 30
     End,
     Swing
-    End,
-    SkillBook
     End,
     StatusUpdate
     End,
@@ -66,15 +64,4 @@ Monster
     Bone = handslot.r
     Scale = 1
   End
-
-  Skills = [
-    Skill
-      Key = Q
-      ; The medallion drinks for him: a quarter of every blow back, never cast.
-      Effect = LIFESTEAL
-      BoostPercent = 25
-      MaxRank = 1
-      Name = Qon so'rish
-    End
-  ]
 End

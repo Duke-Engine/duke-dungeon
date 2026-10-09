@@ -268,6 +268,7 @@ Effect
       Name = Dust
       Type = BURST
       Texture = kit/effects/particles/smoke_01.png
+      Blend = Alpha
       Cover = 0.6
       Count = 14
       Life = [0.8, 1.3]
@@ -287,7 +288,7 @@ Effect
       Texture = kit/effects/particles/circle_05.png
       Blend = Additive
       Count = 1
-      Life = [0.9, 0.9]
+      Life = [0.7, 0.7]
       Size = [6, 26]
       Colour = [0xC8C0E8, 0x8070A0]
       Alpha = [0.6, 0]
@@ -325,7 +326,8 @@ Effect
 End
 
 ; The souls the medallion held, rising from where she fell into the sky: three waves
-; of pale wisps, a column of light standing up out of the floor, and its glow.
+; of pale wisps, slow, and a glow under them. Drawn as stuff, not light: the rules
+; keep light that happens at once short, and these take seconds to rise away.
 Effect
   Name = SoulsRise
   Layers = [
@@ -333,7 +335,8 @@ Effect
       Name = FirstSouls
       Type = BURST
       Texture = kit/effects/particles/light_02.png
-      Blend = Additive
+      Blend = Alpha
+      Cover = 0.3
       Count = 30
       Life = [3, 4.5]
       Size = [2.4, 0.8]
@@ -350,7 +353,8 @@ Effect
       Name = MoreSouls
       Type = BURST
       Texture = kit/effects/particles/light_02.png
-      Blend = Additive
+      Blend = Alpha
+      Cover = 0.3
       Delay = 0.8
       Count = 30
       Life = [3, 4.5]
@@ -368,7 +372,8 @@ Effect
       Name = LastSouls
       Type = BURST
       Texture = kit/effects/particles/star_01.png
-      Blend = Additive
+      Blend = Alpha
+      Cover = 0.3
       Delay = 1.6
       Count = 30
       Life = [3, 4.5]
@@ -381,21 +386,6 @@ Effect
       Gravity = -3
       Radius = 10
       Height = 3
-    End,
-    Layer
-      Name = Column
-      Type = PILLAR
-      Texture = kit/effects/particles/light_02.png
-      Blend = Additive
-      Count = 1
-      Life = [3, 3]
-      Size = [14, 14]
-      Colour = [0xE8F6FF, 0x9FD8FF]
-      Alpha = [0.7, 0]
-      Direction = UP
-      Height = 60
-      Rise = 0.5
-      RiseEase = 3
     End,
     Layer
       Name = Glow
