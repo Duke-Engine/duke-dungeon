@@ -554,13 +554,13 @@ class DungeonSettingsTest {
         for (var skill : DungeonSettings.load().skills()) {
             float reach = switch (skill.effect()) {
                 case STRIKE, AREA_AT_SPOT, SKILLSHOT, HEAL -> skill.range();
-                case DASH, BLINK -> skill.distance();
+                case DASH, BLINK, SKEWER, WAVE -> skill.distance();
                 case METEOR -> skill.range();
-                case AREA_DAMAGE, SUMMON -> skill.radius();
+                case AREA_DAMAGE, SUMMON, PULL -> skill.radius();
                 case HASTE -> skill.range();
                 case EMPOWER, GUARD -> 1f; // his own width; the look says how wide
                 // Never cast, so no ring is ever drawn: a stand-in to keep the switch whole.
-                case LIFESTEAL, DAMAGE_AURA, MANA_AURA, LIFESTEAL_AURA, SOUL_DRINK, UNYIELDING -> 1f;
+                case LIFESTEAL, DAMAGE_AURA, MANA_AURA, LIFESTEAL_AURA, SOUL_DRINK, UNYIELDING, DRAGON_BLOOD -> 1f;
             };
             assertTrue(reach > 0f, skill.heroTemplate() + "'s " + skill.key() + " is a "
                     + skill.effect() + " and has nothing to draw a ring from");
