@@ -38,6 +38,7 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E22 | the story half lifted into rpg: zones, dialogue, quests, triggers and cutscenes, people and trade | waiting (big) |
 | E23 | a long list in a .duke file read in linear time (the world map's scenery) | landed, e05164d8 (on e23-linear-lists) |
 | E24 | haze (and the world picture) chosen per map, as streaming is | landed, 60557fac (on e24-haze-per-map); the game hazes its wide worlds |
+| E25 | a hero's worn slots by kind and a backpack that gives nothing | waiting (medium) |
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
 game builds against the local engine. E12–E15 reached it together at 668045f0 (their pull requests merged as
@@ -710,3 +711,27 @@ world picture E10 offers, but they are one global setting on `Visuals`: turned o
 floors too. Asked: the same shape as E18 — e.g. `Visuals.haze(look, Predicate<Object> forMap)` (and the world picture
 likewise), asked of each map's record as it is laid; the old one-argument form unchanged. Done when a launch can lay
 the hazy open world and then an unhazed floor, with a test.
+
+## E25 — Worn slots and a backpack (2026-10-09, medium)
+
+The owner, 2026-10-09: today a hero's bag is six slots and everything in it acts on him (Dota's hero inventory). An RPG
+needs to carry things that do nothing until put on. Decided with him:
+
+- **Worn slots, by kind** — Qurol (weapon), Zirh (armour), Dubulg'a (helmet), Etik (boots), Tumor (amulet), Uzuk (ring)
+  — the slot list and its words the game's data. Only what is worn acts on the hero (its figures, extras, auras the
+  item gives). An item says which slot it goes in (`Slot = …` on the item's record); one that names none cannot be worn.
+- **A backpack** of a size the game gives (10): carried, acting on nothing. Keys, quest items and things to sell live
+  here; what a use-item does (a potion, the key given to the gate) is used from the backpack.
+- **Moves:** a backpack item clicked → worn in its slot, the worn one there swapped back to the backpack; a worn item
+  clicked → to the backpack (refused with a word if it is full). A thing picked up is worn when its slot is empty and
+  nothing else, otherwise goes to the backpack; a full backpack refuses with a word, as the full bag does today. Drop
+  from either. Every move is an order through the simulation (party in step, as the bag's orders are now).
+- **rpg-client-3d's `BagScreen`:** the worn slots laid out by kind and the backpack's grid beside them, the item card
+  saying "Kiyiladi: Uzuk" / what it gives; the game's words handed in as `BagScreen.Words`.
+- **State for saving:** what is worn and the backpack, in order, readable and restorable through public API (the game
+  saves it, as it saves the bag today).
+- A game that gives no slot list (generals, or the old way) keeps today's single list where everything acts.
+
+The game then: slot words and each item's `Slot` in data, the merchant buying from and selling to the backpack, saving
+both, its loot drops unchanged. Done when the rpg tests pin each move and the old single-list mode, and the game's suite
+passes with its items given slots.
