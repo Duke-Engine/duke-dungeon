@@ -542,6 +542,8 @@ public final class Main {
             current.set(next);
             shell.asking(FrontMenu.startingFresh(wayIn.apply(next), () -> duke.startMatch(next.game())));
         });
+        // The live scene behind the front menu: the kingdom's soldiers holding a clearing against the skeletons.
+        duke.backdrop(() -> MenuScene.of(settings).game());
         duke.shell(shell);
         duke.launch();
     }
