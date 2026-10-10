@@ -937,3 +937,47 @@ Asked:
 The game cannot get round this. Its shell, front rows, `menuAt` and `backdrop` wiring are as E30 asks
 (`FrontMenu.shell`, `Main.main`), and no `Duke3D` call shows the stone menu again without ending the match drawn
 behind it. It is not headless-testable from the game either, because `DukeRtsApp` needs a jME context.
+
+## E34 — A scenery piece drawn with another picture (2026-10-10, small)
+
+The castle kits (`models/castles/`, CC BY 4.0, `art/castles/export_castles.py`) want the queen's dark castle drawn
+with the same pieces as the kingdom's, in darker, colder pictures. A `ThemeMonster` can already be handed another
+`Texture`; a map's scenery cannot. The game works round it by writing a `_dark.gltf` beside every fort piece —
+the same `.bin`, its images pointed at `textures/*_dark.jpg` — which costs a file a piece and doubles the names
+the editor offers.
+
+Asked: a scenery line may name a picture after its model — `models/castles/fort/fort_wall.gltf@textures/fort_9_dark.jpg
+x y facing scale footprint`, or a seventh word — that replaces the base colour of every material of that piece (or
+of the material whose picture has that file name). `Tileset.piece` caches by model and picture. Done when a
+`TerrainScene` test lays one model twice, once with another picture, and the two draw different textures.
+
+## E35 — A map's scenery line carries its tint (2026-10-10, small)
+
+`MapScenery.tint()` exists and the client multiplies it over a piece, but a map's `Scenery` line is `model x y
+facing scale footprint` and is read back white (`GeneratedDungeon.Piece.of`, the editor's `Scenic.written`): a tint
+is only ever set by a generator. A castle that is a little darker here, a ruin greyer there, a red-lit throne room
+— all one model and one tint — cannot be written into a map.
+
+Asked: an optional seventh word, `0xRRGGBB`, read and written by the engine's line format (and by the editor), white
+when absent, so every map written today reads the same. Done when a written line with a tint reads back with it.
+
+## E36 — Scenery stands in the way along its length, turned with its facing (2026-10-10, medium)
+
+A piece's footprint is a circle round its origin. A wall of the castle kits runs three to six cells east of its
+origin, so a circle cannot stand for it: the courtyard in `maps/qasr` keeps its walls out of nobody's way, and a
+map that wants a castle the hero cannot walk through must also paint `#` under the walls — which on painted ground
+the client draws as rock (the kit's wall standing in the cell), on top of the castle.
+
+Asked: a footprint may be a box — `footprint` written as `WxD` (cells, in the model's own frame: W along +X from
+the origin, D centred across it), turned by the piece's facing — closing the cells it covers as a circle's are; or,
+as good, a footprint read off the model's own bounds when the line says `box`. And a `#` cell under scenery that
+says so is blocked but draws no rock. Done when a three-cell wall at facing 90 closes exactly the three cells north
+of its origin and a hero routes round it.
+
+## E37 — Placing a piece on the grid in the editor (2026-10-10, medium, for duke-plugin)
+
+The owner will build castles in the editor. The scatter brush lays random kinds at random places and turns; a
+castle wants one chosen piece at a chosen grid point and a right angle. Asked (of the plugin, which is the owner's
+and mine to build): a Place tool — pick one kind from the Castles theme, click a grid point (snapping to whole and
+half cells), turn by 90° with a key, write one piece. The pieces' pivots are made for it: a wall starts at its
+origin and runs east, a tower is centred, a floor's corner is at its origin (see `data/world/themes/castles.duke`).
