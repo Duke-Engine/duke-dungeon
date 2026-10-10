@@ -47,11 +47,11 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E31 | four new skill shapes for the knight: a piercing wave, a shield charge that drags and stuns, armour and regeneration as a passive, a pull to one point that stuns | landed, dba15f52 + 1d0bcfd3 (the charge frame by frame); the knight is Qilich to'lqini, Qalqon bilan surish, Ajdar qoni and Teskari qutb |
 | E32 | the knight's skills as played: a charge that carries two, their looks drawn, an unlearnt passive that is off | landed, 24965199; the charge carries three skeletons the whole way, the wave, charge and pull are drawn, and an unlearnt Ajdar qoni does nothing |
 | E33 | the front menu hides itself the frame the backdrop arrives behind it (forgetTheWorld hides the menu, nothing shows it again) | landed, bf191479 (on e31-knight-skills) |
-| E34 | a scenery piece drawn with another picture (the queen's dark castle) | waiting (small) |
-| E35 | a map's scenery line carries its tint | waiting (small) |
-| E36 | scenery that blocks along its length, turned with its facing (castle walls) | waiting (medium) |
+| E34 | a scenery piece drawn with another picture (the queen's dark castle) | landed, 5971fa0b (on e34-36-castle-scenery); the queen's castle is the fort pieces @ their dark pictures |
+| E35 | a map's scenery line carries its tint | landed, 5971fa0b; the game reads and writes it (`GeneratedDungeon.Piece` over `SceneryLine`) |
+| E36 | scenery that blocks along its length, turned with its facing (castle walls) | landed, 5971fa0b; every castle wall is a `WxD` box, the qasr courtyard is entered only by its gate |
 | E37 | placing one piece on the grid in the editor — the plugin's, done in duke-plugin | plugin |
-| E38 | a map that starts explored: its ground seen from the first frame, its creatures only in sight | waiting (small) |
+| E38 | a map that starts explored: its ground seen from the first frame, its creatures only in sight | landed, 7f17f626 (with E34–E36); the open world begins seen, the descent black |
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
 game builds against the local engine. E12–E15 reached it together at 668045f0 (their pull requests merged as

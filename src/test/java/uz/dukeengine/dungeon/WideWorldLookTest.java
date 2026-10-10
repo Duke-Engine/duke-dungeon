@@ -10,8 +10,9 @@ import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.dungeon.stage.Stages;
 
 /**
- * The open world fades into haze at the edge of the ground built round the camera, and nothing else does: the same
- * maps its things sleep on and its routes are sectored on, asked of the record the client is handed.
+ * The open world fades into haze at the edge of the ground built round the camera, and begins seen (E38), and nothing
+ * else does: the same maps its things sleep on and its routes are sectored on, asked of the record the client is
+ * handed.
  */
 class WideWorldLookTest {
 
@@ -30,14 +31,18 @@ class WideWorldLookTest {
         world.runHeadless(2);
         assertTrue(visuals.hazes(world.getMapRecord()), "the open world does not fade at its edge");
         assertTrue(world.getLogic().getRouteSectors() > 0, "and it is the same world its routes are sectored on");
+        assertTrue(visuals.fogStartsExploredFor(world.getMapRecord()), "the open world begins dark, not seen");
 
         var painted = Dungeon.newStageSession(Stages.load("painted", SETTINGS), SETTINGS).game();
         painted.runHeadless(2);
         assertFalse(visuals.hazes(painted.getMapRecord()), "a small painted stage is drawn whole");
+        assertFalse(visuals.fogStartsExploredFor(painted.getMapRecord()), "a small painted stage begins seen");
 
         var descent = Dungeon.newSession(11L).game();
         descent.runHeadless(2);
         assertFalse(visuals.hazes(descent.getMapRecord()), "a floor of the descent is drawn whole to its walls");
+        assertFalse(visuals.fogStartsExploredFor(descent.getMapRecord()), "a floor of the descent begins seen");
         assertFalse(visuals.hazes(null), "and so is no map at all");
+        assertFalse(visuals.fogStartsExploredFor(null), "and no map at all begins seen");
     }
 }

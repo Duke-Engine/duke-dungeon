@@ -1,6 +1,7 @@
 package uz.dukeengine.dungeon.gen;
 
 import java.util.List;
+import uz.dukeengine.core.map.SceneryLine;
 import uz.dukeengine.core.pathfind.HeightMap;
 import uz.dukeengine.core.pathfind.PathGrid;
 
@@ -78,25 +79,32 @@ public record GeneratedDungeon(
     /**
      * One piece of scenery: a model standing on the floor, where the engine is told to draw it — in cells, as
      * everything a map hands the engine is. Grass and pebbles are in nobody's way; a grove's tree is, as far round
-     * its middle as {@code footprint} says.
+     * its middle as {@code footprint} says; a wall is, along a box {@code boxLength} cells down its facing from its
+     * origin and {@code boxDepth} across. It may be drawn with another {@code picture} than its own (the queen's dark
+     * castle of the kingdom's pieces) and under a {@code tint}. Its line is the engine's {@link SceneryLine}.
      */
-    public record Piece(String model, float x, float y, float facing, float scale, int tint, float footprint)
-            implements uz.dukeengine.core.map.MapScenery {
+    public record Piece(String model, float x, float y, float facing, float scale, int tint, float footprint,
+            String picture, float boxLength, float boxDepth) implements uz.dukeengine.core.map.MapScenery {
 
-        /** As a map file writes it: {@code model x y facing scale footprint}, in cells; read back white. */
-        public static Piece of(String written) {
-            var words = written.strip().split("\\s+");
-            if (words.length != 6) {
-                throw new IllegalArgumentException("'" + written
-                        + "' is a model, then x y facing scale footprint, in cells");
-            }
-            return new Piece(words[0], Float.parseFloat(words[1]), Float.parseFloat(words[2]),
-                    Float.parseFloat(words[3]), Float.parseFloat(words[4]), 0xFFFFFF, Float.parseFloat(words[5]));
+        public Piece {
+            picture = picture == null ? "" : picture;
         }
 
-        /** As a map file writes it; the tint is not written. */
+        /** Round, or in nobody's way, in its own picture: what every generator lays. */
+        public Piece(String model, float x, float y, float facing, float scale, int tint, float footprint) {
+            this(model, x, y, facing, scale, tint, footprint, "", 0f, 0f);
+        }
+
+        /** As a map file writes it: {@code model[@picture] x y facing scale footprint|WxD [0xRRGGBB]}, in cells. */
+        public static Piece of(String written) {
+            var line = SceneryLine.of(written);
+            return new Piece(line.model(), line.x(), line.y(), line.facing(), line.scale(), line.tint(),
+                    line.footprint(), line.picture(), line.boxLength(), line.boxDepth());
+        }
+
+        /** As a map file writes it: the picture, the box and the tint only where they say something. */
         public String written() {
-            return model + " " + x + " " + y + " " + facing + " " + scale + " " + footprint;
+            return new SceneryLine(model, picture, x, y, facing, scale, footprint, boxLength, boxDepth, tint).written();
         }
     }
 

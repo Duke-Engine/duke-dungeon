@@ -291,7 +291,8 @@ class DungeonTilesTest {
                 pieces.add(tone.floor());
                 pieces.add(tone.corner());
                 // And what lies about on its floor, and its groves' trees, drawn from paths the same way.
-                theme.scenery().forEach(scatter -> pieces.add(scatter.model()));
+                // (model@picture: the model here, its picture in CastleKitsTest)
+                theme.scenery().forEach(scatter -> pieces.add(scatter.model().split("@")[0]));
                 if (theme.grove() != null) {
                     pieces.addAll(theme.grove().models());
                 }

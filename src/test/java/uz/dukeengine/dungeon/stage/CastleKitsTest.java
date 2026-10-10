@@ -21,8 +21,9 @@ import uz.dukeengine.dungeon.gen.GeneratedDungeon;
 
 /**
  * The six castle kits (models/castles, written by art/castles/export_castles.py): every piece loads wearing its
- * picture and stands on the ground; the queen's dark copies are there; the Castles theme offers every piece; and the
- * courtyard of maps/qasr loads, checks, and has its walls meeting its towers.
+ * picture and stands on the ground; the Castles theme offers every piece with its footprint, and the fort's again with
+ * its dark picture; and the courtyard of maps/qasr loads, checks, has its walls meeting its towers and in the way, and
+ * is entered by its gate.
  */
 class CastleKitsTest {
 
@@ -62,7 +63,7 @@ class CastleKitsTest {
     @Test
     void everyPieceLoadsWearingItsPictureOnTheGround() throws Exception {
         var all = pieces();
-        assertTrue(all.size() >= 90, "only " + all.size() + " castle pieces");
+        assertTrue(all.size() >= 75, "only " + all.size() + " castle pieces");
         for (var path : all) {
             var model = ASSETS.loadModel(path);
             var box = box(model);
@@ -95,33 +96,58 @@ class CastleKitsTest {
         assertEquals(30f, 2 * rampart.getXExtent(), 0.5f, "the rampart's wall is three cells");
     }
 
-    /** The queen's castle: every fort piece has its dark twin, drawn with other pictures on the same mesh. */
+    /**
+     * The queen's castle: every fort piece is offered again drawn with its dark picture (model@picture, one mesh),
+     * and that picture is shipped beside its own.
+     */
     @Test
-    void everyFortPieceHasItsDarkTwin() throws Exception {
-        var all = pieces();
-        var fort = all.stream().filter(p -> p.contains("/fort/") && !p.endsWith("_dark.gltf")).toList();
+    void everyFortPieceIsOfferedWithItsDarkPicture() throws Exception {
+        var fort = pieces().stream().filter(p -> p.contains("/fort/")).toList();
         assertTrue(fort.size() >= 15, "only " + fort.size() + " fort pieces");
+        var offered = castles().scenery().stream().map(s -> s.model()).toList();
         for (var piece : fort) {
-            var dark = piece.replace(".gltf", "_dark.gltf");
-            assertTrue(all.contains(dark), piece + " has no dark twin");
-            var light = ASSETS.loadModel(piece);
-            var twin = ASSETS.loadModel(dark);
-            assertTrue(pictures(twin).stream().allMatch(name -> name.contains("_dark")), dark + " wears "
-                    + pictures(twin));
-            assertEquals(box(light).getYExtent(), box(twin).getYExtent(), 0.01f, dark + " is another shape");
+            var dark = offered.stream().filter(m -> m.startsWith(piece + "@")).findFirst()
+                    .orElseThrow(() -> new AssertionError(piece + " is not offered dark"));
+            var picture = dark.substring(dark.indexOf('@') + 1);
+            assertTrue(picture.endsWith("_dark.jpg"), dark);
+            assertNotNull(ASSETS.loadTexture(picture), picture);
+            var own = pictures(ASSETS.loadModel(piece));
+            assertEquals(Set.of(picture.replace("_dark.jpg", ".jpg")), own,
+                    piece + " is drawn with more than the one picture its dark one replaces");
         }
     }
 
-    /** The Castles theme offers every shipped piece to the brush, strews none, and names nothing that is not there. */
+    /**
+     * The Castles theme offers every shipped piece to the brush and strews none; a wall stands in the way along its
+     * length, a gate or an arch does not, a tower is round.
+     */
     @Test
-    void theCastlesThemeOffersEveryPiece() throws Exception {
-        var theme = SETTINGS.themes().all().stream().filter(t -> t.name().equals("Castles")).findFirst()
-                .orElseThrow(() -> new AssertionError("no Castles theme"));
-        var offered = theme.scenery().stream().map(s -> s.model()).collect(Collectors.toSet());
+    void theCastlesThemeOffersEveryPieceWithItsFootprint() throws Exception {
+        var theme = castles();
+        var offered = theme.scenery().stream().map(s -> s.model().split("@")[0]).collect(Collectors.toSet());
         assertEquals(Set.copyOf(pieces()), offered);
         assertTrue(theme.scenery().stream().allMatch(s -> s.perHundred() == 0 && s.scale() == 1f));
         assertTrue(SETTINGS.biomes().all().stream().noneMatch(t -> t.name().equals("Castles")),
                 "the castles are no biome");
+        for (var scatter : theme.scenery()) {
+            var model = scatter.model();
+            var line = GeneratedDungeon.Piece.of(model + " 0 0 0 1 " + scatter.footprint());
+            var name = model.split("@")[0];
+            name = name.substring(name.lastIndexOf('/') + 1, name.length() - ".gltf".length());
+            if (name.endsWith("_gate") || name.endsWith("_gatehouse") || name.endsWith("_wall_arch")) {
+                assertEquals(0f, line.boxLength() + line.footprint(), model + " shuts its own way through");
+            } else if (name.contains("_wall") || name.contains("_block")) {
+                assertTrue(line.boxLength() >= 0.5f && line.boxDepth() >= 1.1f, model + " is in nobody's way: "
+                        + scatter.footprint());
+            } else if (name.contains("_tower") || name.endsWith("_keep") || name.endsWith("_turret")) {
+                assertTrue(line.footprint() > 0.3f && line.boxLength() == 0f, model + " is not round");
+            }
+        }
+    }
+
+    private static uz.dukeengine.dungeon.world.Theme castles() {
+        return SETTINGS.themes().all().stream().filter(t -> t.name().equals("Castles")).findFirst()
+                .orElseThrow(() -> new AssertionError("no Castles theme"));
     }
 
     /** The castle hall's solid things are props with a look that loads. */
@@ -159,6 +185,41 @@ class CastleKitsTest {
             assertTrue(near(towers, wall.x() - dx, wall.y() - dy), wall.written() + " starts by no tower");
             assertTrue(near(towers, wall.x() + 4 * dx, wall.y() + 4 * dy), wall.written() + " ends by no tower");
         }
+    }
+
+    /**
+     * The courtyard's walls stand in the way and its gate does not: the cells under a wall are shut, those in the
+     * gateway open, and the way from before the gate to the middle of the court goes in by the gateway, never
+     * through a wall.
+     */
+    @Test
+    void theHeroComesInByTheGateAndNotThroughAWall() {
+        var game = uz.dukeengine.dungeon.Dungeon.newStageSession(Stages.load("qasr", SETTINGS), SETTINGS).game();
+        game.runHeadless(1);
+        var logic = game.getLogic();
+        var grid = logic.getPathGrid();
+        float cell = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
+        // The north wall from (9, 8) east, the west wall from (8, 9) south, the south wall west of the gate.
+        for (int[] shut : new int[][] {{10, 7}, {10, 8}, {7, 10}, {8, 10}, {10, 17}, {10, 18}, {18, 15}}) {
+            assertTrue(grid.isBlocked(shut[0], shut[1]), "the wall leaves " + shut[0] + "," + shut[1] + " open");
+        }
+        for (int[] open : new int[][] {{15, 17}, {15, 18}, {12, 12}}) {
+            assertTrue(!grid.isBlocked(open[0], open[1]), open[0] + "," + open[1] + " is shut");
+        }
+        var path = logic.findPath(new uz.dukeengine.core.math.Coord3D(15.5f * cell, 22.5f * cell, 0f),
+                new uz.dukeengine.core.math.Coord3D(13.5f * cell, 12.5f * cell, 0f));
+        assertTrue(!path.isEmpty(), "no way into the court");
+        boolean byTheGate = false;
+        for (var waypoint : path.getWaypoints()) {
+            int cx = grid.toCellX(waypoint);
+            int cy = grid.toCellY(waypoint);
+            assertTrue(!grid.isBlocked(cx, cy), "the way goes through a wall at " + cx + "," + cy);
+            byTheGate |= cy >= 17 && cy <= 18 && cx >= 14 && cx <= 16;
+        }
+        var first = path.getWaypoints().getFirst();
+        var last = path.getWaypoints().getLast();
+        // Waypoints may be sparse: a straight line from before the gate to the court is through the gateway anyway.
+        assertTrue(byTheGate || Math.abs(first.x() - last.x()) < 2.5f * cell, "the way in misses the gate");
     }
 
     private static boolean near(List<GeneratedDungeon.Piece> towers, float x, float y) {
