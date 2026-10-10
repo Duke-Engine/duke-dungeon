@@ -42,4 +42,20 @@ class MenuSceneTest {
         scene.game().runHeadless(2);
         assertTrue(scene.game().getSnapshot().status().contains("|look=" + SETTINGS.mainMenu().sceneLook()));
     }
+
+    /** The owner, 2026-10-10: the camera somewhat higher, and the fight to the right of the menu at the left. */
+    @Test
+    void theCameraLooksFromHigherThanPlayAndLeftOfTheFight() {
+        var scene = MenuScene.of(SETTINGS);
+        scene.game().runHeadless(2);
+        var seen = scene.game().camera().current();
+        var menu = SETTINGS.mainMenu();
+        assertEquals(Math.toRadians(menu.scenePitch()), seen.pitch(), 1e-4);
+        assertTrue(seen.pitch() > Math.atan2(0.82, 0.57), "no higher than the camera a game is played with");
+        assertEquals(menu.sceneZoom(), seen.zoom(), 1e-3);
+        assertTrue(menu.sceneZoom() > 140f, "no further back than play's");
+        float fight = (MenuScene.FIGHT_COLUMN + 0.5f) * uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
+        assertTrue(seen.x() < fight, "it looks at " + seen.x() + ", not left of the fight at " + fight);
+        assertEquals(0f, seen.angle(), 1e-6f);
+    }
 }

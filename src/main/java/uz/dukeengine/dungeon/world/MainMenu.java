@@ -14,14 +14,18 @@ import java.util.Map;
  * @param sceneLook the theme and tone the live scene behind the menu wears, as a run names one
  * @param soldiers  the kingdom's side of the scene, one creature per entry
  * @param foes      the skeletons' side, one creature per entry
+ * @param scenePitch how steeply the scene's camera looks down, in degrees above the ground; 0 leaves the client's
+ * @param sceneZoom  how far back it stands, in world units; 0 leaves the client's
+ * @param sceneShift how many cells left of the fight it looks, so the fight stands right of a menu at the left
  */
 public record MainMenu(String subtitle, String settingsWord, String quitWord, String side,
         float margin, String creditsWord, String creditsBlurb, String creditsTitle, String creditsHint,
-        List<String> words, String sceneLook, List<String> soldiers, List<String> foes) {
+        List<String> words, String sceneLook, List<String> soldiers, List<String> foes, float scenePitch,
+        float sceneZoom, int sceneShift) {
 
     /** What a block leaves out: the client's English, in the middle, and no scene. */
     public static final MainMenu DEFAULTS = new MainMenu("", "Settings", "Quit", "MIDDLE", 0f, "Credits",
-            "Who made what this game is drawn with", "CREDITS", "ESC back", List.of(), null, List.of(), List.of());
+            "Who made what this game is drawn with", "CREDITS", "ESC back", List.of(), null, List.of(), List.of(), 0f, 0f, 0);
 
     public MainMenu {
         words = words == null ? List.of() : List.copyOf(words);

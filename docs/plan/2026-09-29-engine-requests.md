@@ -46,6 +46,7 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E30 | the backdrop behind the client's own stone menus, not only behind a game-drawn front end; the questions' "Back" said by the game; the game's own front rows | landed, 0aeeec88; the scene runs behind the menu, Orqaga is said, and the front rows stand on the menu itself |
 | E31 | four new skill shapes for the knight: a piercing wave, a shield charge that drags and stuns, armour and regeneration as a passive, a pull to one point that stuns | landed, dba15f52 + 1d0bcfd3 (the charge frame by frame); the knight is Qilich to'lqini, Qalqon bilan surish, Ajdar qoni and Teskari qutb |
 | E32 | the knight's skills as played: a charge that carries two, their looks drawn, an unlearnt passive that is off | landed, 24965199; the charge carries three skeletons the whole way, the wave, charge and pull are drawn, and an unlearnt Ajdar qoni does nothing |
+| E33 | the front menu hides itself the frame the backdrop arrives behind it (forgetTheWorld hides the menu, nothing shows it again) | waiting (small, a bug) |
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
 game builds against the local engine. E12–E15 reached it together at 668045f0 (their pull requests merged as
@@ -905,3 +906,34 @@ pinned by the game's tests:
    0 means not held (the scale let go, nothing mended); "the first where nothing says" stays for a book nobody ranks.
 
 Done when: the three tests above, and the game's suite green with the second skeleton and the look test back.
+
+## E33 — The front menu vanishes when the backdrop arrives (2026-10-10, small, a bug)
+
+The owner played MSI 1.0.23 (engine 24965199): the battle runs behind the front menu as E30 meant, but the menu's
+rows never show. He sits watching the simulation with nothing to click. Keys do nothing either, because the menu's
+input is gated on `menu.isVisible()`.
+
+**The cause, in `client3d/.../DukeRtsApp.java` at 24965199:**
+1. `showMainMenu()` (about line 1960) shows the stone menu (`menu.show(...)` sets the root's cull hint to `Never`)
+   on `Screen.MENU`.
+2. On a later frame, the backdrop's match is ready. `frame()` → `keepTheBackdropGoing()` (line 1156) sees
+   `behind != game`, parks the front match and calls **`forgetTheWorld()` (line 1165)**.
+3. `forgetTheWorld()` (line 1239) ends with **`menu.hide()` (line 1260)**, which sets the cull hint to `Always`.
+4. `keepTheBackdropGoing()` then calls `menu.liveBehind(true)` (line 1168). `StoneMenu.liveBehind` only calls
+   `refresh()`, which redraws the rows but never touches the cull hint. So the menu stays hidden. Nothing shows it
+   again until the screen changes (Settings and back, for instance).
+
+The same thing happens each time a fresh backdrop is made: on quit to the menu, and when Settings is closed back
+to the menu.
+
+Asked:
+- `keepTheBackdropGoing()` swaps the world without hiding what is on the screen. Either it keeps the menu visible
+  across its own `forgetTheWorld()` (note `menu.isVisible()` before, show it again after), or `forgetTheWorld()`
+  leaves the menu alone and its other callers (`startMatch`, `backToFrontEnd`, `takeTheFrontMatchBack`) hide or show
+  the menu themselves, as each of them already does next.
+- Done when a client3d test pins it: with a backdrop and a stone shell, the menu is visible after the frame in which
+  the backdrop's match arrives (and after a quit to the menu, and after Settings → Back); and the menu takes keys.
+
+The game cannot get round this. Its shell, front rows, `menuAt` and `backdrop` wiring are as E30 asks
+(`FrontMenu.shell`, `Main.main`), and no `Duke3D` call shows the stone menu again without ending the match drawn
+behind it. It is not headless-testable from the game either, because `DukeRtsApp` needs a jME context.
