@@ -483,6 +483,9 @@ public final class Main {
         // The edge of the ground built round the camera, faded away -- on a wide world only, the one predicate its
         // sleep and its sectors answer to.
         visuals.haze(ground.hazeFrom(), ground.hazeTo(), uz.dukeengine.dungeon.stage.StagePaint::isWide);
+        // And it begins seen: its ground, cliffs and scenery remembered from the first frame, its creatures only where
+        // the hero's eyes reach (E38). Every floor of the descent and every small map begins black.
+        visuals.fogStartsExplored(uz.dukeengine.dungeon.stage.StagePaint::isWide);
     }
 
     public static void main(String[] args) {
