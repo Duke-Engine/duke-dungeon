@@ -701,8 +701,17 @@ public final class Main {
                         game.getLocalPlayerIndex(), key, new ObjectId(id), null))));
                 case GROUND -> keys.onGround(key, (game, spot) -> game.postCommand(PartyOrders.of(
                         new CastSkill(game.getLocalPlayerIndex(), key, null, spot))));
-                case OPEN_GROUND -> keys.onOpenGround(key, (game, spot) -> game.postCommand(PartyOrders.of(
-                        new CastSkill(game.getLocalPlayerIndex(), key, null, spot))));
+                // The shield charge is aimed down a lane, as the wave is: any spot says which way, stone included
+                // (Dungeon.toTheEndOfItsLane puts it out at his whole Distance).
+                case OPEN_GROUND -> {
+                    if (skill.effect() == uz.dukeengine.rpg.skill.SkillEffect.SKEWER) {
+                        keys.onGround(key, (game, spot) -> game.postCommand(PartyOrders.of(
+                                new CastSkill(game.getLocalPlayerIndex(), key, null, spot))));
+                    } else {
+                        keys.onOpenGround(key, (game, spot) -> game.postCommand(PartyOrders.of(
+                                new CastSkill(game.getLocalPlayerIndex(), key, null, spot))));
+                    }
+                }
                 case SELF -> keys.on(key, game -> game.postCommand(PartyOrders.of(
                         new CastSkill(game.getLocalPlayerIndex(), key))));
             }
@@ -1009,12 +1018,13 @@ public final class Main {
             case STRIKE, HEAL -> uz.dukeengine.client3d.SkillRange.Shape.AT_A_CREATURE;
             case AREA_AT_SPOT -> uz.dukeengine.client3d.SkillRange.Shape.AT_A_SPOT;
             // A wave runs down a lane as a shot does, only on through what it meets.
-            case SKILLSHOT, WAVE -> uz.dukeengine.client3d.SkillRange.Shape.DOWN_A_LANE;
+            // And the shield charge: a line as long as his drive and as wide as what it catches -- the owner,
+            // 2026-10-10: "a line like the first skill's, not a point inside a circle".
+            case SKILLSHOT, WAVE, SKEWER -> uz.dukeengine.client3d.SkillRange.Shape.DOWN_A_LANE;
             // A blink is pointed at a spot exactly as a dash is. That it does not
             // cross what is between is the simulation's business; what the player
             // has to do with the mouse is the same thing, so the ring is the same.
-            // The knight's shield charge too: he drives toward the spot.
-            case DASH, BLINK, SKEWER -> uz.dukeengine.client3d.SkillRange.Shape.AT_A_SPOT;
+            case DASH, BLINK -> uz.dukeengine.client3d.SkillRange.Shape.AT_A_SPOT;
             case METEOR -> uz.dukeengine.client3d.SkillRange.Shape.AT_A_SPOT;
             // A summoning calls them up round him, as far out as its Radius; a haste finds one of
             // his own round him, as far out as its Range; a pull gathers whoever is within its Radius.
@@ -1050,7 +1060,9 @@ public final class Main {
             case AREA_AT_SPOT, METEOR -> skill.radius();
             default -> 0f;
         };
-        return new uz.dukeengine.client3d.SkillRange(skill.key(), shape, reach, area, skill.hitWidth());
+        // A lane is as wide as what runs down it: a shot's HitWidth, a charge's catch either side of him.
+        float width = skill.effect() == uz.dukeengine.rpg.skill.SkillEffect.SKEWER ? 2f * skill.radius() : skill.hitWidth();
+        return new uz.dukeengine.client3d.SkillRange(skill.key(), shape, reach, area, width);
     }
 
     /**

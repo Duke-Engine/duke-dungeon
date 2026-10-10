@@ -138,7 +138,9 @@ class ControlsTest {
                 assertEquals(switch (skill.effect().aim()) {
                     case UNIT -> Hotkeys.Aim.UNIT;
                     case GROUND -> Hotkeys.Aim.GROUND;
-                    case OPEN_GROUND -> Hotkeys.Aim.OPEN_GROUND;
+                    // The shield charge is aimed down a lane as the wave is: any spot is a way (Main.aimsFor).
+                    case OPEN_GROUND -> skill.effect() == uz.dukeengine.rpg.skill.SkillEffect.SKEWER
+                            ? Hotkeys.Aim.GROUND : Hotkeys.Aim.OPEN_GROUND;
                     case SELF -> Hotkeys.Aim.NOW;
                 }, controls.aimOf(skill.key()),
                         him + "'s " + skill.key() + " asks for the wrong thing, so pressing"

@@ -429,7 +429,8 @@ public final class Dungeon {
                 case CastSkill cast -> {
                     var learnt = run.learntOf(cast.playerIndex());
                     if (learnt != null) {
-                        Skills.cast(game.getLogic(), cast, learnt.rankOf(cast.key()));
+                        Skills.cast(game.getLogic(), toTheEndOfItsLane(game.getLogic(), cast, learnt.getSkills()),
+                                learnt.rankOf(cast.key()));
                     }
                 }
                 // And spending one of those levels, which is a click on the little
@@ -556,6 +557,32 @@ public final class Dungeon {
         }
 
         return new Session(game, run, progresses.getFirst(), arena.orders());
+    }
+
+    /**
+     * A shield charge (SKEWER) aimed down a lane as the wave is: the click says which way, not how far, so the point
+     * it carries is put out at the skill's whole Distance that way -- the length its lane is drawn (Main.rangeOf). The
+     * engine drives no further than the point it is given. Any other cast goes as it came.
+     */
+    static CastSkill toTheEndOfItsLane(uz.dukeengine.core.GameLogic logic, CastSkill cast,
+            java.util.List<uz.dukeengine.rpg.skill.Skill> skills) {
+        var skill = skills.stream().filter(each -> each.key() == cast.key()).findFirst().orElse(null);
+        var hero = cast.point() == null || skill == null
+                || skill.effect() != uz.dukeengine.rpg.skill.SkillEffect.SKEWER
+                ? null : Skills.heroOf(logic, cast.playerIndex());
+        if (hero == null) {
+            return cast;
+        }
+        var from = hero.getPosition();
+        float dx = cast.point().x() - from.x();
+        float dy = cast.point().y() - from.y();
+        float length = (float) Math.sqrt(dx * dx + dy * dy);
+        if (length < 0.001f) {
+            return cast;
+        }
+        float scale = skill.distance() / length;
+        return new CastSkill(cast.playerIndex(), cast.key(), cast.target(), new uz.dukeengine.core.math.Coord3D(
+                from.x() + dx * scale, from.y() + dy * scale, cast.point().z()));
     }
 
     /**

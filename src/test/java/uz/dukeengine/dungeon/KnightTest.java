@@ -189,6 +189,45 @@ class KnightTest {
                 .projectile())), "the wave flies as nothing the file describes");
     }
 
+    /**
+     * The owner, 2026-10-10: the wave is a half-moon on the floor and half as fast as it was; the charge is aimed as a
+     * line, like the wave, not at a point inside a circle.
+     */
+    @Test
+    void theWaveIsAHalfMoonAndTheChargeIsAimedAsALine() {
+        var wave = skillOf(KNIGHT, 'Q');
+        assertEquals(55f, wave.projectileSpeed(), 0.001f, "the wave flies at other than half its first 110");
+        var looks = SETTINGS.effectLayers().stream().filter(art -> art.effect().equals("SwordWave")).toList();
+        assertTrue(looks.stream().anyMatch(art -> "ARC".equals(art.fields().get("type"))),
+                "the wave is not drawn as a half-moon lying on the floor");
+        assertTrue(looks.stream().noneMatch(art -> "AURA".equals(art.fields().get("type"))),
+                "the wave still carries a ball round it");
+
+        var charge = skillOf(KNIGHT, 'W');
+        var ring = Main.rangeOf(charge, SETTINGS.skillRing().selfRadius());
+        assertEquals(uz.dukeengine.client3d.SkillRange.Shape.DOWN_A_LANE, ring.shape(), "the charge is not aimed as a line");
+        assertEquals(charge.distance(), ring.reach(), 0.001f, "its line is not as long as his drive");
+        assertEquals(2f * charge.radius(), ring.width(), 0.001f, "its line is not as wide as what it catches");
+    }
+
+    /** And a click down that line, near or far, drives him its whole Distance that way. */
+    @Test
+    void aClickDownTheLaneSendsTheChargeItsWholeLength() {
+        var world = Dungeon.world(room(), SETTINGS, Content.units());
+        var game = world.game();
+        game.spawn(KNIGHT, world.hero(), 100f, 150f);
+        game.runHeadless(1);
+        int player = world.hero().getIndex();
+        var near = new uz.dukeengine.rpg.skill.CastSkill(player, 'W', null, new Coord3D(110f, 150f, 0f));
+
+        var sent = Dungeon.toTheEndOfItsLane(game.getLogic(), near, SETTINGS.skillsFor(KNIGHT));
+        assertEquals(100f + skillOf(KNIGHT, 'W').distance(), sent.point().x(), 0.01f, "a near click cut the charge short");
+        assertEquals(150f, sent.point().y(), 0.01f, "the charge went another way than the click");
+        var wave = new uz.dukeengine.rpg.skill.CastSkill(player, 'Q', null, new Coord3D(110f, 150f, 0f));
+        assertEquals(wave, Dungeon.toTheEndOfItsLane(game.getLogic(), wave, SETTINGS.skillsFor(KNIGHT)),
+                "a skill that is not the charge was moved");
+    }
+
     /** His ultimate is earned, grows fewer times, and holds a room longer than his charge holds a line. */
     @Test
     void hisUltimateIsEarnedAndHoldsLongest() {

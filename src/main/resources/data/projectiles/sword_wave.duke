@@ -13,8 +13,8 @@ Projectile
   ]
 
 
-; No model: a white-steel crescent and the sparks it sheds, both drawn by the
-; effect below. Waist height, as a swing is.
+; No model: a white-steel half-moon and the sparks it sheds, both drawn by the
+; effect below.
   Height = 6
   Tint = 0xDDEBFF
   Effect = SwordWave
@@ -22,27 +22,38 @@ Projectile
 End
 
 ; ---------------------------------------------------------------------------
-; The kit's ArcaneBolt, layer for layer, made a blade: the core is the slash the
-; kit's Cleave cuts with rather than a ball, wider, and white-steel and gold where
-; the bolt is blue -- the same colours as Cleave, so the wave reads as the swing
-; thrown on. No light of its own: it crosses a room, and a moving light down
-; every corridor is the costliest thing an effect can do.
+; A HALF-MOON lying on the floor and running the way it was thrown -- the owner,
+; 2026-10-10: "not a sphere, a crescent". The kit's slash (the arc Cleave cuts
+; with) laid flat as an ARC, which the client turns so its bulge points the way
+; the wave is travelling, read from how it moved since the last frame. Let out
+; continuously and short-lived, so the newest is the wave and the ones just
+; behind it fade into a faint wake. As wide as the skill's HitWidth (14).
+;
+; Not Follows: a layer that follows is drawn in the wave's own frame, and the
+; turn is read off the ground it has crossed. White-steel and gold, the colours
+; of Cleave, so it reads as the swing thrown on. No light of its own: it crosses
+; a room, and a moving light down every corridor is the costliest thing an
+; effect can do.
 ; ---------------------------------------------------------------------------
 Effect
   Name = SwordWave
   Layers = [
     Layer
-      Name = Blade
-      Type = AURA
+      Name = HalfMoon
+      Type = ARC
       Texture = kit/effects/particles/slash_04.png
       Blend = Additive
-      Cover = 0.3
-      Count = 6
-      Rate = 40
-      Life = [0.1, 0.16]
-      Size = [9, 7]
+      Count = 14
+      Rate = 50
+      Life = [0.18, 0.22]
+      Size = [15, 13]
       Colour = [0xFFFFFF, 0xCFE4FF]
-      Alpha = [1, 0.5]
+      Alpha = [1, 0]
+      FadeOut = 0.6
+      ; Just off the floor, so it never sinks into a step.
+      Height = 1.5
+      Direction = NONE
+      TurnJitter = 0
     End,
     Layer
       Name = Sparks
