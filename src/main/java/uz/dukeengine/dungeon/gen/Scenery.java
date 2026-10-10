@@ -60,7 +60,9 @@ final class Scenery {
                     float down = y + 0.15f + rng.nextInt(71) / 100f;
                     float facing = rng.nextInt(360);
                     float size = scatter.scale() * (1f + scatter.variety() * (rng.nextInt(201) - 100) / 100f);
-                    pieces.add(new Piece(scatter.model(), across, down, facing, size, scatter.tint(), 0f));
+                    int at = scatter.model().indexOf('@');  // model@picture: drawn with another picture
+                    pieces.add(new Piece(at < 0 ? scatter.model() : scatter.model().substring(0, at), across, down,
+                            facing, size, scatter.tint(), 0f, at < 0 ? "" : scatter.model().substring(at + 1), 0f, 0f));
                 }
             }
         }

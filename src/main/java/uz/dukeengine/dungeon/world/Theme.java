@@ -104,16 +104,19 @@ public record Theme(
      * One kind of thing that lies about on a biome's floor for its look alone: nothing walks into it, nothing reads
      * it, and every machine scatters the same ones in the same places from the same seed.
      *
-     * @param model      the model, a whole path from the resource root
+     * @param model      the model, a whole path from the resource root; {@code model@picture} draws it with another
+     *     picture, as a map's scenery line does (the queen's dark castle)
      * @param perHundred how many to every hundred cells of this biome's floor
      * @param scale      how large against the model as it was made — about 2.5 is the kit's own proportion
      * @param variety    how much each differs in size, as a fraction either way
      * @param tint       a colour over it, packed {@code 0xRRGGBB}; white leaves it as it was made
+     * @param footprint  how a piece placed by the editor stands in the way, as a scenery line writes it: a radius in
+     *     cells, or {@code WxD}, a wall's box; the biome's own strewing leaves its pieces in nobody's way
      */
-    public record Scatter(String model, int perHundred, float scale, float variety, int tint) {
+    public record Scatter(String model, int perHundred, float scale, float variety, int tint, String footprint) {
 
         /** What a block leaves out. */
-        public static final Scatter DEFAULTS = new Scatter(null, 0, 2.5f, 0.3f, 0xFFFFFF);
+        public static final Scatter DEFAULTS = new Scatter(null, 0, 2.5f, 0.3f, 0xFFFFFF, "0");
     }
 
     /**
