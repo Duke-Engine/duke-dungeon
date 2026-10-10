@@ -53,6 +53,8 @@ Game
     data/animations/humanoid.duke,
     ; And the Rogue's, on the Huntress's own skeleton.
     data/animations/huntress.duke,
+    ; And what the knight, Lange, moves by: his own rig, his own clips.
+    data/animations/lange.duke,
 
     data/units/rogue.duke,
     data/units/knight.duke,

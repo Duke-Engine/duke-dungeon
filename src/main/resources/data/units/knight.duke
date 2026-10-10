@@ -102,22 +102,20 @@ Hero
 ; ---------------------------------------------------------------------------
 ; The knight.
 ;
-; Out of KayKit Adventurers 2.0 (CC0), the same pack all three heroes come from,
-; so the
-; rig matches and every clip below retargets onto him without a thing being done
-; to it. His clips come out of the Humanoid set, melee.glb among them: his swings, his
-; blocks and his two-handed stance are all in that one.
+; ★ LANGE, since 2026-10-10: phucpham1076's "Lange - Half-Elf Knight" (CC BY 4.0,
+; see CREDITS.md), the owner's choice for the Act 1 hero, made into the game's by
+; art/lange/export_lange.py -- his sunglasses taken off, his sword made part of him.
+; The KayKit knight he replaces (models/heroes/knight.glb) stays: it is the
+; kingdom's soldiers' and the Cursed Hero's.
 ;
-; HE CARRIES A GREATSWORD, and that is not decoration: the pack has no
-; Melee_1H_Idle, so a one-handed sword would have to stand in Melee_Unarmed_Idle
-; and read as a man who has forgotten he is holding one. Two hands also suits the
-; rest of him — slow, heavy, has to walk in.
+; His rig is his own, so he moves by the Lange set (data/animations/lange.duke),
+; whose one library is his own file, not by the Humanoid set: no KayKit clip
+; moves a bone of his unless art/lange/retarget.py has put it there. Idle and Walk
+; came with him; Attack, Hurt, Death and his casts are borrowed (Quaternius, KayKit).
 ;
-; ★ MEASURED, NOT GUESSED. He boxes 2.543 tall against the archer's 2.275, and
-; his head joint sits at 0.488 of that against the archer's 0.546 — he is a
-; taller model with a proportionally smaller head. That is why his ModelScale and
-; his portrait camera are not the archer's numbers, and it is the whole reason
-; both are written per hero.
+; HE IS LEFT-HANDED. Every clip has the sword in his left hand and the right hand
+; free, and the shield slung on his back -- as the model was made. Both are in
+; his file, so he carries nothing in Held.
 ; ---------------------------------------------------------------------------
 
   Title = Qalqon va qilich
@@ -138,94 +136,33 @@ Hero
   ; at 48 and shoots; a swordsman who did that would stand there swinging at air.
   CloseDistance = 8
 
-  Model = models/heroes/knight.glb
-  ; GeometryHeight is 12 in his template above and the model boxes 2.543 tall, so
-  ; 12 / 2.543 -- measured, exactly as the archer's 5.3 was. Both heroes then
-  ; stand the same height on screen, because both are 12 units of creature; what
-  ; makes him look like a knight is the model, not the scale.
-  ModelScale = 4.72
+  Model = models/heroes/lange/lange.glb
+  ; GeometryHeight is 12 in his template above and Lange stands 1.760 tall (metres:
+  ; the top of his hair, printed by art/lange/export_lange.py), so 12 / 1.760. He
+  ; stands as tall on screen as the KayKit knight did at 4.72; he only looks
+  ; slighter, because his head is a man's and not half his height.
+  ModelScale = 6.82
+  ; His file faces glTF's +Z, as the KayKit people do.
   Facing = 90
 
-  ; What he moves by, as everything on two legs does; the clips below are the ones
-  ; he plays his own way.
-  Animations = Humanoid
-
-  ; ★ SHIELD UP. He carries a sword and a shield now rather than two hands of
-  ; greatsword, so the two-handed idle -- both fists on one hilt -- would have
-  ; the shield hanging off a hand that is busy.
-  ;
-  ; The pack has no Melee_1H_Idle, which is why he had the greatsword in the
-  ; first place. Melee_Blocking is the nearest thing to a man standing behind a
-  ; shield and is what his PORTRAIT already uses for exactly that reason, so the
-  ; two now agree. Melee_Unarmed_Idle is the other end of it if a permanent
-  ; guard reads as too tense: arms down, which with a sword and a shield in the
-  ; hands is a man at rest.
-  Idle = Melee_Blocking
+  ; His own clips, in his own file -- see data/animations/lange.duke. Named here
+  ; as well as there so this block says what he plays. Idle and Walk came with him;
+  ; the rest are borrowed from two CC0 libraries and put on his rig by
+  ; art/lange/retarget.py.
+  Animations = Lange
+  Idle = Idle
   ; He WALKS where the archer runs, and it is the same fact as Speed = 21 said
   ; twice: a run cycle at his pace reads as skating.
-  Walk = Walking_A
-  ; ★ CHOSEN BY ITS LENGTH, not by its name. The client plays this once per blow,
-  ; and a blow lands every ReloadFrames -- 34, which is 1.133s. This clip runs
-  ; 1.100s, so the swing FINISHES and has a breath to spare before the next.
-  ;
-  ; Melee_2H_Attack_Chop is the obvious pick and was the first one: it runs
-  ; 1.633s, half again longer than the gap between blows, so every chop was cut
-  ; off at two thirds and restarted from the top. He never once finished a swing.
-  ; From a chair that reads as "the animation is bad" rather than as two numbers
-  ; disagreeing.
-  ;
-  ; The two numbers are checked against each other in the build, so changing
-  ; ReloadFrames without changing this will fail rather than look bad. _Stab is
-  ; 1.600s and _Spinning is 0.667s, if the pace ever changes.
-  ; ★ ONE-HANDED now, and still chosen by its LENGTH. The client plays this once
-  ; per blow and a blow lands every ReloadFrames -- 34, which is 1.133s. This
-  ; clip runs 1.067s, so the chop FINISHES with room to spare, which is the same
-  ; test the two-handed slice passed at 1.100s.
-  ;
-  ; The build checks the two against each other, so changing ReloadFrames
-  ; without changing this fails rather than looks bad. _Slice_Diagonal is 1.000s
-  ; and _Slice_Horizontal is 1.367s (too long), if the swing ever wants changing.
-  Attack = Melee_1H_Attack_Chop
-  Hurt = Hit_A
-  ; Death_A falls in 0.8s; Death_B takes 2.6s, which is longer than the floor
-  ; stays open after he dies.
-  Death = Death_A
+  Walk = Walk
+  ; ★ CHOSEN BY ITS LENGTH. The client plays this once per blow and a blow lands
+  ; every ReloadFrames -- 34, which is 1.133s. His slash (Quaternius' Sword_Attack,
+  ; left-handed) is baked half again as fast to run 1.083s, so it finishes before the
+  ; next; the build checks the two against each other.
+  Attack = Attack
+  Hurt = Hurt
+  Death = Death
 
-  Held = [
-    ; ★ A ONE-HANDED sword, because the other hand now has a shield in it. The
-    ; greatsword is still in the folder if he ever goes back to two hands, and
-    ; going back is this line plus Idle and Attack above.
-    Held
-      Model = models/heroes/sword_1handed.gltf
-      Bone = handslot.r
-      ; Body and blade came out of the same pack at the same size.
-      Scale = 1
-    End,
-    ; The RIGHT hand, unlike the rogue: he draws no string, he swings. If he ends
-    ; up fighting left-handed, this is the line -- handslot.l.
-    ;
-    ; No HeldRoll. The bow needed half a turn because it is the one weapon in the
-    ; pack laid out along its own +Z; every blade runs along +Y, which is what the
-    ; hand bone is authored for.
-
-    ; ★ AND THE SHIELD, in the hand the sword is not in. It is the second half of
-    ; what makes him readable across a dark room as the one who walks in: a
-    ; silhouette with a slab on one arm is not mistaken for an archer.
-    ;
-    ; No turn, like the sword and unlike the bow. The pack authors its own props
-    ; for its own hand slots, so a shield out of this kit in this kit's hand is
-    ; already the right way round -- the bow is the one documented exception in the
-    ; whole set, because it is the one model laid out along +Z.
-    ;
-    ; ★ Worth a look all the same: it is a disc rather than a length, so the rule
-    ; the build checks (longest side along +Y) has nothing to say about which way a
-    ; shield FACES. If it lies flat like a tray, HeldPitch = 90 is the line.
-    Held
-      Model = models/heroes/shield_round.gltf
-      Bone = handslot.l
-      Scale = 1
-    End
-  ]
+  ; No Held: his sword and his shield are in his own file -- see the top of this block.
   ; ★ WHAT HE IS MADE OF -- see Attributes in the World block. STRENGTH is his primary: every
   ; point of it is health and swing both, and it grows fastest. At the first level
   ; these make the knight he always was: 716 + 22 x 12 = 980 health,
@@ -259,32 +196,25 @@ Hero
   HealthRegen = 20
 
 
-; The knight's. Two of his states are things the archer has no clip for — a blade
-; held ready, and a level worth celebrating — and the rest he shares.
+; The knight's.
 ;
 ; The camera numbers are the same as everybody's, and that is the point: they are
 ; fractions of whatever they are looking at, so they frame a knight by his own
 ; measured height without anybody having measured him. If his head comes out badly
 ; once his model is in, Head and Show are the two lines, and neither needs a
 ; rebuild.
-  ; Standing with the blade, as he stands in the world.
+  ; Standing as he stands in the world, and the pull's raised hand for a level. Fight and
+  ; Hurt fall back to standing: a slash looped is a man shadow-boxing, a flinch looped a fit.
   Portrait = PortraitArt
-    Calm = Melee_2H_Idle
-    ; Guarding rather than swinging: he "has a target" for a whole engagement, so a
-    ; chop here would have him hacking at the air between blows.
-    Fight = Melee_Blocking
-    Hurt = Idle_B
-    Dead = Death_A
-    ; A spin, which reads as a flourish. Melee_2H_Attack_Spinning is the longer one.
-    LevelUp = Melee_2H_Attack_Spin
+    Calm = Idle
+    Dead = Death
+    LevelUp = Cast_Pull
 
-    ; ★ NOT the archer's numbers, and this is the case the per-hero block was for.
-    ; He boxes 2.543 against the archer's 2.275 and his head joint sits at 0.488 of
-    ; that against 0.546 — a taller model with a proportionally smaller head — so
-    ; the same fractions would frame him high and leave dead space over his helmet.
-    ; Lower and a little wider: chest to just over the crest.
-    Head = 0.70
-    Show = 0.68
+    ; ★ NOT the KayKit numbers: Lange is drawn as a man, his head an eighth of him
+    ; rather than nearly half, his eyes at about 0.92 of his height. So the camera
+    ; looks higher and takes less of him -- head and shoulders.
+    Head = 0.88
+    Show = 0.36
     Yaw = 22
     Pitch = -4
     Fov = 34
@@ -342,10 +272,14 @@ Hero
       CooldownFrames = 150
       CooldownPerLevel = -8
       MaxRank = 4
-      ; A flash at his hand as he throws it, as the mage's fire leaves his -- see Effect
-      ; CastFlash, marked on him as he throws (E32). The wave's
-      ; own look is the SwordWave it flies as (data/projectiles/sword_wave.duke).
-      Look = CastFlash
+      ; A white-steel flash at his hand as he throws it -- see Effect WaveFlash, beside the
+      ; SwordWave it flies as (data/projectiles/sword_wave.duke). Its own rather than the mage's
+      ; CastFlash, because the client keys a cast's gesture by its Look.
+      Look = WaveFlash
+      ; ★ HIS GESTURE: the big slash the wave comes off -- Quaternius' Sword_Attack, left-handed, on
+      ; his rig. The wave leaves at once, so the 1.5s slash is hurried into 0.8s.
+      CastAnim = Cast_Wave
+      CastSeconds = 0.8
       Name = Qilich to'lqini
       Icon = icons/skills/skill_cleave.png
       Blurb = Qilichini siltaydi va undan to'lqin otilib chiqadi. To'lqin yo'lidagi har bir dushmanni bir martadan kesib o'tadi — tanaga urilib to'xtamaydi, faqat devor yoki o'z masofasi tugaganda to'xtaydi.
@@ -379,6 +313,10 @@ Hero
       MaxRank = 4
       ; Dust where he pushed off and himself at the end -- see Effect Charge.
       Look = Charge
+      ; ★ HIS GESTURE: leaning in and driving -- Quaternius' Push_Loop on his rig -- for exactly as
+      ; long as the drive (Distance 45 at 36 a second: 1.25s), so he stops pushing as he stops.
+      CastAnim = Cast_Charge
+      CastSeconds = 1.25
       Name = Qalqon bilan surish
       Icon = icons/skills/skill_dash.png
       Blurb = Qalqonini oldinga tutib, ko'rsatilgan tomonga yugurib ketadi. Yo'lida uchragan har bir dushmanni ilib, o'zi bilan birga suradi, to'xtaganda esa ularni oldiga tashlab, gangitib qo'yadi.
@@ -437,6 +375,11 @@ Hero
       LevelPerRank = 4
       ; A turn of the air round him as wide as the pull -- see Effect Whirlwind.
       Look = Whirlwind
+      ; ★ HIS GESTURE: one hand raised to call the room in -- KayKit's Ranged_Magic_Raise on his rig
+      ; (art/lange/retarget.py). The pull lands at once, so it is hurried into a second rather than
+      ; its own 2.1s: a man stood calling for two seconds after the room arrived reads as late.
+      CastAnim = Cast_Pull
+      CastSeconds = 1.0
       Name = Teskari qutb
       Icon = icons/skills/skill_whirlwind.png
       Blurb = Atrofidagi barcha dushmanlarni bir nuqtaga — o'zining ro'parasiga — tortib keladi, ularga zarar yetkazadi va gangitib qo'yadi. To'plangan dushmanlarni bitta to'lqin bilan kesish mumkin.

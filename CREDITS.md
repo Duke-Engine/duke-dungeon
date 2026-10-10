@@ -49,10 +49,13 @@ written from there.
 | Fountain — the one at every way in, lifted to stand on its own foot | **Poly by Google** (Google Poly asset `4KKY7CmNe_r`), supplied by the owner | **CC BY 3.0** — attribution required, given here | `models/props/fountain/` |
 | "Baba Yaga's hut" — Yalmog'iz kampir's hut on its chicken legs, the old woman, the girl in the cage and the imp, her cauldron and yard, and the forest round it | **Inuciian** (@Inuciian, [Sketchfab](https://sketchfab.com/3d-models/baba-yagas-hut-479b5f3c493349b18c59dbcbe354d98f)) | **CC BY 4.0** — attribution required, given here; modified: split into parts, recoloured, converted to glTF (`art/inuciian/export_models.py`) | `models/inuciian/` |
 | "Huntress" — the Rogue, the campaign's heroine, and her quiver and arrows | **Wilson** (neilhancart, [Sketchfab](https://sketchfab.com/3d-models/huntress-19ceb83a896c4d668b0f30a6fc58d563)) | **CC BY 4.0** — attribution required, given here; modified: pedestal, banner and the arrow in her hand removed, decimated to about 24k triangles, bones cut from 438 to 62, pictures cut to their colour and downsized, a hand bone added for her bow, the kit's clips retargeted onto her, converted to glTF (`art/huntress/export_huntress.py`) | `models/heroes/huntress.glb`, `animations/characters/huntress.glb` |
+| "Lange - Half-Elf Knight" — the knight, Lange, with his sword, shield, dagger, potion and book | **phucpham1076** ([Sketchfab](https://sketchfab.com/3d-models/lange-half-elf-knight-3c22b831b66c4de88043f57fabca406b)) | **CC BY 4.0** — attribution required, given here; modified: glasses removed and eyes painted in, sword attached, textures downsized, converted to glTF (`art/lange/export_lange.py`) | `models/heroes/lange/` |
 | Skeletons — everything that walks the floors, and its blades, axes and staves | KayKit | CC0 | `models/monsters/` |
 | …and its atlas repainted with a green robe and a purple one, for the Skeleton Healer and the Skeleton Summoner | repainted from the original KayKit atlas, supplied by the owner | CC0 (a repaint of a CC0 atlas) | `models/monsters/skeleton_texture_{green,purple}.png` |
-| Adventurers — all three heroes, and everything they carry | KayKit | CC0 | `models/heroes/` |
+| Adventurers — the archer and the mage and everything they carry; the knight Lange replaced, kept for the kingdom's soldiers and the Cursed Hero | KayKit | CC0 | `models/heroes/` |
 | Character Animations — everything anything down here does | KayKit | CC0 | `animations/characters/` |
+| Universal Animation Library — Lange's slash, flinch, fall, the wave's slash and the charge's drive, retargeted onto his rig | **Quaternius** ([quaternius.com](https://quaternius.com)) | CC0 | inside `models/heroes/lange/lange.glb` (`art/lange/retarget.py`) |
+| Character Animations 1.1 — Lange's raised hand for the pull, retargeted onto his rig | KayKit | CC0 | inside `models/heroes/lange/lange.glb` (`art/lange/retarget.py`) |
 | Standing 2H Magic Area Attack — the mage's meteor | **Mixamo** / Adobe | **not CC0, see below** | `animations/characters/magic.glb` |
 | RPG Audio — cloth, coins, a door, a knife drawn | Kenney | CC0 | `audio/sfx/` |
 | Impact Sounds — what an arrow and a fist land like, and footsteps | Kenney | CC0 | `audio/sfx/` |
@@ -131,7 +134,10 @@ are in this repository, along with the weapons each of them carries:
   and `quiver.gltf`. Since 2026-10-10 the Rogue is drawn as neilhancart's "Huntress"
   (CC BY 4.0, row above) and carries only `bow.gltf`; `rogue.glb` is kept for the
   kingdom's soldiers.
-- **Knight** (`knight.glb`) — `sword_1handed.gltf` and `shield_round.gltf`.
+- **Knight** (`knight.glb`) — `sword_1handed.gltf` and `shield_round.gltf`. No longer
+  the hero since 2026-10-10 -- the knight is Lange (`lange/lange.glb`, phucpham1076,
+  CC BY 4.0, in the table above) -- and kept for the kingdom's soldiers and the
+  Cursed Hero.
 - **Mage** (`mage.glb`) — `staff.gltf` and `spellbook_closed.gltf`. He briefly
   wore the ranger's mesh and the *skeletons'* staff, which was a placeholder and
   is not one any more.

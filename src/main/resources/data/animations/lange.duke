@@ -1,0 +1,30 @@
+; ---------------------------------------------------------------------------
+; What Lange moves by -- the knight, since 2026-10-10.
+;
+; His rig is his own (phucpham1076's), so no clip made for another rig moves
+; him as it is: his clips are in his own file, and that file is his only
+; library. The client borrows nothing it already has, so naming it here costs
+; one more read of the same file and nothing else.
+;
+; Idle and Walk came with him. Attack, Hurt and Death are borrowed from
+; Quaternius' Universal Animation Library and put onto his rig by
+; art/lange/retarget.py (Sword_Attack made left-handed, Hit_Chest, Death01);
+; so are the three gestures his skills name as CastAnim (Cast_Wave,
+; Cast_Charge, Cast_Pull -- see his Skills). Which is which is BORROWED in
+; art/lange/export_lange.py.
+;
+; There is no Run: the game has no running state, and he walks.
+; ---------------------------------------------------------------------------
+AnimationSet
+  Name = Lange
+  Libraries = [
+    models/heroes/lange/lange.glb,
+  ]
+  Idle = Idle
+  Walk = Walk
+  ; 1.083s -- it has to fit between his blows, 1.133s apart.
+  Attack = Attack
+  Hurt = Hurt
+  ; Onto his back, in 1.2s.
+  Death = Death
+End
