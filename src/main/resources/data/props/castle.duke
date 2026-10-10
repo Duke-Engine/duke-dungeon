@@ -1,0 +1,65 @@
+; ---------------------------------------------------------------------------
+; What stands solid in a castle's hall: santyfrow's "Stylized Medieval Castle
+; Room" (CC BY 4.0, see CREDITS.md), each a Prop -- solid, nothing's target --
+; that no room ever draws (Weight 0): a map puts them where it wants them. One
+; look each, at ModelScale 1: the models are written in the game's units
+; (art/castles/export_castles.py). Everything else of the six castle kits is
+; scenery, turned as a map turns it: see data/world/themes/castles.duke.
+; ---------------------------------------------------------------------------
+
+; A stone column of the throne hall, two storeys of a hero.
+Prop
+  Name = CastleColumn
+  DisplayName = Qasr ustuni
+  KindOf = [STRUCTURE]
+  VisionRange = 0
+  Geometry = Cylinder
+    Radius = 2.5
+    Height = 21
+  End
+  Weight = 0
+End
+
+ThemeMonster
+  Name = CastleColumn
+  Model = models/castles/room/room_column.gltf
+  ModelScale = 1
+End
+
+; A long plank table.
+Prop
+  Name = CastleTable
+  DisplayName = Stol
+  KindOf = [STRUCTURE]
+  VisionRange = 0
+  Geometry = Cylinder
+    Radius = 4
+    Height = 5
+  End
+  Weight = 0
+End
+
+ThemeMonster
+  Name = CastleTable
+  Model = models/castles/room/room_table.gltf
+  ModelScale = 1
+End
+
+; A stone basin of water on its pedestal.
+Prop
+  Name = CastleBasin
+  DisplayName = Tosh kosa
+  KindOf = [STRUCTURE]
+  VisionRange = 0
+  Geometry = Cylinder
+    Radius = 2
+    Height = 5
+  End
+  Weight = 0
+End
+
+ThemeMonster
+  Name = CastleBasin
+  Model = models/castles/room/room_basin.gltf
+  ModelScale = 1
+End

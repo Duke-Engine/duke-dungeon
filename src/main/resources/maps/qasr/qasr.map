@@ -1,0 +1,112 @@
+; Duke Dungeon — a map drawn once: a dungeon that has stopped changing.
+;
+; The castle kits' proof (art/castles/export_castles.py): a little courtyard built of
+; FelikinRuslan's rampart pieces (CC BY 4.0) -- towers on grid points five cells apart,
+; a wall of three cells between each two, placed at the cell after a tower and turned
+; by its facing (0 east, 90 north, 180 west, 270 south) -- the gate in the south wall,
+; the queen's dark keep inside, a basin, a table, a barrel and a crate from the castle
+; room. Not a level: a page for the eye, with one skeleton to win it.
+
+StaticMap
+  Name = qasr
+  DisplayName = "Qasr hovlisi"
+  Description = "Qasr bo'laklari sinovi: minoralar, devorlar, darvoza va qora qal'a."
+  Difficulty = 1
+  Players = 1
+  Seed = 20261010
+  ; Where the hero comes in: before the gate.
+  Entrance = [15, 22]
+  ; '#' is stone, a digit the storey a cell stands on.
+  Cells = [
+    "##########################",
+    "#000000000000000000000000#",
+    "#000000000000000000000000#",
+    "#000000000000000000000000#",
+    "#000000000000000000000000#",
+    "#000000000000000000000000#",
+    "#000000000000000000000000#",
+    "#000000000000000000000000#",
+    "#000000000000000000000000#",
+    "#000000000000000000000000#",
+    "#000000000000000000000000#",
+    "#000000000000000000000000#",
+    "#000000000000000000000000#",
+    "#000000000000000000000000#",
+    "#000000000000000000000000#",
+    "#000000000000000000000000#",
+    "#000000000000000000000000#",
+    "#000000000000000000000000#",
+    "#000000000000000000000000#",
+    "#000000000000000000000000#",
+    "#000000000000000000000000#",
+    "#000000000000000000000000#",
+    "#000000000000000000000000#",
+    "#000000000000000000000000#",
+    "#000000000000000000000000#",
+    "##########################",
+  ]
+  ; x y width height storey.
+  Rooms = [
+    1 1 24 24 0,
+  ]
+  Links = []
+  ; Killing it wins the map.
+  Boss = Skeleton 12 11
+  Monsters = []
+  ; Solid, and not alive — see data/props/castle.duke.
+  Props = [
+    CastleColumn 16 16,
+  ]
+  ; What the ground is painted with: grass round the castle, dirt in its court.
+  Paint = [
+    "gggggggggggggggggggggggggg",
+    "gggggggggggggggggggggggggg",
+    "gggggggggggggggggggggggggg",
+    "gggggggggggggggggggggggggg",
+    "gggggggggggggggggggggggggg",
+    "gggggggggggggggggggggggggg",
+    "gggggggggggggggggggggggggg",
+    "gggggggggggggggggggggggggg",
+    "gggggggggggggggggggggggggg",
+    "gggggggggdddddddddgggggggg",
+    "gggggggggdddddddddgggggggg",
+    "gggggggggdddddddddgggggggg",
+    "gggggggggdddddddddgggggggg",
+    "gggggggggdddddddddgggggggg",
+    "gggggggggdddddddddgggggggg",
+    "gggggggggdddddddddgggggggg",
+    "gggggggggdddddddddgggggggg",
+    "gggggggggdddddddddgggggggg",
+    "gggggggggggggggggggggggggg",
+    "gggggggggggggggggggggggggg",
+    "gggggggggggggggggggggggggg",
+    "gggggggggggggggggggggggggg",
+    "gggggggggggggggggggggggggg",
+    "gggggggggggggggggggggggggg",
+    "gggggggggggggggggggggggggg",
+    "gggggggggggggggggggggggggg",
+  ]
+  Palette = [
+    g = "ground/grass.png",
+    d = "ground/dirt.png",
+  ]
+  Coverage = [
+    g = 6.0,
+    d = 4.0,
+  ]
+  ; What stands about for the look, a line a row of cells: each piece a model, then x y
+  ; facing scale footprint, in cells, and the pieces held apart by ';'. A wall stands in
+  ; nobody's way yet -- a footprint is a circle round its origin (engine request E36).
+  Scenery = [
+    "models/castles/rampart/rampart_tower_tall.gltf 8 8 0 1 1.0; models/castles/rampart/rampart_wall.gltf 9 8 0 1 0; models/castles/rampart/rampart_tower_octagon.gltf 13 8 0 1 1.0; models/castles/rampart/rampart_wall_arcade.gltf 14 8 0 1 0; models/castles/rampart/rampart_tower_tall.gltf 18 8 90 1 1.0",
+    "models/castles/rampart/rampart_wall.gltf 8 9 270 1 0",
+    "models/castles/room/room_barrel.gltf 10 10 0 1 0.3; models/castles/room/room_crate.gltf 10.8 10.1 20 1 0.3",
+    "models/castles/fort/fort_keep_dark.gltf 15.5 11.5 0 1 0.6",
+    "models/castles/rampart/rampart_wall.gltf 18 12 90 1 0; models/castles/room/room_basin.gltf 11 12.5 0 1 0.3",
+    "models/castles/rampart/rampart_tower.gltf 8 13 0 1 1.0; models/castles/rampart/rampart_tower.gltf 18 13 0 1 1.0",
+    "models/castles/rampart/rampart_wall_arcade.gltf 8 14 270 1 0",
+    "models/castles/room/room_table.gltf 11 15.5 90 1 0.4; models/castles/town/town_banner_post.gltf 14.5 15.5 0 1 0.2",
+    "models/castles/rampart/rampart_wall.gltf 18 17 90 1 0",
+    "models/castles/rampart/rampart_tower_tall.gltf 8 18 270 1 1.0; models/castles/rampart/rampart_wall.gltf 12 18 180 1 0; models/castles/rampart/rampart_tower.gltf 13 18 0 1 1.0; models/castles/rampart/rampart_wall_gate.gltf 17 18 180 1 0; models/castles/rampart/rampart_tower_tall.gltf 18 18 180 1 1.0",
+  ]
+End
