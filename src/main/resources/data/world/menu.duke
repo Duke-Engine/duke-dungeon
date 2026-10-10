@@ -54,4 +54,9 @@ MainMenu
   SceneLook = "Forest,Wooded"
   Soldiers = [Knight, Knight, Rogue, Rogue, Mage]
   Foes = [Skeleton, Skeleton, Skeleton, Runner, Brute, SkeletonMage]
+  ; The camera over it, higher than the one a game is played with (55 degrees, 140 back): the owner, 2026-10-10.
+  ScenePitch = 66
+  SceneZoom = 230
+  ; Cells left of the fight it looks at, so the fight stands to the right of the menu at the left.
+  SceneShift = 7
 End

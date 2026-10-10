@@ -26,18 +26,22 @@ final class MenuScene {
     static final int RESPAWN_FRAMES = 90;
     /** How long the camera takes to drift from one end of its path to the other: twenty seconds. */
     static final int DRIFT_FRAMES = 600;
+    /** Where the two sides meet, roughly: a little past the middle, the soldiers walking further than the skeletons. */
+    static final int FIGHT_COLUMN = WIDTH / 2 + 2;
 
     private final DukeGame game;
     private final Side soldiers;
     private final Side foes;
     private final uz.dukeengine.dungeon.ai.Orders orders;
+    private final int shift;
     private int deaths;
 
-    private MenuScene(DukeGame game, Side soldiers, Side foes, uz.dukeengine.dungeon.ai.Orders orders) {
+    private MenuScene(DukeGame game, Side soldiers, Side foes, uz.dukeengine.dungeon.ai.Orders orders, int shift) {
         this.game = game;
         this.soldiers = soldiers;
         this.foes = foes;
         this.orders = orders;
+        this.shift = shift;
     }
 
     /** A fresh scene, not yet started. */
@@ -46,7 +50,8 @@ final class MenuScene {
         var arena = Dungeon.world(clearing(), settings);
         var game = arena.game().randomSeed(SEED);
         var scene = new MenuScene(game, new Side(arena.hero(), menu.soldiers(), 8),
-                new Side(arena.dungeon(), menu.foes(), WIDTH - 9), arena.orders());
+                new Side(arena.dungeon(), menu.foes(), WIDTH - 9), arena.orders(),
+                settings.mainMenu().sceneShift());
         game.onStart(started -> {
             if (menu.sceneLook() != null && !menu.sceneLook().isBlank()) {
                 started.setStatus("|look=" + menu.sceneLook()); // the theme the clearing wears, as a run names one
@@ -54,8 +59,16 @@ final class MenuScene {
             scene.soldiers.fill(started, 0);
             scene.foes.fill(started, 0);
             var camera = started.camera();
-            camera.moveTo(cell(WIDTH / 2 - 6), cell(HEIGHT / 2 + 3), 0);
-            camera.lookToward(cell(WIDTH / 2), cell(HEIGHT / 2));
+            // Higher than play's camera, turned to face north as play's is, and looking left of the fight so the
+            // fight stands to the right of the menu at the left. See MainMenu's Scene words.
+            if (menu.scenePitch() > 0f) {
+                camera.pitch((float) Math.toRadians(menu.scenePitch()));
+            }
+            if (menu.sceneZoom() > 0f) {
+                camera.zoom(menu.sceneZoom());
+            }
+            camera.angle(0f);
+            camera.moveTo(scene.aim(-1), cell(HEIGHT / 2), 0);
         });
         game.onDied(died -> scene.deaths++);
         game.onTick(ticking -> scene.tick(ticking));
@@ -87,12 +100,14 @@ final class MenuScene {
                     : new Coord3D(cell(foes.column), cell(HEIGHT / 2), 0f));
         }
         if (frame % DRIFT_FRAMES == 1) {
-            // Back and forth along the soldiers' flank, always turned toward the middle of the clearing.
-            boolean out = (frame / DRIFT_FRAMES) % 2 == 0;
-            var camera = running.camera();
-            camera.moveTo(cell(WIDTH / 2 + (out ? 6 : -6)), cell(HEIGHT / 2 + 3), DRIFT_FRAMES);
-            camera.lookToward(cell(WIDTH / 2), cell(HEIGHT / 2));
+            // Back and forth along the line the fight is fought on, a few cells either way, never turning.
+            running.camera().moveTo(aim((frame / DRIFT_FRAMES) % 2 == 0 ? 1 : -1), cell(HEIGHT / 2), DRIFT_FRAMES);
         }
+    }
+
+    /** Where the camera looks along the clearing: {@link #shift} cells left of the fight, {@code side} drifts over. */
+    float aim(int side) {
+        return cell(FIGHT_COLUMN - shift + 3 * side);
     }
 
     /** An open clearing ringed by stone — trees, in the forest's look — with a few clumps standing in it. */
