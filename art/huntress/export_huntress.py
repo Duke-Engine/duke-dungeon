@@ -49,10 +49,13 @@ the turn alone; hands and feet ride with the forearm and shin. They are written
 under their own names into animations/characters/huntress.glb, beside the KayKit
 libraries, and her animation set (data/animations/huntress.duke) names that file.
 
-A HAND SLOT. A bone `handslot.l` is added in her left palm, turned as KayKit's
-`handslot.l` is in every frame, so the bow hangs from it with the same numbers it
-hangs from the KayKit rogue with. And `sheath.l` on her left hip, pointing down her
-thigh, for her dagger (add_sheath).
+A FIST ROUND THE BOW. A bone `handslot.l` is added in her left hand where her curled
+fingers close round a grip of the bow's radius (fist), along her knuckles, with the
+string back up her forearm; it rides her hand, so the bow never leaves her fist. In the
+KayKit clips her wrist is turned about her forearm until her knuckles run where their
+bow runs (turned_to_the_bow), so the bow still stands up to be drawn. (A stray joint the
+download left in her middle finger is put back first: mend_stray_joints.)
+And `sheath.l` on her left hip, pointing down her thigh, for her dagger (add_sheath).
 
 HER HANDS AND EYES. No library moves her fingers, so every clip keys a curl into
 them: her left hand closed round the bow, her right relaxed, or hooked on the string
@@ -65,6 +68,7 @@ import os
 import sys
 
 import bpy
+import numpy as np
 from mathutils import Matrix, Vector
 
 args = sys.argv[sys.argv.index("--") + 1:]
@@ -100,7 +104,6 @@ MAP = {
         "LeftUpLeg_04": "upperleg.l", "LeftLeg_05": "lowerleg.l", "LeftFoot_06": "foot.l",
         "LeftToeBase_07": "toes.l", "RightUpLeg_08": "upperleg.r", "RightLeg_09": "lowerleg.r",
         "RightFoot_010": "foot.r", "RightToeBase_011": "toes.r",
-        "handslot.l": "handslot.l",
     },
     UAL: {
         "Hips_03": "pelvis", "Spine_012": "spine_01", "Spine1_013": "spine_02", "Spine2_014": "spine_03",
@@ -119,14 +122,17 @@ ALIGN = {
     "RightUpLeg_08": "RightLeg_09", "RightLeg_09": "RightFoot_010",
 }
 RIDE = {
-    "LeftHand_018": "LeftForeArm_017", "RightHand_041": "RightForeArm_040", "handslot.l": "LeftForeArm_017",
+    "LeftHand_018": "LeftForeArm_017", "RightHand_041": "RightForeArm_040",
     "LeftFoot_06": "LeftLeg_05", "LeftToeBase_07": "LeftLeg_05",
     "RightFoot_010": "RightLeg_09", "RightToeBase_011": "RightLeg_09",
 }
 
 # Her fingers, which no library moves: a curl in degrees at each joint from the knuckle out, a hand.
 RELAXED = {"finger": (18, 25, 15), "thumb": (8, 10, 5)}
-GRIP = {"finger": (70, 85, 55), "thumb": (25, 30, 20)}  # round the bow, in her left hand, always
+GRIP = {"finger": (70, 85, 55), "thumb": (40, 45, 30)}  # round the bow, in her left hand, always
+# The elven bow's grip, a cylinder this round where her hand holds it (at its Scale 0.8), and half the
+# thickness of a finger of hers: the fist is closed to wrap one with the other (see fist).
+HANDLE_RADIUS, FINGER_HALF = 0.022, 0.006
 DRAW = {"Index": (40, 55, 30), "MiddleF": (40, 55, 30), "Ring": (65, 80, 50), "Pinky": (70, 85, 55),
         "thumb": (30, 30, 20)}  # two fingers hooked on the string, in her right hand while she shoots
 DRAWING = {"Ranged_Bow_Aiming_Idle", "Ranged_Bow_Draw", "Ranged_Bow_Release", "Ranged_Bow_Release_Up"}
@@ -245,9 +251,27 @@ def as_bound(rig, meshes):
         bpy.data.actions.remove(action)
 
 
+def mend_stray_joints(rig):
+    """A joint the download left far from its finger -- her left middle finger's second joint stood
+    at the statue's origin, so bending that finger swung it about a point a metre away -- is put back
+    halfway between the joints either side of it. Moving a joint at rest moves no vertex."""
+    select([rig], rig)
+    bpy.ops.object.mode_set(mode="EDIT")
+    for bone in rig.data.edit_bones:
+        if bone.parent is None or not bone.children:
+            continue
+        after = bone.children[0].head
+        if (bone.head - bone.parent.head).length > 4 * (after - bone.parent.head).length:
+            bone.head = (bone.parent.head + after) / 2
+            bone.tail = after
+            print(f"HUNTRESS mended {bone.name}: put halfway along its finger")
+    bpy.ops.object.mode_set(mode="OBJECT")
+
+
 def stand_her_up(rig, meshes):
     """Her feet on the origin, HEIGHT tall, written into the bones and vertices themselves."""
     as_bound(rig, meshes)
+    mend_stray_joints(rig)
     bpy.context.view_layer.update()
     points = [v.co for m in meshes for v in m.data.vertices]
     lo = Vector([min(p[i] for p in points) for i in range(3)])
@@ -346,17 +370,15 @@ def prune(rig, meshes, keep):
                 obj.vertex_groups.remove(g)
 
 
-def add_hand_slot(rig, rest):
-    """`handslot.l` in her left palm, at the turn the retarget gives it (see retarget)."""
+def add_hand_slot(rig, where, turn):
+    """`handslot.l` in her left fist, where and as fist() says the grip lies; it rides her hand."""
     select([rig], rig)
     bpy.ops.object.mode_set(mode="EDIT")
     hand = rig.data.edit_bones[PREFIX + "LeftHand_018"]
-    middle = next(b for b in hand.children if "MiddleF" in b.name)
-    palm = (hand.head + middle.head) / 2
     slot = rig.data.edit_bones.new("handslot.l")
     slot.head = Vector((0, 0, 0))
     slot.tail = Vector((0, 0.05, 0))
-    slot.matrix = Matrix.LocRotScale(palm, rest, None)
+    slot.matrix = Matrix.LocRotScale(where, turn, None)
     slot.parent = hand
     slot.use_deform = False
     bpy.ops.object.mode_set(mode="OBJECT")
@@ -643,10 +665,84 @@ def curl(pose, kind, depth):
     return math.radians(angles[depth]) if depth < len(angles) else 0.0
 
 
-def retarget(her, rigs, holder, slot_rest):
+def fist(her):
+    """Her left hand closed round the bow: how far her fingers curl, and where the grip then sits.
+
+    The bow's grip is a cylinder HANDLE_RADIUS round (the elven bow at its Scale 0.8). Her middle finger,
+    curled by the GRIP angles times k, runs round a circle; k is chosen so that circle is the handle's
+    radius plus half a finger, and the handle's axis is laid through its middle, along her knuckles.
+    So the fingers close on the grip rather than beside it. The slot is turned so the bow runs along
+    that axis (its own Z) and its string (its own -X, half-turned to +X by Roll 180) points back up her
+    forearm, toward her drawing hand. Returns (k, where, turn) in armature space at rest.
+    """
+    bones = her.data.bones
+    hand = bones[PREFIX + "LeftHand_018"]
+    _, axes = hands(her)
+    axis = axes[hand.name]
+    chain = next(b for b in hand.children if "MiddleF" in b.name)
+    joints = [b for b in [chain] + list(chain.children_recursive) if "scaleCompensation" not in b.name]
+    joints.sort(key=lambda b: len(b.parent_recursive))
+    rest = [b.head_local.copy() for b in joints] + [joints[-1].tail_local.copy()]
+
+    def curled(k):
+        points = [p.copy() for p in rest]
+        for depth in range(len(joints)):
+            bend = Matrix.Rotation(k * curl(GRIP, "finger", depth), 3, axis)
+            pivot = points[depth]
+            for i in range(depth + 1, len(points)):
+                points[i] = pivot + bend @ (points[i] - pivot)
+        return points
+
+    def circle(points):  # least squares, in the plane across the axis
+        u = (points[1] - points[0]).normalized()
+        u = (u - axis * u.dot(axis)).normalized()
+        v = axis.cross(u)
+        flat = np.array([[(p - points[0]).dot(u), (p - points[0]).dot(v)] for p in points])
+        a = np.c_[2 * flat, np.ones(len(flat))]
+        (cx, cy, c), *_ = np.linalg.lstsq(a, (flat ** 2).sum(1), rcond=None)
+        return points[0] + u * cx + v * cy, math.sqrt(c + cx * cx + cy * cy)
+
+    want = HANDLE_RADIUS + FINGER_HALF
+    k = min(np.linspace(0.5, 1.8, 131), key=lambda k: abs(circle(curled(k))[1] - want))
+    where, radius = circle(curled(k))
+    forearm = (hand.head_local - bones[PREFIX + "LeftForeArm_017"].head_local).normalized()
+    x = -forearm
+    x = (x - axis * x.dot(axis)).normalized()
+    z = axis
+    y = z.cross(x)
+    print(f"HUNTRESS fist: curl x{k:.2f}, the fingers round {radius:.3f} for a grip of {HANDLE_RADIUS}")
+    return k, where, Matrix((x, y, z)).transposed().to_quaternion()
+
+
+def turned_to_the_bow(hand, forearm, theirs, slot_in_hand):
+    """Her bow hand turned about her forearm so the bow in her fist runs as KayKit's clip runs its bow.
+
+    A real fist holds the bow along the knuckles, and a hand hanging down holds it level; KayKit's
+    chibi hand has no knuckles and its clips stand the bow up by the hand slot's turn alone. So for a
+    KayKit clip her wrist is twisted until her knuckles point where their bow points -- the bow stands
+    up for the draw, and her fingers still close round it. Either way along is the same bow."""
+    along = (hand.translation - forearm.translation).normalized()
+    mine = (rotation(hand) @ slot_in_hand).col[2]
+    want = rotation(theirs).col[2]
+    mine = (mine - along * mine.dot(along)).normalized()
+    want = (want - along * want.dot(along)).normalized()
+    angle = math.atan2(along.dot(mine.cross(want)), mine.dot(want))
+    if angle > math.pi / 2:
+        angle -= math.pi
+    elif angle < -math.pi / 2:
+        angle += math.pi
+    turned = Matrix.Rotation(angle, 3, along) @ rotation(hand)
+    return Matrix.LocRotScale(hand.translation, turned.to_quaternion(), None)
+
+
+def retarget(her, rigs, holder, grip):
     scene = bpy.context.scene
     order = sorted(her.data.bones, key=lambda b: len(b.parent_recursive))
     fingers, axes = hands(her)
+    closed = {"finger": tuple(a * grip for a in GRIP["finger"]), "thumb": GRIP["thumb"]}
+    bow_hand = PREFIX + "LeftHand_018"
+    slot_in_hand = (rotation(her.data.bones[bow_hand].matrix_local).inverted()
+                    @ rotation(her.data.bones["handslot.l"].matrix_local))
     for bone in her.pose.bones:
         bone.rotation_mode = "QUATERNION"
     her.animation_data_create()
@@ -667,7 +763,7 @@ def retarget(her, rigs, holder, slot_rest):
         if hasattr(rig.animation_data, "action_slot") and action.slots:
             rig.animation_data.action_slot = action.slots[0]
         their_rest = {n: turn @ rest_world(rig, n) for n in set(table.values())}
-        hand_pose = {PREFIX + "LeftHand_018": GRIP,
+        hand_pose = {PREFIX + "LeftHand_018": closed,
                      PREFIX + "RightHand_041": DRAW if clip in DRAWING else RELAXED}
         made = bpy.data.actions.new(clip)
         her.animation_data.action = made
@@ -694,13 +790,17 @@ def retarget(her, rigs, holder, slot_rest):
                     k = mapped[name]
                     now = turn @ rig.matrix_world @ rig.pose.bones[k].matrix
                     their_turn = rotation(now) @ rotation(their_rest[k]).inverted()
-                    rest = slot_rest if name == "handslot.l" else rotation(bone.matrix_local)
+                    rest = rotation(bone.matrix_local)
                     r = their_turn @ swing.get(name, Matrix.Identity(3)) @ rest
                     where = carried.translation
                     if name == PREFIX + "Hips_03":
                         moved = now.translation - their_rest[k].translation - drift * share
                         where = bone.matrix_local.translation + moved * hips_ratio
                     posed[name] = Matrix.LocRotScale(where, r.to_quaternion(), None)
+                    if name == bow_hand and source == KAYKIT:
+                        posed[name] = turned_to_the_bow(
+                            posed[name], posed[PREFIX + "LeftForeArm_017"],
+                            turn @ rig.matrix_world @ rig.pose.bones["handslot.l"].matrix, slot_in_hand)
                 elif name in fingers:
                     hand, kind, depth = fingers[name]
                     hand_turn = rotation(posed[hand]) @ rotation(her.data.bones[hand].matrix_local).inverted()
@@ -758,14 +858,11 @@ def main():
     four_at_most(meshes)
 
     rigs, holder = open_libraries()
-    kay = rigs[KAYKIT]
-    turn = facing(kay, MAP[KAYKIT])
-    slot_rest = (swings(her, kay, MAP[KAYKIT], turn)["handslot.l"].inverted()
-                 @ rotation(turn @ rest_world(kay, "handslot.l")))
     prune(her, meshes, keep=set())
-    add_hand_slot(her, slot_rest.to_quaternion())
+    grip, where, turn = fist(her)
+    add_hand_slot(her, where, turn)
     add_sheath(her)
-    retarget(her, rigs, holder, slot_rest)
+    retarget(her, rigs, holder, grip)
     for obj in list(bpy.data.objects):
         if obj != her and obj not in meshes:
             bpy.data.objects.remove(obj, do_unlink=True)
