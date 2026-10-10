@@ -161,17 +161,24 @@ tasks.register("exportInuciian") {
 // phucpham1076's "Lange - Half-Elf Knight" (CC BY 4.0, see CREDITS.md) made into the knight:
 // resources/models/heroes/lange/lange.glb, his pictures and clips inside. See art/lange/export_lange.py.
 //
-//   ./gradlew exportLange -PlangeSource="C:/Users/me/Downloads/lange-half-elf-knight"
+//   ./gradlew exportLange -PlangeSource="C:/Users/me/Downloads/lange-half-elf-knight" \
+//       -PualSource=".../Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb" \
+//       -PkaykitAnimations=".../KayKit_Character_Animations_1.1/Animations/gltf/Rig_Medium"
 //
-// The source (the Sketchfab download: source/KnightElf.zip and textures/) is not in the repository;
-// what ships is what this wrote, which is committed. The downsized pictures are left beside the
-// unpacked FBX under build/lange/out. Blender is found as convertAnimations finds it.
+// The sources (the Sketchfab download: source/KnightElf.zip and textures/; Quaternius' Universal
+// Animation Library and KayKit's Character Animations, both CC0, which his borrowed clips come out
+// of -- art/lange/retarget.py) are not in the repository; what ships is what this wrote, which is
+// committed. The downsized pictures are left beside the unpacked FBX under build/lange/out.
+// Blender is found as convertAnimations finds it.
 tasks.register("exportLange") {
     group = "application"
     description = "Make Lange, the knight, into the game's model, using Blender"
     doLast {
-        val source = File((findProperty("langeSource") as String?)
-            ?: throw GradleException("Say where the download is: -PlangeSource=\".../lange-half-elf-knight\""))
+        fun said(name: String, example: String) = (findProperty(name) as String?)
+            ?: throw GradleException("Say where it is: -P$name=\"$example\"")
+        val source = File(said("langeSource", ".../lange-half-elf-knight"))
+        val ual = File(said("ualSource", ".../UAL1_Standard.glb"))
+        val kaykit = File(said("kaykitAnimations", ".../Animations/gltf/Rig_Medium"))
         val unpacked = layout.buildDirectory.dir("lange").get().asFile
         copy {
             from(zipTree(File(source, "source/KnightElf.zip")))
@@ -187,10 +194,13 @@ tasks.register("exportLange") {
                 File(unpacked, "Animations/KnightElfIdle.fbx").absolutePath,
                 File(unpacked, "Animations/KnightElfWalk.fbx").absolutePath,
                 File(source, "textures").absolutePath,
+                ual.absolutePath,
+                kaykit.absolutePath,
                 out.absolutePath,
             )
         }.standardOutput.asText.get()
-            .lines().filter { it.startsWith("EXPORTED") || it.startsWith("SIZE") || it.startsWith("CLIP") }
+            .lines().filter { it.startsWith("EXPORTED") || it.startsWith("SIZE") || it.startsWith("CLIP")
+                || it.startsWith("EYES") }
             .forEach { logger.lifecycle(it) }
         copy {
             from(File(out, "lange.glb"))

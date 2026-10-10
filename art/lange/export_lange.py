@@ -1,23 +1,26 @@
 """Makes phucpham1076's "Lange - Half-Elf Knight" into the knight the game draws.
 
-    ./gradlew exportLange -PlangeSource="C:/Users/me/Downloads/lange-half-elf-knight"
-    blender -b --factory-startup -P art/lange/export_lange.py -- <posing.fbx> <idle.fbx> <walk.fbx> <textures> <out folder>
+    ./gradlew exportLange -PlangeSource=".../lange-half-elf-knight" \
+        -PualSource=".../UAL1_Standard.glb" -PkaykitAnimations=".../Animations/gltf/Rig_Medium"
+    blender -b --factory-startup -P art/lange/export_lange.py -- <posing.fbx> <idle.fbx> <walk.fbx> \
+        <textures> <UAL1_Standard.glb> <KayKit Rig_Medium folder> <out folder>
 
 The download (Sketchfab, CC BY 4.0 -- see CREDITS.md) is three FBX files in
 source/KnightElf.zip -- him in a pose, him idling, him walking, all on one
 91-bone rig -- and a folder of 4K PBR pictures in three sets (clothes_leather,
 hair_skin_steel, weapons). The game wants one glTF with his clips inside, so
 this opens the posing file, fixes him up, borrows the two clips from the other
-two files and writes <out>/lange.glb, with the pictures it used, downsized,
-in <out>/textures. What ships is that .glb, which is committed; the source is
-not in the repository and Blender is not a build dependency.
+two files and the rest from two CC0 animation libraries, and writes
+<out>/lange.glb, with the pictures it used, downsized, in <out>/textures. What
+ships is that .glb, which is committed; the sources are not in the repository
+and Blender is not a build dependency.
 
 On the way:
 
-THE GLASSES GO. The owner's word: he wears none. They were sunglasses over a
-face with no eyes modelled under them, so the frame is deleted and the two dark
-lenses are shrunk into his eye sockets (EYE) to be his eyes. The earring, which
-is in the same mesh, stays.
+THE GLASSES GO, AND HE HAS EYES. The owner's word: he wears none. They were
+sunglasses over a face with no eyes modelled under them, so the glasses are
+deleted and eyes are painted into his skin picture where the lenses were --
+see eyes.py. The earring, which is in the same mesh, stays.
 
 THE SWORD IS HIS. It arrives as a loose object with an animation of its own in
 each file, following his LEFT hand (he is left-handed: the right hand hangs at
@@ -38,10 +41,11 @@ SIZE first. The game itself draws the base colour only (the client re-lights
 every model with plain lighting, see DukeRtsApp.dressModel); the rest is there
 for whatever else reads the file.
 
-THE CLIPS ARE THE GAME'S NAMES. Idle and Walk from their files. The download has
-nothing else, so Attack, Hurt and Death are STAND-INS: slices of the idle, short
-enough that his swing fits between blows (DungeonMonsterArtTest). Replace them
-here, under the same names, when real ones arrive, and no data file changes.
+THE CLIPS ARE THE GAME'S NAMES. Idle and Walk are his own, from their files.
+Attack, Hurt, Death and his three casts (Cast_Wave, Cast_Charge, Cast_Pull) are
+borrowed from Quaternius' Universal Animation Library and KayKit's Character
+Animations (both CC0) and put onto his rig by retarget.py -- see BORROWED for
+which is which, and why.
 
 METRES, FEET AT THE ORIGIN, FACING +Z. The rig stands at the origin with his
 feet on it and faces Blender's -Y, which the exporter's Z-up to Y-up turn makes
@@ -56,24 +60,42 @@ import os
 import struct
 import sys
 
-import bmesh
 import bpy
 import mathutils
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import eyes  # noqa: E402
+import retarget  # noqa: E402
+
 args = sys.argv[sys.argv.index("--") + 1:]
-if len(args) != 5:
-    raise SystemExit("usage: blender -b -P export_lange.py -- <posing.fbx> <idle.fbx> <walk.fbx> <textures> <out>")
-POSING, IDLE, WALK, TEXTURES, OUT = args
+if len(args) != 7:
+    raise SystemExit("usage: blender -b -P export_lange.py -- <posing.fbx> <idle.fbx> <walk.fbx> <textures> "
+                     "<UAL1_Standard.glb> <KayKit Rig_Medium folder> <out>")
+POSING, IDLE, WALK, TEXTURES, UAL_FILE, KAYKIT_DIR, OUT = args
 
 # Pixels a side each set's pictures are written at.
 SIZE = {"clothes_leather": 1024, "hair_skin_steel": 1024, "weapons": 1024}
 FPS = 24
-# Stand-ins, as (name, first frame, last frame) of the idle: one second, half a second, one second.
-STAND_INS = [("Attack", 2, 26), ("Hurt", 2, 14), ("Death", 2, 26)]
+# What he borrows: (his clip, which library, its file, its clip, mirrored, how much faster). Mirrored is a right-handed
+# swing made left-handed, for his sword hand. See retarget.py.
+BORROWED = [
+    # A lunging one-handed slash, made left-handed; 1.45 times as fast so it runs 1.083s and is over
+    # before his next blow (ReloadFrames 34 = 1.133s, checked by DungeonMonsterArtTest).
+    ("Attack", "ual", None, "Sword_Attack", True, 1.45),
+    ("Hurt", "ual", None, "Hit_Chest", False, 1.0),
+    # Onto his back, twice as fast: 1.208s.
+    ("Death", "ual", None, "Death01", False, 2.0),
+    # Q, the wave: the same slash at its own pace, the stronger for being slower.
+    ("Cast_Wave", "ual", None, "Sword_Attack", True, 1.0),
+    # W, the charge: leaning in and driving, which is what the charge does to what it meets. KayKit's
+    # Melee_Blocking was tried first: its chibi arms block with the upper arm straight out, which on a
+    # man's proportions is a scarecrow, not a guard.
+    ("Cast_Charge", "ual", None, "Push_Loop", False, 1.0),
+    # R, the pull: one hand raised to call the room in.
+    ("Cast_Pull", "kaykit", "Rig_Medium_CombatRanged.glb", "Ranged_Magic_Raise", False, 1.0),
+]
 SWORD_BONE = "sword"
 HAND = "L.forearm"  # the rig has no hand bone: the fingers start at the forearm's end
-# What a sunglasses lens is shrunk to, across and up, to be an eye.
-EYE = (0.42, 0.34)
 
 
 def new_objects(before):
@@ -119,53 +141,8 @@ arm.name = "Armature"
 scene.frame_set(2)
 bpy.context.view_layer.update()
 
-def eyes_instead_of_glasses(glasses, body):
-    """The sunglasses' frame goes; their two lenses, shrunk, become his eyes; the earring stays."""
-    depsgraph = bpy.context.evaluated_depsgraph_get()
-    face = body.evaluated_get(depsgraph)
-    to_face = face.matrix_world.inverted()
-    bm = bmesh.new()
-    bm.from_mesh(glasses.data)
-    bm.transform(glasses.matrix_world)  # world space, as the pose shows it
-    seen, parts = set(), []
-    for start in bm.faces:
-        if start.index in seen:
-            continue
-        part, stack = [], [start]
-        seen.add(start.index)
-        while stack:
-            f = stack.pop()
-            part.append(f)
-            for e in f.edges:
-                for g in e.link_faces:
-                    if g.index not in seen:
-                        seen.add(g.index)
-                        stack.append(g)
-        parts.append(part)
-    steel = [p for p in parts if glasses.data.materials[p[0].material_index].name.startswith("hair skin steel")]
-    frame = max(steel, key=len)
-    lenses = [p for p in steel if p is not frame]
-    for lens in lenses:
-        verts = {v for f in lens for v in f.verts}
-        centre = sum((v.co for v in verts), mathutils.Vector()) / len(verts)
-        # Where his face is behind the lens, found by looking at it from the front (-Y).
-        hit, at, _, _ = face.ray_cast(to_face @ (centre + mathutils.Vector((0, -0.3, 0))),
-                                      to_face.to_3x3() @ mathutils.Vector((0, 1, 0)))
-        surface = face.matrix_world @ at if hit else centre
-        for v in verts:
-            d = v.co - centre
-            v.co = mathutils.Vector((centre.x + d.x * EYE[0], surface.y - 0.002 + d.y * 0.2,
-                                     centre.z + d.z * EYE[1]))
-    bmesh.ops.delete(bm, geom=frame, context="FACES")
-    bm.transform(glasses.matrix_world.inverted())
-    bm.to_mesh(glasses.data)
-    bm.free()
-    glasses.name = "eyes and earring"
-    print(f"EYES {len(lenses)} lenses made eyes, the frame's {len(frame)} faces gone")
-
-
-eyes_instead_of_glasses(next(o for o in objs if o.name.startswith("glasses")),
-                        next(o for o in objs if o.name == "body"))
+EYES = eyes.take_off_glasses(next(o for o in objs if o.name.startswith("glasses")),
+                             next(o for o in objs if o.name == "body"), bpy.context.evaluated_depsgraph_get())
 
 world_of = lambda pb: arm.matrix_world @ pb.matrix
 
@@ -250,13 +227,40 @@ def borrow(path, name):
 idle = borrow(IDLE, "Idle")
 walk = borrow(WALK, "Walk")
 clips = [idle, walk]
-for name, first, last in STAND_INS:
-    slice_ = idle.copy()
-    slice_.name = name
-    slice_.frame_start, slice_.frame_end = first, last
-    slice_.use_fake_user = True
-    clips.append(slice_)
-    print(f"CLIP {name} (stand-in: Idle {first}-{last}) = {(last - first) / FPS:.3f}s")
+# His fingers as his own idle closes them on the sword (and lets the other hand hang), for every borrowed clip.
+ad = arm.animation_data
+ad.action = idle
+ad.action_slot = idle.slots[0]
+scene.frame_set(2)
+fingers = {pb.name: pb.matrix_basis.copy() for pb in arm.pose.bones
+           if pb.name.split(".", 1)[-1].startswith(retarget.FINGERS)}
+ad.action = None
+for pb in arm.pose.bones:
+    pb.matrix_basis = mathutils.Matrix.Identity(4)
+bpy.context.view_layer.update()
+target = retarget.Target(arm, fingers)
+
+
+def import_gltf(path):
+    before = {o.name for o in bpy.data.objects}
+    actions_before = set(bpy.data.actions)
+    bpy.ops.import_scene.gltf(filepath=path)
+    objs = new_objects(before)
+    return objs, next(o for o in objs if o.type == "ARMATURE"), set(bpy.data.actions) - actions_before
+
+
+TABLES = {"kaykit": retarget.KAYKIT, "ual": retarget.UAL}
+for path in sorted({(lib, file) for _, lib, file, _, _, _ in BORROWED}, key=str):
+    lib, file = path
+    source_objs, source_arm, source_actions = import_gltf(UAL_FILE if lib == "ual" else os.path.join(KAYKIT_DIR, file))
+    by_name = {a.name: a for a in source_actions}
+    for name, l, f, clip, mirror, speed in BORROWED:
+        if (l, f) == path:
+            clips.append(retarget.retarget(scene, target, source_arm, by_name[clip], TABLES[lib], mirror, name, FPS,
+                                           speed))
+    remove(source_objs)
+    for action in source_actions:
+        bpy.data.actions.remove(action)
 
 ad = arm.animation_data
 ad.action = None
@@ -279,6 +283,8 @@ def picture(set_name, kind, colour=False):
     if not os.path.exists(source):
         return None
     image = bpy.data.images.load(source)
+    if (set_name, kind) == ("hair_skin_steel", "BaseColor"):
+        eyes.paint(image, EYES)
     size = SIZE[set_name]
     if image.size[0] != size:
         image.scale(size, size)
@@ -339,6 +345,11 @@ for material in {m for o in arm.children for m in o.data.materials if m}:
 
 # ---- his size, and the file ----
 
+for track in arm.animation_data.nla_tracks:  # measured at rest, not in whatever pose the clips left
+    track.mute = True
+for pb in arm.pose.bones:
+    pb.matrix_basis = mathutils.Matrix.Identity(4)
+bpy.context.view_layer.update()
 low, high = [1e9] * 3, [-1e9] * 3
 tris = 0
 for o in arm.children:
@@ -351,6 +362,8 @@ for o in arm.children:
         high = [max(a, b) for a, b in zip(high, point)]
 print(f"SIZE rest box {[round(v, 3) for v in low]} .. {[round(v, 3) for v in high]}; "
       f"height {high[2]:.3f} m, {tris} triangles, {len(arm.data.bones)} bones")
+for track in arm.animation_data.nla_tracks:
+    track.mute = False
 
 target = os.path.join(OUT, "lange.glb")
 bpy.ops.export_scene.gltf(
