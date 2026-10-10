@@ -239,7 +239,8 @@ def write(path, animated):
         export_morph=False, export_skins=animated)
 
 
-def static_piece(out, names, factor=None, height=None, turn=0.0, foot=None, dark_hue=None, upright=False):
+def static_piece(out, names, factor=None, height=None, turn=0.0, foot=None, dark_hue=None, upright=False,
+                 along_x=False):
     """{names} joined into one mesh, its foot at the origin, at {factor} units a metre or {height} units tall."""
     open_scene()
     objects = keep_only(names)
@@ -274,6 +275,13 @@ def static_piece(out, names, factor=None, height=None, turn=0.0, foot=None, dark
         bpy.ops.object.join()
     joined = bpy.context.view_layer.objects.active
     bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+    if along_x:  # a length of fence laid along glTF's X, so a map turns it along the line it is part of
+        xy = np.array([(v.co.x, v.co.y) for v in joined.data.vertices])
+        xy -= xy.mean(axis=0)
+        eigen = np.linalg.eigh(np.cov(xy.T))[1][:, -1]
+        turn -= math.atan2(eigen[1], eigen[0])
+        joined.data.transform(mathutils.Matrix.Rotation(turn, 4, "Z"))
+        turn = 0.0
     lo, hi = world_box([joined])
     middle = foot if foot is not None else ((lo.x + hi.x) / 2, (lo.y + hi.y) / 2)
     if factor is None:
@@ -429,8 +437,8 @@ def main():
     static_piece(os.path.join(props, "stool.glb"), ["Cube.088"], PEOPLE)
     static_piece(os.path.join(props, "bucket.glb"), ["bucket"], PEOPLE)
     static_piece(os.path.join(props, "broom.glb"), ["broom"], PEOPLE)
-    static_piece(os.path.join(props, "fence.glb"), ["fence_1"], PEOPLE)
-    static_piece(os.path.join(props, "fence_gate.glb"), ["fence_2"], PEOPLE)
+    static_piece(os.path.join(props, "fence.glb"), ["fence_1"], PEOPLE, along_x=True)
+    static_piece(os.path.join(props, "fence_gate.glb"), ["fence_2"], PEOPLE, along_x=True)
     static_piece(os.path.join(props, "scarecrow.glb"), ["scarecrow.001", "scarecrow_target", "scarecrow_circles"], PEOPLE)
     static_piece(os.path.join(props, "torch.glb"), ["torch"], PEOPLE)
     static_piece(os.path.join(props, "well.glb"), ["Cylinder.108", "Cylinder.109"], PEOPLE)

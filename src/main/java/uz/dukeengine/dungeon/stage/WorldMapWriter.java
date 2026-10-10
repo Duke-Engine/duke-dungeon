@@ -1061,13 +1061,17 @@ public final class WorldMapWriter {
             var pieces = new ArrayList<Piece>();
             // The hut, walked under between its legs, its door (the model's +Z) facing south, down the map.
             pieces.add(yardPiece("hut", x + 0.5f, y - 4.5f, 0, 0.7f));
-            // A fence on an arc round the west and the north, each length along the arc.
-            for (int angle = 110; angle <= 290; angle += 22) {
+            // A fence on an arc round the west and the north, length by length along it (a length lies along the
+            // model's X, which a facing of -(a + 90) turns along the arc at a), a gap where a post has fallen.
+            for (int angle = 125; angle <= 305; angle += 9) {
+                if (angle == 179 || angle == 251) {
+                    continue;
+                }
                 double a = Math.toRadians(angle);
-                pieces.add(yardPiece("props/fence", (float) (x + 0.5 + 8 * Math.cos(a)),
-                        (float) (y + 0.5 + 8 * Math.sin(a)), angle, 0.2f));
+                pieces.add(yardPiece(angle == 188 ? "props/fence_gate" : "props/fence",
+                        (float) (x + 0.5 + 7.5 * Math.cos(a)), (float) (y + 0.5 + 7.5 * Math.sin(a)),
+                        Math.floorMod(-(angle + 90), 360), 0.2f));
             }
-            pieces.add(yardPiece("props/fence_gate", x + 0.5f, y - 8.5f, 0, 0.2f));
             pieces.add(yardPiece("props/bucket", x + 5.6f, y - 3.6f, 30, 0f));
             pieces.add(yardPiece("props/broom", x + 2.4f, y - 3.2f, 200, 0f));
             pieces.add(yardPiece("props/candles", x - 4.2f, y + 1.8f, 0, 0f));
@@ -1233,7 +1237,11 @@ public final class WorldMapWriter {
          */
         private List<Piece> scenery(List<Piece> yard) {
             for (var site : SITES) {
-                keep(site.x(), site.y(), site.radius() + 2);
+                // The kampir's yard is walled in by the wood up to its fence; every other site has open ground round it.
+                keep(site.x(), site.y(), site == SITES.get(HUT) ? site.radius() - 1 : site.radius() + 2);
+            }
+            for (var piece : yard) {
+                keep((int) piece.x(), (int) piece.y(), piece.model().endsWith("hut.glb") ? 2 : 0);
             }
             var rng = new DeterministicRng(seed ^ 0x7363656E65L);
             var pieces = new ArrayList<Piece>();
@@ -1279,7 +1287,7 @@ public final class WorldMapWriter {
             }
             var hut = SITES.get(HUT);
             double fromHut = Math.hypot(x - hut.x(), y - hut.y());
-            if (fromHut > hut.radius() + 2 && fromHut < hut.radius() + 9 && !nearRoad(x, y, 4)) {
+            if (fromHut > hut.radius() - 1 && fromHut < hut.radius() + 7 && !nearRoad(x, y, 4)) {
                 return 1.6;
             }
             return nearRoad(x, y, 5) ? 0.65 : 1;
