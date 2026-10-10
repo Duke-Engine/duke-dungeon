@@ -41,6 +41,11 @@ import uz.dukeengine.dungeon.tools.GroundPictures;
  * lands to free and on the way to the hut and the castle; their levels rise with the walk from the city, as every
  * stage's do. Trees in the forest and in groves on the meadow, rocks in the highlands, a little of each elsewhere.
  *
+ * <p>The places are built of the castle kits (see castles): the city in its town wall, its two roads leaving by gates
+ * of their own, the royal castle inside; the queen's castle of the fortress drawn dark; a desert fortress; a small fort
+ * and a ruined one in the lands to free; a watchtower by the roads. Their walls stand in the way, and wherever a road
+ * comes through a wall there is a gate.
+ *
  * <p>No water: the engine draws water from a map's areas ({@code Zoned}, {@code MapArea.water}), and a map file has
  * no areas yet, so the lake is a low basin of mud and marsh. Giving {@code StaticMap} its areas is the game's next step.
  *
@@ -76,7 +81,7 @@ public final class WorldMapWriter {
 
     // In the order of the rooms: the city first, where the hero comes in, and the castle last, where the boss waits.
     static final List<Site> SITES = List.of(
-            new Site("Poytaxt", 0.22, 0.90, 14),
+            new Site("Poytaxt", 0.22, 0.90, 18),
             new Site("Yashil_dala", 0.40, 0.62, 16),
             new Site("Qumli_dasht", 0.76, 0.80, 16),
             new Site("Toshli_adir", 0.54, 0.42, 14),
@@ -242,11 +247,18 @@ public final class WorldMapWriter {
             carveRiver();
             waters.add(lake());
             for (var join : ROADS) {
-                var path = route(SITES.get(join[0]), SITES.get(join[1]));
-                grade(path);
-                for (var cell : path) {
-                    road[cell[1] * SIZE + cell[0]] = true;
-                    graded[cell[1] * SIZE + cell[0]] = true;
+                // A road out of the city leaves by a gate of its own, on the side of the town wall facing where it
+                // goes, and is joined to the plaza within: see door.
+                var paths = join[0] == CITY
+                        ? List.of(route(door(SITES.get(join[1])), SITES.get(join[1])),
+                                route(SITES.get(CITY), door(SITES.get(join[1]))))
+                        : List.of(route(SITES.get(join[0]), SITES.get(join[1])));
+                for (var path : paths) {
+                    grade(path);
+                    for (var cell : path) {
+                        road[cell[1] * SIZE + cell[0]] = true;
+                        graded[cell[1] * SIZE + cell[0]] = true;
+                    }
                 }
             }
             smoothRoads();
@@ -936,6 +948,19 @@ public final class WorldMapWriter {
             return path.reversed();
         }
 
+        /**
+         * Where the road from the city to {@code to} leaves it: in the middle of a length of the town wall (see
+         * castles) on the side facing {@code to}, a cell outside it.
+         */
+        private Site door(Site to) {
+            var city = SITES.get(CITY);
+            int dx = to.x() - city.x();
+            int dy = to.y() - city.y();
+            int x = Math.abs(dx) >= Math.abs(dy) ? city.x() + Integer.signum(dx) * 13 : city.x() + 3;
+            int y = Math.abs(dx) >= Math.abs(dy) ? city.y() + 3 : city.y() + Integer.signum(dy) * 13;
+            return new Site(city.zone() + "_door", (double) x / SIZE, (double) y / SIZE, 0);
+        }
+
         private int lean(int x, int y) {
             int a = steps[y * (SIZE + 1) + x];
             int b = steps[y * (SIZE + 1) + x + 1];
@@ -960,6 +985,9 @@ public final class WorldMapWriter {
             var paint = paint();
             var taken = new HashSet<Long>();
             walk(SITES.get(CITY));
+            // The castles first, so nothing is placed inside a wall.
+            var castles = castles();
+            closeUnder(castles, taken);
             var city = SITES.get(CITY);
             var hero = free(taken, city.x(), city.y());
             var castle = SITES.get(CASTLE);
@@ -993,8 +1021,9 @@ public final class WorldMapWriter {
                 }
             }
             for (int[] corner : new int[][] {{-6, -6}, {6, -6}, {-6, 6}, {6, 6}}) {
-                props.add(new Prop("Pillar", free(taken, castle.x() + corner[0], castle.y() + corner[1])));
-                props.add(new Prop("Pillar", free(taken, city.x() + corner[0] * 2, city.y() + corner[1])));
+                props.add(new Prop("Pillar", free(taken, castle.x() + corner[0] / 2, castle.y() + corner[1] / 2)));
+                props.add(new Prop("Pillar", free(taken, city.x() + corner[0] + (corner[0] > 0 ? 1 : -1),
+                        city.y() + corner[1] / 2)));
             }
             props.add(new Prop("Statue", free(taken, castle.x(), castle.y() + 9)));
             for (int c = 0; c < 3; c++) {
@@ -1033,7 +1062,7 @@ public final class WorldMapWriter {
                     monsters, boss, CASTLE, rooms, links, storeys, props, relief, 0f);
             return new Stage(NAME, "Ochiq dunyo",
                     "Butun qirollik bir xaritada: shahar, qorong'i o'rmon, ozod qilinadigan yerlar va malika qasri.",
-                    1, 1, seed, floor, new StagePaint(NAME, paint, PALETTE, COVERAGE, scenery(yard), waters),
+                    1, 1, seed, floor, new StagePaint(NAME, paint, PALETTE, COVERAGE, scenery(yard, castles), waters),
                     new MapStory(npcs, zones, List.of(), List.of()));
         }
 
@@ -1118,6 +1147,233 @@ public final class WorldMapWriter {
                     int cy = y + dy;
                     if (cx >= 0 && cy >= 0 && cx < SIZE && cy < SIZE) {
                         kept[cy * SIZE + cx] = true;
+                    }
+                }
+            }
+        }
+
+        // ---- the castles ----
+
+        /** The castle kits (models/castles, CC BY 4.0, see CREDITS.md and data/world/themes/castles.duke). */
+        private static final String KITS = "models/castles/";
+
+        /** How each piece the world builds with stands in the way, as the Castles theme offers it. */
+        private static final Map<String, String> FOOT = Map.ofEntries(
+                Map.entry("town/town_wall_long", "6x1.1"), Map.entry("town/town_wall_short", "3.5x1.1"),
+                Map.entry("town/town_wall_tower", "2x1.4"), Map.entry("town/town_gatehouse", "0"),
+                Map.entry("town/town_gate", "0"), Map.entry("town/town_tower_round", "0.98"),
+                Map.entry("town/town_tower_round_low", "0.79"), Map.entry("town/town_tower_slim", "0.49"),
+                Map.entry("town/town_house", "1.2"), Map.entry("town/town_palace_tower", "1.2"),
+                Map.entry("fort/fort_wall", "3x1.1"), Map.entry("fort/fort_wall_gable", "1.5x1.1"),
+                Map.entry("fort/fort_wall_ruined", "3x1.1"), Map.entry("fort/fort_gatehouse", "0"),
+                Map.entry("fort/fort_house_front", "1x1.1"), Map.entry("fort/fort_house_front_narrow", "1x1.1"),
+                Map.entry("fort/fort_keep", "0.57"), Map.entry("fort/fort_tower_cone", "0.39"),
+                Map.entry("fort/fort_tower_stepped", "0.49"), Map.entry("fort/fort_tower_open", "0.41"),
+                Map.entry("fort/fort_turret", "0.5"),
+                Map.entry("desert/desert_block_long", "4x1.3"), Map.entry("desert/desert_block_long_b", "4x1.1"),
+                Map.entry("desert/desert_pillar_tall", "0.49"),
+                Map.entry("rampart/rampart_wall", "3x1.4"), Map.entry("rampart/rampart_wall_arcade", "3x1.4"),
+                Map.entry("rampart/rampart_wall_gate", "0"), Map.entry("rampart/rampart_tower", "1.17"),
+                Map.entry("rampart/rampart_tower_tall", "1.17"));
+
+        /** The fort's pictures, by piece, that its dark copy is drawn with: the queen's castle. */
+        private static final Map<String, String> DARK = Map.of("fort_wall", "fort_9", "fort_wall_gable", "fort_7",
+                "fort_gatehouse", "fort_14", "fort_keep", "fort_15", "fort_tower_stepped", "fort_5",
+                "fort_tower_cone", "fort_3", "fort_turret", "fort_12");
+
+        /**
+         * How a ring of walls is built: each side whole {@code segment}s; at the start of each a tower (the
+         * {@code corner} one at a corner, the {@code joint} one between, either may be none); then, {@code wallAt}
+         * cells on, a wall from {@code walls} in turn ("" a breach) -- or, where a road comes through, the
+         * {@code gate} (none: an open gap), what stands in it at the same point ({@code inGate}), and {@code fill}
+         * {@code gateLength} cells on to close the rest. Pieces named {@code kit/piece}, dark where {@code dark}.
+         */
+        private record Style(int segment, float wallAt, String[] walls, String gate, String inGate, String fill,
+                float gateLength, String corner, String joint, boolean dark) {
+        }
+
+        private static final Style TOWN = new Style(6, 0, new String[] {"town/town_wall_long"}, "town/town_gatehouse",
+                "town/town_gate", "town/town_wall_tower", 4, "town/town_tower_round", "town/town_tower_round_low",
+                false);
+        private static final Style ROYAL = new Style(3, 0, new String[] {"fort/fort_wall"}, "fort/fort_gatehouse",
+                null, "fort/fort_wall_gable", 1.5f, "fort/fort_tower_cone", "fort/fort_turret", false);
+        private static final Style QUEEN = new Style(3, 0, new String[] {"fort/fort_wall"}, "fort/fort_gatehouse",
+                null, "fort/fort_wall_gable", 1.5f, "fort/fort_tower_stepped", "fort/fort_turret", true);
+        private static final Style DESERT = new Style(4, 0, new String[] {"desert/desert_block_long",
+                "desert/desert_block_long_b"}, null, null, null, 0, "desert/desert_pillar_tall",
+                "desert/desert_pillar_tall", false);
+        private static final Style RAMPART = new Style(5, 1, new String[] {"rampart/rampart_wall",
+                "rampart/rampart_wall_arcade"}, "rampart/rampart_wall_gate", null, null, 3,
+                "rampart/rampart_tower_tall", "rampart/rampart_tower", false);
+        private static final Style RUIN = new Style(3, 0, new String[] {"fort/fort_wall_ruined", "",
+                "fort/fort_wall_ruined", "fort/fort_wall_ruined"}, null, null, null, 0, "fort/fort_tower_open", null,
+                false);
+
+        /**
+         * The castles at the sites, from the castle kits: the city ringed by its town wall with the royal castle in
+         * its west and a street of house fronts by the plaza; the queen's castle of the fort's pieces drawn dark;
+         * a desert fortress in the steppe; a small fort on the meadow and a ruined one in the highlands, their
+         * camps about them; and a watchtower by each road between. Every wall stands across a grid line and in the
+         * way along its length (a {@code WxD} box); wherever a road comes through a ring there is a gate, and a gate
+         * stands in nobody's way. Kampir_kulbasi keeps her fence and nothing more.
+         */
+        private List<Piece> castles() {
+            var pieces = new ArrayList<Piece>();
+            var city = SITES.get(CITY);
+            // The town wall: 24 cells a side round the city, its roads leaving by gates of their own (door); the
+            // royal castle, 9 a side, against its west wall, its gate to the east onto the plaza.
+            ring(pieces, city.x() - 12, city.y() - 12, 24, TOWN, Set.of());
+            ring(pieces, city.x() - 11, city.y() - 4, 9, ROYAL, Set.of(1 * 100 + 1));
+            pieces.add(piece("fort/fort_keep", city.x() - 6.5f, city.y() + 0.5f, 0, false));
+            pieces.add(piece("town/town_palace_tower", city.x() - 9f, city.y() - 1.5f, 0, false));
+            // A street of house fronts west and east of the plaza, broken where a road runs, a house at its end.
+            String[] fronts = {"fort/fort_house_front", "fort/fort_house_front_narrow", "fort/fort_house_front"};
+            for (int side : new int[] {-1, 1}) {
+                for (int i = 0; i < 6; i++) {
+                    int x = side < 0 ? city.x() - 10 + i : city.x() + 4 + i;
+                    int y = city.y() + 6;
+                    if (!roadNear(x, y, 1)) {
+                        pieces.add(piece(fronts[i % fronts.length], x, y, 0, false));
+                    }
+                }
+                if (!roadNear(city.x() + side * 8, city.y() + 9, 2)) {
+                    pieces.add(piece("town/town_house", city.x() + side * 8 + 0.5f, city.y() + 9.5f, 0, false));
+                }
+            }
+            var castle = SITES.get(CASTLE);
+            ring(pieces, castle.x() - 6, castle.y() - 6, 12, QUEEN, Set.of());
+            pieces.add(piece("fort/fort_keep", castle.x() - 6, castle.y() - 6, 0, true));
+            var steppe = SITES.get(2);
+            ring(pieces, steppe.x() - 8, steppe.y() - 8, 16, DESERT, Set.of());
+            var meadow = SITES.get(1);
+            ring(pieces, meadow.x() - 7, meadow.y() - 7, 15, RAMPART, Set.of());
+            var hill = SITES.get(3);
+            ring(pieces, hill.x() - 6, hill.y() - 6, 12, RUIN, Set.of());
+            // A watchtower beside each road, about halfway, but on the forest's.
+            for (var join : ROADS) {
+                if (join[0] == HUT || join[1] == HUT) {
+                    continue;
+                }
+                var a = SITES.get(join[0]);
+                var b = SITES.get(join[1]);
+                var spot = besideTheRoad((a.x() + b.x()) / 2, (a.y() + b.y()) / 2);
+                if (spot != null) {
+                    pieces.add(piece("town/town_tower_slim", spot[0] + 0.5f, spot[1] + 0.5f, 0, false));
+                }
+            }
+            return pieces;
+        }
+
+        /** A ring of walls from (x0, y0), {@code side} cells a side, run clockwise; {@code gates} forced, side*100+i. */
+        private void ring(List<Piece> out, int x0, int y0, int side, Style style, Set<Integer> gates) {
+            int[][] corners = {{x0, y0}, {x0 + side, y0}, {x0 + side, y0 + side}, {x0, y0 + side}};
+            int[][] ways = {{1, 0}, {0, 1}, {-1, 0}, {0, -1}};
+            int[] facings = {0, 270, 180, 90};
+            int n = side / style.segment();
+            for (int k = 0; k < 4; k++) {
+                int[] way = ways[k];
+                for (int i = 0; i < n; i++) {
+                    int sx = corners[k][0] + way[0] * i * style.segment();
+                    int sy = corners[k][1] + way[1] * i * style.segment();
+                    var tower = i == 0 ? style.corner() : style.joint();
+                    if (tower != null) {
+                        out.add(piece(tower, sx, sy, 0, style.dark()));
+                    }
+                    float ox = sx + way[0] * style.wallAt();
+                    float oy = sy + way[1] * style.wallAt();
+                    if (gates.contains(k * 100 + i) || roadAcross(sx, sy, way, style.segment())) {
+                        if (style.gate() != null) {
+                            out.add(piece(style.gate(), ox, oy, facings[k], style.dark()));
+                        }
+                        if (style.inGate() != null) {
+                            out.add(piece(style.inGate(), ox, oy, facings[k], style.dark()));
+                        }
+                        if (style.fill() != null) {
+                            out.add(piece(style.fill(), ox + way[0] * style.gateLength(),
+                                    oy + way[1] * style.gateLength(), facings[k], style.dark()));
+                        }
+                    } else {
+                        var wall = style.walls()[(k * n + i) % style.walls().length];
+                        if (!wall.isEmpty()) {
+                            out.add(piece(wall, ox, oy, facings[k], style.dark()));
+                        }
+                    }
+                }
+            }
+        }
+
+        /** Whether a road crosses the grid line from (x, y) along {@code way} for {@code length} cells. */
+        private boolean roadAcross(int x, int y, int[] way, int length) {
+            for (int t = 0; t < length; t++) {
+                int cx = way[0] != 0 ? x + way[0] * t + (way[0] < 0 ? -1 : 0) : x;
+                int cy = way[1] != 0 ? y + way[1] * t + (way[1] < 0 ? -1 : 0) : y;
+                if (way[0] != 0 ? onRoad(cx, cy - 1) || onRoad(cx, cy) : onRoad(cx - 1, cy) || onRoad(cx, cy)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private boolean onRoad(int x, int y) {
+            return x >= 0 && y >= 0 && x < SIZE && y < SIZE && road[y * SIZE + x];
+        }
+
+        private boolean roadNear(int x, int y, int reach) {
+            for (int dy = -reach; dy <= reach; dy++) {
+                for (int dx = -reach; dx <= reach; dx++) {
+                    if (onRoad(x + dx, y + dy)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        /** A cell three from a road, near (x, y): flat, walked to, off the road's shoulder; null for none. */
+        private int[] besideTheRoad(int x, int y) {
+            for (int reach = 0; reach < 40; reach++) {
+                for (int dy = -reach; dy <= reach; dy++) {
+                    for (int dx = -reach; dx <= reach; dx++) {
+                        int cx = x + dx;
+                        int cy = y + dy;
+                        if (Math.max(Math.abs(dx), Math.abs(dy)) == reach && cx > 12 && cy > 12 && cx < SIZE - 12
+                                && cy < SIZE - 12 && walked[cy * SIZE + cx] && lean(cx, cy) < 6
+                                && !roadNear(cx, cy, 2) && roadNear(cx, cy, 3) && !nearASite(cx, cy, 4)) {
+                            return new int[] {cx, cy};
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
+        /** One piece of a kit at (x, y) turned {@code facing}, standing in the way as its kit says; dark if asked. */
+        private static Piece piece(String kitPiece, float x, float y, int facing, boolean dark) {
+            var name = kitPiece.substring(kitPiece.indexOf('/') + 1);
+            var model = KITS + kitPiece + ".gltf"
+                    + (dark ? "@" + KITS + "fort/textures/" + DARK.get(name) + "_dark.jpg" : "");
+            return Piece.of(model + " " + x + " " + y + " " + facing + " 1 " + FOOT.get(kitPiece));
+        }
+
+        /** The cells the castles close, made taken so nothing is placed in a wall, and kept clear of trees. */
+        private void closeUnder(List<Piece> castles, Set<Long> taken) {
+            for (var piece : castles) {
+                var box = piece.boxLength() > 0
+                        ? new uz.dukeengine.core.pathfind.SceneryBox(piece.x(), piece.y(), piece.boxLength(),
+                                piece.boxDepth(), piece.facing())
+                        : null;
+                int reach = (int) Math.ceil(Math.max(piece.boxLength(), piece.footprint())) + 1;
+                for (int cy = (int) piece.y() - reach; cy <= (int) piece.y() + reach; cy++) {
+                    for (int cx = (int) piece.x() - reach; cx <= (int) piece.x() + reach; cx++) {
+                        if (cx < 0 || cy < 0 || cx >= SIZE || cy >= SIZE) {
+                            continue;
+                        }
+                        boolean under = box != null ? box.covers(cx + 0.5f, cy + 0.5f)
+                                : Math.hypot(cx + 0.5 - piece.x(), cy + 0.5 - piece.y()) < piece.footprint() + 0.5;
+                        if (under) {
+                            taken.add((long) cy * SIZE + cx);
+                            kept[cy * SIZE + cx] = true;
+                        }
                     }
                 }
             }
@@ -1235,7 +1491,7 @@ public final class WorldMapWriter {
          * What stands about, cell by cell in a fixed order: never on a road or a step from one, on a site, by a
          * monster or a prop, or on ground too steep to stand on.
          */
-        private List<Piece> scenery(List<Piece> yard) {
+        private List<Piece> scenery(List<Piece> yard, List<Piece> castles) {
             for (var site : SITES) {
                 // The kampir's yard is walled in by the wood up to its fence; every other site has open ground round it.
                 keep(site.x(), site.y(), site == SITES.get(HUT) ? site.radius() - 1 : site.radius() + 2);
@@ -1266,6 +1522,7 @@ public final class WorldMapWriter {
                 }
             }
             pieces.addAll(yard);
+            pieces.addAll(castles);
             // A line a row of cells, as the file writes them: the yard's pieces go into their rows.
             pieces.sort(java.util.Comparator.comparingInt(piece -> (int) Math.floor(piece.y())));
             return pieces;
