@@ -48,6 +48,7 @@ written from there.
 | The keep's key — a crown key, lying where the last monster outside the keep fell, and its picture in the bag rendered from it | from the owner's own asset folder, maker not named | **unconfirmed** — to be asked of the owner before a release | `models/props/key/`, `icons/items/key_crown.png` |
 | Fountain — the one at every way in, lifted to stand on its own foot | **Poly by Google** (Google Poly asset `4KKY7CmNe_r`), supplied by the owner | **CC BY 3.0** — attribution required, given here | `models/props/fountain/` |
 | "Baba Yaga's hut" — Yalmog'iz kampir's hut on its chicken legs, the old woman, the girl in the cage and the imp, her cauldron and yard, and the forest round it | **Inuciian** (@Inuciian, [Sketchfab](https://sketchfab.com/3d-models/baba-yagas-hut-479b5f3c493349b18c59dbcbe354d98f)) | **CC BY 4.0** — attribution required, given here; modified: split into parts, recoloured, converted to glTF (`art/inuciian/export_models.py`) | `models/inuciian/` |
+| "Huntress" — the Rogue, the campaign's heroine, and her quiver and arrows | **Wilson** (neilhancart, [Sketchfab](https://sketchfab.com/3d-models/huntress-19ceb83a896c4d668b0f30a6fc58d563)) | **CC BY 4.0** — attribution required, given here; modified: pedestal, banner and the arrow in her hand removed, decimated to about 24k triangles, bones cut from 438 to 62, pictures cut to their colour and downsized, a hand bone added for her bow, the kit's clips retargeted onto her, converted to glTF (`art/huntress/export_huntress.py`) | `models/heroes/huntress.glb`, `animations/characters/huntress.glb` |
 | Skeletons — everything that walks the floors, and its blades, axes and staves | KayKit | CC0 | `models/monsters/` |
 | …and its atlas repainted with a green robe and a purple one, for the Skeleton Healer and the Skeleton Summoner | repainted from the original KayKit atlas, supplied by the owner | CC0 (a repaint of a CC0 atlas) | `models/monsters/skeleton_texture_{green,purple}.png` |
 | Adventurers — all three heroes, and everything they carry | KayKit | CC0 | `models/heroes/` |
@@ -127,7 +128,9 @@ are in this repository, along with the weapons each of them carries:
 
 - **Rogue** (`rogue.glb`) — the archer. He wore the ranger's mesh while he was
   the only hero and there was nobody to be told apart from. Carries `bow.gltf`
-  and `quiver.gltf`.
+  and `quiver.gltf`. Since 2026-10-10 the Rogue is drawn as neilhancart's "Huntress"
+  (CC BY 4.0, row above) and carries only `bow.gltf`; `rogue.glb` is kept for the
+  kingdom's soldiers.
 - **Knight** (`knight.glb`) — `sword_1handed.gltf` and `shield_round.gltf`.
 - **Mage** (`mage.glb`) — `staff.gltf` and `spellbook_closed.gltf`. He briefly
   wore the ranger's mesh and the *skeletons'* staff, which was a placeholder and
