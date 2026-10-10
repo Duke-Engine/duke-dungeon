@@ -23,3 +23,6 @@ Updated 2026-10-10: a pale violet-grey iris, pupil and highlight painted into he
 curled in every clip (bow hand gripping, draw hand hooked while shooting); clips from
 KayKit (CC0) and Quaternius' Universal Animation Library (CC0) retargeted onto her
 (huntress_clips.glb).
+
+Updated again 2026-10-10: a sheath bone (sheath.l) on her left hip for her dagger; she
+carries nodgerty's elven bow and dagger (CC BY 4.0, models/weapons/elven).

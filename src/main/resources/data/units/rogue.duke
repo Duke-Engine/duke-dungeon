@@ -173,35 +173,33 @@ Hero
   Death = Death_A
 
   Held = [
-    ; The kit's bow, as the KayKit rogue held it. Her rig had no bone to hang a
-    ; weapon from, so her exporter gives her one: handslot.l in her left palm,
-    ; turned in every frame of every clip exactly as the KayKit handslot.l is --
-    ; so the half-turn below is the one the kit's bow always needed.
+    ; nodgerty's elven bow ("Elven Assassin Weapon Set", CC BY 4.0 -- see CREDITS.md),
+    ; in her left palm on handslot.l: a bone her exporter gives her, turned in every
+    ; frame of every clip exactly as the KayKit handslot.l is. The bow is laid out as
+    ; the kit's bow was (art/weapons/export_weapons.py), so it hangs with the kit's
+    ; numbers: 1.98 long along its own +Z, its grip on the origin.
     ;
-    ; The bow goes in the LEFT hand because the right draws the string. Her
-    ; quiver and its arrows are her own, on her right hip; she carries nothing
-    ; else.
+    ; The bow goes in the LEFT hand because the right draws the string.
     Held
-      Model = models/heroes/bow.gltf
+      Model = models/weapons/elven/bow.glb
       Bone = handslot.l
-      ; The bow is 1.98 long and was drawn for a chibi of 2.18, nearly as tall as
-      ; he was. On a woman of the same height a bow of her own height is a
-      ; longbow; at 0.8 it is three quarters of her, a hunting bow.
+      ; 1.98 long against her 2.18: at 0.8 it is three quarters of her, a hunting bow
+      ; rather than a longbow.
       Scale = 0.8
-      ; And half a turn about its own length, because the bone and the model disagree
-      ; about which way round a bow goes.
-      ;
-      ; Every other weapon in the pack runs along its own +Y -- sword 1.78, dagger
-      ; 1.21, staff 2.16 -- and the bow is the one that runs along +Z, 1.98 of it.
-      ; The hand bone is authored for the first sort, so it stands the bow's length
-      ; straight up, which is right, and then hands it over the wrong way round:
-      ; measured down the length of the model, the STRING is the straight line at
-      ; x = -0.33 and the grip is the bulge at +0.13, and the bone points +x at the
-      ; archer. String outward, knuckles against the grip.
-      ;
-      ; A bow is symmetrical top to bottom, so the fix is one half-turn and nothing
-      ; else needs touching.
+      ; Half a turn about its own length: its grip bulges toward +x and its string is
+      ; the straight line on -x, and the bone points +x at the archer -- so turned,
+      ; the string is toward her drawing hand and her knuckles are on the grip.
       Roll = 180
+    End,
+
+    ; ★ AND ITS DAGGER, on her left hip -- her quiver and arrows are her own, on the
+    ; right. sheath.l is a bone her exporter hangs from her hips pointing down the
+    ; outside of her thigh; a held thing runs along its +Y, so the dagger's blade (its
+    ; own +Y) points down it, the flat against her leg. Made 0.55 long, a quarter of her.
+    Held
+      Model = models/weapons/elven/dagger.glb
+      Bone = sheath.l
+      Scale = 1
     End
   ]
 
