@@ -158,6 +158,36 @@ tasks.register("exportInuciian") {
     }
 }
 
+// neilhancart's "Huntress" (CC BY 4.0, see CREDITS.md) made into the Rogue hero: her model in
+// resources/models/heroes/huntress.glb and the Rogue's clips retargeted onto her skeleton in
+// resources/animations/characters/huntress.glb. See art/huntress/export_huntress.py.
+//
+//   ./gradlew exportHuntress -PhuntressSource="C:/Users/me/Downloads/huntress"
+//
+// The source (Sketchfab's glTF download: scene.gltf, scene.bin, textures/) is not in the repository;
+// what ships is what this wrote, which is committed. Blender is found as convertAnimations finds it.
+tasks.register("exportHuntress") {
+    group = "application"
+    description = "Make neilhancart's Huntress into the Rogue hero's model and clips, using Blender"
+    doLast {
+        val source = File((findProperty("huntressSource") as String?)
+            ?: throw GradleException("Say where the download is: -PhuntressSource=\".../huntress\""))
+        val gltf = File(source, "scene.gltf").takeIf { it.isFile }
+            ?: throw GradleException("no scene.gltf under $source")
+        providers.exec {
+            workingDir = rootProject.projectDir
+            commandLine(
+                blender("exportHuntress"), "-b", "--factory-startup",
+                "-P", "art/huntress/export_huntress.py", "--",
+                gltf.absolutePath, "src/main/resources/animations/characters",
+                "src/main/resources/models/heroes/huntress.glb",
+            )
+        }.standardOutput.asText.get()
+            .lines().filter { it.startsWith("HUNTRESS") }
+            .forEach { logger.lifecycle(it) }
+    }
+}
+
 // A map drawn once, from a seed, then filled by hand on the Map tab of the IDE:
 //
 //   ./gradlew newMap --args="crypt 42"             # a floor's size, at depth 1
