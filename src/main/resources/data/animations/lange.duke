@@ -1,0 +1,27 @@
+; ---------------------------------------------------------------------------
+; What Lange moves by -- the knight, since 2026-10-10.
+;
+; His rig is his own (91 bones, phucpham1076's), so no KayKit clip moves him:
+; his clips are in his own file, and that file is his only library. The client
+; borrows nothing it already has, so naming it here costs one more read of the
+; same file and nothing else.
+;
+; The download came with an idle and a walk and nothing more. Attack, Hurt and
+; Death are STAND-INS -- slices of the idle, written by art/lange/export_lange.py
+; under the names below. When real clips arrive they go into the same file under
+; the same names, and nothing here changes.
+; ---------------------------------------------------------------------------
+AnimationSet
+  Name = Lange
+  Libraries = [
+    models/heroes/lange/lange.glb,
+  ]
+  Idle = Idle
+  Walk = Walk
+  ; Stand-in: one second of the idle -- short enough to fit between his blows.
+  Attack = Attack
+  ; Stand-in: half a second of the idle.
+  Hurt = Hurt
+  ; Stand-in: one second of the idle; he does not fall yet.
+  Death = Death
+End
