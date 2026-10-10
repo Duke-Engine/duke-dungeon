@@ -1,0 +1,136 @@
+{
+ "asset": {
+  "generator": "Khronos glTF Blender I/O v5.2.40",
+  "version": "2.0"
+ },
+ "scene": 0,
+ "scenes": [
+  {
+   "name": "Scene",
+   "nodes": [
+    0
+   ]
+  }
+ ],
+ "nodes": [
+  {
+   "mesh": 0,
+   "name": "fort_keep"
+  }
+ ],
+ "materials": [
+  {
+   "doubleSided": true,
+   "name": "fort_15_lambert1_BaseColor.1001_dark",
+   "pbrMetallicRoughness": {
+    "baseColorTexture": {
+     "index": 0
+    },
+    "metallicFactor": 0
+   }
+  }
+ ],
+ "meshes": [
+  {
+   "name": "fort_keep",
+   "primitives": [
+    {
+     "attributes": {
+      "POSITION": 0,
+      "NORMAL": 1,
+      "TEXCOORD_0": 2
+     },
+     "indices": 3,
+     "material": 0
+    }
+   ]
+  }
+ ],
+ "textures": [
+  {
+   "sampler": 0,
+   "source": 0
+  }
+ ],
+ "images": [
+  {
+   "mimeType": "image/jpeg",
+   "name": "15_lambert1_BaseColor.1001.png.002_dark",
+   "uri": "textures/fort_15_dark.jpg"
+  }
+ ],
+ "accessors": [
+  {
+   "bufferView": 0,
+   "componentType": 5126,
+   "count": 6772,
+   "max": [
+    5.689151763916016,
+    41.63789367675781,
+    5.71457576751709
+   ],
+   "min": [
+    -5.689143657684326,
+    0,
+    -5.73193359375
+   ],
+   "type": "VEC3"
+  },
+  {
+   "bufferView": 1,
+   "componentType": 5126,
+   "count": 6772,
+   "type": "VEC3"
+  },
+  {
+   "bufferView": 2,
+   "componentType": 5126,
+   "count": 6772,
+   "type": "VEC2"
+  },
+  {
+   "bufferView": 3,
+   "componentType": 5123,
+   "count": 15000,
+   "type": "SCALAR"
+  }
+ ],
+ "bufferViews": [
+  {
+   "buffer": 0,
+   "byteLength": 81264,
+   "byteOffset": 0,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteLength": 81264,
+   "byteOffset": 81264,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteLength": 54176,
+   "byteOffset": 162528,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteLength": 30000,
+   "byteOffset": 216704,
+   "target": 34963
+  }
+ ],
+ "samplers": [
+  {
+   "magFilter": 9729,
+   "minFilter": 9987
+  }
+ ],
+ "buffers": [
+  {
+   "byteLength": 246704,
+   "uri": "fort_keep.bin"
+  }
+ ]
+}

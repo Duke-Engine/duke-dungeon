@@ -1,0 +1,136 @@
+{
+ "asset": {
+  "generator": "Khronos glTF Blender I/O v5.2.40",
+  "version": "2.0"
+ },
+ "scene": 0,
+ "scenes": [
+  {
+   "name": "Scene",
+   "nodes": [
+    0
+   ]
+  }
+ ],
+ "nodes": [
+  {
+   "mesh": 0,
+   "name": "fort_ramp"
+  }
+ ],
+ "materials": [
+  {
+   "doubleSided": true,
+   "name": "fort_16_lambert1_BaseColor.1001_dark",
+   "pbrMetallicRoughness": {
+    "baseColorTexture": {
+     "index": 0
+    },
+    "metallicFactor": 0
+   }
+  }
+ ],
+ "meshes": [
+  {
+   "name": "fort_ramp",
+   "primitives": [
+    {
+     "attributes": {
+      "POSITION": 0,
+      "NORMAL": 1,
+      "TEXCOORD_0": 2
+     },
+     "indices": 3,
+     "material": 0
+    }
+   ]
+  }
+ ],
+ "textures": [
+  {
+   "sampler": 0,
+   "source": 0
+  }
+ ],
+ "images": [
+  {
+   "mimeType": "image/jpeg",
+   "name": "16_lambert1_BaseColor.1001.png.002_dark",
+   "uri": "textures/fort_16_dark.jpg"
+  }
+ ],
+ "accessors": [
+  {
+   "bufferView": 0,
+   "componentType": 5126,
+   "count": 5396,
+   "max": [
+    12.8272705078125,
+    9.067625999450684,
+    29.041343688964844
+   ],
+   "min": [
+    -12.8271484375,
+    0,
+    -29.041259765625
+   ],
+   "type": "VEC3"
+  },
+  {
+   "bufferView": 1,
+   "componentType": 5126,
+   "count": 5396,
+   "type": "VEC3"
+  },
+  {
+   "bufferView": 2,
+   "componentType": 5126,
+   "count": 5396,
+   "type": "VEC2"
+  },
+  {
+   "bufferView": 3,
+   "componentType": 5123,
+   "count": 14997,
+   "type": "SCALAR"
+  }
+ ],
+ "bufferViews": [
+  {
+   "buffer": 0,
+   "byteLength": 64752,
+   "byteOffset": 0,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteLength": 64752,
+   "byteOffset": 64752,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteLength": 43168,
+   "byteOffset": 129504,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteLength": 29994,
+   "byteOffset": 172672,
+   "target": 34963
+  }
+ ],
+ "samplers": [
+  {
+   "magFilter": 9729,
+   "minFilter": 9987
+  }
+ ],
+ "buffers": [
+  {
+   "byteLength": 202668,
+   "uri": "fort_ramp.bin"
+  }
+ ]
+}
