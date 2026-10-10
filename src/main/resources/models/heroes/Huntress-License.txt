@@ -26,3 +26,7 @@ KayKit (CC0) and Quaternius' Universal Animation Library (CC0) retargeted onto h
 
 Updated again 2026-10-10: a sheath bone (sheath.l) on her left hip for her dagger; she
 carries nodgerty's elven bow and dagger (CC BY 4.0, models/weapons/elven).
+
+Updated again 2026-10-10: her left hand closes in a fist round the bow's grip in every clip
+(the hand slot set inside the curled fingers, the wrist turned in the bow clips so the bow stands
+up); a stray middle-finger joint of the download put back in its finger.

@@ -174,10 +174,10 @@ Hero
 
   Held = [
     ; nodgerty's elven bow ("Elven Assassin Weapon Set", CC BY 4.0 -- see CREDITS.md),
-    ; in her left palm on handslot.l: a bone her exporter gives her, turned in every
-    ; frame of every clip exactly as the KayKit handslot.l is. The bow is laid out as
-    ; the kit's bow was (art/weapons/export_weapons.py), so it hangs with the kit's
-    ; numbers: 1.98 long along its own +Z, its grip on the origin.
+    ; in her left fist on handslot.l: a bone her exporter puts where her curled fingers
+    ; close round the bow's grip, along her knuckles, riding her hand in every clip (see
+    ; fist in art/huntress/export_huntress.py). The bow is laid out as the kit's bow was
+    ; (art/weapons/export_weapons.py): 1.98 long along its own +Z, its grip on the origin.
     ;
     ; The bow goes in the LEFT hand because the right draws the string.
     Held

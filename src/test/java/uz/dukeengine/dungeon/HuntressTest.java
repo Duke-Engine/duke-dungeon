@@ -31,6 +31,41 @@ class HuntressTest {
         return model;
     }
 
+    /**
+     * The bow's grip stays in her fist in every clip: her middle finger's joints are curled round the slot
+     * it hangs from, each within the grip's radius and a finger of it, whatever the clip does with her arm.
+     * A grip held in the palm with the fingers open beside it -- what she had -- is 5 to 8 cm off them.
+     */
+    @Test
+    void theBowStaysInHerFistInEveryClip() {
+        var model = her();
+        var library = ASSETS.loadModel("animations/characters/huntress.glb");
+        var composer = AnimationLibrary.findControl(library, com.jme3.anim.AnimComposer.class);
+        AnimationLibrary.copy(library, model, composer.getAnimClipsNames());
+        var mine = AnimationLibrary.findControl(model, com.jme3.anim.AnimComposer.class);
+        var armature = AnimationLibrary.findControl(model, SkinningControl.class).getArmature();
+        var slot = armature.getJoint("handslot.l");
+        var joints = java.util.List.of(armature.getJoint("R_MiddleF1_028"), armature.getJoint("R_MiddleF2_029"));
+        assertTrue(mine.getAnimClipsNames().size() >= 10, "her clips did not arrive: " + mine.getAnimClipsNames());
+        for (var clip : mine.getAnimClipsNames()) {
+            mine.setCurrentAction(clip);
+            for (int step = 0; step < 32; step++) {
+                mine.update(0.05f);
+                model.updateLogicalState(0.05f);
+                armature.update();
+                if (step < 12) {
+                    continue; // jME cross-fades into a clip from the last pose -- here the open hand at rest
+                }
+                for (var joint : joints) {
+                    float apart = slot.getModelTransform().getTranslation()
+                            .distance(joint.getModelTransform().getTranslation());
+                    assertTrue(apart < 0.045f, "in " + clip + " the bow's grip is " + apart + " from her "
+                            + joint.getName() + ": her fingers are not round it");
+                }
+            }
+        }
+    }
+
     @Test
     void theRogueIsDrawnAsTheHuntress() {
         var rogue = SETTINGS.heroNamed("Rogue");
