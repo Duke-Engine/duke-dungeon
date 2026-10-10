@@ -1,0 +1,10 @@
+"FREE - Elven Assassin Weapon Set Bow & Dagger" by nodgerty
+https://sketchfab.com/3d-models/b8e64cc0c7df472c9f0cb5d6e1acdd3f
+
+Licensed under Creative Commons Attribution 4.0 International (CC BY 4.0):
+https://creativecommons.org/licenses/by/4.0/
+
+Modified for Last Hero (duke-dungeon) by art/weapons/export_weapons.py: the bow and the dagger
+split into a file each, laid out as the KayKit weapons are, decimated (bow 7,618 -> 3,500
+triangles, dagger 2,731 -> about 1,500), pictures cut to their base colour and downsized
+(bow 1024, dagger 512), converted to glb.
