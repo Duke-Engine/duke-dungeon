@@ -1,0 +1,136 @@
+{
+ "asset": {
+  "generator": "Khronos glTF Blender I/O v5.2.40",
+  "version": "2.0"
+ },
+ "scene": 0,
+ "scenes": [
+  {
+   "name": "Scene",
+   "nodes": [
+    0
+   ]
+  }
+ ],
+ "nodes": [
+  {
+   "mesh": 0,
+   "name": "fort_house_front_narrow"
+  }
+ ],
+ "materials": [
+  {
+   "doubleSided": true,
+   "name": "fort_10_lambert1_BaseColor.1001_dark",
+   "pbrMetallicRoughness": {
+    "baseColorTexture": {
+     "index": 0
+    },
+    "metallicFactor": 0
+   }
+  }
+ ],
+ "meshes": [
+  {
+   "name": "fort_house_front_narrow",
+   "primitives": [
+    {
+     "attributes": {
+      "POSITION": 0,
+      "NORMAL": 1,
+      "TEXCOORD_0": 2
+     },
+     "indices": 3,
+     "material": 0
+    }
+   ]
+  }
+ ],
+ "textures": [
+  {
+   "sampler": 0,
+   "source": 0
+  }
+ ],
+ "images": [
+  {
+   "mimeType": "image/jpeg",
+   "name": "10_lambert1_BaseColor.1001.png.002_dark",
+   "uri": "textures/fort_10_dark.jpg"
+  }
+ ],
+ "accessors": [
+  {
+   "bufferView": 0,
+   "componentType": 5126,
+   "count": 2039,
+   "max": [
+    10.88916015625,
+    27.246299743652344,
+    1.1654052734375
+   ],
+   "min": [
+    0,
+    0,
+    -1.165283203125
+   ],
+   "type": "VEC3"
+  },
+  {
+   "bufferView": 1,
+   "componentType": 5126,
+   "count": 2039,
+   "type": "VEC3"
+  },
+  {
+   "bufferView": 2,
+   "componentType": 5126,
+   "count": 2039,
+   "type": "VEC2"
+  },
+  {
+   "bufferView": 3,
+   "componentType": 5123,
+   "count": 5688,
+   "type": "SCALAR"
+  }
+ ],
+ "bufferViews": [
+  {
+   "buffer": 0,
+   "byteLength": 24468,
+   "byteOffset": 0,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteLength": 24468,
+   "byteOffset": 24468,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteLength": 16312,
+   "byteOffset": 48936,
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteLength": 11376,
+   "byteOffset": 65248,
+   "target": 34963
+  }
+ ],
+ "samplers": [
+  {
+   "magFilter": 9729,
+   "minFilter": 9987
+  }
+ ],
+ "buffers": [
+  {
+   "byteLength": 76624,
+   "uri": "fort_house_front_narrow.bin"
+  }
+ ]
+}

@@ -1,0 +1,8 @@
+"Medieval Fortress Kit" by Aya Rady (ayarady)
+https://sketchfab.com/3d-models/f246ce47e15f407b8399c1b270d782bd
+
+Licensed under Creative Commons Attribution 4.0 International (CC BY 4.0):
+https://creativecommons.org/licenses/by/4.0/
+(confirmed from the Sketchfab API on 2026-10-10: "CC Attribution")
+
+Modified for Duke Dungeon by art/castles/export_castles.py: split into one glTF a piece, pivots set on the game's grid, scaled (2 game units a metre) and stretched to whole cells, the keep and the ramp decimated to about 5000 triangles, pictures cut to their base colour and downsized to JPEG, and *_dark copies with darker, colder pictures for the queen's castle.

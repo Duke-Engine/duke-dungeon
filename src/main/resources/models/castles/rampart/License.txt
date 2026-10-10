@@ -1,0 +1,8 @@
+"modular fortress, Free" by FelikinRuslan
+https://sketchfab.com/3d-models/a229821e9f91413a95d939b2c8412db9
+
+Licensed under Creative Commons Attribution 4.0 International (CC BY 4.0):
+https://creativecommons.org/licenses/by/4.0/
+(confirmed from the Sketchfab API on 2026-10-10: "CC Attribution")
+
+Modified for Duke Dungeon by art/castles/export_castles.py: the one mesh cut into its pieces with the duplicates dropped, pivots set on the game's grid, scaled to whole cells, pictures cut to their base colour and downsized to JPEG.

@@ -132,6 +132,33 @@ tasks.register("convertAnimations") {
     }
 }
 
+// Six castle kits from Sketchfab (all CC BY 4.0, see CREDITS.md) cut into the pieces a map builds castles of:
+// resources/models/castles/<kit>/, a .gltf a piece over a folder of pictures the kit's pieces share, and the fort's
+// dark copies for the queen's castle. See art/castles/export_castles.py, which says the grid and the pivots.
+//
+//   ./gradlew exportCastles -PcastlesSource="C:/Users/me/Downloads/castles"
+//
+// The source holds each download unzipped into a folder named as its zip (medieval-fortress-kit/, ...). Not in
+// the repository; what ships is what this wrote, which is committed. Blender is found as convertAnimations finds it.
+tasks.register("exportCastles") {
+    group = "application"
+    description = "Cut the six castle kits into the game's scenery pieces, using Blender"
+    doLast {
+        val source = File((findProperty("castlesSource") as String?)
+            ?: throw GradleException("Say where the downloads are: -PcastlesSource=\".../castles\""))
+        providers.exec {
+            workingDir = rootProject.projectDir
+            commandLine(
+                blender("exportCastles"), "-b", "--factory-startup",
+                "-P", "art/castles/export_castles.py", "--",
+                source.absolutePath, "src/main/resources/models/castles",
+            )
+        }.standardOutput.asText.get()
+            .lines().filter { it.startsWith("PIECE") || it.startsWith("DARK") }
+            .forEach { logger.lifecycle(it) }
+    }
+}
+
 // Inuciian's "Baba Yaga's hut" (CC BY 4.0, see CREDITS.md) cut into the models under
 // resources/models/inuciian: the hut, its people, its props and its forest, each one glTF with its
 // pictures inside, and the dark wood's recoloured copies. See art/inuciian/export_models.py.
