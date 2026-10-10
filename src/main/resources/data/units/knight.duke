@@ -110,8 +110,8 @@ Hero
 ;
 ; His rig is his own, so he moves by the Lange set (data/animations/lange.duke),
 ; whose one library is his own file, not by the Humanoid set: no KayKit clip
-; moves a bone of his. The download had an idle and a walk; his attack, hurt and
-; death are stand-ins until real clips come.
+; moves a bone of his unless art/lange/retarget.py has put it there. Idle and Walk
+; came with him; Attack, Hurt, Death and his casts are borrowed (Quaternius, KayKit).
 ;
 ; HE IS LEFT-HANDED. Every clip has the sword in his left hand and the right hand
 ; free, and the shield slung on his back -- as the model was made. Both are in
@@ -146,17 +146,18 @@ Hero
   Facing = 90
 
   ; His own clips, in his own file -- see data/animations/lange.duke. Named here
-  ; as well as there so this block says what he plays; Attack, Hurt and Death
-  ; are stand-ins (slices of the idle) until real clips arrive.
+  ; as well as there so this block says what he plays. Idle and Walk came with him;
+  ; the rest are borrowed from two CC0 libraries and put on his rig by
+  ; art/lange/retarget.py.
   Animations = Lange
   Idle = Idle
   ; He WALKS where the archer runs, and it is the same fact as Speed = 21 said
   ; twice: a run cycle at his pace reads as skating.
   Walk = Walk
   ; ★ CHOSEN BY ITS LENGTH. The client plays this once per blow and a blow lands
-  ; every ReloadFrames -- 34, which is 1.133s; the stand-in runs 1.000s, so it
-  ; finishes before the next. The build checks the two against each other, so a
-  ; real swing put in its place has to fit too.
+  ; every ReloadFrames -- 34, which is 1.133s. His slash (Quaternius' Sword_Attack,
+  ; left-handed) is baked half again as fast to run 1.083s, so it finishes before the
+  ; next; the build checks the two against each other.
   Attack = Attack
   Hurt = Hurt
   Death = Death
@@ -202,12 +203,12 @@ Hero
 ; measured height without anybody having measured him. If his head comes out badly
 ; once his model is in, Head and Show are the two lines, and neither needs a
 ; rebuild.
-  ; Standing as he stands in the world. His file has no blade held ready and no
-  ; flourish yet, so Fight, Hurt and LevelUp are left to fall back to standing;
-  ; they come back when his real clips do.
+  ; Standing as he stands in the world, and the pull's raised hand for a level. Fight and
+  ; Hurt fall back to standing: a slash looped is a man shadow-boxing, a flinch looped a fit.
   Portrait = PortraitArt
     Calm = Idle
     Dead = Death
+    LevelUp = Cast_Pull
 
     ; ★ NOT the KayKit numbers: Lange is drawn as a man, his head an eighth of him
     ; rather than nearly half, his eyes at about 0.92 of his height. So the camera
@@ -271,10 +272,14 @@ Hero
       CooldownFrames = 150
       CooldownPerLevel = -8
       MaxRank = 4
-      ; A flash at his hand as he throws it, as the mage's fire leaves his -- see Effect
-      ; CastFlash, marked on him as he throws (E32). The wave's
-      ; own look is the SwordWave it flies as (data/projectiles/sword_wave.duke).
-      Look = CastFlash
+      ; A white-steel flash at his hand as he throws it -- see Effect WaveFlash, beside the
+      ; SwordWave it flies as (data/projectiles/sword_wave.duke). Its own rather than the mage's
+      ; CastFlash, because the client keys a cast's gesture by its Look.
+      Look = WaveFlash
+      ; ★ HIS GESTURE: the big slash the wave comes off -- Quaternius' Sword_Attack, left-handed, on
+      ; his rig. The wave leaves at once, so the 1.5s slash is hurried into 0.8s.
+      CastAnim = Cast_Wave
+      CastSeconds = 0.8
       Name = Qilich to'lqini
       Icon = icons/skills/skill_cleave.png
       Blurb = Qilichini siltaydi va undan to'lqin otilib chiqadi. To'lqin yo'lidagi har bir dushmanni bir martadan kesib o'tadi — tanaga urilib to'xtamaydi, faqat devor yoki o'z masofasi tugaganda to'xtaydi.
@@ -308,6 +313,10 @@ Hero
       MaxRank = 4
       ; Dust where he pushed off and himself at the end -- see Effect Charge.
       Look = Charge
+      ; ★ HIS GESTURE: leaning in and driving -- Quaternius' Push_Loop on his rig -- for exactly as
+      ; long as the drive (Distance 45 at 36 a second: 1.25s), so he stops pushing as he stops.
+      CastAnim = Cast_Charge
+      CastSeconds = 1.25
       Name = Qalqon bilan surish
       Icon = icons/skills/skill_dash.png
       Blurb = Qalqonini oldinga tutib, ko'rsatilgan tomonga yugurib ketadi. Yo'lida uchragan har bir dushmanni ilib, o'zi bilan birga suradi, to'xtaganda esa ularni oldiga tashlab, gangitib qo'yadi.
@@ -366,6 +375,11 @@ Hero
       LevelPerRank = 4
       ; A turn of the air round him as wide as the pull -- see Effect Whirlwind.
       Look = Whirlwind
+      ; ★ HIS GESTURE: one hand raised to call the room in -- KayKit's Ranged_Magic_Raise on his rig
+      ; (art/lange/retarget.py). The pull lands at once, so it is hurried into a second rather than
+      ; its own 2.1s: a man stood calling for two seconds after the room arrived reads as late.
+      CastAnim = Cast_Pull
+      CastSeconds = 1.0
       Name = Teskari qutb
       Icon = icons/skills/skill_whirlwind.png
       Blurb = Atrofidagi barcha dushmanlarni bir nuqtaga — o'zining ro'parasiga — tortib keladi, ularga zarar yetkazadi va gangitib qo'yadi. To'plangan dushmanlarni bitta to'lqin bilan kesish mumkin.

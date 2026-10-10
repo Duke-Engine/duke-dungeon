@@ -90,3 +90,40 @@ Effect
     End
   ]
 End
+
+; ---------------------------------------------------------------------------
+; The flash at his sword as he throws the wave -- the knight's Q's Look. It was the
+; mage's CastFlash, borrowed; it is its own now because the client keys a cast's
+; GESTURE by its Look (Visuals.castAnim), and the knight's Q has a gesture
+; (Cast_Wave) that the mage's fire must not be asked for. White steel, not fire:
+; the colours of the wave it lets go.
+; ---------------------------------------------------------------------------
+Effect
+  Name = WaveFlash
+  Layers = [
+    Layer
+      Name = Spark
+      Type = IMPACT
+      Texture = kit/effects/particles/flare_01.png
+      Blend = Additive
+      Count = 1
+      Life = [0.22, 0.22]
+      Size = [8, 26]
+      SizeEase = 3
+      Colour = [0xFFFFFF, 0xCFE4FF]
+      Alpha = [1, 0]
+      FadeOut = 0.6
+      Height = 6
+      TurnJitter = 0
+    End,
+    Layer
+      Name = Light
+      Type = LIGHT
+      Seconds = 0.25
+      LightColour = 0xCFE4FF
+      LightPower = 1.5
+      LightRadius = 36
+      FadeOut = 0.8
+    End
+  ]
+End
