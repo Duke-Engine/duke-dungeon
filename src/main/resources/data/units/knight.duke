@@ -333,8 +333,9 @@ Hero
       ; About a skeleton's width each side of the line: what it runs THROUGH, not a
       ; cone.
       HitWidth = 14
-      ; Fast enough to read as a swing thrown on, slow enough to see cross the room.
-      ProjectileSpeed = 110
+      ; Half what it was (110) -- the owner, 2026-10-10: "far too fast". At 55 it
+      ; crosses its 50 in under a second, slow enough to watch the half-moon go.
+      ProjectileSpeed = 55
       Projectile = SwordWave
       ; No stun: the charge and the pull are the knight's stuns, and a cheap
       ; spammable stun would make them pointless.
@@ -355,7 +356,8 @@ Hero
     Skill
       Key = W
       ; Qalqon bilan surish. The Magnataur's charge: shield up, he drives Distance
-      ; toward where he pointed at ProjectileSpeed, and every enemy he meets within
+      ; down the line he points (aimed as a lane, as the wave is: the click is a way,
+      ; not a spot -- Dungeon.toTheEndOfItsLane) at ProjectileSpeed, and every enemy he meets within
       ; Radius of his shield is caught, hurt once, and carried along at his front --
       ; then dropped there, stunned, when the drive ends (its distance run, stone, the
       ; shut gate, or a body too big to carry in his way).
