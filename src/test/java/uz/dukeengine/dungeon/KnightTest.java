@@ -691,12 +691,17 @@ class KnightTest {
                 "both are in the same hand, so the second line overwrote the first");
     }
 
-    /** And every hero really does carry two things now, not one. */
+    /**
+     * And every hero carries something, each on a bone.
+     *
+     * <p>It was two things each while all three came out of one kit and wore their
+     * weapons apart. The Huntress wears her quiver and its arrows as part of her own
+     * mesh, on her hip, so the bow is the one thing she is handed.
+     */
     @Test
-    void everyHeroCarriesMoreThanOneThing() {
+    void everyHeroCarriesSomethingOnABone() {
         for (var him : SETTINGS.heroes()) {
-            assertTrue(him.held().size() >= 2, him.name() + " carries "
-                    + him.held().size() + " thing(s): a hero is rarely one hand");
+            assertFalse(him.held().isEmpty(), him.name() + " carries nothing at all");
             for (var held : him.held()) {
                 assertTrue(held.isCarried(),
                         him.name() + " has a Holds with no bone under it, which hangs nothing");
@@ -737,15 +742,28 @@ class KnightTest {
     /** And a carried thing may sit off its bone, by X, Y and Z. */
     @Test
     void aCarriedThingMayBeShiftedOffItsBone() {
-        var quiver = SETTINGS.heroNamed("Rogue").held().stream()
-                .filter(held -> held.model().contains("quiver"))
-                .findFirst().orElseThrow(() -> new AssertionError("the archer carries no arrows"));
+        // Read from a block of its own: the archer's quiver was the shifted one, and the
+        // Huntress who replaced him carries hers in her own mesh.
+        var quiver = DungeonSettings.parse("""
+                Hero
+                  Name = Solo
+                  Model = models/heroes/rogue.glb
+                  Held = [
+                    Held
+                      Model = models/heroes/quiver.gltf
+                      Bone = chest
+                      X = 0.12
+                      Y = 0.10
+                      Z = -0.22
+                    End
+                  ]
+                End
+                """).heroNamed("Solo").held().get(0);
 
-        assertEquals("chest", quiver.bone(),
-                "this rig has two attachment points and both are hands, so a quiver"
-                        + " has nowhere to go but a body bone");
-        assertTrue(quiver.x() != 0f || quiver.y() != 0f || quiver.z() != 0f,
-                "left on the bone with no shift it sits inside him");
+        assertEquals("chest", quiver.bone());
+        assertEquals(0.12f, quiver.x(), 0.001f);
+        assertEquals(0.10f, quiver.y(), 0.001f);
+        assertEquals(-0.22f, quiver.z(), 0.001f);
     }
 
     // ---- helpers ----

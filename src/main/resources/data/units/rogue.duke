@@ -134,25 +134,26 @@ Hero
 ; onto the settings, so a second one would have quietly overwritten the first.
 ; ---------------------------------------------------------------------------
 
-  ; ★ THE ROGUE'S OWN MESH. He wore the ranger's while he was the only hero and
-  ; there was nobody for him to be told apart from; three heroes out of one pack
-  ; have to be three silhouettes, and the kit ships five.
+  ; ★ THE HUNTRESS. neilhancart's "Huntress" (CC BY 4.0 -- see CREDITS.md), the
+  ; heroine of the campaign and the one who beats the last of it: a grown woman
+  ; in leather and steel among the kit's chibis, which is the point -- she is
+  ; who the story is about. Made from Sketchfab's statue of her by
+  ; art/huntress/export_huntress.py (./gradlew exportHuntress): pedestal and
+  ; banner off, 24k triangles, her skeleton cut to 62 bones.
   ;
-  ; He is still an archer -- every clip below is a bow clip and his weapon in
-  ; his template is unchanged. What the mesh decides is what he LOOKS like, and
-  ; a light hooded man with a bow is a better picture of "wins at distance, dies
-  ; the moment anything arrives" than the ranger was.
-  Model = models/heroes/rogue.glb
-  ; GeometryHeight is 12 in his template above and the model boxes 2.180 tall, so
-  ; 12 / 2.180 -- measured off the file, like every other number on this page.
-  ; He is the SHORTEST of the three (knight 2.543, mage 2.655), so he is drawn
-  ; the largest to stand the same twelve units tall as the other two.
+  ; The KayKit rogue he wore before (models/heroes/rogue.glb) is kept for the
+  ; kingdom's soldiers.
+  Model = models/heroes/huntress.glb
+  ; Written 2.180 tall, the KayKit rogue's height, so the 12 / 2.180 that stood
+  ; him twelve units tall stands her the same.
   ModelScale = 5.50
+  ; And facing the way the KayKit heroes face, so the same quarter turn.
   Facing = 90
 
-  ; What he moves by, as everything on two legs does; the clips below are the ones
-  ; he plays his own way.
-  Animations = Humanoid
+  ; Her own set, not Humanoid: her skeleton is not the kit's, so the kit's clips
+  ; are retargeted onto it and kept in her own library -- see
+  ; data/animations/huntress.duke. Every name below is the KayKit one.
+  Animations = Huntress
 
   ; Standing with the bow rather than empty-handed, because he is holding one.
   Idle = Ranged_Bow_Idle
@@ -161,7 +162,8 @@ Hero
   Walk = Running_A
   ; The loose, not the draw: the arrow leaves at the start of this clip, which is
   ; the frame the simulation fires on. Ranged_Bow_Draw is the other half of the
-  ; shot if that reads better, and it is one word.
+  ; shot if that reads better -- one word here, and one name in CLIPS in her
+  ; exporter, which is the list of what is retargeted onto her.
   Attack = Ranged_Bow_Release
   Hurt = Hit_A
   ; Death_A falls in 0.8s; Death_B takes 2.6s, which is longer than the floor
@@ -169,18 +171,21 @@ Hero
   Death = Death_A
 
   Held = [
-    ; A character kit ships its weapons apart from its characters, and its rigs
-    ; carry a bone to hang them on. One rogue and a rack of weapons is every armed
-    ; rogue there is; a rogue-with-a-bow is one of them. The kit also ships him a
-    ; dagger and a smokebomb, if he is ever anything but an archer.
+    ; The kit's bow, as the KayKit rogue held it. Her rig had no bone to hang a
+    ; weapon from, so her exporter gives her one: handslot.l in her left palm,
+    ; turned in every frame of every clip exactly as the KayKit handslot.l is --
+    ; so the half-turn below is the one the kit's bow always needed.
     ;
-    ; The bow goes in the LEFT hand because the right draws the string. If he ends
-    ; up shooting left-handed, this is the line: handslot.r.
+    ; The bow goes in the LEFT hand because the right draws the string. Her
+    ; quiver and its arrows are her own, on her right hip; she carries nothing
+    ; else.
     Held
       Model = models/heroes/bow.gltf
       Bone = handslot.l
-      ; Body and bow came out of the same pack at the same size.
-      Scale = 1
+      ; The bow is 1.98 long and was drawn for a chibi of 2.18, nearly as tall as
+      ; he was. On a woman of the same height a bow of her own height is a
+      ; longbow; at 0.8 it is three quarters of her, a hunting bow.
+      Scale = 0.8
       ; And half a turn about its own length, because the bone and the model disagree
       ; about which way round a bow goes.
       ;
@@ -195,34 +200,6 @@ Hero
       ; A bow is symmetrical top to bottom, so the fix is one half-turn and nothing
       ; else needs touching.
       Roll = 180
-    End,
-
-    ; ★ AND THE ARROWS FOR IT. A second Held, which is the whole of what the
-    ; repeatable form is for: a bow with no quiver is a man who has brought one
-    ; shot.
-    ;
-    ; ★ ON THE CHEST, because this rig has exactly TWO attachment points and both
-    ; of them are hands -- handslot.l and handslot.r and nothing else. There is no
-    ; back slot to hang it from, so it goes on the chest bone and is pushed into
-    ; place by hand. Hung there with no shift it sits INSIDE him.
-    ;
-    ; HeldAt is x y z in the bone's own space, and the three numbers are: a little
-    ; to his right, a little up, and back behind him. The quiver is 0.93 long, so
-    ; half of it clears his shoulder. HeldPitch lies it back against him rather
-    ; than standing it upright like a chimney.
-    ;
-    ; ★ These four numbers are the ones to nudge if it floats or sinks -- they are
-    ; a guess at a placement, not a measurement of one, and the only way to settle
-    ; them is to look.
-    Held
-      Model = models/heroes/quiver.gltf
-      Bone = chest
-      Scale = 1
-      X = 0.12
-      Y = 0.10
-      Z = -0.22
-      Pitch = -20
-      Roll = 12
     End
   ]
 
@@ -268,11 +245,12 @@ Hero
 
 
 ; The hero's own, because two of his states are things no monster has: a bow held
-; ready, and a flourish for a new level. His clips come out of the Humanoid
+; ready, and a flourish for a new level. His clips come out of the Huntress
 ; set he links above. Each is one word to change — worth trying:
 ; Idle_A / Idle_B / Ranged_Bow_Aiming_Idle for the standing ones, Death_B for a
 ; slower fall (2.6s, longer than the floor stays open), Interact / Throw /
-; Ranged_Bow_Draw_Up for the flourish.
+; Ranged_Bow_Draw_Up for the flourish -- and, on the Huntress, a name in CLIPS in
+; art/huntress/export_huntress.py, since only what is retargeted onto her is there.
   ; Standing with the bow, as he stands in the world.
   Portrait = PortraitArt
     Calm = Ranged_Bow_Idle
@@ -287,13 +265,14 @@ Hero
     ; Rising out of the ground, which reads as power arriving.
     LevelUp = Spawn_Ground
 
-    ; ★ Re-measured for his own mesh. He boxes 2.180 against the ranger's 2.275 and
-    ; his head joint sits at 0.569 of that against 0.546 -- a shorter model with a
-    ; proportionally larger head -- so the ranger's 0.74 would have framed him low
-    ; and cut the top of his hood off. The camera aims about 0.20 above the joint
-    ; on all three of them, which is the rule the knight's numbers follow too.
-    Head = 0.77
-    Show = 0.63
+    ; ★ Re-measured for the Huntress. The KayKit numbers framed a chibi, whose head
+    ; is two fifths of him; hers is an eighth of her. Her head joint stands at 0.91
+    ; of her 2.18 and her eyes at 0.93, so the camera aims a little under her eyes
+    ; and shows three tenths of her height: head, shoulders and the top of her
+    ; armour. A guess from the file, not yet a look in the game -- these two are
+    ; the ones to nudge.
+    Head = 0.88
+    Show = 0.30
     Yaw = 22
     Pitch = -4
     Fov = 34

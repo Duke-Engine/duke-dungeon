@@ -1,0 +1,26 @@
+; ---------------------------------------------------------------------------
+; What the Huntress moves by -- the Rogue, drawn as neilhancart's "Huntress".
+;
+; Her skeleton is not the kit's. The Humanoid set's clips are KayKit's and drive
+; KayKit bones (hips, upperarm.l); hers is a Maya HumanIK rig
+; (QuickRigCharacter_Hips_03 ...), so not one of them would reach her and she
+; would stand in her A-pose. The clips the Rogue's block names are therefore
+; retargeted onto her own bones once, in Blender (art/huntress/export_huntress.py),
+; and written here under the KayKit names -- so his block names them exactly as
+; it did.
+;
+; ★ STAND-INS. These are the KayKit movements on her body, not movements made for
+; her: a chibi's bow stance on a grown woman. When a library on her own skeleton
+; arrives (Quaternius' Universal Animation Library is the plan), it is a second
+; line under Libraries and a word per clip in rogue.duke.
+; ---------------------------------------------------------------------------
+AnimationSet
+  Name = Huntress
+  Libraries = [
+    animations/characters/huntress.glb,
+  ]
+  Idle = Ranged_Bow_Idle
+  Walk = Running_A
+  Attack = Ranged_Bow_Release
+  Death = Death_A
+End
