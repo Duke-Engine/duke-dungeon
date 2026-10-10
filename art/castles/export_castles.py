@@ -38,13 +38,12 @@ copy of every picture in every piece. Normal, roughness and occlusion maps are l
 
 TRIANGLES. A piece over 8000 triangles is collapsed to about 5000; the rest are as made.
 
-THE QUEEN'S CASTLE. The fort kit is written twice: as made, and as a `_dark` copy of every piece -- the same
-.bin, its pictures recoloured darker, colder and a little red (darken()) -- for the queen's dark castle. The
-game cannot yet hand a scenery piece another picture or write a tint into a map (engine requests E34, E35), so
-the copies are what a map names.
+THE QUEEN'S CASTLE. Every picture of the fort kit is written twice: as made, and as a `_dark` copy recoloured
+darker, colder and a little red (darken()). A map draws a fort piece dark by naming the picture after the
+model (`models/castles/fort/fort_wall.gltf@models/castles/fort/textures/fort_9_dark.jpg`, engine E34): one
+mesh, two castles. Every fort piece has one picture, so the swap is the whole piece.
 """
 
-import json
 import math
 import os
 import re
@@ -500,19 +499,7 @@ def dark_copies(prefix):
         dark.filepath_raw = path(folder, "textures", f[:-4] + "_dark.jpg")
         dark.file_format = "JPEG"
         dark.save()
-    for f in sorted(os.listdir(folder)):
-        if not f.endswith(".gltf") or f.endswith("_dark.gltf"):
-            continue
-        with open(path(folder, f), encoding="utf-8") as stream:
-            gltf = json.load(stream)
-        for image in gltf.get("images", []):
-            image["uri"] = re.sub(r"\.jpg$", "_dark.jpg", image["uri"])
-            image["name"] = image.get("name", "") + "_dark"
-        for material in gltf.get("materials", []):
-            material["name"] = material.get("name", "") + "_dark"
-        with open(path(folder, f[:-5] + "_dark.gltf"), "w", encoding="utf-8") as stream:
-            json.dump(gltf, stream, indent=1)
-        LOG.append(f"DARK {prefix}/{f[:-5]}_dark")
+        LOG.append(f"DARK {prefix}/textures/{f[:-4]}_dark.jpg")
 
 
 LOG = []
