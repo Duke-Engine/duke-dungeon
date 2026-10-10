@@ -48,9 +48,10 @@ written from there.
 | The keep's key — a crown key, lying where the last monster outside the keep fell, and its picture in the bag rendered from it | from the owner's own asset folder, maker not named | **unconfirmed** — to be asked of the owner before a release | `models/props/key/`, `icons/items/key_crown.png` |
 | Fountain — the one at every way in, lifted to stand on its own foot | **Poly by Google** (Google Poly asset `4KKY7CmNe_r`), supplied by the owner | **CC BY 3.0** — attribution required, given here | `models/props/fountain/` |
 | "Baba Yaga's hut" — Yalmog'iz kampir's hut on its chicken legs, the old woman, the girl in the cage and the imp, her cauldron and yard, and the forest round it | **Inuciian** (@Inuciian, [Sketchfab](https://sketchfab.com/3d-models/baba-yagas-hut-479b5f3c493349b18c59dbcbe354d98f)) | **CC BY 4.0** — attribution required, given here; modified: split into parts, recoloured, converted to glTF (`art/inuciian/export_models.py`) | `models/inuciian/` |
+| "Lange - Half-Elf Knight" — the knight, Lange, with his sword, shield, dagger, potion and book | **phucpham1076** ([Sketchfab](https://sketchfab.com/3d-models/lange-half-elf-knight-3c22b831b66c4de88043f57fabca406b)) | **CC BY 4.0** — attribution required, given here; modified: glasses removed, sword attached, textures downsized, converted to glTF (`art/lange/export_lange.py`) | `models/heroes/lange/` |
 | Skeletons — everything that walks the floors, and its blades, axes and staves | KayKit | CC0 | `models/monsters/` |
 | …and its atlas repainted with a green robe and a purple one, for the Skeleton Healer and the Skeleton Summoner | repainted from the original KayKit atlas, supplied by the owner | CC0 (a repaint of a CC0 atlas) | `models/monsters/skeleton_texture_{green,purple}.png` |
-| Adventurers — all three heroes, and everything they carry | KayKit | CC0 | `models/heroes/` |
+| Adventurers — the archer and the mage and everything they carry; the knight Lange replaced, kept for the kingdom's soldiers and the Cursed Hero | KayKit | CC0 | `models/heroes/` |
 | Character Animations — everything anything down here does | KayKit | CC0 | `animations/characters/` |
 | Standing 2H Magic Area Attack — the mage's meteor | **Mixamo** / Adobe | **not CC0, see below** | `animations/characters/magic.glb` |
 | RPG Audio — cloth, coins, a door, a knife drawn | Kenney | CC0 | `audio/sfx/` |
@@ -128,7 +129,10 @@ are in this repository, along with the weapons each of them carries:
 - **Rogue** (`rogue.glb`) — the archer. He wore the ranger's mesh while he was
   the only hero and there was nobody to be told apart from. Carries `bow.gltf`
   and `quiver.gltf`.
-- **Knight** (`knight.glb`) — `sword_1handed.gltf` and `shield_round.gltf`.
+- **Knight** (`knight.glb`) — `sword_1handed.gltf` and `shield_round.gltf`. No longer
+  the hero since 2026-10-10 -- the knight is Lange (`lange/lange.glb`, phucpham1076,
+  CC BY 4.0, in the table above) -- and kept for the kingdom's soldiers and the
+  Cursed Hero.
 - **Mage** (`mage.glb`) — `staff.gltf` and `spellbook_closed.gltf`. He briefly
   wore the ranger's mesh and the *skeletons'* staff, which was a placeholder and
   is not one any more.
