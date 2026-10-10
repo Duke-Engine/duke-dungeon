@@ -1,0 +1,159 @@
+; ---------------------------------------------------------------------------
+; The dark wood -- Qorong'i o'rmon -- where Yalmog'iz kampir keeps her hut.
+;
+; The pine wood's ground and walls, dressed in Inuciian's forest ("Baba Yaga's
+; hut", CC BY 4.0, see CREDITS.md): dark pines, dead crooked trees, blue-grey
+; grass, toadstools. Not in the descent's Biomes; it is here so its pieces are
+; offered by the map editor's scatter brush and named in one place, and the open
+; world's forest (stage/WorldMapWriter) strews the same pieces.
+; ---------------------------------------------------------------------------
+Theme
+  Name = DarkWood
+  TileSize = 4
+  ; A module of six for a pine 3.74 across: each comes out about six units wide
+  ; and eighteen tall, and three stand in every cell of rock.
+  WallTileSize = 6
+  WallHeight = 0
+  Stairs = models/tiles/forest/stairs.gltf
+  WallFillsRock = Yes
+  WallClump = 3
+  WallSpread = 0.3
+  WallVariety = 0.45
+  RockFace = models/props/forest/wall.gltf
+  StoreyShadePercent = 108
+  ; A cold dark under the needles.
+  FogTint = 0x05090B
+  Terrain = Terrain
+    Ragged = 40
+    Winding = 45
+    Loops = 30
+    IslandsPerRoom = [1, 3]
+    Rise = 72
+    HillSize = 12
+    Slope = 7
+    Level = 20
+  End
+  ; Wilderness, and alive only just: the dark wood is the pine wood's ground under darker trees.
+  Climate = [92, 30]
+  ; What the brush and the generator strew between its trees: Inuciian's pieces (models/inuciian,
+  ; CC BY 4.0), each written at the size it stands at Scale 1 -- see art/inuciian/export_models.py.
+  ; The foliage is the dark copies; the autumn ones stay beside them for a wood in another season.
+  Scenery = [
+    Scatter
+      Model = models/inuciian/nature/grass_tall_dark.glb
+      PerHundred = 12
+      Scale = 1
+      Variety = 0.25
+    End,
+    Scatter
+      Model = models/inuciian/nature/grass_short_dark.glb
+      PerHundred = 14
+      Scale = 1
+      Variety = 0.25
+    End,
+    Scatter
+      Model = models/inuciian/nature/bush_large_dark.glb
+      PerHundred = 4
+      Scale = 1
+      Variety = 0.25
+    End,
+    Scatter
+      Model = models/inuciian/nature/bush_bare.glb
+      PerHundred = 3
+      Scale = 1
+      Variety = 0.25
+    End,
+    Scatter
+      Model = models/inuciian/nature/rock.glb
+      PerHundred = 2
+      Scale = 1
+      Variety = 0.25
+    End,
+    Scatter
+      Model = models/inuciian/nature/rock_small.glb
+      PerHundred = 5
+      Scale = 1
+      Variety = 0.25
+    End,
+    Scatter
+      Model = models/inuciian/nature/mushroom_red.glb
+      PerHundred = 3
+      Scale = 1
+      Variety = 0.3
+    End,
+    Scatter
+      Model = models/inuciian/nature/mushroom_brown.glb
+      PerHundred = 3
+      Scale = 1
+      Variety = 0.3
+    End,
+    Scatter
+      Model = models/inuciian/nature/stump.glb
+      PerHundred = 1
+      Scale = 1
+      Variety = 0.25
+    End,
+    Scatter
+      Model = models/inuciian/nature/mound.glb
+      PerHundred = 1
+      Scale = 1
+      Variety = 0.25
+    End,
+    Scatter
+      Model = models/inuciian/nature/cattails.glb
+      PerHundred = 1
+      Scale = 1
+      Variety = 0.25
+    End
+  ]
+  ; Its groves: the dark pine among dead trees, two to a cell.
+  Grove = Grove
+    Models = [models/inuciian/nature/pine_dark.glb, models/inuciian/nature/pine_dark.glb, models/inuciian/nature/dead_tree.glb, models/inuciian/nature/dead_tree_bent.glb, models/inuciian/nature/dead_tree_tall.glb]
+    PerCell = 2
+    Scale = 1
+    Footprint = 0.1
+  End
+  Tones = [
+    Tone
+      Name = Tall
+      Floor = models/tiles/forest/floor_rocky.gltf
+      Wall = models/tiles/forest/pine_tall.gltf
+      Walls = [models/tiles/forest/pine.gltf]
+    End,
+    Tone
+      Name = Young
+      Floor = models/tiles/forest/floor.gltf
+      Wall = models/tiles/forest/pine.gltf
+      Walls = [models/tiles/forest/pine_tall.gltf, models/tiles/forest/bush_tall.gltf]
+    End
+  ]
+  ; What stands about is the wood's own: see forest.duke.
+  Monsters = [
+    ThemeMonster
+      Name = Pillar
+      Model = models/props/forest/tree_bare.gltf
+      ModelScale = 3.5
+    End,
+    ThemeMonster
+      Name = Statue
+      Model = models/props/forest/rock.gltf
+      ModelScale = 6.5
+    End,
+    ThemeMonster
+      Name = Barrel
+      Model = models/props/forest/rock_small.gltf
+      ModelScale = 9.0
+    End,
+    ThemeMonster
+      Name = Chest
+      Model = models/props/forest/chest.gltf
+      ModelScale = 5.0
+    End,
+    ThemeMonster
+      Name = Fountain
+      Model = models/props/fountain/fountain.glb
+      ModelScale = 7.5
+      Effect = FountainWater
+    End
+  ]
+End

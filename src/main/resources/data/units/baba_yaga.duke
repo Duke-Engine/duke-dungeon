@@ -1,0 +1,31 @@
+; ---------------------------------------------------------------------------
+; Yalmog'iz kampir -- Baba Yaga -- who keeps her hut on chicken legs in the dark
+; wood, stirring her cauldron. She made the spell, and the medallion, for the
+; queen: see docs/plan/2026-10-01-campaign.md.
+;
+; A person, as the commander is: the engine's neutral side, no Body, Weight 0 so
+; no floor draws her. What she says is her Npc block in data/story/kampir.duke.
+;
+; Her look is Inuciian's ("Baba Yaga's hut", CC BY 4.0, see CREDITS.md), written
+; in the game's units (ModelScale 1) and facing as the KayKit people do. She
+; moves by her own file's one clip, Idle -- her stirring -- not by the Humanoid
+; set: her rig is her own, and the KayKit clips would move nothing on it.
+; ---------------------------------------------------------------------------
+Monster
+  Name = BabaYaga
+  DisplayName = Yalmog'iz kampir
+  KindOf = [INFANTRY, SELECTABLE]
+  Geometry = Cylinder
+    Radius = 4
+    Height = 11
+  End
+  VisionRange = 0
+  MinDepth = 99
+  Weight = 0
+  Colour = 0x8A2A22
+  Scale = 1.0
+  Model = models/inuciian/people/baba_yaga.glb
+  ModelScale = 1
+  Facing = 90
+  Idle = Idle
+End

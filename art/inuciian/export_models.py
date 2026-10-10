@@ -288,7 +288,7 @@ def static_piece(out, names, factor=None, height=None, turn=0.0, foot=None, dark
 
 
 def animated_piece(out, names, factor, turn=0.0, foot=None):
-    """{names} as they are -- rigs and swinging cages kept -- under a root that sizes, turns and centres them."""
+    """{names} as they are, rigs and swinging cages kept, sized, turned and with their foot at the origin."""
     open_scene()
     objects = keep_only(names)
     meshes = [o for o in objects if o.type == "MESH"]
@@ -299,14 +299,62 @@ def animated_piece(out, names, factor, turn=0.0, foot=None):
     scene = bpy.context.scene
     scene.frame_start, scene.frame_end = 0, 68
     scene.frame_set(0)
-    lo, hi = world_box(meshes)
+    rigs = [o for o in objects if o.type == "ARMATURE"]
+    if rigs:  # measured as it is bound to its rig, which is how a loader measures it, not in its keyed pose
+        points = [m.matrix_world @ v.co for m in meshes for v in m.data.vertices]
+        lo = mathutils.Vector([min(p[i] for p in points) for i in range(3)])
+        hi = mathutils.Vector([max(p[i] for p in points) for i in range(3)])
+    else:
+        lo, hi = world_box(meshes)
     middle = foot if foot is not None else ((lo.x + hi.x) / 2, (lo.y + hi.y) / 2)
+    if rigs:
+        bake_into_rig(rigs[0], meshes, factor, turn, middle, lo.z)
+    else:
+        under_a_root(objects, names, factor, turn, middle, lo.z)
+    scene.name = "Idle"  # the scene's animation is written as one clip, named after the scene
+    write(out, animated=True)
+    report(out, meshes[0], factor, True, meshes)
+
+
+def fcurves(action):
+    return [f for layer in action.layers for strip in layer.strips for bag in strip.channelbags for f in bag.fcurves]
+
+
+def bake_into_rig(rig, meshes, factor, turn, middle, floor):
+    """A rig sized, turned and centred in its own bones and mesh, so it is written with no transform over it.
+
+    Not a root node over it, as the cage has: jME applies a skinned model's root transform to its joints and to
+    its mesh both, and the old woman came out ninety units tall.
+    """
+    for obj in meshes:
+        obj.animation_data_clear()  # the rig moves them; a mesh's own keyed drift is dropped
+    move = (mathutils.Matrix.Rotation(turn, 4, "Z") @ mathutils.Matrix.Scale(factor, 4)
+            @ mathutils.Matrix.Translation((-middle[0], -middle[1], -floor)))
+    rig.matrix_world = move @ rig.matrix_world
+    bpy.context.view_layer.update()
+    bpy.ops.object.select_all(action="DESELECT")
+    for obj in [rig] + meshes:
+        obj.select_set(True)
+    bpy.context.view_layer.objects.active = rig
+    bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+    # A bone's keyed place is in its own space, which was sized with the rig.
+    for curve in fcurves(rig.animation_data.action):
+        if curve.data_path.endswith(".location"):
+            for key in curve.keyframe_points:
+                key.co.y *= factor
+                key.handle_left.y *= factor
+                key.handle_right.y *= factor
+
+
+def under_a_root(objects, names, factor, turn, middle, floor):
+    """Things that move as whole objects -- a swinging cage -- under a root that sizes, turns and centres them."""
+    scene = bpy.context.scene
     root = bpy.data.objects.new("root", None)
     scene.collection.objects.link(root)
     offset = bpy.data.objects.new("offset", None)
     scene.collection.objects.link(offset)
     offset.parent = root
-    offset.location = (-middle[0], -middle[1], -lo.z)
+    offset.location = (-middle[0], -middle[1], -floor)
     root.scale = (factor, factor, factor)
     root.rotation_euler = (0, 0, turn)
     for obj in objects:
@@ -314,9 +362,6 @@ def animated_piece(out, names, factor, turn=0.0, foot=None):
             # Its own place becomes its place under the root: moved to the foot, then sized and turned.
             obj.parent = offset
             obj.matrix_parent_inverse = mathutils.Matrix.Identity(4)
-    scene.name = "Idle"  # the scene's animation is written as one clip, named after the scene
-    write(out, animated=True)
-    report(out, meshes[0], factor, True, meshes)
 
 
 LOG = []

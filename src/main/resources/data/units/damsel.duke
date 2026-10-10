@@ -1,0 +1,27 @@
+; ---------------------------------------------------------------------------
+; The girl Yalmog'iz kampir keeps in a cage by her hut -- Inuciian's "Damsel"
+; (the owner, 2026-10-10). Qiz for now: her name, and what freeing her is worth,
+; are the owner's to decide -- see docs/plan/2026-10-01-campaign.md.
+;
+; A person, neutral and bodiless as the commander. Her model is her in the cage
+; on its gibbet, the cage swinging (her own file's clip, Idle); she stands at the
+; cell under the cage. Out of it she is models/inuciian/people/damsel.glb.
+; ---------------------------------------------------------------------------
+Monster
+  Name = Damsel
+  DisplayName = Qiz
+  KindOf = [INFANTRY, SELECTABLE]
+  Geometry = Cylinder
+    Radius = 4
+    Height = 12
+  End
+  VisionRange = 0
+  MinDepth = 99
+  Weight = 0
+  Colour = 0xD8C070
+  Scale = 1.0
+  Model = models/inuciian/people/damsel_caged.glb
+  ModelScale = 1
+  Facing = 90
+  Idle = Idle
+End
