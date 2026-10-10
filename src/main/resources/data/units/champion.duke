@@ -62,9 +62,11 @@ Monster
   Effect = EmberEyes
   ModelScale = 11.1
   Held = Held
-    Model = models/monsters/axe.gltf
+    ; panarth's long war axe (Low poly medieval weapons, CC BY 4.0) -- already 2.2 long, so at its
+    ; own size rather than the kit axe's 1.4.
+    Model = models/weapons/medieval/axe.glb
     Bone = handslot.r
-    Scale = 1.4
+    Scale = 1
   End
   Tint = 0x6E4A55
 

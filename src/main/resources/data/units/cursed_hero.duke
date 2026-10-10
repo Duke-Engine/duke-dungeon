@@ -63,7 +63,8 @@ Monster
   Facing = 90
   Animations = Humanoid
   Held = Held
-    Model = models/heroes/sword_1handed.gltf
+    ; panarth's sword (Low poly medieval weapons, CC BY 4.0), as long as the kit's.
+    Model = models/weapons/medieval/sword.glb
     Bone = handslot.r
     Scale = 1
   End

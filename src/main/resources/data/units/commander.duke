@@ -35,4 +35,10 @@ Monster
   ModelScale = 5.5
   Facing = 90
   Animations = Humanoid
+  ; A commander wears her sword: panarth's (Low poly medieval weapons, CC BY 4.0), in the
+  ; ranger's right hand.
+  Held = Held
+    Model = models/weapons/medieval/sword.glb
+    Bone = handslot.r
+  End
 End

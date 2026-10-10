@@ -66,7 +66,8 @@ Monster
   ModelScale = 4.2
   Tint = 0xFFD08A
   Held = Held
-    Model = models/monsters/blade.gltf
+    ; panarth's dagger (Low poly medieval weapons, CC BY 4.0): the quick one carries the short blade.
+    Model = models/weapons/medieval/dagger.glb
     Bone = handslot.r
   End
   ; It runs rather than walks: it is the one you cannot step away from.
