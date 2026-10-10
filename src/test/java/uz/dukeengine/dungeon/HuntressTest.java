@@ -39,6 +39,15 @@ class HuntressTest {
                 "her clips are on her own skeleton, not the kit's");
     }
 
+    /** The elven bow in her left hand and its dagger on her hip, each on a bone her exporter gives her. */
+    @Test
+    void sheCarriesTheElvenBowAndItsDagger() {
+        var held = SETTINGS.heroNamed("Rogue").held();
+        assertEquals(java.util.List.of("models/weapons/elven/bow.glb", "models/weapons/elven/dagger.glb"),
+                held.stream().map(h -> h.model()).toList());
+        assertEquals(java.util.List.of("handslot.l", "sheath.l"), held.stream().map(h -> h.bone()).toList());
+    }
+
     /** jME skins at most 255 joints, four to a vertex; she came with 438. */
     @Test
     void herSkeletonFitsWhatTheEngineSkins() {

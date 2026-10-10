@@ -162,6 +162,39 @@ tasks.register("exportInuciian") {
     }
 }
 
+// Two weapon packs (CC BY 4.0, see CREDITS.md) made into the game's hand-held models: nodgerty's elven
+// bow and dagger in resources/models/weapons/elven, panarth's low-poly medieval weapons one file each in
+// resources/models/weapons/medieval. See art/weapons/export_weapons.py.
+//
+//   ./gradlew exportWeapons -PelvenSource=".../free-elven-assassin-weapon-set-bow-dagger" \
+//       -PelvenFbx=".../resault/KatanaBow.fbx" -PmedievalFbx=".../melee.FBX" \
+//       -PmedievalSource=".../low-poly-medieval-weapons-free-pack"
+//
+// The FBX files come inside the downloads' source/ archives, unpacked by hand; the pictures are the
+// downloads' textures/. Not in the repository; what ships is what this wrote, which is committed.
+tasks.register("exportWeapons") {
+    group = "application"
+    description = "Make the elven and the medieval weapon packs into the game's held models, using Blender"
+    doLast {
+        fun said(name: String, example: String) = (findProperty(name) as String?)
+            ?: throw GradleException("Say where it is: -P$name=\"$example\"")
+        val elven = File(said("elvenSource", ".../free-elven-assassin-weapon-set-bow-dagger"))
+        val medieval = File(said("medievalSource", ".../low-poly-medieval-weapons-free-pack"))
+        providers.exec {
+            workingDir = rootProject.projectDir
+            commandLine(
+                blender("exportWeapons"), "-b", "--factory-startup",
+                "-P", "art/weapons/export_weapons.py", "--",
+                said("elvenFbx", ".../KatanaBow.fbx"), File(elven, "textures").absolutePath,
+                said("medievalFbx", ".../melee.FBX"), File(medieval, "textures/textureFlat.png").absolutePath,
+                "src/main/resources/models/weapons",
+            )
+        }.standardOutput.asText.get()
+            .lines().filter { it.startsWith("WEAPON") }
+            .forEach { logger.lifecycle(it) }
+    }
+}
+
 // neilhancart's "Huntress" (CC BY 4.0, see CREDITS.md) made into the Rogue hero: her model in
 // resources/models/heroes/huntress.glb and the Rogue's clips retargeted onto her skeleton in
 // resources/animations/characters/huntress.glb. See art/huntress/export_huntress.py.

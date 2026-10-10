@@ -1,0 +1,10 @@
+"Low poly medieval weapons free pack" by panarth
+https://sketchfab.com/3d-models/24db2937c7b947f7917674a617661219
+
+Licensed under Creative Commons Attribution 4.0 International (CC BY 4.0):
+https://creativecommons.org/licenses/by/4.0/
+
+Modified for Last Hero (duke-dungeon) by art/weapons/export_weapons.py: split into one glb
+per weapon (sword, axe, warhammer, dagger, shield_round, shield_heater, bow, quiver, arrow),
+stood up with the grip on the origin, all scaled so the sword is 1.78 long, the colour atlas
+inside each as a PNG.

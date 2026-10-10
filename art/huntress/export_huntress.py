@@ -51,7 +51,8 @@ libraries, and her animation set (data/animations/huntress.duke) names that file
 
 A HAND SLOT. A bone `handslot.l` is added in her left palm, turned as KayKit's
 `handslot.l` is in every frame, so the bow hangs from it with the same numbers it
-hangs from the KayKit rogue with.
+hangs from the KayKit rogue with. And `sheath.l` on her left hip, pointing down her
+thigh, for her dagger (add_sheath).
 
 HER HANDS AND EYES. No library moves her fingers, so every clip keys a curl into
 them: her left hand closed round the bow, her right relaxed, or hooked on the string
@@ -358,6 +359,33 @@ def add_hand_slot(rig, rest):
     slot.matrix = Matrix.LocRotScale(palm, rest, None)
     slot.parent = hand
     slot.use_deform = False
+    bpy.ops.object.mode_set(mode="OBJECT")
+
+
+# Where her dagger hangs: on her left hip -- her quiver is on the right -- hilt at the belt, the blade
+# down the outside of her thigh, tipped a little out and back. From the top of her left thigh, in metres
+# at her 2.18; the numbers to nudge if it sinks into her or floats.
+SHEATH_AT = Vector((0.085, 0.03, 0.04))
+SHEATH_DOWN = Vector((0.12, 0.30, -1.0))
+
+
+def add_sheath(rig):
+    """`sheath.l` on her hips: a bone pointing down her thigh, which a held thing runs along (its +Y),
+    turned so a blade's flat lies against her leg."""
+    select([rig], rig)
+    bpy.ops.object.mode_set(mode="EDIT")
+    hips = rig.data.edit_bones[PREFIX + "Hips_03"]
+    y = SHEATH_DOWN.normalized()
+    x = Vector((0, -1, 0))
+    x = (x - y * x.dot(y)).normalized()
+    z = x.cross(y)
+    sheath = rig.data.edit_bones.new("sheath.l")
+    sheath.head = Vector((0, 0, 0))
+    sheath.tail = Vector((0, 0.1, 0))
+    at = rig.data.edit_bones[PREFIX + "LeftUpLeg_04"].head + SHEATH_AT
+    sheath.matrix = Matrix.LocRotScale(at, Matrix((x, y, z)).transposed().to_quaternion(), None)
+    sheath.parent = hips
+    sheath.use_deform = False
     bpy.ops.object.mode_set(mode="OBJECT")
 
 
@@ -736,6 +764,7 @@ def main():
                  @ rotation(turn @ rest_world(kay, "handslot.l")))
     prune(her, meshes, keep=set())
     add_hand_slot(her, slot_rest.to_quaternion())
+    add_sheath(her)
     retarget(her, rigs, holder, slot_rest)
     for obj in list(bpy.data.objects):
         if obj != her and obj not in meshes:

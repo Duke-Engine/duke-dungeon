@@ -56,6 +56,8 @@ written from there.
 | Character Animations — everything anything down here does | KayKit | CC0 | `animations/characters/` |
 | Universal Animation Library — Lange's slash, flinch, fall, the wave's slash and the charge's drive, retargeted onto his rig | **Quaternius** ([quaternius.com](https://quaternius.com)) | CC0 | inside `models/heroes/lange/lange.glb` (`art/lange/retarget.py`) |
 | Universal Animation Library — the Huntress's flinch, idle, fall, roll and casting hand, retargeted onto her rig | **Quaternius** ([quaternius.com](https://quaternius.com)) | CC0 | `animations/characters/huntress.glb` |
+| "FREE - Elven Assassin Weapon Set Bow & Dagger" — the Huntress's bow and the dagger on her hip | **nodgerty** ([Sketchfab](https://sketchfab.com/3d-models/b8e64cc0c7df472c9f0cb5d6e1acdd3f)) | **CC BY 4.0** — attribution required, given here; modified: split, laid out as the kit's weapons, decimated, pictures cut to their colour and downsized, converted to glTF (`art/weapons/export_weapons.py`) | `models/weapons/elven/` |
+| "Low poly medieval weapons free pack" — the commander's and the Cursed Hero's sword, the brute's warhammer, the champion's axe, the runner's dagger, and shields, a bow, a quiver and an arrow not yet carried | **panarth** ([Sketchfab](https://sketchfab.com/3d-models/24db2937c7b947f7917674a617661219)) | **CC BY 4.0** — attribution required, given here; modified: split into a file a weapon, stood up and sized to the kit's sword, converted to glTF (`art/weapons/export_weapons.py`) | `models/weapons/medieval/` |
 | Character Animations 1.1 — Lange's raised hand for the pull, retargeted onto his rig | KayKit | CC0 | inside `models/heroes/lange/lange.glb` (`art/lange/retarget.py`) |
 | Standing 2H Magic Area Attack — the mage's meteor | **Mixamo** / Adobe | **not CC0, see below** | `animations/characters/magic.glb` |
 | RPG Audio — cloth, coins, a door, a knife drawn | Kenney | CC0 | `audio/sfx/` |
@@ -133,7 +135,8 @@ are in this repository, along with the weapons each of them carries:
 - **Rogue** (`rogue.glb`) — the archer. He wore the ranger's mesh while he was
   the only hero and there was nobody to be told apart from. Carries `bow.gltf`
   and `quiver.gltf`. Since 2026-10-10 the Rogue is drawn as neilhancart's "Huntress"
-  (CC BY 4.0, row above) and carries only `bow.gltf`; `rogue.glb` is kept for the
+  (CC BY 4.0, row above) and carries nodgerty's elven bow and dagger instead; `rogue.glb` and
+  `bow.gltf` are kept for the
   kingdom's soldiers.
 - **Knight** (`knight.glb`) — `sword_1handed.gltf` and `shield_round.gltf`. No longer
   the hero since 2026-10-10 -- the knight is Lange (`lange/lange.glb`, phucpham1076,
