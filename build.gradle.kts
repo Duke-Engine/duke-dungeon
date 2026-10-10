@@ -162,9 +162,11 @@ tasks.register("exportInuciian") {
 // resources/models/heroes/huntress.glb and the Rogue's clips retargeted onto her skeleton in
 // resources/animations/characters/huntress.glb. See art/huntress/export_huntress.py.
 //
-//   ./gradlew exportHuntress -PhuntressSource="C:/Users/me/Downloads/huntress"
+//   ./gradlew exportHuntress -PhuntressSource="C:/Users/me/Downloads/huntress" \
+//       -PualSource=".../Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb"
 //
-// The source (Sketchfab's glTF download: scene.gltf, scene.bin, textures/) is not in the repository;
+// The sources (Sketchfab's glTF download: scene.gltf, scene.bin, textures/; Quaternius' library, CC0)
+// are not in the repository;
 // what ships is what this wrote, which is committed. Blender is found as convertAnimations finds it.
 tasks.register("exportHuntress") {
     group = "application"
@@ -174,12 +176,14 @@ tasks.register("exportHuntress") {
             ?: throw GradleException("Say where the download is: -PhuntressSource=\".../huntress\""))
         val gltf = File(source, "scene.gltf").takeIf { it.isFile }
             ?: throw GradleException("no scene.gltf under $source")
+        val ual = File((findProperty("ualSource") as String?)
+            ?: throw GradleException("Say where Quaternius' library is: -PualSource=\".../UAL1_Standard.glb\""))
         providers.exec {
             workingDir = rootProject.projectDir
             commandLine(
                 blender("exportHuntress"), "-b", "--factory-startup",
                 "-P", "art/huntress/export_huntress.py", "--",
-                gltf.absolutePath, "src/main/resources/animations/characters",
+                gltf.absolutePath, "src/main/resources/animations/characters", ual.absolutePath,
                 "src/main/resources/models/heroes/huntress.glb",
             )
         }.standardOutput.asText.get()

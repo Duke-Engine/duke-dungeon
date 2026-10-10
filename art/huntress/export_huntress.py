@@ -1,10 +1,12 @@
 """Makes neilhancart's "Huntress" into the Rogue hero's model.
 
-    ./gradlew exportHuntress -PhuntressSource="C:/Users/me/Downloads/huntress"
+    ./gradlew exportHuntress -PhuntressSource="C:/Users/me/Downloads/huntress" \
+        -PualSource=".../Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb"
     blender -b --factory-startup -P art/huntress/export_huntress.py -- \
-        <scene.gltf> <animations folder> <out .glb> [<folder for the downsized pictures>]
+        <scene.gltf> <animations folder> <UAL1_Standard.glb> <out .glb> [<folder for the downsized pictures>]
 
-The KayKit libraries are read from the animations folder and her clips written into it.
+The KayKit libraries are read from the animations folder and her clips written into it;
+Quaternius' Universal Animation Library (CC0) is not in the repository.
 
 The source is Sketchfab's glTF of "Huntress" (Wilson / neilhancart, CC BY 4.0 -- see
 CREDITS.md): a statue of her on a stone pedestal beside a banner, 63k triangles,
@@ -19,9 +21,10 @@ HER SKELETON IN HER BODY. Blender stands the QuickRig's rest skeleton 1.46 times
 the size of the body it skins; it is laid back onto her by one measured scale and
 shift (see as_bound).
 
-HER CLOTH IS STIFF. Her cape, sash and loincloth hang on five chains of cloth bones
--- 270 of them -- that only the statue's wind ever moved. Their weights go to her
-hips and the chains are deleted; bones nothing is weighted to are pruned, and no
+HER CLOTH FOLLOWS HER LEGS. Her cape, sash and loincloth hang on five chains of cloth
+bones -- 270 of them -- that only the statue's wind ever moved. Their weights go to her
+hips, and from the top of her thighs to her knees more and more to the thighs, so
+the skirt swings with her stride (cloth_onto_her); the chains are deleted; bones nothing is weighted to are pruned, and no
 vertex is moved by more than 4 bones, which is what jME skins with. 438 bones come
 down to the skeleton and her fingers.
 
@@ -37,18 +40,23 @@ memory a load for nothing anyone could see.
 SIZED AS THE KAYKIT ROGUE. 2.18 tall with her feet on the origin and facing glTF's
 +Z, as the KayKit heroes are -- so her block keeps ModelScale 5.50 and Facing 90.
 
-THE ROGUE'S CLIPS, ON HER SKELETON. Her rig is Maya's HumanIK and the game's clips
-are KayKit's, so the library cannot be copied onto her by bone name
-(AnimationLibrary.copy). Each clip the Rogue's block names is retargeted here:
-every limb bone takes its KayKit bone's turn from rest, after her A-pose limbs are
-swung onto the KayKit T-pose; her hips, spine and head keep their own rest and take
+THE ROGUE'S CLIPS, ON HER SKELETON. Her rig is Maya's HumanIK and the clips are
+KayKit's (the bow) and Quaternius' (a grown body hurt, idling, rolling, casting), so
+no library can be copied onto her by bone name (AnimationLibrary.copy). Each clip in
+CLIPS is retargeted here: every limb bone takes its library bone's turn from rest,
+after her A-pose limbs are swung onto their T-pose; her hips, spine and head keep their own rest and take
 the turn alone; hands and feet ride with the forearm and shin. They are written
-under the KayKit names into animations/characters/huntress.glb, beside the KayKit
+under their own names into animations/characters/huntress.glb, beside the KayKit
 libraries, and her animation set (data/animations/huntress.duke) names that file.
 
 A HAND SLOT. A bone `handslot.l` is added in her left palm, turned as KayKit's
 `handslot.l` is in every frame, so the bow hangs from it with the same numbers it
 hangs from the KayKit rogue with.
+
+HER HANDS AND EYES. No library moves her fingers, so every clip keys a curl into
+them: her left hand closed round the bow, her right relaxed, or hooked on the string
+in the shooting clips. Her eyes were blank white balls; they are given a pale, faintly
+violet iris, a pupil and a highlight, so the stare stays eerie (paint_eyes).
 """
 
 import math
@@ -59,39 +67,72 @@ import bpy
 from mathutils import Matrix, Vector
 
 args = sys.argv[sys.argv.index("--") + 1:]
-SOURCE, ANIMATIONS, OUT = args[0], args[1], args[2]
-PICTURES = args[3] if len(args) > 3 else None
+SOURCE, ANIMATIONS, UAL_SOURCE, OUT = args[0], args[1], args[2], args[3]
+PICTURES = args[4] if len(args) > 4 else None
 CLIPS_OUT = os.path.join(ANIMATIONS, "huntress.glb")  # her clips, written beside the KayKit libraries
 
 HEIGHT = 2.18          # the KayKit rogue's, so her block keeps his ModelScale
 PREFIX = "QuickRigCharacter_"
 
-# What the Rogue's block plays (rogue.duke: Idle, Walk, Attack, Hurt, Death and his Portrait).
-CLIPS = ["Ranged_Bow_Idle", "Running_A", "Ranged_Bow_Release", "Hit_A", "Death_A",
-         "Ranged_Bow_Aiming_Idle", "Idle_B", "Spawn_Ground"]
-LIBRARIES = ["ranged.glb", "movement.glb", "general.glb"]
-
-# Hers <- KayKit's. ALIGN: her bone is swung from her A-pose onto KayKit's T-pose first;
-# RIDE: it keeps her bone's rest relative to the one named; neither: it takes the turn alone.
-MAP = {
-    "Hips_03": "hips", "Spine_012": "spine", "Spine2_014": "chest", "Head_062": "head",
-    "LeftArm_016": "upperarm.l", "LeftForeArm_017": "lowerarm.l", "LeftHand_018": "wrist.l",
-    "RightArm_039": "upperarm.r", "RightForeArm_040": "lowerarm.r", "RightHand_041": "wrist.r",
-    "LeftUpLeg_04": "upperleg.l", "LeftLeg_05": "lowerleg.l", "LeftFoot_06": "foot.l", "LeftToeBase_07": "toes.l",
-    "RightUpLeg_08": "upperleg.r", "RightLeg_09": "lowerleg.r", "RightFoot_010": "foot.r", "RightToeBase_011": "toes.r",
-    "handslot.l": "handslot.l",
+KAYKIT, UAL = "KayKit", "Quaternius UAL"
+# Every clip she is given, and whose: the Rogue's block, his portrait and his skills' gestures name them.
+# KayKit's bow clips (no other library holds a bow); Quaternius' where a grown body moves better than a chibi.
+CLIPS = {
+    "Ranged_Bow_Idle": KAYKIT, "Ranged_Bow_Aiming_Idle": KAYKIT, "Ranged_Bow_Draw": KAYKIT,
+    "Ranged_Bow_Release": KAYKIT, "Ranged_Bow_Release_Up": KAYKIT, "Spawn_Ground": KAYKIT,
+    "Running_A": KAYKIT, "Death_A": KAYKIT,
+    "Idle_Loop": UAL, "Hit_Chest": UAL, "Death01": UAL, "Roll": UAL,
+    "Spell_Simple_Shoot": UAL,
 }
-ALIGN = {  # her bone: (her next bone, KayKit's next bone) -- the direction each is swung by
-    "LeftArm_016": ("LeftForeArm_017", "lowerarm.l"), "LeftForeArm_017": ("LeftHand_018", "wrist.l"),
-    "RightArm_039": ("RightForeArm_040", "lowerarm.r"), "RightForeArm_040": ("RightHand_041", "wrist.r"),
-    "LeftUpLeg_04": ("LeftLeg_05", "lowerleg.l"), "LeftLeg_05": ("LeftFoot_06", "foot.l"),
-    "RightUpLeg_08": ("RightLeg_09", "lowerleg.r"), "RightLeg_09": ("RightFoot_010", "foot.r"),
+LIBRARIES = ["ranged.glb", "movement.glb", "general.glb"]
+# Made on the spot, but their hips wander: the drift from first frame to last is taken out.
+IN_PLACE = {"Idle_Loop", "Roll", "Spell_Simple_Shoot", "Running_A"}
+
+# Hers <- theirs, a table a library. ALIGN: her bone is swung from her A-pose onto their T-pose
+# first, by the direction to the bone named; RIDE: it keeps her bone's rest relative to the one
+# named; neither: it takes their turn alone. Her shoulders follow Quaternius' clavicles; KayKit has none.
+MAP = {
+    KAYKIT: {
+        "Hips_03": "hips", "Spine_012": "spine", "Spine2_014": "chest", "Head_062": "head",
+        "LeftArm_016": "upperarm.l", "LeftForeArm_017": "lowerarm.l", "LeftHand_018": "wrist.l",
+        "RightArm_039": "upperarm.r", "RightForeArm_040": "lowerarm.r", "RightHand_041": "wrist.r",
+        "LeftUpLeg_04": "upperleg.l", "LeftLeg_05": "lowerleg.l", "LeftFoot_06": "foot.l",
+        "LeftToeBase_07": "toes.l", "RightUpLeg_08": "upperleg.r", "RightLeg_09": "lowerleg.r",
+        "RightFoot_010": "foot.r", "RightToeBase_011": "toes.r",
+        "handslot.l": "handslot.l",
+    },
+    UAL: {
+        "Hips_03": "pelvis", "Spine_012": "spine_01", "Spine1_013": "spine_02", "Spine2_014": "spine_03",
+        "Neck_061": "neck_01", "Head_062": "Head",
+        "LeftShoulder_015": "clavicle_l", "RightShoulder_038": "clavicle_r",
+        "LeftArm_016": "upperarm_l", "LeftForeArm_017": "lowerarm_l", "LeftHand_018": "hand_l",
+        "RightArm_039": "upperarm_r", "RightForeArm_040": "lowerarm_r", "RightHand_041": "hand_r",
+        "LeftUpLeg_04": "thigh_l", "LeftLeg_05": "calf_l", "LeftFoot_06": "foot_l", "LeftToeBase_07": "ball_l",
+        "RightUpLeg_08": "thigh_r", "RightLeg_09": "calf_r", "RightFoot_010": "foot_r", "RightToeBase_011": "ball_r",
+    },
+}
+ALIGN = {
+    "LeftArm_016": "LeftForeArm_017", "LeftForeArm_017": "LeftHand_018",
+    "RightArm_039": "RightForeArm_040", "RightForeArm_040": "RightHand_041",
+    "LeftUpLeg_04": "LeftLeg_05", "LeftLeg_05": "LeftFoot_06",
+    "RightUpLeg_08": "RightLeg_09", "RightLeg_09": "RightFoot_010",
 }
 RIDE = {
     "LeftHand_018": "LeftForeArm_017", "RightHand_041": "RightForeArm_040", "handslot.l": "LeftForeArm_017",
     "LeftFoot_06": "LeftLeg_05", "LeftToeBase_07": "LeftLeg_05",
     "RightFoot_010": "RightLeg_09", "RightToeBase_011": "RightLeg_09",
 }
+
+# Her fingers, which no library moves: a curl in degrees at each joint from the knuckle out, a hand.
+RELAXED = {"finger": (18, 25, 15), "thumb": (8, 10, 5)}
+GRIP = {"finger": (70, 85, 55), "thumb": (25, 30, 20)}  # round the bow, in her left hand, always
+DRAW = {"Index": (40, 55, 30), "MiddleF": (40, 55, 30), "Ring": (65, 80, 50), "Pinky": (70, 85, 55),
+        "thumb": (30, 30, 20)}  # two fingers hooked on the string, in her right hand while she shoots
+DRAWING = {"Ranged_Bow_Aiming_Idle", "Ranged_Bow_Draw", "Ranged_Bow_Release", "Ranged_Bow_Release_Up"}
+
+# Her cloth -- cape, sash, loincloth -- hung from her hips; from the top of her thighs down to her
+# knees it follows them more and more, up to this share.
+CLOTH_FOLLOW = 0.7
 
 # Meshes by what they are (the source names them Object_4xx).
 BANNER = {"Object_17"}
@@ -237,14 +278,28 @@ def cloth_chains(rig):
             for b in [child] + list(child.children_recursive)}
 
 
-def weights_onto(meshes, gone, onto):
+def cloth_onto_her(rig, meshes, gone):
+    """The cloth chains' weights given to her hips -- and, from the top of her thighs down to her knees,
+    more and more to the thighs themselves, the left one on her left and the right on her right, both
+    alike down her middle -- so a skirt that hung stiff off her hips swings with her stride."""
+    bones = rig.data.bones
+    hips = PREFIX + "Hips_03"
+    left, right = PREFIX + "LeftUpLeg_04", PREFIX + "RightUpLeg_08"
+    top = bones[left].head_local.z
+    knee = bones[PREFIX + "LeftLeg_05"].head_local.z
+    half = bones[left].head_local.x
     for obj in meshes:
-        target = obj.vertex_groups.get(onto) or obj.vertex_groups.new(name=onto)
+        targets = {n: obj.vertex_groups.get(n) or obj.vertex_groups.new(name=n) for n in (hips, left, right)}
         groups = {g.index: g for g in obj.vertex_groups if g.name in gone}
         for v in obj.data.vertices:
             moved = sum(g.weight for g in v.groups if g.group in groups)
-            if moved > 0:
-                target.add([v.index], moved, "ADD")
+            if moved <= 0:
+                continue
+            follow = CLOTH_FOLLOW * min(max((top - v.co.z) / (top - knee), 0.0), 1.0)
+            side = min(max(0.5 + v.co.x / (2 * half), 0.0), 1.0)  # her left is +X
+            for name, share in ((hips, 1 - follow), (left, follow * side), (right, follow * (1 - side))):
+                if share > 0:
+                    targets[name].add([v.index], moved * share, "ADD")
         for g in list(groups.values()):
             obj.vertex_groups.remove(g)
 
@@ -366,6 +421,74 @@ def decimate(meshes, rig):
 
 # ---- pictures ----
 
+EYES = "Object_473"  # two plain white balls: the statue's blank, eerie stare
+EYE_SIZE = 256
+SCLERA = (0.93, 0.93, 0.95)
+IRIS_IN, IRIS_RIM, LIMBUS = (0.80, 0.80, 0.92), (0.56, 0.56, 0.74), (0.22, 0.20, 0.30)  # pale, faint violet
+PUPIL, SHINE = (0.04, 0.04, 0.06), (1.0, 1.0, 1.0)
+IRIS_R, PUPIL_R, SHINE_R = 0.25, 0.085, 0.035  # of the picture, which spans the ball's width
+
+
+def paint_eyes(meshes):
+    """Irises in her white eyes: pale, faintly violet, so the stare stays eerie -- a dark rim, a pupil,
+    a highlight. The balls had no picture at all, so each is given one: looked at from the front, a
+    ball's width is the picture's width (the same picture on both), and the iris is its middle."""
+    import bmesh
+    import numpy as np
+    obj = next(m for m in meshes if m.name == EYES)
+    bm = bmesh.new()
+    bm.from_mesh(obj.data)
+    uv = bm.loops.layers.uv.verify()
+    unseen = set(bm.verts)
+    while unseen:
+        ball, todo = [], [unseen.pop()]
+        while todo:
+            v = todo.pop()
+            ball.append(v)
+            for e in v.link_edges:
+                w = e.other_vert(v)
+                if w in unseen:
+                    unseen.remove(w)
+                    todo.append(w)
+        lo = Vector([min(v.co[i] for v in ball) for i in range(3)])
+        hi = Vector([max(v.co[i] for v in ball) for i in range(3)])
+        middle, radius = (lo + hi) / 2, max(hi.x - lo.x, hi.z - lo.z) / 2
+        for v in ball:
+            for loop in v.link_loops:
+                loop[uv].uv = (0.5 + (v.co.x - middle.x) / (2 * radius), 0.5 + (v.co.z - middle.z) / (2 * radius))
+    bm.to_mesh(obj.data)
+    bm.free()
+
+    y, x = np.mgrid[0:EYE_SIZE, 0:EYE_SIZE] / (EYE_SIZE - 1)
+    r = np.hypot(x - 0.5, y - 0.5)
+    px = np.ones((EYE_SIZE, EYE_SIZE, 4), dtype=np.float32)
+    px[..., :3] = SCLERA
+
+    def lay(mask, colour):
+        for c in range(3):
+            px[..., c] = px[..., c] * (1 - mask) + colour[c] * mask
+
+    soft = lambda edge, width: np.clip((edge - r) / width + 0.5, 0, 1)  # 1 inside the circle `edge`
+    iris = np.clip(r / IRIS_R, 0, 1)[..., None]
+    shade = np.array(IRIS_IN) * (1 - iris) + np.array(IRIS_RIM) * iris
+    inside = soft(IRIS_R, 0.012)
+    for c in range(3):
+        px[..., c] = px[..., c] * (1 - inside) + shade[..., c] * inside
+    lay(soft(IRIS_R, 0.012) * np.clip((r - (IRIS_R - 0.035)) / 0.035, 0, 1), LIMBUS)
+    lay(soft(PUPIL_R, 0.01), PUPIL)
+    lay(np.clip((SHINE_R - np.hypot(x - 0.45, y - 0.56)) / 0.008 + 0.5, 0, 1), SHINE)
+    image = bpy.data.images.new("eyes", EYE_SIZE, EYE_SIZE)
+    image.pixels.foreach_set(px.ravel())
+    image.pack()
+    material = obj.material_slots[0].material
+    tree = material.node_tree
+    bsdf = next(n for n in tree.nodes if n.type == "BSDF_PRINCIPLED")
+    tex = tree.nodes.new("ShaderNodeTexImage")
+    tex.image = image
+    tree.links.new(tex.outputs["Color"], bsdf.inputs["Base Color"])
+    print("HUNTRESS eyes painted")
+
+
 def base_colour_only(meshes):
     """Each material a base-colour picture, downsized, and nothing else: the game reads its first picture as the skin."""
     for material in {s.material for m in meshes for s in m.material_slots if s.material}:
@@ -411,31 +534,47 @@ def rotation(matrix):
     return matrix.to_3x3().normalized()
 
 
+def import_rig(path):
+    """One library: its armature (everything else it holds deleted) and the actions it brought."""
+    before, actions = set(bpy.data.objects), set(bpy.data.actions)
+    bpy.ops.import_scene.gltf(filepath=path, bone_heuristic="BLENDER")
+    added = [o for o in bpy.data.objects if o not in before]
+    rig = next(o for o in added if o.type == "ARMATURE")
+    for obj in added:
+        if obj != rig:
+            bpy.data.objects.remove(obj, do_unlink=True)
+    return rig, set(bpy.data.actions) - actions
+
+
 def open_libraries():
-    """The KayKit libraries, each an armature and its actions, and which one holds each clip."""
-    rigs, holder = [], {}
-    for name in LIBRARIES:
-        before, actions = set(bpy.data.objects), set(bpy.data.actions)
-        bpy.ops.import_scene.gltf(filepath=os.path.join(ANIMATIONS, name), bone_heuristic="BLENDER")
-        added = [o for o in bpy.data.objects if o not in before]
-        rig = next(o for o in added if o.type == "ARMATURE")
-        for obj in added:
-            if obj != rig:
-                bpy.data.objects.remove(obj, do_unlink=True)
-        rigs.append(rig)
-        for action in set(bpy.data.actions) - actions:
+    """Each clip's rig and action, and one rig a library to measure rest by."""
+    rigs, holder = {}, {}
+    paths = [(KAYKIT, os.path.join(ANIMATIONS, name)) for name in LIBRARIES] + [(UAL, UAL_SOURCE)]
+    for source, path in paths:
+        rig, actions = import_rig(path)
+        rigs.setdefault(source, rig)
+        for action in actions:
             clip = action.name.split(".")[0]  # a second library's T-Pose comes in as T-Pose.001
-            if clip in CLIPS and clip not in holder:
+            if CLIPS.get(clip) == source and clip not in holder:
                 holder[clip] = (rig, action)
-    return rigs[0], holder
+    missing = [c for c in CLIPS if c not in holder]
+    if missing:
+        raise SystemExit(f"no library holds {missing}")
+    return rigs, holder
 
 
-def swings(her, kay):
-    """For each ALIGN bone, the turn that lays her rest direction onto KayKit's."""
+def facing(rig, table):
+    """The turn about the vertical that faces a library's rig the way hers faces: her left arm along +X."""
+    arm = rest_world(rig, table["LeftForeArm_017"]).translation - rest_world(rig, table["LeftArm_016"]).translation
+    return Matrix.Rotation(-math.atan2(arm.y, arm.x), 4, "Z")
+
+
+def swings(her, rig, table, turn):
+    """For each ALIGN bone, the turn that lays her rest direction onto theirs."""
     found = {}
-    for mine, (next_mine, next_kay) in ALIGN.items():
-        a = (rest_world(her, PREFIX + next_mine).translation - rest_world(her, PREFIX + mine).translation)
-        b = (rest_world(kay, next_kay).translation - rest_world(kay, MAP[mine]).translation)
+    for mine, after in ALIGN.items():
+        a = rest_world(her, PREFIX + after).translation - rest_world(her, PREFIX + mine).translation
+        b = turn.to_3x3() @ (rest_world(rig, table[after]).translation - rest_world(rig, table[mine]).translation)
         found[mine] = a.normalized().rotation_difference(b.normalized()).to_matrix()
     for mine, under in RIDE.items():
         found[mine] = found[under]
@@ -446,33 +585,78 @@ def full(name):
     return name if name == "handslot.l" else PREFIX + name
 
 
-def retarget(her, kay, holder, swing):
-    scene = bpy.context.scene
+def hands(her):
+    """Each finger joint: (its hand, which finger, how far from the knuckle); and the axis each hand curls about."""
     bones = her.data.bones
-    hips_ratio = (rest_world(her, PREFIX + "Hips_03").translation.z
-                  / rest_world(kay, "hips").translation.z)
-    order = [b for b in bones]  # parents before children, as Blender lists them
-    order.sort(key=lambda b: len(b.parent_recursive))
-    mapped = {full(k): v for k, v in MAP.items()}
-    swing = {full(k): v for k, v in swing.items()}
+    found, axes = {}, {}
+    for hand in (PREFIX + "LeftHand_018", PREFIX + "RightHand_041"):
+        h = bones[hand]
+        base = {}
+        for chain in h.children:
+            if chain.name == "handslot.l":
+                continue
+            kind = next((k for k in ("Index", "MiddleF", "Ring", "Pinky") if k in chain.name), "thumb")
+            joints = [b for b in [chain] + list(chain.children_recursive) if "scaleCompensation" not in b.name]
+            joints.sort(key=lambda b: len(b.parent_recursive))
+            base[kind] = joints[0].head_local
+            for depth, b in enumerate(joints):
+                found[b.name] = (hand, kind, depth)
+        forward = (base["MiddleF"] - h.head_local).normalized()
+        across = (base["Index"] - base["Pinky"]).normalized()
+        palm = base["thumb"] - h.head_local
+        palm = (palm - forward * palm.dot(forward) - across * palm.dot(across)).normalized()
+        # Turned so a finger bends toward the palm: the side the thumb stands out on.
+        axes[hand] = across if (Matrix.Rotation(0.3, 3, across) @ forward).dot(palm) > forward.dot(palm) else -across
+    return found, axes
+
+
+def curl(pose, kind, depth):
+    angles = pose["thumb"] if kind == "thumb" else pose.get(kind, pose.get("finger"))
+    return math.radians(angles[depth]) if depth < len(angles) else 0.0
+
+
+def retarget(her, rigs, holder, slot_rest):
+    scene = bpy.context.scene
+    order = sorted(her.data.bones, key=lambda b: len(b.parent_recursive))
+    fingers, axes = hands(her)
     for bone in her.pose.bones:
         bone.rotation_mode = "QUATERNION"
     her.animation_data_create()
-    for clip in CLIPS:
-        kay, action = holder[clip]
-        kay.animation_data_create()
-        kay.animation_data.action = action
-        if hasattr(kay.animation_data, "action_slot") and action.slots:
-            kay.animation_data.action_slot = action.slots[0]
-        kay_rest = {n: rest_world(kay, n) for n in set(MAP.values())}
+    per_source = {}
+    for source, rig in rigs.items():
+        table = MAP[source]
+        turn = facing(rig, table)
+        hips = (turn @ rest_world(rig, table["Hips_03"])).translation.z
+        per_source[source] = (table, turn, swings(her, rig, table, turn),
+                              rest_world(her, PREFIX + "Hips_03").translation.z / hips)
+    for clip, source in CLIPS.items():
+        rig, action = holder[clip]
+        table, turn, swing, hips_ratio = per_source[source]
+        mapped = {full(k): v for k, v in table.items()}
+        swing = {full(k): v for k, v in swing.items()}
+        rig.animation_data_create()
+        rig.animation_data.action = action
+        if hasattr(rig.animation_data, "action_slot") and action.slots:
+            rig.animation_data.action_slot = action.slots[0]
+        their_rest = {n: turn @ rest_world(rig, n) for n in set(table.values())}
+        hand_pose = {PREFIX + "LeftHand_018": GRIP,
+                     PREFIX + "RightHand_041": DRAW if clip in DRAWING else RELAXED}
         made = bpy.data.actions.new(clip)
         her.animation_data.action = made
         start, end = action.frame_range
         frames = [float(f) for f in range(int(start), int(math.floor(end)) + 1)]
         if end - frames[-1] > 1e-4:
             frames.append(end)
+        # A clip made on the spot whose hips still wander: what they travel first frame to last is taken out.
+        ends = []
+        for frame in (frames[0], frames[-1]):
+            scene.frame_set(int(frame), subframe=frame - int(frame))
+            ends.append((turn @ rig.matrix_world @ rig.pose.bones[table["Hips_03"]].matrix).translation)
+        drift = (ends[1] - ends[0]) if clip in IN_PLACE else Vector()
+        drift.z = 0.0
         for frame in frames:
             scene.frame_set(int(frame), subframe=frame - int(frame))
+            share = (frame - frames[0]) / max(frames[-1] - frames[0], 1e-6)
             posed = {}
             for bone in order:
                 name = bone.name
@@ -480,22 +664,27 @@ def retarget(her, kay, holder, swing):
                 carried = (posed[bone.parent.name] @ rel) if bone.parent else rel
                 if name in mapped:
                     k = mapped[name]
-                    now = kay.matrix_world @ kay.pose.bones[k].matrix
-                    turn = rotation(now) @ rotation(kay_rest[k]).inverted()
-                    rest = rotation(bone.matrix_local)
-                    if name == "handslot.l":
-                        rest = swing[name].inverted() @ rotation(kay_rest[k])
-                    r = turn @ swing.get(name, Matrix.Identity(3)) @ rest
+                    now = turn @ rig.matrix_world @ rig.pose.bones[k].matrix
+                    their_turn = rotation(now) @ rotation(their_rest[k]).inverted()
+                    rest = slot_rest if name == "handslot.l" else rotation(bone.matrix_local)
+                    r = their_turn @ swing.get(name, Matrix.Identity(3)) @ rest
                     where = carried.translation
                     if name == PREFIX + "Hips_03":
-                        where = bone.matrix_local.translation + (now.translation - kay_rest[k].translation) * hips_ratio
+                        moved = now.translation - their_rest[k].translation - drift * share
+                        where = bone.matrix_local.translation + moved * hips_ratio
                     posed[name] = Matrix.LocRotScale(where, r.to_quaternion(), None)
+                elif name in fingers:
+                    hand, kind, depth = fingers[name]
+                    hand_turn = rotation(posed[hand]) @ rotation(her.data.bones[hand].matrix_local).inverted()
+                    bend = Matrix.Rotation(curl(hand_pose[hand], kind, depth), 3, hand_turn @ axes[hand])
+                    posed[name] = Matrix.LocRotScale(carried.translation,
+                                                     (bend @ rotation(carried)).to_quaternion(), None)
                 else:
                     posed[name] = carried
                 pose_bone = her.pose.bones[name]
                 parent_rest = (posed[bone.parent.name] @ rel) if bone.parent else rel
                 pose_bone.matrix_basis = parent_rest.inverted() @ posed[name]
-                if name in mapped:
+                if name in mapped or name in fingers:
                     pose_bone.keyframe_insert("rotation_quaternion", frame=frame, group=name)
                     if name == PREFIX + "Hips_03":
                         pose_bone.keyframe_insert("location", frame=frame, group=name)
@@ -503,7 +692,7 @@ def retarget(her, kay, holder, swing):
         track.name = clip
         track.strips.new(clip, int(start), made)
         her.animation_data.action = None
-        print(f"HUNTRESS clip {clip} frames={len(frames)}")
+        print(f"HUNTRESS clip {clip} from {source} frames={len(frames)}")
     for bone in her.pose.bones:
         bone.matrix_basis = Matrix.Identity(4)
 
@@ -536,24 +725,23 @@ def main():
     her, meshes = open_her()
     factor = stand_her_up(her, meshes)
     drop_the_arrow_in_her_hand(meshes)
-    chains = cloth_chains(her)
-    weights_onto(meshes, chains, PREFIX + "Hips_03")
+    cloth_onto_her(her, meshes, cloth_chains(her))
     decimate(meshes, her)
     four_at_most(meshes)
 
-    kay, holder = open_libraries()
-    missing = [c for c in CLIPS if c not in holder]
-    if missing:
-        raise SystemExit(f"no KayKit library holds {missing}")
-    swing = swings(her, kay)
-    slot_rest = swing["handslot.l"].inverted() @ rotation(rest_world(kay, "handslot.l"))
+    rigs, holder = open_libraries()
+    kay = rigs[KAYKIT]
+    turn = facing(kay, MAP[KAYKIT])
+    slot_rest = (swings(her, kay, MAP[KAYKIT], turn)["handslot.l"].inverted()
+                 @ rotation(turn @ rest_world(kay, "handslot.l")))
     prune(her, meshes, keep=set())
     add_hand_slot(her, slot_rest.to_quaternion())
-    retarget(her, kay, holder, swing)
+    retarget(her, rigs, holder, slot_rest)
     for obj in list(bpy.data.objects):
         if obj != her and obj not in meshes:
             bpy.data.objects.remove(obj, do_unlink=True)
 
+    paint_eyes(meshes)
     base_colour_only(meshes)
     write(her, meshes)
     print(f"HUNTRESS factor={factor:.5f} bones={len(her.data.bones)} triangles={tris(meshes)}"
