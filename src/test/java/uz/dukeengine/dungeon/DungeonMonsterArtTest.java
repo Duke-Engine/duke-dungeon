@@ -434,6 +434,27 @@ class DungeonMonsterArtTest {
     }
 
     /**
+     * The knight is Lange: his block names Lange's file, and the file loads with his clips in it,
+     * his sword part of him and his glasses gone (art/lange/export_lange.py).
+     */
+    @Test
+    void theKnightIsLange() {
+        var knight = SETTINGS.heroes().stream().filter(him -> him.name().equals("Knight")).findFirst().orElseThrow();
+        assertEquals("models/heroes/lange/lange.glb", knight.model());
+        var model = assets().loadModel(knight.model());
+        var composer = control(model, AnimComposer.class);
+        assertNotNull(composer, "Lange's file carries no clips");
+        for (var clip : List.of("Idle", "Walk", "Attack", "Hurt", "Death")) {
+            assertNotNull(composer.getAnimClip(clip), "Lange's file has no " + clip);
+        }
+        var skin = control(model, com.jme3.anim.SkinningControl.class);
+        assertNotNull(skin.getArmature().getJoint("sword"), "the sword is not on a bone of its own");
+        var names = new ArrayList<String>();
+        model.depthFirstTraversal(spatial -> names.add(spatial.getName()));
+        assertTrue(names.stream().noneMatch(name -> name != null && name.contains("glasses")), "he still wears glasses");
+    }
+
+    /**
      * A swordsman finishes his swing before the next one starts.
      *
      * <p>Two numbers in two different files that have to agree, and disagreeing
@@ -657,12 +678,15 @@ class DungeonMonsterArtTest {
                             || joint.getParent() != null || moved.getRotations() == null) {
                         continue;
                     }
+                    // Against the root as his own file rests it: a clip in the file the model came
+                    // from (Lange's) carries the file's own quarter turn there and changes nothing.
+                    var rest = joint.getInitialTransform().getRotation();
                     for (var turn : moved.getRotations()) {
                         var angles = new float[3];
-                        turn.toAngles(angles);
+                        rest.inverse().mult(turn).toAngles(angles);
                         for (var angle : angles) {
                             assertEquals(0f, Math.toDegrees(angle), 1.0,
-                                    hero.name() + "'s " + name + " turns his root joint, which"
+                                    hero.name() + "'s " + name + " turns his root joint " + joint.getName() + ", which"
                                             + " is the one the game aims — he will play it"
                                             + " lying down");
                         }

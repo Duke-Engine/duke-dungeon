@@ -676,25 +676,35 @@ class KnightTest {
      *
      * <p>The trap in a repeatable block with fields under it: the fields have to
      * attach to the {@code Holds} ABOVE them and not to the last one parsed or to
-     * all of them at once. Written the obvious way, a knight's shield would have
-     * ended up in the hand his sword is in — both lines say {@code HeldIn}, and
-     * whichever was read last would have won for both.
+     * all of them at once. Written the obvious way, a mage's book would have
+     * ended up in the hand his staff is in — both lines say {@code HeldIn}, and
+     * whichever was read last would have won for both. Asked of the mage since the
+     * knight, Lange, carries his sword and shield in his own file.
      */
     @Test
     void eachThingCarriedKeepsItsOwnLines() {
-        var carried = SETTINGS.heroNamed(KNIGHT).held();
+        var carried = SETTINGS.heroNamed("Mage").held();
 
-        assertEquals(2, carried.size(), "a sword and a shield");
-        assertTrue(carried.get(0).model().contains("sword"), "the sword is named first");
-        assertTrue(carried.get(1).model().contains("shield"));
+        assertEquals(2, carried.size(), "a staff and a book");
+        assertTrue(carried.get(0).model().contains("staff"), "the staff is named first");
+        assertTrue(carried.get(1).model().contains("spellbook"));
         assertNotEquals(carried.get(0).bone(), carried.get(1).bone(),
                 "both are in the same hand, so the second line overwrote the first");
     }
 
-    /** And every hero really does carry two things now, not one. */
+    /**
+     * And every hero really does carry two things, not one -- in his hands, or in his own file.
+     *
+     * <p>The knight, Lange, holds nothing in {@code Held}: his sword and shield are part of his
+     * model, the sword skinned to a bone of its own (art/lange/export_lange.py).
+     */
     @Test
     void everyHeroCarriesMoreThanOneThing() {
         for (var him : SETTINGS.heroes()) {
+            if (him.name().equals(KNIGHT)) {
+                assertTrue(him.held().isEmpty(), "Lange's sword and shield are in his own file");
+                continue;
+            }
             assertTrue(him.held().size() >= 2, him.name() + " carries "
                     + him.held().size() + " thing(s): a hero is rarely one hand");
             for (var held : him.held()) {
