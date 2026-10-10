@@ -1098,8 +1098,8 @@ class DungeonMonsterArtTest {
         }
 
         var armature = control(him, SkinningControl.class).getArmature();
-        var knee = armature.getJoint("lowerleg.l");
-        assertNotNull(knee, "his skeleton is not the one the animations were built on");
+        var knee = leftKnee(armature);
+        assertNotNull(knee, "his skeleton has no left knee by any name this knows");
         var before = knee.getLocalRotation().clone();
 
         var composer = control(him, AnimComposer.class);
@@ -1197,27 +1197,29 @@ class DungeonMonsterArtTest {
     }
 
     /**
-     * The hero and the monsters share their rig, and therefore their libraries.
+     * The hero is on a skeleton of her own, so the monsters' libraries cannot move her.
      *
-     * <p>This has said three things in its life and the change each time was the
+     * <p>This has said four things in its life and the change each time was the
      * art rather than the rule. It began as "the two share no joint at all, so a
      * clip cannot cross" — true of a Mixamo hero and a Quaternius bestiary. Then
      * as "a clip crosses and moves nothing", when the hero changed kits and a few
-     * names happened to match. Now both come out of one pack on one rig, and the
-     * fact worth holding is the plain one: the files the monsters use really do
-     * move him, which is why there is one folder of clips and not two.
+     * names happened to match. Then, with both out of one pack on one rig, "the
+     * files the monsters use really do move him". Now the hero is the Huntress, on
+     * a Maya rig of her own, and it is nearly the first again: the one KayKit joint
+     * name she has is handslot.l, the bone her exporter gives her bow. So the kit's
+     * walk crosses and moves nothing of her body, which is why her clips are
+     * retargeted onto her in Blender and shipped as a library of her own
+     * (data/animations/huntress.duke).
      */
     @Test
-    void theHeroAndTheMonstersShareTheirClips() {
+    void theHeroIsOnASkeletonOfHerOwn() {
         var him = assets().loadModel(hero().model());
         var walk = SETTINGS.lookOf(SETTINGS.monsters().get(0)).walk();
-        int copied = 0;
         for (var path : HUMANOID.libraries()) {
-            copied += AnimationLibrary.copy(assets().loadModel(path), him, List.of(walk));
+            AnimationLibrary.copy(assets().loadModel(path), him, List.of(walk));
         }
-        assertEquals(1, copied, walk + " did not go onto the hero at all");
-
-        var knee = control(him, SkinningControl.class).getArmature().getJoint("lowerleg.l");
+        var knee = leftKnee(control(him, SkinningControl.class).getArmature());
+        assertNotNull(knee, "her own skeleton has no knee for her own clips to bend");
         var before = knee.getLocalRotation().clone();
         var composer = control(him, AnimComposer.class);
         composer.setCurrentAction(walk);
@@ -1226,8 +1228,15 @@ class DungeonMonsterArtTest {
             him.updateLogicalState(0.05f);
         }
 
-        assertFalse(before.equals(knee.getLocalRotation()),
-                "the monsters' walk went onto him and moved nothing — the rigs have parted");
+        assertTrue(before.equals(knee.getLocalRotation()),
+                "the monsters' walk bent her knee: if the kit's clips reach her now, her own library"
+                        + " is no longer needed");
+    }
+
+    /** The left knee, by the KayKit rig's name or the Huntress's. */
+    private static com.jme3.anim.Joint leftKnee(com.jme3.anim.Armature armature) {
+        var kit = armature.getJoint("lowerleg.l");
+        return kit != null ? kit : armature.getJoint("QuickRigCharacter_LeftLeg_05");
     }
 
     /**

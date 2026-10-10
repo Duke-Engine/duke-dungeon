@@ -18,6 +18,10 @@ java {
 
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
+    // jME decodes every picture a test loads into direct memory, which by default is capped at the heap's
+    // 512 MB, and the test classes keep their loaders (and so their pictures) for the whole run. Two heroes
+    // with pictures of their own -- Lange and the Huntress -- took the suite past it halfway through.
+    jvmArgs("-XX:MaxDirectMemorySize=1g")
 }
 
 // The credits the front menu rolls are CREDITS.md's own rows, shipped beside the game's data.
@@ -154,6 +158,40 @@ tasks.register("exportInuciian") {
             )
         }.standardOutput.asText.get()
             .lines().filter { it.startsWith("EXPORTED") }
+            .forEach { logger.lifecycle(it) }
+    }
+}
+
+// neilhancart's "Huntress" (CC BY 4.0, see CREDITS.md) made into the Rogue hero: her model in
+// resources/models/heroes/huntress.glb and the Rogue's clips retargeted onto her skeleton in
+// resources/animations/characters/huntress.glb. See art/huntress/export_huntress.py.
+//
+//   ./gradlew exportHuntress -PhuntressSource="C:/Users/me/Downloads/huntress" \
+//       -PualSource=".../Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb"
+//
+// The sources (Sketchfab's glTF download: scene.gltf, scene.bin, textures/; Quaternius' library, CC0)
+// are not in the repository;
+// what ships is what this wrote, which is committed. Blender is found as convertAnimations finds it.
+tasks.register("exportHuntress") {
+    group = "application"
+    description = "Make neilhancart's Huntress into the Rogue hero's model and clips, using Blender"
+    doLast {
+        val source = File((findProperty("huntressSource") as String?)
+            ?: throw GradleException("Say where the download is: -PhuntressSource=\".../huntress\""))
+        val gltf = File(source, "scene.gltf").takeIf { it.isFile }
+            ?: throw GradleException("no scene.gltf under $source")
+        val ual = File((findProperty("ualSource") as String?)
+            ?: throw GradleException("Say where Quaternius' library is: -PualSource=\".../UAL1_Standard.glb\""))
+        providers.exec {
+            workingDir = rootProject.projectDir
+            commandLine(
+                blender("exportHuntress"), "-b", "--factory-startup",
+                "-P", "art/huntress/export_huntress.py", "--",
+                gltf.absolutePath, "src/main/resources/animations/characters", ual.absolutePath,
+                "src/main/resources/models/heroes/huntress.glb",
+            )
+        }.standardOutput.asText.get()
+            .lines().filter { it.startsWith("HUNTRESS") }
             .forEach { logger.lifecycle(it) }
     }
 }
