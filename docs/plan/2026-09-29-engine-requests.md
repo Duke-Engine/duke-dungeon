@@ -47,6 +47,11 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E31 | four new skill shapes for the knight: a piercing wave, a shield charge that drags and stuns, armour and regeneration as a passive, a pull to one point that stuns | landed, dba15f52 + 1d0bcfd3 (the charge frame by frame); the knight is Qilich to'lqini, Qalqon bilan surish, Ajdar qoni and Teskari qutb |
 | E32 | the knight's skills as played: a charge that carries two, their looks drawn, an unlearnt passive that is off | landed, 24965199; the charge carries three skeletons the whole way, the wave, charge and pull are drawn, and an unlearnt Ajdar qoni does nothing |
 | E33 | the front menu hides itself the frame the backdrop arrives behind it (forgetTheWorld hides the menu, nothing shows it again) | landed, bf191479 (on e31-knight-skills) |
+| E34 | a scenery piece drawn with another picture (the queen's dark castle) | waiting (small) |
+| E35 | a map's scenery line carries its tint | waiting (small) |
+| E36 | scenery that blocks along its length, turned with its facing (castle walls) | waiting (medium) |
+| E37 | placing one piece on the grid in the editor — the plugin's, done in duke-plugin | plugin |
+| E38 | a map that starts explored: its ground seen from the first frame, its creatures only in sight | waiting (small) |
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
 game builds against the local engine. E12–E15 reached it together at 668045f0 (their pull requests merged as
@@ -981,3 +986,20 @@ castle wants one chosen piece at a chosen grid point and a right angle. Asked (o
 and mine to build): a Place tool — pick one kind from the Castles theme, click a grid point (snapping to whole and
 half cells), turn by 90° with a key, write one piece. The pieces' pivots are made for it: a wall starts at its
 origin and runs east, a tower is centred, a floor's corner is at its origin (see `data/world/themes/castles.duke`).
+
+## E38 — A map that starts explored (2026-10-10, small)
+
+The owner, 2026-10-10: the open world's pitch-black fog is wrong for it. "There is fog of war, but not black: the
+map's relief, mountains and buildings are seen, but units are not — like the fog that falls after you have walked
+somewhere once. The pitch-black fog only for the endless descent and when you enter a dungeon: there the map is
+small and opening dark places is interesting; in the open world opening a huge map is tiresome. A player who sees at a
+glance how big the map is and what is on it gets more curious."
+
+So on the wide worlds the client's own fog (`Discovery`) should start with every cell **explored** (REMEMBERED: the
+ground, cliffs and scenery drawn at the remembered light, no creatures drawn), and only the eyes make cells VISIBLE.
+Today the only whole-map entry is `openEverything()` (explored and visible — a watcher's), and black is the start.
+
+Asked: `Visuals.fogStartsExplored(Predicate<Object> forMap)` (the E18/E24 shape, asked of each map's record as it is
+laid): a map it names starts with all cells explored and none visible; the descent and dungeons, not named, start black
+as today. The minimap the same (the whole map drawn, creatures only in sight). Done when a test lays a named map
+explored-not-visible and an unnamed one black.
