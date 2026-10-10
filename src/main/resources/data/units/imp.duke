@@ -1,0 +1,24 @@
+; ---------------------------------------------------------------------------
+; Ajina -- the imp who keeps Yalmog'iz kampir company. A person for now (neutral,
+; bodiless, says nothing); whether he is ever something to fight is the story's.
+; Inuciian's imp, a little larger than made so he reads beside the hero; his own
+; clip, Idle, is his hovering.
+; ---------------------------------------------------------------------------
+Monster
+  Name = Imp
+  DisplayName = Ajina
+  KindOf = [INFANTRY, SELECTABLE]
+  Geometry = Cylinder
+    Radius = 3
+    Height = 7
+  End
+  VisionRange = 0
+  MinDepth = 99
+  Weight = 0
+  Colour = 0xB02020
+  Scale = 1.0
+  Model = models/inuciian/people/imp.glb
+  ModelScale = 1.4
+  Facing = 90
+  Idle = Idle
+End

@@ -36,9 +36,9 @@ import uz.dukeengine.dungeon.tools.GroundPictures;
  * where the kingdom's city stands by the southern edge, dry steppe in the south-east, a dark forest in the west whose
  * marshy edge runs down to a low basin, rocky highlands in the middle whose terraces break into cliffs, and snowy
  * mountains in the north-east corner. The queen's castle stands on a flattened height between the highlands and the
- * snow; the creature's cave is deep in the forest. Dirt roads are found over the ground — round the cliffs, preferring
+ * snow; Yalmog'iz kampir's hut stands in a clearing deep in the forest. Dirt roads are found over the ground — round the cliffs, preferring
  * the gentle way — from the city to every site, so each is walked to by construction. Monster camps stand in the three
- * lands to free and on the way to the cave and the castle; their levels rise with the walk from the city, as every
+ * lands to free and on the way to the hut and the castle; their levels rise with the walk from the city, as every
  * stage's do. Trees in the forest and in groves on the meadow, rocks in the highlands, a little of each elsewhere.
  *
  * <p>No water: the engine draws water from a map's areas ({@code Zoned}, {@code MapArea.water}), and a map file has
@@ -80,9 +80,11 @@ public final class WorldMapWriter {
             new Site("Yashil_dala", 0.40, 0.62, 16),
             new Site("Qumli_dasht", 0.76, 0.80, 16),
             new Site("Toshli_adir", 0.54, 0.42, 14),
-            new Site("Maxluq_g'ori", 0.09, 0.17, 6),
+            new Site("Kampir_kulbasi", 0.09, 0.17, 9),
             new Site("Malika_qasri", 0.64, 0.19, 12));
     private static final int CITY = 0;
+    /** Yalmog'iz kampir's hut, by its place in {@link #SITES}. */
+    static final int HUT = 4;
     private static final int CASTLE = SITES.size() - 1;
 
     /** The roads, by the sites they join; each also a corridor between their rooms. */
@@ -962,6 +964,9 @@ public final class WorldMapWriter {
             var hero = free(taken, city.x(), city.y());
             var castle = SITES.get(CASTLE);
             var boss = new Monster("Warden", free(taken, castle.x(), castle.y()));
+            var props = new ArrayList<Prop>();
+            var npcs = new ArrayList<StaticMap.Placed>();
+            var yard = yard(taken, props, npcs);
             var rng = new DeterministicRng(seed ^ 0x776F726C64L);
             var monsters = new ArrayList<Monster>();
             for (var camp : CAMPS) {
@@ -969,7 +974,8 @@ public final class WorldMapWriter {
                 // Short of the site itself on its road from the city, so the camp is met on the way in.
                 for (var kind : (String[]) camp[1]) {
                     double angle = rng.nextInt(360) * Math.PI / 180;
-                    int reach = site.radius() / 2 + rng.nextInt(site.radius() / 2 + 1);
+                    int reach = site.radius() / 2 + rng.nextInt(site.radius() / 2 + 1)
+                            + ((int) camp[0] == HUT ? site.radius() : 0); // not in her yard: on the way to it
                     monsters.add(new Monster(kind, free(taken, site.x() + (int) Math.round(reach * Math.cos(angle)),
                             site.y() + (int) Math.round(reach * Math.sin(angle)))));
                 }
@@ -986,7 +992,6 @@ public final class WorldMapWriter {
                     }
                 }
             }
-            var props = new ArrayList<Prop>();
             for (int[] corner : new int[][] {{-6, -6}, {6, -6}, {-6, 6}, {6, 6}}) {
                 props.add(new Prop("Pillar", free(taken, castle.x() + corner[0], castle.y() + corner[1])));
                 props.add(new Prop("Pillar", free(taken, city.x() + corner[0] * 2, city.y() + corner[1])));
@@ -1021,14 +1026,70 @@ public final class WorldMapWriter {
             for (var prop : props) {
                 keep(prop.at().cellX(), prop.at().cellY(), 1);
             }
+            for (var npc : npcs) {
+                keep(npc.x(), npc.y(), 1);
+            }
             var floor = new GeneratedDungeon(String.join("\n", walls) + "\n", String.join("\n", levels) + "\n", hero,
                     monsters, boss, CASTLE, rooms, links, storeys, props, relief, 0f);
             return new Stage(NAME, "Ochiq dunyo",
                     "Butun qirollik bir xaritada: shahar, qorong'i o'rmon, ozod qilinadigan yerlar va malika qasri.",
-                    1, 1, seed, floor, new StagePaint(NAME, paint, PALETTE, COVERAGE, scenery(), waters),
-                    new MapStory(List.of(), zones, List.of(), List.of()));
+                    1, 1, seed, floor, new StagePaint(NAME, paint, PALETTE, COVERAGE, scenery(yard), waters),
+                    new MapStory(npcs, zones, List.of(), List.of()));
         }
 
+
+        /**
+         * Yalmog'iz kampir's yard, round the middle of {@link #HUT}: her hut on its chicken legs at the north of the
+         * clearing, its door to the south; her cauldron on its fire with her beside it; the girl's cage on its gibbet
+         * to the west, a torch by it; her imp; a well, a bench and a stool, a scarecrow; a fence round the west and
+         * north; and the small things -- a bucket, a broom, candles, a rat, toadstools, a stump, fallen leaves. The
+         * road comes in from the east, which is left open. The solid things and the people go into {@code props}
+         * and {@code npcs}; what is only looked at is returned, as scenery.
+         */
+        private List<Piece> yard(Set<Long> taken, List<Prop> props, List<StaticMap.Placed> npcs) {
+            var site = SITES.get(HUT);
+            int x = site.x();
+            int y = site.y();
+            for (var prop : new Object[][] {{"Cauldron", -2, 0}, {"Well", 4, -5}, {"Scarecrow", -6, -5},
+                    {"Bench", -5, 1}, {"Stool", -1, 2}, {"Torch", -6, 4}}) {
+                props.add(new Prop((String) prop[0], free(taken, x + (int) prop[1], y + (int) prop[2])));
+            }
+            for (var person : new Object[][] {{"BabaYaga", -2, 1}, {"Damsel", -7, 2}, {"Imp", 1, -2}}) {
+                var at = free(taken, x + (int) person[1], y + (int) person[2]);
+                npcs.add(new StaticMap.Placed((String) person[0], at.cellX(), at.cellY()));
+            }
+            var pieces = new ArrayList<Piece>();
+            // The hut, walked under between its legs, its door (the model's +Z) facing south, down the map.
+            pieces.add(yardPiece("hut", x + 0.5f, y - 4.5f, 0, 0.7f));
+            // A fence on an arc round the west and the north, length by length along it (a length lies along the
+            // model's X, which a facing of -(a + 90) turns along the arc at a), a gap where a post has fallen.
+            for (int angle = 125; angle <= 305; angle += 9) {
+                if (angle == 179 || angle == 251) {
+                    continue;
+                }
+                double a = Math.toRadians(angle);
+                pieces.add(yardPiece(angle == 188 ? "props/fence_gate" : "props/fence",
+                        (float) (x + 0.5 + 7.5 * Math.cos(a)), (float) (y + 0.5 + 7.5 * Math.sin(a)),
+                        Math.floorMod(-(angle + 90), 360), 0.2f));
+            }
+            pieces.add(yardPiece("props/bucket", x + 5.6f, y - 3.6f, 30, 0f));
+            pieces.add(yardPiece("props/broom", x + 2.4f, y - 3.2f, 200, 0f));
+            pieces.add(yardPiece("props/candles", x - 4.2f, y + 1.8f, 0, 0f));
+            pieces.add(yardPiece("props/rat", x - 0.4f, y + 3.6f, 120, 0f));
+            pieces.add(yardPiece("nature/leaves", x + 1.5f, y + 2.5f, 40, 0f));
+            pieces.add(yardPiece("nature/stump", x + 3.5f, y + 4.5f, 70, 0.2f));
+            float[][] toadstools = {{-3.4f, 3.3f}, {-3.0f, 3.7f}, {2.7f, 3.9f}, {4.1f, 4.3f}, {-7.8f, -1.5f}};
+            for (int i = 0; i < toadstools.length; i++) {
+                pieces.add(yardPiece(i % 2 == 0 ? "nature/mushroom_red" : "nature/mushroom_brown",
+                        x + 0.5f + toadstools[i][0], y + 0.5f + toadstools[i][1], i * 73, 0f));
+            }
+            return pieces;
+        }
+
+        private static Piece yardPiece(String model, float x, float y, int facing, float footprint) {
+            return new Piece(INUCIIAN + model + ".glb", Math.round(x * 100) / 100f, Math.round(y * 100) / 100f,
+                    facing, 1f, 0xFFFFFF, footprint);
+        }
 
         /** Every cell a hero can walk to from {@code from}, by the engine's rule on ground of one storey: no cliff. */
         private void walk(Site from) {
@@ -1131,16 +1192,26 @@ public final class WorldMapWriter {
         // ---- the scenery ----
 
         private static final String MODELS = "models/tiles/forest/";
+        /** Inuciian's pieces ("Baba Yaga's hut", CC BY 4.0): see art/inuciian/export_models.py and darkwood.duke. */
+        private static final String INUCIIAN = "models/inuciian/";
 
         /** One kind of piece a region scatters: its model, how many in ten thousand cells, its size, its trunk. */
         private record Scatter(String model, int perTenThousand, float scale, float footprint) {
         }
 
+        /**
+         * The dark wood: Inuciian's dark pines and dead crooked trees among the KayKit pines, dark bushes and
+         * blue-grey grass between them, toadstools. A model with a folder in its name is Inuciian's, at scale 1.
+         */
         private static final Scatter[] FOREST_TREES = {
-                new Scatter("pine_tall", 900, 1.67f, 0.15f), new Scatter("pine", 900, 1.67f, 0.15f),
-                new Scatter("tree", 700, 3.1f, 0.15f), new Scatter("tree_round", 500, 3.1f, 0.15f),
-                new Scatter("tree_twisted", 400, 3.1f, 0.15f), new Scatter("bush_wide", 300, 3f, 0f),
-                new Scatter("grass_tall", 300, 3f, 0f)};
+                new Scatter("nature/pine_dark", 700, 1f, 0.15f), new Scatter("pine_tall", 600, 1.67f, 0.15f),
+                new Scatter("pine", 500, 1.67f, 0.15f), new Scatter("nature/dead_tree", 250, 1f, 0.15f),
+                new Scatter("nature/dead_tree_bent", 200, 1f, 0.15f), new Scatter("tree_twisted", 250, 3.1f, 0.15f),
+                new Scatter("nature/dead_tree_tall", 150, 1f, 0.15f), new Scatter("tree", 200, 3.1f, 0.15f),
+                new Scatter("nature/bush_large_dark", 250, 1f, 0f), new Scatter("nature/bush_bare", 200, 1f, 0f),
+                new Scatter("nature/grass_tall_dark", 300, 1f, 0f), new Scatter("nature/grass_short_dark", 250, 1f, 0f),
+                new Scatter("nature/mushroom_red", 60, 1f, 0f), new Scatter("nature/mushroom_brown", 60, 1f, 0f),
+                new Scatter("nature/stump", 50, 1f, 0.1f), new Scatter("nature/rock", 50, 1f, 0.2f)};
         private static final Scatter[] GROVE = {
                 new Scatter("tree", 1500, 3.1f, 0.15f), new Scatter("tree_round", 1500, 3.1f, 0.15f),
                 new Scatter("bush_small", 400, 3f, 0f)};
@@ -1157,16 +1228,20 @@ public final class WorldMapWriter {
                 new Scatter("pine_tall", 200, 1.67f, 0.15f), new Scatter("rock_cluster", 150, 3f, 0.3f),
                 new Scatter("stone", 100, 3f, 0.2f)};
         private static final Scatter[] MARSH = {
-                new Scatter("grass_tall", 600, 3f, 0f), new Scatter("bush_small", 150, 3f, 0f),
-                new Scatter("tree_twisted", 60, 3.1f, 0.15f)};
+                new Scatter("grass_tall", 600, 3f, 0f), new Scatter("nature/cattails", 250, 1f, 0f),
+                new Scatter("bush_small", 150, 3f, 0f), new Scatter("tree_twisted", 60, 3.1f, 0.15f)};
 
         /**
          * What stands about, cell by cell in a fixed order: never on a road or a step from one, on a site, by a
          * monster or a prop, or on ground too steep to stand on.
          */
-        private List<Piece> scenery() {
+        private List<Piece> scenery(List<Piece> yard) {
             for (var site : SITES) {
-                keep(site.x(), site.y(), site.radius() + 2);
+                // The kampir's yard is walled in by the wood up to its fence; every other site has open ground round it.
+                keep(site.x(), site.y(), site == SITES.get(HUT) ? site.radius() - 1 : site.radius() + 2);
+            }
+            for (var piece : yard) {
+                keep((int) piece.x(), (int) piece.y(), piece.model().endsWith("hut.glb") ? 2 : 0);
             }
             var rng = new DeterministicRng(seed ^ 0x7363656E65L);
             var pieces = new ArrayList<Piece>();
@@ -1176,20 +1251,46 @@ public final class WorldMapWriter {
                             || channel[y * SIZE + x]) {
                         continue;
                     }
+                    double thick = thickness(x, y);
                     for (var scatter : scattersAt(x, y)) {
-                        if (rng.nextInt(10_000) >= scatter.perTenThousand()) {
+                        if (rng.nextInt(10_000) >= scatter.perTenThousand() * thick) {
                             continue;
                         }
                         float across = x + (15 + rng.nextInt(71)) / 100f;
                         float down = y + (15 + rng.nextInt(71)) / 100f;
                         float size = scatter.scale() * (85 + rng.nextInt(31)) / 100f;
-                        pieces.add(new Piece(MODELS + scatter.model() + ".gltf", across, down, rng.nextInt(360),
+                        pieces.add(new Piece(modelOf(scatter), across, down, rng.nextInt(360),
                                 Math.round(size * 100) / 100f, 0xFFFFFF, scatter.footprint()));
                         break; // one piece a cell
                     }
                 }
             }
+            pieces.addAll(yard);
+            // A line a row of cells, as the file writes them: the yard's pieces go into their rows.
+            pieces.sort(java.util.Comparator.comparingInt(piece -> (int) Math.floor(piece.y())));
             return pieces;
+        }
+
+        private static String modelOf(Scatter scatter) {
+            return scatter.model().contains("/") ? INUCIIAN + scatter.model() + ".glb"
+                    : MODELS + scatter.model() + ".gltf";
+        }
+
+        /**
+         * How thick the dark wood stands at a cell: thinned a third along a road's shoulders, so the camera above
+         * sees the hero walking it, and half again as thick in a ring round the kampir's clearing, so her yard is
+         * walled in trees. Outside the forest, as its scatter says.
+         */
+        private double thickness(int x, int y) {
+            if (region[y * SIZE + x] != Biome.FOREST) {
+                return 1;
+            }
+            var hut = SITES.get(HUT);
+            double fromHut = Math.hypot(x - hut.x(), y - hut.y());
+            if (fromHut > hut.radius() - 1 && fromHut < hut.radius() + 7 && !nearRoad(x, y, 4)) {
+                return 1.6;
+            }
+            return nearRoad(x, y, 5) ? 0.65 : 1;
         }
 
         private Scatter[] scattersAt(int x, int y) {

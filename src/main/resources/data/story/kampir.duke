@@ -1,0 +1,68 @@
+; ---------------------------------------------------------------------------
+; Yalmog'iz kampir's hut in the dark wood (maps/world, the zone Kampir_kulbasi):
+; the old woman by her cauldron, the girl in her cage, the imp. Stubs only: she
+; hints that she knows the queen's secret, the girl asks for help. The Act 2
+; conversation and what freeing the girl is worth are the owner's to decide --
+; see docs/plan/2026-10-01-campaign.md.
+; ---------------------------------------------------------------------------
+
+Speaker
+  Name = BabaYaga
+  DisplayName = "Yalmog'iz kampir"
+  Picture =
+End
+
+Speaker
+  Name = Damsel
+  DisplayName = Qiz
+  Picture =
+End
+
+Conversation
+  Name = KampirGreets
+  Lines = [
+    Line
+      Speaker = BabaYaga
+      Text = "Oho, mehmon... Qorong'i o'rmonga o'z oyog'i bilan kelgan qahramonni ko'pdan beri ko'rmagandim."
+    End,
+    Line
+      Speaker = BabaYaga
+      Text = "Malikangning bo'ynidagi medalyon... Uni kim yasaganini bilasanmi? Men bilaman, bolam."
+    End,
+    Line
+      Speaker = BabaYaga
+      Text = "Har bir sirning bahosi bor. Hali vaqti emas — qaytib kel, shunda gaplashamiz."
+    End
+  ]
+End
+
+Conversation
+  Name = DamselAsks
+  Lines = [
+    Line
+      Speaker = Damsel
+      Text = "Iltimos, meni bu qafasdan chiqaring! Kampir qozonidan qaytmasidan oldin..."
+    End
+  ]
+End
+
+Npc
+  Name = BabaYaga
+  Talk = KampirGreets
+  Role = Jodugar
+  Radius = 30
+End
+
+Npc
+  Name = Damsel
+  Talk = DamselAsks
+  Role = Asira
+  Radius = 25
+End
+
+; Hers, and says nothing yet.
+Npc
+  Name = Imp
+  Role = "Kampirning xizmatkori"
+  Radius = 20
+End

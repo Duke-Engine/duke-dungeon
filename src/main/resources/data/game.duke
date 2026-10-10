@@ -42,6 +42,7 @@ Game
     data/world/themes/deadland.duke,
     data/world/themes/mine.duke,
     data/world/themes/keep.duke,
+    data/world/themes/darkwood.duke,
 
     ; How a floor is drawn when nobody drew it: the endless descent's own recipe.
     ; The maps drawn once are NOT listed here — each is a folder of its own under
@@ -73,6 +74,10 @@ Game
     ; The last fight's two, whom only a map puts: see data/story/final.duke.
     data/units/queen_boss.duke,
     data/units/cursed_hero.duke,
+    ; Yalmog'iz kampir, the girl in her cage and her imp: see data/story/kampir.duke.
+    data/units/baba_yaga.duke,
+    data/units/damsel.duke,
+    data/units/imp.duke,
 
     data/projectiles/arrow.duke,
     data/projectiles/heavy_arrow.duke,
@@ -126,6 +131,7 @@ Game
     data/props/fountain.duke,
     data/props/gate.duke,
     data/props/key.duke,
+    data/props/kampir.duke,
 
     data/sounds/sfx.duke,
     data/sounds/ui.duke,
@@ -137,5 +143,6 @@ Game
     data/story/trade.duke,
     data/story/medallion.duke,
     data/story/final.duke,
+    data/story/kampir.duke,
   ]
 End

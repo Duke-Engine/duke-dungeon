@@ -94,6 +94,31 @@ class DungeonMonsterArtTest {
         return all;
     }
 
+    /**
+     * The looks that move by the Humanoid set: every one but the people whose own file carries their clips (a look
+     * linking no set -- Yalmog'iz kampir, the girl in the cage, the imp: Inuciian's rigs, which no KayKit clip moves).
+     */
+    private static List<uz.dukeengine.dungeon.content.MonsterLook> setLooks() {
+        return looks().stream().filter(look -> look.animations() != null).toList();
+    }
+
+    /** The kinds that move by the Humanoid set, as {@link #setLooks}. */
+    private static List<uz.dukeengine.dungeon.content.MonsterKind> setKinds() {
+        return SETTINGS.monsters().stream().filter(kind -> SETTINGS.lookOf(kind).animations() != null).toList();
+    }
+
+    /** A person who moves by clips of their own carries them: the one they name for standing is in their file. */
+    @Test
+    void everyoneWithClipsOfTheirOwnCarriesThem() {
+        var own = looks().stream().filter(look -> look.animations() == null).toList();
+        assertFalse(own.isEmpty(), "nobody moves by clips of their own any more: drop this test");
+        for (var look : own) {
+            var composer = control(assets().loadModel(look.model()), AnimComposer.class);
+            assertNotNull(composer, look.model() + " carries no clips");
+            assertNotNull(composer.getAnimClip(look.idle()), look.model() + " has no " + look.idle());
+        }
+    }
+
     /** Every kind the file describes has been given something to be drawn as. */
     @Test
     void everyMonsterHasAModel() {
@@ -229,7 +254,7 @@ class DungeonMonsterArtTest {
     /** Every clip the settings name — defaults and per-kind overrides — is in one. */
     @Test
     void everyClipNamedIsInOneOfTheLibraries() {
-        for (var look : looks()) {
+        for (var look : setLooks()) {
             for (var clip : new String[] {look.idle(), look.walk(), look.attack()}) {
                 assertNotNull(clip, "a monster was left without one of its three clips");
                 assertTrue(inAMonsterLibrary(clip),
@@ -278,7 +303,7 @@ class DungeonMonsterArtTest {
      */
     @Test
     void everythingThatSwingsSwingsTheSameWay() {
-        for (var kind : SETTINGS.monsters()) {
+        for (var kind : setKinds()) {
             var attack = SETTINGS.lookOf(kind).attack();
             if (attack.startsWith(RANGED)) {
                 continue; // it shoots, and a shot is not a swing
@@ -302,7 +327,7 @@ class DungeonMonsterArtTest {
      */
     @Test
     void anythingDrawnShootingHasSomethingToShoot() {
-        for (var kind : SETTINGS.monsters()) {
+        for (var kind : setKinds()) {
             if (!SETTINGS.lookOf(kind).attack().startsWith(RANGED)) {
                 continue;
             }
@@ -683,7 +708,7 @@ class DungeonMonsterArtTest {
     @Test
     void everyMonsterCanWearTheLibrarysAnimations() {
         var loader = assets();
-        for (var look : looks()) {
+        for (var look : setLooks()) {
             var monster = loader.loadModel(look.model());
             int copied = 0;
             for (var path : HUMANOID.libraries()) {
@@ -970,7 +995,7 @@ class DungeonMonsterArtTest {
     @Test
     void anythingThatShootsStandsWithItsWeaponUp() {
         var atRest = weaponHandHeight(HUMANOID.idle());
-        for (var kind : SETTINGS.monsters()) {
+        for (var kind : setKinds()) {
             var look = SETTINGS.lookOf(kind);
             if (!look.attack().startsWith(RANGED) || !look.hasModel()) {
                 continue;
