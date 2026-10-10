@@ -64,8 +64,7 @@ Monster
   Effect = EmberEyes
   ModelScale = 7.4
   Held = Held
-    ; panarth's warhammer (Low poly medieval weapons, CC BY 4.0): a brute crushes rather than cuts.
-    Model = models/weapons/medieval/warhammer.glb
+    Model = models/monsters/axe.gltf
     Bone = handslot.r
   End
 End
