@@ -435,7 +435,7 @@ class DungeonMonsterArtTest {
 
     /**
      * The knight is Lange: his block names Lange's file, and the file loads with his clips in it,
-     * his sword part of him and his glasses gone (art/lange/export_lange.py).
+     * his own and his borrowed, his sword part of him and his glasses gone (art/lange/export_lange.py).
      */
     @Test
     void theKnightIsLange() {
@@ -444,7 +444,7 @@ class DungeonMonsterArtTest {
         var model = assets().loadModel(knight.model());
         var composer = control(model, AnimComposer.class);
         assertNotNull(composer, "Lange's file carries no clips");
-        for (var clip : List.of("Idle", "Walk", "Attack", "Hurt", "Death")) {
+        for (var clip : List.of("Idle", "Walk", "Attack", "Hurt", "Death", "Cast_Wave", "Cast_Charge", "Cast_Pull")) {
             assertNotNull(composer.getAnimClip(clip), "Lange's file has no " + clip);
         }
         var skin = control(model, com.jme3.anim.SkinningControl.class);
@@ -583,7 +583,9 @@ class DungeonMonsterArtTest {
                     continue; // a skill cast without a gesture, which is most of them
                 }
                 var model = assets().loadModel(hero.model());
-                int arrived = 0;
+                // A gesture in his own file is on him already (Lange's): nothing to copy, nothing missing.
+                var own = control(model, AnimComposer.class);
+                int arrived = own != null && own.getAnimClip(skill.castAnim()) != null ? 1 : 0;
                 for (var path : hero.animations()) {
                     arrived += uz.dukeengine.client3d.AnimationLibrary.copy(
                             assets().loadModel(path), model,

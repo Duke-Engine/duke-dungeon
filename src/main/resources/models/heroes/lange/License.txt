@@ -4,5 +4,8 @@ https://sketchfab.com/3d-models/lange-half-elf-knight-3c22b831b66c4de88043f57fab
 Licensed under Creative Commons Attribution 4.0 International (CC BY 4.0):
 https://creativecommons.org/licenses/by/4.0/
 
-Modified for Duke Dungeon: glasses removed (their lenses made his eyes), sword attached to his hand,
-textures downsized, converted to glTF -- by art/lange/export_lange.py.
+Modified for Duke Dungeon: glasses removed (eyes painted into his skin in their place), sword
+attached to his hand, textures downsized, converted to glTF -- by art/lange/export_lange.py.
+
+His Attack, Hurt, Death and cast clips are retargeted onto his rig (art/lange/retarget.py) from
+Quaternius' Universal Animation Library (CC0) and KayKit's Character Animations (CC0).
