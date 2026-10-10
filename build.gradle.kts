@@ -78,6 +78,29 @@ application {
 // arrives, and the build does not depend on it: what ships is the .glb it wrote,
 // which is committed.
 // ---------------------------------------------------------------------------
+fun blender(task: String): String {
+    // Where it actually is, checked rather than hoped for: a name on the PATH
+    // that is not there fails inside the process launcher, which reports
+    // "a problem occurred starting process" and not one word about Blender.
+    val onThePath = System.getenv("PATH").orEmpty()
+        .split(File.pathSeparator)
+        .flatMap { listOf(File(it, "blender"), File(it, "blender.exe")) }
+        .firstOrNull { it.canExecute() }?.absolutePath
+    return (findProperty("blenderPath") as String?)
+        ?: onThePath
+        ?: listOf(
+            "C:/Program Files/Blender Foundation/Blender 5.2/blender.exe",
+            "C:/Program Files/Blender Foundation/Blender 4.2/blender.exe",
+            "/Applications/Blender.app/Contents/MacOS/Blender",
+            "/usr/bin/blender",
+        ).firstOrNull { File(it).exists() }
+        ?: throw GradleException(
+            "Blender was not found on the PATH or where it is usually installed. " +
+                "Install it, or point at it: " +
+                "./gradlew $task -PblenderPath=\"...\""
+        )
+}
+
 private val animations = listOf(
     // source (under art/anim), output (under resources), clip name
     Triple("magic_area_attack.fbx", "magic.glb", "Magic_Area_Attack"),
@@ -87,26 +110,7 @@ tasks.register("convertAnimations") {
     group = "application"
     description = "Convert the .fbx animations into .glb libraries, using Blender"
     doLast {
-        // Where it actually is, checked rather than hoped for: a name on the PATH
-        // that is not there fails inside the process launcher, which reports
-        // "a problem occurred starting process" and not one word about Blender.
-        val onThePath = System.getenv("PATH").orEmpty()
-            .split(File.pathSeparator)
-            .flatMap { listOf(File(it, "blender"), File(it, "blender.exe")) }
-            .firstOrNull { it.canExecute() }?.absolutePath
-        val blender = (findProperty("blenderPath") as String?)
-            ?: onThePath
-            ?: listOf(
-                "C:/Program Files/Blender Foundation/Blender 5.2/blender.exe",
-                "C:/Program Files/Blender Foundation/Blender 4.2/blender.exe",
-                "/Applications/Blender.app/Contents/MacOS/Blender",
-                "/usr/bin/blender",
-            ).firstOrNull { File(it).exists() }
-            ?: throw GradleException(
-                "Blender was not found on the PATH or where it is usually installed. " +
-                    "Install it, or point at it: " +
-                    "./gradlew convertAnimations -PblenderPath=\"...\""
-            )
+        val blender = blender("convertAnimations")
         animations.forEach { (from, into, clip) ->
             providers.exec {
                 workingDir = rootProject.projectDir
@@ -121,6 +125,36 @@ tasks.register("convertAnimations") {
                 .lines().filter { it.startsWith("CONVERTED") }
                 .forEach { logger.lifecycle(it) }
         }
+    }
+}
+
+// Inuciian's "Baba Yaga's hut" (CC BY 4.0, see CREDITS.md) cut into the models under
+// resources/models/inuciian: the hut, its people, its props and its forest, each one glTF with its
+// pictures inside, and the dark wood's recoloured copies. See art/inuciian/export_models.py.
+//
+//   ./gradlew exportInuciian -PinuciianSource="C:/Users/me/Downloads/baba-yagas-hut"
+//
+// The source (the Sketchfab download: source/*.blend and textures/) is not in the repository;
+// what ships is what this wrote, which is committed. Blender is found as convertAnimations finds it.
+tasks.register("exportInuciian") {
+    group = "application"
+    description = "Cut Inuciian's Baba Yaga scene into the game's models, using Blender"
+    doLast {
+        val source = File((findProperty("inuciianSource") as String?)
+            ?: throw GradleException("Say where the download is: -PinuciianSource=\".../baba-yagas-hut\""))
+        val blend = File(source, "source").listFiles { f -> f.name.endsWith(".blend") }?.firstOrNull()
+            ?: throw GradleException("no .blend under $source/source")
+        providers.exec {
+            workingDir = rootProject.projectDir
+            commandLine(
+                blender("exportInuciian"), "-b", "--factory-startup",
+                "-P", "art/inuciian/export_models.py", "--",
+                blend.absolutePath, File(source, "textures").absolutePath,
+                "src/main/resources/models/inuciian",
+            )
+        }.standardOutput.asText.get()
+            .lines().filter { it.startsWith("EXPORTED") }
+            .forEach { logger.lifecycle(it) }
     }
 }
 

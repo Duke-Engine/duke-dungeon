@@ -59,6 +59,8 @@ class MainMenuTest {
         for (var row : rows) {
             assertNotNull(row.next(), row.label() + " would start the game");
         }
+        var hut = rows.stream().filter(row -> row.label().equals("\"Baba Yaga's hut\"")).findFirst().orElseThrow();
+        assertTrue(hut.blurb().startsWith("Inuciian") && hut.blurb().contains("CC BY 4.0"), hut.blurb());
         assertTrue(rows.stream().noneMatch(row -> row.label().startsWith("Industrial")),
                 "the music's own table is not an asset row");
     }
