@@ -18,6 +18,10 @@ java {
 
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
+    // jME decodes every picture a test loads into direct memory, which by default is capped at the heap's
+    // 512 MB, and the test classes keep their loaders (and so their pictures) for the whole run. Two heroes
+    // with pictures of their own -- Lange and the Huntress -- took the suite past it halfway through.
+    jvmArgs("-XX:MaxDirectMemorySize=1g")
 }
 
 // The credits the front menu rolls are CREDITS.md's own rows, shipped beside the game's data.
