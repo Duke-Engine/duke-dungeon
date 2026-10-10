@@ -158,6 +158,47 @@ tasks.register("exportInuciian") {
     }
 }
 
+// phucpham1076's "Lange - Half-Elf Knight" (CC BY 4.0, see CREDITS.md) made into the knight:
+// resources/models/heroes/lange/lange.glb, his pictures and clips inside. See art/lange/export_lange.py.
+//
+//   ./gradlew exportLange -PlangeSource="C:/Users/me/Downloads/lange-half-elf-knight"
+//
+// The source (the Sketchfab download: source/KnightElf.zip and textures/) is not in the repository;
+// what ships is what this wrote, which is committed. The downsized pictures are left beside the
+// unpacked FBX under build/lange/out. Blender is found as convertAnimations finds it.
+tasks.register("exportLange") {
+    group = "application"
+    description = "Make Lange, the knight, into the game's model, using Blender"
+    doLast {
+        val source = File((findProperty("langeSource") as String?)
+            ?: throw GradleException("Say where the download is: -PlangeSource=\".../lange-half-elf-knight\""))
+        val unpacked = layout.buildDirectory.dir("lange").get().asFile
+        copy {
+            from(zipTree(File(source, "source/KnightElf.zip")))
+            into(unpacked)
+        }
+        val out = File(unpacked, "out")
+        providers.exec {
+            workingDir = rootProject.projectDir
+            commandLine(
+                blender("exportLange"), "-b", "--factory-startup",
+                "-P", "art/lange/export_lange.py", "--",
+                File(unpacked, "KnightElfposing.fbx").absolutePath,
+                File(unpacked, "Animations/KnightElfIdle.fbx").absolutePath,
+                File(unpacked, "Animations/KnightElfWalk.fbx").absolutePath,
+                File(source, "textures").absolutePath,
+                out.absolutePath,
+            )
+        }.standardOutput.asText.get()
+            .lines().filter { it.startsWith("EXPORTED") || it.startsWith("SIZE") || it.startsWith("CLIP") }
+            .forEach { logger.lifecycle(it) }
+        copy {
+            from(File(out, "lange.glb"))
+            into("src/main/resources/models/heroes/lange")
+        }
+    }
+}
+
 // A map drawn once, from a seed, then filled by hand on the Map tab of the IDE:
 //
 //   ./gradlew newMap --args="crypt 42"             # a floor's size, at depth 1
