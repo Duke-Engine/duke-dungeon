@@ -17,3 +17,9 @@ arrows); a hand bone (handslot.l) added for a bow, the bow itself being KayKit's
 (CC0) and attached in the game, not in this file; KayKit's character animations
 (CC0) retargeted onto her skeleton (animations/characters/huntress.glb);
 converted to glb.
+
+Updated 2026-10-10: a pale violet-grey iris, pupil and highlight painted into her eyes
+(eyes.jpg here is that picture); her skirt reweighted to follow her thighs; her fingers
+curled in every clip (bow hand gripping, draw hand hooked while shooting); clips from
+KayKit (CC0) and Quaternius' Universal Animation Library (CC0) retargeted onto her
+(huntress_clips.glb).

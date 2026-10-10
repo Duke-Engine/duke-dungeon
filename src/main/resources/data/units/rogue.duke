@@ -165,7 +165,9 @@ Hero
   ; shot if that reads better -- one word here, and one name in CLIPS in her
   ; exporter, which is the list of what is retargeted onto her.
   Attack = Ranged_Bow_Release
-  Hurt = Hit_A
+  ; Quaternius' flinch: a grown body takes a blow to the chest, where the chibi's Hit_A rocked a
+  ; big head about.
+  Hurt = Hit_Chest
   ; Death_A falls in 0.8s; Death_B takes 2.6s, which is longer than the floor
   ; stays open after he dies.
   Death = Death_A
@@ -258,10 +260,10 @@ Hero
     ; engagement, so a release clip here would have him shooting continuously and
     ; none of it would be a shot.
     Fight = Ranged_Bow_Aiming_Idle
-    ; The plainer of the two idles, run faster — see HurtSpeed above.
-    Hurt = Idle_B
-    ; Death_A falls in 0.8s.
-    Dead = Death_A
+    ; Quaternius' plain idle, run faster — see HurtSpeed above.
+    Hurt = Idle_Loop
+    ; Quaternius' fall, 2.4s: too long for the floor (Death above stays Death_A), not for the panel.
+    Dead = Death01
     ; Rising out of the ground, which reads as power arriving.
     LevelUp = Spawn_Ground
 
@@ -440,6 +442,10 @@ Hero
       Icon = icons/skills/skill_arrow_shot.png
       ; What it looks like going off -- see Effect Shot.
       Look = Shot
+      ; ★ HER GESTURE: the full draw (KayKit's Ranged_Bow_Draw on her rig), in the half second the
+      ; skill winds up (WindUpFrames 15).
+      CastAnim = Ranged_Bow_Draw
+      CastSeconds = 0.5
       Name = Og'ir o'q
       Blurb = Kamonni to'liq tortib bitta dushmanga og'ir o'q otadi. O'q xonani kesib o'tadi, shuning uchun nishon qochib ulgurishi mumkin.
       ManaCost = 14
@@ -461,6 +467,10 @@ Hero
       Icon = icons/skills/skill_arrow_volley.png
       ; What it looks like going off -- see Effect Volley.
       Look = Volley
+      ; ★ HER GESTURE: loosing into the sky, so the rain comes down from somewhere (KayKit's
+      ; Ranged_Bow_Release_Up), hurried from 1.4s into 0.6.
+      CastAnim = Ranged_Bow_Release_Up
+      CastSeconds = 0.6
       Name = O'q yomg'iri
       Blurb = Atrofdagi hamma dushmanga bir vaqtda zarar yetkazadi. Qurshab olinganda bosiladi.
       ManaCost = 24
@@ -481,6 +491,10 @@ Hero
       Icon = icons/skills/skill_dash.png
       ; What it looks like going off -- see Effect Sprint.
       Look = Sprint
+      ; ★ HER GESTURE: a roll (Quaternius' Roll), the way out of a fight rather than a run;
+      ; hurried from 1.5s into 0.6, since the dash itself lands at once.
+      CastAnim = Roll
+      CastSeconds = 0.6
       Name = Chopish
       Blurb = Ko'rsatilgan tomonga tez siljiydi. Hech kimga zarar bermaydi — bu jangdan chiqish yo'li, jangga kirish emas.
       ManaCost = 16
@@ -514,6 +528,9 @@ Hero
       Icon = icons/skills/skill_piercing_volley.png
       ; What it looks like going off -- see Effect Focus.
       Look = Focus
+      ; ★ HER GESTURE: a hand thrust out as the focus takes (Quaternius' Spell_Simple_Shoot).
+      CastAnim = Spell_Simple_Shoot
+      CastSeconds = 0.5
       Name = Nishonga ol
       Blurb = Bir muddat uning hamma zarbalari kuchliroq bo'ladi. O'zi hech kimga tegmaydi — bu boshqa hamma narsani qimmatroq qiladigan oyna.
       ManaCost = 40
