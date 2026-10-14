@@ -1003,3 +1003,21 @@ Asked: `Visuals.fogStartsExplored(Predicate<Object> forMap)` (the E18/E24 shape,
 laid): a map it names starts with all cells explored and none visible; the descent and dungeons, not named, start black
 as today. The minimap the same (the whole map drawn, creatures only in sight). Done when a test lays a named map
 explored-not-visible and an unnamed one black.
+
+## E39 — Coins that bounce and fly into the hero (2026-10-14, small)
+
+The owner, 2026-10-14: when a monster dies and pays, coins burst out of the corpse, fall, bounce, and fly into
+the hero who killed it, and the gold floats up as "+20". The game does it today with what the engine has: a
+GoldBurst plays a BURST effect of coin pictures at the corpse (up in an arc, gravity, spin, fading as they fall),
+once for every few gold, and its own painter floats the number over the corpse through `Canvas.screenOf`. Two
+things are missing for the rest of the look, both drawing only (out of the checksum, as every effect is):
+
+- **A floor to bounce on.** A BURST particle falls through the ground. Asked: a layer's `Bounce` (0 to 1, the
+  speed kept on hitting the floor at the effect's own height; 0 as today) so a coin lands and hops once or twice.
+- **A thing to fly into.** Asked: an effect played at a point with a thing to end at — `World.effect(name, where,
+  facing, toward)` — whose layers that say `Home = Yes` turn, after `HomeDelay` of their life, toward that thing
+  (where it stands as drawn) and are gone on reaching it; a thing gone, they fade where they are.
+
+And a nicety: a coin spins in the screen's plane today (`Spin`); a `Flip` (turns a second, the picture squeezed
+across by its cosine) would make it read as a coin turning over. Done when a test plays a homing layer at a point
+with a thing and its particles end at the thing, and a bouncing layer's particles never go under its floor.

@@ -1599,10 +1599,11 @@ public final class DungeonRun {
     }
 
     /**
-     * A monster the floor placed died: the hero whose blow it was is paid, at once, and his bubble says so. A blow that
-     * names its killer but not his side is his killer's side.
+     * A monster the floor placed died: the hero whose blow it was is paid, at once, and it is shown -- the GoldBurst's
+     * coins played at the corpse, an event and so nothing the simulation reads, and the payment kept for the painter
+     * to float the gold over it. A blow that names its killer but not his side is his killer's side.
      */
-    private void pay(uz.dukeengine.core.module.Death death, int level) {
+    private void pay(uz.dukeengine.core.module.Death death, int level, GameObject monster) {
         int player = death.killerPlayerIndex();
         if (player < 0 && death.killer() != null && lastLogic != null) {
             var killer = lastLogic.findObject(death.killer());
@@ -1614,10 +1615,36 @@ public final class DungeonRun {
         }
         int paid = settings.story().trade().goldFor(level);
         seat.gold += paid;
-        if (lastLogic != null) {
-            seat.progress.getLoot().say(settings.story().trade().gainWord().replace("%d", Integer.toString(paid)),
-                    lastLogic.getFrame(), settings.lootDrops().noteFrames());
+        // The world the corpse lies in, which is the one drawn: a run outlives the worlds its floors are laid in.
+        var world = monster.getWorld();
+        if (world == null || paid <= 0) {
+            return;
         }
+        var at = monster.getPosition();
+        int frame = world.getFrame();
+        payments.removeIf(old -> frame - old.frame() > PAYMENTS_KEPT_FRAMES);
+        payments.add(new Payment(frame, player, paid, at.x(), at.y(), at.z()));
+        var burst = settings.goldBurst();
+        if (!burst.coinLook().isBlank()) {
+            for (int i = burst.burstsFor(paid); i > 0; i--) {
+                world.effect(burst.coinLook(), at, 0f);
+            }
+        }
+    }
+
+    /** A kill paid for, as it is shown: the frame, whose gold, how much, and where the corpse lay. */
+    public record Payment(int frame, int player, int gold, float x, float y, float z) {
+    }
+
+    /** How long a payment is kept for the painter: longer than any float lasts. */
+    private static final int PAYMENTS_KEPT_FRAMES = 10 * uz.dukeengine.core.GameConstants.LOGICFRAMES_PER_SECOND;
+
+    /** Drawing only: never read by the simulation, never saved. */
+    private final List<Payment> payments = new java.util.concurrent.CopyOnWriteArrayList<>();
+
+    /** The kills paid for in the last few seconds, oldest first: what the painter floats the gold of. */
+    public List<Payment> payments() {
+        return List.copyOf(payments);
     }
 
     /** How much gold this player's hero has; 0 for a player with no seat. */

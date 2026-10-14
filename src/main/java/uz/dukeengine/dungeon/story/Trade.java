@@ -9,7 +9,7 @@ package uz.dukeengine.dungeon.story;
  * @param sellPercent  what a thing sells for, in percent of its price
  * @param basePrice    the price of a thing no merchant stocks
  * @param wanderFrames how often a wandering person picks somewhere new to stroll to
- * @param gainWord     the hero's bubble as he is paid; {@code %d} the gold
+ * @param gainWord     the gold a kill paid, floated over the corpse; {@code %d} the gold
  * @param goldIcon     the coins drawn before the purse, a path from the resource root
  */
 public record Trade(int goldPerKill, int goldPerLevel, int sellPercent, int basePrice, int wanderFrames,
