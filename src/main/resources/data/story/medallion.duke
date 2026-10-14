@@ -36,7 +36,7 @@ End
 LootItem
   Name = Medallion
   DisplayName = Malikaning medalyoni
-  Icon = icons/stats/stat_lifesteal.png
+  Icon = icons/items/medallion.png
   Kind = QUEST
   Slot = Tumor
   ; Its passive, lent while it is worn: a soul for every enemy its wearer kills,

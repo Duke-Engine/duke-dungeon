@@ -52,7 +52,8 @@ class KeyArtTest {
 
     @Test
     void itsPictureIsTheSizeOfEveryOtherAndClearRoundTheKey() throws IOException {
-        var image = ImageIO.read(KeyArtTest.class.getClassLoader().getResource("icons/items/key_crown.png"));
+        var image = ImageIO.read(KeyArtTest.class.getClassLoader().getResource(SETTINGS.loot().stream()
+                .filter(item -> item.id().equals("Key")).findFirst().orElseThrow().icon()));
 
         assertNotNull(image, "the bag has no picture of it");
         assertEquals(64, image.getWidth());

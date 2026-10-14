@@ -145,7 +145,7 @@ End
 LootItem
   Name = Locket
   DisplayName = Tumor
-  Icon = icons/stats/stat_crit.png
+  Icon = icons/items/locket.png
   Kind = QUEST
   Value = 0
   Weight = 0

@@ -15,6 +15,8 @@ Trade
   ; How often, in frames, a wandering person picks somewhere new to stroll to.
   WanderFrames = 150
   GoldWord = Oltin
+  ; The coins drawn before the purse, wherever it is shown.
+  GoldIcon = icons/items/gold.png
   GainWord = "+%d oltin"
   StockWord = Sotiladi
   BagWord = Xaltangiz
@@ -65,7 +67,7 @@ End
 LootItem
   Name = Amulet
   DisplayName = Hayot tumori
-  Icon = icons/stats/stat_health.png
+  Icon = icons/items/amulet.png
   Kind = HEALTH
   Slot = Tumor
   Value = 40
@@ -75,7 +77,7 @@ End
 LootItem
   Name = Ring
   DisplayName = Mana uzugi
-  Icon = icons/stats/stat_intelligence.png
+  Icon = icons/items/ring.png
   Kind = MANA
   Slot = Uzuk
   Value = 30
@@ -85,7 +87,7 @@ End
 LootItem
   Name = Whetstone
   DisplayName = Charx toshi
-  Icon = icons/stats/stat_attack.png
+  Icon = icons/items/whetstone.png
   Kind = ATTACK
   Slot = Qurol
   Value = 6
