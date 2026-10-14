@@ -17,7 +17,7 @@ final class Bounty extends Module implements DieModule {
 
     /** Who is paid what: the blow that killed it, and its level. */
     interface Payer {
-        void pay(Death death, int level);
+        void pay(Death death, int level, GameObject monster);
     }
 
     private final int level;
@@ -32,7 +32,7 @@ final class Bounty extends Module implements DieModule {
     @Override
     public void onDie(Death death) {
         if (death != null) {
-            payer.pay(death, level);
+            payer.pay(death, level, getOwner());
         }
     }
 }

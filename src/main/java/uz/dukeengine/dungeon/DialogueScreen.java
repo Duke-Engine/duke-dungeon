@@ -126,6 +126,7 @@ final class DialogueScreen implements Painter, CanvasInput {
         if (under != null) {
             under.paint(canvas);
         }
+        trade.floats(canvas, match);
         trade.purse(canvas, match);
         if (!inCutscene()) {
             trade.paint(canvas, match);

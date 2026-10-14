@@ -17,7 +17,9 @@ Trade
   GoldWord = Oltin
   ; The coins drawn before the purse, wherever it is shown.
   GoldIcon = icons/items/gold.png
-  GainWord = "+%d oltin"
+  ; The gold a kill paid, floated up over the corpse (see GoldBurst below); %d the gold. "+%d oltin" says the
+  ; word as well.
+  GainWord = "+%d"
   StockWord = Sotiladi
   BagWord = Xaltangiz
   CloseHint = "Esc — yopish"
@@ -25,6 +27,71 @@ Trade
   FullWord = Xalta to'la
   SoldOutWord = Qolmadi
   CantSellWord = Buni sotib bo'lmaydi
+End
+
+; What a kill that pays looks like -- drawing only, nothing the simulation reads. The coins: CoinLook
+; played at the corpse once for every GoldPerBurst paid, at most MostBursts times, so a bigger purse is
+; more coins. The number: the GainWord above, FloatHeight units over the corpse's feet, rising
+; FloatRise of the window's height over FloatSeconds, solid for HoldShare of that and then fading, its
+; letters TextSize of the window's height -- BigScale bigger from BigGold -- in Colour.
+GoldBurst
+  CoinLook = CoinBurst
+  GoldPerBurst = 8
+  MostBursts = 6
+  FloatSeconds = 1.2
+  HoldShare = 0.35
+  FloatHeight = 16
+  FloatRise = 0.07
+  TextSize = 0.03
+  BigGold = 30
+  BigScale = 1.35
+  Colour = 0xFFD447
+End
+
+; A handful of gold coins thrown up out of a corpse in an arc, turning as they fly, falling and gone in
+; about a second, with a glint as they leave. The coin is effects/coin.png, painted by
+; art/icons/ItemIcons.java from game-icons.net's crown coin (Lorc, CC BY 3.0); a white Colour keeps its gold.
+Effect
+  Name = CoinBurst
+
+  Layers = [
+    Layer
+      Name = Coins
+      Type = BURST
+      Texture = effects/coin.png
+      Blend = Alpha
+      Count = 4
+      Life = [0.8, 1.1]
+      Size = [2.4, 2.0]
+      SizeJitter = 0.2
+      Colour = [0xFFFFFF, 0xFFFFFF]
+      Alpha = [1, 1]
+      FadeOut = 0.3
+      Speed = [16, 24]
+      Direction = UP
+      Spread = 40
+      Height = 6
+      Gravity = 45
+      Spin = 540
+      TurnJitter = 360
+    End,
+
+    Layer
+      Name = Glint
+      Type = BURST
+      Texture = kit/effects/particles/star_01.png
+      Blend = Additive
+      Count = 3
+      Life = [0.2, 0.4]
+      Size = [3, 0.5]
+      Colour = [0xFFF4B0, 0xFFB020]
+      Alpha = [1, 0]
+      Speed = [4, 8]
+      Direction = UP
+      Spread = 60
+      Height = 7
+    End
+  ]
 End
 
 Speaker

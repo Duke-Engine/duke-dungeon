@@ -15,5 +15,5 @@ Armor Icons by Equipment Slot -- Clint Bellanger, Blarumyrran, crowline, Justin 
 OSARE weapon icons -- Blarumyrran -- https://opengameart.org/content/osare-weapon-icons -- CC0.
   Modified: cut from the sheet, black keyed out, framed.
 
-key.png is drawn from key_crown.png, rendered from the owner's key model (art/models/key_crown.glb), whose maker is not
-named: see CREDITS.md.
+key.png is Delapouite's boss key from game-icons.net. The key lying on the floor is still the owner's model
+(models/props/key/), whose maker is not named: see CREDITS.md.

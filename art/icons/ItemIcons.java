@@ -37,9 +37,10 @@ import javax.imageio.ImageWriteParam;
  *
  * <p>What is drawn is listed in {@code art/icons/items.csv}: a row a picture, with its group (wired: the game's own
  * things, at the bag's 64 pixels into {@code icons/items/}; library: the starter set, at 128 into
- * {@code icons/items/library/} with an index; candidate: the skill, figure and command pictures offered in the same
- * look, written only where {@code --candidates} says), its rarity, where it comes from and the gradient it is filled
- * with. Every picture is painted at 128 and halved for 64.
+ * {@code icons/items/library/} with an index; skills, commands and stats: the panel's pictures, at 128 into
+ * {@code icons/skills/} and {@code icons/commands/} and at 64 into {@code icons/stats/}; effect: a particle's picture,
+ * the drawing alone with no frame, at 64 into {@code effects/}), its rarity, where it comes from and the gradient it
+ * is filled with. Every picture is painted at 128 and halved for 64.
  *
  * <p>Its sources live beside it, so it runs from the repository alone: the outline of every game-icons drawing used in
  * {@code art/icons/items/glyphs.txt} (one {@code author/name<TAB>path} a line, the one path each of their SVGs is),
@@ -47,8 +48,8 @@ import javax.imageio.ImageWriteParam;
  * from the packs as downloaded, which is only needed when a row names something not yet there.
  *
  * <pre>
- * java art/icons/ItemIcons.java                                   # the game's and the library's pictures
- * java art/icons/ItemIcons.java --sheets DIR --candidates DIR     # and the sheets, and the candidates
+ * java art/icons/ItemIcons.java                                   # every picture the manifest lists
+ * java art/icons/ItemIcons.java --sheets DIR                      # and a sheet of each group
  * java art/icons/ItemIcons.java --import DOWNLOADS                # gi/, raven/128/, flare_armor.png, osare_relvad.png
  * </pre>
  *
@@ -143,12 +144,10 @@ public final class ItemIcons {
 
     public static void main(String[] args) throws IOException {
         Path sheets = null;
-        Path candidates = null;
         Path downloads = null;
         for (int i = 0; i < args.length; i += 2) {
             switch (args[i]) {
                 case "--sheets" -> sheets = Path.of(args[i + 1]);
-                case "--candidates" -> candidates = Path.of(args[i + 1]);
                 case "--import" -> downloads = Path.of(args[i + 1]);
                 default -> throw new IllegalArgumentException("unknown argument " + args[i]);
             }
@@ -162,24 +161,25 @@ public final class ItemIcons {
         var made = new LinkedHashMap<Row, BufferedImage>();
         Files.createDirectories(LIBRARY);
         for (var row : rows) {
-            var big = render(row, glyphs);
+            var big = row.group().equals("effect") ? glyph(parse(glyphOf(row, glyphs)), row.colours())
+                    : render(row, glyphs);
             made.put(row, big);
             switch (row.group()) {
                 case "wired" -> write(half(big), WIRED.resolve(row.name() + ".png"));
                 case "library" -> write(big, LIBRARY.resolve(row.name() + ".png"));
-                case "candidate" -> {
-                    if (candidates != null) {
-                        Files.createDirectories(candidates);
-                        write(big, candidates.resolve(row.name() + ".png"));
-                    }
-                }
+                // The panel's: a skill and an order at 128, a figure at 64, in their own folders.
+                case "skills", "commands" -> write(big, RESOURCES.resolve("icons/" + row.group() + "/" + row.name()
+                        + ".png"));
+                case "stats" -> write(half(big), RESOURCES.resolve("icons/stats/" + row.name() + ".png"));
+                // A particle's picture: the drawing alone, no frame, at 64.
+                case "effect" -> write(half(big), RESOURCES.resolve("effects/" + row.name() + ".png"));
                 default -> throw new IllegalArgumentException(row.name() + ": no group " + row.group());
             }
         }
         writeIndex(rows);
         if (sheets != null) {
             Files.createDirectories(sheets);
-            for (var group : List.of("wired", "library", "candidate")) {
+            for (var group : rows.stream().map(Row::group).distinct().toList()) {
                 var some = new LinkedHashMap<Row, BufferedImage>();
                 made.forEach((row, image) -> {
                     if (row.group().equals(group)) {
@@ -189,10 +189,17 @@ public final class ItemIcons {
                 ImageIO.write(sheet(group, some), "png", sheets.resolve(group + ".png").toFile());
             }
         }
-        System.out.printf("%d pictures: %d wired, %d in the library, %d candidates%n", rows.size(),
-                rows.stream().filter(r -> r.group().equals("wired")).count(),
-                rows.stream().filter(r -> r.group().equals("library")).count(),
-                rows.stream().filter(r -> r.group().equals("candidate")).count());
+        var counts = new TreeMap<String, Long>();
+        rows.forEach(row -> counts.merge(row.group(), 1L, Long::sum));
+        System.out.println(rows.size() + " pictures: " + counts);
+    }
+
+    static String glyphOf(Row row, Map<String, String> glyphs) throws IOException {
+        var d = glyphs.get(row.ref());
+        if (d == null) {
+            throw new IOException(row.ref() + " is not in " + GLYPHS + ": run --import first");
+        }
+        return d;
     }
 
     static List<Row> rows() throws IOException {
@@ -437,11 +444,7 @@ public final class ItemIcons {
         g.setClip(frame);
         BufferedImage thing;
         if (row.kind().equals("gi")) {
-            var d = glyphs.get(row.ref());
-            if (d == null) {
-                throw new IOException(row.ref() + " is not in " + GLYPHS + ": run --import first");
-            }
-            thing = glyph(parse(d), row.colours());
+            thing = glyph(parse(glyphOf(row, glyphs)), row.colours());
         } else {
             var source = row.kind().equals("res") ? RESOURCES.resolve(row.ref()) : PAINTED.resolve(painted(row));
             var read = ImageIO.read(source.toFile());

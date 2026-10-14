@@ -111,6 +111,60 @@ final class TradeScreen {
         canvas.drawText(font, words, x, y, 0xFF000000 | look.torchColour());
     }
 
+    /**
+     * One kill's gold as it floats this frame: its words, the point of the world it rises from, how far it has risen
+     * (a share of the window's height), how solid it is and how big against the GoldBurst's text size.
+     */
+    record GoldFloat(String text, float x, float y, float z, float rise, float alpha, float scale) {
+    }
+
+    /**
+     * The gold of every kill paid to {@code player} still floating in {@code frame}: the Trade's GainWord with the
+     * gold in it, from the GoldBurst's height over the corpse, risen as far as its life has gone, solid for HoldShare
+     * of it and then fading, bigger from BigGold. Counted in the game's frames, so a paused game holds it.
+     */
+    static List<GoldFloat> floating(List<uz.dukeengine.dungeon.run.DungeonRun.Payment> payments, int player, int frame,
+            DungeonSettings settings) {
+        var burst = settings.goldBurst();
+        float life = burst.floatSeconds() * uz.dukeengine.core.GameConstants.LOGICFRAMES_PER_SECOND;
+        var out = new ArrayList<GoldFloat>();
+        for (var paid : payments) {
+            float age = (frame - paid.frame()) / life;
+            if (paid.player() != player || age < 0f || age >= 1f) {
+                continue;
+            }
+            float eased = 1f - (1f - age) * (1f - age);
+            float alpha = age <= burst.holdShare() ? 1f : 1f - (age - burst.holdShare()) / (1f - burst.holdShare());
+            out.add(new GoldFloat(settings.story().trade().gainWord().replace("%d", Integer.toString(paid.gold())),
+                    paid.x(), paid.y(), paid.z() + burst.floatHeight(), burst.floatRise() * eased, alpha,
+                    paid.gold() >= burst.bigGold() ? burst.bigScale() : 1f));
+        }
+        return out;
+    }
+
+    /** The gold of this machine's kills floating up over the corpses: see {@link #floating}. */
+    void floats(Canvas canvas, Dungeon.Session match) {
+        if (match == null || match.game().getLogic() == null) {
+            return;
+        }
+        var burst = settings.goldBurst();
+        for (var one : floating(match.run().payments(), match.game().getLocalPlayerIndex(),
+                match.game().getLogic().getFrame(), settings)) {
+            var at = canvas.screenOf(one.x(), one.y(), one.z());
+            if (at == null) {
+                continue;
+            }
+            int px = Math.max(10, Math.round(canvas.height() * burst.textSize() * one.scale()));
+            var font = Canvas.Font.of("Georgia", px);
+            var size = canvas.measure(font, one.text());
+            float x = at.x() - size.width() / 2f;
+            float y = at.y() - size.lineHeight() - one.rise() * canvas.height();
+            int alpha = Math.round(one.alpha() * 255f) << 24;
+            canvas.drawText(font, one.text(), x + 1.5f, y + 1.5f, alpha | 0x000000);
+            canvas.drawText(font, one.text(), x, y, alpha | burst.colour() & 0xFFFFFF);
+        }
+    }
+
     /** The coins before a purse whose words start at {@code x}, as tall as a line and a third, centred on it. */
     private void coins(Canvas canvas, float x, float y, float line) {
         var icon = settings.story().trade().goldIcon();

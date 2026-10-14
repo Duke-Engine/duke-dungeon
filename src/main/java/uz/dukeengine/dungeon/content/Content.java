@@ -119,6 +119,7 @@ public final class Content {
             named(uz.dukeengine.dungeon.world.MainMenu.class),
             named(uz.dukeengine.dungeon.story.Trigger.class), named(uz.dukeengine.dungeon.story.Cutscene.class),
             named(uz.dukeengine.dungeon.story.Merchant.class), named(uz.dukeengine.dungeon.story.Trade.class),
+            named(uz.dukeengine.dungeon.story.GoldBurst.class),
             named(uz.dukeengine.dungeon.story.Boss.class), named(uz.dukeengine.dungeon.story.Medallion.class));
 
     /** The blocks a world builds things from. */
