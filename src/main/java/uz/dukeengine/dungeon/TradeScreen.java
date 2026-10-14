@@ -107,7 +107,20 @@ final class TradeScreen {
         float x = canvas.width() - size.width() - 16f;
         float y = floor - size.lineHeight();
         canvas.drawText(font, words, x + 1f, y + 1f, 0xC0000000);
+        coins(canvas, x, y, size.lineHeight());
         canvas.drawText(font, words, x, y, 0xFF000000 | look.torchColour());
+    }
+
+    /** The coins before a purse whose words start at {@code x}, as tall as a line and a third, centred on it. */
+    private void coins(Canvas canvas, float x, float y, float line) {
+        var icon = settings.story().trade().goldIcon();
+        if (icon == null || icon.isBlank()) {
+            return;
+        }
+        float face = line * 1.35f;
+        float top = y + (line - face) / 2f;
+        canvas.drawImage(Canvas.Image.of(icon), x - face - 4f, top, x - 4f, top + face,
+                0xFFFFFFFF, Canvas.Blend.ALPHA);
     }
 
     /** The window, over everything but the dialogue box. */
@@ -141,7 +154,9 @@ final class TradeScreen {
                 : settings.story().speaker(npcOf(match, merchant)).displayName();
         canvas.drawText(font, name, left + pad, top + pad, gold);
         var purse = trade.goldWord() + ": " + match.run().goldOf(match.game().getLocalPlayerIndex());
-        canvas.drawText(font, purse, left + wide - pad - canvas.measure(font, purse).width(), top + pad, gold);
+        float purseAt = left + wide - pad - canvas.measure(font, purse).width();
+        coins(canvas, purseAt, top + pad, canvas.measure(font, purse).lineHeight());
+        canvas.drawText(font, purse, purseAt, top + pad, gold);
 
         float y = top + pad + line * 1.3f;
         canvas.drawText(font, trade.stockWord(), left + pad, y, gold);

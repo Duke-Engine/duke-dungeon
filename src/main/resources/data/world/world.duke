@@ -596,7 +596,7 @@ End
 LootItem
   Name = Gauntlet
   DisplayName = Kuch qo'lqopi
-  Icon = icons/stats/stat_strength.png
+  Icon = icons/items/gauntlet.png
   Kind = ATTRIBUTE
   Attribute = Strength
   Slot = Zirh
@@ -613,7 +613,7 @@ End
 LootItem
   Name = Boots
   DisplayName = Chaqqon etik
-  Icon = icons/stats/stat_agility.png
+  Icon = icons/items/boots.png
   Kind = ATTRIBUTE
   Attribute = Agility
   Slot = Etik
@@ -627,7 +627,7 @@ End
 LootItem
   Name = Tome
   DisplayName = Donolik kitobi
-  Icon = icons/stats/stat_intelligence.png
+  Icon = icons/items/tome.png
   Kind = ATTRIBUTE
   Attribute = Intelligence
   Slot = Dubulg'a
@@ -650,7 +650,7 @@ End
 LootItem
   Name = Key
   DisplayName = Kalit
-  Icon = icons/items/key_crown.png
+  Icon = icons/items/key.png
   Kind = KEY
   Use = UNLOCK
   LiesAs = Key

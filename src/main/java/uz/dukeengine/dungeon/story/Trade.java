@@ -10,13 +10,15 @@ package uz.dukeengine.dungeon.story;
  * @param basePrice    the price of a thing no merchant stocks
  * @param wanderFrames how often a wandering person picks somewhere new to stroll to
  * @param gainWord     the hero's bubble as he is paid; {@code %d} the gold
+ * @param goldIcon     the coins drawn before the purse, a path from the resource root
  */
 public record Trade(int goldPerKill, int goldPerLevel, int sellPercent, int basePrice, int wanderFrames,
         String goldWord, String gainWord, String stockWord, String bagWord, String closeHint, String noGoldWord,
-        String fullWord, String soldOutWord, String cantSellWord) {
+        String fullWord, String soldOutWord, String cantSellWord, String goldIcon) {
 
     public static final Trade DEFAULTS = new Trade(4, 2, 40, 30, 150, "Oltin", "+%d oltin", "Sotiladi",
-            "Xaltangiz", "Esc — yopish", "Oltin yetmaydi", "Xalta to'la", "Qolmadi", "Buni sotib bo'lmaydi");
+            "Xaltangiz", "Esc — yopish", "Oltin yetmaydi", "Xalta to'la", "Qolmadi", "Buni sotib bo'lmaydi",
+            "icons/items/gold.png");
 
     /** What a kill of a monster at {@code level} pays. */
     public int goldFor(int level) {
