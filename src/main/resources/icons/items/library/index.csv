@@ -1,0 +1,149 @@
+name,category,rarity,file,source,author,licence
+sword_short,weapon,common,sword_short.png,Ravenmore Fantasy Icon Pack 2.0 sword,Ravenmore,CC BY 3.0
+sword_rune,weapon,rare,sword_rune.png,Ravenmore Fantasy Icon Pack 2.0 upg_sword,Ravenmore,CC BY 3.0
+knife,weapon,common,knife.png,OSARE weapon icons 0.0,Blarumyrran,CC0
+sword_long,weapon,common,sword_long.png,OSARE weapon icons 0.1,Blarumyrran,CC0
+sword_broad,weapon,magic,sword_broad.png,OSARE weapon icons 0.2,Blarumyrran,CC0
+sword_blood,weapon,epic,sword_blood.png,OSARE weapon icons 0.3,Blarumyrran,CC0
+dagger,weapon,common,dagger.png,Ravenmore Fantasy Icon Pack 2.0 dagger,Ravenmore,CC BY 3.0
+dagger_fine,weapon,rare,dagger_fine.png,Ravenmore Fantasy Icon Pack 2.0 upg_dagger,Ravenmore,CC BY 3.0
+axe,weapon,common,axe.png,Ravenmore Fantasy Icon Pack 2.0 axe,Ravenmore,CC BY 3.0
+axe_fine,weapon,rare,axe_fine.png,Ravenmore Fantasy Icon Pack 2.0 upg_axe,Ravenmore,CC BY 3.0
+axe_double,weapon,magic,axe_double.png,Ravenmore Fantasy Icon Pack 2.0 axeDouble,Ravenmore,CC BY 3.0
+hammer,weapon,common,hammer.png,Ravenmore Fantasy Icon Pack 2.0 hammer,Ravenmore,CC BY 3.0
+spear,weapon,magic,spear.png,Ravenmore Fantasy Icon Pack 2.0 upg_spear,Ravenmore,CC BY 3.0
+bow,weapon,common,bow.png,Ravenmore Fantasy Icon Pack 2.0 bow,Ravenmore,CC BY 3.0
+bow_fine,weapon,rare,bow_fine.png,Ravenmore Fantasy Icon Pack 2.0 upg_bow,Ravenmore,CC BY 3.0
+wand,weapon,common,wand.png,Ravenmore Fantasy Icon Pack 2.0 wand,Ravenmore,CC BY 3.0
+crossbow,weapon,magic,crossbow.png,OSARE weapon icons 2.1,Blarumyrran,CC0
+bow_short,weapon,common,bow_short.png,OSARE weapon icons 2.2,Blarumyrran,CC0
+bow_long,weapon,magic,bow_long.png,OSARE weapon icons 2.3,Blarumyrran,CC0
+staff_ruby,weapon,rare,staff_ruby.png,OSARE weapon icons 3.1,Blarumyrran,CC0
+staff_emerald,weapon,rare,staff_emerald.png,OSARE weapon icons 3.2,Blarumyrran,CC0
+staff_star,weapon,epic,staff_star.png,OSARE weapon icons 3.3,Blarumyrran,CC0
+katana,weapon,rare,katana.png,game-icons.net delapouite/katana,Delapouite,CC BY 3.0
+halberd,weapon,common,halberd.png,game-icons.net lorc/halberd,Lorc,CC BY 3.0
+trident,weapon,magic,trident.png,game-icons.net lorc/trident,Lorc,CC BY 3.0
+mace,weapon,common,mace.png,game-icons.net lorc/spiked-mace,Lorc,CC BY 3.0
+warhammer,weapon,magic,warhammer.png,game-icons.net delapouite/warhammer,Delapouite,CC BY 3.0
+battle_axe,weapon,magic,battle_axe.png,game-icons.net lorc/battle-axe,Lorc,CC BY 3.0
+quiver,weapon,common,quiver.png,game-icons.net delapouite/quiver,Delapouite,CC BY 3.0
+staff_wizard,weapon,magic,staff_wizard.png,game-icons.net lorc/wizard-staff,Lorc,CC BY 3.0
+staff_skull,weapon,epic,staff_skull.png,game-icons.net delapouite/skull-staff,Delapouite,CC BY 3.0
+wand_crystal,weapon,rare,wand_crystal.png,game-icons.net lorc/crystal-wand,Lorc,CC BY 3.0
+shield_wooden,shield,common,shield_wooden.png,OSARE weapon icons 4.0,Blarumyrran,CC0
+shield_steel,shield,magic,shield_steel.png,OSARE weapon icons 4.1,Blarumyrran,CC0
+shield_kite,shield,common,shield_kite.png,Ravenmore Fantasy Icon Pack 2.0 shield,Ravenmore,CC BY 3.0
+shield_kite_fine,shield,rare,shield_kite_fine.png,Ravenmore Fantasy Icon Pack 2.0 upg_shield,Ravenmore,CC BY 3.0
+buckler,shield,common,buckler.png,Ravenmore Fantasy Icon Pack 2.0 shieldSmall,Ravenmore,CC BY 3.0
+shield_round,shield,common,shield_round.png,game-icons.net willdabeast/round-shield,Willdabeast,CC BY 3.0
+cloth_shirt,armour,common,cloth_shirt.png,Armor Icons by Equipment Slot 0.1,Clint Bellanger; Blarumyrran; crowline; Justin Nichol,CC0
+cloth_gloves,armour,common,cloth_gloves.png,Armor Icons by Equipment Slot 0.2,Clint Bellanger; Blarumyrran; crowline; Justin Nichol,CC0
+cloth_sandals,armour,common,cloth_sandals.png,Armor Icons by Equipment Slot 0.4,Clint Bellanger; Blarumyrran; crowline; Justin Nichol,CC0
+hide_hood,armour,common,hide_hood.png,Armor Icons by Equipment Slot 1.0,Clint Bellanger; Blarumyrran; crowline; Justin Nichol,CC0
+hide_tunic,armour,common,hide_tunic.png,Armor Icons by Equipment Slot 1.1,Clint Bellanger; Blarumyrran; crowline; Justin Nichol,CC0
+hide_boots,armour,common,hide_boots.png,Armor Icons by Equipment Slot 1.4,Clint Bellanger; Blarumyrran; crowline; Justin Nichol,CC0
+leather_hood,armour,common,leather_hood.png,Armor Icons by Equipment Slot 2.0,Clint Bellanger; Blarumyrran; crowline; Justin Nichol,CC0
+leather_armour,armour,common,leather_armour.png,Armor Icons by Equipment Slot 2.1,Clint Bellanger; Blarumyrran; crowline; Justin Nichol,CC0
+leather_gloves,armour,common,leather_gloves.png,Armor Icons by Equipment Slot 2.2,Clint Bellanger; Blarumyrran; crowline; Justin Nichol,CC0
+leather_trousers,armour,common,leather_trousers.png,Armor Icons by Equipment Slot 2.3,Clint Bellanger; Blarumyrran; crowline; Justin Nichol,CC0
+leather_boots,armour,common,leather_boots.png,Armor Icons by Equipment Slot 2.4,Clint Bellanger; Blarumyrran; crowline; Justin Nichol,CC0
+chain_coif,armour,magic,chain_coif.png,Armor Icons by Equipment Slot 3.0,Clint Bellanger; Blarumyrran; crowline; Justin Nichol,CC0
+chain_shirt,armour,magic,chain_shirt.png,Armor Icons by Equipment Slot 3.1,Clint Bellanger; Blarumyrran; crowline; Justin Nichol,CC0
+chain_gloves,armour,magic,chain_gloves.png,Armor Icons by Equipment Slot 3.2,Clint Bellanger; Blarumyrran; crowline; Justin Nichol,CC0
+chain_boots,armour,magic,chain_boots.png,Armor Icons by Equipment Slot 3.4,Clint Bellanger; Blarumyrran; crowline; Justin Nichol,CC0
+plate_helm,armour,rare,plate_helm.png,Armor Icons by Equipment Slot 4.0,Clint Bellanger; Blarumyrran; crowline; Justin Nichol,CC0
+plate_cuirass,armour,rare,plate_cuirass.png,Armor Icons by Equipment Slot 4.1,Clint Bellanger; Blarumyrran; crowline; Justin Nichol,CC0
+plate_gauntlets,armour,rare,plate_gauntlets.png,Armor Icons by Equipment Slot 4.2,Clint Bellanger; Blarumyrran; crowline; Justin Nichol,CC0
+plate_greaves,armour,rare,plate_greaves.png,Armor Icons by Equipment Slot 4.3,Clint Bellanger; Blarumyrran; crowline; Justin Nichol,CC0
+plate_boots,armour,rare,plate_boots.png,Armor Icons by Equipment Slot 4.4,Clint Bellanger; Blarumyrran; crowline; Justin Nichol,CC0
+plate_dark,armour,epic,plate_dark.png,OSARE weapon icons 1.2,Blarumyrran,CC0
+cuirass,armour,common,cuirass.png,Ravenmore Fantasy Icon Pack 2.0 armor,Ravenmore,CC BY 3.0
+helmet,armour,common,helmet.png,Ravenmore Fantasy Icon Pack 2.0 helmet,Ravenmore,CC BY 3.0
+helm_viking,armour,magic,helm_viking.png,game-icons.net delapouite/viking-helmet,Delapouite,CC BY 3.0
+robe_mage,armour,magic,robe_mage.png,game-icons.net lorc/robe,Lorc,CC BY 3.0
+ring_gold,jewellery,common,ring_gold.png,game-icons.net delapouite/ring,Delapouite,CC BY 3.0
+ring_diamond,jewellery,rare,ring_diamond.png,game-icons.net delapouite/diamond-ring,Delapouite,CC BY 3.0
+ring_power,jewellery,epic,ring_power.png,game-icons.net delapouite/power-ring,Delapouite,CC BY 3.0
+ring_frost,jewellery,magic,ring_frost.png,game-icons.net delapouite/frozen-ring,Delapouite,CC BY 3.0
+necklace_pearl,jewellery,magic,necklace_pearl.png,game-icons.net delapouite/pearl-necklace,Delapouite,CC BY 3.0
+necklace_emerald,jewellery,rare,necklace_emerald.png,game-icons.net delapouite/emerald-necklace,Delapouite,CC BY 3.0
+medal,jewellery,magic,medal.png,game-icons.net lorc/medal,Lorc,CC BY 3.0
+ankh,jewellery,rare,ankh.png,game-icons.net lorc/ankh,Lorc,CC BY 3.0
+crown,jewellery,epic,crown.png,game-icons.net delapouite/jewel-crown,Delapouite,CC BY 3.0
+crown_queen,jewellery,epic,crown_queen.png,game-icons.net lorc/queen-crown,Lorc,CC BY 3.0
+potion_health,potion,common,potion_health.png,game-icons.net delapouite/health-potion,Delapouite,CC BY 3.0
+potion_mana,potion,common,potion_mana.png,game-icons.net lorc/round-bottom-flask,Lorc,CC BY 3.0
+potion_stamina,potion,common,potion_stamina.png,game-icons.net lorc/standing-potion,Lorc,CC BY 3.0
+potion_antidote,potion,common,potion_antidote.png,game-icons.net lorc/fizzing-flask,Lorc,CC BY 3.0
+potion_poison,potion,magic,potion_poison.png,game-icons.net lorc/poison-bottle,Lorc,CC BY 3.0
+potion_elixir,potion,rare,potion_elixir.png,game-icons.net caro-asercion/round-potion,Caro Asercion,CC BY 3.0
+holy_water,potion,rare,holy_water.png,game-icons.net delapouite/holy-water,Delapouite,CC BY 3.0
+potion_red,potion,common,potion_red.png,Ravenmore Fantasy Icon Pack 2.0 potionRed,Ravenmore,CC BY 3.0
+potion_blue,potion,common,potion_blue.png,Ravenmore Fantasy Icon Pack 2.0 potionBlue,Ravenmore,CC BY 3.0
+potion_green,potion,common,potion_green.png,Ravenmore Fantasy Icon Pack 2.0 potionGreen,Ravenmore,CC BY 3.0
+scroll,scroll,common,scroll.png,game-icons.net lorc/scroll-unfurled,Lorc,CC BY 3.0
+scroll_tied,scroll,common,scroll_tied.png,game-icons.net lorc/tied-scroll,Lorc,CC BY 3.0
+scroll_quill,scroll,magic,scroll_quill.png,game-icons.net delapouite/scroll-quill,Delapouite,CC BY 3.0
+treasure_map,scroll,rare,treasure_map.png,game-icons.net lorc/treasure-map,Lorc,CC BY 3.0
+map,scroll,common,map.png,Ravenmore Fantasy Icon Pack 2.0 map,Ravenmore,CC BY 3.0
+letter,scroll,common,letter.png,Ravenmore Fantasy Icon Pack 2.0 envelope,Ravenmore,CC BY 3.0
+book_open,book,common,book_open.png,game-icons.net lorc/open-book,Lorc,CC BY 3.0
+spell_book,book,magic,spell_book.png,game-icons.net delapouite/spell-book,Delapouite,CC BY 3.0
+book_evil,book,epic,book_evil.png,game-icons.net lorc/evil-book,Lorc,CC BY 3.0
+book_secret,book,rare,book_secret.png,game-icons.net delapouite/secret-book,Delapouite,CC BY 3.0
+key_iron,key,common,key_iron.png,game-icons.net lorc/key,Lorc,CC BY 3.0
+key_skeleton,key,magic,key_skeleton.png,game-icons.net lorc/skeleton-key,Lorc,CC BY 3.0
+key_boss,key,rare,key_boss.png,game-icons.net delapouite/boss-key,Delapouite,CC BY 3.0
+key_heart,key,rare,key_heart.png,game-icons.net delapouite/heart-key,Delapouite,CC BY 3.0
+padlock,key,common,padlock.png,game-icons.net lorc/padlock,Lorc,CC BY 3.0
+gem_ruby,gem,rare,gem_ruby.png,Ravenmore Fantasy Icon Pack 2.0 gemRed,Ravenmore,CC BY 3.0
+gem_sapphire,gem,rare,gem_sapphire.png,Ravenmore Fantasy Icon Pack 2.0 gemBlue,Ravenmore,CC BY 3.0
+gem_emerald,gem,rare,gem_emerald.png,Ravenmore Fantasy Icon Pack 2.0 gemGreen,Ravenmore,CC BY 3.0
+diamond,gem,epic,diamond.png,game-icons.net lorc/cut-diamond,Lorc,CC BY 3.0
+emerald,gem,magic,emerald.png,game-icons.net lorc/emerald,Lorc,CC BY 3.0
+amethyst,gem,magic,amethyst.png,game-icons.net lorc/crystal-cluster,Lorc,CC BY 3.0
+fire_gem,gem,rare,fire_gem.png,game-icons.net delapouite/fire-gem,Delapouite,CC BY 3.0
+crystal_ball,gem,rare,crystal_ball.png,game-icons.net lorc/crystal-ball,Lorc,CC BY 3.0
+ore_iron,ore,common,ore_iron.png,game-icons.net faithtoken/ore,Faithtoken,CC BY 3.0
+gold_nuggets,ore,magic,gold_nuggets.png,game-icons.net delapouite/gold-nuggets,Delapouite,CC BY 3.0
+gold_bar,ore,rare,gold_bar.png,game-icons.net willdabeast/gold-bar,Willdabeast,CC BY 3.0
+iron_bar,ore,common,iron_bar.png,game-icons.net lorc/metal-bar,Lorc,CC BY 3.0
+stone,ore,common,stone.png,game-icons.net lorc/rock,Lorc,CC BY 3.0
+log,material,common,log.png,game-icons.net delapouite/log,Delapouite,CC BY 3.0
+hide,material,common,hide.png,game-icons.net delapouite/animal-hide,Delapouite,CC BY 3.0
+bone,material,common,bone.png,game-icons.net lorc/broken-bone,Lorc,CC BY 3.0
+feather,material,common,feather.png,game-icons.net lorc/feather,Lorc,CC BY 3.0
+herbs,material,common,herbs.png,game-icons.net delapouite/herbs-bundle,Delapouite,CC BY 3.0
+tools,tool,common,tools.png,Ravenmore Fantasy Icon Pack 2.0 tools,Ravenmore,CC BY 3.0
+bread,food,common,bread.png,game-icons.net delapouite/bread,Delapouite,CC BY 3.0
+meat,food,common,meat.png,game-icons.net lorc/meat,Lorc,CC BY 3.0
+cheese,food,common,cheese.png,game-icons.net lorc/cheese-wedge,Lorc,CC BY 3.0
+apple,food,common,apple.png,game-icons.net lorc/shiny-apple,Lorc,CC BY 3.0
+fish,food,common,fish.png,game-icons.net darkzaitzev/fish-cooked,DarkZaitzev,CC BY 3.0
+mushroom,food,common,mushroom.png,game-icons.net lorc/mushroom,Lorc,CC BY 3.0
+honey,food,common,honey.png,game-icons.net delapouite/honey-jar,Delapouite,CC BY 3.0
+skull_crowned,quest,epic,skull_crowned.png,game-icons.net lorc/crowned-skull,Lorc,CC BY 3.0
+eye_relic,quest,epic,eye_relic.png,game-icons.net delapouite/eye-of-horus,Delapouite,CC BY 3.0
+hourglass,quest,rare,hourglass.png,game-icons.net lorc/hourglass,Lorc,CC BY 3.0
+compass,quest,magic,compass.png,game-icons.net lorc/compass,Lorc,CC BY 3.0
+lantern,quest,common,lantern.png,game-icons.net delapouite/old-lantern,Delapouite,CC BY 3.0
+torch,quest,common,torch.png,game-icons.net delapouite/primitive-torch,Delapouite,CC BY 3.0
+dragon_orb,quest,epic,dragon_orb.png,game-icons.net delapouite/dragon-orb,Delapouite,CC BY 3.0
+heart,quest,rare,heart.png,Ravenmore Fantasy Icon Pack 2.0 heart,Ravenmore,CC BY 3.0
+bandage,quest,common,bandage.png,game-icons.net lorc/bandage-roll,Lorc,CC BY 3.0
+holy_symbol,quest,rare,holy_symbol.png,game-icons.net lorc/holy-symbol,Lorc,CC BY 3.0
+backpack,container,common,backpack.png,Ravenmore Fantasy Icon Pack 2.0 backpack,Ravenmore,CC BY 3.0
+knapsack,container,common,knapsack.png,game-icons.net lorc/knapsack,Lorc,CC BY 3.0
+purse,container,common,purse.png,game-icons.net lorc/shiny-purse,Lorc,CC BY 3.0
+pouch,container,common,pouch.png,game-icons.net seregacthtuf/pouch-with-beads,Seregacthtuf,CC BY 3.0
+chest,container,common,chest.png,game-icons.net delapouite/chest,Delapouite,CC BY 3.0
+chest_locked,container,magic,chest_locked.png,game-icons.net lorc/locked-chest,Lorc,CC BY 3.0
+chest_open,container,rare,chest_open.png,game-icons.net skoll/open-treasure-chest,Skoll,CC BY 3.0
+strongbox,container,magic,strongbox.png,game-icons.net delapouite/strongbox,Delapouite,CC BY 3.0
+barrel,container,common,barrel.png,game-icons.net delapouite/barrel,Delapouite,CC BY 3.0
+crate,container,common,crate.png,game-icons.net delapouite/wooden-crate,Delapouite,CC BY 3.0
+coin,coin,common,coin.png,Ravenmore Fantasy Icon Pack 2.0 coin,Ravenmore,CC BY 3.0
+coins_gold,coin,common,coins_gold.png,game-icons.net delapouite/coins,Delapouite,CC BY 3.0
+coins_silver,coin,common,coins_silver.png,game-icons.net delapouite/two-coins,Delapouite,CC BY 3.0
+coins_pile,coin,magic,coins_pile.png,game-icons.net delapouite/coins-pile,Delapouite,CC BY 3.0

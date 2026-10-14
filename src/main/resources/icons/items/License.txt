@@ -1,0 +1,19 @@
+The pictures in this folder and in library/ are painted by art/icons/ItemIcons.java from the drawings and paintings
+below; the frame, glow, gradient, outline and shadow are the generator's. library/index.csv names the source, maker and
+licence of every picture in library/.
+
+game-icons.net -- https://game-icons.net -- CC BY 3.0 (https://creativecommons.org/licenses/by/3.0/)
+  Icons made by Lorc, Delapouite, Skoll, Willdabeast, Faithtoken, Caro Asercion, DarkZaitzev and Seregacthtuf.
+  Available on https://game-icons.net. Modified: filled with a gradient, outlined, shadowed and framed.
+
+Ravenmore Fantasy Icon Pack 2.0 -- Ravenmore (https://ravenmore.itch.io) -- https://opengameart.org/node/11073
+  CC BY 3.0. Modified: trimmed, resized, outlined, shadowed and framed.
+
+Armor Icons by Equipment Slot -- Clint Bellanger, Blarumyrran, crowline, Justin Nichol
+  https://opengameart.org/content/armor-icons-by-equipment-slot -- CC0. Modified: black keyed out, framed.
+
+OSARE weapon icons -- Blarumyrran -- https://opengameart.org/content/osare-weapon-icons -- CC0.
+  Modified: cut from the sheet, black keyed out, framed.
+
+key.png is drawn from key_crown.png, rendered from the owner's key model (art/models/key_crown.glb), whose maker is not
+named: see CREDITS.md.
