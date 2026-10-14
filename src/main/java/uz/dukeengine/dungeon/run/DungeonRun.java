@@ -1626,8 +1626,13 @@ public final class DungeonRun {
         payments.add(new Payment(frame, player, paid, at.x(), at.y(), at.z()));
         var burst = settings.goldBurst();
         if (!burst.coinLook().isBlank()) {
+            // Toward the one whose blow it was, or his hero: the coins that home fly into him.
+            var killer = death.killer() == null ? null : world.findObject(death.killer());
+            if (killer == null && seat.heroId != null) {
+                killer = world.findObject(seat.heroId);
+            }
             for (int i = burst.burstsFor(paid); i > 0; i--) {
-                world.effect(burst.coinLook(), at, 0f);
+                world.effect(burst.coinLook(), at, 0f, killer);
             }
         }
     }
