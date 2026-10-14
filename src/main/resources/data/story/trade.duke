@@ -48,8 +48,9 @@ GoldBurst
   Colour = 0xFFD447
 End
 
-; A handful of gold coins thrown up out of a corpse in an arc, turning as they fly, falling and gone in
-; about a second, with a glint as they leave. The coin is effects/coin.png, painted by
+; A handful of gold coins thrown up out of a corpse, spinning, bouncing on the ground and then flying
+; into the hero who made the kill (GoldBurst plays it toward him), in about a second, with a glint as
+; they leave. The coin is effects/coin.png, painted by
 ; art/icons/ItemIcons.java from game-icons.net's crown coin (Lorc, CC BY 3.0); a white Colour keeps its gold.
 Effect
   Name = CoinBurst
@@ -61,19 +62,25 @@ Effect
       Texture = effects/coin.png
       Blend = Alpha
       Count = 4
-      Life = [0.8, 1.1]
+      ; Up out of the corpse, down onto the ground under it at about 0.45 s, a hop that lands again at
+      ; about 0.7, and from HomeDelay drawn into the hero whose kill it was, arriving as its life ends.
+      Life = [1.05, 1.2]
       Size = [2.4, 2.0]
       SizeJitter = 0.2
       Colour = [0xFFFFFF, 0xFFFFFF]
       Alpha = [1, 1]
-      FadeOut = 0.3
-      Speed = [16, 24]
+      FadeOut = 0.1
+      Speed = [12, 18]
       Direction = UP
-      Spread = 40
-      Height = 6
-      Gravity = 45
-      Spin = 540
-      TurnJitter = 360
+      Spread = 45
+      Height = 3
+      Gravity = 100
+      ; The share of its speed a coin keeps as it strikes the ground.
+      Bounce = 0.45
+      ; Turns a second, over and over across the screen: a coin spinning.
+      Flip = 2.5
+      Home = Yes
+      HomeDelay = 0.65
     End,
 
     Layer

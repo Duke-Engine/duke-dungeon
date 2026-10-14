@@ -108,6 +108,7 @@ public final class Main {
                 case "measure" -> layer.measure(value);
                 case "follows" -> layer.follows(Boolean.parseBoolean(value));
                 case "renews" -> layer.renews(Boolean.parseBoolean(value));
+                case "home" -> layer.home(Boolean.parseBoolean(value));
                 default -> number(layer, field, Float.parseFloat(value));
             }
         });
@@ -150,6 +151,9 @@ public final class Main {
             case "cover" -> layer.cover(value);
             case "rise" -> layer.rise(value);
             case "riseEase" -> layer.riseEase(value);
+            case "bounce" -> layer.bounce(value);
+            case "homeDelay" -> layer.homeDelay(value);
+            case "flip" -> layer.flip(value);
             default -> LOG.warning(() -> "an effect layer says " + field
                     + ", which the client does not draw -- ignored");
         }

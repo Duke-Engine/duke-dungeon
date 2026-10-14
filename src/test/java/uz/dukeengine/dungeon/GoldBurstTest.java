@@ -50,10 +50,10 @@ class GoldBurstTest {
                 .map(uz.dukeengine.core.module.DieModule.class::cast).findFirst().orElse(null);
     }
 
-    private static long coinsPlayed(DukeGame game) {
+    private static List<EffectPlayed> coinsPlayed(DukeGame game) {
         return game.getLogic().drainEvents().stream().filter(EffectPlayed.class::isInstance)
                 .map(EffectPlayed.class::cast)
-                .filter(played -> played.name().equals(SETTINGS.goldBurst().coinLook())).count();
+                .filter(played -> played.name().equals(SETTINGS.goldBurst().coinLook())).toList();
     }
 
     @Test
@@ -67,11 +67,18 @@ class GoldBurstTest {
         game.getLogic().drainEvents();
         // Its death as the world hears it, without running a frame: a frame's client takes the events it posts.
         bounty(skeleton).onDie(new Death(DeathType.NORMAL, hero.getId(), hero.getPlayerIndex()));
-        long coins = coinsPlayed(game);
+        var coins = coinsPlayed(game);
 
         var burst = SETTINGS.goldBurst();
         assertEquals("CoinBurst", burst.coinLook());
-        assertEquals(burst.burstsFor(gold), coins, "the coins, once for every " + burst.goldPerBurst());
+        assertEquals(burst.burstsFor(gold), coins.size(), "the coins, once for every " + burst.goldPerBurst());
+        assertTrue(coins.stream().allMatch(played -> hero.getId().equals(played.toward())),
+                "every burst played toward the hero whose kill it was: " + coins);
+        var layers = SETTINGS.effects().stream().filter(effect -> effect.name().equals(burst.coinLook()))
+                .findFirst().orElseThrow().layers();
+        assertTrue(layers.stream().anyMatch(layer -> Boolean.TRUE.equals(layer.home()) && layer.homeDelay() != null
+                && layer.bounce() != null && layer.bounce() > 0f && layer.flip() != null),
+                "and its coins bounce, spin over and fly into him");
         var paid = session.run().payments();
         assertEquals(1, paid.size());
         assertEquals(new DungeonRun.Payment(paid.getFirst().frame(), hero.getPlayerIndex(), gold, at.x(), at.y(),

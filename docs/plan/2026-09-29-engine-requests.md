@@ -1021,3 +1021,7 @@ things are missing for the rest of the look, both drawing only (out of the check
 And a nicety: a coin spins in the screen's plane today (`Spin`); a `Flip` (turns a second, the picture squeezed
 across by its cosine) would make it read as a coin turning over. Done when a test plays a homing layer at a point
 with a thing and its particles end at the thing, and a bouncing layer's particles never go under its floor.
+
+**Landed** as 946409ed (branch e39-bouncing-homing-particles): `Layer` gains `Bounce`, `Home` with `HomeDelay`, and
+`Flip`; `World.effect(name, where, facing, toward)` and `EffectPlayed.toward`. The game reads the four in
+`Main.layerOf`, and the GoldBurst plays its CoinBurst toward the killer: the coins bounce, spin over and fly into him.
