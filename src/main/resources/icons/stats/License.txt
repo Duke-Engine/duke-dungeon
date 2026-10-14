@@ -1,0 +1,7 @@
+The pictures in this folder are painted by art/icons/ItemIcons.java (the skills, stats and commands rows of
+art/icons/items.csv) from drawings on game-icons.net -- https://game-icons.net
+
+Icons made by Lorc, Delapouite and Skoll: CC BY 3.0 (https://creativecommons.org/licenses/by/3.0/).
+Icons made by Zeromancer (heart-plus): CC0.
+Available on https://game-icons.net. Modified: filled with a gradient, outlined, shadowed and framed.
+They replaced, on 2026-10-14, AI-generated pictures cut from sheets.

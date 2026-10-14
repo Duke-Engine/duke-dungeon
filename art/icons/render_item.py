@@ -5,6 +5,9 @@ set on its own origin and lying on it.
         -P art/icons/render_item.py -- art/models/key_crown.glb \
         src/main/resources/models/props/key/key_crown.glb src/main/resources/icons/items/key_crown.png
 
+Since 2026-10-14 the key's picture in the bag is not this render but icons/items/key.png, a game-icons.net key painted by
+art/icons/ItemIcons.java in the look of every other thing; the render is no longer shipped, and the model still is.
+
 Run by hand when an item's model arrives, as art/anim/fbx_to_glb.py is, and the build does not depend on it: what
 ships is what it wrote, which is committed. Kept here rather than done in Blender's window for the reason the icon
 cutter is: a picture nobody can make again is a picture nobody dares change.

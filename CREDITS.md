@@ -29,8 +29,8 @@ written from there.
 
 | What | Who | Licence | Where |
 |---|---|---|---|
-| Skill, command and figure icons — all 22 | **Generated with Microsoft Copilot** (AI), cut and resized by `:dungeon:cutIcons` | see the note below | `icons/{skills,commands,stats}/` |
-| Attribute icons — strength, agility, intelligence | **AI-generated**, supplied by the owner as one sheet; cut and resized by `:dungeon:cutIcons` | see the note below | `icons/stats/stat_{strength,agility,intelligence}.png` |
+| Skill, command, figure and attribute icons — all 26, painted in the item icons' look by `art/icons/ItemIcons.java` | **Lorc, Delapouite, Skoll** ([game-icons.net](https://game-icons.net)); Zeromancer's heart-plus | **CC BY 3.0** — attribution required, given here; Zeromancer's CC0 | `icons/{skills,commands,stats}/` |
+| The coins a kill throws out of the corpse — Lorc's crown coin, filled with gold by `art/icons/ItemIcons.java` | **Lorc** ([game-icons.net](https://game-icons.net)) | **CC BY 3.0** — attribution required, given here | `effects/coin.png` |
 | The marks an aura's bearer wears on the floor — a ring of runes, ripples, and a sigil of eight points | made for this game, by `art/effects/AuraDecals.java` | CC0 | `effects/aura_{runes,ripples,sigil}.png` |
 | The ground a painted map is drawn with — grass, dirt, rock, snow and sand, a picture of noise and one of variation | made for this game, painted from a seed by `src/main/java/uz/dukeengine/dungeon/tools/GroundPictures.java` (`./gradlew writeGroundPictures`) | CC0 | `ground/*.png` |
 | Dungeon Pack — floors, walls, stairs | **KayKit** / Kay Lousberg ([kaylousberg.com](https://kaylousberg.com)) | CC0 | `models/tiles/dungeon/` |
@@ -45,8 +45,8 @@ written from there.
 | …and more cliffs and spires among the caverns' rocks, bushes among the forest's trees, and the grass, pebbles and stones every biome's floor is strewn with | KayKit | CC0 | `models/tiles/dungeon/{cliff_c,spire_a,spire_b}.gltf`, `models/tiles/forest/{bush_*,grass_*,pebble,stone}.gltf` |
 | Resource Bits — the mine's gold, silver and copper ore, broken stone and timber | KayKit | CC0 | `models/props/mine/` |
 | The keep's gate — "Old Driveway Gate": two stone pillars with their lamps, and an iron gate | **animatedheaven** ([CGTrader](https://www.cgtrader.com/designers/animatedheaven)) | commercial use with credit | `models/props/gate/` |
-| The keep's key — a crown key, lying where the last monster outside the keep fell, and its picture in the bag rendered from it, framed as every other thing's (`icons/items/key.png`) | from the owner's own asset folder, maker not named | **unconfirmed** — to be asked of the owner before a release | `models/props/key/`, `icons/items/key_crown.png` |
-| Item icons drawn from game-icons.net — the medallion, the locket, the amulet, the ring, the whetstone and the purse's coins, and 86 pictures of the starter library; filled with a gradient, outlined, shadowed and framed by `art/icons/ItemIcons.java` | **Lorc, Delapouite, Skoll, Willdabeast, Faithtoken, Caro Asercion, DarkZaitzev, Seregacthtuf** ([game-icons.net](https://game-icons.net)) | **CC BY 3.0** — attribution required, given here; the maker of each library picture is in its `index.csv` | `icons/items/`, `icons/items/library/` |
+| The keep's key — a crown key, lying where the last monster outside the keep fell (its picture in the bag is Delapouite's boss key, in the row below) | from the owner's own asset folder, maker not named | **unconfirmed** — to be asked of the owner before a release | `models/props/key/` |
+| Item icons drawn from game-icons.net — the key, the medallion, the locket, the amulet, the ring, the whetstone and the purse's coins, and 86 pictures of the starter library; filled with a gradient, outlined, shadowed and framed by `art/icons/ItemIcons.java` | **Lorc, Delapouite, Skoll, Willdabeast, Faithtoken, Caro Asercion, DarkZaitzev, Seregacthtuf** ([game-icons.net](https://game-icons.net)) | **CC BY 3.0** — attribution required, given here; the maker of each library picture is in its `index.csv` | `icons/items/`, `icons/items/library/` |
 | Ravenmore Fantasy Icon Pack 2.0 — the tome, and 29 painted weapons, shields, armour, potions, gems and papers in the starter library, framed by `art/icons/ItemIcons.java` | **Ravenmore** ([ravenmore.itch.io](https://ravenmore.itch.io), [OpenGameArt](https://opengameart.org/node/11073)) | **CC BY 3.0** — attribution required, given here | `icons/items/tome.png`, `icons/items/library/` |
 | "Armor Icons by Equipment Slot" — the gauntlet and the boots, and 20 painted pieces of armour in the starter library, keyed and framed by `art/icons/ItemIcons.java` | **Clint Bellanger, Blarumyrran, crowline, Justin Nichol** ([OpenGameArt](https://opengameart.org/content/armor-icons-by-equipment-slot)) | CC0 | `icons/items/{gauntlet,boots}.png`, `icons/items/library/` |
 | "OSARE weapon icons" — 13 painted weapons, shields and armour in the starter library, cut, keyed and framed by `art/icons/ItemIcons.java` | **Blarumyrran** ([OpenGameArt](https://opengameart.org/content/osare-weapon-icons)) | CC0 | `icons/items/library/` |
@@ -109,10 +109,9 @@ this section settled back on the page. It is set out in full below rather than
 folded away here, because a decision reversed deserves as plain a statement as
 the decision did.
 
-Two other things are open and are of a different kind: three pieces of music have
-licences nobody has looked up, and the icons are a generator's output whose terms
-are not the same sort of thing as a licence. Both are at the end of this page. A
-third, of the music's kind, is the keep's key: it came out of the owner's own asset
+Another thing is open and is of a different kind: three pieces of music have
+licences nobody has looked up, set out further down this page. A second, of the
+music's kind, is the keep's key: it came out of the owner's own asset
 folder with no maker named, and its row in the table says it is to be asked of the
 owner before a release.
 
@@ -133,8 +132,9 @@ drawings themselves are untouched.
 
 They are at `_unused/icons/` now and **nothing draws them**, which is why they
 are no longer in the table above — CC BY asks for a line of credit for art that
-is *used*. They are kept with their `License.txt` because they are the fallback:
-see the note at the end of this page for why a generated set wants one.
+is *used*. The panel draws game-icons.net's drawings again since 2026-10-14, the
+arrowhead and the arrow cluster among them, painted in the item icons' look: see
+the note at the end of this page.
 
 ### The three heroes, in full
 
@@ -160,8 +160,8 @@ are in this repository, along with the weapons each of them carries:
 along with `sword_2handed.gltf`, which the knight put down when he picked up a
 shield.
 
-**All twelve skills have icons now**, out of the generated sheets — which is what
-the eight empty slots on this page were waiting for.
+**Every skill has an icon now**, painted from game-icons.net's drawings — which is
+what the eight empty slots on this page were waiting for.
 
 ### The audio, in full
 
@@ -327,37 +327,13 @@ the terms on the pack's page rather than in the zip. Either reason would have
 been enough on its own. The note is kept because the rule it followed is worth
 keeping: **an asset's licence goes in the table above before it is committed,
 not after.**
-### The icons, and what is not known about them
+### The icons, replaced
 
-All twenty-two pictures the panel draws — ten skills, four order buttons and
-eight figures — were **generated with Microsoft Copilot** and cut out of three
-sheets by `./gradlew :dungeon:cutIcons`. The sheets themselves are kept at
-`dungeon/art/icons/`, outside the resources, so the cut can be run again.
-
-The three attribute pictures — an arm for strength, a runner for agility, a head
-with a brain for intelligence — are **AI-generated** as well, in the same flat
-gold, and came as one sheet from the owner's asset folder. It is kept beside the
-others as `dungeon/art/icons/attributes_sheet.png` and cut the same way:
-`./gradlew :dungeon:cutIcons --args=attributes`. Which generator drew it is not
-recorded, so everything below applies to them exactly as it does to the rest.
-
-The terms are recorded here as what they are, which is **not fully settled**.
-Microsoft's service terms give the user broad rights to what it produces, and
-under current US and UK practice an image with no human author has no copyright
-of its own to license — which is closer to "nobody owns it" than to CC0, and is
-not the same thing as a licence somebody granted. Two things follow, and both
-are worth knowing before this ships anywhere that matters:
-
-- **No attribution is owed** and none is claimed. The line in the table is a
-  record of where the pictures came from, not a condition on using them.
-- **No warranty of originality.** A generator can reproduce what it was trained
-  on. Nothing here was checked against anything, and nobody looked.
-
-The line-drawn skill icons these replaced are at
-`dungeon/src/main/resources/_unused/icons/` with their own `License.txt`. They
-are game-icons.net's, CC BY 3.0, and **do** require attribution — which is why
-they were moved rather than deleted: if the generated set ever has to go, the
-art that replaces it is already there and its terms are already known.
+Until 2026-10-14 the panel's pictures -- the skills, the order buttons, the figures and the attributes --
+were AI-generated (Microsoft Copilot and an unrecorded generator), cut out of sheets. The owner had all of
+them replaced: each is now a game-icons.net drawing painted in the item icons' look by
+`art/icons/ItemIcons.java`, with its row in the table above, and the AI sheets and their cutter are gone
+from the tree.
 
 ## Duke Skirmish
 

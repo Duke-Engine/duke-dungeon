@@ -235,10 +235,9 @@ Hero
   ; None of them reaches across a room: the longest is the wave's 50, against the
   ; archer's 68. That is still the first number to change if he plays too safely.
   ;
-  ; ICONS. Q is the cleave's blade, W the charge's, R the whirlwind's vortex -- the
-  ; owner's own sheet (art/icons/skills_sheet.png). E is the guard's shield
-  ; recoloured blood-red, made from skill_guard.png by hue alone, so it is the same
-  ; drawing and no new art: see the knight-skills report of 2026-10-09.
+  ; ICONS. Every skill's picture is a game-icons.net drawing painted in the game's
+  ; one look by art/icons/ItemIcons.java (the skills rows of art/icons/items.csv),
+  ; since 2026-10-14 in place of the AI-made sheet.
   ;
   ; Numbers to start from, balanced against his own swing (30 every 34 frames, about
   ; 26 a second) and a floor-one skeleton (60 health, 7 a blow). Each says why.

@@ -57,16 +57,6 @@ application {
 }
 
 // ---------------------------------------------------------------------------
-// Cuts the icon sheets in art/icons into one file per icon:
-//
-//   ./gradlew cutIcons
-//
-// Here rather than done by hand for the reason the example stage is: twenty-two
-// crops nobody can repeat are twenty-two crops nobody dares change. The sheets
-// themselves are kept beside the tool, outside resources, so they travel with
-// the repository without travelling inside the game.
-// ---------------------------------------------------------------------------
-// ---------------------------------------------------------------------------
 // Turns the .fbx animations in art/anim into .glb libraries the game can
 // read:
 //
@@ -368,16 +358,6 @@ tasks.register<JavaExec>("writeWorldMap") {
     classpath = sourceSets["main"].runtimeClasspath
     workingDir = rootProject.projectDir
     maxHeapSize = "2g"
-}
-
-tasks.register<JavaExec>("cutIcons") {
-    group = "application"
-    description = "Cut the icon sheets into the game's own icon folders"
-    mainClass.set("uz.dukeengine.dungeon.tools.IconSheets")
-    classpath = sourceSets["main"].runtimeClasspath
-    // From the repository root, so the paths in the Java are the paths you would
-    // type -- the same reason newMap sets this.
-    workingDir = rootProject.projectDir
 }
 
 // ---------------------------------------------------------------------------

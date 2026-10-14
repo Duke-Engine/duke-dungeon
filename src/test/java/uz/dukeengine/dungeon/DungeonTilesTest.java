@@ -220,20 +220,18 @@ class DungeonTilesTest {
     }
 
     /**
-     * Every picture the panel draws is square, and the size it was made at: cut from
-     * its sheet, or for a thing in the bag rendered from its model.
+     * Every picture the panel draws is square, and the size it was painted at by
+     * {@code art/icons/ItemIcons.java}.
      *
      * <p>A slot is square and a picture is stretched to fill it, so one that is
      * not comes out squashed — and there is nothing on screen to say whether the
-     * drawing was made that way or the cut went wrong. The sizes are the cutter's
-     * own, so this is the other end of {@code IconSheets}: it says what came out,
-     * and this says what the game ships. The bag's are not cut but rendered, by
-     * {@code art/icons/render_item.py}, at the size of the stats' beside them.
+     * drawing was made that way or went wrong. The sizes are the generator's own:
+     * a skill and an order at 128, a figure and a thing in the bag at 64.
      */
     @Test
-    void everyPictureIsSquareAndTheSizeItsSheetWasCutAt() throws java.io.IOException {
+    void everyPictureIsSquareAndTheSizeItWasPaintedAt() throws java.io.IOException {
         int checked = 0;
-        for (var folder : new String[][] {{"icons/skills/", "256"}, {"icons/commands/", "128"},
+        for (var folder : new String[][] {{"icons/skills/", "128"}, {"icons/commands/", "128"},
             {"icons/stats/", "64"}, {"icons/items/", "64"}}) {
             for (var name : shipped(folder[0])) {
                 var image = javax.imageio.ImageIO.read(

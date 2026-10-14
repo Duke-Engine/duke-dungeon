@@ -1,0 +1,3 @@
+coin.png is painted by art/icons/ItemIcons.java (the effect row of art/icons/items.csv) from Lorc's crown coin on
+game-icons.net (https://game-icons.net), CC BY 3.0 (https://creativecommons.org/licenses/by/3.0/): filled with a gold
+gradient and outlined. The aura marks beside it are the game's own, by art/effects/AuraDecals.java, CC0.
