@@ -330,14 +330,14 @@ Monster
   Skills = [
     Skill
       Key = W
-      ; Fire breathed down a line: it can be stepped out of.
+      ; Fire breathed down a line, bursting as the mage's fireball does: it can be stepped out of.
       Effect = SKILLSHOT
       Damage = 40
       Range = 70
-      Radius = 14
+      Radius = 26
       HitWidth = 8
       ProjectileSpeed = 120
-      Projectile = Fireball
+      Projectile = MageFireball
       CooldownFrames = 240
       MaxRank = 1
       Name = Olov nafasi
