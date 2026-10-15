@@ -1184,3 +1184,35 @@ Asked: the path grid takes a cost per cell -- or a set of preferred cells and ho
 pathfinder (and the sector router on a wide map) weighs, from the map (its painted roads, `d` in the world's paint,
 or a game-handed mask); every map that hands none routes as today. Done when a test routes between two points joined
 by a road with a shortcut over open ground and the path keeps to the road where the cost says it should.
+
+
+## E55 — Music the game chooses, and a weapon that keeps its name (2026-10-15, small)
+
+The game now picks its music by place and moment (`Soundscape`, the Audio block's Music list) through
+`Duke3D.music(cue, fadeOut, fadeIn)`. Two things fight it. (1) `startGame` plays the settings screen's chosen track
+(`playChosenMusic`), so every match opens with track 0 for a frame before the game's track fades in, and the Music row's
+track picker on the settings screen changes nothing that lasts (the game asks for its own track again within a second).
+Asked: `Duke3D.musicByGame(true)` — the client plays no track of its own at a start or a menu, and the settings screen
+shows the volume but not the track picker. (2) `HeroBuild.weapon` rebuilds a hero's `WeaponUpdate.Data` with the six-field
+constructor and drops its `name` (and `targets`, the clip and `targetScanFrames`); the game names every weapon after
+its holder (`Dungeon.namedFor`, after HeroBuild) so `fired.<Template>` sounds per creature. Asked: HeroBuild keeps every
+field but the damage. Done when a test builds a hero from a named, targeted weapon and gets both back.
+
+## E56 — A flat loop the game starts and stops, faded (2026-10-15, small)
+
+Ambience per place rides the hero today: the simulation plays `ambience.<place>` with `World.sound(cue, hero, hold)`
+every check (`DungeonRun.ambience`), so it has to be mono and placed, and when he leaves the place it stops dead when
+the hold runs out. Asked: `Duke3D.loop(String cue, float fadeIn)` / `Duke3D.stopLoop(String cue, float fadeOut)` — a flat
+loop on the cue's channel, one per cue, started and faded by the game's client — and, for a held `SoundPlayed`, a fade
+of a few tenths of a second when it is let go of rather than a cut. Done when a test starts a loop, stops it with a
+fade, and the sink sees the gain fall over that time.
+
+## E57 — The bag's sounds, and a footstep with its ground (2026-10-15, small)
+
+(1) `BagScreen` (rpg-client-3d) says nothing when it opens, closes, or a thing is picked up and put down in it, and
+has no `isOpen()` the game could watch. Asked: it raises `bag_open`, `bag_close`, `item_lift`, `item_drop` through the
+game's bank (any it does not name stay silent). (2) A creature's footsteps are `walking.<Template>`, one sound wherever
+it walks; the game plays its hero's own by the paint under him (`Soundscape.stepOn`), but monsters cannot. Asked:
+`walking.<Template>.<surface>` where the map is painted — the surface the palette picture's file name without its
+folder and extension — falling back as every name does. Done when a test walks a creature from grass onto rock and
+hears `walking.X.grass` then `walking.X.rock`.
