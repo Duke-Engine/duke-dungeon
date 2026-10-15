@@ -1387,6 +1387,7 @@ public final class Main {
                 settings.hitFeel().hitFlashSeconds(), settings.hitFeel().hitFlashStrength()));
         visuals.strikeWithin(settings.hitFeel().strikeWithin());
         visuals.effectLists(settings.effectLists());
+        visuals.hitStop(settings.hitStop());
         uz.dukeengine.dungeon.content.Feel.apply(visuals, settings);
         // The run's own moments -- a level, the boss down, a floor reached -- and the
         // look each one plays on the hero.

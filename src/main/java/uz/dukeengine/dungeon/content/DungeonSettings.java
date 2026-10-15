@@ -131,6 +131,7 @@ public final class DungeonSettings {
     private uz.dukeengine.dungeon.story.GoldBurst goldBurst = uz.dukeengine.dungeon.story.GoldBurst.DEFAULTS;
     private final List<HeavyBlow> heavyBlows = new java.util.ArrayList<>();
     private final List<BigDeath> bigDeaths = new java.util.ArrayList<>();
+    private uz.dukeengine.client3d.HitStop hitStop = new uz.dukeengine.client3d.HitStop(0f, 1f, true, false);
     private final List<uz.dukeengine.core.content.EffectList> effectLists = new java.util.ArrayList<>();
     private uz.dukeengine.dungeon.story.Medallion medallion = uz.dukeengine.dungeon.story.Medallion.DEFAULTS;
     private final List<uz.dukeengine.dungeon.story.Campaign> campaigns = new java.util.ArrayList<>();
@@ -265,6 +266,11 @@ public final class DungeonSettings {
     /** The blows that are felt, and what they play: see {@link HeavyBlow}. */
     public List<HeavyBlow> heavyBlows() {
         return List.copyOf(heavyBlows);
+    }
+
+    /** The catch in the motion of a heavy blow; none (0 seconds) unless the files say. */
+    public uz.dukeengine.client3d.HitStop hitStop() {
+        return hitStop;
     }
 
     /** The deaths that are felt. */
@@ -542,6 +548,7 @@ public final class DungeonSettings {
                 case uz.dukeengine.dungeon.story.GoldBurst block -> goldBurst = once(block, once);
                 case HeavyBlow blow -> heavyBlows.add(blow);
                 case BigDeath death -> bigDeaths.add(death);
+                case uz.dukeengine.client3d.HitStop block -> hitStop = once(block, once);
                 case uz.dukeengine.core.content.EffectList list -> effectLists.add(list);
                 case uz.dukeengine.dungeon.story.Medallion block -> medallion = once(block, once);
                 case uz.dukeengine.dungeon.story.Campaign block -> campaigns.add(block);
