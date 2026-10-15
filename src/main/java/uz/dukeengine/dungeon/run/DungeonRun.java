@@ -125,6 +125,8 @@ public final class DungeonRun {
 
     private final GamePlayer dungeonPlayer;
     private final DungeonSettings settings;
+    /** Food and fire: the world's trees, bushes, wells and fires, and each hero's work at them. See {@link Camp}. */
+    private final Camp camp;
     private final LootTable drops;
 
     /** The players' seats, the first player's first: a game alone has that one. */
@@ -201,6 +203,7 @@ public final class DungeonRun {
         this.themes = settings.themes();
         this.look = lookOf(null);
         this.depth = floors.firstDepth();
+        this.camp = new Camp(settings);
         seats.add(new Seat(heroPlayer, progress, learnt, settings.run().defaultHero()));
     }
 
@@ -622,6 +625,7 @@ public final class DungeonRun {
             monster.addModule(new Bounty(monster, uz.dukeengine.rpg.hero.LevelBonus.levelOf(monster), this::pay));
         }
         peopleOn(game);
+        camp.lay(game.getLogic(), floors.stageName(), floors.seed(), zones(), dungeonPlayer.getIndex(), heroLevel());
         if (loading && skippedTo.isBlank() && lastTowerFound() != null) {
             skippedTo = lastTowerFound(); // back from a save or a death: at the last tower he found, not the way in
         }
@@ -1255,6 +1259,7 @@ public final class DungeonRun {
     public void died(uz.dukeengine.core.event.ObjectDied death) {
         quests.died(death.templateName(), bags());
         drunk(death);
+        camp.died(lastLogic, death);
         script.heard(uz.dukeengine.dungeon.story.Trigger.When.DIED, death.templateName(), 0);
         // A camp cleared: every zone with none of the dungeon's creatures standing in it any more is heard CLEARED
         // (a once-only trigger hears it once). See docs/plan/2026-10-15-act2.md.
@@ -1263,7 +1268,7 @@ public final class DungeonRun {
             for (var zone : zones()) {
                 boolean held = lastLogic.getObjects().stream().anyMatch(thing -> thing.getBody() != null
                         && !thing.isEffectivelyDead() && thing.getPlayerIndex() == dungeonPlayer.getIndex()
-                        && zone.holds(thing.getPosition().x(), thing.getPosition().y(), cell));
+                        && !camp.isAnimal(thing) && zone.holds(thing.getPosition().x(), thing.getPosition().y(), cell));
                 if (!held) {
                     script.heard(uz.dukeengine.dungeon.story.Trigger.When.CLEARED, zone.name(), 0);
                 }
@@ -1759,6 +1764,31 @@ public final class DungeonRun {
     }
 
     /**
+     * The player right-clicked a thing to work -- a tree, a bush, a well, a fire -- and his hero goes to work it; or,
+     * with no thing, pressed the build key: a fire at his feet from his wood. See {@link Camp}.
+     */
+    public void work(DukeGame game, int playerIndex, ObjectId thing) {
+        var seat = seatOf(playerIndex);
+        var hero = seat == null || seat.heroId == null ? null : game.getLogic().findObject(seat.heroId);
+        if (hero == null || hero.isEffectivelyDead()) {
+            return;
+        }
+        if (thing == null) {
+            camp.build(game.getLogic(), playerIndex, hero, seat.progress.getLoot());
+            return;
+        }
+        seat.talkingTo = null;
+        orders.attackMove(playerIndex, null);
+        uz.dukeengine.combat.module.Errand.giveUpAll(hero);
+        camp.order(game.getLogic(), playerIndex, hero, thing);
+    }
+
+    /** Whether this player's hero is at work: chopping, picking, filling or cooking. */
+    public boolean working(int playerIndex) {
+        return camp.working(playerIndex);
+    }
+
+    /**
      * Every BeamFrames, every magic, rare and epic thing lying on the floor stands in a column of its rarity's light
      * (ItemRules' Beams): an event the client plays riding the thing, as a quest's glow is; nothing in the world reads it.
      * The floor's key stands in the run's KeyBeam, the tallest, and the place every quest going sends him to on
@@ -1923,9 +1953,14 @@ public final class DungeonRun {
         glow(game);
         beams(game);
         stackPotions();
+        var heroes = new ArrayList<GameObject>();
         for (var seat : seats) {
-            Belt.digest(seat.heroId == null ? null : game.getLogic().findObject(seat.heroId));
+            var hero = seat.heroId == null ? null : game.getLogic().findObject(seat.heroId);
+            Belt.digest(hero);
+            camp.tick(game.getLogic(), seat.player.getIndex(), hero, seat.progress.getLoot());
+            heroes.add(hero);
         }
+        camp.grow(game.getLogic(), heroes);
         var logic = game.getLogic();
         quests.frame(logic.getFrame());
         int paid = quests.takeExperience();

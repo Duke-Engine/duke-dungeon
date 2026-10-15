@@ -66,6 +66,8 @@ public final class PartyOrders {
     static final String SELL = "sell";
     /** A draught from the belt: the order's number is which of its stacks. */
     static final String DRINK = "drink";
+    /** A fire built at his feet; a thing worked is sent as its click's word, one of Food.WORDS. */
+    static final String BUILD = "build";
     /** A journey to a found watchtower: the order's number is which of the map's towers. */
     static final String TRAVEL = "travel";
 
@@ -103,6 +105,10 @@ public final class PartyOrders {
                     null, null, travel.tower());
             case uz.dukeengine.dungeon.run.TalkTo talk -> new GameOrder(talk.playerIndex(), TALK, List.of(), null,
                     talk.person(), 0);
+            case uz.dukeengine.dungeon.run.Work work -> work.thing() == null
+                    ? new GameOrder(work.playerIndex(), BUILD, List.of(), null, null, 0)
+                    : new GameOrder(work.playerIndex(), uz.dukeengine.dungeon.food.Food.COOK, List.of(), null,
+                            work.thing(), 0);
             default -> throw new IllegalArgumentException("not one of this game's orders: " + command);
         };
     }
@@ -113,6 +119,9 @@ public final class PartyOrders {
      */
     public static Command commandOf(GameOrder order) {
         var word = order.word();
+        if (uz.dukeengine.dungeon.food.Food.WORDS.contains(word)) {
+            return order.target() == null ? null : new uz.dukeengine.dungeon.run.Work(order.playerIndex(), order.target());
+        }
         if (word.startsWith(HERO)) {
             return new ChooseHero(order.playerIndex(), word.substring(HERO.length()));
         }
@@ -137,6 +146,7 @@ public final class PartyOrders {
                     : new uz.dukeengine.dungeon.run.Buy(order.playerIndex(), order.target(), (int) order.number());
             case SELL -> order.target() == null ? null
                     : new uz.dukeengine.dungeon.run.Sell(order.playerIndex(), order.target(), (int) order.number());
+            case BUILD -> new uz.dukeengine.dungeon.run.Work(order.playerIndex(), null);
             case TALK -> order.target() == null ? null
                     : new uz.dukeengine.dungeon.run.TalkTo(order.playerIndex(), order.target());
             default -> null;
