@@ -155,8 +155,9 @@ class StaggerTest {
             boolean staggered = fight.staggered();
             assertEquals(staggered ? hurt : null, fight.knight.getBusyClip(), "frame " + i + " of it");
             frames += staggered ? 1 : 0;
-            // ponytail: no blow inside it -- one ends the busy clip and the engine does not set it again, so the
-            // flinch stops while the stun goes on. Engine request E73.
+            if (i == 3) {
+                fight.knight.getBody().damage(1f); // a blow inside it: the flinch holds to its end (E73)
+            }
             fight.run(1);
         }
         assertEquals(stagger().stunFrames(), frames);
