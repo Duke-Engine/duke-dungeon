@@ -103,6 +103,7 @@ public final class DungeonSettings {
     private uz.dukeengine.dungeon.world.SaveMenu saveMenu = uz.dukeengine.dungeon.world.SaveMenu.DEFAULTS;
     private uz.dukeengine.dungeon.world.MainMenu mainMenu = uz.dukeengine.dungeon.world.MainMenu.DEFAULTS;
     private uz.dukeengine.dungeon.world.Screens screens = uz.dukeengine.dungeon.world.Screens.DEFAULTS;
+    private uz.dukeengine.dungeon.world.Travel travel = uz.dukeengine.dungeon.world.Travel.DEFAULTS;
     private UnitBar unitBar = UnitBar.DEFAULTS;
     private StatBlock statBlock = StatBlock.DEFAULTS;
     private SkillRing skillRing = SkillRing.DEFAULTS;
@@ -180,6 +181,11 @@ public final class DungeonSettings {
     }
 
     /** The character sheet, the quest log and the world map: their keys and words. */
+    /** Fast travel between a map's watchtowers: see {@link uz.dukeengine.dungeon.world.Travel}. */
+    public uz.dukeengine.dungeon.world.Travel travel() {
+        return travel;
+    }
+
     public uz.dukeengine.dungeon.world.Screens screens() {
         return screens;
     }
@@ -517,6 +523,7 @@ public final class DungeonSettings {
                 case uz.dukeengine.dungeon.world.SaveMenu block -> saveMenu = once(block, once);
                 case uz.dukeengine.dungeon.world.MainMenu block -> mainMenu = once(block, once);
                 case uz.dukeengine.dungeon.world.Screens block -> screens = once(block, once);
+                case uz.dukeengine.dungeon.world.Travel block -> travel = once(block, once);
                 case UnitBar block -> unitBar = once(block, once);
                 case StatBlock block -> statBlock = once(block, once);
                 case SkillRing block -> skillRing = once(block, once);
@@ -968,6 +975,11 @@ public final class DungeonSettings {
         require(progression.armourPercentPerLevel() >= 0, "a level cannot take armour away");
         validateAttributes();
         validateScreens();
+        require(travel.cost() >= 0, "Travel: Cost cannot be negative");
+        require(travel.card().isBlank() || titles.stream().anyMatch(t -> t.name().equals(travel.card())),
+                "Travel: Card names no Title: " + travel.card());
+        require(travel.keeper().isBlank() || npcs.stream().anyMatch(n -> n.name().equals(travel.keeper())),
+                "Travel: Keeper names no Npc: " + travel.keeper());
         require(progression.minDamageTakenPercent() > 0 && progression.minDamageTakenPercent() <= 100,
                 "the damage floor must leave some way to lose");
         require(progression.levelUpBannerFrames() >= 0, "the level-up message cannot last negative frames");

@@ -211,6 +211,13 @@ final class WorldMapScreen {
         var title = canvas.measure(bold, screens.mapTitle());
         canvas.drawText(bold, screens.mapTitle(), (canvas.width() - title.width()) / 2f,
                 (box.y() - title.lineHeight()) / 2f, gold);
+        if (!uz.dukeengine.dungeon.run.DungeonRun.towers(match.run().storyNow(), settings.travel()).isEmpty()) {
+            // A map with towers: how to travel between them, and what it costs, under the title.
+            var travel = settings.travel().travelHint().replace("{cost}", String.valueOf(settings.travel().cost()));
+            var said = canvas.measure(small, travel);
+            canvas.drawText(small, travel, (canvas.width() - said.width()) / 2f,
+                    (box.y() - title.lineHeight()) / 2f + title.lineHeight(), gold);
+        }
         var hint = canvas.measure(small, screens.mapHint());
         canvas.drawText(small, screens.mapHint(), (canvas.width() - hint.width()) / 2f,
                 box.y() + box.height() + (canvas.height() - box.y() - box.height() - hint.lineHeight()) / 2f, dim);
@@ -287,7 +294,37 @@ final class WorldMapScreen {
         return null;
     }
 
-    /** The pointer: the wheel zooms, a left drag pans. Everything is taken while the map is open. */
+    /** What a click on a found tower does: closes the screen, once the journey is asked for. */
+    private Runnable travelled = () -> { };
+    /** Where the left button went down, to tell a click from a drag. */
+    private int[] pressed;
+
+    void onTravel(Runnable then) {
+        travelled = then;
+    }
+
+    /**
+     * The tower of {@code match}'s map whose mark is under the screen's {@code (x, y)}, by its place among the towers,
+     * or -1: only a tower found -- he has stood in it -- can be gone to.
+     */
+    int towerAt(Dungeon.Session match, float x, float y, float reach) {
+        float cell = PathGrid.DEFAULT_CELL_SIZE;
+        var towers = uz.dukeengine.dungeon.run.DungeonRun.towers(match.run().storyNow(), settings.travel());
+        var found = match.run().visited();
+        for (int i = 0; i < towers.size(); i++) {
+            var zone = towers.get(i);
+            var at = view.toScreen(zone.middleX(cell), zone.middleY(cell));
+            if (found.contains(zone.name()) && Math.hypot(at.x() - x, at.y() - y) <= reach) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * The pointer: the wheel zooms, a left drag pans, and a left click on a found tower travels there (the Travel
+     * block's gold, paid in the world). Everything is taken while the map is open.
+     */
     boolean take(uz.dukeengine.client3d.CanvasInput.Event event) {
         switch (event) {
             case uz.dukeengine.client3d.CanvasInput.Wheel wheel -> view.zoom(Integer.signum(wheel.notches()),
@@ -295,6 +332,12 @@ final class WorldMapScreen {
             case uz.dukeengine.client3d.CanvasInput.Button button -> {
                 if (button.button() == uz.dukeengine.client3d.CanvasInput.Mouse.LEFT) {
                     dragging = button.down() ? new int[] {button.x(), button.y()} : null;
+                    if (button.down()) {
+                        pressed = new int[] {button.x(), button.y()};
+                    } else if (pressed != null && Math.abs(button.x() - pressed[0]) + Math.abs(button.y() - pressed[1])
+                            < 6) {
+                        click(button.x(), button.y());
+                    }
                 }
             }
             case uz.dukeengine.client3d.CanvasInput.Pointer pointer -> {
@@ -307,5 +350,18 @@ final class WorldMapScreen {
             }
         }
         return true;
+    }
+
+    private void click(int x, int y) {
+        var match = DialogueScreen.match();
+        if (match == null || match.game().getLogic() == null) {
+            return;
+        }
+        int tower = towerAt(match, x, y, 18f);
+        if (tower >= 0) {
+            match.game().postCommand(uz.dukeengine.dungeon.party.PartyOrders.of(
+                    new uz.dukeengine.dungeon.run.TravelTo(match.game().getLocalPlayerIndex(), tower)));
+            travelled.run();
+        }
     }
 }
