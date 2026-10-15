@@ -8,10 +8,9 @@
 ; from the belt with keys 1-4.
 ;
 ; Every figure is the engine's: a base moves its slot's figure (ATTACK and ARMOUR
-; in percent, HEALTH and MANA flat, ATTRIBUTE whole points); an affix of the same
-; figure adds to it, one of HEALTH_REGEN, MANA_REGEN or ATTACK_SPEED is its extra,
-; and LIFESTEAL is a passive the thing lends. One of each kind a thing, until the
-; engine carries more (E43).
+; in percent, HEALTH and MANA flat, ATTRIBUTE whole points), and every affix is
+; the engine's Affix (E43), any figure on any slot it names: crit and move speed
+; (E44), a skill's rank, and LIFESTEAL as a passive the thing lends.
 ; ---------------------------------------------------------------------------
 
 ItemRules
@@ -26,7 +25,7 @@ ItemRules
   Boss = [0, 450, 430, 120]
   Chest = [250, 450, 260, 40]
   Shop = [550, 380, 70, 0]
-  ; How many affixes, from and to. A rare holds three until E43: one of each kind.
+  ; How many affixes, from and to.
   MagicAffixes = [1, 2]
   RareAffixes = [3, 4]
   ; A thing's price: its base's, times its rarity's in percent, and 8% more each
@@ -69,6 +68,13 @@ ItemRules
   LoreColour = 0xD8B05A
   BetterColour = 0x6CD86C
   WorseColour = 0xE05A4A
+  ; The words of the figures E44 added, on a card and the character sheet; %s the key.
+  CritChanceWord = Kritik zarba
+  CritDamageWord = Kritik zarba kuchi
+  MoveSpeedWord = Yurish tezligi
+  SkillRankWord = "%s mahorati"
+  ; The longest line a card says, in letters: a unique's story is broken to it.
+  Wrap = 40
 End
 
 ; ---------------------------------------------------------------------------
@@ -478,13 +484,16 @@ End
 ; ---------------------------------------------------------------------------
 ; Affixes. Low and High are the least and the most it rolls at item level 1 and
 ; at 15, drawn straight between. Prefix names a magic thing: "O'tkir qisqa qilich".
+; Each is the engine's Affix (E43) and counts while the thing is worn. ATTRIBUTE
+; is the thing's own attribute, or one drawn among the three; SKILL_RANK raises the
+; skill on one of its Keys; Also is what it brings with it, fixed.
 ; ---------------------------------------------------------------------------
 
 Affix
   Name = otkir
   Stat = ATTACK
   Prefix = "O'tkir"
-  Slots = [Qurol]
+  Slots = [Qurol, Uzuk, Tumor]
   Low = [2, 12]
   High = [5, 24]
   Weight = 30
@@ -494,7 +503,7 @@ Affix
   Name = mustahkam
   Stat = ARMOUR
   Prefix = Mustahkam
-  Slots = [Zirh]
+  Slots = [Zirh, "Dubulg'a", Etik]
   Low = [1, 4]
   High = [2, 8]
   Weight = 30
@@ -504,7 +513,7 @@ Affix
   Name = baquvvat
   Stat = HEALTH
   Prefix = Baquvvat
-  Slots = ["Dubulg'a"]
+  Slots = ["Dubulg'a", Zirh, Etik, Tumor, Uzuk]
   Low = [10, 60]
   High = [20, 110]
   Weight = 30
@@ -514,17 +523,17 @@ Affix
   Name = donishmand
   Stat = MANA
   Prefix = Donishmand
-  Slots = [Tumor]
+  Slots = [Tumor, Uzuk, "Dubulg'a", Qurol]
   Low = [6, 30]
   High = [12, 55]
-  Weight = 30
+  Weight = 25
 End
 
 Affix
   Name = alo
   Stat = ATTRIBUTE
   Prefix = "A'lo"
-  Slots = [Etik, Uzuk]
+  Slots = [Etik, Uzuk, Tumor, "Dubulg'a", Zirh]
   Low = [1, 4]
   High = [2, 7]
   Weight = 30
@@ -564,16 +573,63 @@ Affix
   Name = qonxor
   Stat = LIFESTEAL
   Prefix = "Qonxo'r"
-  Slots = [Qurol, Zirh, "Dubulg'a", Etik, Tumor, Uzuk]
+  Slots = [Qurol, Uzuk, Tumor]
   Low = [2, 4]
   High = [3, 8]
   Weight = 20
 End
 
+; A critical blow: how often, and with it how much harder (a blow that lands critical
+; and is no harder is no blow at all).
+Affix
+  Name = halokatli
+  Stat = CRIT_CHANCE
+  Prefix = Halokatli
+  Slots = [Qurol, Uzuk, Tumor]
+  Low = [2, 5]
+  High = [4, 10]
+  Weight = 15
+  Also = ["CRIT_DAMAGE 30"]
+End
+
+Affix
+  Name = shafqatsiz
+  Stat = CRIT_DAMAGE
+  Prefix = Shafqatsiz
+  Slots = [Qurol, Uzuk, Tumor]
+  Low = [10, 30]
+  High = [20, 60]
+  Weight = 12
+End
+
+; Quicker legs, in percent of his whole speed.
+Affix
+  Name = shamoldek
+  Stat = MOVE_SPEED
+  Prefix = Shamoldek
+  Slots = [Etik]
+  Low = [3, 8]
+  High = [6, 15]
+  Weight = 25
+End
+
+; A rank on one of his three skills while he wears it.
+Affix
+  Name = mohir
+  Stat = SKILL_RANK
+  Prefix = Mohir
+  Slots = [Qurol, Tumor, "Dubulg'a"]
+  Keys = [Q, W, E]
+  Low = [1, 1]
+  High = [1, 2]
+  Weight = 8
+End
+
 ; ---------------------------------------------------------------------------
-; Uniques: epic things, written by hand. Gives are its affixes, a Stat and how
-; much; its base's figure is the base's best. Skills are passives it lends: an
-; aura reaches whoever stands with him too.
+; Uniques: epic things, written by hand, four to six affixes each. Gives are its
+; affixes, a Stat and how much (ATTRIBUTE its own attribute, SKILL_RANK:Q a rank on
+; that key's skill); its base's figure is the base's best. Skills are passives it
+; lends: an aura reaches whoever stands with him too.
 ; ---------------------------------------------------------------------------
 
 Unique
@@ -581,7 +637,7 @@ Unique
   DisplayName = Ajdar tishi
   Base = keng_qilich
   Level = 6
-  Gives = ["ATTACK 14", "ATTACK_SPEED 12", "LIFESTEAL 6"]
+  Gives = ["ATTACK 14", "ATTACK_SPEED 12", "LIFESTEAL 6", "CRIT_CHANCE 8", "CRIT_DAMAGE 40"]
   Lore = "Ajdarning og'zidan sug'urib olingan; tig'i hali ham iliq."
 End
 
@@ -590,7 +646,7 @@ Unique
   DisplayName = "Qal'a devori"
   Base = temir_sovut
   Level = 7
-  Gives = ["ARMOUR 6", "HEALTH_REGEN 5", "LIFESTEAL 3"]
+  Gives = ["ARMOUR 6", "HEALTH_REGEN 5", "HEALTH 80", "LIFESTEAL 3"]
   Lore = "Poytaxt qulagan kuni ham bu sovut bukilmagan."
 End
 
@@ -599,7 +655,7 @@ Unique
   DisplayName = "Bo'ri boshi"
   Base = shoxli_dubulga
   Level = 8
-  Gives = ["HEALTH 90", "MANA_REGEN 3", "LIFESTEAL 4"]
+  Gives = ["HEALTH 90", "MANA_REGEN 3", "LIFESTEAL 4", "SKILL_RANK:Q 1"]
   Lore = "Oxirgi oq bo'rining bosh suyagidan; to'lin oyda uvillaydi."
 End
 
@@ -609,7 +665,7 @@ Unique
   Base = charm_etik
   Level = 4
   Attribute = Agility
-  Gives = ["ATTRIBUTE 5", "ATTACK_SPEED 14", "LIFESTEAL 3"]
+  Gives = ["ATTRIBUTE 5", "ATTACK_SPEED 14", "MOVE_SPEED 12", "HEALTH_REGEN 3"]
   Lore = "Uni kiygan chopqirni hech kim quvib yetolmagan."
 End
 
@@ -618,7 +674,7 @@ Unique
   DisplayName = Kampir marjoni
   Base = zumrad_tumor
   Level = 8
-  Gives = ["MANA 40", "MANA_REGEN 4"]
+  Gives = ["MANA 40", "MANA_REGEN 4", "SKILL_RANK:E 1", "CRIT_CHANCE 5", "CRIT_DAMAGE 30"]
   Lore = "Yalmog'iz kampir uni qochgan qizning bo'ynidan yulib olgan."
   Skills = [
     Skill
@@ -638,7 +694,7 @@ Unique
   Base = oltin_uzuk
   Level = 3
   Attribute = Strength
-  Gives = ["ATTRIBUTE 5", "LIFESTEAL 8"]
+  Gives = ["ATTRIBUTE 5", "LIFESTEAL 8", "HEALTH 40", "CRIT_DAMAGE 50"]
   Lore = "Har zarbadan bir tomchi qon so'raydi va oladi."
   Skills = [
     Skill

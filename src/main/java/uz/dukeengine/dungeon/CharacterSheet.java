@@ -48,6 +48,11 @@ final class CharacterSheet {
         if (sheet.lifesteal() > 0) {
             rows.add(new Row(hud.lifestealWord(), sheet.lifesteal() + "%"));
         }
+        // A critical blow, from what he wears (E44): how often, and how much harder.
+        if (sheet.critChance() > 0) {
+            var rules = settings.items().rules();
+            rows.add(new Row(rules.critChanceWord(), sheet.critChance() + "% (+" + sheet.critDamage() + "%)"));
+        }
         return rows;
     }
 

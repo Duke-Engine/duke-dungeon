@@ -100,7 +100,7 @@ class BeltTest {
         var lines = ITEMS.lines(ITEMS.potion(ITEMS.potion("tiklanish_eliksiri"), 4, 1)).stream()
                 .map(Items.Line::text).toList();
         assertEquals(List.of("+40% Jon", "+40% Mana", "Soni: 4"), lines);
-        assertTrue(Items.figures(ITEMS.potion(ITEMS.potion("hayot_shishasi"), 4, 1)).isEmpty(),
+        assertTrue(ITEMS.figures(ITEMS.potion(ITEMS.potion("hayot_shishasi"), 4, 1)).isEmpty(),
                 "a stack in the backpack moves nothing");
     }
 }

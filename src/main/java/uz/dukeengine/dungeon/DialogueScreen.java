@@ -237,7 +237,7 @@ final class DialogueScreen implements Painter, CanvasInput {
         if (inCutscene()) {
             return cutsceneTakes(event);
         }
-        if (showing() == null && (trade.take(event, match) || cards.drinks(event, match))) {
+        if (showing() == null && trade.take(event, match)) {
             return true;
         }
         if (showing() == null) {

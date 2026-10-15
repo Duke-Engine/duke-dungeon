@@ -29,11 +29,13 @@ import uz.dukeengine.rpg.skill.SkillBook;
  * @param lifesteal       the share of a blow he drinks back as health, in percent
  * @param worn            what he wears, a slot each, in the bag's order; empty for a bag that wears nothing
  * @param souls           the souls his medallion has drunk, or -1 while he does not wear it
+ * @param critChance      the share of his blows that land critical, in percent, from what he wears (E44)
+ * @param critDamage      and how much harder such a blow lands, in percent
  */
 public record Sheet(int id, String name, String title, int level, int experience, int experienceToGo,
         List<Attribute> attributes, int damage, int blowsPerSecond, int attackSpeed, int armour, int speed,
         int health, int maxHealth, int mana, int maxMana, int healthRegen, int manaRegen, int lifesteal,
-        List<Worn> worn, int gold, int souls) {
+        List<Worn> worn, int gold, int souls, int critChance, int critDamage) {
 
     public Sheet {
         attributes = List.copyOf(attributes);
@@ -82,7 +84,8 @@ public record Sheet(int id, String name, String title, int level, int experience
                 Math.round(hero.getBody().getMaxHealth()), book == null ? 0 : book.getMana(),
                 book == null ? 0 : book.getMaxMana(), Math.round(rates.healthPerSecond() * 10f),
                 Math.round(rates.manaPerSecond() * 10f), rates.lifestealPercent(), worn(bag), gold,
-                wearsIt ? souls : -1);
+                wearsIt ? souls : -1, bag.total(uz.dukeengine.rpg.item.Stat.CRIT_CHANCE),
+                bag.total(uz.dukeengine.rpg.item.Stat.CRIT_DAMAGE));
     }
 
     /** What he wears, a slot each. */
