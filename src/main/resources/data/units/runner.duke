@@ -19,7 +19,10 @@ Monster
     WeaponUpdate
       Damage = 4
       AttackRange = 8
-      ReloadFrames = 22
+      ReloadFrames = 5
+      ; The swing up to the blow (MonsterClipFitTest): the client starts its attack as it winds up,
+      ; and the blow lands as the clip strikes. Taken off ReloadFrames, so it hits as often as before.
+      PreAttackFrames = 17
     End,
     ; Tells the brain the frame a blow landed, so it stands and finishes the swing
     ; instead of walking off mid-blow. It launches nothing -- see Swing.
@@ -72,4 +75,7 @@ Monster
   End
   ; It runs rather than walks: it is the one you cannot step away from.
   Walk = Running_A
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
+  WalkStride = 11.32
+  UpperBody = spine
 End

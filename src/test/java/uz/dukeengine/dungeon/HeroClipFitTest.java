@@ -86,6 +86,43 @@ class HeroClipFitTest {
         }
     }
 
+    /**
+     * Every hero carries his work's clips (data/world/food.duke), and his Chop is a woodcutter's loop: about 1.2s, his
+     * hands going up over his head and coming down -- not the sword stand-in it was.
+     */
+    @Test
+    void everyHeroCarriesHisWorkAndHisChopIsAnOverheadLoop() {
+        var food = SETTINGS.food();
+        for (var hero : heroes()) {
+            var him = ASSETS.loadModel(hero.model());
+            var work = uz.dukeengine.dungeon.food.Food.WORDS.stream().map(food::clipOf)
+                    .filter(java.util.Objects::nonNull).distinct().toList();
+            for (var library : hero.animations()) {
+                AnimationLibrary.copy(ASSETS.loadModel(library), him, work);
+            }
+            var composer = control(him, AnimComposer.class);
+            for (var clip : work) {
+                assertTrue(composer.getAnimClip(clip) != null, hero.name() + " has no " + clip + ": he stands still at it");
+            }
+            var chop = sample(hero, food.clipOf("Chop"));
+            assertTrue(chop.length() >= 1.0 && chop.length() <= 1.5, hero.name() + "'s chop runs " + chop.length() + "s");
+            double low = Double.MAX_VALUE;
+            double high = -Double.MAX_VALUE;
+            for (int j = 0; j < chop.joints().size(); j++) {
+                if (!chop.joints().get(j).toLowerCase().matches(".*(hand|sword|slot).*")) { // the knight has no hand bone: his sword is in it
+                    continue;
+                }
+                for (var at : chop.at()) {
+                    low = Math.min(low, at[j].y);
+                    high = Math.max(high, at[j].y);
+                }
+            }
+            float tall = 12f / hero.modelScale(); // every hero stands 12 units: his height in his model's own units
+            assertTrue((high - low) >= 0.3 * tall, hero.name() + "'s hands travel " + (high - low)
+                    + " up and down in his chop, under a third of his height: it is no overhead swing");
+        }
+    }
+
     private static List<HeroLook> heroes() {
         return SETTINGS.heroes().stream().filter(HeroLook::hasModel).toList();
     }
@@ -144,7 +181,8 @@ class HeroClipFitTest {
     private static Samples sample(HeroLook hero, String clipName) {
         var him = ASSETS.loadModel(hero.model());
         for (var library : hero.animations()) {
-            AnimationLibrary.copy(ASSETS.loadModel(library), him, hero.clips());
+            AnimationLibrary.copy(ASSETS.loadModel(library), him, java.util.stream.Stream.concat(hero.clips().stream(),
+                    java.util.stream.Stream.of(clipName)).distinct().toList());
         }
         var composer = control(him, AnimComposer.class);
         var skin = control(him, SkinningControl.class);

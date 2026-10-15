@@ -37,6 +37,9 @@ import uz.dukeengine.rpg.skill.Skill;
  * @param maxMana       the pool its skills are paid from, in whole points, as a hero's {@code MaxMana} -- grown by
  *                      its level where it is placed, and full then. None, and it casts free
  * @param manaRegen     how fast the pool comes back, in tenths of a point a second, as a hero's {@code ManaRegen}
+ * @param walkStride    how far one play of its walk carries it, in units: the client paces the walk to its speed by it
+ *                      (MonsterClipFitTest measures it off the clip). 0 plays the walk at its own pace
+ * @param upperBody     the joint its upper body hangs from, for a blow on the move; none for a rig without one
  * @param licensed      a look on a licensed model, drawn instead of the block's own where that model is shipped
  *                      ({@code Licensed = MonsterLook ... End}; see {@link MonsterLook#licensedOr}). Its clips, size
  *                      and facing are its own: nothing of the stand-in's carries over
@@ -49,7 +52,8 @@ public record Monster(@Group("Identity") String name, String displayName, Set<Ki
         @Group("Behaviour") Band skillDistance, Band keepDistance, @Group("Spawning") int maxPerRoom,
         @Group("Look") String model, String texture, float modelScale, int tint, float facing,
         @Group("Animation") @Link(AnimationSet.class) String animations, @Clip String idle, @Clip String walk,
-        @Clip String attack, @Clip String hurt, @Clip String death, @Group("Look") @Link(Effect.class) String effect,
+        @Clip String attack, @Clip String hurt, @Clip String death, float walkStride, String upperBody,
+        @Group("Look") @Link(Effect.class) String effect,
         Held held, @Group("Skills") PortraitArt portrait, List<Skill> skills, int maxMana, int manaRegen,
         @Group("Look") MonsterLook licensed)
         implements Solid, Sighted, Classified, Titled, Drawn {
@@ -64,7 +68,7 @@ public record Monster(@Group("Identity") String name, String displayName, Set<Ki
             90f, 150f, 4f, 70f, 10, 12, 1, 0, 0xFFFFFF, 1f,
             Band.NONE, Band.NONE, 0,
             null, null, 1f, 0xFFFFFF, 90f, null,
-            null, null, null, null, null, null, Held.NOTHING,
+            null, null, null, null, null, 0f, null, null, Held.NOTHING,
             null, List.of(), 0, 0, null);
 
     public Monster {
@@ -89,6 +93,6 @@ public record Monster(@Group("Identity") String name, String displayName, Set<Ki
     /** What it is drawn as, which nothing in the simulation may read. */
     public MonsterLook look() {
         return MonsterLook.licensedOr(licensed, new MonsterLook(model, texture, modelScale, tint, facing, animations,
-                List.of(), idle, walk, attack, hurt, death, held, effect, 0f, null));
+                List.of(), idle, walk, attack, hurt, death, held, effect, walkStride, upperBody));
     }
 }

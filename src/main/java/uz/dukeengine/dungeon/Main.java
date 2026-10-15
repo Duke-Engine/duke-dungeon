@@ -1441,7 +1441,7 @@ public final class Main {
                         .scale(look.modelScale())
                         .facing(look.facing())
                         .idle(look.idle())
-                        // Paced to its speed where its look says how far a play carries it (a licensed look).
+                        // Paced to its speed by how far a play carries it (MonsterClipFitTest measures it).
                         .walk(look.walk(), look.walkStride())
                         .attack(look.attack())
                         .hurt(look.hurt())
@@ -1487,6 +1487,11 @@ public final class Main {
                 // disagree.
                 for (var skill : settings.skillsFor(hero.name())) {
                     unit.alsoAnimation(skill.castAnim());
+                }
+                // And his work's clips (Chop, Gather, Cook): a clip nobody names is never copied off a
+                // library, and a hero drawn from one (the Huntress, the mage) stood still at a tree.
+                for (var word : uz.dukeengine.dungeon.food.Food.WORDS) {
+                    unit.alsoAnimation(settings.food().clipOf(word));
                 }
                 for (var library : hero.animations()) {
                     unit.animationsFrom(library);

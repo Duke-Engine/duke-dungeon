@@ -67,6 +67,8 @@ import mathutils
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import eyes  # noqa: E402
 import retarget  # noqa: E402
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "anim"))
+import overhead_chop  # noqa: E402
 
 args = sys.argv[sys.argv.index("--") + 1:]
 if len(args) != 6:
@@ -103,9 +105,11 @@ BORROWED = [
     # R, the pull: one hand raised to call the room in.
     ("Cast_Pull", "kaykit", "Rig_Medium_CombatRanged.glb", "Ranged_Magic_Raise", False, 1.0, 0.0),
     # Work, for the food state: the engine loops one by its exact name while he works (E67, GameObject.busy). Chop
-    # is his slash at its own pace, Gather Quaternius' Interact, Cook Quaternius' Fixing_Kneeling: the Huntress has the same
-    # three names.
-    ("Chop", "ual", None, "Sword_Attack", True, 1.0, 0.0),
+    # is a woodcutter's two-handed overhead chop at a trunk in front, 1.2s, posed on the UAL rig by
+    # art/anim/overhead_chop.py (no library has one a grown body can use); Gather Quaternius' Interact, Cook
+    # Quaternius' Fixing_Kneeling. The Huntress and the mage have the same three names (art/huntress,
+    # art/anim/work_clips.py).
+    ("Chop", "ual", None, "Chop_Overhead", False, 1.0, 0.0),
     ("Gather", "ual", None, "Interact", False, 1.0, 0.0),
     ("Cook", "ual", None, "Fixing_Kneeling", False, 1.0, 0.0),
 ]
@@ -285,6 +289,8 @@ def table_for(lib, clip):
 for path in sorted({(lib, file) for _, lib, file, _, _, _, _ in BORROWED}, key=str):
     lib, file = path
     source_objs, source_arm, source_actions = import_gltf(UAL_FILE if lib == "ual" else os.path.join(KAYKIT_DIR, file))
+    if lib == "ual":
+        source_actions.add(overhead_chop.make(source_arm))  # posed, not borrowed: see art/anim/overhead_chop.py
     by_name = {a.name: a for a in source_actions}
     for name, l, f, clip, mirror, speed, start in BORROWED:
         if (l, f) == path:
@@ -294,6 +300,10 @@ for path in sorted({(lib, file) for _, lib, file, _, _, _, _ in BORROWED}, key=s
     remove(source_objs)
     for action in source_actions:
         bpy.data.actions.remove(action)
+# A clip made while its library held one of the same name comes out as Name.001; the library's is gone now, so
+# it takes its own name back.
+for action in clips:
+    action.name = action.name.split(".")[0]
 
 ad = arm.animation_data
 ad.action = None

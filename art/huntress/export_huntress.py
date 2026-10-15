@@ -71,6 +71,9 @@ import bpy
 import numpy as np
 from mathutils import Matrix, Vector
 
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "anim"))
+import overhead_chop  # noqa: E402
+
 args = sys.argv[sys.argv.index("--") + 1:]
 SOURCE, ANIMATIONS, UAL_SOURCE, OUT = args[0], args[1], args[2], args[3]
 PICTURES = args[4] if len(args) > 4 else None
@@ -89,11 +92,12 @@ CLIPS = {
     "Idle_Loop": UAL, "Hit_Chest": UAL, "Death01": UAL, "Roll": UAL,
     "Spell_Simple_Shoot": UAL,
     # Work, for the food state: the engine loops one by its exact name while she works (E67, GameObject.busy).
-    # Written under RENAME's names -- Chop, Gather, Cook -- the same three the knight has.
-    "Sword_Attack": UAL, "Interact": UAL, "Fixing_Kneeling": UAL,
+    # Written under RENAME's names -- Chop, Gather, Cook -- the same three the knight has. The chop is posed on the
+    # UAL rig as it is opened (art/anim/overhead_chop.py): no library holds one a grown body can use.
+    "Chop_Overhead": UAL, "Interact": UAL, "Fixing_Kneeling": UAL,
 }
 # The name a clip is written under, where it is not its library's.
-RENAME = {"Sword_Attack": "Chop", "Interact": "Gather", "Fixing_Kneeling": "Cook"}
+RENAME = {"Chop_Overhead": "Chop", "Interact": "Gather", "Fixing_Kneeling": "Cook"}
 # Frames a clip is cut to. The client plays her Attack from the frame the arrow leaves, once a shot, and she
 # shoots every ReloadFrames 24 = 0.8s: Ranged_Bow_Release looses on its first frames and has settled by its 19th,
 # so its last half second, which every next shot cut off, is dropped (HeroClipFitTest).
@@ -611,6 +615,8 @@ def open_libraries():
     paths = [(KAYKIT, os.path.join(ANIMATIONS, name)) for name in LIBRARIES] + [(UAL, UAL_SOURCE)]
     for source, path in paths:
         rig, actions = import_rig(path)
+        if source == UAL:
+            actions.add(overhead_chop.make(rig))  # posed, not borrowed: see art/anim/overhead_chop.py
         rigs.setdefault(source, rig)
         for action in actions:
             clip = action.name.split(".")[0]  # a second library's T-Pose comes in as T-Pose.001

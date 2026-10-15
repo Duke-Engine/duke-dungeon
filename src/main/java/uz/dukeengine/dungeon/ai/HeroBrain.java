@@ -106,6 +106,10 @@ public final class HeroBrain extends UnitScript {
      */
     private ItemErrand walkingFor;
 
+    /** How many times he has set off again on his errand without his legs taking it up. */
+    private int resumeTries;
+    private static final int RESUME_TRIES = 60;
+
     /** The standing orders his player has given; see {@link Orders}. */
     private final Orders orders;
 
@@ -433,9 +437,13 @@ public final class HeroBrain extends UnitScript {
             if (WayAhead.stillShut(unit(), waitingOn, errand, settings.combat().wayAheadProbe(), null)) {
                 return;
             }
-            var goal = errand;
-            forgetTheErrand();
-            moveTo(goal.x(), goal.y());
+            // Kept until his legs take it up (moving, above, forgets it): the body that fell in his way can turn
+            // the first try away for a frame or two while it lies there, and an errand given up on a first try
+            // left him standing for good. Two seconds of tries, the locomotor's own patience, then it is spent.
+            moveTo(errand.x(), errand.y());
+            if (++resumeTries >= RESUME_TRIES) {
+                forgetTheErrand();
+            }
             return;
         }
         if (!move.isMoving()) {
@@ -461,6 +469,7 @@ public final class HeroBrain extends UnitScript {
         errand = null;
         waitingOn = null;
         walkingFor = null;
+        resumeTries = 0;
     }
 
     /** Send him walking at something, remembering where it was when he set off. */

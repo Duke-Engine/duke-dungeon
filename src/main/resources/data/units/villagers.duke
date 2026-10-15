@@ -33,6 +33,9 @@ Monster
   ModelScale = 5.0
   Facing = 90
   Animations = Humanoid
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
+  WalkStride = 3.72
+  UpperBody = spine
 End
 
 ; A farmer, who keeps near his field.
@@ -60,6 +63,9 @@ Monster
   ModelScale = 5.5
   Facing = 90
   Animations = Humanoid
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
+  WalkStride = 4.1
+  UpperBody = spine
 End
 
 ; A traveller on the roads between the villages.
@@ -87,6 +93,9 @@ Monster
   ModelScale = 5.5
   Facing = 90
   Animations = Humanoid
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
+  WalkStride = 4.1
+  UpperBody = spine
 End
 
 ; A pedlar who walks the roads with his wares: his stock is data/story/villages.duke.
@@ -114,6 +123,9 @@ Monster
   ModelScale = 4.5
   Facing = 90
   Animations = Humanoid
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
+  WalkStride = 3.35
+  UpperBody = spine
 End
 
 ; A watchtower's keeper: talked to, he opens the map to travel from (data/world/travel.duke).
@@ -141,4 +153,7 @@ Monster
   ModelScale = 4.72
   Facing = 90
   Animations = Humanoid
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
+  WalkStride = 3.52
+  UpperBody = spine
 End
