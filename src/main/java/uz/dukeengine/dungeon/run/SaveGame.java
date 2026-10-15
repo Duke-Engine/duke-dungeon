@@ -156,7 +156,10 @@ public record SaveGame(long seed, String stage, int depth, String hero, int expe
                         saved.level(), base.use(), base.liesAs(), base.slot(), base.skills());
             }
         }
-        return null;
+        // A generated thing is made again from its id, every roll as it was; a potion stack keeps its count, its
+        // Value (docs/plan/2026-10-15-loot.md).
+        var made = settings.items().resolve(saved.id());
+        return made == null ? null : made.worth(saved.value());
     }
 
     // ---- the text ----
