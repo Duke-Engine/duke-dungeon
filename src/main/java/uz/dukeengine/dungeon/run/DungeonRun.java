@@ -99,6 +99,9 @@ public final class DungeonRun {
         ObjectId talkingTo;
         /** The experience a loaded save gives his next body, or -1 when there is none to give. */
         int loadedExperience = -1;
+        /** The frame his belt is ready again from, and the bag's count of changes when its potions were last stacked. */
+        volatile int beltReady;
+        int stackedAt = -1;
         /** His purse: the gold his kills have paid him and his trading left him. */
         int gold;
         /** The souls his book has drunk (SOUL_DRINK), carried from body to body and saved. See {@link #medallion}. */
@@ -1110,11 +1113,17 @@ public final class DungeonRun {
                         person.getPosition().y()));
             }
         }
+        var items = settings.items();
         for (var placed : story.items()) {
-            var item = settings.loot().stream().filter(loot -> loot.id().equals(placed.kind())).findFirst();
-            item.ifPresent(loot -> uz.dukeengine.rpg.item.GroundItem.lay(logic,
-                    loot.liesAs(settings.lootDrops().template()), loot, ground(logic, placed),
-                    dungeonPlayer.getIndex()));
+            // One of the data's own, a base, a unique or a potion by name — or a treasure, rolled at the hero's level
+            // as a chest's drop (docs/plan/2026-10-15-loot.md).
+            var loot = placed.kind().equals(items.rules().treasure()) && items.active()
+                    ? items.drop(logic.random().nextInt(0, (1 << 30) - 1), heroLevel(), uz.dukeengine.dungeon.loot.Items.Source.CHEST)
+                    : items.resolve(placed.kind());
+            if (loot != null) {
+                uz.dukeengine.rpg.item.GroundItem.lay(logic, loot.liesAs(settings.lootDrops().template()), loot,
+                        ground(logic, placed), dungeonPlayer.getIndex());
+            }
         }
         for (var quest : story.quests()) {
             quests.start(quest);
@@ -1346,8 +1355,12 @@ public final class DungeonRun {
                     }
                 }
             }
-            case GIVE -> settings.loot().stream().filter(item -> item.id().equals(what)).findFirst()
-                    .ifPresent(item -> seats.getFirst().progress.getLoot().take(item, logic.getFrame(), 0));
+            case GIVE -> {
+                var given = settings.items().resolve(what);
+                if (given != null) {
+                    seats.getFirst().progress.getLoot().take(given, logic.getFrame(), 0);
+                }
+            }
             case TAKE -> {
                 for (var bag : bags()) {
                     for (int slot = 0; slot < bag.slots().size(); slot++) {
@@ -1510,6 +1523,66 @@ public final class DungeonRun {
     }
 
     /**
+     * Every BeamFrames, every magic, rare and epic thing lying on the floor stands in a column of its rarity's light
+     * (ItemRules' Beams): an event the client plays riding the thing, as a quest's glow is; nothing in the world reads it.
+     */
+    private void beams(DukeGame game) {
+        var items = settings.items();
+        var logic = game.getLogic();
+        if (items.rules().beams().isEmpty() || logic.getFrame() % items.rules().beamFrames() != 0) {
+            return;
+        }
+        for (var thing : logic.getObjects()) {
+            var lying = thing.findModule(uz.dukeengine.rpg.item.GroundItem.class);
+            var beam = lying == null || lying.getHolding() == null ? "" : items.beamOf(lying.getHolding());
+            if (!beam.isBlank()) {
+                logic.effect(beam, thing);
+            }
+        }
+    }
+
+    /** Every hero's potion stacks joined, as things come into his bag. See {@link Belt#stack}. */
+    private void stackPotions() {
+        var items = settings.items();
+        for (var seat : seats) {
+            var bag = seat.progress.getLoot();
+            if (bag.version() != seat.stackedAt) {
+                Belt.stack(bag, items);
+                seat.stackedAt = bag.version();
+            }
+        }
+    }
+
+    /**
+     * A player's hero drinks from his belt's {@code belt}th stack, if the belt is ready: the Drink order, keys 1-4.
+     * See {@link Belt}.
+     */
+    public void drink(DukeGame game, int playerIndex, int belt) {
+        var seat = seatOf(playerIndex);
+        int frame = game.getLogic().getFrame();
+        if (seat == null || seat.heroId == null || frame < seat.beltReady) {
+            return;
+        }
+        var bag = seat.progress.getLoot();
+        var items = settings.items();
+        Belt.stack(bag, items);
+        if (Belt.drink(game.getLogic().findObject(seat.heroId), bag, items, belt)) {
+            seat.beltReady = frame + items.rules().beltFrames();
+        }
+    }
+
+    /** The frame this player's belt is ready again from: for the belt on the screen, from any thread. */
+    public int beltReadyOf(int playerIndex) {
+        var seat = seatOf(playerIndex);
+        return seat == null ? 0 : seat.beltReady;
+    }
+
+    /** The level things are rolled at for the party: its first hero's. */
+    private int heroLevel() {
+        return Math.max(1, seats.getFirst().progress.getLevel());
+    }
+
+    /**
      * Every GlowFrames, the Dialogue block's GlowLook played on the target of every quest step that says Glow, for as
      * long as the step wants it: the thing lying that it asks for, the creature it asks to kill, the person it sends
      * him to. An event, which the client plays riding the thing; nothing in the world reads it.
@@ -1577,6 +1650,8 @@ public final class DungeonRun {
         tellTheRanks(game);
         medallion(game);
         glow(game);
+        beams(game);
+        stackPotions();
         var logic = game.getLogic();
         quests.frame(logic.getFrame());
         int paid = quests.takeExperience();
@@ -1712,7 +1787,7 @@ public final class DungeonRun {
     }
 
     /** A merchant's stock on this floor: the person, and how many of each of his wares are left. */
-    private record Shop(ObjectId id, uz.dukeengine.dungeon.story.Merchant merchant, int[] left) {
+    private record Shop(ObjectId id, List<uz.dukeengine.dungeon.story.Merchant.Ware> wares, int[] left) {
     }
 
     private final List<Shop> shops = new ArrayList<>();
@@ -1722,15 +1797,27 @@ public final class DungeonRun {
     private volatile java.util.Map<Integer, List<uz.dukeengine.dungeon.story.Merchant.Ware>> stock =
             java.util.Map.of();
 
-    /** Every merchant on the floor stocked again from the data. */
+    /**
+     * Every merchant on the floor stocked again: the data's wares, and his {@code Gear} things rolled at the hero's
+     * level off the world's draw (docs/plan/2026-10-15-loot.md).
+     */
     private void restock() {
         shops.clear();
+        var items = settings.items();
         for (var who : people) {
             var merchant = settings.story().merchant(who.npc());
-            if (merchant != null) {
-                shops.add(new Shop(who.id(), merchant,
-                        merchant.stock().stream().mapToInt(uz.dukeengine.dungeon.story.Merchant.Ware::count).toArray()));
+            if (merchant == null) {
+                continue;
             }
+            var wares = new ArrayList<>(merchant.stock());
+            if (merchant.gear() > 0 && items.active() && lastLogic != null) {
+                for (var thing : items.stock(lastLogic.random().nextInt(0, (1 << 30) - 1), heroLevel(),
+                        merchant.gear())) {
+                    wares.add(new uz.dukeengine.dungeon.story.Merchant.Ware(thing.id(), items.price(thing), 1));
+                }
+            }
+            shops.add(new Shop(who.id(), List.copyOf(wares),
+                    wares.stream().mapToInt(uz.dukeengine.dungeon.story.Merchant.Ware::count).toArray()));
         }
         published();
     }
@@ -1740,7 +1827,7 @@ public final class DungeonRun {
         for (var shop : shops) {
             var wares = new ArrayList<uz.dukeengine.dungeon.story.Merchant.Ware>();
             for (int i = 0; i < shop.left().length; i++) {
-                var ware = shop.merchant().stock().get(i);
+                var ware = shop.wares().get(i);
                 wares.add(new uz.dukeengine.dungeon.story.Merchant.Ware(ware.item(), ware.price(), shop.left()[i]));
             }
             now.put(shop.id().value(), List.copyOf(wares));
@@ -1840,8 +1927,14 @@ public final class DungeonRun {
         var bag = seat.progress.getLoot();
         int frame = game.getLogic().getFrame();
         int notes = settings.lootDrops().noteFrames();
-        var sold = shop.merchant().stock().get(ware);
-        var item = settings.loot().stream().filter(loot -> loot.id().equals(sold.item())).findFirst().orElse(null);
+        var sold = shop.wares().get(ware);
+        var items = settings.items();
+        var item = items.resolve(sold.item());
+        var potion = items.potionOf(item);
+        if (potion != null) {
+            // A stack of one of its own, joined into his first of its kind as it comes in.
+            item = items.potion(potion, 1, game.getLogic().random().nextInt(0, (1 << 30) - 1));
+        }
         if (item == null || shop.left()[ware] <= 0) {
             bag.say(trade.soldOutWord(), frame, notes);
         } else if (seat.gold < sold.price()) {
@@ -1849,6 +1942,7 @@ public final class DungeonRun {
         } else if (!bag.take(item, frame, notes)) {
             bag.say(trade.fullWord(), frame, notes);
         } else {
+            Belt.stack(bag, items);
             seat.gold -= sold.price();
             shop.left()[ware]--;
             published();
@@ -1885,6 +1979,11 @@ public final class DungeonRun {
             return -1;
         }
         var story = settings.story();
+        // A generated thing by its base, rarity and level, a potion stack by its potions (docs/plan/2026-10-15-loot.md).
+        int priced = settings.items().price(item);
+        if (priced >= 0) {
+            return priced * story.trade().sellPercent() / 100;
+        }
         int joined = (int) Math.pow(Math.max(1, settings.lootDrops().joinCount()), item.level() - 1);
         return story.priceOf(item.id()) * joined * story.trade().sellPercent() / 100;
     }

@@ -802,6 +802,8 @@ class DungeonEffectLayerTest {
             longest.merge(art.effect(), over, Math::max);
         }
         assertFalse(columns.isEmpty(), "no column of light in the file");
+        // A thing's light on the ground is no moment: it stands, played again every BeamFrames (ItemRules).
+        columns.removeAll(SETTINGS.items().rules().beams());
         for (var effect : columns) {
             float over = longest.get(effect);
             assertTrue(over >= 0.5f && over <= 0.8f, effect + " lasts " + over + " s");

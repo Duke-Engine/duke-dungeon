@@ -291,6 +291,14 @@ public final class DungeonSettings {
     /** Everything that can be found on a floor, in file order. */
     private final java.util.List<Loot> loot = new java.util.ArrayList<>();
 
+    /** What is generated — see docs/plan/2026-10-15-loot.md — and the one Items made of it, once asked. */
+    private final java.util.List<uz.dukeengine.dungeon.loot.ItemBase> itemBases = new java.util.ArrayList<>();
+    private final java.util.List<uz.dukeengine.dungeon.loot.Affix> affixes = new java.util.ArrayList<>();
+    private final java.util.List<uz.dukeengine.dungeon.loot.Unique> uniques = new java.util.ArrayList<>();
+    private final java.util.List<uz.dukeengine.dungeon.loot.Potion> potions = new java.util.ArrayList<>();
+    private uz.dukeengine.dungeon.loot.ItemRules itemRules = uz.dukeengine.dungeon.loot.ItemRules.DEFAULTS;
+    private volatile uz.dukeengine.dungeon.loot.Items items;
+
     /**
      * The kind placed in the furthest room when the file names no others. Named,
      * not flagged, so it is findable.
@@ -421,6 +429,24 @@ public final class DungeonSettings {
                     item.skills().forEach(skill -> require(skill.effect() != null && skill.effect().isPassive(),
                             "LootItem " + item.name() + " lends a " + skill.effect() + ": a worn thing lends passives only"));
                 }
+                // What is generated: a later block of a name is the one rolled (a map's or a test's own).
+                case uz.dukeengine.dungeon.loot.ItemBase base -> {
+                    itemBases.removeIf(earlier -> earlier.name().equals(base.name()));
+                    itemBases.add(base);
+                }
+                case uz.dukeengine.dungeon.loot.Affix affix -> {
+                    affixes.removeIf(earlier -> earlier.name().equals(affix.name()));
+                    affixes.add(affix);
+                }
+                case uz.dukeengine.dungeon.loot.Unique unique -> {
+                    uniques.removeIf(earlier -> earlier.name().equals(unique.name()));
+                    uniques.add(unique);
+                }
+                case uz.dukeengine.dungeon.loot.Potion potion -> {
+                    potions.removeIf(earlier -> earlier.name().equals(potion.name()));
+                    potions.add(potion);
+                }
+                case uz.dukeengine.dungeon.loot.ItemRules block -> itemRules = once(block, once);
                 case Moment moment -> moments.add(moment);
                 case Cursor cursor -> cursors.add(cursor);
                 case Skin skin -> skins.add(skin);
@@ -687,6 +713,73 @@ public final class DungeonSettings {
      * Catch a file that would produce a broken dungeon at load time, where the
      * message can name the field, rather than as a strange failure much later.
      */
+    /** What is generated, each name pointing at something and each figure one the hero reads. */
+    private void validateItems() {
+        var figures = java.util.Set.of(Stat.ATTACK, Stat.ARMOUR, Stat.HEALTH, Stat.MANA, Stat.ATTRIBUTE);
+        var slots = lootDrops.wornSlots();
+        var rules = attributeRules();
+        for (var base : itemBases) {
+            var named = "ItemBase " + base.name();
+            require(!base.name().isBlank() && !base.name().contains("-") && sayable(base.displayName()),
+                    named + ": a name with no '-' and a DisplayName without ',' or '|'");
+            require(figures.contains(base.kind()), named + " has Kind = " + base.kind() + ", and no figure is called that");
+            require(slots.isEmpty() || slots.contains(base.slot()), named + " has Slot = " + base.slot()
+                    + ", and LootDrops wears no slot called that");
+            require(base.value().size() == 2 && base.value().get(0) <= base.value().get(1),
+                    named + ": Value is [from, to]");
+            require(!base.kind().equals(Stat.ATTRIBUTE) || !base.attributes().isEmpty(),
+                    named + " gives an attribute: say which in Attributes");
+            base.attributes().forEach(attribute -> require(rules.indexOf(attribute) >= 0,
+                    named + " gives " + attribute + ", and no Attribute is called that"));
+        }
+        var stats = new java.util.HashSet<>(figures);
+        stats.addAll(EXTRAS);
+        stats.add(uz.dukeengine.dungeon.loot.Items.LIFESTEAL);
+        for (var affix : affixes) {
+            var named = "Affix " + affix.name();
+            require(stats.contains(affix.stat()), named + " has Stat = " + affix.stat() + ", and no figure is called that");
+            require(affix.low().size() == 2 && affix.high().size() == 2, named + ": Low and High are [level 1, level 15]");
+            affix.slots().forEach(slot -> require(slots.isEmpty() || slots.contains(slot),
+                    named + " rolls on " + slot + ", and LootDrops wears no slot called that"));
+            require(sayable(affix.prefix()), named + ": its Prefix may not contain ',' or '|'");
+        }
+        for (var unique : uniques) {
+            var named = "Unique " + unique.name();
+            var base = itemBases.stream().filter(each -> each.name().equals(unique.base())).findFirst().orElse(null);
+            require(base != null, named + " is made on " + unique.base() + ", and no ItemBase is called that");
+            require(!unique.name().contains("-") && sayable(unique.displayName()) && sayable(unique.lore()),
+                    named + ": a name with no '-', and words without ',' or '|'");
+            int extras = 0;
+            for (var said : unique.gives()) {
+                var words = said.strip().split("\\s+");
+                require(words.length == 2 && words[1].matches("-?\\d+"), named + " gives '" + said + "': a Stat and a number");
+                require(stats.contains(words[0]), named + " gives " + words[0] + ", and no figure is called that");
+                require(!figures.contains(words[0]) || words[0].equals(base.kind()),
+                        named + " gives " + words[0] + ", and its base's figure is " + base.kind() + " (E43)");
+                extras += EXTRAS.contains(words[0]) ? 1 : 0;
+            }
+            require(extras <= 1, named + " gives two extras, and a thing carries one (E43)");
+            unique.skills().forEach(skill -> require(skill.effect() != null && skill.effect().isPassive(),
+                    named + " lends a " + skill.effect() + ": a worn thing lends passives only"));
+        }
+        for (var potion : potions) {
+            require(!potion.name().contains("-") && sayable(potion.displayName()) && potion.stack() >= 1,
+                    "Potion " + potion.name() + ": a name with no '-', and a Stack of one at least");
+        }
+        var item = itemRules;
+        for (var list : java.util.List.of(item.rarities(), item.colours(), item.normal(), item.elite(), item.boss(),
+                item.chest(), item.shop(), item.prices())) {
+            require(list.size() == 4, "ItemRules: a list by rarity is four: common, magic, rare, epic");
+        }
+        require(!item.firstNames().isEmpty() && !item.secondNames().isEmpty(), "ItemRules: a rare's name needs words");
+        require(item.beltSize() >= 0 && item.beltSize() <= 9 && item.beamFrames() >= 1,
+                "ItemRules: BeltSize is 0 to 9, BeamFrames at least 1");
+        for (var beam : item.beams()) {
+            require(beam.isBlank() || effects.stream().anyMatch(effect -> effect.name().equals(beam)),
+                    "ItemRules' Beams name " + beam + ", and no Effect block describes it");
+        }
+    }
+
     private void validate() {
         require(map.generation().mapWidth() > 0 && map.generation().mapHeight() > 0, "map size must be positive");
         require(map.generation().minRooms() >= 1, "a dungeon needs at least one room");
@@ -908,9 +1001,13 @@ public final class DungeonSettings {
         require(map.keep().sizes().isEmpty() || loot.stream().anyMatch(item -> item.kind().equals(KEY)),
                 "a Keep's gate opens only to a key, and no LootItem has Kind = KEY to lay on its floor");
         // People and their talk: every name in it points at something the files have.
-        var story = story().problems(monsters.stream().map(MonsterKind::name).toList(),
-                loot.stream().map(Loot::id).toList());
+        var known = new java.util.ArrayList<>(loot.stream().map(Loot::id).toList());
+        itemBases.forEach(base -> known.add(base.name()));
+        potions.forEach(potion -> known.add(potion.name()));
+        uniques.forEach(unique -> known.add(unique.name()));
+        var story = story().problems(monsters.stream().map(MonsterKind::name).toList(), known);
         require(story.isEmpty(), String.join("; ", story));
+        validateItems();
         require(goldBurst.coinLook().isBlank()
                 || effects.stream().anyMatch(effect -> effect.name().equals(goldBurst.coinLook())),
                 "GoldBurst's CoinLook names " + goldBurst.coinLook() + ", and no Effect block describes it");
@@ -1392,6 +1489,22 @@ public final class DungeonSettings {
     /** Everything that can be found on a floor, in file order. */
     public java.util.List<Loot> loot() {
         return java.util.List.copyOf(loot);
+    }
+
+    /** What is generated: the bases, affixes, uniques and potions, rolled, named and priced. See loot/Items. */
+    public uz.dukeengine.dungeon.loot.Items items() {
+        var made = items;
+        if (made == null) {
+            var named = new java.util.LinkedHashMap<String, String>();
+            attributes.forEach(attribute -> named.put(attribute.name(), attribute.word()));
+            made = new uz.dukeengine.dungeon.loot.Items(itemBases, affixes, uniques, potions, itemRules,
+                    new uz.dukeengine.dungeon.loot.Items.Words(hud.attackWord(), hud.armourWord(), hud.healthWord(),
+                            hud.manaWord(), lootDrops.healthRegenWord(), lootDrops.manaRegenWord(),
+                            lootDrops.attackSpeedWord(), hud.lifestealWord(), named),
+                    loot);
+            items = made;
+        }
+        return made;
     }
 
     /** The animations called {@code name}; none when a unit links none. */

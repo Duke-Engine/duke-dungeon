@@ -35,6 +35,8 @@ final class DialogueScreen implements Painter, CanvasInput {
     private final DungeonSettings settings;
     /** The trade window and the purse, drawn under the box. */
     private final TradeScreen trade;
+    /** A thing's card in colour over the bag's, and the belt. */
+    private final ItemCard cards;
 
     /** The match the counts below are of; a new match is shown from its own first conversation. */
     private Dungeon.Session counted;
@@ -48,6 +50,12 @@ final class DialogueScreen implements Painter, CanvasInput {
         this.underInput = underInput;
         this.settings = settings;
         this.trade = new TradeScreen(settings);
+        this.cards = new ItemCard(settings);
+    }
+
+    /** The cards and the belt, for a test to read them. */
+    ItemCard cards() {
+        return cards;
     }
 
     /** The trade window under the box, for a test to find its rows. */
@@ -133,10 +141,14 @@ final class DialogueScreen implements Painter, CanvasInput {
         if (under != null) {
             under.paint(canvas);
         }
+        if (!inCutscene()) {
+            cards.paint(canvas, match);
+        }
         trade.floats(canvas, match);
         trade.purse(canvas, match);
         if (!inCutscene()) {
             trade.paint(canvas, match);
+            cards.trade(canvas, trade, match);
         }
         var now = showing();
         pause(now != null);
@@ -221,10 +233,11 @@ final class DialogueScreen implements Painter, CanvasInput {
 
     @Override
     public boolean take(Event event) {
+        cards.pointer(event);
         if (inCutscene()) {
             return cutsceneTakes(event);
         }
-        if (showing() == null && trade.take(event, match)) {
+        if (showing() == null && (trade.take(event, match) || cards.drinks(event, match))) {
             return true;
         }
         if (showing() == null) {

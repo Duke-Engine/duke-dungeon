@@ -150,6 +150,8 @@ Game
     ; People, their talk and the quests.
     data/story/story.duke,
     data/story/trade.duke,
+    ; What is found: bases, affixes, uniques, potions and how they drop. See docs/plan/2026-10-15-loot.md.
+    data/world/loot.duke,
     data/story/medallion.duke,
     data/story/final.duke,
     data/story/kampir.duke,

@@ -134,7 +134,13 @@ Merchant
     Amulet 50 3,
     Ring 50 3,
     Whetstone 60 2,
+    hayot_shishasi 20 10,
+    mana_shishasi 20 10,
+    tiklanish_eliksiri 60 3,
+    katta_hayot_shishasi 45 5,
   ]
+  ; And six things more, rolled at the hero's level each time a map stocks him (data/world/loot.duke).
+  Gear = 6
 End
 
 ; His own: never found, only bought (Weight 0).

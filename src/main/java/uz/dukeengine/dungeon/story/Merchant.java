@@ -2,10 +2,13 @@ package uz.dukeengine.dungeon.story;
 
 import java.util.List;
 
-/** A person who trades: the Npc of that name, and what a map starts him with — each thing, its price, how many. */
-public record Merchant(String name, List<Ware> stock) {
+/**
+ * A person who trades: the Npc of that name, and what a map starts him with — each thing, its price, how many — and
+ * {@code gear} more things rolled at the hero's level each time a map stocks him (docs/plan/2026-10-15-loot.md).
+ */
+public record Merchant(String name, List<Ware> stock, int gear) {
 
-    public static final Merchant DEFAULTS = new Merchant("", List.of());
+    public static final Merchant DEFAULTS = new Merchant("", List.of(), 0);
 
     public Merchant {
         stock = stock == null ? List.of() : List.copyOf(stock);

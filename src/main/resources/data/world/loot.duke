@@ -1,0 +1,843 @@
+; ---------------------------------------------------------------------------
+; What is found — see docs/plan/2026-10-15-loot.md.
+;
+; A thing a monster drops, a map's treasure holds or the merchant sells is made
+; here: a base (what it is: a sword, mail, a ring), a rarity (common, magic, rare,
+; epic), and for magic and rare things affixes rolled by its item level. An epic
+; thing is a Unique, written by hand. A potion is a stack in the backpack, drunk
+; from the belt with keys 1-4.
+;
+; Every figure is the engine's: a base moves its slot's figure (ATTACK and ARMOUR
+; in percent, HEALTH and MANA flat, ATTRIBUTE whole points); an affix of the same
+; figure adds to it, one of HEALTH_REGEN, MANA_REGEN or ATTACK_SPEED is its extra,
+; and LIFESTEAL is a passive the thing lends. One of each kind a thing, until the
+; engine carries more (E43).
+; ---------------------------------------------------------------------------
+
+ItemRules
+  ; Each rarity's word and colour, common, magic, rare, epic: the name on a card,
+  ; and the light a thing lying on the ground stands in.
+  Rarities = [Oddiy, Sehrli, Noyob, Afsonaviy]
+  Colours = [0xC8CCD2, 0x5B9BFF, 0xE8B23A, 0xB46CFF]
+  ; The rarities each source drops, out of their sum: an ordinary monster, an elite,
+  ; a boss, a treasure a map places, the merchant's stock.
+  Normal = [700, 250, 45, 5]
+  Elite = [380, 430, 160, 30]
+  Boss = [0, 450, 430, 120]
+  Chest = [250, 450, 260, 40]
+  Shop = [550, 380, 70, 0]
+  ; How many affixes, from and to. A rare holds three until E43: one of each kind.
+  MagicAffixes = [1, 2]
+  RareAffixes = [3, 4]
+  ; A thing's price: its base's, times its rarity's in percent, and 8% more each
+  ; item level past the first. It sells for Trade's SellPercent of it.
+  Prices = [100, 250, 500, 1200]
+  PricePerLevel = 8
+  ; The chance an elite drops anything (a monster's and a boss's are LootDrops').
+  EliteDropPercent = 40
+  Elites = [Brute, Champion, Warden, Reaper]
+  ; Of an ordinary or elite drop, how many in a hundred are a potion.
+  PotionPercent = 35
+  ; A boss drops two things, a level above its own.
+  BossDrops = 2
+  BossLevel = 1
+  ; A base is found from its Level to six levels past it, then is left behind.
+  BaseWindow = 6
+  ; A rare's name: one of the first, one of the second.
+  FirstNames = [Qora, Qonli, Muzli, Olovli, Tungi, Qahrli, Jim, Yovuz, Qadimiy, "So'nggi", "Bo'ronli", Kumush, Temir, Sovuq, Shum, Telba]
+  SecondNames = [tish, "tig'", yara, qahr, "o'lim", chaqmoq, soya, "bo'ron", ilon, burgut, "bo'ri", "yo'lbars", qasos, "la'nat", sado, alanga]
+  ; The light a magic, a rare and an epic thing lying on the ground stands in,
+  ; played on it again every BeamFrames (30 = one second). A common one lies dark.
+  Beams = [LootBeamMagic, LootBeamRare, LootBeamEpic]
+  BeamFrames = 45
+  ; The belt: the first four potion stacks in the backpack, keys 1-4, and how long
+  ; after a draught it is ready again.
+  BeltSize = 4
+  BeltFrames = 30
+  LevelWord = "%d-daraja"
+  CompareWord = Kiyilgan bilan solishtiring
+  CountWord = "Soni: %d"
+  DrinkHint = "1-4: ichish"
+  ; What each belt key does, on the Settings screen's list of keys; %d the key.
+  BeltKeyWord = "Belbog'dan ichish: %d"
+  ; A map's placed thing called this is a treasure: a roll at the floor's level.
+  Treasure = Xazina
+  ; A card's colours: the base figure, an affix, a unique's story, and a difference
+  ; to what is worn, more and less.
+  FigureColour = 0xFFFFFF
+  AffixColour = 0x7FB2FF
+  LoreColour = 0xD8B05A
+  BetterColour = 0x6CD86C
+  WorseColour = 0xE05A4A
+End
+
+; ---------------------------------------------------------------------------
+; Bases. Value is the figure as found, from and to; Level the item level it is
+; found from; Price what it costs common at level 1. Icon is the icon library's
+; picture, drawn in its rarity's frame (icons/items/loot/, art/icons/ItemIcons.java).
+; ---------------------------------------------------------------------------
+
+; Qurol: percent on his blow.
+ItemBase
+  Name = xanjar
+  DisplayName = Xanjar
+  Slot = Qurol
+  Icon = dagger
+  Kind = ATTACK
+  Level = 1
+  Value = [4, 6]
+  Price = 20
+End
+
+ItemBase
+  Name = qisqa_qilich
+  DisplayName = Qisqa qilich
+  Slot = Qurol
+  Icon = sword_short
+  Kind = ATTACK
+  Level = 1
+  Value = [5, 7]
+  Price = 24
+End
+
+ItemBase
+  Name = bolta
+  DisplayName = Bolta
+  Slot = Qurol
+  Icon = axe
+  Kind = ATTACK
+  Level = 3
+  Value = [7, 9]
+  Price = 34
+End
+
+ItemBase
+  Name = kamon
+  DisplayName = Kamon
+  Slot = Qurol
+  Icon = bow
+  Kind = ATTACK
+  Level = 3
+  Value = [6, 9]
+  Price = 34
+End
+
+ItemBase
+  Name = hassa
+  DisplayName = Sehrgar hassasi
+  Slot = Qurol
+  Icon = staff_wizard
+  Kind = ATTACK
+  Level = 4
+  Value = [6, 9]
+  Price = 36
+End
+
+ItemBase
+  Name = keng_qilich
+  DisplayName = Keng qilich
+  Slot = Qurol
+  Icon = sword_broad
+  Kind = ATTACK
+  Level = 5
+  Value = [9, 12]
+  Price = 48
+End
+
+ItemBase
+  Name = gurzi
+  DisplayName = Gurzi
+  Slot = Qurol
+  Icon = mace
+  Kind = ATTACK
+  Level = 6
+  Value = [10, 13]
+  Price = 54
+End
+
+ItemBase
+  Name = arbalet
+  DisplayName = Arbalet
+  Slot = Qurol
+  Icon = crossbow
+  Kind = ATTACK
+  Level = 7
+  Value = [11, 14]
+  Price = 60
+End
+
+ItemBase
+  Name = uzun_qilich
+  DisplayName = Uzun qilich
+  Slot = Qurol
+  Icon = sword_long
+  Kind = ATTACK
+  Level = 8
+  Value = [12, 15]
+  Price = 66
+End
+
+ItemBase
+  Name = uzun_kamon
+  DisplayName = Uzun kamon
+  Slot = Qurol
+  Icon = bow_long
+  Kind = ATTACK
+  Level = 9
+  Value = [13, 16]
+  Price = 74
+End
+
+ItemBase
+  Name = jang_boltasi
+  DisplayName = Jang boltasi
+  Slot = Qurol
+  Icon = battle_axe
+  Kind = ATTACK
+  Level = 10
+  Value = [14, 18]
+  Price = 80
+End
+
+ItemBase
+  Name = egri_qilich
+  DisplayName = Egri qilich
+  Slot = Qurol
+  Icon = katana
+  Kind = ATTACK
+  Level = 12
+  Value = [16, 20]
+  Price = 96
+End
+
+; Zirh: percent off every blow that reaches him.
+ItemBase
+  Name = postin
+  DisplayName = "Po'stin"
+  Slot = Zirh
+  Icon = hide_tunic
+  Kind = ARMOUR
+  Level = 1
+  Value = [2, 4]
+  Price = 22
+End
+
+ItemBase
+  Name = charm_kamzul
+  DisplayName = Charm kamzul
+  Slot = Zirh
+  Icon = leather_armour
+  Kind = ARMOUR
+  Level = 2
+  Value = [3, 5]
+  Price = 28
+End
+
+ItemBase
+  Name = sehrgar_libosi
+  DisplayName = Sehrgar libosi
+  Slot = Zirh
+  Icon = robe_mage
+  Kind = ARMOUR
+  Level = 4
+  Value = [3, 5]
+  Price = 40
+End
+
+ItemBase
+  Name = zanjirli_sovut
+  DisplayName = Zanjirli sovut
+  Slot = Zirh
+  Icon = chain_shirt
+  Kind = ARMOUR
+  Level = 5
+  Value = [5, 7]
+  Price = 46
+End
+
+ItemBase
+  Name = temir_sovut
+  DisplayName = Temir sovut
+  Slot = Zirh
+  Icon = cuirass
+  Kind = ARMOUR
+  Level = 8
+  Value = [7, 9]
+  Price = 64
+End
+
+ItemBase
+  Name = plastinka_sovut
+  DisplayName = Plastinka sovut
+  Slot = Zirh
+  Icon = plate_cuirass
+  Kind = ARMOUR
+  Level = 11
+  Value = [9, 12]
+  Price = 88
+End
+
+; Dubulg'a: room for more health.
+ItemBase
+  Name = teri_qalpoq
+  DisplayName = Teri qalpoq
+  Slot = "Dubulg'a"
+  Icon = hide_hood
+  Kind = HEALTH
+  Level = 1
+  Value = [15, 25]
+  Price = 20
+End
+
+ItemBase
+  Name = charm_qalpoq
+  DisplayName = Charm qalpoq
+  Slot = "Dubulg'a"
+  Icon = leather_hood
+  Kind = HEALTH
+  Level = 2
+  Value = [20, 30]
+  Price = 26
+End
+
+ItemBase
+  Name = zanjirli_dubulga
+  DisplayName = "Zanjirli dubulg'a"
+  Slot = "Dubulg'a"
+  Icon = chain_coif
+  Kind = HEALTH
+  Level = 5
+  Value = [35, 50]
+  Price = 44
+End
+
+ItemBase
+  Name = temir_dubulga
+  DisplayName = "Temir dubulg'a"
+  Slot = "Dubulg'a"
+  Icon = helmet
+  Kind = HEALTH
+  Level = 7
+  Value = [50, 65]
+  Price = 58
+End
+
+ItemBase
+  Name = shoxli_dubulga
+  DisplayName = "Shoxli dubulg'a"
+  Slot = "Dubulg'a"
+  Icon = helm_viking
+  Kind = HEALTH
+  Level = 9
+  Value = [60, 80]
+  Price = 72
+End
+
+ItemBase
+  Name = plastinka_dubulga
+  DisplayName = "Plastinka dubulg'a"
+  Slot = "Dubulg'a"
+  Icon = plate_helm
+  Kind = HEALTH
+  Level = 12
+  Value = [80, 100]
+  Price = 92
+End
+
+; Etik: agility, which is quicker legs and blows.
+ItemBase
+  Name = choriq
+  DisplayName = Choriq
+  Slot = Etik
+  Icon = hide_boots
+  Kind = ATTRIBUTE
+  Attributes = [Agility]
+  Level = 1
+  Value = [1, 2]
+  Price = 18
+End
+
+ItemBase
+  Name = charm_etik
+  DisplayName = Charm etik
+  Slot = Etik
+  Icon = leather_boots
+  Kind = ATTRIBUTE
+  Attributes = [Agility]
+  Level = 3
+  Value = [2, 3]
+  Price = 30
+End
+
+ItemBase
+  Name = zanjirli_etik
+  DisplayName = Zanjirli etik
+  Slot = Etik
+  Icon = chain_boots
+  Kind = ATTRIBUTE
+  Attributes = [Agility]
+  Level = 6
+  Value = [3, 4]
+  Price = 48
+End
+
+ItemBase
+  Name = temir_etik
+  DisplayName = Temir etik
+  Slot = Etik
+  Icon = plate_boots
+  Kind = ATTRIBUTE
+  Attributes = [Agility]
+  Level = 10
+  Value = [4, 6]
+  Price = 72
+End
+
+; Tumor: room for more mana.
+ItemBase
+  Name = marjon
+  DisplayName = Marjon
+  Slot = Tumor
+  Icon = necklace_pearl
+  Kind = MANA
+  Level = 1
+  Value = [10, 15]
+  Price = 24
+End
+
+ItemBase
+  Name = nishon
+  DisplayName = Oltin nishon
+  Slot = Tumor
+  Icon = medal
+  Kind = MANA
+  Level = 4
+  Value = [18, 25]
+  Price = 40
+End
+
+ItemBase
+  Name = zumrad_tumor
+  DisplayName = Zumrad tumor
+  Slot = Tumor
+  Icon = necklace_emerald
+  Kind = MANA
+  Level = 8
+  Value = [28, 38]
+  Price = 64
+End
+
+ItemBase
+  Name = qadimiy_tumor
+  DisplayName = Qadimiy tumor
+  Slot = Tumor
+  Icon = ankh
+  Kind = MANA
+  Level = 11
+  Value = [38, 50]
+  Price = 86
+End
+
+; Uzuk: one attribute, drawn among the three.
+ItemBase
+  Name = oltin_uzuk
+  DisplayName = Oltin uzuk
+  Slot = Uzuk
+  Icon = ring_gold
+  Kind = ATTRIBUTE
+  Attributes = [Strength, Agility, Intelligence]
+  Level = 1
+  Value = [1, 2]
+  Price = 24
+End
+
+ItemBase
+  Name = muz_uzuk
+  DisplayName = Muz uzuk
+  Slot = Uzuk
+  Icon = ring_frost
+  Kind = ATTRIBUTE
+  Attributes = [Strength, Agility, Intelligence]
+  Level = 5
+  Value = [2, 4]
+  Price = 46
+End
+
+ItemBase
+  Name = olmos_uzuk
+  DisplayName = Olmos uzuk
+  Slot = Uzuk
+  Icon = ring_diamond
+  Kind = ATTRIBUTE
+  Attributes = [Strength, Agility, Intelligence]
+  Level = 9
+  Value = [4, 6]
+  Price = 74
+End
+
+; ---------------------------------------------------------------------------
+; Affixes. Low and High are the least and the most it rolls at item level 1 and
+; at 15, drawn straight between. Prefix names a magic thing: "O'tkir qisqa qilich".
+; ---------------------------------------------------------------------------
+
+Affix
+  Name = otkir
+  Stat = ATTACK
+  Prefix = "O'tkir"
+  Slots = [Qurol]
+  Low = [2, 12]
+  High = [5, 24]
+  Weight = 30
+End
+
+Affix
+  Name = mustahkam
+  Stat = ARMOUR
+  Prefix = Mustahkam
+  Slots = [Zirh]
+  Low = [1, 4]
+  High = [2, 8]
+  Weight = 30
+End
+
+Affix
+  Name = baquvvat
+  Stat = HEALTH
+  Prefix = Baquvvat
+  Slots = ["Dubulg'a"]
+  Low = [10, 60]
+  High = [20, 110]
+  Weight = 30
+End
+
+Affix
+  Name = donishmand
+  Stat = MANA
+  Prefix = Donishmand
+  Slots = [Tumor]
+  Low = [6, 30]
+  High = [12, 55]
+  Weight = 30
+End
+
+Affix
+  Name = alo
+  Stat = ATTRIBUTE
+  Prefix = "A'lo"
+  Slots = [Etik, Uzuk]
+  Low = [1, 4]
+  High = [2, 7]
+  Weight = 30
+End
+
+Affix
+  Name = tez
+  Stat = ATTACK_SPEED
+  Prefix = Tez
+  Slots = [Qurol, Etik, Uzuk, Tumor]
+  Low = [3, 8]
+  High = [6, 16]
+  Weight = 20
+End
+
+Affix
+  Name = shifobaxsh
+  Stat = HEALTH_REGEN
+  Prefix = Shifobaxsh
+  Slots = [Zirh, "Dubulg'a", Etik, Tumor, Uzuk]
+  Low = [1, 3]
+  High = [2, 6]
+  Weight = 20
+End
+
+Affix
+  Name = ilhomli
+  Stat = MANA_REGEN
+  Prefix = Ilhomli
+  Slots = [Qurol, "Dubulg'a", Tumor, Uzuk]
+  Low = [1, 2]
+  High = [2, 5]
+  Weight = 20
+End
+
+Affix
+  Name = qonxor
+  Stat = LIFESTEAL
+  Prefix = "Qonxo'r"
+  Slots = [Qurol, Zirh, "Dubulg'a", Etik, Tumor, Uzuk]
+  Low = [2, 4]
+  High = [3, 8]
+  Weight = 20
+End
+
+; ---------------------------------------------------------------------------
+; Uniques: epic things, written by hand. Gives are its affixes, a Stat and how
+; much; its base's figure is the base's best. Skills are passives it lends: an
+; aura reaches whoever stands with him too.
+; ---------------------------------------------------------------------------
+
+Unique
+  Name = ajdar_tishi
+  DisplayName = Ajdar tishi
+  Base = keng_qilich
+  Level = 6
+  Gives = ["ATTACK 14", "ATTACK_SPEED 12", "LIFESTEAL 6"]
+  Lore = "Ajdarning og'zidan sug'urib olingan; tig'i hali ham iliq."
+End
+
+Unique
+  Name = qala_devori
+  DisplayName = "Qal'a devori"
+  Base = temir_sovut
+  Level = 7
+  Gives = ["ARMOUR 6", "HEALTH_REGEN 5", "LIFESTEAL 3"]
+  Lore = "Poytaxt qulagan kuni ham bu sovut bukilmagan."
+End
+
+Unique
+  Name = bori_boshi
+  DisplayName = "Bo'ri boshi"
+  Base = shoxli_dubulga
+  Level = 8
+  Gives = ["HEALTH 90", "MANA_REGEN 3", "LIFESTEAL 4"]
+  Lore = "Oxirgi oq bo'rining bosh suyagidan; to'lin oyda uvillaydi."
+End
+
+Unique
+  Name = shamol_izi
+  DisplayName = Shamol izi
+  Base = charm_etik
+  Level = 4
+  Attribute = Agility
+  Gives = ["ATTRIBUTE 5", "ATTACK_SPEED 14", "LIFESTEAL 3"]
+  Lore = "Uni kiygan chopqirni hech kim quvib yetolmagan."
+End
+
+Unique
+  Name = kampir_marjoni
+  DisplayName = Kampir marjoni
+  Base = zumrad_tumor
+  Level = 8
+  Gives = ["MANA 40", "MANA_REGEN 4"]
+  Lore = "Yalmog'iz kampir uni qochgan qizning bo'ynidan yulib olgan."
+  Skills = [
+    Skill
+      Key = U
+      Effect = MANA_AURA
+      Name = "Kampir sehri: yonidagilarga +3 Mana/s"
+      ManaRegen = 30
+      Radius = 40
+      MaxRank = 1
+    End
+  ]
+End
+
+Unique
+  Name = qonli_ahd
+  DisplayName = Qonli ahd
+  Base = oltin_uzuk
+  Level = 3
+  Attribute = Strength
+  Gives = ["ATTRIBUTE 5", "LIFESTEAL 8"]
+  Lore = "Har zarbadan bir tomchi qon so'raydi va oladi."
+  Skills = [
+    Skill
+      Key = U
+      Effect = DAMAGE_AURA
+      Name = "Qon ahdi: yonidagilarga +10% Zarba"
+      BoostPercent = 10
+      Radius = 40
+      MaxRank = 1
+    End
+  ]
+End
+
+; ---------------------------------------------------------------------------
+; Potions: Heal and Mana are percent of the most he holds. Stack is how many make
+; one stack in the backpack; Level the item level it drops from.
+; ---------------------------------------------------------------------------
+
+Potion
+  Name = hayot_shishasi
+  DisplayName = Hayot shishasi
+  Icon = potion_health
+  Heal = 35
+  Level = 1
+  Price = 20
+  Weight = 40
+  Stack = 10
+End
+
+Potion
+  Name = mana_shishasi
+  DisplayName = Mana shishasi
+  Icon = potion_mana
+  Mana = 40
+  Level = 1
+  Price = 20
+  Weight = 30
+  Stack = 10
+End
+
+Potion
+  Name = tiklanish_eliksiri
+  DisplayName = Tiklanish eliksiri
+  Icon = potion_elixir
+  Heal = 40
+  Mana = 40
+  Level = 5
+  Price = 60
+  Weight = 10
+  Stack = 5
+End
+
+Potion
+  Name = katta_hayot_shishasi
+  DisplayName = Katta hayot shishasi
+  Icon = potion_red
+  Heal = 65
+  Level = 7
+  Price = 45
+  Weight = 20
+  Stack = 10
+End
+
+; ---------------------------------------------------------------------------
+; The light a thing lying on the ground stands in: a thin column of its rarity's
+; colour and a glow at its foot, played on it again every BeamFrames.
+; ---------------------------------------------------------------------------
+
+Effect
+  Name = LootBeamMagic
+
+  Layers = [
+    Layer
+      Name = Beam
+      Type = PILLAR
+      Texture = kit/effects/particles/pillar_core.png
+      Blend = Additive
+      Count = 1
+      Life = [2.2, 2.2]
+      Size = [3, 3]
+      Height = 34
+      Direction = UP
+      Colour = [0x5B9BFF, 0x3F86FF]
+      Alpha = [0.5, 0.5]
+      FadeIn = 0.4
+      FadeOut = 0.6
+      At = CASTER
+      Follows = Yes
+    End,
+
+    Layer
+      Name = Foot
+      Type = AURA
+      Texture = kit/effects/particles/light_02.png
+      Blend = Additive
+      Cover = 0.1
+      Count = 1
+      Size = [8, 8]
+      Colour = [0x8AB8FF, 0x5B9BFF]
+      Alpha = [0.45, 0.45]
+      FadeIn = 0.3
+      FadeOut = 0.5
+      Height = 2
+    End
+  ]
+End
+
+Effect
+  Name = LootBeamRare
+
+  Layers = [
+    Layer
+      Name = Beam
+      Type = PILLAR
+      Texture = kit/effects/particles/pillar_core.png
+      Blend = Additive
+      Count = 1
+      Life = [2.2, 2.2]
+      Size = [3.5, 3.5]
+      Height = 42
+      Direction = UP
+      Colour = [0xFFD27A, 0xE8B23A]
+      Alpha = [0.6, 0.6]
+      FadeIn = 0.4
+      FadeOut = 0.6
+      At = CASTER
+      Follows = Yes
+    End,
+
+    Layer
+      Name = Foot
+      Type = AURA
+      Texture = kit/effects/particles/light_02.png
+      Blend = Additive
+      Cover = 0.1
+      Count = 1
+      Size = [9, 9]
+      Colour = [0xFFE08A, 0xE8B23A]
+      Alpha = [0.5, 0.5]
+      FadeIn = 0.3
+      FadeOut = 0.5
+      Height = 2
+    End
+  ]
+End
+
+Effect
+  Name = LootBeamEpic
+
+  Layers = [
+    Layer
+      Name = Beam
+      Type = PILLAR
+      Texture = kit/effects/particles/pillar_core.png
+      Blend = Additive
+      Count = 1
+      Life = [2.2, 2.2]
+      Size = [4, 4]
+      Height = 52
+      Direction = UP
+      Colour = [0xD8A0FF, 0xA55CF0]
+      Alpha = [0.7, 0.7]
+      FadeIn = 0.4
+      FadeOut = 0.6
+      At = CASTER
+      Follows = Yes
+    End,
+
+    Layer
+      Name = Halo
+      Type = PILLAR
+      Texture = kit/effects/particles/pillar_halo.png
+      Blend = Additive
+      Count = 1
+      Life = [2.2, 2.2]
+      Size = [10, 10]
+      Height = 40
+      Direction = UP
+      Colour = [0xB46CFF, 0x7A2FD0]
+      Alpha = [0.3, 0.3]
+      FadeIn = 0.4
+      FadeOut = 0.6
+      At = CASTER
+      Follows = Yes
+    End,
+
+    Layer
+      Name = Foot
+      Type = AURA
+      Texture = kit/effects/particles/light_02.png
+      Blend = Additive
+      Cover = 0.1
+      Count = 1
+      Size = [11, 11]
+      Colour = [0xD8A0FF, 0xA55CF0]
+      Alpha = [0.55, 0.55]
+      FadeIn = 0.3
+      FadeOut = 0.5
+      Height = 2
+    End
+  ]
+End

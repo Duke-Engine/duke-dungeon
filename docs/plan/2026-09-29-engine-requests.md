@@ -52,6 +52,11 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E36 | scenery that blocks along its length, turned with its facing (castle walls) | landed, 5971fa0b; every castle wall is a `WxD` box, the qasr courtyard is entered only by its gate |
 | E37 | placing one piece on the grid in the editor — the plugin's, done in duke-plugin | plugin |
 | E38 | a map that starts explored: its ground seen from the first frame, its creatures only in sight | landed, 7f17f626 (with E34–E36); the open world begins seen, the descent black |
+<<<<<<< HEAD
+| E43 | a `Loot` carries affixes: several (figure, value) pairs that `LootBag.total` and `extra` add beside its own | waiting; the game carries at most three affixes an item meanwhile (docs/plan/2026-10-15-loot.md) |
+| E44 | crit chance and move speed as figures the hero reads; a worn thing that raises a skill's rank | waiting; those affixes are left out until then |
+| E45 | the bag's card in the game's colours: a colour for each line, the name's by rarity | waiting; the game paints its own coloured card over the engine's (`ItemCard`) |
+=======
 | E39 | particles that bounce, fly home and turn over (the kill's coins) | landed, 946409ed |
 | E40 | a creature moved by the story over frames (the landing, the knock-back) | waiting (small) |
 | E41 | a cutscene camera that turns, tilts and zooms, eased | waiting (small) |
@@ -59,6 +64,7 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E46 | the game's keys in Settings | landed, 9ce15e4e |
 | E47 | a hero's whole figures in one place | landed, 9ce15e4e |
 | E48 | a key's code and name for a game's canvas | landed, 9ce15e4e |
+>>>>>>> master
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
 game builds against the local engine. E12–E15 reached it together at 668045f0 (their pull requests merged as
@@ -1033,6 +1039,48 @@ with a thing and its particles end at the thing, and a bouncing layer's particle
 `Flip`; `World.effect(name, where, facing, toward)` and `EffectPlayed.toward`. The game reads the four in
 `Main.layerOf`, and the GoldBurst plays its CoinBurst toward the killer: the coins bounce, spin over and fly into him.
 
+<<<<<<< HEAD
+## E43 — A thing carries several figures: affixes (2026-10-15, medium)
+
+The big plan's items (docs/plan/2026-10-15-loot.md) are Diablo's: a magic sword is +9 % damage and +6 % attack speed,
+a rare ring +3 strength, +2 mana a second, +5 % lifesteal and +30 health. A `Loot` carries one figure (`Kind`, `Value`)
+and one extra (`Extra`, `ExtraValue`), and lends passives (`Skills`). The game fits what it can into those three — an
+affix of the base's own figure folded into `Value`, one extra-figure affix in `Extra`, lifesteal as a lent
+`LIFESTEAL` — which caps an item at three affixes, one of each kind, and rules out a second flat figure on one thing
+(health on a ring, armour on a helmet).
+
+Asked: `Loot` gains `affixes`, a list of `Affix(String stat, int value)` — a `Stat` word or the game's own, as `Kind`
+is — kept through `joined`, `worth` and every copy, and `LootBag.total(kind)` and `extra(kind)` add every acting
+thing's affixes of that word beside its own figure (`attributes` too: an affix naming the attribute). A thing with
+none is as today. Done when the rpg tests pin a worn thing with two affixes moving two figures, and one in the
+backpack moving none. The game then writes every affix there, lifts the cap to four for a rare, and lets any affix
+roll on any slot (the `Affix` blocks' `Slots`).
+
+## E44 — Crit and move speed as figures; a worn thing that raises a skill (2026-10-15, medium)
+
+Diablo's affixes the hero has no figure for:
+
+1. **Critical strikes** — `Stat.CRIT_CHANCE` (percent) and `Stat.CRIT_DAMAGE` (percent more), read by the hero's
+   weapon and skills from what he wears; drawn from `world.random()` on the blow, so a party crits alike.
+2. **Move speed** — `Stat.MOVE_SPEED` (percent), added to his figures' speed by `HeroProgress` as agility's is.
+3. **A skill's rank** — a worn thing that adds a rank to a key's skill while worn, counted by `SkillBook` above what
+   he learnt, never past `MaxRank` and the bonus.
+
+Done when the rpg tests pin each from a worn thing and its end when it is taken off.
+
+## E45 — The bag's card in the game's colours (2026-10-15, small)
+
+`BagScreen` draws a thing's card in three colours: the name in torch, the lines in bone, the hints dim. An RPG's card
+is read by colour: the name by rarity (grey, blue, gold, purple), the base figure white, affixes blue, the lore gold,
+and the comparison with what is worn green and red. The game paints its own card over the engine's for now
+(`ItemCard`: the same lines and fonts at the same anchor, so it covers it whole), which means it repeats the bag's
+layout sums.
+
+Asked: the bag's `gives` may hand back coloured lines — `Function<Loot, List<BagScreen.Line>>` with
+`Line(String text, int colour)`, beside today's strings — and the name's colour from the game; and a hook for lines
+under the hints (the comparison). Done when the client test draws a card with a blue line. The game then drops
+`ItemCard`'s overlay and keeps only its belt.
+=======
 ## E46 — The game's own keys in the Settings key list (2026-10-15, small)
 
 The player screens (`2026-10-15-player-screens.md`) open on C, L and M, the tracker folds on J, and the skills and
@@ -1106,3 +1154,4 @@ Act 1 ends on "1-qism tugadi"; Act 2 will open on its own card. Today the game s
 fadeIn, hold, fadeOut)` — big centred lettering over a darkened screen in the shell's font, drawn only (out of the
 checksum), the game's input taken while it shows unless the game says otherwise. Done when a test shows a card and
 the client reports it gone after its frames.
+>>>>>>> master

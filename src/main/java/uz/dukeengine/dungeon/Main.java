@@ -222,6 +222,13 @@ public final class Main {
         if (!dialogue.glowLook().isBlank()) {
             visuals.effectSeconds(dialogue.glowLook(), 2 * dialogue.glowFrames() / perSecond);
         }
+        // A thing's light on the ground, likewise: each beam lasts two beats. See DungeonRun.beams.
+        var itemRules = settings.items().rules();
+        for (var beam : itemRules.beams()) {
+            if (!beam.isBlank()) {
+                visuals.effectSeconds(beam, 2 * itemRules.beamFrames() / perSecond);
+            }
+        }
         // The medallion appearing in the hand it is given to glows this long.
         var medallion = settings.medallion();
         if (!medallion.givenLook().isBlank()) {
@@ -1055,6 +1062,12 @@ public final class Main {
         // The file's default hero to begin with, and whoever is actually chosen
         // the moment he is -- see aimsFor, and whoToPlay, which calls it again.
         aimsFor(keys, settings, settings.run().defaultHero());
+        // The belt's keys, 1 to its size: taken on the game's own canvas (ItemCard.drinks) and only named here, for
+        // the Settings screen's list of keys (E46).
+        var rules = settings.items().rules();
+        for (int key = 1; key <= rules.beltSize(); key++) {
+            keys.describe((char) ('0' + key), rules.beltKeyWord().formatted(key));
+        }
         // Spending a level on a slot. A click on the badge rather than a letter,
         // so it comes through a door of its own -- and it is a COMMAND like every
         // other decision, settled on a frame boundary where the rules live.

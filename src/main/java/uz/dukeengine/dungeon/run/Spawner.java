@@ -406,9 +406,16 @@ public final class Spawner {
     /** Give a monster something to leave behind, if the game asked for loot at all. */
     private static void dropsFrom(GameObject monster, LootTable drops, DungeonSettings settings,
             int depth, boolean boss) {
-        if (drops != null && !settings.lootDrops().template().isBlank()) {
-            monster.addModule(new LootDrop(monster, drops, settings.lootDrops().template(), depth, boss));
+        if (drops == null || settings.lootDrops().template().isBlank()) {
+            return;
         }
+        // Generated things where the game has bases to make them on (docs/plan/2026-10-15-loot.md); a test's own
+        // settings with none drop off the catalogue, as the dungeon always did.
+        var items = settings.items();
+        monster.addModule(items.active()
+                ? new uz.dukeengine.dungeon.loot.ItemDrop(monster, items, settings.lootDrops().template(),
+                        settings.lootDrops().dropPercent(), settings.lootDrops().bossDropPercent(), boss)
+                : new LootDrop(monster, drops, settings.lootDrops().template(), depth, boss));
     }
 
     /**

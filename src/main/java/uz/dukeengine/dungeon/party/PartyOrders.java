@@ -64,6 +64,8 @@ public final class PartyOrders {
     static final String READ = "read";
     static final String BUY = "buy";
     static final String SELL = "sell";
+    /** A draught from the belt: the order's number is which of its stacks. */
+    static final String DRINK = "drink";
 
     private PartyOrders() {
     }
@@ -91,6 +93,8 @@ public final class PartyOrders {
                     buy.merchant(), buy.ware());
             case uz.dukeengine.dungeon.run.Sell sell -> new GameOrder(sell.playerIndex(), SELL, List.of(), null,
                     sell.merchant(), sell.slot());
+            case uz.dukeengine.dungeon.run.Drink drink -> new GameOrder(drink.playerIndex(), DRINK, List.of(), null, null,
+                    drink.belt());
             case uz.dukeengine.dungeon.run.SkipCutscene skip -> new GameOrder(skip.playerIndex(), SKIP, List.of(), null,
                     null, 0);
             case uz.dukeengine.dungeon.run.TalkTo talk -> new GameOrder(talk.playerIndex(), TALK, List.of(), null,
@@ -122,6 +126,7 @@ public final class PartyOrders {
             case USE -> order.target() == null ? null
                     : new UseItem(order.playerIndex(), (int) order.number(), order.target());
             case SKIP -> new uz.dukeengine.dungeon.run.SkipCutscene(order.playerIndex());
+            case DRINK -> new uz.dukeengine.dungeon.run.Drink(order.playerIndex(), (int) order.number());
             case READ -> new uz.dukeengine.dungeon.run.Read(order.playerIndex(), (int) order.number());
             case BUY -> order.target() == null ? null
                     : new uz.dukeengine.dungeon.run.Buy(order.playerIndex(), order.target(), (int) order.number());
