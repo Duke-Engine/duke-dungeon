@@ -125,8 +125,12 @@ final class PlayerScreens implements Painter, CanvasInput {
         }
         switch (event) {
             case Key key -> {
-                if (!key.down() || key.repeat()) {
-                    return forKey(key.code(), settings) != Open.NONE || key.code() == DialogueScreen.ESCAPE;
+                if (!key.down()) {
+                    return under.take(event); // a key let go is the game's: it may be holding it
+                }
+                if (key.repeat()) {
+                    return forKey(key.code(), settings) != Open.NONE || key.code() == DialogueScreen.ESCAPE
+                            || under.take(event);
                 }
                 if (key.code() == DialogueScreen.ESCAPE) {
                     close();
