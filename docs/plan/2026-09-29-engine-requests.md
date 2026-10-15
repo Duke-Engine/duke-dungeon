@@ -70,6 +70,9 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E59 | settings: an Ambience channel with its own volume, a Camera shake row (`ShakeScale` for the player), a Language row if there is more than one | landed (engine 01eb7029; game 2026-10-15) |
 | E60 | closest-thing questions with no candidate list or sort; a weapon that does not copy its owner's module list every frame | landed (engine 01eb7029; game 2026-10-15) |
 | E61 | where the hero is wanted: a `Mission` that drops its key with a few still standing, and the game's own marks on the minimap | landed, 6e789f32 on the engine's branch `e61-key-minimap`; the game passes `Run.keyLeeway` to `Mission.begin` (`run/EarlyKey` gone) and marks the key (gold, blinking) and each quest's target (QuestColour) on the minimap |
+| E62 | scenery a hero can work: a scenery piece the game can point at, take away (a tree felled) and lay again (grown back) | waiting; the game stands in with trees it places as things (`ChoppableTree`, `data/world/food.duke`) |
+| E63 | a busy state with its own clip: a creature plays a named clip on a loop for N frames, cut short by an order or a blow | waiting; the game stands in with a puff and a sound each second (`run/Camp`) |
+| E64 | health over time as a buff the skill book reads (as `MANA_AURA` is for mana), with its picture on the HUD | waiting; the game pays a `HEAL` buff out each frame (`Belt.digest`) |
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
 game builds against the local engine. E12–E15 reached it together at 668045f0 (their pull requests merged as
@@ -1288,3 +1291,39 @@ game today draws its key and quest targets on its own world map, and an arrow ro
 (`MissionScreen.pointers`, from `Canvas.screenOf`) — no engine hook is missing for that.
 
 **Landed** as 6e789f32 on the engine's branch `e61-key-minimap`: `Mission.begin(..., int leeway)` (clamped to 0..outside-1, one key, `killed()` capped at `outside()`) and `Duke3D.minimapMarks(Supplier<List<MinimapMark>>)`. The game: `DungeonRun.missionOf` passes `Run.keyLeeway`, and `run/EarlyKey` is deleted; `MissionScreen.minimapMarks` feeds the floor's key (the menu's gold, blinking) and every quest going's target (Run `QuestColour`, a still diamond), and quest places now stand in their own blue `QuestBeam`, not the key's gold. Tests: `MissionTest` (the early drop and the 0/0 last-of-them rule through the engine), `QuestMarkerTest.theCellarIsMarkedOnTheMinimap`, `theKeyIsMarkedOnTheMinimapAndBlinks`, `aQuestsPlaceLooksUnlikeTheKey`.
+
+## E62 — Scenery a hero can work: a tree pointed at, felled and grown again (2026-10-15, medium)
+
+The owner's food and fire (`docs/plan/2026-10-15-food-and-fire.md`): as in Warcraft III or Dota, the hero right-clicks
+a tree, chops it for a few seconds, gets wood, and the tree is gone until it grows back. The world's trees are E10's
+scenery (`StaticMap.Scenery`, drawn by the client per chunk, their footprints `GameLogic.setSceneryFootprints` in the
+path grid) and nothing in a snapshot or under the pointer is a piece of scenery, so none can be targeted or taken
+away. Asked: (1) the context-order rule (`DukeGame.addContextOrder`) and the click are told of a scenery piece under
+the pointer (its index and model), as they are of a thing, so the game can answer `Chop` and the pointer shows it;
+(2) `GameLogic.removeScenery(index)` and `restoreScenery(index)`: the piece stops (starts again) being drawn and its
+footprint leaves (rejoins) the grid, the same on every machine, and the client hears it as an event; (3) what is
+removed is part of the world's state a save can carry. Done when a test removes a piece, a body walks through where
+its footprint was, the client draws it no more, and restoring it puts both back. Until then the game places its own
+choppable trees as things (`ChoppableTree`, the Food block's Forage, about 60 on the open world) beside the scenery.
+
+## E63 — A busy state with its own clip (2026-10-15, small)
+
+Chopping, picking, filling a waterskin and cooking keep the hero busy for 1.5 to 3.5 seconds (`run/Camp`); he should
+be seen doing it. Nothing lets a game play a clip on a creature but the engine's own states (idle, walk) and moments
+(attack, hurt, death) and a skill's cast. Asked: `GameObject.busy(String clip, int frames)` — the client loops that
+clip (from the creature's own model or its `AnimationSet`) until the frames run out or `busy(null, 0)`, a snapshot
+field like a condition, out of the checksum; the clip names live in the hero's block (`Chop`, `Gather`, `Cook`, a
+name not there plays nothing). Done when a test sets a creature busy for 30 frames and the snapshot says the clip for
+those frames and not after. Until then the game plays a puff (`WorkChop`, `WorkHarvest`, `WorkFill`, `WorkCook`) and a
+sound on him every second of the work.
+
+## E64 — Health over time as a buff the book reads (2026-10-15, small)
+
+A meal heals over its seconds (Eternal Return's food), and the owner's rule is that buffs are the skill system's. The
+game gives the hero's `SkillBook` a buff of kind `HEAL` (its own id lending it) worth tenths of a point of health a
+second until the meal's last frame, and pays it out itself each frame (`Belt.digest`); a drink is a `MANA_AURA` buff,
+which the book's trickle already reads. Asked: the book's update heals its bearer by the strongest `HEAL` buff it
+holds (tenths a second, the way `regenerate` counts mana), `healthPerSecond()` and the HUD's rates count it, and the
+buff row (`BuffScreen`) shows a held `HEAL` and `MANA_AURA` on the hero with a picture the game names. Done when a
+test gives a book a `HEAL` buff of 100 for 60 frames and its body is 20 points fuller two seconds later and no fuller
+after. Then `Belt.digest` goes.
