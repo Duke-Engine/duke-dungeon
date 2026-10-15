@@ -7,7 +7,7 @@ The open world's atmosphere. Data: `data/world/daynight.duke` (`world/DayNight`)
   reads the same hour.
 - **The light** is `Light` keys (hour, colour, percent) eased round the clock: dawn warm, noon nothing, dusk orange,
   night a dark blue at half. Only a wide map (the open world) is drawn by it; the castles, halls and descent keep theirs.
-  Until the engine's E82 the colour is laid by the game's canvas over the world above the panel; fires and the fountain
+  Until the engine's E86 the colour is laid by the game's canvas over the world above the panel; fires and the fountain
   get an added halo (`Glows`) as strong as the night is dark.
 - **Night roamers** (`NightRoamers`, the marsh's Arvoh/Wisp): by day they keep to where they stand and sense nobody,
   unless struck (`MonsterBrain`). No punishment for the hero.
@@ -19,4 +19,4 @@ The open world's atmosphere. Data: `data/world/daynight.duke` (`world/DayNight`)
 - Testing: `--hour=H` (1-24) opens at that hour (with `--actN=` or `--map=`); `--weather=Rain|Storm|Snow|Fog` draws that
   weather whatever the sky says.
 
-Skipped: villagers going indoors at night (people have no homes to walk to yet); a wet sheen (asked in E82).
+Skipped: villagers going indoors at night (people have no homes to walk to yet); a wet sheen (asked in E86).

@@ -23,6 +23,12 @@ Dialogue
   ; asks for, the creature, the person. Played on it again every GlowFrames. See QuestGlow below.
   GlowLook = QuestGlow
   GlowFrames = 30
+  ; Whoever a FOLLOW step leads him after wears this over their head, played every GlowFrames (see
+  ; data/story/landing.duke). They walk on while a hero keeps within FollowNear, and stop and wait for him
+  ; past FollowFar -- units (docs/plan/2026-10-15-seamless-campaign.md, section 5).
+  FollowLook = FollowMark
+  FollowNear = 90
+  FollowFar = 150
 End
 
 Speaker

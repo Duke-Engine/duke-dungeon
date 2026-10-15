@@ -1,0 +1,371 @@
+; ---------------------------------------------------------------------------
+; The looks of the hero's coming in the seamless campaign (docs/plan/2026-10-15-seamless-campaign.md,
+; section 4): the ritual's motes and beams, the pillar of light, the meteor's fire, its impact, the
+; ritualists' going, and the mark over whoever a follow mission leads him after. Drawing only.
+; ---------------------------------------------------------------------------
+
+; The ritualists' beams, from their joined hands to a point over the landing: three of them, from
+; three sides. A Laser is how the engine draws a beam the simulation owns (World.beam).
+Laser
+  Name = RitualBeam
+  NumBeams = 3
+  InnerBeamWidth = 1.2
+  OuterBeamWidth = 5
+  InnerColour = 0xFFFFF4FF
+  OuterColour = 0x70B060FF
+  Texture = kit/effects/particles/trace_07.png
+  ScrollRate = 1.6
+  Tile = Yes
+  TilingScalar = 1
+  Segments = 6
+  ArcHeight = 0
+  SegmentOverlapRatio = 0
+End
+
+; The pillar of light the beams feed, from the ground at the landing up into the sky.
+Laser
+  Name = SkyPillarBeam
+  NumBeams = 3
+  InnerBeamWidth = 6
+  OuterBeamWidth = 22
+  InnerColour = 0xFFFFFFFF
+  OuterColour = 0x90FFD27A
+  Texture = kit/effects/particles/trace_07.png
+  ScrollRate = 0.8
+  Tile = Yes
+  TilingScalar = 0.3
+  Segments = 1
+  ArcHeight = 0
+  SegmentOverlapRatio = 0
+End
+
+; Violet motes rising round the landing while the ritual is sung, a ring of it on the ground, and its light.
+Effect
+  Name = RitualGlow
+  Layers = [
+    Layer
+      Name = Motes
+      Type = BURST
+      Texture = kit/effects/particles/star_01.png
+      Blend = Additive
+      Count = 60
+      Seconds = 4
+      Life = [0.5, 0.8]
+      Size = [2.2, 0.4]
+      Colour = [0xF0C8FF, 0x9A40FF]
+      Alpha = [1, 0]
+      Speed = [12, 24]
+      Direction = UP
+      Spread = 15
+      Radius = 32
+      Height = 1
+    End,
+    Layer
+      Name = Ring
+      Type = RING
+      Texture = kit/effects/particles/circle_05.png
+      Blend = Additive
+      Count = 1
+      Life = [0.8, 0.8]
+      Size = [20, 66]
+      Colour = [0xC890FF, 0x8A30FF]
+      Alpha = [0.5, 0]
+      Height = 0.3
+    End,
+    Layer
+      Name = Glow
+      Type = LIGHT
+      LightColour = 0xB070FF
+      LightPower = 2
+      LightRadius = 60
+      Seconds = 5
+      Height = 10
+    End
+  ]
+End
+
+; The pillar's own light round its foot (the column itself is the laser SkyPillarBeam, which the
+; simulation holds as long as it stands): motes going up it, the field lit.
+Effect
+  Name = SkyPillar
+  Layers = [
+    Layer
+      Name = Motes
+      Type = BURST
+      Texture = kit/effects/particles/star_04.png
+      Blend = Additive
+      Count = 50
+      Seconds = 2.5
+      Life = [0.5, 0.8]
+      Size = [2.4, 0.4]
+      Colour = [0xFFFFFF, 0xFFC040]
+      Alpha = [1, 0]
+      Speed = [30, 60]
+      Direction = UP
+      Spread = 6
+      Radius = 5
+      Height = 2
+    End,
+    Layer
+      Name = Glow
+      Type = LIGHT
+      LightColour = 0xFFE8B0
+      LightPower = 5
+      LightRadius = 110
+      Seconds = 3
+      Height = 30
+    End
+  ]
+End
+
+; Played on him every frame of the meteor's fall: fire and smoke left behind along the way he comes down.
+Effect
+  Name = MeteorTrail
+  Layers = [
+    Layer
+      Name = Fire
+      Type = BURST
+      Texture = kit/effects/particles/fire_01.png
+      Blend = Additive
+      Count = 6
+      Life = [0.35, 0.6]
+      Size = [14, 4]
+      Colour = [0xFFE080, 0xFF4010]
+      Alpha = [1, 0]
+      Speed = [2, 6]
+      Direction = ALL
+      Radius = 3
+      Height = 6
+    End,
+    Layer
+      Name = Smoke
+      Type = BURST
+      Texture = kit/effects/particles/smoke_05.png
+      Blend = Alpha
+      Count = 3
+      Life = [1.2, 1.8]
+      Size = [8, 18]
+      Colour = [0x504440, 0x302826]
+      Alpha = [0.6, 0]
+      Speed = [1, 3]
+      Direction = UP
+      Height = 6
+    End,
+    Layer
+      Name = Glow
+      Type = LIGHT
+      LightColour = 0xFF8030
+      LightPower = 4
+      LightRadius = 70
+      Seconds = 0.1
+      Height = 6
+    End
+  ]
+End
+
+; The meteor strikes: a white flash, a shockwave ring racing out, dust and fire thrown, smoke he rises
+; out of, a scorched crater that lies a while, a flare of light and a big knock of the camera. The low
+; boom is its sound (landing.impact), played at the landing by the story.
+Effect
+  Name = MeteorImpact
+  ; The biggest knock the game allows any look (SkillLookTest: 0.8 s, 2.0).
+  ShakeSeconds = 0.8
+  ShakePower = 2.0
+  Layers = [
+    Layer
+      Name = Flash
+      Type = IMPACT
+      Texture = kit/effects/particles/star_09.png
+      Blend = Additive
+      Count = 1
+      Life = [0.3, 0.3]
+      Size = [40, 160]
+      SizeEase = 3
+      Colour = [0xFFFFFF, 0xFFF0D0]
+      Alpha = [1, 0]
+      FadeOut = 0.6
+      Height = 6
+    End,
+    Layer
+      Name = Shock
+      Type = RING
+      Texture = kit/effects/particles/circle_05.png
+      Blend = Additive
+      Count = 1
+      Life = [0.7, 0.7]
+      Size = [10, 250]
+      SizeEase = 0.6
+      Colour = [0xFFFFFF, 0xFFA040]
+      Alpha = [0.9, 0]
+      Height = 0.4
+    End,
+    Layer
+      Name = Dust
+      Type = BURST
+      Texture = kit/effects/particles/smoke_01.png
+      Blend = Alpha
+      Cover = 0.6
+      Count = 44
+      Life = [1.2, 2.2]
+      Size = [8, 22]
+      Colour = [0xB0A890, 0x706858]
+      Alpha = [0.75, 0]
+      Speed = [25, 55]
+      Direction = OUT
+      Spread = 12
+      Drag = 2.5
+      Radius = 6
+      Height = 1
+      TurnJitter = 360
+    End,
+    Layer
+      Name = Embers
+      Type = BURST
+      Texture = kit/effects/particles/fire_01.png
+      Blend = Additive
+      Count = 36
+      Life = [0.4, 0.8]
+      Size = [5, 1]
+      Colour = [0xFFE080, 0xFF3010]
+      Alpha = [1, 0]
+      Speed = [40, 90]
+      Direction = OUT
+      Spread = 40
+      Gravity = 60
+      Drag = 1.5
+      Height = 3
+    End,
+    Layer
+      Name = Smoke
+      Type = BURST
+      Texture = kit/effects/particles/smoke_05.png
+      Blend = Alpha
+      Count = 18
+      Life = [2.5, 3.5]
+      Size = [14, 30]
+      Colour = [0x5A5450, 0x3A3634]
+      Alpha = [0.7, 0]
+      Speed = [2, 6]
+      Direction = UP
+      Spread = 40
+      Radius = 8
+      Height = 2
+    End,
+    Layer
+      Name = Crater
+      Type = MARK
+      Texture = kit/effects/particles/scorch_03.png
+      Blend = Alpha
+      Count = 1
+      Seconds = 20
+      Size = [46, 46]
+      Colour = [0x14100E, 0x14100E]
+      Alpha = [0.8, 0.8]
+      FadeOut = 0.2
+      Height = 0.3
+    End,
+    Layer
+      Name = Blast
+      Type = LIGHT
+      Seconds = 1.0
+      LightColour = 0xFFE0B0
+      LightPower = 7
+      LightRadius = 140
+      Height = 10
+    End
+  ]
+End
+
+; A ritualist gone in a flash: violet light, sparks and a breath of smoke where she stood.
+Effect
+  Name = RitualistVanish
+  Layers = [
+    Layer
+      Name = Flash
+      Type = IMPACT
+      Texture = kit/effects/particles/star_09.png
+      Blend = Additive
+      Count = 1
+      Life = [0.35, 0.35]
+      Size = [10, 40]
+      Colour = [0xF0D0FF, 0xA040FF]
+      Alpha = [1, 0]
+      Height = 8
+    End,
+    Layer
+      Name = Sparks
+      Type = BURST
+      Texture = kit/effects/particles/star_04.png
+      Blend = Additive
+      Count = 24
+      Life = [0.4, 0.8]
+      Size = [1.6, 0.2]
+      Colour = [0xFFD0FF, 0x9A30FF]
+      Speed = [15, 35]
+      Direction = OUT
+      Spread = 60
+      Height = 6
+    End,
+    Layer
+      Name = Smoke
+      Type = BURST
+      Texture = kit/effects/particles/smoke_03.png
+      Blend = Alpha
+      Count = 8
+      Life = [0.8, 1.4]
+      Size = [6, 14]
+      Colour = [0x403848, 0x2A2430]
+      Alpha = [0.6, 0]
+      Speed = [2, 5]
+      Direction = UP
+      Height = 3
+    End
+  ]
+End
+
+; Over whoever a follow mission leads him after (the Dialogue block's FollowLook): a diamond in the
+; quest's own blue turning slowly high over their head, and a soft halo round it -- the colour of the
+; quest's pillar and arrow, so it is read as "this way".
+Effect
+  Name = FollowMark
+  Layers = [
+    Layer
+      Name = Diamond
+      Type = AURA
+      Texture = effects/follow_diamond.png
+      Blend = Additive
+      Count = 1
+      Size = [6, 6]
+      Colour = [0xCFF2FF, 0x6FD3FF]
+      Alpha = [0.95, 0.95]
+      FadeIn = 0.1
+      FadeOut = 0.2
+      PulseRate = 1.5
+      PulseDepth = 0.25
+      Height = 22
+    End,
+    Layer
+      Name = Halo
+      Type = AURA
+      Texture = kit/effects/particles/light_02.png
+      Blend = Additive
+      Cover = 0.1
+      Count = 1
+      Size = [12, 12]
+      Colour = [0xCFF2FF, 0x3FA8E0]
+      Alpha = [0.45, 0.45]
+      FadeIn = 0.1
+      FadeOut = 0.2
+      Height = 22
+    End
+  ]
+End
+
+; The meteor's low boom.
+Sound
+  Name = landing.impact
+  Channel = Effects
+  Positional = Yes
+  Gain = 1.0
+  Files = [audio/sfx/boss_appears.ogg]
+End

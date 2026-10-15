@@ -89,11 +89,11 @@ MainMenu
     "Screenshot = Skrinshot",
     "Pause = Pauza",
   ]
-  ; ---- the scene behind the menu: the kingdom's soldiers holding a clearing against the skeletons ----
-  ; A real fight of the game's own creatures and brains, the fallen coming back, so it never ends.
-  SceneLook = "Forest,Wooded"
-  Soldiers = [Knight, Knight, Rogue, Rogue, Mage]
-  Foes = [Skeleton, Skeleton, Skeleton, Runner, Brute, SkeletonMage]
+  ; ---- the scene behind the menu: the campaign's opening battle, before the capital's north gate ----
+  ; A real fight of the game's own creatures and brains on the open world, the fallen coming back, so it
+  ; never ends: the Battle block the story lays for the intro (data/story/act1.duke), the same armies on
+  ; the same spot, the three ritualists round the landing. "New game" goes on from it.
+  SceneBattle = Opening
   ; The camera over it, higher than the one a game is played with (55 degrees, 140 back): the owner, 2026-10-10.
   ScenePitch = 66
   SceneZoom = 230

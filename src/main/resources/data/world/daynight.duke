@@ -8,7 +8,7 @@
 ; wide map) is drawn by the hour; the castles, the halls and the descent keep
 ; their own light, the keep's dark among them.
 ;
-; Until the engine can relight a world while it is drawn (E82), the hour is a
+; Until the engine can relight a world while it is drawn (E86), the hour is a
 ; colour laid over the world under the panel: the sun, the ambient and the
 ; haze stay as scene.duke sets them, and the night is a dark blue wash over
 ; them, the fires' halos added on top.

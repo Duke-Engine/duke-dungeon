@@ -19,7 +19,7 @@ import uz.dukeengine.dungeon.world.DayNight;
  * flash, and a small clock by the minimap. Only on a wide map: the castles, halls and the descent keep their own light.
  *
  * <p>The hour and the weather are the run's (its clock, saved; its seed) and so the same on every machine; how they are
- * drawn is this client's. Until the engine can relight a world while it is drawn (E82) the hour is a colour laid over
+ * drawn is this client's. Until the engine can relight a world while it is drawn (E86) the hour is a colour laid over
  * the world under the panel, as the game's own canvas can: a fill, the halos added, nothing more a frame. Drawn under
  * the game's other screens, whose painter it wraps.
  */
