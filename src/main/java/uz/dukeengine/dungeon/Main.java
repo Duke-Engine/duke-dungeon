@@ -747,8 +747,9 @@ public final class Main {
             char key = skill.key();
             keys.describe(key, skill.name()); // its name on the Settings screen's list of keys (E46)
             if (skill.effect().isPassive()) {
-                // Never cast: its key, or a click on its slot, does nothing -- no aim, no order, no refusal. Bound to
-                // nothing rather than left alone, so another hero's skill on the same letter does not stay behind.
+                // Never cast: its key does nothing -- no aim, no order, no refusal (the panel takes no click on its
+                // slot since E65). Bound to nothing rather than left alone, so another hero's skill on the same
+                // letter does not stay behind.
                 keys.on(key, game -> { });
                 continue;
             }
@@ -1103,6 +1104,12 @@ public final class Main {
             int belt = key - 1;
             keys.on((char) ('0' + key), rules.beltKeyWord().formatted(key), game -> game.postCommand(
                     PartyOrders.of(new uz.dukeengine.dungeon.run.Drink(game.getLocalPlayerIndex(), belt))));
+        }
+        // A fire built at his feet from his wood, as this game's order (docs/plan/2026-10-15-food-and-fire.md).
+        var food = settings.food();
+        if (!food.buildKey().isBlank()) {
+            keys.on(food.buildKey().charAt(0), food.buildWord(), game -> game.postCommand(
+                    PartyOrders.of(new uz.dukeengine.dungeon.run.Work(game.getLocalPlayerIndex(), null))));
         }
         // Spending a level on a slot. A click on the badge rather than a letter,
         // so it comes through a door of its own -- and it is a COMMAND like every

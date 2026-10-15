@@ -234,8 +234,8 @@ final class HeroStatus {
      */
     /**
      * A passive's card says so where an active one names its key -- "1-daraja · Passiv": it is never pressed (its key
-     * is bound to nothing, see Main.aimsFor). The panel reads the last {@code tipAt} it is sent. ponytail: its slot is
-     * still drawn as a button until the engine's panel knows a passive (E65).
+     * is bound to nothing, see Main.aimsFor). The panel reads the last {@code tipAt} it is sent. Its slot is drawn as a
+     * framed picture by the engine itself (HeroCard.skills writes "passive", E65).
      */
     static void passives(HeroCard card, SkillBook book, uz.dukeengine.rpg.skill.SkillRanks learnt,
             uz.dukeengine.dungeon.world.Hud hud) {

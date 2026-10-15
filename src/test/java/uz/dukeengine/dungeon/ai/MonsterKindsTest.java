@@ -138,7 +138,9 @@ class MonsterKindsTest {
      */
     @Test
     void everyMonsterStopsInsideItsOwnReach() {
-        for (var kind : SETTINGS.monsters().stream().filter(k -> SETTINGS.story().npc(k.name()) == null).toList()) {
+        // An animal that only runs (the deer, data/world/food.duke) carries no weapon, and has no reach to stop in.
+        for (var kind : SETTINGS.monsters().stream().filter(k -> SETTINGS.story().npc(k.name()) == null
+                && ShippedBlock.of(k.name()).text().contains("WeaponUpdate")).toList()) {
             float reach = Float.parseFloat(ShippedBlock.of(kind.name()).value("AttackRange"));
             assertTrue(kind.closeDistance() < reach,
                     kind.name() + " stops at " + kind.closeDistance()

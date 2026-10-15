@@ -1,0 +1,706 @@
+; ---------------------------------------------------------------------------
+; Food and fire (docs/plan/2026-10-15-food-and-fire.md): the owner's Eternal
+; Return-style meals. No hunger and no thirst: what is eaten heals, what is
+; drunk fills, over a few seconds -- the Potion blocks of data/world/loot.duke.
+; Here: how a fire cooks and is built, what is chopped, picked and filled, what
+; an animal leaves, the recipes, and where the open world's things stand.
+; ---------------------------------------------------------------------------
+
+Food
+  ; A fire cooks for whoever stands this near its middle (units; a cell is 10).
+  FireRadius = 30
+  ; The build key lays a fire at his feet from this much wood; it burns
+  ; FireFrames (30 a second) and goes out. The world's own fires burn for good.
+  BuildWood = 4
+  Wood = otin
+  Campfire = Campfire
+  FireFrames = 5400
+  ; A meal takes this long at the fire; work plays its puff and sound on him
+  ; every BeatFrames; Reach is how near a thing's outline he works it.
+  CookFrames = 105
+  BeatFrames = 30
+  Reach = 10
+  BuildKey = G
+  BuildWord = Gulxan yoqish
+  NoWoodWord = "Gulxanga %d o'tin kerak"
+  NothingWord = "Pishiradigan narsa yo'q"
+  ; Best first: a click on a fire cooks the first he has everything for.
+  Recipes = [
+    "shorva = xom_gosht qovoq",
+    "kompot = suv rezavor",
+    "qovurilgan_gosht = xom_gosht",
+    "choy = suv",
+  ]
+  ; A thing, what it gives and how many, the frames it takes, the frames it
+  ; takes to grow back (0: never used up), the word a click on it gives (its
+  ; cursor's name), and what stands in its place meanwhile (- for nothing).
+  Gathers = [
+    "ChoppableTree otin 3 90 18000 Chop Stump",
+    "BerryBush rezavor 2 45 5400 Harvest -",
+    "PumpkinPatch qovoq 1 45 7200 Harvest -",
+    "Well suv 1 45 0 Fill -",
+  ]
+  ; What an animal leaves where it falls: the Potion, how many.
+  Hunts = [
+    "Deer xom_gosht 2",
+    "Boar xom_gosht 2",
+    "Wolf xom_gosht 1",
+  ]
+  ; The map, a thing, the zone, how many, from and to how many cells of the
+  ; zone's middle -- laid with the map, on open ground, drawn from its seed.
+  Forage = [
+    "world Campfire Olmazor 1 3 5",
+    "world Campfire Bog'iston 1 3 5",
+    "world Campfire Qoratepa 1 3 5",
+    "world Campfire Tolzor 1 3 5",
+    "world Campfire Yangiobod 1 3 5",
+    "world Campfire Minora_1 1 2 4",
+    "world Campfire Minora_2 1 2 4",
+    "world Campfire Minora_3 1 2 4",
+    "world Campfire Minora_4 1 2 4",
+    "world Campfire Minora_5 1 2 4",
+    "world Campfire Poytaxt 1 4 10",
+    "world Campfire Kampir_kulbasi 1 4 10",
+    "world Campfire Yashil_dala 1 4 10",
+    "world Campfire Qumli_dasht 1 4 10",
+    "world Campfire Toshli_adir 1 4 10",
+    "world ChoppableTree Qorong'i_o'rmon 30 4 40",
+    "world ChoppableTree Olmazor 4 8 14",
+    "world ChoppableTree Bog'iston 4 8 14",
+    "world ChoppableTree Qoratepa 4 8 14",
+    "world ChoppableTree Tolzor 4 8 14",
+    "world ChoppableTree Yangiobod 4 8 14",
+    "world ChoppableTree Yashil_dala 6 18 30",
+    "world ChoppableTree Eski_ibodatxona 4 6 12",
+    "world ChoppableTree Tosh_doira 3 6 12",
+    "world BerryBush Olmazor 3 5 11",
+    "world BerryBush Bog'iston 3 5 11",
+    "world BerryBush Qoratepa 3 5 11",
+    "world BerryBush Tolzor 3 5 11",
+    "world BerryBush Yangiobod 3 5 11",
+    "world BerryBush Qorong'i_o'rmon 6 6 40",
+    "world BerryBush Yashil_dala 4 18 30",
+    "world PumpkinPatch Olmazor 3 3 9",
+    "world PumpkinPatch Bog'iston 3 3 9",
+    "world PumpkinPatch Qoratepa 3 3 9",
+    "world PumpkinPatch Tolzor 3 3 9",
+    "world PumpkinPatch Yangiobod 3 3 9",
+    "world Deer Yashil_dala 4 18 32",
+    "world Deer Qorong'i_o'rmon 4 10 40",
+    "world Deer Olmazor 2 10 18",
+    "world Deer Bog'iston 2 10 18",
+    "world Boar Qorong'i_o'rmon 3 10 40",
+    "world Boar Tolzor 2 10 18",
+    "world Boar Qoratepa 2 10 18",
+  ]
+End
+
+; ---------------------------------------------------------------------------
+; The things worked. Props: solid, nobody's target, never drawn by a room
+; (Weight 0). Each has one look, written outside any theme.
+; ---------------------------------------------------------------------------
+
+; A tree to chop: the forest's own tree as the scenery stands it, but a thing.
+Prop
+  Name = ChoppableTree
+  DisplayName = Daraxt
+  KindOf = [STRUCTURE, SELECTABLE]
+  VisionRange = 0
+  Geometry = Cylinder
+    Radius = 2
+    Height = 20
+  End
+  Weight = 0
+End
+
+ThemeMonster
+  Name = ChoppableTree
+  Model = models/tiles/forest/tree.gltf
+  ModelScale = 3.4
+End
+
+; What is left of it until it grows back: in nobody's way, nothing to work.
+Prop
+  Name = Stump
+  DisplayName = "To'nka"
+  KindOf = [STRUCTURE]
+  VisionRange = 0
+  Weight = 0
+End
+
+ThemeMonster
+  Name = Stump
+  Model = models/inuciian/nature/stump.glb
+  ModelScale = 1
+End
+
+; A bush with berries (Quaternius, CC0).
+Prop
+  Name = BerryBush
+  DisplayName = Rezavor buta
+  KindOf = [STRUCTURE, SELECTABLE]
+  VisionRange = 0
+  Geometry = Cylinder
+    Radius = 2.5
+    Height = 6
+  End
+  Weight = 0
+End
+
+ThemeMonster
+  Name = BerryBush
+  Model = models/food/berry_bush.glb
+  ModelScale = 5
+End
+
+; A pumpkin in a village's patch (Quaternius, CC0).
+Prop
+  Name = PumpkinPatch
+  DisplayName = Qovoq
+  KindOf = [STRUCTURE, SELECTABLE]
+  VisionRange = 0
+  Geometry = Cylinder
+    Radius = 2.5
+    Height = 4
+  End
+  Weight = 0
+End
+
+ThemeMonster
+  Name = PumpkinPatch
+  Model = models/food/pumpkin_patch.glb
+  ModelScale = 3.5
+End
+
+; A fire (Kenney's campfire, CC0, its pot over it): no shape, so it is in
+; nobody's way, and one built where he stands shuts no cell.
+Prop
+  Name = Campfire
+  DisplayName = Gulxan
+  KindOf = [STRUCTURE, SELECTABLE]
+  VisionRange = 0
+  Weight = 0
+End
+
+ThemeMonster
+  Name = Campfire
+  Model = models/food/campfire.glb
+  ModelScale = 16
+  Effect = CampfireFlame
+End
+
+; ---------------------------------------------------------------------------
+; The fire, burning for as long as it stands, and the puffs work plays on him
+; each BeatFrames: chips off a tree, leaves off a bush, a splash at the well,
+; steam off a meal.
+; ---------------------------------------------------------------------------
+
+Effect
+  Name = CampfireFlame
+
+  Layers = [
+    Layer
+      Name = Flames
+      Type = TRAIL
+      Texture = kit/effects/particles/flame_03.png
+      Blend = Additive
+      Count = 18
+      Rate = 16
+      Life = [0.5, 0.8]
+      Size = [3.2, 0.8]
+      SizeJitter = 0.3
+      Colour = [0xFFD27A, 0xFF5A1E]
+      Alpha = [0.9, 0]
+      Speed = [3, 6]
+      Direction = UP
+      Spread = 12
+      Radius = 1.2
+      Height = 1
+    End,
+
+    Layer
+      Name = Smoke
+      Type = TRAIL
+      Texture = kit/effects/particles/smoke_02.png
+      Blend = Alpha
+      Count = 10
+      Rate = 5
+      Life = [1.6, 2.4]
+      Size = [2, 6]
+      Colour = [0x8A8580, 0x5A5550]
+      Alpha = [0.3, 0]
+      Speed = [2, 4]
+      Direction = UP
+      Spread = 15
+      Height = 5
+    End,
+
+    Layer
+      Name = Glow
+      Type = LIGHT
+      LightColour = 0xFF9A3A
+      LightPower = 1.6
+      LightRadius = 45
+      Height = 6
+    End
+  ]
+End
+
+Effect
+  Name = WorkChop
+
+  Layers = [
+    Layer
+      Name = Chips
+      Type = BURST
+      Texture = kit/effects/particles/dirt_02.png
+      Blend = Alpha
+      Count = 10
+      Life = [0.4, 0.7]
+      Size = [1.2, 0.8]
+      Colour = [0xC89A60, 0x8A5A30]
+      Alpha = [1, 0.6]
+      Speed = [8, 14]
+      Direction = UP
+      Spread = 50
+      Gravity = 30
+      Height = 6
+    End
+  ]
+End
+
+Effect
+  Name = WorkHarvest
+
+  Layers = [
+    Layer
+      Name = Leaves
+      Type = BURST
+      Texture = kit/effects/particles/dirt_01.png
+      Blend = Alpha
+      Count = 8
+      Life = [0.5, 0.8]
+      Size = [1, 0.6]
+      Colour = [0x7AC060, 0x3A7A30]
+      Alpha = [1, 0.5]
+      Speed = [4, 8]
+      Direction = UP
+      Spread = 60
+      Gravity = 12
+      Height = 3
+    End
+  ]
+End
+
+Effect
+  Name = WorkFill
+
+  Layers = [
+    Layer
+      Name = Splash
+      Type = BURST
+      Texture = kit/effects/particles/circle_02.png
+      Blend = Additive
+      Count = 10
+      Life = [0.4, 0.6]
+      Size = [0.8, 0.3]
+      Colour = [0xCFF2FF, 0x6CC8FF]
+      Alpha = [0.9, 0]
+      Speed = [5, 9]
+      Direction = UP
+      Spread = 40
+      Gravity = 25
+      Height = 4
+    End
+  ]
+End
+
+Effect
+  Name = WorkCook
+
+  Layers = [
+    Layer
+      Name = Steam
+      Type = BURST
+      Texture = kit/effects/particles/smoke_02.png
+      Blend = Alpha
+      Count = 6
+      Life = [0.8, 1.2]
+      Size = [1.5, 4]
+      Colour = [0xF0ECE6, 0xC8C4BE]
+      Alpha = [0.5, 0]
+      Speed = [2, 4]
+      Direction = UP
+      Spread = 20
+      Height = 4
+    End
+  ]
+End
+
+; ---------------------------------------------------------------------------
+; The pointer over a thing to work: the word its click gives (Food Gathers).
+; ---------------------------------------------------------------------------
+
+Cursor
+  Name = Chop
+  Image = ui/cursors/default/tool_axe.png
+  HotX = 15
+  HotY = 15
+  Tint = 0xE8A33D
+End
+
+Cursor
+  Name = Harvest
+  Image = ui/cursors/default/hand_open.png
+  HotX = 15
+  HotY = 15
+  Tint = 0xE8A33D
+End
+
+Cursor
+  Name = Fill
+  Image = ui/cursors/default/tool_watering_can.png
+  HotX = 15
+  HotY = 15
+  Tint = 0xE8A33D
+End
+
+Cursor
+  Name = Cook
+  Image = ui/cursors/default/tool_torch.png
+  HotX = 15
+  HotY = 15
+  Tint = 0xE8A33D
+End
+
+; ---------------------------------------------------------------------------
+; What work sounds like, each BeatFrames: the game's own clips (CC0).
+; ---------------------------------------------------------------------------
+
+Sound
+  Name = work.chop
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.6
+  Files = [audio/sfx/weapon/heavy_swing_1.ogg, audio/sfx/weapon/heavy_swing_2.ogg, audio/sfx/weapon/heavy_swing_3.ogg]
+End
+
+Sound
+  Name = work.harvest
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.5
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r2.ogg]
+End
+
+Sound
+  Name = work.fill
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.6
+  Files = [audio/ui/drink_1.ogg]
+End
+
+Sound
+  Name = work.cook
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.35
+  Files = [audio/sfx/magic/fire_1.ogg, audio/sfx/magic/fire_2.ogg]
+End
+
+; ---------------------------------------------------------------------------
+; The animals of the open world (Quaternius, CC0): a deer that runs from him --
+; it keeps a band it never closes, and has nothing to strike with -- and a boar
+; that fights. The forest's wolves are hunted too (data/units/wilds_forest.duke).
+; Never on a floor of the descent: the Food block's Forage places them.
+; ---------------------------------------------------------------------------
+
+Monster
+  Name = Deer
+  DisplayName = Kiyik
+  KindOf = [INFANTRY, SELECTABLE]
+  Geometry = Cylinder
+    Radius = 4
+    Height = 10
+  End
+  VisionRange = 70
+  Modules = [
+    GrowableBody
+      MaxHealth = 40
+    End,
+    MoveUpdate
+      Speed = 24
+      TurnRate = 0
+    End,
+    SkillBook
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 6
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  ; It notices him at SenseRadius and runs to beyond the band's near edge; it
+  ; never comes after him, the band's far edge being past any chase.
+  SenseRadius = 50
+  ChaseRadius = 110
+  KeepDistance = [100, 2000]
+  RepathFrames = 10
+  MinDepth = 99
+  Weight = 0
+  Colour = 0xB07A48
+  Model = models/food/deer.glb
+  ModelScale = 2.2
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+End
+
+Monster
+  Name = Boar
+  DisplayName = "Yovvoyi to'ng'iz"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 4
+    Height = 6
+  End
+  VisionRange = 70
+  Modules = [
+    GrowableBody
+      MaxHealth = 90
+    End,
+    MoveUpdate
+      Speed = 19
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 8
+      AttackRange = 8
+      ReloadFrames = 30
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 14
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 30
+  ChaseRadius = 80
+  CloseDistance = 4
+  AlertRadius = 40
+  RepathFrames = 10
+  SwingFrames = 12
+  MinDepth = 99
+  Weight = 0
+  Colour = 0x6A4A38
+  Model = models/food/boar.glb
+  ModelScale = 4
+  ; The pig made a boar: darker, by the game's tint.
+  Tint = 0x6E5040
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+End
+
+; Their sounds: the wolf's, which are beasts' (data/sounds/wilds.duke).
+Sound
+  Name = hurt.Deer
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.5
+  GapSeconds = 0.1
+  Files = [audio/sfx/creature/beast_1.ogg, audio/sfx/creature/beast_2.ogg]
+End
+
+Sound
+  Name = died.Deer
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.75
+  Files = [audio/sfx/creature/beast_3.ogg]
+End
+
+Sound
+  Name = spawned.Deer
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.6
+  GapSeconds = 3
+  Files = [audio/sfx/creature/beast_2.ogg]
+End
+
+Sound
+  Name = walking.Deer
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/step/stone_l1.ogg, audio/sfx/step/stone_r1.ogg, audio/sfx/step/stone_l2.ogg, audio/sfx/step/stone_r2.ogg, audio/sfx/step/stone_l3.ogg, audio/sfx/step/stone_r3.ogg]
+End
+
+Sound
+  Name = walking.Deer.grass
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+
+Sound
+  Name = walking.Deer.forest
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+
+Sound
+  Name = walking.Deer.mud
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+
+Sound
+  Name = walking.Deer.sand
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+
+Sound
+  Name = walking.Deer.snow
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+
+Sound
+  Name = walking.Deer.dirt
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/footstep_1.ogg, audio/sfx/footstep_2.ogg, audio/sfx/footstep_3.ogg, audio/sfx/footstep_4.ogg, audio/sfx/footstep_5.ogg]
+End
+
+Sound
+  Name = fired.Boar
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.5
+  Files = [audio/sfx/weapon/quick_swing_1.ogg, audio/sfx/weapon/quick_swing_2.ogg]
+End
+
+Sound
+  Name = hurt.Boar
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.5
+  GapSeconds = 0.1
+  Files = [audio/sfx/creature/beast_1.ogg, audio/sfx/creature/beast_2.ogg]
+End
+
+Sound
+  Name = died.Boar
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.75
+  Files = [audio/sfx/creature/beast_3.ogg]
+End
+
+Sound
+  Name = spawned.Boar
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.6
+  GapSeconds = 3
+  Files = [audio/sfx/creature/beast_2.ogg]
+End
+
+Sound
+  Name = walking.Boar
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/step/stone_l1.ogg, audio/sfx/step/stone_r1.ogg, audio/sfx/step/stone_l2.ogg, audio/sfx/step/stone_r2.ogg, audio/sfx/step/stone_l3.ogg, audio/sfx/step/stone_r3.ogg]
+End
+
+Sound
+  Name = walking.Boar.grass
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+
+Sound
+  Name = walking.Boar.forest
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+
+Sound
+  Name = walking.Boar.mud
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+
+Sound
+  Name = walking.Boar.sand
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+
+Sound
+  Name = walking.Boar.snow
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+
+Sound
+  Name = walking.Boar.dirt
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/footstep_1.ogg, audio/sfx/footstep_2.ogg, audio/sfx/footstep_3.ogg, audio/sfx/footstep_4.ogg, audio/sfx/footstep_5.ogg]
+End
+

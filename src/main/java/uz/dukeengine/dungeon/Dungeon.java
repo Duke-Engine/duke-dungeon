@@ -542,6 +542,8 @@ public final class Dungeon {
                         run.travel(game, travel.playerIndex(), travel.tower());
                 case uz.dukeengine.dungeon.run.TalkTo talk ->
                         run.talkTo(game, talk.playerIndex(), talk.person());
+                // Sent to chop, pick, fill or cook, or to build a fire at his feet. See DungeonRun.work.
+                case uz.dukeengine.dungeon.run.Work work -> run.work(game, work.playerIndex(), work.thing());
                 default -> {
                     // Not one of ours; rts has already said so.
                 }

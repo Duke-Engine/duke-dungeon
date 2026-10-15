@@ -143,6 +143,9 @@ final class Bag {
         match.game().addContextOrder((selection, target) ->
                 target.getPlayerIndex() == uz.dukeengine.core.player.PlayerList.NEUTRAL_INDEX
                         && story.npc(target.getTemplate().name()) != null ? PartyOrders.TALK : null);
+        // And a tree, a bush, a well or a fire is worked: its word, and the pointer of that name (food-and-fire.md).
+        var food = settings.food();
+        match.game().addContextOrder((selection, target) -> food.wordOn(target.getTemplate().name()));
         DialogueScreen.show(match);
     }
 
