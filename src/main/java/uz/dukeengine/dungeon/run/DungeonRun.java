@@ -129,6 +129,10 @@ public final class DungeonRun {
     private final Camp camp;
     /** The map's scenery a loaded save says was felled, taken away again as its floor is laid. */
     private List<Integer> felled = List.of();
+    /** Each hero's horse, and whether he rides it. See {@link Stable}. */
+    private final Stable stable;
+    /** Who rides onto the next map laid: a loaded save's rider, or whoever rode as the last map ended. */
+    private List<Integer> riding = List.of();
     private final LootTable drops;
 
     /** The players' seats, the first player's first: a game alone has that one. */
@@ -206,6 +210,7 @@ public final class DungeonRun {
         this.look = lookOf(null);
         this.depth = floors.firstDepth();
         this.camp = new Camp(settings);
+        this.stable = new Stable(settings);
         seats.add(new Seat(heroPlayer, progress, learnt, settings.run().defaultHero()));
     }
 
@@ -382,6 +387,7 @@ public final class DungeonRun {
         visited.clear();
         visited.addAll(save.places()); // the places found, as the save left them
         felled = save.felled(); // and the trees felled, taken away again as the floor is laid
+        riding = save.mounted() ? List.of(seat.player.getIndex()) : List.of(); // and on his horse, if he rode
         visitedNow = List.copyOf(visited);
         if (save.quests() == null) {
             quests.reset();
@@ -483,7 +489,8 @@ public final class DungeonRun {
         return SaveGame.of(floors.seed(), floors.stageName(), depth, seat.hero, seat.progress.getExperience(),
                 seat.learnt, seat.progress.getLoot(), quests.state(), script.state(), seat.gold)
                 .withMedallion(seat.souls, givenTo).withPlaces(visited)
-                .withFelled(lastLogic == null ? List.of() : lastLogic.getRemovedScenery());
+                .withFelled(lastLogic == null ? List.of() : lastLogic.getRemovedScenery())
+                .withMounted(stable.mounted(seat.player.getIndex()));
     }
 
     /** Whoever the first player plays — the file's answer until somebody chooses. */
@@ -633,6 +640,7 @@ public final class DungeonRun {
         camp.lay(game.getLogic(), floors.stageName(), floors.seed(), zones(), dungeonPlayer.getIndex(), heroLevel(),
                 paint == null ? List.of() : paint.scenery().stream().map(piece -> piece.model()).toList(),
                 loading ? felled : List.of());
+        stable.lay(floors.stageName(), zones(), loading ? riding : stable.riding());
         if (loading && skippedTo.isBlank() && lastTowerFound() != null) {
             skippedTo = lastTowerFound(); // back from a save or a death: at the last tower he found, not the way in
         }
@@ -1787,7 +1795,29 @@ public final class DungeonRun {
         seat.talkingTo = null;
         orders.attackMove(playerIndex, null);
         uz.dukeengine.combat.module.Errand.giveUpAll(hero);
+        stable.dismount(game.getLogic(), playerIndex, hero, seat.progress); // work is done on foot
         camp.order(game.getLogic(), playerIndex, hero, thing, place);
+    }
+
+    /** His mount key, or a right-click on his horse: called, got onto, or got off. See {@link Stable#press}. */
+    public void ride(DukeGame game, int playerIndex, ObjectId horse) {
+        var seat = seatOf(playerIndex);
+        var hero = seat == null || seat.heroId == null ? null : game.getLogic().findObject(seat.heroId);
+        if (hero != null) {
+            stable.press(game.getLogic(), playerIndex, hero, seat.progress, horse);
+        }
+    }
+
+    /** Whether this player's hero is on his horse. */
+    public boolean mounted(int playerIndex) {
+        return stable.mounted(playerIndex);
+    }
+
+    /** This player's hero off his horse, at once: a skill pressed on horseback. See {@link Stable#dismount}. */
+    public void dismount(DukeGame game, int playerIndex) {
+        var seat = seatOf(playerIndex);
+        var hero = seat == null || seat.heroId == null ? null : game.getLogic().findObject(seat.heroId);
+        stable.dismount(game.getLogic(), playerIndex, hero, seat == null ? null : seat.progress);
     }
 
     /** What a click on the ground at {@code place} gives: the chop's word over a tree that may be felled (E66). */
@@ -1969,6 +1999,7 @@ public final class DungeonRun {
         for (var seat : seats) {
             var hero = seat.heroId == null ? null : game.getLogic().findObject(seat.heroId);
             camp.tick(game.getLogic(), seat.player.getIndex(), hero, seat.progress.getLoot());
+            stable.tick(game.getLogic(), seat.player.getIndex(), hero, seat.progress);
             heroes.add(hero);
         }
         camp.grow(game.getLogic(), heroes);

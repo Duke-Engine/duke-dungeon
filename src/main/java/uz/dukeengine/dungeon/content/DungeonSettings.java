@@ -142,6 +142,7 @@ public final class DungeonSettings {
     private final List<uz.dukeengine.core.content.EffectList> effectLists = new java.util.ArrayList<>();
     private uz.dukeengine.dungeon.story.Medallion medallion = uz.dukeengine.dungeon.story.Medallion.DEFAULTS;
     private uz.dukeengine.dungeon.food.Food food = uz.dukeengine.dungeon.food.Food.DEFAULTS;
+    private uz.dukeengine.dungeon.mount.Mount mount = uz.dukeengine.dungeon.mount.Mount.DEFAULTS;
     private final List<uz.dukeengine.dungeon.story.Campaign> campaigns = new java.util.ArrayList<>();
     private final List<uz.dukeengine.dungeon.story.Place> places = new java.util.ArrayList<>();
     private uz.dukeengine.dungeon.story.Credits credits = uz.dukeengine.dungeon.story.Credits.DEFAULTS;
@@ -337,6 +338,11 @@ public final class DungeonSettings {
     /** What a kill that pays looks like: the coins out of the corpse and the gold taken floating over it. */
     public uz.dukeengine.dungeon.story.GoldBurst goldBurst() {
         return goldBurst;
+    }
+
+    /** Riding a horse on the open world: see {@code docs/plan/2026-10-15-mounts.md}. */
+    public uz.dukeengine.dungeon.mount.Mount mount() {
+        return mount;
     }
 
     /** Food and fire: see {@code docs/plan/2026-10-15-food-and-fire.md}. */
@@ -611,6 +617,7 @@ public final class DungeonSettings {
                 case uz.dukeengine.core.content.EffectList list -> effectLists.add(list);
                 case uz.dukeengine.dungeon.story.Medallion block -> medallion = once(block, once);
                 case uz.dukeengine.dungeon.food.Food block -> food = once(block, once);
+                case uz.dukeengine.dungeon.mount.Mount block -> mount = once(block, once);
                 case uz.dukeengine.dungeon.story.Campaign block -> campaigns.add(block);
                 case uz.dukeengine.dungeon.story.Place place -> places.add(place);
                 case uz.dukeengine.dungeon.story.Credits block -> credits = once(block, once);
@@ -910,6 +917,7 @@ public final class DungeonSettings {
                     "Potion " + potion.name() + ": a name with no '-', and a Stack of one at least");
         }
         validateFood();
+        validateMount();
         var item = itemRules;
         for (var list : java.util.List.of(item.rarities(), item.colours(), item.normal(), item.elite(), item.boss(),
                 item.chest(), item.shop(), item.prices())) {
@@ -925,6 +933,35 @@ public final class DungeonSettings {
         for (var guard : item.campBosses()) {
             require(monster(guard) != null, "ItemRules' CampBosses name " + guard + ", and no Monster block describes it");
         }
+    }
+
+    /** Riding: the whistle a Potion, the horse and every look a Monster, a key, and frames of one at least. */
+    private void validateMount() {
+        if (!mount.on()) {
+            return;
+        }
+        require(potions.stream().anyMatch(potion -> potion.name().equals(mount.whistle())),
+                "Mount: Whistle " + mount.whistle() + " is no Potion");
+        require(monster(mount.horse()) != null, "Mount: Horse " + mount.horse() + " is no Monster");
+        for (var line : mount.looks()) {
+            var sides = line.split("=");
+            require(sides.length == 2 && monster(sides[1].strip()) != null,
+                    "Mount: Looks are a hero = the Monster he is drawn as riding: " + line);
+        }
+        require(mount.key().length() == 1 && Character.isLetter(mount.key().charAt(0)) && mount.mountFrames() >= 1
+                && mount.gallopFrames() >= 1 && mount.reach() > 0f && mount.callDistance() > 0f
+                && mount.speedPercent() > -100, "Mount: one letter, frames of one at least, a Reach and a CallDistance");
+        // Nobody else's: the orders' and walking's, the client's halt and pause, the screens', the tracker's, the
+        // fire's, and every skill's own key.
+        char key = Character.toUpperCase(mount.key().charAt(0));
+        var taken = new java.util.HashSet<Character>(List.of('W', 'A', 'S', 'D', 'F', 'H', 'P',
+                Character.toUpperCase(run.foldKey().charAt(0))));
+        screens.keys().forEach(each -> taken.add(Character.toUpperCase(each)));
+        skills.forEach(skill -> taken.add(Character.toUpperCase(skill.key())));
+        if (!food.buildKey().isBlank()) {
+            taken.add(Character.toUpperCase(food.buildKey().charAt(0)));
+        }
+        require(!taken.contains(key), "Mount: Key " + key + " is already another's");
     }
 
     /** Food and fire: every thing it names is one, every word a cursor's. See docs/plan/2026-10-15-food-and-fire.md. */
@@ -1539,6 +1576,9 @@ public final class DungeonSettings {
         screens.keys().forEach(key -> taken.add(Character.toUpperCase(key)));
         if (!food.buildKey().isBlank()) {
             taken.add(Character.toUpperCase(food.buildKey().charAt(0)));
+        }
+        if (mount.on()) {
+            taken.add(Character.toUpperCase(mount.key().charAt(0)));
         }
         require(modern.values().stream().noneMatch(taken::contains),
                 "Controls: a modern skill letter is walking's or another key's: " + modern);

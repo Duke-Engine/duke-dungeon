@@ -1124,6 +1124,12 @@ public final class Main {
             keys.on(food.buildKey().charAt(0), food.buildWord(), game -> game.postCommand(
                     PartyOrders.of(new uz.dukeengine.dungeon.run.Work(game.getLocalPlayerIndex(), null))));
         }
+        // His horse: called, got onto, got off, as this game's order (docs/plan/2026-10-15-mounts.md).
+        var mount = settings.mount();
+        if (mount.on()) {
+            keys.on(mount.key().charAt(0), mount.keyWord(), game -> game.postCommand(
+                    PartyOrders.of(new uz.dukeengine.dungeon.run.Ride(game.getLocalPlayerIndex(), null))));
+        }
         // Spending a level on a slot. A click on the badge rather than a letter,
         // so it comes through a door of its own -- and it is a COMMAND like every
         // other decision, settled on a frame boundary where the rules live.

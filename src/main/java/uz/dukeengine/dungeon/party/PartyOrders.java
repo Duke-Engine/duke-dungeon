@@ -105,6 +105,8 @@ public final class PartyOrders {
                     null, null, travel.tower());
             case uz.dukeengine.dungeon.run.TalkTo talk -> new GameOrder(talk.playerIndex(), TALK, List.of(), null,
                     talk.person(), 0);
+            case uz.dukeengine.dungeon.run.Ride ride -> new GameOrder(ride.playerIndex(),
+                    uz.dukeengine.dungeon.mount.Mount.RIDE, List.of(), null, ride.horse(), 0);
             case uz.dukeengine.dungeon.run.Work work when work.place() != null -> new GameOrder(work.playerIndex(),
                     uz.dukeengine.dungeon.food.Food.CHOP, List.of(), work.place(), null, 0);
             case uz.dukeengine.dungeon.run.Work work -> work.thing() == null
@@ -153,6 +155,8 @@ public final class PartyOrders {
             case BUILD -> new uz.dukeengine.dungeon.run.Work(order.playerIndex(), null);
             case TALK -> order.target() == null ? null
                     : new uz.dukeengine.dungeon.run.TalkTo(order.playerIndex(), order.target());
+            case uz.dukeengine.dungeon.mount.Mount.RIDE -> new uz.dukeengine.dungeon.run.Ride(order.playerIndex(),
+                    order.target());
             default -> null;
         };
     }

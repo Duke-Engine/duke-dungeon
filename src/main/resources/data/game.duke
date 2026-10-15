@@ -166,6 +166,8 @@ Game
     data/world/loot.duke,
     ; Food and fire: cooked, chopped, picked, filled, hunted. See docs/plan/2026-10-15-food-and-fire.md.
     data/world/food.duke,
+    ; A horse on the open world. See docs/plan/2026-10-15-mounts.md.
+    data/world/mounts.duke,
     data/story/medallion.duke,
     data/story/final.duke,
     data/story/kampir.duke,

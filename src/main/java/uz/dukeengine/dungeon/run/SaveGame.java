@@ -30,11 +30,21 @@ import uz.dukeengine.rpg.skill.SkillRanks;
  * @param places     the zones a hero has stood in this run, the world map's places found; none in an older save
  * @param felled     the map's scenery taken away -- trees chopped -- by index (docs/plan/2026-10-15-food-and-fire.md);
  *                   none in an older save
+ * @param mounted    whether he rode his horse (docs/plan/2026-10-15-mounts.md); on foot in an older save
  */
 public record SaveGame(long seed, String stage, int depth, String hero, int experience, List<Rank> ranks,
         List<Item> bag, uz.dukeengine.dungeon.story.QuestLog.State quests,
         uz.dukeengine.dungeon.story.Script.State script, int gold, int souls, String givenTo, List<String> places,
-        List<Integer> felled) {
+        List<Integer> felled, boolean mounted) {
+
+    /** A save of a hero on foot: as one written before riding was. */
+    public SaveGame(long seed, String stage, int depth, String hero, int experience, List<Rank> ranks,
+            List<Item> bag, uz.dukeengine.dungeon.story.QuestLog.State quests,
+            uz.dukeengine.dungeon.story.Script.State script, int gold, int souls, String givenTo, List<String> places,
+            List<Integer> felled) {
+        this(seed, stage, depth, hero, experience, ranks, bag, quests, script, gold, souls, givenTo, places, felled,
+                false);
+    }
 
     /** A save with no trees felled in it: as one written before chopping was. */
     public SaveGame(long seed, String stage, int depth, String hero, int experience, List<Rank> ranks,
@@ -124,19 +134,25 @@ public record SaveGame(long seed, String stage, int depth, String hero, int expe
     /** The same save, with what the medallion has drunk and whom the turning gave it to. */
     public SaveGame withMedallion(int souls, String givenTo) {
         return new SaveGame(seed, stage, depth, hero, experience, ranks, bag, quests, script, gold, souls, givenTo,
-                places, felled);
+                places, felled, mounted);
     }
 
     /** The same save, with the map's places a hero has stood in this run (the world map's found places). */
     public SaveGame withPlaces(List<String> found) {
         return new SaveGame(seed, stage, depth, hero, experience, ranks, bag, quests, script, gold, souls, givenTo,
-                found, felled);
+                found, felled, mounted);
     }
 
     /** The same save, with the map's scenery taken away -- the trees chopped -- by index. */
     public SaveGame withFelled(List<Integer> taken) {
         return new SaveGame(seed, stage, depth, hero, experience, ranks, bag, quests, script, gold, souls, givenTo,
-                places, taken);
+                places, taken, mounted);
+    }
+
+    /** The same save, with whether he rides his horse. */
+    public SaveGame withMounted(boolean riding) {
+        return new SaveGame(seed, stage, depth, hero, experience, ranks, bag, quests, script, gold, souls, givenTo,
+                places, felled, riding);
     }
 
     /** What this hero has, as a save. */
@@ -277,6 +293,9 @@ public record SaveGame(long seed, String stage, int depth, String hero, int expe
             out.append("  Felled = [").append(String.join(", ", felled.stream().map(String::valueOf).toList()))
                     .append("]\n");
         }
+        if (mounted) {
+            out.append("  Mounted = Yes\n");
+        }
         return out.append("End\n").toString();
     }
 
@@ -349,7 +368,8 @@ public record SaveGame(long seed, String stage, int depth, String hero, int expe
                     field(save, "GivenTo") == null ? "" : word(save, "GivenTo"),
                     field(save, "Places") == null ? List.of() : items(save, "Places"),
                     field(save, "Felled") == null ? List.of()
-                            : items(save, "Felled").stream().map(Integer::parseInt).toList());
+                            : items(save, "Felled").stream().map(Integer::parseInt).toList(),
+                    field(save, "Mounted") != null && word(save, "Mounted").equalsIgnoreCase("Yes"));
         } catch (RuntimeException e) {
             throw new Refused(source + " cannot be loaded: " + e.getMessage(), e);
         }
