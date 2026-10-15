@@ -409,7 +409,8 @@ Hero
       ; knocks the screen -- or any critical one stuns him StunFrames (0.37s: his wind-up starts over
       ; after it, his reload waits, no skill casts), his CastAnim (his Hurt) playing for exactly those
       ; frames; and none takes him again for DurationFrames (1.2s) after, so a crowd cannot hold him.
-      ; The owner, 2026-10-15: "while the hero flinches he must not attack".
+      ; The owner, 2026-10-15: "while the hero flinches he must not attack". Staggered on the move, he
+      ; is drawn standing at his flinch and walks on with his order when it ends (E73).
       Key = X
       Effect = STAGGER
       Damage = 45

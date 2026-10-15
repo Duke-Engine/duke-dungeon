@@ -81,7 +81,7 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E70 | a blow struck on the move drawn on the upper body only, the legs keeping the paced walk | landed, 7fda6418 on `e69-70-attack-clips`; `UpperBody` on the three heroes (`spine`, `QuickRigCharacter_Spine_012`, `spine`); monsters not yet |
 | E71 | a flinch that never cuts short a blow or a cast: the hurt clip played only when the unit is not mid-attack, mid-gesture or moving, at most once per a look-set interval, optionally only on a major/critical blow | landed, 8c9b234d on `e71-flinches`; the heroes name `Hurt` again, `Flinch` in world/feel.duke (1.0s, `HeavyOnly`), `DungeonMonsterArtTest.aHeroFlinchesOnlyAtAHeavyBlowAndNotEveryBlow`; monsters still name none |
 | E72 | a hero's stagger in the skill system: a passive `STAGGER` (StunFrames on a heavy or critical blow, his hurt clip busy for those frames, DurationFrames of immunity after), and a busy clip that starts cutting an attack clip already playing | landed, 80cbdaf7 on `e72-stagger`; each hero carries a `STAGGER` skill (Key X, Damage = his HeavyBlow MajorAt 45/35/35, StunFrames 11, DurationFrames 36, CastAnim = his hurt clip), held out of his four (`skillsFor`), his ranks and his bar (`HeroStatus.withoutHisStagger`); `run.Staggering` is gone; `StaggerTest` |
-| E73 | a blow inside a stagger keeps its busy clip: `BodyModule.hurt` ends a busy clip on every blow, and the book sets it only as the stagger begins, so in a crowd the flinch stops on the next blow while the stun goes on | asked 2026-10-15 |
+| E73 | a blow inside a stagger keeps its busy clip: `BodyModule.hurt` ends a busy clip on every blow, and the book sets it only as the stagger begins, so in a crowd the flinch stops on the next blow while the stun goes on | landed, 62e1c7c0 on `e73-stagger-holds`; a blow inside a stagger sets the busy clip again for the stun's frames left, and a DISABLED or HELD unit is drawn standing and keeps its order; `StaggerTest.hisHurtClipIsBusyForExactlyTheStaggersFrames` strikes him inside it again; OnBar not done, so `HeroStatus.withoutHisStagger` stays |
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
 game builds against the local engine. E12–E15 reached it together at 668045f0 (their pull requests merged as
@@ -1482,3 +1482,10 @@ its busy clip as it is (the book setting it again for the frames left, or `hurt`
 stun he is under). Done when a test staggers a hero, strikes him again for 1 three frames in, and his busy clip is
 still his flinch until the stun ends. Then `StaggerTest.hisHurtClipIsBusyForExactlyTheStaggersFrames` strikes him
 inside it again, as it did before E72.
+
+**E73 landed** as 62e1c7c0 on the engine's branch `e73-stagger-holds`: a blow landing inside a stagger sets its busy
+clip again for the frames the stun has left, so his flinch runs the whole stagger however many blows land in it; and
+a `DISABLED` or `HELD` unit is drawn standing (its view's `moving` false) while it keeps its order -- so a hero
+staggered on the move shows his flinch, not a walk in place, and walks on when it ends. `StaggerTest` strikes him
+inside the stagger again. A hero's `STAGGER` is still taken off his bar by the game's string filter
+(`HeroStatus.withoutHisStagger`): no `OnBar` was asked or done.
