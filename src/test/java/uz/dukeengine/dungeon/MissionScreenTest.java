@@ -499,4 +499,18 @@ class MissionScreenTest {
         assertEquals(2, run.getDepth());
         assertFalse(run.getTracker().words().isEmpty(), "the next floor says its step");
     }
+
+    /** The arrow to a target off the screen stands on a ring round the hero, pointing the way the screen goes. */
+    @Test
+    void thePointerStandsOnTheRingTheWayTheTargetLies() {
+        var right = MissionScreen.arrowAt(new Canvas.Point(800f, 450f), new Canvas.Point(810f, 450f), 100f);
+        assertEquals(900f, right[0], 1e-3f);
+        assertEquals(450f, right[1], 1e-3f);
+        assertEquals(0f, right[2], 1e-3f);
+        var up = MissionScreen.arrowAt(new Canvas.Point(800f, 450f), new Canvas.Point(800f, 440f), 100f);
+        assertEquals(350f, up[1], 1e-3f, "up the screen");
+        assertEquals((float) (-Math.PI / 2), up[2], 1e-3f);
+        assertNull(MissionScreen.arrowAt(new Canvas.Point(800f, 450f), new Canvas.Point(800f, 450f), 100f),
+                "no way, no arrow");
+    }
 }

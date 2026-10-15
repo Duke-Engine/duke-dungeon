@@ -229,6 +229,10 @@ public final class Main {
                 visuals.effectSeconds(beam, 2 * itemRules.beamFrames() / perSecond);
             }
         }
+        // And the key's, which a quest's place stands in too. See DungeonRun.beams and DungeonRun.glow.
+        if (!settings.run().keyBeam().isBlank()) {
+            visuals.effectSeconds(settings.run().keyBeam(), 2 * itemRules.beamFrames() / perSecond);
+        }
         // The medallion appearing in the hand it is given to glows this long.
         var medallion = settings.medallion();
         if (!medallion.givenLook().isBlank()) {

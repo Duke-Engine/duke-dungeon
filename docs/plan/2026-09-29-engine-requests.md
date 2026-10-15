@@ -69,6 +69,7 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E58 | feel: a number that is bigger and another colour for a heavy or critical blow, a short hit-stop, and a camera knock from an effect list that obeys `ShakeScale` | landed, 62e569ef on the engine's branch `e58-feel`; the numbers, `HitStop` and the effect-list shakes are in `hud.duke` and `feel.duke` |
 | E59 | settings: an Ambience channel with its own volume, a Camera shake row (`ShakeScale` for the player), a Language row if there is more than one | landed (engine 01eb7029; game 2026-10-15) |
 | E60 | closest-thing questions with no candidate list or sort; a weapon that does not copy its owner's module list every frame | landed (engine 01eb7029; game 2026-10-15) |
+| E61 | where the hero is wanted: a `Mission` that drops its key with a few still standing, and the game's own marks on the minimap | asked 2026-10-15; the game stands in for (1) with `run/EarlyKey` and has no minimap mark yet |
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
 game builds against the local engine. E12–E15 reached it together at 668045f0 (their pull requests merged as
@@ -1266,3 +1267,22 @@ thing and a frame of `deep` with every monster idle allocates no candidate lists
 **E59 landed** as 01eb7029 on the engine's branch `e59-60-settings-perf`: `SoundBank.Channel.AMBIENCE` with `volAmbience` (default 70, `say("Ambience")`), loops follow their channel's knob live, and a "Camera shake" row (Full / Half / Off). The game: `ambience.dungeon` in `sfx.duke` is `Channel = Ambience` (`Main.channelOf` already maps any enum word, so no parser change), the five new words are in `menu.duke`'s `Words` in Uzbek (Muhit, Kamera titrashi, To'liq, Yarim, O'chiq), and `HitFeel.ShakeScale` is set in `Main.looks` before `duke.launch()`. Tests: `DungeonSoundTest.theAmbienceLoopsAreOnTheAmbienceChannel`, `MainMenuTest.everyFixedWordOfTheClientsMenusIsSaidInUzbek`.
 
 **E60 landed** in the same commit: closest-thing questions walk the buckets unsorted. The game's three filters (`MonsterBrain.nearestEnemy`, `somethingNearbyHasStarted`, `HeroBrain.closestHeCanShoot`) were audited and are pure (no RNG, no mutation). `deep` idle: 0.414 -> 0.208 ms a frame; the open world is unchanged at 0.087.
+
+## E61 — Where the hero is wanted: a key that drops early, and the game's marks on the minimap (2026-10-15, small)
+
+The owner played MSI 1.0.39: a floor's key lies only where the **last** of the floor's own outside the keep fell, so
+one skeleton missed in a far corner keeps the boss's gate shut; and after taking a quest he did not know where to go.
+(1) **A mission's leeway.** `rpg.mission.Mission` lays the key when its count of deaths reaches all it counted. Asked:
+`Mission.begin(..., int leeway)` — the key is laid at the death that leaves no more than `leeway` of the counted
+standing (a counted thing that has left the world, or is dead, does not stand), where that one fell; `killed()` stops
+at `outside()`; 0 is today's. The game works it out (`Run.keyLeeway`: 15% or 3, whichever is more, never all) and
+stands in today with `run/EarlyKey`, a `DieModule` beside each `Counted` that calls the dying one's `Counted.onDie()`
+for the rest — it goes once this lands. Done when a test kills all but `leeway` of five counted and the key lies
+where the last killed fell, and the rest dying lay no second one and leave `killed() == outside()`. (2) **The game's
+marks on the minimap.** The minimap draws units and the camera's box (`DukeRtsApp.minimapDots`) and nothing a game
+names. Asked: `Duke3D.minimapMarks(Supplier<List<MinimapMark>>)` — a world point, a colour and a picture (or a plain
+diamond), read each frame on the window's thread, clamped to the minimap's edge when off it (pointing the way), so the
+floor's key and each quest's target show there as they do on the game's world map (M). Done when a test hands one mark
+inside and one outside the minimap's span and sees the first at its projected place and the second on the edge. The
+game today draws its key and quest targets on its own world map, and an arrow round the hero on the screen
+(`MissionScreen.pointers`, from `Canvas.screenOf`) — no engine hook is missing for that.

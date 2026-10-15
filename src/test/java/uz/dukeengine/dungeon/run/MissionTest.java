@@ -80,11 +80,25 @@ class MissionTest {
 
     /** The shipped game but for one word: its key is told to lie as a thing no file has made. */
     private static DungeonSettings keyLyingAsNothing() {
+        return DungeonSettings.parse(keyLyingAsNothingData());
+    }
+
+    private static String keyLyingAsNothingData() {
         var data = Content.data();
         var shipped = "  LiesAs = Key\n";
         assertTrue(data.contains(shipped), "the shipped key no longer says how it lies");
-        return DungeonSettings.parse(data.replace(shipped, "  LiesAs = NoSuchThing\n"));
+        return data.replace(shipped, "  LiesAs = NoSuchThing\n");
     }
+
+    /** {@code data} with the key dropped by the last of the floor's own, as it was before 2026-10-15. */
+    private static String lastOnly(String data) {
+        var shipped = "  KeyEarlyPercent = 15\n  KeyEarlyCount = 3\n";
+        assertTrue(data.contains(shipped), "the shipped run no longer drops its key early this way");
+        return data.replace(shipped, "  KeyEarlyPercent = 0\n  KeyEarlyCount = 0\n");
+    }
+
+    /** The shipped game with the key left by the last of them only: the tests of the count itself. */
+    private static final DungeonSettings LAST_ONLY = DungeonSettings.parse(lastOnly(Content.data()));
 
     /** What lies on the floor, each thing as what it holds: a chest's item, the key on the ground. */
     private static List<Loot> lying(DukeGame game) {
@@ -120,7 +134,7 @@ class MissionTest {
 
     @Test
     void theLastOfThemLeavesTheKeyWhereItFell() {
-        var session = opened(SETTINGS);
+        var session = opened(LAST_ONLY);
         var game = session.game();
         Coord3D last = null;
         for (var monster : outside(session)) {
@@ -142,7 +156,7 @@ class MissionTest {
      */
     @Test
     void theLastTwoFallingInOneFrameLeaveOneKey() {
-        var session = opened(SETTINGS);
+        var session = opened(LAST_ONLY);
         var game = session.game();
         var own = outside(session);
         for (var monster : own.subList(0, own.size() - 2)) {
@@ -166,7 +180,7 @@ class MissionTest {
      */
     @Test
     void whatIsCalledUpLaterIsNeitherCountedNorWaitedFor() {
-        var session = opened(SETTINGS);
+        var session = opened(LAST_ONLY);
         var game = session.game();
         var logic = game.getLogic();
         var mission = session.run().getMission();
@@ -315,7 +329,7 @@ class MissionTest {
      */
     @Test
     void aKeyThatCannotBeLaidIsSaidLoudlyWhenTheLastOfThemFalls() {
-        var session = opened(keyLyingAsNothing());
+        var session = opened(DungeonSettings.parse(lastOnly(keyLyingAsNothingData())));
         var game = session.game();
         var own = outside(session);
         for (var monster : own.subList(0, own.size() - 1)) {
@@ -437,7 +451,7 @@ class MissionTest {
     void theTrackerSaysItInTheOwnersWords() {
         var words = SETTINGS.run();
         assertEquals("Monstrlarni qir 12/40", words.clearWord(12, 40));
-        assertEquals("Kalitni top", words.takeKeyWord());
+        assertEquals("Kalitni oling: oltin nur ustunida, o'q yo'lni ko'rsatadi", words.takeKeyWord());
         assertEquals("Kalitni darvozaga ber", words.giveKeyWord());
         assertEquals("Bossni o'ldir", words.killBossWord());
     }
@@ -449,7 +463,7 @@ class MissionTest {
      */
     @Test
     void aStepPassedStaysListedDoneForAWhileAndThenGoes() {
-        var session = opened(SETTINGS);
+        var session = opened(LAST_ONLY);
         var game = session.game();
         var run = session.run();
         var words = SETTINGS.run();
@@ -524,5 +538,114 @@ class MissionTest {
         assertFalse(entries.isEmpty());
         assertEquals(uz.dukeengine.dungeon.run.Tracker.Kind.MAIN, entries.getFirst().kind());
         assertEquals(SETTINGS.run().missionTitle(), entries.getFirst().title());
+    }
+
+    // ---- the key drops early (the owner, 2026-10-15) ----
+
+    /** A few of them may still stand: KeyEarlyPercent of them or KeyEarlyCount, whichever is more, never all. */
+    @Test
+    void theLeewayIsTheMoreForgivingOfTheShareAndTheCount() {
+        var run = SETTINGS.run();
+        assertEquals(6, run.keyLeeway(40), "15% of 40");
+        assertEquals(3, run.keyLeeway(10), "3 beats 15% of 10");
+        assertEquals(2, run.keyLeeway(3), "at least one kill asked");
+        assertEquals(0, run.keyLeeway(1));
+        assertEquals(0, LAST_ONLY.run().keyLeeway(40), "0 and 0: the last of them, as it was");
+    }
+
+    /**
+     * The key lies where the kill fell that left only the leeway standing — not where the last of them falls — and
+     * the rest falling later lay no second one. Twice from the same seed, the same place: deterministic.
+     */
+    @Test
+    void theKeyDropsAtTheKillThatLeavesOnlyAFew() {
+        Coord3D first = null;
+        for (int round = 0; round < 2; round++) {
+            var session = opened(SETTINGS);
+            var game = session.game();
+            var own = outside(session);
+            int leeway = SETTINGS.run().keyLeeway(own.size());
+            assertTrue(leeway > 0 && own.size() > leeway + 1, "the premise: a floor with a few to spare");
+            Coord3D fell = null;
+            int standing = own.size();
+            for (var monster : own) {
+                assertEquals(0, keysLying(game), "a key while " + standing + " stand");
+                fell = monster.getPosition();
+                game.getLogic().destroyObject(monster);
+                game.runHeadless(1);
+                standing--;
+                if (standing == leeway) {
+                    break;
+                }
+            }
+            var key = find(game, "Key");
+            assertNotNull(key, "no key with only " + leeway + " standing");
+            assertTrue(key.getPosition().distance(fell) < 2f, "where that kill fell: " + key.getPosition());
+            assertEquals(Mission.Step.TAKE, session.run().getStep());
+            var lying = session.run().keyLying();
+            assertNotNull(lying, "the window is told where it lies");
+            assertEquals(key.getPosition().x(), lying.x(), 1e-3f);
+            assertTrue(Math.abs(game.getLogic().getFrame() - lying.frame()) <= 1, "and that it dropped just now");
+
+            for (var monster : own.subList(own.size() - leeway, own.size())) {
+                game.getLogic().destroyObject(monster);
+                game.runHeadless(1);
+            }
+            assertEquals(1, keysLying(game), "the rest falling lay no second key");
+            if (first == null) {
+                first = key.getPosition();
+            } else {
+                assertEquals(first, key.getPosition(), "the same seed, the same place");
+            }
+        }
+    }
+
+    /** A key taken is no longer pointed at; a hero falling with it drops it again, and it is pointed at again. */
+    @Test
+    void aKeyDroppedAgainWhereAHeroFellIsPointedAtAgain() {
+        // A party of two, so one falling is not the run lost.
+        var session = Dungeon.newPartySession(PartyMatch.endless(4242L), 2, null, nobodyOutside(), "Rogue");
+        var game = session.game();
+        game.runHeadless(1);
+        game.postCommand(PartyOrders.of(new ChooseHero(2, "Knight")));
+        game.runHeadless(3);
+        var run = session.run();
+        var key = find(game, "Key");
+        assertNotNull(run.keyLying(), "laid at the way in, and pointed at");
+        assertTrue(run.keyLying().frame() < 0, "but not news: nothing floats over it");
+
+        var hero = find(game, "Rogue");
+        hero.setPosition(key.getPosition());
+        game.postCommand(PartyOrders.of(new PickUp(hero.getPlayerIndex(), key.getId())));
+        game.runHeadless(3);
+        assertEquals(Mission.Step.GIVE, run.getStep(), "the premise: he carries it");
+        assertNull(run.keyLying(), "carried, not lying");
+
+        var where = hero.getPosition();
+        game.getLogic().destroyObject(hero);
+        game.runHeadless(1);
+
+        assertNotNull(run.keyLying(), "dropped where he fell");
+        assertEquals(where.x(), run.keyLying().x(), 2f);
+        assertTrue(Math.abs(game.getLogic().getFrame() - run.keyLying().frame()) <= 1, "news, this time");
+    }
+
+    /** The key lying stands in the run's KeyBeam, played on it again every BeamFrames. */
+    @Test
+    void theKeyLyingStandsInItsPillarOfLight() {
+        var session = opened(nobodyOutside());
+        var game = session.game();
+        var key = find(game, "Key");
+        game.watch();
+        boolean lit = false;
+        for (int frame = 0; frame <= SETTINGS.items().rules().beamFrames() && !lit; frame++) {
+            game.runHeadless(1);
+            for (var event : game.getSnapshot().events()) {
+                lit |= event instanceof uz.dukeengine.core.event.EffectPlayed played
+                        && played.name().equals(SETTINGS.run().keyBeam()) && key.getId().equals(played.riding());
+            }
+        }
+        assertFalse(SETTINGS.run().keyBeam().isBlank(), "the premise: the run names one");
+        assertTrue(lit, "no pillar over the key in a whole BeamFrames");
     }
 }
