@@ -118,3 +118,37 @@ Sound
   GapSeconds = 0.25
   Files = [audio/ui/coins_1.ogg, audio/ui/coins_2.ogg, audio/ui/coins_3.ogg, audio/ui/coins_4.ogg]
 End
+
+; ---- the bag (BagScreen, E57) -----------------------------------------------
+
+Sound
+  Name = bag_open
+  Channel = Ui
+  Positional = No
+  Gain = 0.5
+  Files = [audio/ui/page_1.ogg]
+End
+
+Sound
+  Name = bag_close
+  Channel = Ui
+  Positional = No
+  Gain = 0.5
+  Files = [audio/ui/book_shut.ogg]
+End
+
+Sound
+  Name = item_lift
+  Channel = Ui
+  Positional = No
+  Gain = 0.5
+  Files = [audio/ui/equip_1.ogg, audio/ui/equip_2.ogg]
+End
+
+Sound
+  Name = item_drop
+  Channel = Ui
+  Positional = No
+  Gain = 0.5
+  Files = [audio/ui/equip_3.ogg]
+End

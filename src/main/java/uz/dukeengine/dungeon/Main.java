@@ -522,7 +522,7 @@ public final class Main {
         var keys = controls(settings);
         // Held too: a party is a match of its own, built once its players have met, and
         // it is the client that is asked to play it — see PartyFront.
-        var duke = Duke3D.of(session.game(), visuals).hotkeys(keys);
+        var duke = Duke3D.of(session.game(), visuals).hotkeys(keys).musicByGame(true);
         // His bag, the engine's RPG part in the game's words: what he carries, and a hand to take a thing
         // out of it and put it down. Told of every match it is drawn over -- this one, and a party's that replaces it.
         var bag = Bag.on(settings, duke);
@@ -532,7 +532,7 @@ public final class Main {
         // And over that, the player's own screens -- the sheet, the quest log, the map -- each on its key, and the map
         // drawn from the engine's picture of the world as he knows it, asked for every map.
         var screens = new PlayerScreens(talk, settings);
-        // And over them all, what it sounds like from where he stands -- the music for the place, his footsteps, the
+        // And over them all, what it sounds like from where he stands -- the music for the place, the loop under it, the
         // pages and coins of his own screens. See Soundscape.
         duke.canvas(new Soundscape(screens, duke, settings)).input(screens);
         screensOn(keys, screens, settings);

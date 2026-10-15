@@ -14,7 +14,7 @@ import uz.dukeengine.dungeon.run.DungeonRun;
 
 /**
  * What the game sounds like from where he stands, asked every frame the window draws: the music for the place and the
- * moment, his footsteps on the ground under him, and the small sounds of his own screens — a page turned, a quest
+ * moment, the loop under his place, and the small sounds of his own screens — a page turned, a quest
  * taken, a coin paid.
  *
  * <p>The client's, and only read: the simulation decides none of it, and two machines in one party may hear two
@@ -34,6 +34,7 @@ final class Soundscape implements Painter {
     private final Set<String> bosses = new HashSet<>();
 
     private String asked;
+    private String looping;
     private long askedAt;
     private long battleUntil;
     private Object watched;
@@ -64,6 +65,7 @@ final class Soundscape implements Painter {
         }
         long now = System.nanoTime();
         if (!playing) {
+            loop(null);
             play(musicFor(music, false, null, null, List.of(), null, false, false), now);
             return;
         }
@@ -82,10 +84,8 @@ final class Soundscape implements Painter {
                     battleUntil = now + (long) (settings.audio().battleSeconds() * 1e9);
                 }
             }
-            if (hero.moving()) {
-                duke.sound(stepOn(match.game().getMapRecord(), hero.x(), hero.y())); // its gap is the stride
-            }
         }
+        loop(ambienceFor(settings.audio().ambienceByPlace(), zones, run.placeName()));
         play(musicFor(music, true, run.getState(), run.placeName(), zones, run.cutsceneName(), boss,
                 now < battleUntil), now);
         screensHeard();
@@ -132,26 +132,26 @@ final class Soundscape implements Painter {
         return uz.dukeengine.dungeon.world.Audio.firstOf(music, asked);
     }
 
-    /**
-     * The footstep for where he stands: {@code step.<surface>}, the surface the picture its paint names there — {@code
-     * step.grass} for {@code ground/grass.png} — falling back to {@code step} for a surface with no sound of its own,
-     * and for any floor not painted at all (the descent's stone).
-     */
-    static String stepOn(Object map, float x, float y) {
-        if (map instanceof uz.dukeengine.dungeon.stage.StagePaint paint) {
-            float cell = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
-            int row = (int) Math.floor(y / cell);
-            int column = (int) Math.floor(x / cell);
-            if (row >= 0 && row < paint.rows().size() && column >= 0 && column < paint.rows().get(row).length()) {
-                var picture = paint.palette().get(String.valueOf(paint.rows().get(row).charAt(column)));
-                if (picture != null && !picture.startsWith("#")) {
-                    var name = picture.substring(picture.lastIndexOf('/') + 1);
-                    int dot = name.lastIndexOf('.');
-                    return "step." + (dot < 0 ? name : name.substring(0, dot));
-                }
-            }
+    /** The loop under the place he is in, or null: the Audio block's Ambience, his zones before his map. */
+    static String ambienceFor(Map<String, String> ambience, List<String> zones, String place) {
+        var places = new ArrayList<>(zones);
+        places.add(place);
+        return uz.dukeengine.dungeon.world.Audio.firstOf(ambience, places);
+    }
+
+    /** Fades the place's loop in as he comes to it and out as he leaves (or leaves the match). */
+    private void loop(String cue) {
+        if (java.util.Objects.equals(cue, looping)) {
+            return;
         }
-        return "step";
+        float fade = settings.audio().fadeSeconds();
+        if (looping != null) {
+            duke.stopLoop(looping, fade);
+        }
+        if (cue != null) {
+            duke.loop(cue, fade);
+        }
+        looping = cue;
     }
 
     private void play(String cue, long now) {

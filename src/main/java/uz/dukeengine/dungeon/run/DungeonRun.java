@@ -1689,19 +1689,6 @@ public final class DungeonRun {
         return name == null ? "descent" : name;
     }
 
-    /**
-     * The loop under where {@code hero} stands — the Audio block's Ambience, his zones before his map — kept going
-     * riding him while he stays, and let go once he leaves it: asked again every check, held for three of them.
-     */
-    private void ambience(uz.dukeengine.core.GameLogic logic, GameObject hero, List<String> zones) {
-        var places = new ArrayList<>(zones);
-        places.add(placeName());
-        var cue = uz.dukeengine.dungeon.world.Audio.firstOf(settings.audio().ambienceByPlace(), places);
-        if (cue != null) {
-            logic.sound(cue, hero, settings.story().dialogue().checkFrames() * 3);
-        }
-    }
-
     /** The run's triggers: what has fired, the flags, what waits. */
     public uz.dukeengine.dungeon.story.Script getScript() {
         return script;
@@ -1901,7 +1888,6 @@ public final class DungeonRun {
                     }
                 }
             }
-            ambience(logic, hero, his);
         }
         script.standing(standing);
         // A land freed opens the tower nearest it (the Travel block's Opens): found as if he had stood in it.
