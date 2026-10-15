@@ -94,6 +94,7 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E83 | the menu's backdrop kept as the match: "New game" hands the running backdrop game over instead of tearing it down and loading the world again | waiting (seamless campaign); the game opens the match on the same world, battle and framing, under the load bar |
 | E84 | path regions the game shuts and opens (walls by a story flag): a route never plans through closed land | waiting (seamless campaign); the game leashes the hero to the gate's open zones each frame (`DungeonRun.gated`) |
 | E85 | a cutscene camera path: a list of points, each with its pitch, zoom and ease, flown as one move | waiting (seamless campaign, small); the intro's shots stand in, one move a shot |
+| E86 | a weapon that acquires nothing by itself, per unit (`WeaponUpdate.acquiresNothing`), for a hero who fights only when told | waiting (modern controls; the game holds fire through its brain meanwhile) |
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
 game builds against the local engine. E12–E15 reached it together at 668045f0 (their pull requests merged as
@@ -1746,3 +1747,19 @@ Asked: `GameCamera.along(List<Key>, int frames, Ease ease)`, a `Key` being a poi
 move through them on a smooth curve (Catmull-Rom), the turn, pitch and zoom eased with it, the whole over `frames`,
 not checksummed as the camera is not. Done when a test flies a three-key path and the camera passes through the middle
 key's point at the right frame, and at no frame stands still between keys.
+## E86 — A weapon that picks no target by itself, per unit (2026-10-15, small; modern controls)
+
+In the modern scheme the hero fights only when the left button tells him (a lock-on, a swing): never what walks into
+his reach. His brain is the game's, but an idle `WeaponUpdate` looks for the nearest enemy every `targetScanFrames`
+(`acquireTarget`) whatever steers the unit, so a lock-on whose target dies, or a toward swing that ends, leaves a
+weapon that picks the next enemy itself. The only way to stop it is a `WeaponHold`, which a script is not (it runs in
+the final `ScriptModule`), so the game wraps its `HeroBrain` in a module of its own (`HeroBrain.Module`) that holds
+fire while the weapon has no target, no point and no ground -- a hold that would also hold anything the engine adds to
+an idle weapon later.
+
+Asked: `WeaponUpdate.acquiresNothing(boolean)` (or a `Data` field `AcquiresNothing`), deterministic state of the unit:
+while set, `acquireTarget` is never called; orders (`AttackObject`, `AttackToward`, `AttackGround`) and skills that
+aim it work as ever, and when one ends the weapon stays idle. Done when a test sets it on a unit with an enemy in
+reach, runs 60 frames and the weapon has no target, then gives `AttackObject` on that enemy, which dies, and a second
+enemy in reach is untouched for 60 more frames. Then the game sets it from its `FightOnlyWhenTold` order and its
+`HeroBrain.Module` goes.
