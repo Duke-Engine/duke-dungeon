@@ -506,6 +506,14 @@ public final class Main {
         visuals.fogStartsExplored(uz.dukeengine.dungeon.stage.StagePaint::isWide);
     }
 
+    /** The scene behind the front menu now running, and the act "New game" asked to begin on it: see begin in main. */
+    private static final java.util.concurrent.atomic.AtomicReference<MenuScene> backdrop =
+            new java.util.concurrent.atomic.AtomicReference<>();
+    private static final java.util.concurrent.atomic.AtomicReference<uz.dukeengine.dungeon.story.Campaign> newAct =
+            new java.util.concurrent.atomic.AtomicReference<>();
+    private static final java.util.concurrent.atomic.AtomicReference<uz.dukeengine.dungeon.story.Campaign> adopted =
+            new java.util.concurrent.atomic.AtomicReference<>();
+
     public static void main(String[] args) {
         // The language comes first: every data file is read in it. Uzbek unless the player kept English (or --lang=en).
         uz.dukeengine.dungeon.content.Lang.use(uz.dukeengine.dungeon.content.Lang.chosen(args,
@@ -576,13 +584,33 @@ public final class Main {
         // The front menu's own rows -- continue, a new game (with whom, how, where, who), load, the credits -- then
         // Settings and Quit. Nothing opens until one is walked. See frontRows and whoGoesIn.
         var credits = FrontMenu.credits(settings, Content.read("CREDITS.md"));
+        // How a game picked on the menu begins: a new first act on the backdrop running behind it (no load: E83), or
+        // any other a match of its own, loaded as ever.
+        java.util.function.Consumer<Dungeon.Session> begin = match -> {
+            var scene = backdrop.get();
+            var campaign = newAct.getAndSet(null);
+            if (campaign == null || scene == null || !scene.running()) {
+                duke.startMatch(match.game());
+                return;
+            }
+            var played = scene.session();
+            played.run().awaitAdoption(); // no hour's light, no captured mouse until the seat is taken and the intro ends
+            played.run().onCheckpoint(save -> write(saves, Saves.AUTOSAVE, save));
+            played.run().onSaveInto((slot, save) -> write(saves, slot, save));
+            played.run().onTheEnd(duke::frontEnd);
+            played.run().onMusic(duke::music);
+            Bag.show(bag, played, settings);
+            current.set(played);
+            adopted.set(campaign);
+            duke.adoptBackdrop();
+        };
         java.util.function.Function<Dungeon.Session, List<Shell.Option>> rows = match -> frontRows(settings,
                 loadable(saves.list(), settings), him -> displayNameOf(match, him),
                 saved -> {
                     heroChosen(match, settings, visuals, keys, saved.game().hero());
                     match.run().resume(saved.game(), Floors.resumed(saved.game(), settings));
                 },
-                () -> duke.startMatch(match.game()),
+                () -> begin.accept(match),
                 whoGoesIn(match, settings, visuals, keys, duke, bag), credits);
         var shell = FrontMenu.shell(settings, rows.apply(session),
                 List.of(saveRow(settings, slot -> saveTo(current.get(), saves, slot))));
@@ -601,10 +629,25 @@ public final class Main {
             next.run().onMusic(duke::music);
             Bag.show(bag, next, settings);
             current.set(next);
-            shell.frontRows(FrontMenu.startingFresh(rows.apply(next), () -> duke.startMatch(next.game())));
+            shell.frontRows(FrontMenu.startingFresh(rows.apply(next), () -> begin.accept(next)));
         });
-        // The live scene behind the front menu: the kingdom's soldiers holding a clearing against the skeletons.
-        duke.backdrop(() -> MenuScene.of(settings).game());
+        // The live scene behind the front menu: the campaign's opening battle on the open world (MenuScene).
+        duke.backdrop(() -> {
+            var scene = MenuScene.of(settings);
+            backdrop.set(scene);
+            return scene.game();
+        });
+        // "New game" of the first act makes that scene the played match (E83): no load, its frames going on. Told on
+        // the simulation's thread once the client has put its menu away: the seat taken, his keys and eyes, the act begun.
+        duke.onBackdropAdopted(game -> {
+            var scene = backdrop.get();
+            var campaign = adopted.getAndSet(null);
+            if (scene == null || campaign == null || scene.game() != game) {
+                return;
+            }
+            scene.adoptAsMatch(game, campaign);
+            heroChosen(scene.session(), settings, visuals, keys, campaign.hero());
+        });
         duke.shell(shell);
         for (var act : settings.campaigns()) {
             int joint = actArg(args, act.name());
@@ -1005,6 +1048,14 @@ public final class Main {
         var rows = new java.util.ArrayList<Shell.Option>();
         for (var campaign : settings.campaigns()) {
             rows.add(new Shell.Option(campaign.word(), campaign.blurb(), () -> {
+                // The first act begins on the backdrop already running behind the menu, if one does: nothing loads
+                // (the seamless campaign, E83) -- see begin in main. Otherwise, a match of its own, as before.
+                var scene = backdrop.get();
+                if (campaign.follows().isBlank() && scene != null && scene.running()) {
+                    newAct.set(campaign);
+                    return;
+                }
+                newAct.set(null);
                 heroChosen(session, settings, visuals, keys, campaign.hero());
                 // From its first joint, with that joint's flags (Act1: the act's world story on). An act that follows
                 // one carries on from its end save, or from the act's defaults with none.

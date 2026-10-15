@@ -125,8 +125,9 @@ public record Trigger(String name, String map, When when, String target, int ste
          * 0 east, 90 south): a meteor's angled fall. {@code Drawn} is played on them every frame of it (the burning
          * trail), {@code Landed} as they come down (the impact). */
         STREAK,
-        /** The Shockwave block the Target names, from the zone's middle: the dungeon's side thrown out and stunned. */
-        SHOCKWAVE,
+        /** Every hero casts his first skill of the SkillEffect the Target names at the zone's middle, at its first rank:
+         * the landing's PUSH (E82), the knock-back and the stun in the skill system. */
+        CAST,
         /** Every fighter standing in the zone held still -- no blow, no step -- from now until a RELEASE. */
         HOLD,
         /** What a HOLD holds, let go. */

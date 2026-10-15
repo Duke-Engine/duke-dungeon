@@ -76,8 +76,9 @@ class ControlsTest {
 
         for (var skill : SHIPPED.skills()) {
             if (skill.effect() == uz.dukeengine.rpg.skill.SkillEffect.STAGGER
-                    || skill.effect() == uz.dukeengine.rpg.skill.SkillEffect.DODGE) {
-                continue; // never pressed (the dodge: on Space), and no slot of the bar: no letter on purpose
+                    || skill.effect() == uz.dukeengine.rpg.skill.SkillEffect.DODGE
+                    || skill.effect() == uz.dukeengine.rpg.skill.SkillEffect.PUSH) {
+                continue; // never pressed (the dodge: on Space; the push: the story's), no slot: no letter on purpose
             }
             assertTrue(keys.contains(skill.key()),
                     skill.key() + " is in the file but bound to nothing");

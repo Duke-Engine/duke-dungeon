@@ -90,21 +90,23 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E79 | a game's own rows on Settings (the scheme), its keys rebindable on the Keys page, and the bar showing the letter pressed, not the skill's name | landed, ba92ce64 (head f4422800): the game's "Boshqaruv" row (`Controls.ROW`, read at the next launch), Space bound as the dodge, the walking keys said in Uzbek, `HeroCard.skills(.., settings::letterOf)` on the bar |
 | E80 | a `DODGE` skill shape: a quick dash over frames with i-frames, aimed by a direction, on a non-letter key (Space) | landed, f4506485: every hero carries a `DODGE` (Key V, on Space; 16, 9 frames, 7 immune, 75, no mana), off his four and his bar |
 | E81 | traversal links in the path graph (jump, vault, climb, drop) a route can use | landed, f4422800 on `e76-80-modern-combat`: `TraversalLink`, a map's `Linked`; to adopt in the traversal phase |
-| E82 | a radial knock-back in the skill system: `SkillEffect.PUSH`, every enemy within Radius thrown Distance outward over Frames along an arc, stunned StunFrames | waiting (seamless campaign, `2026-10-15-seamless-campaign.md`); the game throws them with `ScriptedMove` and the engine's DISABLED meanwhile (`Battles.shockwave`) |
-| E83 | the menu's backdrop kept as the match: "New game" hands the running backdrop game over instead of tearing it down and loading the world again | waiting (seamless campaign); the game opens the match on the same world, battle and framing, under the load bar |
-| E84 | path regions the game shuts and opens (walls by a story flag): a route never plans through closed land | waiting (seamless campaign); the game leashes the hero to the gate's open zones each frame (`DungeonRun.gated`) |
-| E85 | a cutscene camera path: a list of points, each with its pitch, zoom and ease, flown as one move | waiting (seamless campaign, small); the intro's shots stand in, one move a shot |
+| E82 | a radial knock-back in the skill system: `SkillEffect.PUSH`, every enemy within Radius thrown Distance outward over Frames along an arc, stunned StunFrames | landed, 2e12257e on `e82-85-seamless`: `SkillEffect.PUSH` (Radius, Distance, DurationFrames, HitWidth the arc, Damage, StunFrames, Look); every hero carries one (`Qo'nish zarbasi`, off his bar) and the story casts it as he lands (`CAST PUSH`); the game's `SHOCKWAVE` and `Battles.shockwave` are gone |
+| E83 | the menu's backdrop kept as the match: "New game" hands the running backdrop game over instead of tearing it down and loading the world again | landed, 2e12257e on `e82-85-seamless`: `Duke3D.adoptBackdrop`, `onBackdropAdopted`, `DukeGame.takeSeat`; "New game" of Act 1 adopts the running world backdrop (`MenuScene.adoptAsMatch`, `DungeonRun.adopt`): no load, the same frames going on |
+| E84 | path regions the game shuts and opens (walls by a story flag): a route never plans through closed land | landed, 2e12257e on `e82-85-seamless`: `PathGrid.shut`/`open`/`isShut`; each `Gate` shuts a band round its Open zones (`DungeonRun.gated`), the per-frame leash is gone, the hero is told at the edge |
+| E85 | a cutscene camera path: a list of points, each with its pitch, zoom and ease, flown as one move | landed, 2e12257e on `e82-85-seamless`: `GameCamera.along`; a cutscene shot's `Path` of `Key`s, the opening's camera one move from the menu's framing to the landing |
 | E87 | a weapon that acquires nothing by itself, per unit (`WeaponUpdate.acquiresNothing`), for a hero who fights only when told | landed, 6f48703b (on e86-89-hour-mounts); the hero's brain sets it on his weapon from `FightOnlyWhenTold`, `HeroBrain.Module` gone |
 | E86 | the open world's hour while it is drawn: a sun and ambient changed at runtime, the haze's colour, lights stronger at night, a tint under the GUI, rain with a colour and a streak | landed, d18b0070 (on e86-89-hour-mounts); `Atmosphere` lights the hour by `DayNight`'s Sky keys (sun, shade, haze), the fires by `NightLights`, a weather's tint and the storm's flash under the HUD, rain as pale streaks; scene.duke's Sun back off the open world |
 | E88 | a rider on a mount: one unit drawn on another's bone, both animating, picked and barred as the rider; and a unit's sounds keyed by the template it is drawn as | landed, d18b0070; the hero rides the real horse on its `Saddle` bone, drawn as `<Hero>Riding` (his own model playing `Ride_Idle`/`Ride_Gallop`, art/mounts/export_riders.py), his hooves `walking.<Hero>Riding.<surface>`; the combined models are gone |
 | E89 | mounting in the skill system: a `MOUNT` shape (or at least a `MOVE_SPEED` buff the book holds and `HeroProgress` multiplies into his legs), cast over the mount clip, ended by a blow, a cast or an attack; zones of a map a skill is refused and ended in | landed, 6f48703b; each hero's `MOUNT` skill on T (`NotIn` the towns and `Ichkari`, the zone `Stable.zonesAt` gives every map not out of doors), `MOVE_SPEED` on the buff row; `Stable` keeps the horse as a thing, an ordered attack and riding into a town. **One thing left:** a click-to-move's step is held to the unit's own top speed by `MoveUpdate.giveWay` (`allowed`), so the mount's speed reaches only a walk along (WASD); the share wants multiplying into `topSpeed` there too |
+| E89 (route speed) | the one thing E89 left: a routed walk held to the unit's own top speed (`MoveUpdate.giveWay`), so a mount reached its speed only along WASD | landed, engine master 7df782cf: the MOVE_SPEED share multiplied into a route's top speed too |
 
 | E90 | a captured mouse: the pointer hidden and held in the window, relative motion events, released while a screen, a menu, Alt or a lost focus asks | landed, db83232a on `e90-94-action`: adopted on the game's branch `action2` (the Jangovar scheme) |
 | E91 | the follow camera turned round the hero by the mouse: yaw from relative x, sensitivity, invert, a pitch band | landed, db83232a on `e90-94-action`: adopted on the game's branch `action2` (the Jangovar scheme) |
 | E92 | a skill aimed by relative motion: a key arms it, its indicator from the hero along the camera's forward, mouse y the distance, confirm (LMB, the key again, or release) and cancel (RMB, Esc) | landed, db83232a on `e90-94-action`: adopted on the game's branch `action2` (the Jangovar scheme) |
 | E93 | `MouseScheme.ACTION`: the left button strikes along the camera's forward (`AttackToward` by angle), a ranged hero's soft lock in a forward cone, the hold resent by angle | landed, db83232a on `e90-94-action`: adopted on the game's branch `action2` (the Jangovar scheme) |
 | E94 | interact with the nearest: the context-order target in a front cone within reach, its word for a prompt drawn over it, sent on a key | landed, db83232a on `e90-94-action`: adopted on the game's branch `action2` (the Jangovar scheme) |
-| E96 | interact with the map's own scenery: E94's nearest target taken from the ground rule (`groundOrder`) too, a scenery piece (a felled tree, E66) its prompt and its click | waiting (action controls, small); E on a scenery tree finds nothing meanwhile, a right-click still chops it |
+| E95 | a PUSH that throws a crowd: the farthest moved first, and a body in the way pushed on with it rather than stopping the one behind | landed, engine master 7df782cf: victims thrown farthest first, fellow victims pass through, none ends inside another; the landing's test asks every one in reach thrown |
+| E96 | interact with the map's own scenery: E94's nearest target taken from the ground rule (`groundOrder`) too, a scenery piece (a felled tree, E66) its prompt and its click | landed, engine master 7df782cf: interact scans the map's scenery through the ground rule, so Action's E on a felled-able tree says Kesish with no game change |
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
 game builds against the local engine. E12–E15 reached it together at 668045f0 (their pull requests merged as
@@ -1941,3 +1943,22 @@ map), asks the ground rule for each piece's place, and takes the nearest of thin
 drawn over the piece and the key gives what a click on the ground under it gives. Done when a test stands the hero
 before a scenery tree the game's ground rule names `Chop`, finds it with the prompt "[E] Kesish", and the key posts the
 same order a click there posts; a piece the rule names nothing for is not offered.
+
+## E95 — A PUSH that throws a crowd (2026-10-15, small; seamless campaign)
+
+E82 landed as asked, and the hero's landing casts it. In the opening battle the enemy stands packed against the
+kingdom's line, and `pushEnd` stops a victim at the first body behind it (`findBlocker`), so of the eleven within the
+wave five fly the whole Distance and six do not move at all (all are stunned): the knock-back reads weakest where the
+fight is thickest. The victims are taken in the world's order, so one deeper in the crowd is stopped by one nearer
+the edge that has not moved yet.
+
+Asked: in `PUSH`, the victims moved farthest first (so the outer ones have cleared the way before the inner ones are
+walked out), and a creature of the push's own victims in the way is not a blocker (they fly together); stone, a shut
+gate, a seal and a body that is no victim still stop it. Done when a test pushes a column of five skeletons standing
+one behind the other along a line from the caster, Radius taking them all: all five end Distance further out, in the
+same order, none inside another.
+
+The cutscene's camera shake needed nothing: `SkillEffects.knock` applies an Effect's ShakeSeconds and ShakePower whole,
+scaled only by the player's own setting (ListShow's MaxShakeIntensity caps EffectList shakes, not these). What held
+the intro's impact to 0.8 s and 2.0 was the game's own SkillLookTest; it now lets a look only a story's STREAK lands
+with (a cutscene's) go to 1.5 s and 5.0, and the impact knocks 1.0 s at 4.0.

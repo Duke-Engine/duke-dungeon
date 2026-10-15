@@ -94,11 +94,33 @@ class SkillLookTest {
 
     // ---- and the two shapes worth holding still ----
 
+    /**
+     * The looks only a cutscene plays: what a story's STREAK lands with (the intro's meteor), under the letterbox, with
+     * the player's hands off the keys. The day a meteor really landed (docs/plan/2026-10-15-seamless-campaign.md): it may
+     * knock longer and harder than a fight's -- to CUTSCENE_SECONDS and CUTSCENE_KNOCK, the engine applying it whole
+     * (SkillEffects.knock, scaled only by the player's own Silkinish setting).
+     */
+    private static java.util.Set<String> cutsceneLooks() {
+        var looks = new java.util.HashSet<String>();
+        for (var trigger : SETTINGS.story().triggers()) {
+            for (var action : trigger.actions()) {
+                if (action.act() == uz.dukeengine.dungeon.story.Trigger.Act.STREAK && !action.landed().isBlank()) {
+                    looks.add(action.landed());
+                }
+            }
+        }
+        return looks;
+    }
+
+    private static final float CUTSCENE_SECONDS = 1.5f;
+    private static final float CUTSCENE_KNOCK = 5f;
+
     /** The knock is over before the next thing the player does. */
     @Test
     void everyKnockIsOverQuickly() {
+        var cinematic = cutsceneLooks();
         for (var look : SETTINGS.effects()) {
-            assertTrue(look.shakeSeconds() <= LONGEST_SECONDS,
+            assertTrue(look.shakeSeconds() <= (cinematic.contains(look.name()) ? CUTSCENE_SECONDS : LONGEST_SECONDS),
                     look.name() + " shakes the camera for " + look.shakeSeconds() + "s");
         }
     }
@@ -114,8 +136,10 @@ class SkillLookTest {
      */
     @Test
     void theKnockIsSmall() {
+        var cinematic = cutsceneLooks();
         for (var look : SETTINGS.effects()) {
-            assertTrue(look.shakePower() <= HARDEST_KNOCK, look.name() + " knocks the camera "
+            assertTrue(look.shakePower() <= (cinematic.contains(look.name()) ? CUTSCENE_KNOCK : HARDEST_KNOCK),
+                    look.name() + " knocks the camera "
                     + look.shakePower() + " units, and past " + HARDEST_KNOCK
                     + " it is an earthquake rather than an impact");
         }

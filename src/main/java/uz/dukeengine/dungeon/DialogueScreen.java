@@ -170,10 +170,13 @@ final class DialogueScreen implements Painter, CanvasInput {
         }
     }
 
-    /** Whether the match's run is playing a cutscene. */
+    /**
+     * Whether the match's run is playing a cutscene -- or an intro holds the screen between its cutscenes (the hero in
+     * the sky, the battle held): the keys stay held and the captured mouse let go through the whole of it.
+     */
     private static boolean inCutscene() {
         var now = match;
-        return now != null && now.run().inCutscene();
+        return now != null && now.run().inIntro();
     }
 
     /** The black bars across the top and the bottom of a cutscene. */

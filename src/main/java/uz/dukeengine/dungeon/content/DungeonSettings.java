@@ -87,7 +87,7 @@ public final class DungeonSettings {
     /** The skills whose StunFrames something reads. */
     private static final java.util.Set<SkillEffect> STUNNERS =
             java.util.EnumSet.of(SkillEffect.SKILLSHOT, SkillEffect.WAVE, SkillEffect.SKEWER, SkillEffect.PULL,
-                    SkillEffect.STAGGER);
+                    SkillEffect.STAGGER, SkillEffect.PUSH);
     /** And its Extra, beside none. */
     private static final java.util.Set<String> EXTRAS =
             java.util.Set.of(Stat.HEALTH_REGEN, Stat.MANA_REGEN, Stat.ATTACK_SPEED);
@@ -150,7 +150,6 @@ public final class DungeonSettings {
     private uz.dukeengine.dungeon.story.Credits credits = uz.dukeengine.dungeon.story.Credits.DEFAULTS;
     private final List<uz.dukeengine.dungeon.story.Title> titles = new java.util.ArrayList<>();
     private final List<uz.dukeengine.dungeon.story.Battle> battles = new java.util.ArrayList<>();
-    private final List<uz.dukeengine.dungeon.story.Shockwave> shockwaves = new java.util.ArrayList<>();
     private final List<uz.dukeengine.dungeon.story.Gate> gates = new java.util.ArrayList<>();
     private final List<uz.dukeengine.core.content.Laser> lasers = new java.util.ArrayList<>();
 
@@ -412,11 +411,6 @@ public final class DungeonSettings {
         return battles.stream().filter(each -> each.name().equals(name)).findFirst().orElse(null);
     }
 
-    /** The Shockwave block of that name, or null. */
-    public uz.dukeengine.dungeon.story.Shockwave shockwave(String name) {
-        return shockwaves.stream().filter(each -> each.name().equals(name)).findFirst().orElse(null);
-    }
-
     /** Every Gate block, in file order: the first that holds is the one kept. */
     public List<uz.dukeengine.dungeon.story.Gate> gates() {
         return List.copyOf(gates);
@@ -676,7 +670,6 @@ public final class DungeonSettings {
                 case uz.dukeengine.dungeon.story.Credits block -> credits = once(block, once);
                 case uz.dukeengine.dungeon.story.Title title -> titles.add(title);
                 case uz.dukeengine.dungeon.story.Battle battle -> battles.add(battle);
-                case uz.dukeengine.dungeon.story.Shockwave wave -> shockwaves.add(wave);
                 case uz.dukeengine.dungeon.story.Gate gate -> gates.add(gate);
                 case uz.dukeengine.core.content.Laser laser -> lasers.add(laser);
                 case uz.dukeengine.dungeon.world.SaveMenu block -> saveMenu = once(block, once);
@@ -1426,10 +1419,6 @@ public final class DungeonSettings {
                     named + ": its Ritualist " + battle.ritualist() + " is no Monster");
             require(battle.ring() > 0f, named + ": its Ring is how far out the ritualists stand, above 0");
         }
-        for (var wave : shockwaves) {
-            require(wave.radius() > 0f && wave.frames() >= 1 && wave.stunFrames() >= 0,
-                    "Shockwave " + wave.name() + ": a Radius above 0, Frames of 1 or more, StunFrames of 0 or more");
-        }
         for (var gate : gates) {
             require(!gate.open().isEmpty() && !gate.map().isBlank(),
                     "Gate " + gate.name() + ": on a Map, with at least one Open zone");
@@ -1517,6 +1506,8 @@ public final class DungeonSettings {
                                 && skill.castAnim() != null && !skill.castAnim().isBlank(),
                         skill.heroTemplate() + "'s STAGGER needs the least blow (Damage), StunFrames, and the flinch"
                                 + " it plays (CastAnim)");
+                case PUSH -> require(skill.radius() > 0f && skill.distance() > 0f && skill.durationFrames() > 0,
+                        skill.heroTemplate() + "'s PUSH needs a Radius, a Distance and its DurationFrames");
                 case DODGE -> require(skill.distance() > 0f && skill.durationFrames() > 0 && skill.tickFrames() >= 0
                                 && skill.tickFrames() <= skill.durationFrames() && skill.castAnim() != null
                                 && !skill.castAnim().isBlank(),
@@ -2175,8 +2166,9 @@ public final class DungeonSettings {
     public java.util.List<Skill> skillsFor(String heroTemplate) {
         var his = new java.util.ArrayList<Skill>();
         for (var skill : bookFor(heroTemplate)) {
+            // His stagger, his dodge (Space), his horse (T) and his landing's PUSH (the story's) are no slot of the four.
             if (skill.effect() != SkillEffect.STAGGER && skill.effect() != SkillEffect.DODGE
-                    && skill.effect() != SkillEffect.MOUNT) {
+                    && skill.effect() != SkillEffect.MOUNT && skill.effect() != SkillEffect.PUSH) {
                 his.add(skill);
             }
         }

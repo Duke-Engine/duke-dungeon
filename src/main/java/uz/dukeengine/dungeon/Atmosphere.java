@@ -67,8 +67,10 @@ final class Atmosphere implements Painter {
     @Override
     public void paint(Canvas canvas) {
         var match = DialogueScreen.match();
+        // Not while an intro has the screen: the backdrop made the match shows the hour once the seat is taken and the
+        // act's opening is over (the seamless campaign).
         boolean open = match != null && match.game().getLogic() != null
-                && StagePaint.isWide(match.game().getMapRecord());
+                && StagePaint.isWide(match.game().getMapRecord()) && !match.run().inIntro();
         if (!open) {
             fall(null);
             loops(Set.of());

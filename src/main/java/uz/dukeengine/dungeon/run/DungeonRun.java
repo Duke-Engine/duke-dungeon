@@ -114,7 +114,7 @@ public final class DungeonRun {
         volatile int soulPercent;
         /** How many of the conversations said this run his machine has shown to the end (or had skipped). */
         int read;
-        /** Where his hero last stood inside the gate kept now, and the frame he was last told it is shut. */
+        /** Where his hero stood when the gate was last looked at, and the frame he was last told it is shut. */
         uz.dukeengine.core.math.Coord3D lastInside;
         int toldShutAt = Integer.MIN_VALUE / 2;
 
@@ -697,8 +697,10 @@ public final class DungeonRun {
         game.getLogic().setZones(stable::zonesAt);
         sky = null;
         holding = null;
+        streakUntil = Integer.MIN_VALUE;
         trails.clear();
         beams.clear();
+        laidBattles.clear();
         seats.forEach(seat -> seat.lastInside = null);
         var gate = gate();
         if (loading && skippedTo.isBlank() && gate != null && !gate.start().isBlank()) {
@@ -1585,7 +1587,8 @@ public final class DungeonRun {
             }
             case BATTLE -> {
                 var battle = settings.battle(what);
-                if (battle != null) {
+                if (battle != null && !laidBattles.contains(what)) {
+                    laidBattles.add(what);
                     Battles.lay(logic, battle, this::zoneNamed, seats.getFirst().player.getIndex(),
                             dungeonPlayer.getIndex(), settings, depth, this::pay);
                 }
@@ -1636,6 +1639,7 @@ public final class DungeonRun {
                     return;
                 }
                 sky = null; // let go of: the streak carries him from here
+                streakUntil = logic.getFrame() + action.frames();
                 var to = groundAt(logic, zone);
                 double bearing = Math.toRadians(action.bearing());
                 var from = new uz.dukeengine.core.math.Coord3D(to.x() + action.lean() * (float) Math.cos(bearing),
@@ -1656,12 +1660,17 @@ public final class DungeonRun {
                     }
                 }
             }
-            case SHOCKWAVE -> {
-                var wave = settings.shockwave(what);
+            case CAST -> {
+                // Through the skill system (E82): his skill of that effect, cast at its first rank where the zone is.
                 var zone = zoneNamed(action.zone());
-                if (wave != null && zone != null) {
-                    Battles.shockwave(logic, wave, groundAt(logic, zone), dungeonPlayer.getIndex(),
-                            settings.combat().stunLook());
+                for (var seat : seats) {
+                    var hero = seat.heroId == null || zone == null ? null : logic.findObject(seat.heroId);
+                    var book = hero == null ? null : hero.findModule(uz.dukeengine.rpg.skill.SkillBook.class);
+                    var skill = book == null ? null : book.getSkills().stream()
+                            .filter(each -> each.effect().name().equals(what)).findFirst().orElse(null);
+                    if (skill != null) {
+                        book.cast(skill.key(), 1, null, groundAt(logic, zone));
+                    }
                 }
             }
             case HOLD -> holding = action.zone();
@@ -1811,6 +1820,8 @@ public final class DungeonRun {
     private final List<Trail> trails = new ArrayList<>();
     /** Where SKY holds the heroes, out of sight, until a STREAK; null while it holds none. */
     private uz.dukeengine.core.math.Coord3D sky;
+    /** The last frame a STREAK carries the heroes down: the intro's, until then. */
+    private int streakUntil = Integer.MIN_VALUE;
     /** The zone a HOLD keeps still, until a RELEASE; null while nothing is held. */
     private String holding;
 
@@ -1885,57 +1896,209 @@ public final class DungeonRun {
         return gate == null ? null : gate.name();
     }
 
+    /** The gate whose land is shut now on the grid, by its name, and the grid it is shut on; null for none. */
+    private String shutFor;
+    private Object shutOn;
+
     /**
-     * Every frame: a hero outside every Open zone of the gate kept now is put back where he last stood inside it, his
-     * walk given up, and told so (its Word, once every three seconds). One carried by the story (a fall, a streak) or
-     * held in the sky is let be until he comes down. The barrier is this leash, not the path: E84 asks for path regions
-     * the game shuts, so a route never plans through closed land.
+     * Every CheckFrames: the land the gate kept now shuts (E84) -- a band two cells wide round its Open zones, shut on
+     * the path grid, so no route plans through it and nothing walks into it -- opened as the story's flags move on to
+     * another gate, or to none. A hero who walks into the band's edge (his walk stopped short of it, or pressing on and
+     * getting nowhere) is told so: the gate's Word, once every three seconds.
      */
     private void gated(DukeGame game) {
-        var gate = gate();
-        if (gate == null || sky != null) {
+        var logic = game.getLogic();
+        if (logic.getFrame() % settings.story().dialogue().checkFrames() != 0) {
             return;
         }
-        var logic = game.getLogic();
+        var grid = logic.getPathGrid();
+        var gate = gate();
+        var name = gate == null ? null : gate.name();
+        if (grid != null && (shutOn != grid || !java.util.Objects.equals(name, shutFor))) {
+            if (shutOn == grid && shutFor != null) {
+                grid.open(GATE_REGION);
+            }
+            if (gate != null) {
+                grid.shut(GATE_REGION, band(grid, gate));
+            }
+            shutFor = name;
+            shutOn = grid;
+        }
+        if (gate == null || gate.word().isBlank()) {
+            return;
+        }
         float cell = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
+        int frame = logic.getFrame();
         for (var seat : seats) {
             var hero = seat.heroId == null ? null : logic.findObject(seat.heroId);
-            if (hero == null || hero.isEffectivelyDead()
-                    || hero.findModule(uz.dukeengine.core.module.ScriptedMove.class) != null
-                    && !hero.findModule(uz.dukeengine.core.module.ScriptedMove.class).isDone()) {
+            var legs = hero == null ? null : hero.getLocomotor();
+            if (legs == null || hero.isEffectivelyDead()) {
                 continue;
             }
             var at = hero.getPosition();
-            boolean inside = false;
-            for (var open : gate.open()) {
-                var zone = zoneNamed(open);
-                inside |= zone != null && zone.holds(at.x(), at.y(), cell);
-            }
-            if (inside) {
-                seat.lastInside = at;
-                continue;
-            }
-            var back = seat.lastInside;
-            if (back == null) {
-                var start = zoneNamed(gate.start());
-                if (start == null) {
-                    continue; // nowhere inside known yet, and nowhere to start: let be
-                }
-                back = Battles.middleOf(logic, start);
-            }
-            uz.dukeengine.combat.module.Errand.giveUpAll(hero);
-            var legs = hero.getLocomotor();
-            if (legs != null && legs.isMoving()) {
-                legs.stop();
-            }
-            hero.setPosition(back);
-            seat.lastInside = back;
-            int frame = logic.getFrame();
-            if (!gate.word().isBlank() && frame - seat.toldShutAt >= 3 * uz.dukeengine.core.GameConstants.LOGICFRAMES_PER_SECOND) {
+            var was = seat.lastInside;
+            seat.lastInside = at;
+            boolean pressing = legs.stoppedShort() || legs.isMoving() && was != null
+                    && Math.hypot(at.x() - was.x(), at.y() - was.y()) < 1f;
+            if (pressing && nearTheEdge(gate, at.x(), at.y(), 2.5f * cell)
+                    && frame - seat.toldShutAt >= 3 * uz.dukeengine.core.GameConstants.LOGICFRAMES_PER_SECOND) {
                 seat.toldShutAt = frame;
                 seat.progress.getLoot().say(gate.word(), frame, settings.lootDrops().noteFrames());
             }
         }
+    }
+
+    /** The region of the grid a gate shuts: one name, so the next gate's replaces it. */
+    static final String GATE_REGION = "gate";
+
+    /** Whether ({@code x}, {@code y}) lies in one of the gate's Open zones. */
+    private boolean open(uz.dukeengine.dungeon.story.Gate gate, float x, float y) {
+        float cell = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
+        for (var name : gate.open()) {
+            var zone = zoneNamed(name);
+            if (zone != null && zone.holds(x, y, cell)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Whether shut land lies within {@code reach} of ({@code x}, {@code y}), which is open. */
+    private boolean nearTheEdge(uz.dukeengine.dungeon.story.Gate gate, float x, float y, float reach) {
+        for (int i = 0; i < 8; i++) {
+            double a = Math.PI * i / 4;
+            if (!open(gate, x + reach * (float) Math.cos(a), y + reach * (float) Math.sin(a))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * The cells of {@code grid} a gate shuts: every one outside its Open zones with open land within two map cells --
+     * a band round the open land, which no route crosses. Only the band: the closed world beyond it stays as it is.
+     */
+    private List<int[]> band(uz.dukeengine.core.pathfind.PathGrid grid, uz.dukeengine.dungeon.story.Gate gate) {
+        float cell = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
+        float g = grid.getCellSize();
+        float width = 2f * cell;
+        float minX = Float.MAX_VALUE;
+        float minY = Float.MAX_VALUE;
+        float maxX = -Float.MAX_VALUE;
+        float maxY = -Float.MAX_VALUE;
+        for (var name : gate.open()) {
+            var zone = zoneNamed(name);
+            if (zone == null) {
+                continue;
+            }
+            float r = zone.radius() > 0 ? zone.radius() * cell : 0f;
+            float x0 = zone.radius() > 0 ? zone.middleX(cell) - r : zone.x() * cell;
+            float y0 = zone.radius() > 0 ? zone.middleY(cell) - r : zone.y() * cell;
+            float x1 = zone.radius() > 0 ? zone.middleX(cell) + r : (zone.x() + zone.width()) * cell;
+            float y1 = zone.radius() > 0 ? zone.middleY(cell) + r : (zone.y() + zone.height()) * cell;
+            minX = Math.min(minX, x0);
+            minY = Math.min(minY, y0);
+            maxX = Math.max(maxX, x1);
+            maxY = Math.max(maxY, y1);
+        }
+        var cells = new ArrayList<int[]>();
+        if (minX > maxX) {
+            return cells;
+        }
+        int gx0 = Math.max(0, (int) Math.floor((minX - width) / g));
+        int gy0 = Math.max(0, (int) Math.floor((minY - width) / g));
+        int gx1 = Math.min(grid.getWidth() - 1, (int) Math.ceil((maxX + width) / g));
+        int gy1 = Math.min(grid.getHeight() - 1, (int) Math.ceil((maxY + width) / g));
+        for (int gy = gy0; gy <= gy1; gy++) {
+            for (int gx = gx0; gx <= gx1; gx++) {
+                float x = (gx + 0.5f) * g;
+                float y = (gy + 0.5f) * g;
+                if (!open(gate, x, y) && nearOpen(gate, x, y, width)) {
+                    cells.add(new int[] {gx, gy});
+                }
+            }
+        }
+        return cells;
+    }
+
+    /** Whether open land lies within {@code reach} of a point that is shut. */
+    private boolean nearOpen(uz.dukeengine.dungeon.story.Gate gate, float x, float y, float reach) {
+        for (float d = reach / 2f; d <= reach; d += reach / 2f) {
+            for (int i = 0; i < 8; i++) {
+                double a = Math.PI * i / 4;
+                if (open(gate, x + d * (float) Math.cos(a), y + d * (float) Math.sin(a))) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /** Whether the gate kept now is shut on the grid: for a test. */
+    public boolean gateShut() {
+        return lastLogic != null && lastLogic.getPathGrid() != null && lastLogic.getPathGrid().isShut(GATE_REGION);
+    }
+
+    // ---- the menu's backdrop made the played match (E83): see docs/plan/2026-10-15-seamless-campaign.md ----
+
+    /** The Battle blocks laid on this floor, by name: laid once, whoever laid them. */
+    private final List<String> laidBattles = new ArrayList<>();
+
+    /** The battle {@code name} laid now, as the backdrop lays it -- and the story's BATTLE then finds it laid. */
+    public Battles.Laid layBattle(uz.dukeengine.core.GameLogic logic, String name) {
+        var battle = settings.battle(name);
+        if (battle == null || laidBattles.contains(name)) {
+            return new Battles.Laid(List.of(), List.of(), List.of());
+        }
+        laidBattles.add(name);
+        return Battles.lay(logic, battle, this::zoneNamed, seats.getFirst().player.getIndex(),
+                dungeonPlayer.getIndex(), settings, depth);
+    }
+
+    /** The first seat's player: the one a backdrop adopted as the match is played by. */
+    public GamePlayer heroPlayer() {
+        return seats.getFirst().player;
+    }
+
+    /**
+     * The backdrop running behind the menu is now the played match (E83): no floor laid again, no load -- its frames
+     * go on. The act's first joint begins on it: its flags (Act1: the act's story on the world), its quests, and the
+     * map's start heard again, so the act's own MAP_START triggers run on the world as it stands -- the battle already
+     * laid, the hero held in the sky, the intro. Written as the run's first checkpoint. On the simulation's thread.
+     */
+    public void adopt(DukeGame game, uz.dukeengine.dungeon.story.Campaign campaign) {
+        var joint = campaign.joints().getFirst();
+        lastLogic = game.getLogic();
+        awaitingAdoption = false;
+        introNow = true; // its MAP_START holds him in the sky from the next frame: no light, no mouse until it is over
+        joint.flags().forEach(script::flag);
+        joint.quests().forEach(quests::start);
+        script.mapStarted(floors.stageName());
+        marks();
+        var save = save();
+        if (save != null) {
+            lastCheckpoint = save;
+            checkpoint.accept(save);
+        }
+    }
+
+    /** Whether a story's intro has the screen: told by the simulation each frame, read by the window. */
+    private volatile boolean introNow;
+    /** Set as "New game" asks for the backdrop (E83), until the adopted match begins its act: the menu is going. */
+    private volatile boolean awaitingAdoption;
+
+    /** The backdrop is about to be made this match (E83): until it begins, the hour's light and the mouse wait. */
+    public void awaitAdoption() {
+        awaitingAdoption = true;
+    }
+
+    /**
+     * Whether an intro has the screen -- a cutscene, the heroes held in the sky, the battle held, or the backdrop about
+     * to become the match: the window keeps the hour's light, the weather and the captured mouse off until it is over,
+     * and the player's keys held. From any thread.
+     */
+    public boolean inIntro() {
+        return inCutscene || introNow || awaitingAdoption;
     }
 
     /** Whether the story holds the battle now: every fighter in its zone kept still. */
@@ -1951,6 +2114,7 @@ public final class DungeonRun {
     private void intro(DukeGame game) {
         var logic = game.getLogic();
         int frame = logic.getFrame();
+        introNow = sky != null || holding != null || frame <= streakUntil;
         if (sky != null) {
             for (var seat : seats) {
                 var hero = seat.heroId == null ? null : logic.findObject(seat.heroId);
@@ -2041,7 +2205,9 @@ public final class DungeonRun {
         if (shotLeft < 0) {
             var zone = shot.zone().isBlank() ? null : zoneNamed(shot.zone());
             var camera = game.camera();
-            if (zone != null) {
+            if (!shot.path().isEmpty()) {
+                camera.along(path(camera, shot.path()), shot.frames(), shot.ease()); // one smooth move (E85)
+            } else if (zone != null) {
                 float cell = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
                 camera.moveTo(zone.middleX(cell), zone.middleY(cell), shot.frames(), shot.ease());
             }
@@ -2067,6 +2233,31 @@ public final class DungeonRun {
                 seen(game);
             }
         }
+    }
+
+    /** A shot's keys as the camera flies them: a blank zone where it stands now, a key's left-out figures its last's. */
+    private List<uz.dukeengine.game.GameCamera.Key> path(uz.dukeengine.game.GameCamera camera,
+            List<uz.dukeengine.dungeon.story.Cutscene.Key> keys) {
+        var now = camera.current();
+        float cell = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
+        float x = now.x();
+        float y = now.y();
+        float angle = now.angle();
+        float pitch = now.pitch();
+        float zoom = now.zoom();
+        var out = new ArrayList<uz.dukeengine.game.GameCamera.Key>();
+        for (var key : keys) {
+            var zone = key.zone().isBlank() ? null : zoneNamed(key.zone());
+            if (zone != null) {
+                x = zone.middleX(cell);
+                y = zone.middleY(cell);
+            }
+            angle = Float.isNaN(key.turn()) ? angle : (float) Math.toRadians(key.turn());
+            pitch = Float.isNaN(key.pitch()) ? pitch : (float) Math.toRadians(key.pitch());
+            zoom = Float.isNaN(key.zoom()) ? zoom : key.zoom();
+            out.add(new uz.dukeengine.game.GameCamera.Key(x, y, angle, pitch, zoom));
+        }
+        return out;
     }
 
     /** The cutscene over, or skipped: the camera given back, over the first hero standing. */
