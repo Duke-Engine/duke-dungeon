@@ -1143,12 +1143,21 @@ public final class Main {
             // Modern: W A S D are his feet, not the camera's (the arrows still pan), and F is a skill's. The orders'
             // letters go: the left button attacks, letting go of WASD stops (docs/plan/2026-10-15-modern-controls.md).
             keys.controls(modernKeyMap());
+            // His feet: the held W A S D as a direction the camera's way, sent as an order on the lock-step stream
+            // only when it changes (E74, E75) -- the simulation never reads a key.
+            keys.onDirection(uz.dukeengine.client3d.DirectionKeys.WASD, Main::walk);
         }
         // Which single creature he has picked out. The target frame describes it, and
         // only the simulation can say what it is worth -- see Watching.
         keys.onWatch((game, id) -> game.postCommand(PartyOrders.of(new uz.dukeengine.dungeon.run.Watching(
                 game.getLocalPlayerIndex(), id < 0 ? null : new ObjectId(id)))));
         return keys;
+    }
+
+    /** His hero walked along {@code angle} (256ths of a turn, or MoveAlong.NONE to stop): the held keys' order. */
+    static void walk(uz.dukeengine.game.DukeGame game, int angle) {
+        game.postCommand(new uz.dukeengine.combat.message.CombatOrder.MoveAlong(game.getLocalPlayerIndex(),
+                selected(game), angle));
     }
 
     /** The client's own keys in the modern scheme: its standard ones with W A S D taken off panning. */
@@ -1492,7 +1501,10 @@ public final class Main {
         // all of it in the file — see Fog in data/world/scene.duke.
         // Shoving the camera with the cursor, on top of the keys — see
         // Camera in data/world/world.duke.
-        // Not in the modern scheme, whose camera is to follow him (E77).
+        // Modern: the camera follows his hero, the arrows look away and it eases back (E77); classic: the free camera.
+        visuals.cameraFollow(settings.scheme() == uz.dukeengine.dungeon.world.Controls.Scheme.MODERN
+                ? uz.dukeengine.client3d.CameraFollow.of(null) : uz.dukeengine.client3d.CameraFollow.NONE);
+        // Not in the modern scheme, whose camera follows him.
         visuals.edgeScroll(settings.scheme() == uz.dukeengine.dungeon.world.Controls.Scheme.MODERN ? EdgeScroll.NONE
                 : new EdgeScroll(settings.camera().edgeMargin(), settings.camera().edgeSpeedPercent()));
 

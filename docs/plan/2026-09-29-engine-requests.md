@@ -82,10 +82,10 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E71 | a flinch that never cuts short a blow or a cast: the hurt clip played only when the unit is not mid-attack, mid-gesture or moving, at most once per a look-set interval, optionally only on a major/critical blow | landed, 8c9b234d on `e71-flinches`; the heroes name `Hurt` again, `Flinch` in world/feel.duke (1.0s, `HeavyOnly`), `DungeonMonsterArtTest.aHeroFlinchesOnlyAtAHeavyBlowAndNotEveryBlow`; monsters still name none |
 | E72 | a hero's stagger in the skill system: a passive `STAGGER` (StunFrames on a heavy or critical blow, his hurt clip busy for those frames, DurationFrames of immunity after), and a busy clip that starts cutting an attack clip already playing | landed, 80cbdaf7 on `e72-stagger`; each hero carries a `STAGGER` skill (Key X, Damage = his HeavyBlow MajorAt 45/35/35, StunFrames 11, DurationFrames 36, CastAnim = his hurt clip), held out of his four (`skillsFor`), his ranks and his bar (`HeroStatus.withoutHisStagger`); `run.Staggering` is gone; `StaggerTest` |
 | E73 | a blow inside a stagger keeps its busy clip: `BodyModule.hurt` ends a busy clip on every blow, and the book sets it only as the stagger begins, so in a crowd the flinch stops on the next blow while the stun goes on | landed, 62e1c7c0 on `e73-stagger-holds`; a blow inside a stagger sets the busy clip again for the stun's frames left, and a DISABLED or HELD unit is drawn standing and keeps its order; `StaggerTest.hisHurtClipIsBusyForExactlyTheStaggersFrames` strikes him inside it again; OnBar not done, so `HeroStatus.withoutHisStagger` stays |
-| E74 | a directional move order: `MoveAlong(angle)` walks a unit along a direction every frame until told otherwise, sliding along walls, deterministic, sent only on change | waiting (modern controls, `2026-10-15-modern-controls.md`) |
-| E75 | the client turns held keys (WASD, later a stick) into a direction relative to the camera each frame and gives it to the game on change | waiting (modern controls) |
+| E74 | a directional move order: `MoveAlong(angle)` walks a unit along a direction every frame until told otherwise, sliding along walls, deterministic, sent only on change | landed, c5f942f2 on `e74-77-wasd`; the game's modern scheme sends it from E75 (`Main.walk`) |
+| E75 | the client turns held keys (WASD, later a stick) into a direction relative to the camera each frame and gives it to the game on change | landed, c5f942f2 on `e74-77-wasd`: `Hotkeys.onDirection`, `CanvasInput.holdsKeys` (the launch screen, the player screens, a conversation or cutscene hold them) |
 | E76 | an attack toward a point: a melee swing in an arc with no target, a ranged shot at a spot, and holding it to repeat | waiting (modern controls) |
-| E77 | the camera follows a unit: centred with a look-ahead, eased, no edge scroll, a look away with the arrows that eases back | waiting (modern controls) |
+| E77 | the camera follows a unit: centred with a look-ahead, eased, no edge scroll, a look away with the arrows that eases back | landed, c5f942f2 on `e74-77-wasd`: `Visuals.cameraFollow(CameraFollow.of(null))` in the modern scheme, `NONE` in classic |
 | E78 | the modern mouse: LMB attacks (lock on an enemy, swing at ground, hold to repeat), RMB the context orders, quick-cast; classic untouched | waiting (modern controls) |
 | E79 | a game's own rows on Settings (the scheme), its keys rebindable on the Keys page, and the bar showing the letter pressed, not the skill's name | waiting (modern controls) |
 | E80 | a `DODGE` skill shape: a quick dash over frames with i-frames, aimed by a direction, on a non-letter key (Space) | waiting (modern controls) |
@@ -1523,6 +1523,10 @@ Done when a test gives a hero `MoveAlong(64)` (+Z) for 30 frames and he has walk
 frame it is applied, a wall at 45 degrees slides him along it, two runs with the same orders end bit-identical, and
 the codec round-trips it.
 
+**E74 landed** as c5f942f2 on `e74-77-wasd`: `CombatOrder.MoveAlong(player, units, angle)` (256ths, 0 = +x, `NONE` = -1
+stops), sliding along walls; a DISABLED, HELD or busy unit keeps it; it drops errands and holds fire as a MoveTo does.
+The game's modern scheme posts it for its hero (`Main.walk`); `ModernControlsTest` walks him, stops him and replays it.
+
 ## E75 — Held keys to a direction, on change (2026-10-15, small; modern controls)
 
 The orders of E74 must come from held keys read by the client, never by the simulation. Hotkeys today are presses
@@ -1539,6 +1543,11 @@ Window focus lost: `NONE` once. Designed so a stick later calls the same `change
 Done when a test with a fake key state and a camera at yaw 90 degrees sees W give the angle for the camera's forward,
 W+D its diagonal, holding W for 60 frames call `changed` once, letting go call it with `NONE`, and a turn of the
 camera with W held call it again.
+
+**E75 landed** as c5f942f2: `Hotkeys.onDirection(DirectionKeys.WASD, changed)`, NONE while not playing, under the menu,
+under a game screen whose `CanvasInput.holdsKeys()` or out of focus. The game holds the keys under its `LaunchScreen`,
+its `PlayerScreens` (one open) and its `DialogueScreen` (a conversation or a cutscene); the bag is on the screen the
+whole time he plays (no window that opens), and the trade window shuts as he walks off, so neither holds them.
 
 ## E76 — An attack toward a point, and holding it (2026-10-15, medium; modern controls)
 
@@ -1579,6 +1588,9 @@ Cutscene cameras (E41) win while they run and give it back.
 
 Done when a test steps a followed unit 30 units over 30 frames and the camera's target ends within 1 of its
 position plus the look-ahead, and `NONE` leaves the camera where it is.
+
+**E77 landed** as c5f942f2: `Visuals.cameraFollow` / `Duke3D.cameraFollow`, `CameraFollow.of(template)` at 8, 0.15 s,
+0.4 s and 1.0 s; a game-directed camera still wins. The game follows its hero in the modern scheme, edge scroll off.
 
 ## E78 — The modern mouse (2026-10-15, medium; modern controls)
 
