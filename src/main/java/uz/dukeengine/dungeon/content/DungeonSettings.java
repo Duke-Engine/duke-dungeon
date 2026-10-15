@@ -103,6 +103,7 @@ public final class DungeonSettings {
     private uz.dukeengine.dungeon.world.Party party = uz.dukeengine.dungeon.world.Party.DEFAULTS;
     private uz.dukeengine.dungeon.world.SaveMenu saveMenu = uz.dukeengine.dungeon.world.SaveMenu.DEFAULTS;
     private uz.dukeengine.dungeon.world.MainMenu mainMenu = uz.dukeengine.dungeon.world.MainMenu.DEFAULTS;
+    private uz.dukeengine.dungeon.world.Splash splash = uz.dukeengine.dungeon.world.Splash.DEFAULTS;
     private uz.dukeengine.dungeon.world.Screens screens = uz.dukeengine.dungeon.world.Screens.DEFAULTS;
     private uz.dukeengine.dungeon.world.Controls controls = uz.dukeengine.dungeon.world.Controls.DEFAULTS;
     /** The scheme played: the file's until the launch says the player's own (see useScheme). */
@@ -190,6 +191,11 @@ public final class DungeonSettings {
     /** The front menu's rows, the client's menu words, and the live scene behind them. */
     public uz.dukeengine.dungeon.world.MainMenu mainMenu() {
         return mainMenu;
+    }
+
+    /** What the window shows before the front menu and while a map loads. */
+    public uz.dukeengine.dungeon.world.Splash splash() {
+        return splash;
     }
 
     /** The character sheet, the quest log and the world map: their keys and words. */
@@ -611,6 +617,7 @@ public final class DungeonSettings {
                 case uz.dukeengine.dungeon.story.Title title -> titles.add(title);
                 case uz.dukeengine.dungeon.world.SaveMenu block -> saveMenu = once(block, once);
                 case uz.dukeengine.dungeon.world.MainMenu block -> mainMenu = once(block, once);
+                case uz.dukeengine.dungeon.world.Splash block -> splash = once(block, once);
                 case uz.dukeengine.dungeon.world.Screens block -> screens = once(block, once);
                 case uz.dukeengine.dungeon.world.Controls block -> controls = once(block, once);
                 case uz.dukeengine.dungeon.world.Travel block -> travel = once(block, once);

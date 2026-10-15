@@ -116,7 +116,7 @@ public final class Content {
             named(uz.dukeengine.dungeon.story.Speaker.class), named(uz.dukeengine.dungeon.story.Conversation.class),
             named(uz.dukeengine.dungeon.story.Npc.class), named(uz.dukeengine.dungeon.story.Quest.class),
             named(uz.dukeengine.dungeon.story.Dialogue.class), named(uz.dukeengine.dungeon.world.SaveMenu.class),
-            named(uz.dukeengine.dungeon.world.MainMenu.class), named(uz.dukeengine.dungeon.world.Screens.class),
+            named(uz.dukeengine.dungeon.world.MainMenu.class), named(uz.dukeengine.dungeon.world.Splash.class), named(uz.dukeengine.dungeon.world.Screens.class),
             named(uz.dukeengine.dungeon.world.Controls.class),
             named(uz.dukeengine.dungeon.world.Travel.class),
             named(uz.dukeengine.dungeon.story.Trigger.class), named(uz.dukeengine.dungeon.story.Cutscene.class),

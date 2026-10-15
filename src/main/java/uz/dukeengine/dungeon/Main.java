@@ -545,7 +545,13 @@ public final class Main {
         var screens = new PlayerScreens(talk, settings);
         // And over them all, what it sounds like from where he stands -- the music for the place, the loop under it, the
         // pages and coins of his own screens. See Soundscape.
-        duke.canvas(new Soundscape(screens, duke, settings)).input(screens);
+        // And over everything, the splash and the load screen: the menu comes up only once the scene behind it is laid
+        // and running, and every match loads under the same bar. The scene is held back through the splash so the
+        // splash plays smooth and the bar counts the whole of it. See LaunchScreen.
+        var launch = new LaunchScreen(new Soundscape(screens, duke, settings), screens, settings.splash(),
+                settings.mainMenu(), () -> duke.holdBackdrop(false), duke::sound);
+        duke.canvas(launch).input(launch).onLoading(launch::loaded).onBackdropLoading(launch::loaded);
+        duke.holdBackdrop(true);
         screensOn(keys, screens, settings);
         duke.worldPicture(settings.screens().mostTexels(), screens.map()::picture);
         // The run saves itself as each floor is entered, as the game is left by any door, and into a slot from the

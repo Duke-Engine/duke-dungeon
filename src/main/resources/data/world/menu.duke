@@ -96,3 +96,33 @@ MainMenu
   ; Cells left of the fight it looks at, so the fight stands to the right of the menu at the left.
   SceneShift = 7
 End
+
+; What the window shows before the front menu, and while any map loads (the owner, 2026-10-15): the maker's credit,
+; then the game's name (MainMenu's Title, and its Subtitle under it) coming up gold out of the dark, then a load
+; screen with a bar and a hint -- the menu fades in only once the scene behind it is laid and running. A key or a
+; click skips the splash after SkipAfter. Times in seconds.
+Splash
+  EngineWord = "Duke Engine"
+  EngineSeconds = 1.0
+  TitleSeconds = 3.0
+  RiseSeconds = 1.2
+  SkipAfter = 0.5
+  ; Kenney's jingle (CC0), as the name lands; a Sound block in data/sounds/ui.duke.
+  Sound = splash
+  TitleFont = fonts/Cinzel-Bold.ttf
+  TitleColour = 0xE8C37A
+  GlowColour = 0xE8A33D
+  TextColour = 0xD9CFBA
+  LoadingWord = "Yuklanmoqda…"
+  Tips = [
+    "Taom jonni tiklaydi: Z tugmasi bilan yeng.",
+    "G tugmasi o'tin bo'lsa gulxan yoqadi; gulxanda ovqat pishiriladi.",
+    "M tugmasi xaritani ochadi.",
+    "L tugmasi topshiriqlar daftarini ochadi.",
+    "C tugmasi qahramon varag'ini ochadi.",
+    "Yiqilgan dushmandan qolgan narsalarni yig'ib oling.",
+  ]
+  TipSeconds = 4.0
+  BarSpeed = 120
+  FadeSeconds = 0.6
+End

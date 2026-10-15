@@ -50,6 +50,13 @@ class PlayerScreensMockRenderTest {
 
         private static java.awt.Font font(Canvas.Font font, String text) {
             var awt = new java.awt.Font(font.family(), font.bold() ? java.awt.Font.BOLD : java.awt.Font.PLAIN, font.pixelHeight());
+            if (font.family().endsWith(".ttf")) { // a font file from the resource root, as the window takes one
+                try (var in = PlayerScreensMockRenderTest.class.getClassLoader().getResourceAsStream(font.family())) {
+                    awt = java.awt.Font.createFont(java.awt.Font.TRUETYPE_FONT, in).deriveFont((float) font.pixelHeight());
+                } catch (Exception e) {
+                    // the machine's default face, as before
+                }
+            }
             if (awt.canDisplayUpTo(text) >= 0 && font.wideFamily() != null) {
                 awt = new java.awt.Font(font.wideFamily(), awt.getStyle(), font.pixelHeight());
             }
