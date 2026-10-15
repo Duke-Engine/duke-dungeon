@@ -128,7 +128,9 @@ class DungeonMonsterArtTest {
      */
     @Test
     void everyoneWhoFightsByClipsOfTheirOwnCarriesThemAll() {
-        var own = looks().stream().filter(look -> look.animations() == null && look.walk() != null).toList();
+        var own = SETTINGS.monsters().stream().filter(kind -> !SETTINGS.mount().isMount(kind.name()))
+                .map(SETTINGS::lookOf).filter(look -> look.hasModel() && look.animations() == null
+                        && look.walk() != null).toList();
         assertFalse(own.isEmpty(), "nobody walks by clips of their own");
         for (var look : own) {
             var composer = control(assets().loadModel(look.model()), AnimComposer.class);

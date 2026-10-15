@@ -112,7 +112,6 @@ Monster
     Walk = Gallop
     ; A gallop's stride, in world units: the clip paced to its speed.
     WalkStride = 28
-    Hurt = Hurt
     Death = Death
   End
 End
@@ -137,7 +136,6 @@ Monster
     Walk = Gallop
     ; A gallop's stride, in world units: the clip paced to its speed.
     WalkStride = 28
-    Hurt = Hurt
     Death = Death
   End
 End
@@ -162,7 +160,6 @@ Monster
     Walk = Gallop
     ; A gallop's stride, in world units: the clip paced to its speed.
     WalkStride = 28
-    Hurt = Hurt
     Death = Death
   End
 End

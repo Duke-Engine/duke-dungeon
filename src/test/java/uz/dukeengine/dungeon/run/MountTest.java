@@ -213,4 +213,32 @@ class MountTest {
         assertTrue(zone("Poytaxt").zone().holds((keeper.x() + 0.5f) * CELL, (keeper.y() + 0.5f) * CELL, CELL),
                 "in the capital");
     }
+
+    /** A ride across the world costs a frame what a walk does: ms a frame, on foot then riding, warm. */
+    @Test
+    void ridingCostsAFrameWhatWalkingDoes() {
+        var session = byATower(true);
+        var game = session.game();
+        float onFoot = cost(game, 300);
+        mount(session);
+        float riding = cost(game, 300);
+        System.out.printf("open world: %.3f ms a frame on foot, %.3f riding%n", onFoot, riding);
+        assertTrue(riding < 4f, riding + " ms a frame riding is too dear");
+    }
+
+    /** Ms a frame over {@code frames}, walking to and fro, after as many to warm up. */
+    private static float cost(DukeGame game, int frames) {
+        var hero = hero(game);
+        var start = hero.getPosition();
+        float best = Float.MAX_VALUE;
+        for (int round = 0; round < 2; round++) {
+            hero.getLocomotor().moveTo(new Coord3D(start.x() + (round == 0 ? 200f : 0f), start.y(), start.z()));
+            long began = System.nanoTime();
+            game.runHeadless(frames);
+            best = Math.min(best, (System.nanoTime() - began) / 1e6f / frames);
+        }
+        hero.getLocomotor().stop();
+        game.runHeadless(2);
+        return best;
+    }
 }

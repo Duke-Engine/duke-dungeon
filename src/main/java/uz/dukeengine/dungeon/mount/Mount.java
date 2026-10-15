@@ -62,6 +62,12 @@ public record Mount(String whistle, String horse, List<String> looks, int speedP
         return null;
     }
 
+    /** Whether {@code template} is riding's own -- the horse or a riding look -- and no creature that fights. */
+    public boolean isMount(String template) {
+        return template.equals(horse) || looks.stream().anyMatch(line -> line.split("=").length == 2
+                && line.split("=")[1].strip().equals(template));
+    }
+
     /** His riding speed: {@code walking} and SpeedPercent of it. */
     public float riding(float walking) {
         return walking * (100 + speedPercent) / 100f;
