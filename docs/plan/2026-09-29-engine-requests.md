@@ -90,6 +90,7 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E79 | a game's own rows on Settings (the scheme), its keys rebindable on the Keys page, and the bar showing the letter pressed, not the skill's name | waiting (modern controls) |
 | E80 | a `DODGE` skill shape: a quick dash over frames with i-frames, aimed by a direction, on a non-letter key (Space) | waiting (modern controls) |
 | E81 | traversal links in the path graph (jump, vault, climb, drop) a route can use | after WASD (E74-E80) |
+| E82 | the open world's hour while it is drawn: a sun and ambient changed at runtime, the haze's colour, lights stronger at night, a tint under the GUI, rain with a colour and a streak | waiting (day and night; the game washes its canvas meanwhile) |
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
 game builds against the local engine. E12–E15 reached it together at 668045f0 (their pull requests merged as
@@ -1665,3 +1666,39 @@ moved by `ScriptedMove` with `busy(clip, frames)`, and walks on from B; the AI m
 `low` links are crossed by an E80 dodge whose line crosses them. Done when a test lays a gap no walk can cross with a
 link over it, a `MoveTo` to the far side arrives through it in its frames, and a link one-way from A is never taken
 from B.
+
+
+## E82 — The open world's hour while it is drawn (2026-10-15, medium; day and night)
+
+The game now keeps a day: the run's clock (frames of play, saved) read round a 20-minute day, and the ground's weather
+drawn from the seed every three minutes (`data/world/daynight.duke`, `world/DayNight`, `Atmosphere`). Only the
+open world (a wide map) is drawn by it. What the client lets a game change while a world is drawn is not enough to
+draw it, so today the hour is a colour the game's canvas lays over the world above the bottom panel, the fires' halos
+are pictures added over the dark at `Canvas.screenOf`, and the rain is the client's own `Duke3D.weather(WeatherLook)`, already there (the reference's snow and rain).
+`Sunlight` is adopted only as a world is built (`DukeRtsApp.adoptTheSun`), the haze fades to the fog map's tint, and a
+LIGHT layer's power is fixed. Asked, each drawing only, nothing in the simulation:
+
+1. **A sun changed while the world is drawn.** `Duke3D.sunlight(Sunlight light, float seconds)`: the scene's
+   DirectionalLight and AmbientLight, the shadows' direction, and every lit material that reads the sun (the painted
+   ground, the tiles, the units) eased to it over `seconds` -- a `MatParamOverride` on the root node for the ground's
+   sun parameters would do it in one place. The game calls it a few times a second with the hour's sun (low and
+   orange at dawn and dusk, a cold low "moon" at night).
+2. **The haze and the void in a colour the game says.** `Duke3D.hazeColour(int rgb, float seconds)`: the colour the
+   wide world's edge fades into and the viewport's background behind it, today the Fog block's `Tint` -- dawn's pink,
+   noon's pale blue, night's dark blue. (`followTheLookUnderTheCamera` already recolours the fog map and the
+   background; this is the same call with the game's colour.)
+3. **Lights stronger at night.** `Duke3D.lightScale(float times)`: a multiplier on every LIGHT layer's power and
+   radius (the campfires, the fountain, the keep's lights), so a fire lights more of the ground in the dark; within the
+   E39 `effectBudget`.
+4. **A world-only tint.** `Duke3D.worldTint(int argb)`: a full-window colour laid over the 3D scene *before* the GUI
+   (a filter on the main viewport), so the panel, the minimap, the bars and the hit numbers are not washed with it.
+   Today the game's canvas is over everything, so it lays the tint above the panel only and the unit bars dim with
+   the world. With (1) and (2) this is only for fog banks and the storm's flash.
+5. **Rain that reads as rain.** `WeatherLook` with a `colour` (ARGB the flake's picture is multiplied by) and a
+   `stretch` (a streak's length along its fall, in its widths) so rain is a pale blue line and not a white square;
+   and optionally a ground `wetness` share that darkens the painted ground and raises its specular while it rains.
+
+Done when a test sets a sun at runtime and the DirectionalLight, AmbientLight and the ground material's sun parameter
+reach it over its seconds; `hazeColour` changes the viewport background; `lightScale(2)` doubles a lit layer's
+power; `worldTint` draws under the GUI node; and a weather with a colour hands it to the flakes' material. The game
+then replaces its canvas wash with (1), (2) and (3) and keeps `Atmosphere`'s weather and clock.

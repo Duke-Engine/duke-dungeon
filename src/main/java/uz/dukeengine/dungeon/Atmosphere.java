@@ -46,9 +46,12 @@ final class Atmosphere implements Painter {
     private long lastThunder = -1;
     private long lastNanos;
     private char biome = '*';
+    /** The {@code --weather=Name} test arg's weather, drawn whatever the sky says; null for the sky's. */
+    private final DayNight.Weather forced;
 
-    Atmosphere(Painter under, Duke3D duke, DungeonSettings settings) {
+    Atmosphere(Painter under, Duke3D duke, DungeonSettings settings, String forced) {
         this.under = under;
+        this.forced = forced == null ? null : settings.dayNight().look(forced);
         this.duke = duke;
         this.settings = settings;
         this.day = settings.dayNight();
@@ -80,7 +83,7 @@ final class Atmosphere implements Painter {
         if (hero != null && match.game().getMapRecord() instanceof StagePaint paint) {
             biome = biomeAt(paint.rows(), hero.x(), hero.y(), uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE);
         }
-        var weather = day.weatherAt(run.seed(), clock, biome);
+        var weather = forced != null ? forced : day.weatherAt(run.seed(), clock, biome);
         fall(weather);
         float night = day.nightShare(hour);
         var wanted = new HashSet<String>();

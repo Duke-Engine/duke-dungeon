@@ -495,6 +495,13 @@ public final class DungeonRun {
         return clock.get();
     }
 
+    /** The {@code --hour=H} test arg: the run's clock set to that hour of its first day. */
+    public void startAtHour(float hour) {
+        var day = settings.dayNight();
+        clock.set(Math.round(Math.floorMod(Math.round((hour - day.startHour()) * 1000f), 24000) / 24000f
+                * day.cycleFrames()));
+    }
+
     /** The seed of the floors he is on: what the weather is drawn from. */
     public long seed() {
         return floors.seed();
