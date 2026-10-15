@@ -1,0 +1,25 @@
+; ---------------------------------------------------------------------------
+; How the hero is played: the modern way (WASD walks him, the mouse aims, the left
+; button attacks, the right one works) or the classic Dota/WC3 way (the mouse does
+; everything) -- see docs/plan/2026-10-15-modern-controls.md.
+;
+; A skill keeps its own Key (Q W E R in its hero's file) as its name everywhere:
+; the cast, his ranks, the save, an item's SKILL_RANK:E. Only the letter pressed
+; changes, since W is a step forward in the modern scheme.
+; ---------------------------------------------------------------------------
+Controls
+  ; CLASSIC until the engine can walk him on WASD (E74-E80); then MODERN, the
+  ; owner's choice for a new player (2026-10-15). A player's own choice wins.
+  Scheme = CLASSIC
+
+  SchemeWord = Boshqaruv
+  ModernWord = "Zamonaviy (WASD)"
+  ClassicWord = "Klassik (sichqoncha)"
+
+  ; Slot = the letter that presses it, modern. Q stays; the knight's shield
+  ; charge moves to E, his dragon's blood (a passive, never pressed) to R and
+  ; his pull to F -- and every hero's four the same way. None of W A S D
+  ; (walking), the screens' C L M, the tracker's J, the fire's G, the client's
+  ; H and P or the belt's digits: the file is refused if so.
+  ModernSkillKeys = ["Q = Q", "W = E", "E = R", "R = F"]
+End

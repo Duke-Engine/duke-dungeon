@@ -35,6 +35,7 @@ Game
     data/world/saves.duke,
     data/world/menu.duke,
     data/world/screens.duke,
+    data/world/controls.duke,
     data/world/travel.duke,
     data/world/scene.duke,
     data/world/feel.duke,

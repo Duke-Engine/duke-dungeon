@@ -512,6 +512,8 @@ public final class Main {
         var wanted = Stages.chosen(args);
         var opening = wanted == null ? null : Stages.found(wanted);
         var settings = DungeonSettings.of(opening);
+        // Modern (WASD) or classic (the mouse): the player's own choice, else the file's -- see Controls.
+        settings.useScheme(settings.controls().remembered());
         // The match the window opens with, and after Quit to the main menu a fresh one: a match is played once.
         var current = new java.util.concurrent.atomic.AtomicReference<>(chosenGame(opening, settings));
         var session = current.get();
@@ -744,32 +746,34 @@ public final class Main {
      */
     static void aimsFor(Hotkeys keys, DungeonSettings settings, String hero) {
         for (var skill : settings.skillsFor(hero)) {
+            // The skill's own key names it in the cast; the letter pressed is the scheme's (modern: W's on E).
             char key = skill.key();
-            keys.describe(key, skill.name()); // its name on the Settings screen's list of keys (E46)
+            char letter = settings.letterOf(key);
+            keys.describe(letter, skill.name()); // its name on the Settings screen's list of keys (E46)
             if (skill.effect().isPassive()) {
                 // Never cast: its key does nothing -- no aim, no order, no refusal (the panel takes no click on its
                 // slot since E65). Bound to nothing rather than left alone, so another hero's skill on the same
                 // letter does not stay behind.
-                keys.on(key, game -> { });
+                keys.on(letter, game -> { });
                 continue;
             }
             switch (skill.effect().aim()) {
-                case UNIT -> keys.onUnit(key, (game, id) -> game.postCommand(PartyOrders.of(new CastSkill(
+                case UNIT -> keys.onUnit(letter, (game, id) -> game.postCommand(PartyOrders.of(new CastSkill(
                         game.getLocalPlayerIndex(), key, new ObjectId(id), null))));
-                case GROUND -> keys.onGround(key, (game, spot) -> game.postCommand(PartyOrders.of(
+                case GROUND -> keys.onGround(letter, (game, spot) -> game.postCommand(PartyOrders.of(
                         new CastSkill(game.getLocalPlayerIndex(), key, null, spot))));
                 // The shield charge is aimed down a lane, as the wave is: any spot says which way, stone included
                 // (Dungeon.toTheEndOfItsLane puts it out at his whole Distance).
                 case OPEN_GROUND -> {
                     if (skill.effect() == uz.dukeengine.rpg.skill.SkillEffect.SKEWER) {
-                        keys.onGround(key, (game, spot) -> game.postCommand(PartyOrders.of(
+                        keys.onGround(letter, (game, spot) -> game.postCommand(PartyOrders.of(
                                 new CastSkill(game.getLocalPlayerIndex(), key, null, spot))));
                     } else {
-                        keys.onOpenGround(key, (game, spot) -> game.postCommand(PartyOrders.of(
+                        keys.onOpenGround(letter, (game, spot) -> game.postCommand(PartyOrders.of(
                                 new CastSkill(game.getLocalPlayerIndex(), key, null, spot))));
                     }
                 }
-                case SELF -> keys.on(key, game -> game.postCommand(PartyOrders.of(
+                case SELF -> keys.on(letter, game -> game.postCommand(PartyOrders.of(
                         new CastSkill(game.getLocalPlayerIndex(), key))));
             }
         }
@@ -785,7 +789,10 @@ public final class Main {
      */
     static void ringsFor(Visuals visuals, DungeonSettings settings, String hero) {
         for (var skill : settings.skillsFor(hero)) {
-            visuals.skillRange(rangeOf(skill, settings.skillRing().selfRadius()));
+            // Keyed by the letter pressed, which arms it: the scheme's, not always the skill's own.
+            var ring = rangeOf(skill, settings.skillRing().selfRadius());
+            visuals.skillRange(new uz.dukeengine.client3d.SkillRange(settings.letterOf(skill.key()), ring.shape(),
+                    ring.reach(), ring.area(), ring.width()));
         }
     }
 
@@ -1119,17 +1126,35 @@ public final class Main {
         // The mission list folds to its tab and unfolds again: a thing of the window, so it flips the window's own
         // flag and sends nothing to the simulation.
         keys.on(settings.run().foldKey().charAt(0), settings.screens().trackerWord(), game -> MissionScreen.fold());
-        orders(keys);
-        // The four orders said as the panel's buttons say them: walk, attack, stop, guard (see HeroStatus.orders).
-        var orderWords = settings.hud().orderWords();
-        for (int i = 0; i < orderWords.size(); i++) {
-            keys.describe("FASD".charAt(i), orderWords.get(i));
+        if (settings.scheme() == uz.dukeengine.dungeon.world.Controls.Scheme.CLASSIC) {
+            orders(keys);
+            // The four orders said as the panel's buttons say them: walk, attack, stop, guard (see HeroStatus.orders).
+            var orderWords = settings.hud().orderWords();
+            for (int i = 0; i < orderWords.size(); i++) {
+                keys.describe("FASD".charAt(i), orderWords.get(i));
+            }
+        } else {
+            // Modern: W A S D are his feet, not the camera's (the arrows still pan), and F is a skill's. The orders'
+            // letters go: the left button attacks, letting go of WASD stops (docs/plan/2026-10-15-modern-controls.md).
+            keys.controls(modernKeyMap());
         }
         // Which single creature he has picked out. The target frame describes it, and
         // only the simulation can say what it is worth -- see Watching.
         keys.onWatch((game, id) -> game.postCommand(PartyOrders.of(new uz.dukeengine.dungeon.run.Watching(
                 game.getLocalPlayerIndex(), id < 0 ? null : new ObjectId(id)))));
         return keys;
+    }
+
+    /** The client's own keys in the modern scheme: its standard ones with W A S D taken off panning. */
+    static uz.dukeengine.client3d.KeyMap modernKeyMap() {
+        var map = uz.dukeengine.client3d.KeyMap.standard();
+        var feet = java.util.Set.of(Hotkeys.codeOf('W'), Hotkeys.codeOf('A'), Hotkeys.codeOf('S'), Hotkeys.codeOf('D'));
+        for (var pan : List.of(uz.dukeengine.client3d.KeyMap.Control.PAN_UP, uz.dukeengine.client3d.KeyMap.Control.PAN_LEFT,
+                uz.dukeengine.client3d.KeyMap.Control.PAN_DOWN, uz.dukeengine.client3d.KeyMap.Control.PAN_RIGHT)) {
+            map.bind(pan, map.keysOf(pan).stream().filter(key -> !feet.contains(key.code()))
+                    .toArray(uz.dukeengine.client3d.KeyMap.Key[]::new));
+        }
+        return map;
     }
 
     /**
@@ -1461,8 +1486,9 @@ public final class Main {
         // all of it in the file — see Fog in data/world/scene.duke.
         // Shoving the camera with the cursor, on top of the keys — see
         // Camera in data/world/world.duke.
-        visuals.edgeScroll(new EdgeScroll(settings.camera().edgeMargin(),
-                settings.camera().edgeSpeedPercent()));
+        // Not in the modern scheme, whose camera is to follow him (E77).
+        visuals.edgeScroll(settings.scheme() == uz.dukeengine.dungeon.world.Controls.Scheme.MODERN ? EdgeScroll.NONE
+                : new EdgeScroll(settings.camera().edgeMargin(), settings.camera().edgeSpeedPercent()));
 
         visuals.fog(new Fog(settings.fog().lineOfSight(),
                 settings.fog().unseenPercent() / 100f, settings.fog().rememberedPercent() / 100f,
