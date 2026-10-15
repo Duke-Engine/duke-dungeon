@@ -1925,3 +1925,5 @@ round his facing (the camera's forward while he walks), ties to the smaller angl
 "[E] Gaplashish". The key sends exactly what a right-click on that thing sends today. Not while a screen holds the
 keys, a cutscene runs, or the hero is DISABLED/HELD. Done when a test stands the hero before a tree and behind him a
 well, finds the tree with the prompt "[E] Kesish", and the key posts the tree's Chop; turned round, the well's Fill.
+His horse standing by is one more such target (the game's `Ride` word, "[E] Minish"): E mounts it, nothing
+more is asked for riding (`2026-10-15-action-controls.md` 6b).

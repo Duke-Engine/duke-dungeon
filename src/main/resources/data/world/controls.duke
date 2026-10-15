@@ -48,7 +48,10 @@ Controls
   InteractKey = E
   ; The prompt over that thing, "[E] Gaplashish": each context order's word
   ; (the cursor's name -- a person's Talk, data/world/food.duke's Gathers, a
-  ; thing on the floor's PickUp, the gate's ToTheGate), then what it says.
-  InteractOrders = [Talk, Chop, Harvest, Fill, Cook, PickUp, ToTheGate]
-  InteractWords = ["Gaplashish", "Kesish", "Terish", "Suv olish", "Pishirish", "Olish", "Darvozaga"]
+  ; thing on the floor's PickUp, the gate's ToTheGate, his horse's Ride), then what it
+  ; says. Riding (data/world/mounts.duke): T calls and mounts as in every
+  ; scheme, E on his horse mounts it, Space on horseback gets him off (the
+  ; dodge is a skill, and a skill pressed riding dismounts), as do LMB and 1-4.
+  InteractOrders = [Talk, Chop, Harvest, Fill, Mine, Cook, PickUp, ToTheGate, Ride]
+  InteractWords = ["Gaplashish", "Kesish", "Terish", "Suv olish", "Qazish", "Pishirish", "Olish", "Darvozaga", "Minish"]
 End

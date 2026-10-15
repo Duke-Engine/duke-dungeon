@@ -473,6 +473,8 @@
 "Pishirish" => "Cook"
 "Olish" => "Pick up"
 "Darvozaga" => "To the gate"
+"Qazish" => "Mine"
+"Minish" => "Ride"
 
 ; ---- world/food.duke ----
 "Gulxan yoqish" => "Light a campfire"

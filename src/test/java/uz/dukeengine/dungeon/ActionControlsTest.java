@@ -63,6 +63,7 @@ class ActionControlsTest {
             for (char free : "WASDQRFE".toCharArray()) {
                 assertFalse(keys.claimedKeys().contains(free), hero.name() + ": " + free + " is not bound in action");
             }
+            assertTrue(keys.claimedKeys().contains(action.mount().key().charAt(0)), "T still calls his horse");
             for (char belt : "5678".toCharArray()) {
                 assertTrue(keys.claimedKeys().contains(belt), "the belt's " + belt);
             }
@@ -105,6 +106,7 @@ class ActionControlsTest {
                 uz.dukeengine.dungeon.party.PartyOrders.TO_THE_GATE)) {
             assertNotEquals(null, controls.promptOf(order, 'E'), order);
         }
+        assertEquals("[E] Minish", controls.promptOf(uz.dukeengine.dungeon.mount.Mount.RIDE, 'E'), "E on his horse");
         assertNull(controls.promptOf("Nothing", 'E'));
     }
 

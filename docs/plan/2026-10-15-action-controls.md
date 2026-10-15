@@ -25,20 +25,20 @@ Frames are the simulation's: 30 a second.
 | Space | dodge (the `DODGE` skill, Key V as its name, as modern) | same |
 | Q R F | free (nothing bound in action) | skills |
 | G | build a fire | same |
-| C L M | sheet, quests, map (screens) | same |
+| C L M K | sheet, quests, map, crafting (Hunar) -- the screens | same |
 | J | tracker fold | same |
 | B / I | bag: the bag is on screen all game, no window key | same |
 | H, P | the client's stop, pause | same |
 | Alt (held) | the pointer back for as long as it is held (click the HUD, the bar's badges) | none |
 | Esc | cancels an armed skill; else the menu | the menu |
-| T | the mount's call (branch `mounts`): no clash | same |
+| T | calls his horse, gets him on and off it (`data/world/mounts.duke`) | same |
 
 Internal, never pressed: X (STAGGER's name), V (DODGE's name), Z/U (lent skills).
 
 Conflicts checked by `DungeonSettings.validateAction`: the four slots and the belt each on a digit of its own
 (1-9), as many belt digits as `BeltSize`, and `InteractKey` a single letter that is not a step (W A S D), a screen's
-(C L M), the tracker's (J), the fire's (G), H or P. `ActionControlsTest` holds the map: every hero's four on 1-4
-asking for what their own keys asked for in classic, none of W A S D Q R F E bound, 5-8 the belt.
+(C L M K), the tracker's (J), the fire's (G), the horse's (T), H or P. `ActionControlsTest` holds the map: every hero's four on 1-4
+asking for what their own keys asked for in classic, none of W A S D Q R F E bound, 5-8 the belt, T the horse.
 
 ### Migration of the skill keys
 
@@ -112,11 +112,32 @@ Nothing the simulation does may read the mouse or the camera. As modern (section
   from food.duke plus a margin) whose centre is within a **100-degree cone** (50 each side) of **his facing** while he
   stands, or of the camera's forward while he walks; ties to the smaller angle, then the nearer.
 - **Prompt**: over it, `"[E] " + word`, the key as bound (E79), the word from `Controls.promptOf(order, key)`:
-  Talk Gaplashish, Chop Kesish, Harvest Terish, Fill Suv olish, Cook Pishirish, PickUp Olish, ToTheGate Darvozaga
+  Talk Gaplashish, Chop Kesish, Harvest Terish, Fill Suv olish, Mine Qazish, Cook Pishirish, PickUp Olish,
+  ToTheGate Darvozaga, Ride Minish
   (English rows in `data/lang/en.duke`). An order with no word shows no prompt and is not offered. Not while a screen
   holds the keys, a story holds him, or he is DISABLED.
 - **Press E**: the same order a right-click on it gives today (the engine's context order: walk up to it and do the
-  word), with the thing's id. Later the mount (`mounts` branch) adds its word.
+  word), with the thing's id.
+
+## 6b. Riding (`2026-10-15-mounts.md`, `run/Stable`)
+
+The hero on his horse is the same unit drawn as his riding look, his legs twice as fast, so the action scheme rides
+as it walks: no new order.
+
+| | Action | Modern / classic (unchanged) |
+|---|---|---|
+| Call / mount / dismount | T, as every scheme (`Mount` Key; validated against every scheme's keys) | T |
+| Mount a horse standing by | E on it: the prompt "[E] Minish" (the `Ride` context order, E94) | RMB on it |
+| Ride | W A S D relative to the camera, the mouse turns the camera (E91) | WASD / right-click |
+| Space on horseback | **dismount** (no roll): the dodge is a `CastSkill`, and a skill pressed riding gets him off (`Dungeon`: `CastSkill when mounted`) | same in modern |
+| LMB, 1-4 on horseback | dismount, as modern: an ordered attack (`Stable.tick`) or a cast unseats him | same |
+| A blow, a town, indoors | dismount (`Stable`) | same |
+
+Space is a dismount rather than a gallop burst: it costs nothing new and is what the code does already; a burst
+would be a skill (the owner's rule) -- a `MOVE_SPEED` buff with a cooldown under E89's `MOUNT` -- if a playtest
+asks for one. No engine request of its own: E94 finds the horse as any context-order target, E91 orbits the camera
+round the riding hero as round the walking one; E88/E89 (the rider on the horse's bone, the `MOUNT` skill) change
+nothing here.
 
 ## 7. Engine requests (in `2026-09-29-engine-requests.md`)
 
