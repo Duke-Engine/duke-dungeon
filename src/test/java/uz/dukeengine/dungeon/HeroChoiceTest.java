@@ -186,7 +186,7 @@ class HeroChoiceTest {
 
         var book = find(session.game(), KNIGHT).findModule(SkillBook.class);
         assertNotNull(book, "he arrived without a skill book");
-        assertEquals(SETTINGS.skillsFor(KNIGHT), book.getSkills(),
+        assertEquals(SETTINGS.bookFor(KNIGHT), book.getSkills(),
                 "he is carrying somebody else's four");
     }
 

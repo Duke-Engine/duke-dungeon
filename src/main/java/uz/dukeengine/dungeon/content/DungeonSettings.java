@@ -86,7 +86,8 @@ public final class DungeonSettings {
             java.util.Set.of(Stat.ATTACK, Stat.HEALTH, Stat.ARMOUR, Stat.MANA, Stat.ATTRIBUTE, KEY, QUEST);
     /** The skills whose StunFrames something reads. */
     private static final java.util.Set<SkillEffect> STUNNERS =
-            java.util.EnumSet.of(SkillEffect.SKILLSHOT, SkillEffect.WAVE, SkillEffect.SKEWER, SkillEffect.PULL);
+            java.util.EnumSet.of(SkillEffect.SKILLSHOT, SkillEffect.WAVE, SkillEffect.SKEWER, SkillEffect.PULL,
+                    SkillEffect.STAGGER);
     /** And its Extra, beside none. */
     private static final java.util.Set<String> EXTRAS =
             java.util.Set.of(Stat.HEALTH_REGEN, Stat.MANA_REGEN, Stat.ATTACK_SPEED);
@@ -134,7 +135,6 @@ public final class DungeonSettings {
     private final List<CritBlow> critBlows = new java.util.ArrayList<>();
     private uz.dukeengine.client3d.HitStop hitStop = new uz.dukeengine.client3d.HitStop(0f, 1f, true, false);
     private uz.dukeengine.client3d.Flinch flinch = uz.dukeengine.client3d.Flinch.DEFAULTS;
-    private Stagger stagger = Stagger.DEFAULTS;
     private final List<uz.dukeengine.core.content.EffectList> effectLists = new java.util.ArrayList<>();
     private uz.dukeengine.dungeon.story.Medallion medallion = uz.dukeengine.dungeon.story.Medallion.DEFAULTS;
     private uz.dukeengine.dungeon.food.Food food = uz.dukeengine.dungeon.food.Food.DEFAULTS;
@@ -289,28 +289,6 @@ public final class DungeonSettings {
     /** When a hurt creature flinches; at every blow it is free for unless the files say. */
     public uz.dukeengine.client3d.Flinch flinch() {
         return flinch;
-    }
-
-    /** A hero's stagger at a heavy blow; none unless the files say. */
-    public Stagger stagger() {
-        return stagger;
-    }
-
-    /**
-     * The least blow, after armour, that is a heavy one on {@code template}: its own HeavyBlow's MajorAt, else the one
-     * for every creature's, else none (infinite).
-     */
-    public float heavyAt(String template) {
-        float all = Float.POSITIVE_INFINITY;
-        for (var blow : heavyBlows) {
-            if (blow.template().equals(template)) {
-                return blow.majorAt();
-            }
-            if (blow.template().isBlank()) {
-                all = blow.majorAt();
-            }
-        }
-        return all;
     }
 
     /** What a critical blow adds, see {@link CritBlow}. */
@@ -602,7 +580,6 @@ public final class DungeonSettings {
                 case CritBlow crit -> critBlows.add(crit);
                 case uz.dukeengine.client3d.HitStop block -> hitStop = once(block, once);
                 case uz.dukeengine.client3d.Flinch block -> flinch = once(block, once);
-                case Stagger block -> stagger = once(block, once);
                 case uz.dukeengine.core.content.EffectList list -> effectLists.add(list);
                 case uz.dukeengine.dungeon.story.Medallion block -> medallion = once(block, once);
                 case uz.dukeengine.dungeon.food.Food block -> food = once(block, once);
@@ -1288,7 +1265,7 @@ public final class DungeonSettings {
             // slots, aims, rings and tips know nothing else of a skill that is not cast. Asked first, so that a hero's
             // is refused for that and not for what else it has.
             require(!skill.effect().isPassive() || skill.effect() == SkillEffect.SOUL_DRINK
-                            || skill.effect() == SkillEffect.DRAGON_BLOOD
+                            || skill.effect() == SkillEffect.DRAGON_BLOOD || skill.effect() == SkillEffect.STAGGER
                             || heroes.stream().noneMatch(hero -> hero.name().equals(skill.heroTemplate())),
                     skill.heroTemplate() + "'s Skill " + skill.key() + " is a " + skill.effect()
                             + ", never cast: only a monster may have one but a SOUL_DRINK or a DRAGON_BLOOD -- a"
@@ -1296,7 +1273,9 @@ public final class DungeonSettings {
             // A passive is never cast, so what only a cast reads would be a number nothing read -- but an aura is worn,
             // and may say what it looks like: its bearer plays it on itself.
             // A SOUL_DRINK's Damage is its cap, read.
-            require(!skill.effect().isPassive() || (skill.damage() == 0f || skill.effect() == SkillEffect.SOUL_DRINK)
+            // A STAGGER's Damage is the least blow that staggers, read.
+            require(!skill.effect().isPassive() || (skill.damage() == 0f || skill.effect() == SkillEffect.SOUL_DRINK
+                            || skill.effect() == SkillEffect.STAGGER)
                             && skill.manaCost() == 0
                             && skill.windUpFrames() == 0 && !skill.hasProjectile()
                             && (!skill.hasLook() || skill.effect().isAura()),
@@ -1322,6 +1301,10 @@ public final class DungeonSettings {
                     skill.heroTemplate() + "'s Skill " + skill.key() + " has ManaRegen = " + skill.manaRegen()
                             + ": only a MANA_AURA lends mana");
             switch (skill.effect()){
+                case STAGGER -> require(skill.damage() > 0f && skill.stunFrames() > 0 && skill.durationFrames() >= 0
+                                && skill.castAnim() != null && !skill.castAnim().isBlank(),
+                        skill.heroTemplate() + "'s STAGGER needs the least blow (Damage), StunFrames, and the flinch"
+                                + " it plays (CastAnim)");
                 case HEAL -> {
                     var name = skill.heroTemplate() + "'s Skill " + skill.key();
                     require(skill.heal() > 0f && skill.range() > 0f, name + " mends nobody: it needs a Heal and a Range");
@@ -1912,6 +1895,20 @@ public final class DungeonSettings {
      * screen. A template with none simply has none.
      */
     public java.util.List<Skill> skillsFor(String heroTemplate) {
+        var his = new java.util.ArrayList<Skill>();
+        for (var skill : bookFor(heroTemplate)) {
+            if (skill.effect() != SkillEffect.STAGGER) {
+                his.add(skill);
+            }
+        }
+        return java.util.List.copyOf(his);
+    }
+
+    /**
+     * Everything his SkillBook holds: {@link #skillsFor} and his STAGGER, which is no slot of the four -- never bought
+     * with a point, never drawn on his bar (HeroStatus hides it), held at its first rank from the start.
+     */
+    public java.util.List<Skill> bookFor(String heroTemplate) {
         var his = new java.util.ArrayList<Skill>();
         for (var skill : skills) {
             if (skill.heroTemplate().equals(heroTemplate)) {

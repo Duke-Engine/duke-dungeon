@@ -80,7 +80,8 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E69 | a melee blow struck at its swing's impact: the attack clip started a lead before the blow lands (an inline `PreAttackFrames`, the clip played from the wind-up) | landed, 7fda6418 on the engine's branch `e69-70-attack-clips`; the knight's whole slash is back, `PreAttackFrames = 9` (its blade's fastest frame, 0.3s) with `ReloadFrames` 34 -> 25 so blows stay 34 frames apart (`HeroClipFitTest`) |
 | E70 | a blow struck on the move drawn on the upper body only, the legs keeping the paced walk | landed, 7fda6418 on `e69-70-attack-clips`; `UpperBody` on the three heroes (`spine`, `QuickRigCharacter_Spine_012`, `spine`); monsters not yet |
 | E71 | a flinch that never cuts short a blow or a cast: the hurt clip played only when the unit is not mid-attack, mid-gesture or moving, at most once per a look-set interval, optionally only on a major/critical blow | landed, 8c9b234d on `e71-flinches`; the heroes name `Hurt` again, `Flinch` in world/feel.duke (1.0s, `HeavyOnly`), `DungeonMonsterArtTest.aHeroFlinchesOnlyAtAHeavyBlowAndNotEveryBlow`; monsters still name none |
-| E72 | a hero's stagger in the skill system: a passive `STAGGER` (StunFrames on a heavy or critical blow, his hurt clip busy for those frames, DurationFrames of immunity after), and a busy clip that starts cutting an attack clip already playing | asked 2026-10-15; until then the game's `run.Staggering` (a DamageListener) applies the book's stun (`DISABLED`) and `busy(Hurt)` at his HeavyBlow `MajorAt` -- no crit (the listener is not told one); `StaggerTest` |
+| E72 | a hero's stagger in the skill system: a passive `STAGGER` (StunFrames on a heavy or critical blow, his hurt clip busy for those frames, DurationFrames of immunity after), and a busy clip that starts cutting an attack clip already playing | landed, 80cbdaf7 on `e72-stagger`; each hero carries a `STAGGER` skill (Key X, Damage = his HeavyBlow MajorAt 45/35/35, StunFrames 11, DurationFrames 36, CastAnim = his hurt clip), held out of his four (`skillsFor`), his ranks and his bar (`HeroStatus.withoutHisStagger`); `run.Staggering` is gone; `StaggerTest` |
+| E73 | a blow inside a stagger keeps its busy clip: `BodyModule.hurt` ends a busy clip on every blow, and the book sets it only as the stagger begins, so in a crowd the flinch stops on the next blow while the stun goes on | asked 2026-10-15 |
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
 game builds against the local engine. E12–E15 reached it together at 668045f0 (their pull requests merged as
@@ -1461,3 +1462,23 @@ own stun (`StatusUpdate.apply(DISABLED, 11)`) and `GameObject.busy(<his Hurt>, 1
    (`actionUntil` cleared, the upper-body layer too). The other way round already holds: the stun and the busy clip
    end on the same frame and his weapon cannot wind up while stunned, so a swing never starts under the flinch, and
    `playOnce` of an attack is never refused for a busy clip.
+
+**E72 landed** as 80cbdaf7 on the engine's branch `e72-stagger`. Each hero's file ends his Skills with a `STAGGER`
+(Key `X`): `Damage` his HeavyBlow `MajorAt` (Knight 45, Mage and Rogue 35), `StunFrames = 11`, `DurationFrames = 36`,
+`CastAnim` his hurt clip (`Hurt`, `Hit_A`, `Hit_Chest`); any crit staggers too. It is no slot of the four:
+`DungeonSettings.skillsFor` leaves it out (his ranks, points and the save never see it, so the book holds it at its
+first rank from the start) and `bookFor` gives it to his SkillBook; `HeroStatus.withoutHisStagger` takes its fields
+back out of the bar's line, since a fifth framed picture that is never bought says nothing he can act on. The game's
+`run.Staggering` and its `Stagger` block are gone. `StaggerTest`: a heavy blow, a light one, the immunity, the busy
+clip frame for frame, a critical one, and that it is his and none of his four.
+
+## E73 — A blow inside a stagger keeps its flinch (2026-10-15, small)
+
+`BodyModule.hurt` ends a busy clip on every blow that takes health ("a blow breaks off whatever work it was at"), and
+the book's `STAGGER` sets `busy(castAnim, StunFrames)` only on the blow that begins the stagger -- a blow inside it
+returns early (`frame < staggerFrom`). So in a crowd the second blow, a frame or two later, ends the flinch while the
+stun runs on, and the window shows him standing idle for the rest of it. Asked: a blow landing inside a stagger leaves
+its busy clip as it is (the book setting it again for the frames left, or `hurt` sparing a busy clip that ends with a
+stun he is under). Done when a test staggers a hero, strikes him again for 1 three frames in, and his busy clip is
+still his flinch until the stun ends. Then `StaggerTest.hisHurtClipIsBusyForExactlyTheStaggersFrames` strikes him
+inside it again, as it did before E72.
