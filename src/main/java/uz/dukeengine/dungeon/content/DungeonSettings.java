@@ -129,6 +129,9 @@ public final class DungeonSettings {
     private final List<uz.dukeengine.dungeon.story.Boss> bosses = new java.util.ArrayList<>();
     private uz.dukeengine.dungeon.story.Trade trade = uz.dukeengine.dungeon.story.Trade.DEFAULTS;
     private uz.dukeengine.dungeon.story.GoldBurst goldBurst = uz.dukeengine.dungeon.story.GoldBurst.DEFAULTS;
+    private final List<HeavyBlow> heavyBlows = new java.util.ArrayList<>();
+    private final List<BigDeath> bigDeaths = new java.util.ArrayList<>();
+    private final List<uz.dukeengine.core.content.EffectList> effectLists = new java.util.ArrayList<>();
     private uz.dukeengine.dungeon.story.Medallion medallion = uz.dukeengine.dungeon.story.Medallion.DEFAULTS;
     private final List<uz.dukeengine.dungeon.story.Campaign> campaigns = new java.util.ArrayList<>();
     private final List<uz.dukeengine.dungeon.story.Place> places = new java.util.ArrayList<>();
@@ -257,6 +260,21 @@ public final class DungeonSettings {
     public uz.dukeengine.dungeon.story.Story story() {
         return new uz.dukeengine.dungeon.story.Story(dialogue, speakers, conversations, npcs, quests, triggers,
                 cutscenes, trade, merchants, bosses);
+    }
+
+    /** The blows that are felt, and what they play: see {@link HeavyBlow}. */
+    public List<HeavyBlow> heavyBlows() {
+        return List.copyOf(heavyBlows);
+    }
+
+    /** The deaths that are felt. */
+    public List<BigDeath> bigDeaths() {
+        return List.copyOf(bigDeaths);
+    }
+
+    /** The game's effect lists: several things at once by one name, a camera knock among them. */
+    public List<uz.dukeengine.core.content.EffectList> effectLists() {
+        return List.copyOf(effectLists);
     }
 
     /** What a kill that pays looks like: the coins out of the corpse and the gold taken floating over it. */
@@ -522,6 +540,9 @@ public final class DungeonSettings {
                 }
                 case uz.dukeengine.dungeon.story.Trade block -> trade = once(block, once);
                 case uz.dukeengine.dungeon.story.GoldBurst block -> goldBurst = once(block, once);
+                case HeavyBlow blow -> heavyBlows.add(blow);
+                case BigDeath death -> bigDeaths.add(death);
+                case uz.dukeengine.core.content.EffectList list -> effectLists.add(list);
                 case uz.dukeengine.dungeon.story.Medallion block -> medallion = once(block, once);
                 case uz.dukeengine.dungeon.story.Campaign block -> campaigns.add(block);
                 case uz.dukeengine.dungeon.story.Place place -> places.add(place);
@@ -1074,6 +1095,14 @@ public final class DungeonSettings {
                 "GoldBurst's CoinLook names " + goldBurst.coinLook() + ", and no Effect block describes it");
         require(goldBurst.goldPerBurst() > 0 && goldBurst.mostBursts() > 0 && goldBurst.floatSeconds() > 0f,
                 "GoldBurst: GoldPerBurst, MostBursts and FloatSeconds are more than nothing");
+        for (var blow : heavyBlows) {
+            require(blow.majorAt() > 0f && effectLists.stream().anyMatch(list -> list.name().equals(blow.plays())),
+                    "HeavyBlow " + blow.template() + ": MajorAt is more than nothing and Plays names an EffectList");
+        }
+        for (var death : bigDeaths) {
+            require(effectLists.stream().anyMatch(list -> list.name().equals(death.plays())),
+                    "BigDeath " + death.template() + ": Plays names no EffectList");
+        }
         if (!medallion.item().isBlank()) {
             var named = "Medallion " + medallion.item();
             var item = loot.stream().filter(each -> each.id().equals(medallion.item())).findFirst().orElse(null);
