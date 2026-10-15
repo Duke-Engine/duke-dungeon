@@ -1,0 +1,354 @@
+; ---------------------------------------------------------------------------
+; The desert (Qumli dasht): cactus men, lizards and a fire-throwing jinn; a dragon over the camp.
+; One of the wilds' four families (docs/plan/2026-10-15-big-plan.md, Phase 2 item 5): a common one,
+; a stronger one, one that shoots, the stronger one's ELITE (bigger, tinted, more health and blows, a
+; better drop -- ItemRules' Elites in data/world/loot.duke -- and one or two affixes, each a skill of the
+; skill system) and the CAMP BOSS (ItemRules' CampBosses: drops as a boss does). WorldMapWriter's WILDS
+; puts a camp of them in the desert. Models: Quaternius (CC0) -- see CREDITS.md and art/monsters.
+; Levels are the walk's from the city, as every monster's in the world: these figures are level 1's.
+; ---------------------------------------------------------------------------
+
+; common.
+Monster
+  Name = Cactoro
+  DisplayName = "Kaktusvoy"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 4
+    Height = 12
+  End
+  VisionRange = 70
+  Modules = [
+    GrowableBody
+      MaxHealth = 65
+    End,
+    MoveUpdate
+      Speed = 15
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 8
+      AttackRange = 10
+      ReloadFrames = 30
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 12
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 45
+  ChaseRadius = 95
+  CloseDistance = 4
+  AlertRadius = 70
+  RepathFrames = 10
+  SwingFrames = 12
+  ; Never on a floor of the descent: the open world's camps place it by name.
+  MinDepth = 99
+  Weight = 0
+  Colour = 0xC8B890
+  Scale = 1.00
+  Model = models/wilds/cactoro.glb
+  ModelScale = 3.2
+  ; Its own clips, renamed by art/monsters/export_monsters.py.
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+End
+
+; stronger.
+Monster
+  Name = Lizard
+  DisplayName = "Kaltakesak"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 6
+    Height = 14
+  End
+  VisionRange = 70
+  Modules = [
+    GrowableBody
+      MaxHealth = 170
+    End,
+    MoveUpdate
+      Speed = 12
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 18
+      AttackRange = 12
+      ReloadFrames = 44
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 26
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 45
+  ChaseRadius = 95
+  CloseDistance = 4
+  AlertRadius = 70
+  RepathFrames = 10
+  SwingFrames = 18
+  ; Never on a floor of the descent: the open world's camps place it by name.
+  MinDepth = 99
+  Weight = 0
+  Colour = 0xC8B890
+  Scale = 1.17
+  Model = models/wilds/dino.glb
+  ModelScale = 4.65
+  ; Its own clips, renamed by art/monsters/export_monsters.py.
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+End
+
+; ranged: throws fire.
+Monster
+  Name = Jinn
+  DisplayName = "Jin"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 4
+    Height = 14
+  End
+  VisionRange = 64
+  Modules = [
+    GrowableBody
+      MaxHealth = 50
+    End,
+    MoveUpdate
+      Speed = 13
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 8
+      AttackRange = 58
+      ReloadFrames = 54
+      AttackOnTheMove = No
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    Bow
+      Projectile = Fireball
+      Speed = 190
+      MuzzleOffset = 8
+    End,
+    EyesOnly
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 20
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 64
+  ChaseRadius = 120
+  CloseDistance = 6
+  AlertRadius = 70
+  RepathFrames = 10
+  SwingFrames = 20
+  ; Never on a floor of the descent: the open world's camps place it by name.
+  MinDepth = 99
+  Weight = 0
+  KeepDistance = [30, 50]
+  Colour = 0xC8B890
+  Scale = 1.17
+  Model = models/wilds/demon.glb
+  ModelScale = 5.35
+  ; Its own clips, renamed by art/monsters/export_monsters.py.
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+End
+
+; ELITE of the lizards: bigger, burning orange, two affixes.
+Monster
+  Name = FireLizard
+  DisplayName = "Olovli kaltakesak"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 8
+    Height = 19
+  End
+  VisionRange = 130
+  Modules = [
+    GrowableBody
+      MaxHealth = 380
+    End,
+    MoveUpdate
+      Speed = 13
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 26
+      AttackRange = 14
+      ReloadFrames = 40
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 60
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 55
+  ChaseRadius = 150
+  CloseDistance = 4
+  AlertRadius = 110
+  RepathFrames = 8
+  SwingFrames = 18
+  ; Never on a floor of the descent: the open world's camps place it by name.
+  MinDepth = 99
+  Weight = 0
+  Colour = 0xFF8A40
+  Scale = 1.58
+  Model = models/wilds/dino.glb
+  ModelScale = 6.3
+  Tint = 0xFF8A40
+  ; Its own clips, renamed by art/monsters/export_monsters.py.
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+
+  Skills = [
+    Skill
+      Key = E
+      ; Elite affix: everyone of its own round it hits a quarter harder.
+      Effect = DAMAGE_AURA
+      BoostPercent = 25
+      Radius = 50
+      Look = MightAura
+      TickFrames = 30
+      MaxRank = 1
+      Name = "G'azab"
+      Icon = icons/stats/stat_attack.png
+      Blurb = Atrofidagi o'zinikilar qattiqroq uradi.
+    End,
+    Skill
+      Key = Q
+      ; Elite affix: drinks a third of every blow it lands.
+      Effect = LIFESTEAL
+      BoostPercent = 30
+      MaxRank = 1
+      Name = "Qonxo'r"
+    End
+  ]
+End
+
+; CAMP BOSS: breathes fire down a line, drinks from his blows.
+Monster
+  Name = Dragon
+  DisplayName = "Ajdar"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 9
+    Height = 22
+  End
+  VisionRange = 130
+  Modules = [
+    GrowableBody
+      MaxHealth = 560
+    End,
+    MoveUpdate
+      Speed = 14
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 24
+      AttackRange = 14
+      ReloadFrames = 36
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 150
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 55
+  ChaseRadius = 150
+  CloseDistance = 4
+  AlertRadius = 110
+  RepathFrames = 8
+  SwingFrames = 20
+  ; Never on a floor of the descent: the open world's camps place it by name.
+  MinDepth = 99
+  Weight = 0
+  SkillDistance = [10, 60]
+  Colour = 0xC8B890
+  Scale = 1.83
+  Model = models/wilds/dragon.glb
+  ModelScale = 6.95
+  ; Its own clips, renamed by art/monsters/export_monsters.py.
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+
+  Skills = [
+    Skill
+      Key = W
+      ; Fire breathed down a line: it can be stepped out of.
+      Effect = SKILLSHOT
+      Damage = 40
+      Range = 70
+      Radius = 14
+      HitWidth = 8
+      ProjectileSpeed = 120
+      Projectile = Fireball
+      CooldownFrames = 240
+      MaxRank = 1
+      Name = Olov nafasi
+    End,
+    Skill
+      Key = Q
+      ; Drinks a quarter of every blow it lands.
+      Effect = LIFESTEAL
+      BoostPercent = 25
+      MaxRank = 1
+      Name = Qon so'rish
+    End
+  ]
+End

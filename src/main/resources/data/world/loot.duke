@@ -34,7 +34,11 @@ ItemRules
   PricePerLevel = 8
   ; The chance an elite drops anything (a monster's and a boss's are LootDrops').
   EliteDropPercent = 40
-  Elites = [Brute, Champion, Warden, Reaper]
+  ; The wilds' elites too (data/units/wilds_*.duke): bigger, tinted, with an affix or two.
+  Elites = [Brute, Champion, Warden, Reaper, BloodWolf, FireLizard, StoneGoleling, VenomFrog]
+  ; Who guards a camp of the open world: each drops as a boss does -- always, BossDrops things,
+  ; BossLevel above its own -- wherever it stands.
+  CampBosses = [GoblinChief, Dragon, GiantKing, BogHorror]
   ; Of an ordinary or elite drop, how many in a hundred are a potion.
   PotionPercent = 35
   ; A boss drops two things, a level above its own.

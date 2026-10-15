@@ -831,6 +831,9 @@ public final class DungeonSettings {
             require(beam.isBlank() || effects.stream().anyMatch(effect -> effect.name().equals(beam)),
                     "ItemRules' Beams name " + beam + ", and no Effect block describes it");
         }
+        for (var guard : item.campBosses()) {
+            require(monster(guard) != null, "ItemRules' CampBosses name " + guard + ", and no Monster block describes it");
+        }
     }
 
     private void validate() {

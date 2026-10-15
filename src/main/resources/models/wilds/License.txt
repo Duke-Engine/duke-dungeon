@@ -1,0 +1,26 @@
+The wilds monsters (models/wilds/*.glb)
+
+Author:  Quaternius (https://quaternius.com)
+Licence: CC0 1.0 Universal (public domain dedication) - https://creativecommons.org/publicdomain/zero/1.0/
+Source:  each model downloaded 2026-10-15 from its own page on poly.pizza (CC0 1.0 stated there):
+
+  wolf.glb       Wolf               https://poly.pizza/m/XU7oNeKShV  (CC0 1.0)
+  spider.glb     Spider             https://poly.pizza/m/yRYJiAJyiM  (CC0 1.0)
+  goblin.glb     Goblin             https://poly.pizza/m/OdCOFSmEhl  (CC0 1.0)
+  demon.glb      Demon              https://poly.pizza/m/IkB63XOPvr  (CC0 1.0)
+  dino.glb       Dino               https://poly.pizza/m/wuerCFCWNR  (CC0 1.0)
+  cactoro.glb    Cactoro            https://poly.pizza/m/IGn9lhdama  (CC0 1.0)
+  frog.glb       Frog               https://poly.pizza/m/37wofOCOzG  (CC0 1.0)
+  ghost.glb      Ghost              https://poly.pizza/m/Iip30bDHmu  (CC0 1.0)
+  giant.glb      Giant              https://poly.pizza/m/BldaiPtyJa  (CC0 1.0)
+  glub.glb       Glub Evolved       https://poly.pizza/m/Z9lddNpM1M  (CC0 1.0)
+  goleling.glb   Goleling           https://poly.pizza/m/71gomWolax  (CC0 1.0)
+  sporeling.glb  Mushnub Evolved    https://poly.pizza/m/0SZyA6MV51  (CC0 1.0)
+  slime.glb      Slime              https://poly.pizza/m/LyjSUKHKnh  (CC0 1.0)
+  tribal.glb     Tribal             https://poly.pizza/m/t91lDHaqRW  (CC0 1.0)
+  dragon.glb     Dragon Evolved     https://poly.pizza/m/LlwD0QNUPj  (CC0 1.0)
+
+Changed here (art/monsters/export_monsters.py, Blender 5.2): only four clips kept per model
+(Idle, Walk, Attack, Death) and renamed; flat material colours baked to one small palette
+picture per model; the rig flattened to scale 1 and the stray conversion helper mesh and leaf
+bone empties removed. Shapes, rigs and motion are the author's own.

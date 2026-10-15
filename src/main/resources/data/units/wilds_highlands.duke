@@ -1,0 +1,352 @@
+; ---------------------------------------------------------------------------
+; The highlands (Toshli adir): winged imps of the rocks, a mountain shaman and the ogres; the giant king over the camp.
+; One of the wilds' four families (docs/plan/2026-10-15-big-plan.md, Phase 2 item 5): a common one,
+; a stronger one, one that shoots, the stronger one's ELITE (bigger, tinted, more health and blows, a
+; better drop -- ItemRules' Elites in data/world/loot.duke -- and one or two affixes, each a skill of the
+; skill system) and the CAMP BOSS (ItemRules' CampBosses: drops as a boss does). WorldMapWriter's WILDS
+; puts a camp of them in the highlands. Models: Quaternius (CC0) -- see CREDITS.md and art/monsters.
+; Levels are the walk's from the city, as every monster's in the world: these figures are level 1's.
+; ---------------------------------------------------------------------------
+
+; common: a flyer, quick.
+Monster
+  Name = Goleling
+  DisplayName = "Qoya jini"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 4
+    Height = 11
+  End
+  VisionRange = 70
+  Modules = [
+    GrowableBody
+      MaxHealth = 55
+    End,
+    MoveUpdate
+      Speed = 19
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 7
+      AttackRange = 10
+      ReloadFrames = 28
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 11
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 45
+  ChaseRadius = 95
+  CloseDistance = 4
+  AlertRadius = 70
+  RepathFrames = 10
+  SwingFrames = 12
+  ; Never on a floor of the descent: the open world's camps place it by name.
+  MinDepth = 99
+  Weight = 0
+  Colour = 0xC8B890
+  Scale = 0.92
+  Model = models/wilds/goleling.glb
+  ModelScale = 4.5
+  ; Its own clips, renamed by art/monsters/export_monsters.py.
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+End
+
+; stronger: slow, the heaviest blow of the four lands.
+Monster
+  Name = Ogre
+  DisplayName = "Dev"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 7
+    Height = 18
+  End
+  VisionRange = 130
+  Modules = [
+    GrowableBody
+      MaxHealth = 200
+    End,
+    MoveUpdate
+      Speed = 10
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 22
+      AttackRange = 13
+      ReloadFrames = 48
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 30
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 55
+  ChaseRadius = 150
+  CloseDistance = 4
+  AlertRadius = 110
+  RepathFrames = 8
+  SwingFrames = 22
+  ; Never on a floor of the descent: the open world's camps place it by name.
+  MinDepth = 99
+  Weight = 0
+  Colour = 0xC8B890
+  Scale = 1.50
+  Model = models/wilds/giant.glb
+  ModelScale = 4.7
+  ; Its own clips, renamed by art/monsters/export_monsters.py.
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+End
+
+; ranged: arcane bolts.
+Monster
+  Name = Shaman
+  DisplayName = "Tog' shomoni"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 4
+    Height = 13
+  End
+  VisionRange = 64
+  Modules = [
+    GrowableBody
+      MaxHealth = 50
+    End,
+    MoveUpdate
+      Speed = 13
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 7
+      AttackRange = 58
+      ReloadFrames = 50
+      AttackOnTheMove = No
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    Bow
+      Projectile = MageBolt
+      Speed = 190
+      MuzzleOffset = 8
+    End,
+    EyesOnly
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 20
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 64
+  ChaseRadius = 120
+  CloseDistance = 6
+  AlertRadius = 70
+  RepathFrames = 10
+  SwingFrames = 20
+  ; Never on a floor of the descent: the open world's camps place it by name.
+  MinDepth = 99
+  Weight = 0
+  KeepDistance = [30, 50]
+  Colour = 0xC8B890
+  Scale = 1.08
+  Model = models/wilds/tribal.glb
+  ModelScale = 2.95
+  ; Its own clips, renamed by art/monsters/export_monsters.py.
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+End
+
+; ELITE of the imps: bigger, stone grey, two affixes.
+Monster
+  Name = StoneGoleling
+  DisplayName = "Tosh qanot"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 6
+    Height = 16
+  End
+  VisionRange = 70
+  Modules = [
+    GrowableBody
+      MaxHealth = 170
+    End,
+    MoveUpdate
+      Speed = 20
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 12
+      AttackRange = 12
+      ReloadFrames = 26
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 45
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 45
+  ChaseRadius = 95
+  CloseDistance = 4
+  AlertRadius = 70
+  RepathFrames = 10
+  SwingFrames = 12
+  ; Never on a floor of the descent: the open world's camps place it by name.
+  MinDepth = 99
+  Weight = 0
+  SkillDistance = [0, 50]
+  Colour = 0x9AA0B0
+  Scale = 1.33
+  Model = models/wilds/goleling.glb
+  ModelScale = 6.3
+  Tint = 0x9AA0B0
+  ; Its own clips, renamed by art/monsters/export_monsters.py.
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+
+  Skills = [
+    Skill
+      Key = R
+      ; Elite affix: a quarter of every blow turned aside, and a little health back each second.
+      Effect = DRAGON_BLOOD
+      BoostPercent = 25
+      Heal = 3
+      MaxRank = 1
+      Name = Toshteri
+    End,
+    Skill
+      Key = W
+      ; Elite affix: strikes faster for five seconds -- itself, or the sturdiest of its own near it.
+      Effect = HASTE
+      BoostPercent = 60
+      DurationFrames = 150
+      Range = 50
+      CooldownFrames = 300
+      Look = Hasted
+      MaxRank = 1
+      Name = Shiddat
+      Icon = icons/stats/stat_speed.png
+      Blurb = Bir necha soniya ancha tezroq uradi.
+    End
+  ]
+End
+
+; CAMP BOSS: hard skin and a heavy blow.
+Monster
+  Name = GiantKing
+  DisplayName = "Alp dev"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 9
+    Height = 26
+  End
+  VisionRange = 130
+  Modules = [
+    GrowableBody
+      MaxHealth = 640
+    End,
+    MoveUpdate
+      Speed = 11
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 28
+      AttackRange = 15
+      ReloadFrames = 46
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 160
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 55
+  ChaseRadius = 150
+  CloseDistance = 4
+  AlertRadius = 110
+  RepathFrames = 8
+  SwingFrames = 22
+  ; Never on a floor of the descent: the open world's camps place it by name.
+  MinDepth = 99
+  Weight = 0
+  Colour = 0xB07050
+  Scale = 2.17
+  Model = models/wilds/giant.glb
+  ModelScale = 6.75
+  Tint = 0xB07050
+  ; Its own clips, renamed by art/monsters/export_monsters.py.
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+
+  Skills = [
+    Skill
+      Key = R
+      ; Elite affix: a quarter of every blow turned aside, and a little health back each second.
+      Effect = DRAGON_BLOOD
+      BoostPercent = 25
+      Heal = 3
+      MaxRank = 1
+      Name = Toshteri
+    End,
+    Skill
+      Key = Q
+      ; Drinks a quarter of every blow it lands.
+      Effect = LIFESTEAL
+      BoostPercent = 25
+      MaxRank = 1
+      Name = Qon so'rish
+    End
+  ]
+End
