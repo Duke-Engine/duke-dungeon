@@ -110,9 +110,13 @@ public final class MonsterBrain extends UnitScript {
     /** The keep's shut gate, which it mends nobody through -- see {@link Mending}. */
     private final Seal seal;
 
-    public MonsterBrain(DungeonSettings settings, Seal seal) {
+    /** The run's clock: a night roamer keeps still by day. See {@link uz.dukeengine.dungeon.world.DayNight#roams}. */
+    private final java.util.concurrent.atomic.AtomicInteger clock;
+
+    public MonsterBrain(DungeonSettings settings, Seal seal, java.util.concurrent.atomic.AtomicInteger clock) {
         this.settings = settings;
         this.seal = seal;
+        this.clock = clock;
     }
 
     /**
@@ -136,6 +140,13 @@ public final class MonsterBrain extends UnitScript {
     @Override
     public void onUpdate() {
         noticeAnyWound();
+        if (!wounded && !settings.dayNight().roams(unit().getTemplate().name(), clock.get())) {
+            // A night roamer by day keeps to where it stands and senses nobody -- unless struck.
+            if (chasing) {
+                giveUp();
+            }
+            return;
+        }
         // Once roused, it keeps looking further than it first noticed — and once
         // hurt, it stops looking and simply comes.
         float reachOut = wounded ? THE_WHOLE_FLOOR

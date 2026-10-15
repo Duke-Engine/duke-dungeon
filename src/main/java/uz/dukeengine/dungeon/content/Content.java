@@ -118,7 +118,7 @@ public final class Content {
             named(uz.dukeengine.dungeon.story.Dialogue.class), named(uz.dukeengine.dungeon.world.SaveMenu.class),
             named(uz.dukeengine.dungeon.world.MainMenu.class), named(uz.dukeengine.dungeon.world.Splash.class), named(uz.dukeengine.dungeon.world.Screens.class),
             named(uz.dukeengine.dungeon.world.Controls.class),
-            named(uz.dukeengine.dungeon.world.Travel.class),
+            named(uz.dukeengine.dungeon.world.Travel.class), named(uz.dukeengine.dungeon.world.DayNight.class),
             named(uz.dukeengine.dungeon.story.Trigger.class), named(uz.dukeengine.dungeon.story.Cutscene.class),
             named(uz.dukeengine.dungeon.story.Merchant.class), named(uz.dukeengine.dungeon.story.Trade.class),
             named(uz.dukeengine.dungeon.story.GoldBurst.class),

@@ -97,9 +97,11 @@ public final class Dungeon {
      *               have no other way to reach each other. See {@link Orders}
      * @param seal   the keep's shut gate, as every blow, shot and mending asks it: told of each floor by the run that
      *               lays it, and of none in a world nobody lays one in. See {@link Seal}
+     * @param clock  the run's clock, frames of play since it began, saved with it: the hour the night roamers wake by
+     *               (see {@link uz.dukeengine.dungeon.world.DayNight}), kept by the run and read by every brain
      */
     public record Arena(DukeGame game, GamePlayer hero, GamePlayer dungeon, Orders orders,
-            java.util.List<GamePlayer> heroes, Seal seal) {
+            java.util.List<GamePlayer> heroes, Seal seal, java.util.concurrent.atomic.AtomicInteger clock) {
     }
 
     /** A game, the run loop that keeps it going, and the hero's progression. */
@@ -153,6 +155,7 @@ public final class Dungeon {
             String creaturesIni, java.util.List<LootBag> bagsBySeat) {
         var orders = new Orders();
         var seal = new Seal();
+        var clock = new java.util.concurrent.atomic.AtomicInteger();
         var heroes = new java.util.ArrayList<GamePlayer>();
         // No subtitle here: what this world is called depends on why it was built,
         // and only the caller knows — an endless descent, or one named stage. See
@@ -164,7 +167,7 @@ public final class Dungeon {
                     // MonsterBrain is the brain of is the block it was put on -- see MonsterBrain.onStart.
                     ScriptModule.registerScript(factory, HeroBrain.Data.class, () -> new HeroBrain(settings, orders, seal));
                     ScriptModule.registerScript(factory, MonsterBrain.Data.class,
-                            () -> new MonsterBrain(settings, seal));
+                            () -> new MonsterBrain(settings, seal, clock));
                     // Hero and monsters alike need a body that can grow: levels
                     // raise his and theirs, and the engine's fixes its maximum
                     // when the unit is built.
@@ -259,7 +262,7 @@ public final class Dungeon {
             }
         }
         game.localPlayer(heroes.getFirst());
-        return new Arena(game, heroes.getFirst(), dungeonPlayer, orders, java.util.List.copyOf(heroes), seal);
+        return new Arena(game, heroes.getFirst(), dungeonPlayer, orders, java.util.List.copyOf(heroes), seal, clock);
     }
 
     /**
@@ -409,7 +412,7 @@ public final class Dungeon {
         var drops = new LootTable(settings.loot(), settings.lootDrops().dropPercent(),
                 settings.lootDrops().bossDropPercent(), settings.lootDrops().valuePercentPerDepth());
         var run = new DungeonRun(arena.hero(), arena.dungeon(), floors, settings, progresses.getFirst(),
-                drops, arena.orders(), learnts.getFirst(), arena.seal());
+                drops, arena.orders(), learnts.getFirst(), arena.seal(), arena.clock());
         for (int seat = 1; seat < heroes; seat++) {
             run.seat(arena.heroes().get(seat), progresses.get(seat), learnts.get(seat));
         }

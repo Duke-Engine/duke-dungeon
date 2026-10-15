@@ -182,6 +182,8 @@ public final class DungeonRun {
 
     /** The keep's shut gate, as everything that hurts or mends asks it: told of each floor as it is laid. */
     private final Seal seal;
+    /** Frames of play since the run began, saved with it: the hour of the open world's day (DayNight). */
+    private final java.util.concurrent.atomic.AtomicInteger clock;
 
     /** Told of the run as each floor is entered — the autosave; nothing until somebody asks. */
     private java.util.function.Consumer<SaveGame> checkpoint = save -> { };
@@ -191,8 +193,9 @@ public final class DungeonRun {
     public DungeonRun(GamePlayer heroPlayer, GamePlayer dungeonPlayer, Floors floors,
             DungeonSettings settings, HeroProgress progress,
             LootTable drops, uz.dukeengine.dungeon.ai.Orders orders,
-            SkillRanks learnt, Seal seal) {
+            SkillRanks learnt, Seal seal, java.util.concurrent.atomic.AtomicInteger clock) {
         this.seal = seal;
+        this.clock = clock;
         this.quests = new QuestLog(settings.story(), settings.loot(), settings.lootDrops().joinCount());
         this.script = new uz.dukeengine.dungeon.story.Script(settings.story());
         this.fight = new BossFight(settings.story());
@@ -372,6 +375,7 @@ public final class DungeonRun {
         pick(seat, save.hero());
         save.restore(seat.progress.getLoot(), seat.learnt, settings);
         seat.loadedExperience = save.experience();
+        clock.set(save.clock()); // the hour he saved at
         seat.gold = save.gold();
         seat.souls = save.souls();
         seat.cursed = !save.givenTo().isBlank();
@@ -483,7 +487,17 @@ public final class DungeonRun {
         return SaveGame.of(floors.seed(), floors.stageName(), depth, seat.hero, seat.progress.getExperience(),
                 seat.learnt, seat.progress.getLoot(), quests.state(), script.state(), seat.gold)
                 .withMedallion(seat.souls, givenTo).withPlaces(visited)
-                .withFelled(lastLogic == null ? List.of() : lastLogic.getRemovedScenery());
+                .withFelled(lastLogic == null ? List.of() : lastLogic.getRemovedScenery()).withClock(clock.get());
+    }
+
+    /** Frames of play since the run began: the hour of the open world's day, read on any thread. */
+    public int clock() {
+        return clock.get();
+    }
+
+    /** The seed of the floors he is on: what the weather is drawn from. */
+    public long seed() {
+        return floors.seed();
     }
 
     /** Whoever the first player plays — the file's answer until somebody chooses. */
@@ -773,6 +787,7 @@ public final class DungeonRun {
     /** Called every logic frame on the simulation thread. */
     public void tick(DukeGame game) {
         lastLogic = game.getLogic();
+        clock.incrementAndGet();
         if (gathering != null) {
             return; // nobody is on the floor until everybody is
         }
@@ -976,7 +991,9 @@ public final class DungeonRun {
             // ★ A campaign is not a roguelike: a death goes back to the last floor entered, as he entered it — the
             // checkpoint the autosave holds — not to the opening battle with nothing. See docs/plan/2026-10-15-act1.md.
             var back = lastCheckpoint;
+            int now = clock.get();
             resume(back, Floors.resumed(back, settings));
+            clock.set(now); // the day goes on: a death does not turn the clock back
             openingIsStale = false;
             cued.clear();
             endCutscene(game);

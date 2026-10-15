@@ -539,7 +539,8 @@ public final class Main {
         var bag = Bag.on(settings, duke);
         Bag.show(bag, session, settings);
         // And over it, the box a conversation is said in, which hands the bag whatever it does not take.
-        var talk = new DialogueScreen(bag, bag, settings);
+        // Under it all, the open world's hour and weather laid over the world -- see Atmosphere.
+        var talk = new DialogueScreen(new Atmosphere(bag, duke, settings), bag, settings);
         // And over that, the player's own screens -- the sheet, the quest log, the map -- each on its key, and the map
         // drawn from the engine's picture of the world as he knows it, asked for every map.
         var screens = new PlayerScreens(talk, settings);
@@ -1199,7 +1200,7 @@ public final class Main {
             // A blink is pointed at a spot exactly as a dash is. That it does not
             // cross what is between is the simulation's business; what the player
             // has to do with the mouse is the same thing, so the ring is the same.
-            case DASH, BLINK -> uz.dukeengine.client3d.SkillRange.Shape.AT_A_SPOT;
+            case DASH, BLINK, DODGE -> uz.dukeengine.client3d.SkillRange.Shape.AT_A_SPOT;
             case METEOR -> uz.dukeengine.client3d.SkillRange.Shape.AT_A_SPOT;
             // A summoning calls them up round him, as far out as its Radius; a haste finds one of
             // his own round him, as far out as its Range; a pull gathers whoever is within its Radius.
@@ -1212,7 +1213,7 @@ public final class Main {
         };
         float reach = switch (skill.effect()) {
             case STRIKE, AREA_AT_SPOT, SKILLSHOT, HEAL -> skill.range();
-            case DASH, BLINK, SKEWER, WAVE -> skill.distance();
+            case DASH, BLINK, DODGE, SKEWER, WAVE -> skill.distance();
             case METEOR -> skill.range();
             case AREA_DAMAGE, SUMMON, PULL -> skill.radius();
             case HASTE -> skill.range();
