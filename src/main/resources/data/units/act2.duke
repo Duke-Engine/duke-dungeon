@@ -28,6 +28,9 @@ Monster
   ModelScale = 4.72
   Facing = 90
   Animations = Humanoid
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
+  WalkStride = 3.52
+  UpperBody = spine
 End
 
 Monster
@@ -54,6 +57,9 @@ Monster
   ModelScale = 4.72
   Facing = 90
   Animations = Humanoid
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
+  WalkStride = 3.52
+  UpperBody = spine
 End
 
 Monster
@@ -80,6 +86,9 @@ Monster
   ModelScale = 4.6
   Facing = 90
   Animations = Humanoid
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
+  WalkStride = 3.43
+  UpperBody = spine
 End
 
 ; The caged girl let out of her cage (Act 2): Inuciian's Damsel out of it (CC BY 4.0), walking on

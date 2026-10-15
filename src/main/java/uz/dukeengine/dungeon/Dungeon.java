@@ -654,7 +654,8 @@ public final class Dungeon {
         return new uz.dukeengine.combat.module.WeaponUpdate.Data(data.damage(), data.attackRange(),
                 data.reloadFrames(), data.damageType(), data.splashRadius(), data.attackOnTheMove(), data.targets(),
                 data.reloadFramesMax(), data.clipSize(), data.clipReloadFrames(), data.autoReload(),
-                owner.getTemplate().name(), data.weaponSets(), data.deathType(), data.targetScanFrames());
+                owner.getTemplate().name(), data.weaponSets(), data.deathType(), data.targetScanFrames(),
+                data.preAttackFrames(), data.swingArcDegrees()); // the wind-up too: the blow lands with the swing
     }
 
     /** A sound the simulation plays riding {@code thing} — see {@code World.sound}: an event, out of the checksum. */
