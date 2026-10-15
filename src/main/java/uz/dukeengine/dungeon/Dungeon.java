@@ -180,9 +180,11 @@ public final class Dungeon {
                     factory.register(uz.dukeengine.core.module.MoveUpdate.Data.class,
                             (owner, data) -> new uz.dukeengine.core.module.MoveUpdate(owner,
                                     HeroBuild.legs(data, attributesOf(settings, owner), rules)));
+                    // Named after the creature that holds it, so every blow is heard as fired.<Template> --
+                    // a knight's sword, a brute's axe, a stalker's crossbow -- see data/sounds/sfx.duke.
                     factory.register(uz.dukeengine.combat.module.WeaponUpdate.Data.class,
-                            (owner, data) -> new uz.dukeengine.combat.module.WeaponUpdate(owner,
-                                    HeroBuild.weapon(data, attributesOf(settings, owner), rules)));
+                            (owner, data) -> new uz.dukeengine.combat.module.WeaponUpdate(owner, namedFor(owner,
+                                    HeroBuild.weapon(data, attributesOf(settings, owner), rules))));
                     // Health coming back on its own, at the rate his block names --
                     // set by HeroProgress, as his mana is.
                     factory.register(Recovery.Data.class, (owner, data) -> new Recovery(owner));
@@ -428,9 +430,13 @@ public final class Dungeon {
                 // hero is casting; a player with no hero casts nothing.
                 case CastSkill cast -> {
                     var learnt = run.learntOf(cast.playerIndex());
-                    if (learnt != null) {
-                        Skills.cast(game.getLogic(), toTheEndOfItsLane(game.getLogic(), cast, learnt.getSkills()),
-                                learnt.rankOf(cast.key()));
+                    if (learnt != null && Skills.cast(game.getLogic(),
+                            toTheEndOfItsLane(game.getLogic(), cast, learnt.getSkills()), learnt.rankOf(cast.key()))) {
+                        // Heard as cast.<Template>.<key>: the knight's wave and the huntress's volley are two sounds.
+                        var hero = Skills.heroOf(game.getLogic(), cast.playerIndex());
+                        if (hero != null) {
+                            sound(hero, "cast." + hero.getTemplate().name() + "." + cast.key());
+                        }
                     }
                 }
                 // And spending one of those levels, which is a click on the little
@@ -476,10 +482,13 @@ public final class Dungeon {
                 // backpack keeps it on, and he says so.
                 case uz.dukeengine.rpg.item.ShiftItem shift -> {
                     var progress = run.progressOf(shift.playerIndex());
-                    if (progress != null && progress.getLoot().shift(shift.place())
-                            == uz.dukeengine.rpg.item.LootBag.Shift.FULL) {
+                    var shifted = progress == null ? null : progress.getLoot().shift(shift.place());
+                    if (shifted == uz.dukeengine.rpg.item.LootBag.Shift.FULL) {
                         progress.getLoot().say(settings.lootDrops().fullWord(), game.getLogic().getFrame(),
                                 settings.lootDrops().noteFrames());
+                    } else if (shifted == uz.dukeengine.rpg.item.LootBag.Shift.WORN
+                            || shifted == uz.dukeengine.rpg.item.LootBag.Shift.TAKEN_OFF) {
+                        sound(Skills.heroOf(game.getLogic(), shift.playerIndex()), "equip");
                     }
                 }
                 // Sent up to the keep's gate: he walks there and says whether he has the key. See ItemErrand.
@@ -623,5 +632,28 @@ public final class Dungeon {
     private static HeroAttributes attributesOf(DungeonSettings settings,
             uz.dukeengine.core.thing.GameObject owner) {
         return settings.heroNamed(owner.getTemplate().name()).attributes();
+    }
+
+    /**
+     * A weapon with no name of its own named after the creature holding it, so its shot is heard as {@code
+     * fired.<Template>} rather than every creature's blow as one sound. A weapon its block names keeps its name; one in
+     * sets is the sets'. The name is the sound's and the muzzle's alone: nothing the simulation decides reads it.
+     */
+    static uz.dukeengine.combat.module.WeaponUpdate.Data namedFor(uz.dukeengine.core.thing.GameObject owner,
+            uz.dukeengine.combat.module.WeaponUpdate.Data data) {
+        if (data == null || data.name() != null || !data.weaponSets().isEmpty() || owner.getTemplate() == null) {
+            return data;
+        }
+        return new uz.dukeengine.combat.module.WeaponUpdate.Data(data.damage(), data.attackRange(),
+                data.reloadFrames(), data.damageType(), data.splashRadius(), data.attackOnTheMove(), data.targets(),
+                data.reloadFramesMax(), data.clipSize(), data.clipReloadFrames(), data.autoReload(),
+                owner.getTemplate().name(), data.weaponSets(), data.deathType(), data.targetScanFrames());
+    }
+
+    /** A sound the simulation plays riding {@code thing} — see {@code World.sound}: an event, out of the checksum. */
+    static void sound(uz.dukeengine.core.thing.GameObject thing, String cue) {
+        if (thing != null && thing.getWorld() != null) {
+            thing.getWorld().sound(cue, thing, 0);
+        }
     }
 }

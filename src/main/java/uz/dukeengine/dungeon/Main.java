@@ -376,7 +376,7 @@ public final class Main {
         return bank.build();
     }
 
-    private static uz.dukeengine.client3d.SoundBank.Channel channelOf(String named) {
+    static uz.dukeengine.client3d.SoundBank.Channel channelOf(String named) {
         for (var channel : uz.dukeengine.client3d.SoundBank.Channel.values()) {
             if (channel.name().equalsIgnoreCase(named)) {
                 return channel;
@@ -532,7 +532,9 @@ public final class Main {
         // And over that, the player's own screens -- the sheet, the quest log, the map -- each on its key, and the map
         // drawn from the engine's picture of the world as he knows it, asked for every map.
         var screens = new PlayerScreens(talk, settings);
-        duke.canvas(screens).input(screens);
+        // And over them all, what it sounds like from where he stands -- the music for the place, his footsteps, the
+        // pages and coins of his own screens. See Soundscape.
+        duke.canvas(new Soundscape(screens, duke, settings)).input(screens);
         screensOn(keys, screens, settings);
         duke.worldPicture(settings.screens().mostTexels(), screens.map()::picture);
         // The run saves itself as each floor is entered, as the game is left by any door, and into a slot from the

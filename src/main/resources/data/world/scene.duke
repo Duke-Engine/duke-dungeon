@@ -305,4 +305,62 @@ Audio
   ; One voice at a time. A player clicking around the floor gives an order every
   ; frame he likes; she answers the first and then keeps quiet.
   VoiceGapSeconds = 1.6
+
+  ; ---- the music, by place and by moment (Soundscape) ----
+  ;
+  ; "Where = cue", a cue of data/sounds/music.duke. Where is a map by its name
+  ; (descent for the endless one, the campaign's descents by theirs), a zone of a
+  ; map by its name -- a zone he stands in beats his map -- or a moment: menu,
+  ; battle (an enemy fighting near him), boss (one of Bosses below, or of a Boss
+  ; block, in sight), won / won.<map> (the run won there), dead, and
+  ; cutscene.<Name>. default is anywhere else. Asked in this order: menu; dead;
+  ; won; the cutscene; boss; battle; his zones; his map; default. A moment not
+  ; named here is not one: the place's music goes on.
+  Music = [
+    "menu = music.menu",
+    "won.qora_qasr = music.lament",
+    "won = music.victory",
+    "cutscene.TurningAct1 = music.lament",
+    "boss = music.boss",
+    "battle = music.battle",
+    "Poytaxt = music.town",
+    "Malika_qasri = music.town",
+    "Kampir_kulbasi = music.wilds",
+    "Yashil_dala = music.wilds",
+    "Qorong'i_o'rmon = music.dungeon",
+    "poytaxt = music.town",
+    "medalyon = music.town",
+    "jang = music.battle",
+    "world = music.explore",
+    "qora_qasr = music.castle",
+    "hall = music.castle",
+    "descent = music.dungeon",
+    "mashq = music.dungeon",
+    "urush = music.dungeon",
+    "default = music.dungeon",
+  ]
+  ; One track fading out while the next fades in, in seconds.
+  FadeSeconds = 2.5
+  ; An enemy fighting this near him is a battle, and the battle music holds this
+  ; long after the last blow, so a lull between two packs is not a change of track.
+  BattleReach = 30
+  BattleSeconds = 8
+  ; A boss seen this near is the boss's music. The bosses are every Boss block's
+  ; and these: the descent's floor boss and the castle's lord, who have none.
+  BossReach = 70
+  Bosses = [Boss, DarkLord]
+
+  ; ---- the loop under a place (DungeonRun.ambience) ----
+  ;
+  ; As the music: "Where = cue", his zones before his map. Riding him, so it is
+  ; mono and placed; let go of a moment after he leaves the place. No forest or
+  ; wind loop is in the packs yet: the open world is quiet under its music.
+  Ambience = [
+    "descent = ambience.dungeon",
+    "mashq = ambience.dungeon",
+    "urush = ambience.dungeon",
+    "qora_qasr = ambience.dungeon",
+    "qasr = ambience.dungeon",
+    "hall = ambience.dungeon",
+  ]
 End
