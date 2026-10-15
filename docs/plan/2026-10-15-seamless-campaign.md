@@ -116,7 +116,7 @@ clip (E67) for its 70 frames.
 The knock-back is the hero's own skill: every hero carries a `PUSH` (`Qo'nish zarbasi`: Radius 160, Distance 50 over
 20 frames along an arc 18 high, stunned 90 frames, the stun look on each), off his bar as his stagger and dodge are,
 and the story's `CAST PUSH` at the landing casts it through his skill book (E82). A body standing behind one in a crowd
-stops it short (E90 asks for a push that throws a crowd); every one within the wave is stunned.
+stops it short (E95 asks for a push that throws a crowd); every one within the wave is stunned.
 
 `HOLD` (a zone) keeps every fighter standing in it DISABLED, renewed each frame, until `RELEASE`: no blows, no steps.
 
@@ -178,8 +178,8 @@ added; the joint's quests started unless going or finished. The save's next auto
 ## 8. Engine asks
 
 E82 (`PUSH`), E83 (the backdrop adopted), E84 (shut path regions) and E85 (the camera path) landed on the engine's
-`e82-85-seamless` and are used as above. E90 asks for a push that throws a crowd. The cutscene shake needed no engine
-change (see E90's note): the game's own look test now lets a cutscene's look knock harder.
+`e82-85-seamless` and are used as above. E95 asks for a push that throws a crowd. The cutscene shake needed no engine
+change (see E95's note): the game's own look test now lets a cutscene's look knock harder.
 
 ## 9. Frame cost
 

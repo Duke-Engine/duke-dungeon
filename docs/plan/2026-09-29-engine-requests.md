@@ -98,7 +98,7 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E86 | the open world's hour while it is drawn: a sun and ambient changed at runtime, the haze's colour, lights stronger at night, a tint under the GUI, rain with a colour and a streak | waiting (day and night; the game washes its canvas meanwhile) |
 | E88 | a rider on a mount: one unit drawn on another's bone, both animating, picked and barred as the rider; and a unit's sounds keyed by the template it is drawn as | waiting (mounts, `2026-10-15-mounts.md`); the game draws one combined model a hero through `drawAs` (`<Hero>Riding`) and plays the gallop as an event (`mount.gallop`) |
 | E89 | mounting in the skill system: a `MOUNT` shape (or at least a `MOVE_SPEED` buff the book holds and `HeroProgress` multiplies into his legs), cast over the mount clip, ended by a blow, a cast or an attack; zones of a map a skill is refused and ended in | waiting (mounts); `run/Stable` sets his legs every frame he rides and watches his health, his weapon and the zones itself |
-| E90 | a PUSH that throws a crowd: the farthest moved first, and a body in the way pushed on with it rather than stopping the one behind | waiting (seamless campaign, small); the landing throws those with a clear way, and stuns all |
+| E95 | a PUSH that throws a crowd: the farthest moved first, and a body in the way pushed on with it rather than stopping the one behind | waiting (seamless campaign, small); the landing throws those with a clear way, and stuns all |
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
 game builds against the local engine. E12–E15 reached it together at 668045f0 (their pull requests merged as
@@ -1847,7 +1847,7 @@ Done when a test gives a hero the MOUNT skill, casts it, he walks twice as far i
 cast while mounted is refused or ends it as data says, and casting it inside a `NotIn` zone is refused with nothing
 spent.
 
-## E90 — A PUSH that throws a crowd (2026-10-15, small; seamless campaign)
+## E95 — A PUSH that throws a crowd (2026-10-15, small; seamless campaign)
 
 E82 landed as asked, and the hero's landing casts it. In the opening battle the enemy stands packed against the
 kingdom's line, and `pushEnd` stops a victim at the first body behind it (`findBlocker`), so of the eleven within the

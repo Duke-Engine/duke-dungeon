@@ -181,7 +181,7 @@ class SeamlessIntroTest {
             session.game().runHeadless(1);
         }
         // Those inside its reach as he struck: every one stunned, and thrown its whole Distance out where nothing stands
-        // in the way -- the engine's PUSH stops a body at the first body behind it (a crowd holds; E90 asks otherwise).
+        // in the way -- the engine's PUSH stops a body at the first body behind it (a crowd holds; E95 asks otherwise).
         int inside = 0;
         int thrown = 0;
         for (var each : before.entrySet()) {
