@@ -472,7 +472,8 @@ public final class Dungeon {
                 }
                 case uz.dukeengine.rpg.item.DropItem drop -> {
                     var progress = run.progressOf(drop.playerIndex());
-                    if (progress != null && uz.dukeengine.rpg.item.ItemErrand.drop(
+                    if (progress != null && !run.keepsMedallion(game, drop.playerIndex(), drop.slot(), false)
+                            && uz.dukeengine.rpg.item.ItemErrand.drop(
                             Skills.heroOf(game.getLogic(), drop.playerIndex()), drop.slot(), drop.place(),
                             progress.getLoot(), errandRules(settings, arena))) {
                         arena.orders().attackMove(drop.playerIndex(), null);
@@ -482,7 +483,8 @@ public final class Dungeon {
                 // backpack keeps it on, and he says so.
                 case uz.dukeengine.rpg.item.ShiftItem shift -> {
                     var progress = run.progressOf(shift.playerIndex());
-                    var shifted = progress == null ? null : progress.getLoot().shift(shift.place());
+                    var shifted = progress == null || run.keepsMedallion(game, shift.playerIndex(), shift.place(), true)
+                            ? null : progress.getLoot().shift(shift.place());
                     if (shifted == uz.dukeengine.rpg.item.LootBag.Shift.FULL) {
                         progress.getLoot().say(settings.lootDrops().fullWord(), game.getLogic().getFrame(),
                                 settings.lootDrops().noteFrames());

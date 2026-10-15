@@ -2368,6 +2368,36 @@ public final class DungeonRun {
     }
 
     /**
+     * Whether the medallion keeps this player from what he asked of his bag's {@code place}: in the campaign it cannot
+     * leave him (the owner, 2026-10-15) -- not dropped from anywhere ({@code shifting} false), not taken off, and not
+     * swapped out by putting another thing on in its slot ({@code shifting} true). When it does, he says why (the
+     * Medallion block's LockedWord) and the order is not obeyed. Outside the campaign, never.
+     */
+    public boolean keepsMedallion(DukeGame game, int playerIndex, int place, boolean shifting) {
+        var named = settings.medallion().item();
+        var seat = seatOf(playerIndex);
+        if (named.isBlank() || seat == null || !settings.inCampaign(floors.stageName())) {
+            return false;
+        }
+        var bag = seat.progress.getLoot();
+        var item = place >= 0 && place < bag.slots().size() ? bag.at(place) : null;
+        if (item == null) {
+            return false;
+        }
+        boolean worn = place >= bag.backpackSize();
+        boolean kept = item.id().equals(named) && (!shifting || worn);
+        if (!kept && shifting && !worn) {
+            int slot = bag.wornPlace(item.slot());
+            var wearing = slot < 0 ? null : bag.at(slot);
+            kept = wearing != null && wearing.id().equals(named); // putting this on would take it off
+        }
+        if (kept) {
+            bag.say(settings.medallion().lockedWord(), game.getLogic().getFrame(), settings.lootDrops().noteFrames());
+        }
+        return kept;
+    }
+
+    /**
      * A player sells what is in a place of his backpack to a merchant he is near: a quest thing or a key he cannot,
      * and nothing he wears — he takes it off first.
      */

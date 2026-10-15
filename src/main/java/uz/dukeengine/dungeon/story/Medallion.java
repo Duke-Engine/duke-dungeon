@@ -16,11 +16,13 @@ package uz.dukeengine.dungeon.story;
  * @param givenLook      the Effect played on the person it is given to, as it appears in her hand; blank for none
  * @param givenLookFrames how long that lasts
  * @param turnedWord     the banner as the act ends with him cursed
+ * @param lockedWord     what he says when he tries to take it off, drop it or put another in its place in the campaign,
+ *                       where it cannot leave him (the owner, 2026-10-15)
  */
 public record Medallion(String item, String soulsWord, String wisp, float wispSpeed, String cursedWord,
         float cursedRed, float cursedGreen, float cursedBlue, int cursedEaseFrames, String givenLook,
-        int givenLookFrames, String turnedWord) {
+        int givenLookFrames, String turnedWord, String lockedWord) {
 
     public static final Medallion DEFAULTS = new Medallion("", "Jonlar", "", 4f, "CURSED", -0.3f, -0.4f, -0.25f, 60,
-            "", 60, "Qahramon la'natlandi");
+            "", 60, "Qahramon la'natlandi", "The medallion will not leave me");
 }
