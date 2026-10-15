@@ -37,12 +37,12 @@ public record Story(Dialogue dialogue, List<Speaker> speakers, List<Conversation
 
     /** The Boss block of that Monster, or null for one the story does not fight. */
     public Boss boss(String name) {
-        return bosses.stream().filter(each -> each.name().equals(name)).findFirst().orElse(null);
+        return named(bosses, Boss::name, name);
     }
 
     /** The merchant of that name, or null for a person who does not trade. */
     public Merchant merchant(String name) {
-        return merchants.stream().filter(each -> each.name().equals(name)).findFirst().orElse(null);
+        return named(merchants, Merchant::name, name);
     }
 
     /** What one of {@code item} costs: the first merchant's price for it, or the Trade block's BasePrice. */
@@ -58,27 +58,37 @@ public record Story(Dialogue dialogue, List<Speaker> speakers, List<Conversation
     }
 
     public Trigger trigger(String name) {
-        return triggers.stream().filter(each -> each.name().equals(name)).findFirst().orElse(null);
+        return named(triggers, Trigger::name, name);
     }
 
     public Cutscene cutscene(String name) {
-        return cutscenes.stream().filter(each -> each.name().equals(name)).findFirst().orElse(null);
+        return named(cutscenes, Cutscene::name, name);
     }
 
     public Speaker speaker(String name) {
-        return speakers.stream().filter(each -> each.name().equals(name)).findFirst().orElse(null);
+        return named(speakers, Speaker::name, name);
     }
 
     public Conversation conversation(String name) {
-        return conversations.stream().filter(each -> each.name().equals(name)).findFirst().orElse(null);
+        return named(conversations, Conversation::name, name);
     }
 
     public Npc npc(String name) {
-        return npcs.stream().filter(each -> each.name().equals(name)).findFirst().orElse(null);
+        return named(npcs, Npc::name, name);
     }
 
     public Quest quest(String name) {
-        return quests.stream().filter(each -> each.name().equals(name)).findFirst().orElse(null);
+        return named(quests, Quest::name, name);
+    }
+
+    /** The one called {@code name}, or null: a plain loop and no stream, as the run asks these every frame. */
+    private static <T> T named(List<T> all, java.util.function.Function<T, String> nameOf, String name) {
+        for (var one : all) {
+            if (nameOf.apply(one).equals(name)) {
+                return one;
+            }
+        }
+        return null;
     }
 
     /**
