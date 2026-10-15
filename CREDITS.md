@@ -32,6 +32,7 @@ written from there.
 | Skill, command, figure and attribute icons — all 26, painted in the item icons' look by `art/icons/ItemIcons.java` | **Lorc, Delapouite, Skoll** ([game-icons.net](https://game-icons.net)); Zeromancer's heart-plus | **CC BY 3.0** — attribution required, given here; Zeromancer's CC0 | `icons/{skills,commands,stats}/` |
 | The coins a kill throws out of the corpse — Lorc's crown coin, filled with gold by `art/icons/ItemIcons.java` | **Lorc** ([game-icons.net](https://game-icons.net)) | **CC BY 3.0** — attribution required, given here | `effects/coin.png` |
 | The marks an aura's bearer wears on the floor — a ring of runes, ripples, and a sigil of eight points | made for this game, by `art/effects/AuraDecals.java` | CC0 | `effects/aura_{runes,ripples,sigil}.png` |
+| The knight's sword wave — a flat half-moon of white steel, the body his Q flies as | made for this game, built and exported with Blender by `art/effects/knight_wave.py` | CC0 | `models/effects/knight_wave.glb` |
 | The ground a painted map is drawn with — grass, dirt, rock, snow and sand, a picture of noise and one of variation | made for this game, painted from a seed by `src/main/java/uz/dukeengine/dungeon/tools/GroundPictures.java` (`./gradlew writeGroundPictures`) | CC0 | `ground/*.png` |
 | Dungeon Pack — floors, walls, stairs | **KayKit** / Kay Lousberg ([kaylousberg.com](https://kaylousberg.com)) | CC0 | `models/tiles/dungeon/` |
 | …and its pillars, barrel and chest | KayKit | CC0 | `models/props/dungeon/` |
