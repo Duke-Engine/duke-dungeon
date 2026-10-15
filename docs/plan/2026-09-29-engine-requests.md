@@ -70,6 +70,7 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E59 | settings: an Ambience channel with its own volume, a Camera shake row (`ShakeScale` for the player), a Language row if there is more than one | landed (engine 01eb7029; game 2026-10-15) |
 | E60 | closest-thing questions with no candidate list or sort; a weapon that does not copy its owner's module list every frame | landed (engine 01eb7029; game 2026-10-15) |
 | E61 | where the hero is wanted: a `Mission` that drops its key with a few still standing, and the game's own marks on the minimap | landed, 6e789f32 on the engine's branch `e61-key-minimap`; the game passes `Run.keyLeeway` to `Mission.begin` (`run/EarlyKey` gone) and marks the key (gold, blinking) and each quest's target (QuestColour) on the minimap |
+| E62 | settings kept as the player leaves them (Esc, closing the window), not only on the Save button | asked 2026-10-15 (playtest of 1.0.41) |
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
 game builds against the local engine. E12–E15 reached it together at 668045f0 (their pull requests merged as
@@ -1288,3 +1289,19 @@ game today draws its key and quest targets on its own world map, and an arrow ro
 (`MissionScreen.pointers`, from `Canvas.screenOf`) — no engine hook is missing for that.
 
 **Landed** as 6e789f32 on the engine's branch `e61-key-minimap`: `Mission.begin(..., int leeway)` (clamped to 0..outside-1, one key, `killed()` capped at `outside()`) and `Duke3D.minimapMarks(Supplier<List<MinimapMark>>)`. The game: `DungeonRun.missionOf` passes `Run.keyLeeway`, and `run/EarlyKey` is deleted; `MissionScreen.minimapMarks` feeds the floor's key (the menu's gold, blinking) and every quest going's target (Run `QuestColour`, a still diamond), and quest places now stand in their own blue `QuestBeam`, not the key's gold. Tests: `MissionTest` (the early drop and the 0/0 last-of-them rule through the engine), `QuestMarkerTest.theCellarIsMarkedOnTheMinimap`, `theKeyIsMarkedOnTheMinimapAndBlinks`, `aQuestsPlaceLooksUnlikeTheKey`.
+
+## E62 — Settings kept as the player leaves them, not only on Save (2026-10-15, small)
+
+The owner played MSI 1.0.41: he set the game to a window in Settings, and the next launch was fullscreen again;
+`~/.duke-engine/settings.properties` was last written 2026-09-30. The file is the right one (`GameSettings`, beside
+the user; the packaged app writes its saves to `~/.duke-engine/saves` beside it, so the folder is writable) and the
+game does not move it. What loses the choice is the screen: every row is applied **live** (`fillTheScreen`,
+`applyDisplaySettings`, the volumes) into a draft, and only the **Save** button at the foot writes it. Escape is
+`undoSettings` (the hint says `ESC back`), and closing the window — its X appears the moment he picks a window, which is
+exactly when he is done — throws the draft away with no question. **Repro:** with the file saying `fullscreen=true`,
+open Settings from the front menu, set Fullscreen to NO (the window leaves the screen at once), then close the window
+with its X, or press Esc; relaunch: fullscreen, and the file's time is unchanged. Asked: what a player has *seen
+applied* is kept when he leaves the screen by Esc or closes the window (save the draft on leaving, or ask "save
+changes?" once); Cancel stays the one way back. Done when a test sets a row, leaves by Esc and by a stopped app, and
+finds the value in the file. The game, meanwhile: its Uzbek hint says `ESC bekor qilish` (Esc cancels), and with no
+file yet it starts in a 1280 × 720 window (`Duke3D.window`), not filling the screen (`DisplayModes.firstWindow`).

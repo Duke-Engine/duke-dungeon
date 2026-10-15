@@ -529,7 +529,9 @@ public final class Main {
         var keys = controls(settings);
         // Held too: a party is a match of its own, built once its players have met, and
         // it is the client that is asked to play it — see PartyFront.
-        var duke = Duke3D.of(session.game(), visuals).hotkeys(keys).musicByGame(true);
+        // A player with no settings file yet starts in a 1280 x 720 window, not filling his screen (playtest of 1.0.41);
+        // what he chose, once he has, is the engine's settings.properties and wins over this.
+        var duke = Duke3D.of(session.game(), visuals).window(1280, 720).hotkeys(keys).musicByGame(true);
         // His bag, the engine's RPG part in the game's words: what he carries, and a hand to take a thing
         // out of it and put it down. Told of every match it is drawn over -- this one, and a party's that replaces it.
         var bag = Bag.on(settings, duke);
