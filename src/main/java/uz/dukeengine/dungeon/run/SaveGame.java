@@ -27,10 +27,18 @@ import uz.dukeengine.rpg.skill.SkillRanks;
  *                   saved, which loads with none fired
  * @param souls      the souls his medallion has drunk (docs/plan/2026-10-09-medallion.md)
  * @param givenTo    the person the turning gave the medallion to, which makes him cursed; blank while it never was
+ * @param places     the zones a hero has stood in this run, the world map's places found; none in an older save
  */
 public record SaveGame(long seed, String stage, int depth, String hero, int experience, List<Rank> ranks,
         List<Item> bag, uz.dukeengine.dungeon.story.QuestLog.State quests,
-        uz.dukeengine.dungeon.story.Script.State script, int gold, int souls, String givenTo) {
+        uz.dukeengine.dungeon.story.Script.State script, int gold, int souls, String givenTo, List<String> places) {
+
+    /** A save with no places found in it: as one written before they were saved. */
+    public SaveGame(long seed, String stage, int depth, String hero, int experience, List<Rank> ranks,
+            List<Item> bag, uz.dukeengine.dungeon.story.QuestLog.State quests,
+            uz.dukeengine.dungeon.story.Script.State script, int gold, int souls, String givenTo) {
+        this(seed, stage, depth, hero, experience, ranks, bag, quests, script, gold, souls, givenTo, List.of());
+    }
 
     /** A save with no souls in it: as one written before the medallion was. */
     public SaveGame(long seed, String stage, int depth, String hero, int experience, List<Rank> ranks,
@@ -86,11 +94,19 @@ public record SaveGame(long seed, String stage, int depth, String hero, int expe
         ranks = List.copyOf(ranks);
         bag = List.copyOf(bag);
         givenTo = givenTo == null ? "" : givenTo;
+        places = places == null ? List.of() : List.copyOf(places);
     }
 
     /** The same save, with what the medallion has drunk and whom the turning gave it to. */
     public SaveGame withMedallion(int souls, String givenTo) {
-        return new SaveGame(seed, stage, depth, hero, experience, ranks, bag, quests, script, gold, souls, givenTo);
+        return new SaveGame(seed, stage, depth, hero, experience, ranks, bag, quests, script, gold, souls, givenTo,
+                places);
+    }
+
+    /** The same save, with the map's places a hero has stood in this run (the world map's found places). */
+    public SaveGame withPlaces(List<String> found) {
+        return new SaveGame(seed, stage, depth, hero, experience, ranks, bag, quests, script, gold, souls, givenTo,
+                found);
     }
 
     /** What this hero has, as a save. */
@@ -219,6 +235,11 @@ public record SaveGame(long seed, String stage, int depth, String hero, int expe
                 out.append("  End\n");
             }
         }
+        if (!places.isEmpty()) {
+            // The places found, quoted: a zone's name may hold an apostrophe. None written for none.
+            out.append("  Places = [").append(String.join(", ", places.stream().map(p -> "\"" + p + "\"").toList()))
+                    .append("]\n");
+        }
         return out.append("End\n").toString();
     }
 
@@ -284,7 +305,8 @@ public record SaveGame(long seed, String stage, int depth, String hero, int expe
                     number(save, "Depth"), word(save, "Hero"), number(save, "Experience"), ranks, bag, quests,
                     script, field(save, "Gold") == null ? 0 : number(save, "Gold"),
                     field(save, "Souls") == null ? 0 : number(save, "Souls"),
-                    field(save, "GivenTo") == null ? "" : word(save, "GivenTo"));
+                    field(save, "GivenTo") == null ? "" : word(save, "GivenTo"),
+                    field(save, "Places") == null ? List.of() : items(save, "Places"));
         } catch (RuntimeException e) {
             throw new Refused(source + " cannot be loaded: " + e.getMessage(), e);
         }

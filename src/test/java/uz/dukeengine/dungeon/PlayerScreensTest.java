@@ -284,10 +284,10 @@ class PlayerScreensTest {
 
     @Test
     void eachKeyOpensItsScreenShutsItAndOpeningOneShutsAnother() {
-        assertEquals(46, PlayerScreens.codeOf('C'));
-        assertEquals(38, PlayerScreens.codeOf('l'));
-        assertEquals(50, PlayerScreens.codeOf('M'));
-        assertEquals(36, PlayerScreens.codeOf('J'));
+        assertEquals(46, uz.dukeengine.client3d.Hotkeys.codeOf('C'));
+        assertEquals(38, uz.dukeengine.client3d.Hotkeys.codeOf('l'));
+        assertEquals(50, uz.dukeengine.client3d.Hotkeys.codeOf('M'));
+        assertEquals(36, uz.dukeengine.client3d.Hotkeys.codeOf('J'));
         var session = talk();
         var screens = new PlayerScreens(new DialogueScreen(null, null, SETTINGS), SETTINGS);
         DialogueScreen.show(session);
@@ -309,7 +309,7 @@ class PlayerScreensTest {
         screens.toggle(PlayerScreens.Open.MAP);
         assertTrue(screens.take(new CanvasInput.Button(10, 10, CanvasInput.Mouse.RIGHT, true, false)),
                 "no order to the world through it");
-        assertTrue(screens.take(new CanvasInput.Key(DialogueScreen.ESCAPE, true, false)));
+        assertTrue(screens.take(new CanvasInput.Key(CanvasInput.ESCAPE, true, false)));
         assertEquals(PlayerScreens.Open.NONE, screens.open(), "Esc shuts it");
         assertFalse(screens.take(key('M')), "shut, its key is the hotkeys' again");
 
@@ -329,7 +329,7 @@ class PlayerScreensTest {
         screens.paint(new Drawn());
         assertEquals(PlayerScreens.Open.NONE, screens.open(), "she is talking: the log is shut");
 
-        assertTrue(screens.take(new CanvasInput.Key(DialogueScreen.ESCAPE, true, false))); // her greeting skipped
+        assertTrue(screens.take(new CanvasInput.Key(CanvasInput.ESCAPE, true, false))); // her greeting skipped
         screens.paint(new Drawn());
         screens.toggle(PlayerScreens.Open.QUESTS);
         screens.quests().pick("LostLocket");
@@ -346,7 +346,32 @@ class PlayerScreensTest {
         assertEquals(box.y() + box.height() / 2f, on.y(), 0.5f);
     }
 
+    @Test
+    void theKeysAreSaidInTheGamesWordsOnTheSettingsList() {
+        var keys = Main.controls(SETTINGS);
+        Main.screensOn(keys, new PlayerScreens(new DialogueScreen(null, null, SETTINGS), SETTINGS), SETTINGS);
+        assertEquals(SETTINGS.screens().sheetTitle(), keys.wordOf('C'));
+        assertEquals(SETTINGS.screens().questsTitle(), keys.wordOf('L'));
+        assertEquals(SETTINGS.screens().mapTitle(), keys.wordOf('M'));
+        assertEquals(SETTINGS.screens().trackerWord(), keys.wordOf('J'));
+        assertEquals(SETTINGS.hud().cmdAttackWord(), keys.wordOf('A'), "an order as its button says it");
+        var skill = SETTINGS.skillsFor(SETTINGS.run().defaultHero()).getFirst();
+        assertEquals(skill.name(), keys.wordOf(skill.key()), "a skill by its name");
+        var said = SETTINGS.mainMenu().said();
+        assertEquals("Tugmalar", said.get("Keys"), "the list's heading in Uzbek");
+        assertTrue(said.keySet().containsAll(List.of("Pause", "Select all", "Pan up")), "the client's own controls");
+    }
+
+    @Test
+    void thePlacesFoundAreSaved() {
+        var bare = new uz.dukeengine.dungeon.run.SaveGame(1L, null, 1, "Rogue", 0, List.of(), List.of());
+        assertEquals(List.of(), uz.dukeengine.dungeon.run.SaveGame.read(bare.text(), "test").places(),
+                "an older save found none");
+        var found = bare.withPlaces(List.of("Poytaxt", "Qorong'i_o'rmon"));
+        assertEquals(found.places(), uz.dukeengine.dungeon.run.SaveGame.read(found.text(), "test").places());
+    }
+
     private static CanvasInput.Key key(char letter) {
-        return new CanvasInput.Key(PlayerScreens.codeOf(letter), true, false);
+        return new CanvasInput.Key(uz.dukeengine.client3d.Hotkeys.codeOf(letter), true, false);
     }
 }

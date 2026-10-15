@@ -256,7 +256,7 @@ final class TradeScreen {
         }
         switch (event) {
             case CanvasInput.Key key -> {
-                if (key.down() && key.code() == DialogueScreen.ESCAPE) {
+                if (key.down() && key.code() == CanvasInput.ESCAPE) {
                     close();
                     return true;
                 }
