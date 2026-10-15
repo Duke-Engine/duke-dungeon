@@ -351,6 +351,8 @@ public final class DungeonRun {
         givenTo = save.givenTo();
         // And its quests, before the floor is laid: the map's starting quests are then going or finished already,
         // and are not started again. A save from before quests were saved starts them, as a new run does.
+        visited.clear();
+        visitedNow = List.of();
         if (save.quests() == null) {
             quests.reset();
         } else {
@@ -555,6 +557,8 @@ public final class DungeonRun {
         tracker = descendAtFrame > 0 ? Tracker.NONE
                 : new Tracker(floorMission() ? listed(new Tracker.Entry(Tracker.Kind.MAIN, run.missionTitle(), steps))
                         : quests.entries());
+        questsNow = quests.state();
+        storyNow = floors.story();
     }
 
     /**
@@ -736,14 +740,53 @@ public final class DungeonRun {
         target = Target.of(creature, Skills.heroOf(game.getLogic(), mine.player.getIndex()),
                 fellow != null && Skills.heroOf(game.getLogic(), fellow.player.getIndex()) == creature
                         ? fellow.progress : null, settings);
+        sheet = Sheet.of(Skills.heroOf(game.getLogic(), mine.player.getIndex()), mine.progress, mine.gold, mine.souls,
+                settings);
     }
 
     /** What the target frame shows: this machine's player's pick, worked out each frame, or null for nothing. */
     private volatile Target target;
 
+    /** What the character sheet shows of this machine's hero now, or null: read by the window. */
+    private volatile Sheet sheet;
+
+    /** The run's quests as they stood at the end of the last frame: read by the quest log, from any thread. */
+    private volatile QuestLog.State questsNow = new QuestLog.State(List.of(), List.of(), List.of());
+
+    /** The story of the map being played -- its zones and people -- as the map screen reads it. */
+    private volatile uz.dukeengine.dungeon.story.MapStory storyNow = uz.dukeengine.dungeon.story.MapStory.NONE;
+
+    /**
+     * Every zone a hero has stood in this run, in the order they were first come to: the map's places he has found.
+     * The simulation's own list, and a copy of it for the window. ponytail: not saved -- a loaded run finds them
+     * again by walking in; a Places line in the save once the items work on SaveGame has landed.
+     */
+    private final List<String> visited = new ArrayList<>();
+    private volatile List<String> visitedNow = List.of();
+
     /** What the target frame shows now, or null: read by the window. */
     public Target getTarget() {
         return target;
+    }
+
+    /** What the character sheet shows of this machine's hero now, or null for no hero: read by the window. */
+    public Sheet getSheet() {
+        return sheet;
+    }
+
+    /** The run's quests as the last frame left them -- going, finished, heard -- from any thread. */
+    public QuestLog.State questsNow() {
+        return questsNow;
+    }
+
+    /** The story of the map being played, its zones and people: from any thread. */
+    public uz.dukeengine.dungeon.story.MapStory storyNow() {
+        return storyNow;
+    }
+
+    /** Every zone a hero has stood in this run, in the order first come to: from any thread. */
+    public List<String> visited() {
+        return visitedNow;
     }
 
     /**
@@ -845,6 +888,8 @@ public final class DungeonRun {
         }
         givenTo = "";
         quests.reset(); // and every quest: the map that starts them starts them again
+        visited.clear(); // and the places found
+        visitedNow = List.of();
         script.reset(); // and every trigger: the story begins again with the run
         cued.clear();
         endCutscene(game);
@@ -1460,6 +1505,10 @@ public final class DungeonRun {
             }
         }
         script.standing(standing);
+        if (!visited.containsAll(standing)) {
+            standing.stream().filter(zone -> !visited.contains(zone)).forEach(visited::add);
+            visitedNow = List.copyOf(visited);
+        }
         for (var who : people) {
             var there = logic.findObject(who.id());
             for (var seat : seats) {

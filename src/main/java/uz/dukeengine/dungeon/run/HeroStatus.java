@@ -406,7 +406,7 @@ final class HeroStatus {
      * while there was one hero and became the archer's title on a knight the
      * moment there were two.
      */
-    private static String titleOf(GameObject hero, DungeonSettings settings) {
+    static String titleOf(GameObject hero, DungeonSettings settings) {
         var his = settings.heroNamed(hero.getTemplate().name()).title();
         return his == null || his.isBlank() ? settings.hud().heroTitle() : his;
     }
