@@ -96,7 +96,8 @@ class WorldMapTest {
         var stage = shipped();
         var walk = StageCheck.walk(stage.floor());
         var relief = stage.floor().relief();
-        assertEquals(WorldMapWriter.SITES.size() + 1, stage.story().zones().size());
+        // The sites and the forest, then the villages, the towers and the landmarks: see WorldDressingTest.
+        assertTrue(stage.story().zones().size() >= WorldMapWriter.SITES.size() + 1);
         for (var zone : stage.story().zones()) {
             int reach = zone.radius() > 0 ? zone.radius() : 0;
             int right = zone.radius() > 0 ? zone.x() + reach : zone.x() + zone.width() - 1;

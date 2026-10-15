@@ -1,0 +1,1202 @@
+; ---------------------------------------------------------------------------
+; Act 2, as quests in the open world (maps/world) — see docs/plan/2026-10-15-act2.md.
+;
+; Years on, by the kingdom's summoning, the heroine — the Rogue (her DisplayName, Erika, is the
+; STAND-IN name) — lands in the capital. The commander meets her; the city's talk sends her to the
+; witch in the dark wood (Yalmog'iz kampir), who tells the queen's secret once her price is paid,
+; and the caged girl asks to be let out. The three conquered lands are freed, the queen's castle
+; opens, and the end is the final fight's hall (maps/hall, data/story/final.duke): she spares him,
+; the queen dies, the souls rise — then "Oxiri", the credits, and the front menu.
+;
+; The triggers that start things on the world ask If FLAG_SET Act2 (the act's own flag, set by its
+; joints): the open world played on its own, off the stages list, stays as it was.
+; ---------------------------------------------------------------------------
+
+Campaign
+  Name = act2
+  Word = "2-qism: Kamonchi"
+  Blurb = "Yillar o'tib, u yigitini izlab keladi. 1-qism saqlangan bo'lsa, o'sha yerdan davom etadi."
+  Hero = Rogue
+  ; Act 1's end save (data/story/act1.duke, SAVE act1): its flags, and its hero's level as act1Level=N —
+  ; the level the cursed hero is grown to in the hall. With none, Act 1's hero is taken to have reached:
+  Follows = act1
+  DefaultLevel = 10
+  ; In order; --act2=N skips straight to one (N from 1), with what the joints before it give.
+  Joints = [
+    Joint
+      Map = world
+      Flags = [Act2]
+    End,
+    Joint
+      Map = world
+      Flags = [Act2, HeroineArrived]
+      Quests = [Witch]
+      Experience = 300
+      Gold = 60
+      At = Kampir_kulbasi
+    End,
+    Joint
+      Map = world
+      Flags = [Act2, HeroineArrived, SecretKnown]
+      Quests = [FreeGreen, FreeRocky, FreeSand]
+      Experience = 900
+      Gold = 150
+      At = Yashil_dala
+    End,
+    Joint
+      Map = world
+      Flags = [Act2, HeroineArrived, SecretKnown, FreedGreen, FreedRocky, FreedSand, LandsFreed]
+      Quests = [ToTheQueen]
+      Experience = 1500
+      Gold = 300
+      At = CastleRoad
+    End,
+    Joint
+      Map = hall
+      Flags = [Act2, HeroineArrived, SecretKnown, FreedGreen, FreedRocky, FreedSand, LandsFreed]
+      Experience = 1500
+      Gold = 300
+    End
+  ]
+End
+
+; ---------------------------------------------------------------------------
+; Places the act adds to the open world (its map's file is written by WorldMapWriter): where its
+; people stand and its story listens. In cells: name x y radius.
+; ---------------------------------------------------------------------------
+
+Place
+  Map = world
+  Zone = "Arrival 117 459 1"
+End
+
+Place
+  Map = world
+  Zone = "CommanderSpot 121 462 1"
+End
+
+Place
+  Map = world
+  Zone = "BakerSpot 115 454 1"
+End
+
+Place
+  Map = world
+  Zone = "GuardSpot 123 456 1"
+End
+
+Place
+  Map = world
+  Zone = "ElderSpot 119 465 1"
+End
+
+Place
+  Map = world
+  Zone = "NecroLair 31 90 1"
+End
+
+Place
+  Map = world
+  Zone = "GreenMarket 207 318 1"
+End
+
+Place
+  Map = world
+  Zone = "CastleRoad 328 115 1"
+End
+
+; ---------------------------------------------------------------------------
+; Who speaks.
+; ---------------------------------------------------------------------------
+
+Speaker
+  Name = Baker
+  DisplayName = "Novvoy Karim"
+  Picture =
+End
+
+Speaker
+  Name = Guard
+  DisplayName = "Qorovul Jasur"
+  Picture =
+End
+
+Speaker
+  Name = Elder
+  DisplayName = "Oqsoqol Hamid"
+  Picture =
+End
+
+; The city's talk: two say what the city says; the elder knows where to go.
+Npc
+  Name = Baker
+  Talk = BakerTalks
+  Role = Novvoy
+  Radius = 28
+  Wander = 6
+End
+
+Npc
+  Name = Guard
+  Talk = GuardTalks
+  Role = Qorovul
+  Radius = 28
+End
+
+Npc
+  Name = Elder
+  Talk = ElderTalks
+  Role = Oqsoqol
+  Radius = 28
+End
+
+; ===========================================================================
+; The arrival.
+; ===========================================================================
+
+Conversation
+  Name = HeroineArrives
+  Lines = [
+    Line
+      Speaker = Hero
+      Text = "Yana o'sha nur... Yillar davomida uni izladim — va shu nur meni ham olib keldi."
+    End,
+    Line
+      Speaker = Hero
+      Text = "U shu dunyoda. Bilaman."
+    End
+  ]
+End
+
+Conversation
+  Name = CommanderMeetsHer
+  Lines = [
+    Line
+      Speaker = Act1Commander
+      Text = "Yana nur... Saltanat yana qahramon chaqirdi. Sen kimsan?"
+    End,
+    Line
+      Speaker = Hero
+      Text = "Men bir yigitni izlayapman. U bundan yillar oldin shu yerga tushgan — qilichli, bir oz sarosimada."
+    End,
+    Line
+      Speaker = Act1Commander
+      Text = "Oxirgi qahramon... U qora qasrga ketdi va qaytmadi. Malika u haqda gapirishni taqiqlagan."
+    End,
+    Line
+      Speaker = Act1Commander
+      Text = "Men senga ko'p narsa aytolmayman. Shaharda so'ra — odamlar men aytolmaganni biladi."
+    End
+  ]
+End
+
+Conversation
+  Name = BakerTalks
+  Lines = [
+    Line
+      Speaker = Baker
+      Text = "Qahramon? Ha, bir vaqtlar bor edi. Endi uning nomini aytish ham qo'rqinchli. Qora qasrdan yovuzlik keladi, deyishadi."
+    End
+  ]
+End
+
+Conversation
+  Name = GuardTalks
+  Lines = [
+    Line
+      Speaker = Guard
+      Text = "Yigirma yil qorovullik qildim — malika bir kun ham qarimadi. Ajib, a? Lekin buni men aytmadim."
+    End
+  ]
+End
+
+Conversation
+  Name = ElderTalks
+  Lines = [
+    Line
+      Speaker = Elder
+      Text = "Bobom yosh bo'lganida ham malika shunday go'zal edi. Uning yoshini hech kim bilmaydi..."
+    End
+  ]
+End
+
+Conversation
+  Name = ElderKnows
+  Lines = [
+    Line
+      Speaker = Elder
+      Text = "Qahramonni izlayapsanmi? Unda malikaning sirini bil — u bilan birga."
+    End,
+    Line
+      Speaker = Elder
+      Text = "Qorong'i o'rmonning tubida, tovuq oyoqli kulbada Yalmog'iz kampir yashaydi. Malikaning sirini faqat u biladi."
+    End,
+    Line
+      Speaker = Hero
+      Text = "Unda o'rmonga boraman."
+    End
+  ]
+End
+
+Quest
+  Name = Rumours
+  Kind = MAIN
+  Title = "Uni izlab"
+  Steps = [
+    Step
+      Goal = TALK
+      Target = Elder
+      Text = "Shaharda so'rab-surishtiring: oqsoqol nimadir biladi"
+      Glow = Yes
+      OnDone = Done
+        Says = ElderKnows
+        Experience = 60
+        Starts = Witch
+      End
+    End
+  ]
+End
+
+Cutscene
+  Name = HeroineLands
+  Shots = [
+    Shot
+      ; The beam over the capital's square, and her in it: low and close, settling as she lands.
+      Zone = Arrival
+      Frames = 30
+      Hold = 40
+      Pitch = 30
+      Zoom = 85
+      Ease = OUT
+    End,
+    Shot
+      Says = HeroineArrives
+      Hold = 10
+    End
+  ]
+End
+
+; The capital's people, every time the world is laid in the act (a load lays it again).
+Trigger
+  Name = CapitalPeople
+  Map = world
+  When = MAP_START
+  Repeat = Yes
+  If = [
+    Condition
+      Is = FLAG_SET
+      Target = Act2
+    End
+  ]
+  Actions = [
+    Action
+      Act = SPAWN
+      Target = Act1Commander
+      Zone = CommanderSpot
+    End,
+    Action
+      Act = SPAWN
+      Target = Baker
+      Zone = BakerSpot
+    End,
+    Action
+      Act = SPAWN
+      Target = Guard
+      Zone = GuardSpot
+    End,
+    Action
+      Act = SPAWN
+      Target = Elder
+      Zone = ElderSpot
+    End
+  ]
+End
+
+Trigger
+  Name = HeroineComes
+  Map = world
+  When = MAP_START
+  If = [
+    Condition
+      Is = FLAG_SET
+      Target = Act2
+    End,
+    Condition
+      Is = FLAG_UNSET
+      Target = HeroineArrived
+    End
+  ]
+  Actions = [
+    Action
+      Act = TITLE
+      Target = ChapterArrival
+    End,
+    Action
+      Act = EFFECT
+      Target = SkyLight
+      Zone = Arrival
+    End,
+    Action
+      Act = FALL
+      Target = Hero
+      Zone = Arrival
+      Height = 140
+      Frames = 30
+      Landed = HeroLandsDust
+    End,
+    Action
+      Act = FLAG
+      Target = HeroineArrived
+    End,
+    Action
+      Act = CUTSCENE
+      Target = HeroineLands
+    End
+  ]
+End
+
+Trigger
+  Name = CommanderMeets
+  Map = world
+  When = SEEN
+  Target = HeroineLands
+  Actions = [
+    Action
+      Act = WALK
+      Target = Act1Commander
+      Zone = Arrival
+    End,
+    Action
+      Act = SAY
+      Target = CommanderMeetsHer
+    End,
+    Action
+      Act = START_QUEST
+      Target = Rumours
+    End,
+    Action
+      Act = CHECKPOINT
+    End
+  ]
+End
+
+; ===========================================================================
+; The witch in the dark wood, her price, her secret; the caged girl.
+; ===========================================================================
+
+Quest
+  Name = Witch
+  Kind = MAIN
+  Title = "Qorong'i o'rmondagi kampir"
+  Steps = [
+    Step
+      Goal = TALK
+      Target = BabaYaga
+      Text = "Qorong'i o'rmon tubidagi Yalmog'iz kampirni toping"
+      Glow = Yes
+      OnDone = Done
+        Says = KampirsPrice
+        Starts = WitchsPrice
+      End
+    End
+  ]
+End
+
+Quest
+  Name = WitchsPrice
+  Kind = MAIN
+  Title = "Kampirning bahosi"
+  Steps = [
+    Step
+      Goal = KILL
+      Target = Necromancer
+      Text = "O'rmondagi o'likchini o'ldiring"
+      Glow = Yes
+    End,
+    Step
+      Goal = TALK
+      Target = BabaYaga
+      Text = "Kampirga qayting"
+      OnDone = Done
+        Says = KampirsSecret
+        Experience = 200
+      End
+    End
+  ]
+End
+
+; The necromancer she wants dead: one stands in her wood whatever came before.
+Trigger
+  Name = NecromancerWaits
+  Map = world
+  When = QUEST_STARTED
+  Target = WitchsPrice
+  Actions = [
+    Action
+      Act = SPAWN
+      Target = Necromancer
+      Zone = NecroLair
+    End
+  ]
+End
+
+; The secret told: the lands to free.
+Trigger
+  Name = SecretTold
+  Map = world
+  When = QUEST_DONE
+  Target = WitchsPrice
+  Actions = [
+    Action
+      Act = FLAG
+      Target = SecretKnown
+    End,
+    Action
+      Act = START_QUEST
+      Target = FreeGreen
+    End,
+    Action
+      Act = START_QUEST
+      Target = FreeRocky
+    End,
+    Action
+      Act = START_QUEST
+      Target = FreeSand
+    End,
+    Action
+      Act = CHECKPOINT
+    End
+  ]
+End
+
+; The caged girl (STAND-IN name "Qiz"; her role is the owner's): the key is the necromancer's.
+LootItem
+  Name = CageKey
+  DisplayName = "Qafas kaliti"
+  Icon = icons/items/key.png
+  Kind = QUEST
+  Value = 0
+  Weight = 0
+End
+
+Conversation
+  Name = DamselFreed
+  Lines = [
+    Line
+      Speaker = Damsel
+      Text = "Ozodman! Rahmat, opa. Kampir sizga sirni aytsa — ishoning, u yolg'on gapirmaydi. Faqat narxini so'raydi."
+    End
+  ]
+End
+
+Quest
+  Name = CagedGirl
+  Kind = SIDE
+  Title = "Qafasdagi qiz"
+  Steps = [
+    Step
+      Goal = COLLECT
+      Target = CageKey
+      Text = "Qafas kalitini o'likchidan oling"
+    End,
+    Step
+      Goal = GIVE
+      Target = Damsel
+      Item = CageKey
+      Text = "Qizni qafasdan chiqaring"
+      OnDone = Done
+        Says = DamselFreed
+        Experience = 120
+        Item = Ring
+      End
+    End
+  ]
+End
+
+Trigger
+  Name = KeyFromTheNecromancer
+  Map = world
+  When = DIED
+  Target = Necromancer
+  If = [
+    Condition
+      Is = FLAG_SET
+      Target = Act2
+    End
+  ]
+  Actions = [
+    Action
+      Act = GIVE
+      Target = CageKey
+    End
+  ]
+End
+
+; ===========================================================================
+; Freeing the lands: each fort's camp cleared (its zone heard CLEARED).
+; ===========================================================================
+
+Conversation
+  Name = GreenFreed
+  Lines = [
+    Line
+      Speaker = Hero
+      Text = "Yashil dala ozod. Savdogarlar yo'lga qaytadi."
+    End
+  ]
+End
+
+Conversation
+  Name = RockyFreed
+  Lines = [
+    Line
+      Speaker = Hero
+      Text = "Toshli adir ozod. Tog' yo'llari yana ochiq."
+    End
+  ]
+End
+
+Conversation
+  Name = SandFreed
+  Lines = [
+    Line
+      Speaker = Hero
+      Text = "Qumli dasht ozod. Karvonlar yana o'tadi."
+    End
+  ]
+End
+
+Conversation
+  Name = AllFreed
+  Lines = [
+    Line
+      Speaker = Hero
+      Text = "Uchala yer ozod. Malika qasrining sehri zaiflashdi — endi darvoza ochiladi."
+    End
+  ]
+End
+
+Conversation
+  Name = CastleSealed
+  Lines = [
+    Line
+      Speaker = Hero
+      Text = "Darvoza sehr bilan yopiq. Kampir aytgandek — avval yerlarni ozod qilishim kerak."
+    End
+  ]
+End
+
+; Each is done by the story as its camp is cleared (FINISH_QUEST on CLEARED), never by reaching
+; anywhere: its step names a place no map has.
+Quest
+  Name = FreeGreen
+  Kind = MAIN
+  Title = "Yashil dala"
+  Steps = [
+    Step
+      Goal = REACH
+      Target = Ozod_Yashil_dala
+      Text = "Yashil dala lagerini tozalang"
+    End
+  ]
+End
+
+Quest
+  Name = FreeRocky
+  Kind = MAIN
+  Title = "Toshli adir"
+  Steps = [
+    Step
+      Goal = REACH
+      Target = Ozod_Toshli_adir
+      Text = "Toshli adir lagerini tozalang"
+    End
+  ]
+End
+
+Quest
+  Name = FreeSand
+  Kind = MAIN
+  Title = "Qumli dasht"
+  Steps = [
+    Step
+      Goal = REACH
+      Target = Ozod_Qumli_dasht
+      Text = "Qumli dasht lagerini tozalang"
+    End
+  ]
+End
+
+Quest
+  Name = ToTheQueen
+  Kind = MAIN
+  Title = "Malika qasri"
+  Steps = [
+    Step
+      Goal = REACH
+      Target = Malika_qasri
+      Text = "Malika qasriga boring"
+    End
+  ]
+End
+
+; The merchant on the freed meadow, every time the world is laid after.
+Trigger
+  Name = GreenMarketStays
+  Map = world
+  When = MAP_START
+  Repeat = Yes
+  If = [
+    Condition
+      Is = FLAG_SET
+      Target = FreedGreen
+    End
+  ]
+  Actions = [
+    Action
+      Act = SPAWN
+      Target = Merchant
+      Zone = GreenMarket
+    End
+  ]
+End
+
+Trigger
+  Name = LandsAllFreed
+  Map = world
+  When = FLAG
+  Target = LandsFreed
+  Actions = [
+    Action
+      Act = SAY
+      Target = AllFreed
+    End,
+    Action
+      Act = START_QUEST
+      Target = ToTheQueen
+    End
+  ]
+End
+
+; ===========================================================================
+; The queen's castle: shut until the lands are freed; then open, and on to her hall.
+; ===========================================================================
+
+Trigger
+  Name = CastleShut
+  Map = world
+  When = ZONE
+  Target = Malika_qasri
+  Repeat = Yes
+  If = [
+    Condition
+      Is = FLAG_SET
+      Target = Act2
+    End,
+    Condition
+      Is = FLAG_UNSET
+      Target = LandsFreed
+    End
+  ]
+  Actions = [
+    Action
+      Act = SAY
+      Target = CastleSealed
+    End
+  ]
+End
+
+Cutscene
+  Name = GateOpens
+  Shots = [
+    Shot
+      ; The castle over its walls, the camera drawing back and up as its gate opens.
+      Zone = Malika_qasri
+      Frames = 60
+      Hold = 30
+      Pitch = 60
+      Zoom = 200
+      Ease = IN_OUT
+    End
+  ]
+End
+
+Trigger
+  Name = CastleOpens
+  Map = world
+  When = ZONE
+  Target = Malika_qasri
+  If = [
+    Condition
+      Is = FLAG_SET
+      Target = LandsFreed
+    End
+  ]
+  Actions = [
+    Action
+      Act = EFFECT
+      Target = SkyLight
+      Zone = Malika_qasri
+    End,
+    Action
+      Act = CUTSCENE
+      Target = GateOpens
+    End
+  ]
+End
+
+Trigger
+  Name = IntoTheHall
+  Map = world
+  When = SEEN
+  Target = GateOpens
+  Actions = [
+    Action
+      Act = MAP
+      Target = hall
+    End
+  ]
+End
+
+; ===========================================================================
+; The queen's hall (maps/hall, data/story/final.duke): its chapter card, and the cursed hero grown
+; to the level Act 1's hero reached (act1Level=N, carried) — the player's own.
+; ===========================================================================
+
+Trigger
+  Name = HallOpens
+  Map = hall
+  When = MAP_START
+  Actions = [
+    Action
+      Act = TITLE
+      Target = ChapterHall
+    End
+  ]
+End
+
+Trigger
+  Name = HisOwnLevel
+  Map = hall
+  When = MAP_START
+  If = [
+    Condition
+      Is = FLAG_SET
+      Target = Act2
+    End
+  ]
+  Actions = [
+    Action
+      Act = GROW
+      Target = CursedHero
+      Count = 10
+    End
+  ]
+End
+
+; The ending played (final.duke's TheEnd): "Oxiri", the credits, and the front menu.
+Trigger
+  Name = EndCard
+  Map = hall
+  When = AFTER
+  Target = TheEnd
+  Delay = 90
+  Actions = [
+    Action
+      Act = TITLE
+      Target = TheEndCard
+    End
+  ]
+End
+
+; ---------------------------------------------------------------------------
+; Title cards: the act's chapters, the end, and the credits (names from CREDITS.md).
+; ---------------------------------------------------------------------------
+
+Title
+  Name = ChapterArrival
+  Text = "2-qism: Kamonchi"
+  Subtext = "Yillar o'tib"
+End
+
+Title
+  Name = ChapterHall
+  Text = "Malika zali"
+  Subtext = "2-qism"
+End
+
+Title
+  Name = TheEndCard
+  Text = Oxiri
+  Subtext = "La'nat ko'tarildi"
+  FadeIn = 1.5
+  Hold = 4
+  FadeOut = 1.5
+End
+
+Title
+  Name = CreditsMade
+  Text = Mualliflar
+  Subtext = "O'yin va hikoya: Abdurasul"
+  FadeIn = 0.6
+  Hold = 3
+  FadeOut = 0.6
+End
+
+Title
+  Name = CreditsArt
+  Text = "Qahramonlar va maxluqlar"
+  Subtext = "KayKit — Kay Lousberg (CC0) · Huntress — Wilson · Lange — phucpham1076 · Quaternius (CC0)"
+  FadeIn = 0.6
+  Hold = 3
+  FadeOut = 0.6
+End
+
+Title
+  Name = CreditsCastles
+  Text = "Qasrlar va o'rmon"
+  Subtext = "FelikinRuslan · Aya Rady · BUKKBEEK · Pedram Ashoori · Nicolai Kilstrup · Inuciian (CC BY 4.0)"
+  FadeIn = 0.6
+  Hold = 3
+  FadeOut = 0.6
+End
+
+Title
+  Name = CreditsIcons
+  Text = "Belgilar va tovushlar"
+  Subtext = "game-icons.net — Lorc, Delapouite (CC BY 3.0) · Ravenmore · Kenney (CC0)"
+  FadeIn = 0.6
+  Hold = 3
+  FadeOut = 0.6
+End
+
+Title
+  Name = CreditsThanks
+  Text = "Rahmat!"
+  Subtext = "To'liq ro'yxat: CREDITS.md"
+  FadeIn = 0.6
+  Hold = 3
+  FadeOut = 0.6
+End
+
+; ---------------------------------------------------------------------------
+; Each land's triggers, the AND of the three, and the credits' roll.
+; ---------------------------------------------------------------------------
+
+Trigger
+  Name = FreedGreen
+  Map = world
+  When = CLEARED
+  Target = Yashil_dala
+  If = [
+    Condition
+      Is = FLAG_SET
+      Target = SecretKnown
+    End
+  ]
+  Actions = [
+    Action
+      Act = FINISH_QUEST
+      Target = FreeGreen
+    End,
+    Action
+      Act = FLAG
+      Target = FreedGreen
+    End,
+    Action
+      Act = SAY
+      Target = GreenFreed
+    End,
+    Action
+      ; A merchant comes back to the freed meadow.
+      Act = SPAWN
+      Target = Merchant
+      Zone = GreenMarket
+    End,
+    Action
+      Act = CHECKPOINT
+    End
+  ]
+End
+
+; Laid again (a load, a death), a freed camp stays freed.
+Trigger
+  Name = FreedGreenStays
+  Map = world
+  When = MAP_START
+  Repeat = Yes
+  If = [
+    Condition
+      Is = FLAG_SET
+      Target = FreedGreen
+    End
+  ]
+  Actions = [
+    Action
+      Act = CLEAR
+      Zone = Yashil_dala
+    End
+  ]
+End
+
+Trigger
+  Name = FreedRocky
+  Map = world
+  When = CLEARED
+  Target = Toshli_adir
+  If = [
+    Condition
+      Is = FLAG_SET
+      Target = SecretKnown
+    End
+  ]
+  Actions = [
+    Action
+      Act = FINISH_QUEST
+      Target = FreeRocky
+    End,
+    Action
+      Act = FLAG
+      Target = FreedRocky
+    End,
+    Action
+      Act = SAY
+      Target = RockyFreed
+    End,
+    Action
+      ; The hill's freed folk pay their thanks.
+      Act = GOLD
+      Count = 150
+    End,
+    Action
+      Act = CHECKPOINT
+    End
+  ]
+End
+
+; Laid again (a load, a death), a freed camp stays freed.
+Trigger
+  Name = FreedRockyStays
+  Map = world
+  When = MAP_START
+  Repeat = Yes
+  If = [
+    Condition
+      Is = FLAG_SET
+      Target = FreedRocky
+    End
+  ]
+  Actions = [
+    Action
+      Act = CLEAR
+      Zone = Toshli_adir
+    End
+  ]
+End
+
+Trigger
+  Name = FreedSand
+  Map = world
+  When = CLEARED
+  Target = Qumli_dasht
+  If = [
+    Condition
+      Is = FLAG_SET
+      Target = SecretKnown
+    End
+  ]
+  Actions = [
+    Action
+      Act = FINISH_QUEST
+      Target = FreeSand
+    End,
+    Action
+      Act = FLAG
+      Target = FreedSand
+    End,
+    Action
+      Act = SAY
+      Target = SandFreed
+    End,
+    Action
+      Act = GOLD
+      Count = 150
+    End,
+    Action
+      Act = CHECKPOINT
+    End
+  ]
+End
+
+; Laid again (a load, a death), a freed camp stays freed.
+Trigger
+  Name = FreedSandStays
+  Map = world
+  When = MAP_START
+  Repeat = Yes
+  If = [
+    Condition
+      Is = FLAG_SET
+      Target = FreedSand
+    End
+  ]
+  Actions = [
+    Action
+      Act = CLEAR
+      Zone = Qumli_dasht
+    End
+  ]
+End
+
+Trigger
+  Name = AllFreedAfterFreedGreen
+  Map = world
+  When = FLAG
+  Target = FreedGreen
+  If = [
+    Condition
+      Is = FLAG_SET
+      Target = FreedRocky
+    End,
+    Condition
+      Is = FLAG_SET
+      Target = FreedSand
+    End
+  ]
+  Actions = [
+    Action
+      Act = FLAG
+      Target = LandsFreed
+    End
+  ]
+End
+
+Trigger
+  Name = AllFreedAfterFreedRocky
+  Map = world
+  When = FLAG
+  Target = FreedRocky
+  If = [
+    Condition
+      Is = FLAG_SET
+      Target = FreedGreen
+    End,
+    Condition
+      Is = FLAG_SET
+      Target = FreedSand
+    End
+  ]
+  Actions = [
+    Action
+      Act = FLAG
+      Target = LandsFreed
+    End
+  ]
+End
+
+Trigger
+  Name = AllFreedAfterFreedSand
+  Map = world
+  When = FLAG
+  Target = FreedSand
+  If = [
+    Condition
+      Is = FLAG_SET
+      Target = FreedGreen
+    End,
+    Condition
+      Is = FLAG_SET
+      Target = FreedRocky
+    End
+  ]
+  Actions = [
+    Action
+      Act = FLAG
+      Target = LandsFreed
+    End
+  ]
+End
+
+Trigger
+  Name = Roll1
+  Map = hall
+  When = AFTER
+  Target = EndCard
+  Delay = 240
+  Actions = [
+    Action
+      Act = TITLE
+      Target = CreditsMade
+    End
+  ]
+End
+
+Trigger
+  Name = Roll2
+  Map = hall
+  When = AFTER
+  Target = Roll1
+  Delay = 150
+  Actions = [
+    Action
+      Act = TITLE
+      Target = CreditsArt
+    End
+  ]
+End
+
+Trigger
+  Name = Roll3
+  Map = hall
+  When = AFTER
+  Target = Roll2
+  Delay = 150
+  Actions = [
+    Action
+      Act = TITLE
+      Target = CreditsCastles
+    End
+  ]
+End
+
+Trigger
+  Name = Roll4
+  Map = hall
+  When = AFTER
+  Target = Roll3
+  Delay = 150
+  Actions = [
+    Action
+      Act = TITLE
+      Target = CreditsIcons
+    End
+  ]
+End
+
+Trigger
+  Name = Roll5
+  Map = hall
+  When = AFTER
+  Target = Roll4
+  Delay = 150
+  Actions = [
+    Action
+      Act = TITLE
+      Target = CreditsThanks
+    End
+  ]
+End
+
+Trigger
+  Name = BackToTheMenu
+  Map = hall
+  When = AFTER
+  Target = Roll5
+  Delay = 150
+  Actions = [
+    Action
+      Act = MENU
+    End
+  ]
+End
+

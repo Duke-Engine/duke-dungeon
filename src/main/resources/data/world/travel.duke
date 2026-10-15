@@ -1,0 +1,22 @@
+; ---------------------------------------------------------------------------
+; Fast travel between the watchtowers of the open world (maps/world): a tower is
+; a zone named Minora_<n> beside it; the hero finds one by standing in it, as he
+; finds every place (saved with them), and from the world map (M) -- or from its
+; keeper, who opens the map -- goes to any tower he has found, for the gold here.
+; Back from a save or a death he stands at the last tower he found.
+; ---------------------------------------------------------------------------
+Travel
+  Towers = Minora_
+  Cost = 25
+  Keeper = TowerKeeper
+  Card = Journey
+  NoGoldWord = "Oltin yetmaydi"
+  UnknownWord = "Bu minora hali topilmagan"
+  TravelHint = "Topilgan minorani bosing — u yerga borish: {cost} oltin"
+  ; A land freed opens the road to it: the tower nearest it is found (Act 2's flags, data/story/act2.duke).
+  Opens = [
+    "FreedGreen = Yashil_dala",
+    "FreedRocky = Toshli_adir",
+    "FreedSand = Qumli_dasht",
+  ]
+End

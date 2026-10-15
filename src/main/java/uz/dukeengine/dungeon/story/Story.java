@@ -210,6 +210,11 @@ public record Story(Dialogue dialogue, List<Speaker> speakers, List<Conversation
                 }
             }
             case HEARD -> conversation(target, named, wrong);
+            case CLEARED -> {
+                if (target.isBlank()) {
+                    wrong.add(named + " waits for a zone to be CLEARED and names none");
+                }
+            }
             case DEPTH -> {
                 if (!target.matches("[1-9][0-9]*")) {
                     wrong.add(named + " waits on DEPTH " + target + ": a depth is a number, 1 or more");
@@ -326,6 +331,18 @@ public record Story(Dialogue dialogue, List<Speaker> speakers, List<Conversation
                     wrong.add(named + " " + action.act() + "s " + what + ", who is no Monster nor Hero, or to no"
                             + " Zone, or over fewer than one frame or from below the ground");
                 }
+            }
+            case CLEAR -> {
+                if (action.zone().isBlank()) {
+                    wrong.add(named + " clears no Zone");
+                }
+            }
+            case GROW -> {
+                if (!monsters.contains(what)) {
+                    wrong.add(named + " grows " + what + ", and no Monster is called that");
+                }
+            }
+            case CHECKPOINT, MENU -> {
             }
             case TITLE -> {
                 if (what.isBlank()) {

@@ -117,6 +117,7 @@ public final class Content {
             named(uz.dukeengine.dungeon.story.Npc.class), named(uz.dukeengine.dungeon.story.Quest.class),
             named(uz.dukeengine.dungeon.story.Dialogue.class), named(uz.dukeengine.dungeon.world.SaveMenu.class),
             named(uz.dukeengine.dungeon.world.MainMenu.class), named(uz.dukeengine.dungeon.world.Screens.class),
+            named(uz.dukeengine.dungeon.world.Travel.class),
             named(uz.dukeengine.dungeon.story.Trigger.class), named(uz.dukeengine.dungeon.story.Cutscene.class),
             named(uz.dukeengine.dungeon.story.Merchant.class), named(uz.dukeengine.dungeon.story.Trade.class),
             named(uz.dukeengine.dungeon.story.GoldBurst.class),
@@ -124,7 +125,8 @@ public final class Content {
             named(uz.dukeengine.dungeon.loot.ItemBase.class), named(uz.dukeengine.dungeon.loot.Affix.class),
             named(uz.dukeengine.dungeon.loot.Unique.class), named(uz.dukeengine.dungeon.loot.Potion.class),
             named(uz.dukeengine.dungeon.loot.ItemRules.class),
-            named(uz.dukeengine.dungeon.story.Campaign.class), named(uz.dukeengine.dungeon.story.Title.class));
+            named(uz.dukeengine.dungeon.story.Campaign.class), named(uz.dukeengine.dungeon.story.Title.class),
+            named(uz.dukeengine.dungeon.story.Place.class));
 
     /** The blocks a world builds things from. */
     private static final Set<String> TEMPLATES = Set.of("object", "monster", "hero", "projectile", "prop");

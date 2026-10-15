@@ -1,0 +1,147 @@
+; ---------------------------------------------------------------------------
+; The open world's ordinary people (maps/world): the villages along its roads,
+; the people walking between them, and the keepers of its watchtowers. Each says
+; one plain greeting here; what they have to say in the story is Act 2's.
+; Their Monster blocks are data/units/villagers.duke; where they stand is the
+; world's writer's (stage/WorldMapWriter).
+; ---------------------------------------------------------------------------
+
+Speaker
+  Name = Villager
+  DisplayName = Qishloqi
+  Picture =
+End
+
+Speaker
+  Name = Farmer
+  DisplayName = Dehqon
+  Picture =
+End
+
+Speaker
+  Name = Traveller
+  DisplayName = "Yo'lovchi"
+  Picture =
+End
+
+Speaker
+  Name = Pedlar
+  DisplayName = "Chayqovchi Sobir"
+  Picture =
+End
+
+Speaker
+  Name = TowerKeeper
+  DisplayName = Minorabon
+  Picture =
+End
+
+Conversation
+  Name = VillagerGreets
+  Lines = [
+    Line
+      Speaker = Villager
+      Text = "Assalomu alaykum, mehmon! Qishlog'imizga xush kelibsiz."
+    End
+  ]
+End
+
+Conversation
+  Name = FarmerGreets
+  Lines = [
+    Line
+      Speaker = Farmer
+      Text = "Yer bu yil yaxshi hosil berdi. Faqat kechalari yo'llardan uzoqroq yuring."
+    End
+  ]
+End
+
+Conversation
+  Name = TravellerGreets
+  Lines = [
+    Line
+      Speaker = Traveller
+      Text = "Yo'lingiz ochiq bo'lsin! Men qishloqdan qishloqqa yuraman."
+    End
+  ]
+End
+
+Conversation
+  Name = PedlarGreets
+  Lines = [
+    Line
+      Speaker = Pedlar
+      Text = "To'xtang, to'xtang! Yo'l uchun kerakli narsalar bor — arzon!"
+    End
+  ]
+End
+
+Conversation
+  Name = KeeperGreets
+  Lines = [
+    Line
+      Speaker = TowerKeeper
+      Text = "Minoradan minoraga yo'l bor. Qaysi biriga borasiz? Xaritani ochaman."
+    End
+  ]
+End
+
+Npc
+  Name = Villager
+  Talk = VillagerGreets
+  Role = Qishloqi
+  Radius = 25
+  Wander = 30
+End
+
+Npc
+  Name = Farmer
+  Talk = FarmerGreets
+  Role = Dehqon
+  Radius = 25
+  Wander = 15
+End
+
+; Walks the roads round the city: from village to city to village, and back.
+Npc
+  Name = Traveller
+  Talk = TravellerGreets
+  Role = "Yo'lovchi"
+  Radius = 25
+  Route = [Olmazor, Poytaxt, "Bog'iston", Poytaxt]
+End
+
+; The pedlar walks between the meadow and the highlands' villages, selling as he goes.
+Npc
+  Name = Pedlar
+  Talk = PedlarGreets
+  Role = Savdogar
+  Radius = 30
+  Route = [Olmazor, Yashil_dala, Qoratepa, Toshli_adir, Qoratepa, Yashil_dala]
+End
+
+Merchant
+  Name = Pedlar
+  Stock = [
+    hayot_shishasi 22 6,
+    mana_shishasi 22 6,
+    Ring 55 1,
+  ]
+End
+
+Npc
+  Name = TowerKeeper
+  Talk = KeeperGreets
+  Role = Minorabon
+  Radius = 30
+End
+
+; Shown as a hero travels from a tower to a tower (data/world/travel.duke).
+Title
+  Name = Journey
+  Text = "Yo'lda..."
+  Subtext = "Minoradan minoraga"
+  FadeIn = 0.5
+  Hold = 1.2
+  FadeOut = 0.5
+End

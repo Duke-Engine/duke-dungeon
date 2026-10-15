@@ -69,7 +69,7 @@ final class Soundscape implements Painter {
         }
         var run = match.run();
         var hero = heroOf(match);
-        var zones = hero == null ? List.<String>of() : zonesOf(run, hero);
+        var zones = hero == null ? List.<String>of() : zonesOf(run, hero, settings);
         boolean boss = false;
         if (hero != null) {
             for (var unit : match.game().getSnapshot().units()) {
@@ -211,10 +211,13 @@ final class Soundscape implements Painter {
         return null;
     }
 
-    private static List<String> zonesOf(DungeonRun run, UnitView hero) {
+    /** The zones he stands in: his map's own, and the places the story adds to it (Place blocks). */
+    private static List<String> zonesOf(DungeonRun run, UnitView hero, DungeonSettings settings) {
         float cell = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
+        var all = new ArrayList<>(run.storyNow().zones());
+        all.addAll(settings.placesOn(run.getStageName()));
         var zones = new ArrayList<String>();
-        for (var zone : run.storyNow().zones()) {
+        for (var zone : all) {
             if (zone.holds(hero.x(), hero.y(), cell)) {
                 zones.add(zone.name());
             }

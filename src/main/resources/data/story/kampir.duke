@@ -36,14 +36,73 @@ Conversation
   ]
 End
 
+; Asked for the secret (Act 2, data/story/act2.duke): her price.
+Conversation
+  Name = KampirsPrice
+  Lines = [
+    Line
+      Speaker = BabaYaga
+      Text = "Sirni bilmoqchimisan, qizim? Bepul emas. Avval mening ishimni bajar."
+    End,
+    Line
+      Speaker = BabaYaga
+      Text = "O'rmonimda bir o'likchi kezadi — qabrlarimni o'g'irlab, jonlarni o'ziga bo'ysundiradi."
+    End,
+    Line
+      Speaker = BabaYaga
+      Text = "Uni yo'q qil. Qaytib kelganingda, malikangning sirini aytaman."
+    End
+  ]
+End
+
+; Her price paid: the queen's secret, and how to end it (the campaign's Act 2).
+Conversation
+  Name = KampirsSecret
+  Lines = [
+    Line
+      Speaker = BabaYaga
+      Text = "Bajarding... Unda eshit. Medalyonni men yasaganman — malikaning buyurtmasi bilan."
+    End,
+    Line
+      Speaker = BabaYaga
+      Text = "U har bir o'ldirilgan dushmanning jonini yutadi. O'sha jonlar malikani abadiy yosh va go'zal saqlaydi."
+    End,
+    Line
+      Speaker = BabaYaga
+      Text = "Qahramon medalyonni to'ldiradi — so'ng u qahramonni ham yutadi. Sening yigiting endi qora qasrda, la'nat ichida."
+    End,
+    Line
+      Speaker = BabaYaga
+      Text = "U urushni to'xtatmaydi — malika esa yangi qahramonlar chaqiraveradi. Seni ham shu nur olib keldi."
+    End,
+    Line
+      Speaker = Hero
+      Text = "Qanday tugataman?"
+    End,
+    Line
+      Speaker = BabaYaga
+      Text = "Malikani o'ldir. Medalyon sinadi, jonlar ozod bo'ladi, la'nat ko'tariladi. Ammo uning qasri sehr bilan yopiq."
+    End,
+    Line
+      Speaker = BabaYaga
+      Text = "Avval bosib olingan yerlarni ozod qil: uchta qal'a — Yashil dala, Toshli adir, Qumli dasht. Ularsiz darvoza ochilmaydi."
+    End
+  ]
+End
+
 Conversation
   Name = DamselAsks
   Lines = [
     Line
       Speaker = Damsel
       Text = "Iltimos, meni bu qafasdan chiqaring! Kampir qozonidan qaytmasidan oldin..."
+    End,
+    Line
+      Speaker = Damsel
+      Text = "Kalit o'sha o'likchida — u meni kampirga sotgan. Uni o'ldirsangiz, kalit sizniki."
     End
   ]
+  Starts = [CagedGirl]
 End
 
 Npc

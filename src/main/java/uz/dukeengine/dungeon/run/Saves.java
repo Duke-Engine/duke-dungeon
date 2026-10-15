@@ -48,6 +48,20 @@ public final class Saves {
         Files.move(fresh, file, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
     }
 
+    /** The save in {@code slot} — an act's end, {@code act1} — or null when there is none that can be read. */
+    public SaveGame read(String slot) {
+        var file = folder.resolve(slot + ".duke");
+        if (!Files.isRegularFile(file)) {
+            return null;
+        }
+        try {
+            return SaveGame.read(Files.readString(file), file.getFileName().toString());
+        } catch (IOException | SaveGame.Refused e) {
+            LOG.warning(() -> "the save " + slot + " cannot be read: " + e.getMessage());
+            return null;
+        }
+    }
+
     /** Every save that can be read, newest first; one that cannot is left out, and the log says why. */
     public List<Saved> list() {
         var found = new ArrayList<Saved>();
