@@ -130,6 +130,7 @@ public final class DungeonSettings {
     private uz.dukeengine.dungeon.story.GoldBurst goldBurst = uz.dukeengine.dungeon.story.GoldBurst.DEFAULTS;
     private uz.dukeengine.dungeon.story.Medallion medallion = uz.dukeengine.dungeon.story.Medallion.DEFAULTS;
     private uz.dukeengine.dungeon.story.Campaign campaign = uz.dukeengine.dungeon.story.Campaign.DEFAULTS;
+    private final List<uz.dukeengine.dungeon.story.Title> titles = new java.util.ArrayList<>();
 
     /** Every attribute, in file order — the order a hero's are held in and the panel draws them. */
     private final List<Attribute> attributes = new java.util.ArrayList<>();
@@ -258,6 +259,11 @@ public final class DungeonSettings {
     /** The queen's medallion and its passive: see {@code docs/plan/2026-10-09-medallion.md}. */
     public uz.dukeengine.dungeon.story.Medallion medallion() {
         return medallion;
+    }
+
+    /** The title card of that name, or null. */
+    public uz.dukeengine.dungeon.story.Title title(String name) {
+        return titles.stream().filter(each -> each.name().equals(name)).findFirst().orElse(null);
     }
 
     /** The campaign a new game opens: see {@code docs/plan/2026-10-15-act1.md}. */
@@ -478,6 +484,7 @@ public final class DungeonSettings {
                 case uz.dukeengine.dungeon.story.GoldBurst block -> goldBurst = once(block, once);
                 case uz.dukeengine.dungeon.story.Medallion block -> medallion = once(block, once);
                 case uz.dukeengine.dungeon.story.Campaign block -> campaign = once(block, once);
+                case uz.dukeengine.dungeon.story.Title title -> titles.add(title);
                 case uz.dukeengine.dungeon.world.SaveMenu block -> saveMenu = once(block, once);
                 case uz.dukeengine.dungeon.world.MainMenu block -> mainMenu = once(block, once);
                 case uz.dukeengine.dungeon.world.Screens block -> screens = once(block, once);
@@ -1049,6 +1056,13 @@ public final class DungeonSettings {
             require(look.isBlank() || effects.stream().anyMatch(effect -> effect.name().equals(look)),
                     "the story plays the Effect " + look + ", and no Effect block describes it");
         }
+        for (var title : titles) {
+            require(!title.text().isBlank() && title.fadeIn() >= 0f && title.hold() > 0f && title.fadeOut() >= 0f,
+                    "Title " + title.name() + ": it says something, and is held a while");
+        }
+        triggers.forEach(trigger -> trigger.actions().forEach(action -> require(
+                action.act() != uz.dukeengine.dungeon.story.Trigger.Act.TITLE || title(action.target()) != null,
+                "Trigger " + trigger.name() + " shows the Title " + action.target() + ", and no Title is called that")));
         require(dialogue.glowFrames() >= 1, "Dialogue's GlowFrames is how often a quest's target glows again: at least 1");
         for (var moment : moments) {
             require(!moment.effect().isBlank(), "Moment " + moment.name() + " plays no Effect");
@@ -1320,7 +1334,7 @@ public final class DungeonSettings {
 
     /** The Effect an EFFECT action plays, or blank for an action of another Act. */
     private static String effectOf(uz.dukeengine.dungeon.story.Trigger.Action action) {
-        return action.act() == uz.dukeengine.dungeon.story.Trigger.Act.EFFECT ? action.target() : "";
+        return action.act() == uz.dukeengine.dungeon.story.Trigger.Act.EFFECT ? action.target() : action.landed();
     }
 
     private static void require(boolean condition, String message) {

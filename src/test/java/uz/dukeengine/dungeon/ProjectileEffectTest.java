@@ -108,7 +108,7 @@ class ProjectileEffectTest {
     /**
      * The same files with every top-level Effect block cut out of them -- and the Combat block's AuraMarkLooks, which a
      * file may not write without the Effects it names, and the Dialogue block's GlowLook, a Boss's BeatenLook and the
-     * GoldBurst's CoinLook and ItemRules' Beams for the same reason; and a story's EFFECT action, which names one too, said as a FLAG instead.
+     * GoldBurst's CoinLook, ItemRules' Beams and a story move's Landed for the same reason; and a story's EFFECT action, which names one too, said as a FLAG instead.
      */
     private static String withoutTheBurning(String file) {
         var kept = new StringBuilder();
@@ -119,7 +119,7 @@ class ProjectileEffectTest {
             }
             if (!inside && !line.trim().startsWith("AuraMarkLooks = ") && !line.trim().startsWith("GlowLook = ")
                     && !line.trim().startsWith("BeatenLook = ") && !line.trim().startsWith("CoinLook = ")
-                    && !line.trim().startsWith("Beams = ")) {
+                    && !line.trim().startsWith("Beams = ") && !line.trim().startsWith("Landed = ")) {
                 kept.append(line.replace("Act = EFFECT", "Act = FLAG")).append('\n');
             }
             if (inside && line.equals("End")) {

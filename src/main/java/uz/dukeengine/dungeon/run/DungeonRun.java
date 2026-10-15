@@ -1247,8 +1247,10 @@ public final class DungeonRun {
                     tracker = Tracker.NONE;
                     // The story's own words, or nothing: there is no generic "won" (the owner, 2026-10-09).
                     game.setBanner(what.isBlank() ? "" : "won|" + what);
-                } else if (state == State.WON && !what.isBlank()) {
-                    game.setBanner("won|" + what); // a story won already (the turning) says its last words: "1-qism tugadi"
+                } else if (state == State.WON) {
+                    // A story won already (the turning) says its last words — or, saying none, clears the banner for
+                    // its title card: "1-qism tugadi".
+                    game.setBanner(what.isBlank() ? "" : "won|" + what);
                 }
             }
             case ALLY -> {
@@ -1287,6 +1289,41 @@ public final class DungeonRun {
                         }
                         thing.setPosition(to);
                     }
+                }
+            }
+            case MOVE, LEAP, FALL -> {
+                // Carried over frames by the engine's ScriptedMove (E40), not legs: a slide, a hop, a fall from the
+                // sky. Coming down, the Effect it names plays on the thing — its dust and its knock of the camera.
+                var zone = zoneNamed(action.zone());
+                if (zone == null) {
+                    return;
+                }
+                float cell = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
+                var flat = new uz.dukeengine.core.math.Coord3D(zone.middleX(cell), zone.middleY(cell), 0f);
+                var to = new uz.dukeengine.core.math.Coord3D(flat.x(), flat.y(), logic.groundHeight(flat));
+                boolean heroes = uz.dukeengine.dungeon.story.Trigger.HEROES.equals(what);
+                for (var thing : List.copyOf(logic.getObjects())) {
+                    boolean moved = heroes ? seats.stream().anyMatch(seat -> thing.getId().equals(seat.heroId))
+                            : thing.getTemplate().name().equals(what) && !thing.isEffectivelyDead();
+                    if (!moved) {
+                        continue;
+                    }
+                    uz.dukeengine.combat.module.Errand.giveUpAll(thing);
+                    var move = action.act() == uz.dukeengine.dungeon.story.Trigger.Act.FALL
+                            ? uz.dukeengine.core.module.ScriptedMove.fall(thing, to, action.height(), action.frames())
+                            : uz.dukeengine.core.module.ScriptedMove.along(thing, to, action.frames(),
+                                    action.act() == uz.dukeengine.dungeon.story.Trigger.Act.LEAP
+                                            ? action.height() : 0f);
+                    if (!action.landed().isBlank()) {
+                        move.onLanded(() -> logic.effect(action.landed(), thing));
+                    }
+                }
+            }
+            case TITLE -> {
+                var card = settings.title(what);
+                if (card != null) {
+                    // Drawn only, as every look is: the client shows it and says when it is gone (E42).
+                    game.titleCard(card.text(), card.subtext(), card.fadeIn(), card.hold(), card.fadeOut());
                 }
             }
             case KILL -> {
@@ -1436,9 +1473,20 @@ public final class DungeonRun {
         var shot = cutscene.shots().get(shotAt);
         if (shotLeft < 0) {
             var zone = shot.zone().isBlank() ? null : zoneNamed(shot.zone());
+            var camera = game.camera();
             if (zone != null) {
                 float cell = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
-                game.camera().moveTo(zone.middleX(cell), zone.middleY(cell), shot.frames());
+                camera.moveTo(zone.middleX(cell), zone.middleY(cell), shot.frames(), shot.ease());
+            }
+            // Turned, tilted and drawn in or back over the same frames, eased (E41); after the move, which stops a turn.
+            if (!Float.isNaN(shot.turn())) {
+                camera.turnTo((float) Math.toRadians(shot.turn()), shot.frames(), shot.ease());
+            }
+            if (!Float.isNaN(shot.pitch())) {
+                camera.pitchTo((float) Math.toRadians(shot.pitch()), shot.frames(), shot.ease());
+            }
+            if (!Float.isNaN(shot.zoom())) {
+                camera.zoomTo(shot.zoom(), shot.frames(), shot.ease());
             }
             if (!shot.says().isBlank()) {
                 quests.play(shot.says());

@@ -82,19 +82,34 @@ public record Trigger(String name, String map, When when, String target, int ste
         /** {@code Count} gold into the first hero's purse. */
         GOLD,
         /** The run written as it is now into the save slot the Target names, won or not: an act's end. */
-        SAVE
+        SAVE,
+        /** Every one of the Target (a Monster, or {@code Hero}: the heroes) slides to the zone over Frames (E40). */
+        MOVE,
+        /** The same over an arc Height high at its middle: a leap, a knock-back's hop. */
+        LEAP,
+        /** The same dropped straight down onto the zone from Height above it: a fall from the sky. */
+        FALL,
+        /** A Title block's card over the screen: a chapter's name, an act's end (E42). */
+        TITLE
     }
+
+    /** The Target of a MOVE, LEAP or FALL that is the heroes rather than a Monster. */
+    public static final String HEROES = "Hero";
 
     /**
      * One thing done.
      *
-     * @param target what: a conversation, quest, Monster, Npc, LootItem, flag, map, cutscene, Effect or a banner's
-     *               words — by {@link #act}
+     * @param target what: a conversation, quest, Monster, Npc, LootItem, flag, map, cutscene, Effect, Title or a
+     *               banner's words — by {@link #act}
      * @param count  how many, for SPAWN and ALLY; how much, for GOLD
-     * @param zone   where, for SPAWN, ALLY, WALK, CALL, EFFECT, PLACE and KNOCK
+     * @param zone   where, for SPAWN, ALLY, WALK, CALL, EFFECT, PLACE, KNOCK, MOVE, LEAP and FALL
+     * @param frames how long a MOVE, LEAP or FALL takes
+     * @param height a LEAP's arc at its middle; how far above the zone a FALL begins
+     * @param landed an Effect played on the thing as a MOVE, LEAP or FALL comes down — its dust, its knock of the
+     *               camera (the Effect's ShakeSeconds and ShakePower); blank for none
      */
-    public record Action(Act act, String target, int count, String zone) {
+    public record Action(Act act, String target, int count, String zone, int frames, float height, String landed) {
 
-        public static final Action DEFAULTS = new Action(null, "", 1, "");
+        public static final Action DEFAULTS = new Action(null, "", 1, "", 30, 0f, "");
     }
 }
