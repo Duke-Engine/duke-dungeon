@@ -1328,7 +1328,7 @@ public final class Main {
                         .scale(hero.modelScale())
                         .facing(hero.facing())
                         .idle(hero.idle())
-                        .walk(hero.walk())
+                        .walk(hero.walk(), hero.walkStride())
                         .attack(hero.attack())
                         .hurt(hero.hurt())
                         .die(hero.death());

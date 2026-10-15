@@ -280,7 +280,6 @@ tasks.register("exportLange") {
                 "-P", "art/lange/export_lange.py", "--",
                 File(unpacked, "KnightElfposing.fbx").absolutePath,
                 File(unpacked, "Animations/KnightElfIdle.fbx").absolutePath,
-                File(unpacked, "Animations/KnightElfWalk.fbx").absolutePath,
                 File(source, "textures").absolutePath,
                 ual.absolutePath,
                 kaykit.absolutePath,
@@ -294,6 +293,11 @@ tasks.register("exportLange") {
             from(File(out, "lange.glb"))
             into("src/main/resources/models/heroes/lange")
         }
+        // The game draws base colour only: the other maps, and their bytes, are dropped (see the script).
+        providers.exec {
+            workingDir = rootProject.projectDir
+            commandLine("node", "art/models/base_colour_only.js", "src/main/resources/models/heroes/lange/lange.glb")
+        }.standardOutput.asText.get().lines().filter { it.isNotBlank() }.forEach { logger.lifecycle(it) }
     }
 }
 

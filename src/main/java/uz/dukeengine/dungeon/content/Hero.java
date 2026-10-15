@@ -33,6 +33,8 @@ import uz.dukeengine.rpg.skill.Skill;
  * @param attributes each attribute he has, an {@code Attribute} block in {@code Attributes = [ … ]}:
  *                   which it is, what he starts with in it and what a level adds
  * @param animations the {@link AnimationSet} he moves by; his own clips are the ones he plays differently
+ * @param walkStride how far one play of his walk carries him, in world units: the client plays it at the rate
+ *                   that covers that at his speed, so his feet stay where they land. 0 plays it at its own pace
  * @param held       what he carries, each a {@code Held} block in {@code Held = [ … ]}, in the order written
  */
 public record Hero(@Group("Identity") String name, String displayName, Set<Kind> kindOf,
@@ -42,7 +44,8 @@ public record Hero(@Group("Identity") String name, String displayName, Set<Kind>
         int manaRegen, int healthRegen, String primary, List<Attribute> attributes,
         @Group("Look") String model, String texture, float modelScale, float facing,
         @Group("Animation") @Link(AnimationSet.class) String animations,
-        @Clip String idle, @Clip String walk, @Clip String attack, @Clip String hurt, @Clip String death,
+        @Clip String idle, @Clip String walk, float walkStride, @Clip String attack, @Clip String hurt,
+        @Clip String death,
         @Group("Look") List<Held> held,
         @Group("Skills") PortraitArt portrait, List<Skill> skills) implements Solid, Sighted, Classified, Titled, Drawn {
 
@@ -80,7 +83,7 @@ public record Hero(@Group("Identity") String name, String displayName, Set<Kind>
             "", 0f, 0, 0, 0, 0,
             null, List.of(),
             null, null, 1f, 90f, null,
-            null, null, null, null, null, List.of(),
+            null, null, 0f, null, null, null, List.of(),
             null, List.of());
 
     public Hero {
@@ -103,6 +106,7 @@ public record Hero(@Group("Identity") String name, String displayName, Set<Kind>
                 attributes(rules), model, texture, modelScale, facing, set.libraries(),
                 idle != null ? idle : set.idle(),
                 walk != null ? walk : set.walk(),
+                walkStride,
                 attack != null ? attack : set.attack(),
                 hurt != null ? hurt : set.hurt(),
                 death != null ? death : set.death(),

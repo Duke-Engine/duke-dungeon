@@ -77,6 +77,8 @@ import java.util.List;
  *                   bow in a third
  * @param idle       the clip he stands in
  * @param walk       the clip he moves in
+ * @param walkStride how far one play of his walk carries him, in world units, so the client paces it to his
+ *                   speed; 0 for its own pace
  * @param attack     the clip he shoots in
  * @param hurt       the clip he flinches in, or {@code null} for a hero who does
  *                   not flinch
@@ -101,6 +103,7 @@ public record HeroLook(
         List<String> animations,
         String idle,
         String walk,
+        float walkStride,
         String attack,
         String hurt,
         String death,
@@ -115,7 +118,7 @@ public record HeroLook(
     /** No art: he is drawn as a shape, as he was before there was a model. */
     public static final HeroLook NONE = new HeroLook("Rogue", "", 0f, 0, 0, 0, 0,
             uz.dukeengine.rpg.hero.HeroAttributes.NONE, null, null, 1f, 0f,
-            List.of(), null, null, null, null, null, List.of());
+            List.of(), null, null, 0f, null, null, null, List.of());
 
     public boolean hasModel() {
         return model != null;

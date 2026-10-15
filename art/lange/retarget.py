@@ -142,13 +142,40 @@ class Target:
         self.grip = self.rest["sword"].inverted() @ palm  # the point of the sword his palm is on
 
 
-def retarget(scene, target, source_arm, action, table, mirror, name, fps, speed=1.0):
-    """`action` on `source_arm` played onto Lange as a new action called `name`, `speed` times as fast."""
-    ad = source_arm.animation_data or source_arm.animation_data_create()
+class Blend:
+    """Two of the source rig's loops played at once, `weight` of the second over the first, both stretched to
+    `frames` frames: a gait between two of theirs. Both must start on the same foot. Played through the source
+    rig, each bone's world pose slerped between the two -- what a game engine's blend space does."""
+
+    def __init__(self, first, second, weight, frames):
+        self.name = f"{first.name}+{second.name}@{weight}"
+        self.parts = (first, second)
+        self.weight = weight
+        self.frame_range = (0.0, float(frames))
+
+
+def _pose(scene, source_arm, action, at, bones):
+    """World matrices of `bones` of the source rig, `action` played at frame `at`."""
+    ad = source_arm.animation_data
     ad.action = action
     if action.slots:
         ad.action_slot = action.slots[0]
+    scene.frame_set(int(at), subframe=at - int(at))
+    return {b: source_arm.matrix_world @ source_arm.pose.bones[b].matrix for b in bones}
+
+
+def _mix(a, b, w):
+    loc = a.translation.lerp(b.translation, w)
+    rot = a.to_quaternion().slerp(b.to_quaternion(), w)
+    return mathutils.Matrix.LocRotScale(loc, rot, None)
+
+
+def retarget(scene, target, source_arm, action, table, mirror, name, fps, speed=1.0, start=0.0):
+    """`action` on `source_arm` played onto Lange as a new action called `name`, `speed` times as fast, from
+    `start` seconds into it."""
+    source_arm.animation_data or source_arm.animation_data_create()
     first, last = action.frame_range
+    first += start * fps
     keys = int(math.ceil((last - first) / speed))
 
     def theirs(bone):
@@ -191,11 +218,15 @@ def retarget(scene, target, source_arm, action, table, mirror, name, fps, speed=
     previous = {}
     for key in range(keys + 1):
         at = first + min(key * speed, last - first)
-        scene.frame_set(int(at), subframe=at - int(at))
-        theirs_now = {}
-        for mine, (s, _) in offsets.items():
-            theirs_now[mine] = reflect(source_arm.matrix_world @ source_arm.pose.bones[s].matrix)
-        hips_now = reflect(source_arm.matrix_world @ source_arm.pose.bones[hips_name].matrix).translation
+        bones = {s for s, _ in offsets.values()} | {hips_name}
+        if isinstance(action, Blend):
+            poses = [_pose(scene, source_arm, part, part.frame_range[0] + (at - first) / (last - first)
+                           * (part.frame_range[1] - part.frame_range[0]), bones) for part in action.parts]
+            pose = {b: _mix(poses[0][b], poses[1][b], action.weight) for b in bones}
+        else:
+            pose = _pose(scene, source_arm, action, at, bones)
+        theirs_now = {mine: reflect(pose[s]) for mine, (s, _) in offsets.items()}
+        hips_now = reflect(pose[hips_name]).translation
         mats = {}
         for bone in target.order:
             n = bone.name
@@ -228,5 +259,5 @@ def retarget(scene, target, source_arm, action, table, mirror, name, fps, speed=
     new.use_frame_range = True
     new.frame_start, new.frame_end = 0, keys
     new.use_fake_user = True
-    print(f"CLIP {name} <- {action.name}{' mirrored' if mirror else ''} x{speed} = {keys / fps:.3f}s")
+    print(f"CLIP {name} <- {action.name} from {start}s{' mirrored' if mirror else ''} x{speed} = {keys / fps:.3f}s")
     return new

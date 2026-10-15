@@ -151,13 +151,20 @@ Hero
   ; art/lange/retarget.py.
   Animations = Lange
   Idle = Idle
-  ; He WALKS where the archer runs, and it is the same fact as Speed = 21 said
-  ; twice: a run cycle at his pace reads as skating.
+  ; ★ A RUN, since 2026-10-15. Speed 21 on a man 12 tall is 3.1 m/s for one 1.76 m high:
+  ; a jog, not a walk. His own download's walk planted his feet at a quarter of that, and
+  ; he skated (the owner: it "doesn't stick"). Walk is now Quaternius' walk and jog half
+  ; and half (art/lange/export_lange.py), a long-striding run.
   Walk = Walk
-  ; ★ CHOSEN BY ITS LENGTH. The client plays this once per blow and a blow lands
-  ; every ReloadFrames -- 34, which is 1.133s. His slash (Quaternius' Sword_Attack,
-  ; left-handed) is baked half again as fast to run 1.083s, so it finishes before the
-  ; next; the build checks the two against each other.
+  ; How far one play of it carries him, in units. The client plays it at the rate that
+  ; covers this at his speed, so his feet stay where they land however fast he is made to
+  ; go. Measured off the clip by HeroClipFitTest: re-export, re-measure.
+  WalkStride = 20.6
+  ; ★ THE BLOW LANDS ON ITS FIRST FRAME. The client starts this on the frame the blow
+  ; lands, and it has to finish inside ReloadFrames (34, 1.133s). So his slash (Quaternius'
+  ; Sword_Attack, left-handed) is cut in at the top of its wind-up: the blade is fastest a
+  ; tenth of a second after the blow, where the whole swing had it three tenths before.
+  ; 1.0s long. HeroClipFitTest measures both.
   Attack = Attack
   Hurt = Hurt
   Death = Death
