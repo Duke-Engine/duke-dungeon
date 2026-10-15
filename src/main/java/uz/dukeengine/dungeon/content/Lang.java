@@ -45,7 +45,8 @@ public final class Lang {
      */
     static final Set<String> ID_KEYS = Set.of("Zone", "Open", "Where", "At", "Cells", "Map", "Model", "Icon", "Picture",
             "Look", "Sound", "Music", "Plays", "Flags", "Items", "Needs", "Gives", "Forage", "Recipes", "Gathers",
-            "Hunts", "Clips", "Opens", "Ambience", "ModernSkillKeys", "SceneLook", "Also", "Route", "Files", "Kind",
+            "Hunts", "Clips", "Opens", "Ambience", "ModernSkillKeys", "ActionSkillKeys", "ActionBeltKeys",
+            "InteractOrders", "SceneLook", "Also", "Route", "Files", "Kind",
             "Modules", "Animations", "Cue", "Cues", "Sfx", "Footsteps", "Start", "Talk", "Says", "Starts", "Base");
 
     private static volatile Map<String, String> english;

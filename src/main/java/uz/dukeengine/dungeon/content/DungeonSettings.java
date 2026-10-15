@@ -238,6 +238,11 @@ public final class DungeonSettings {
         return controls.letterOf(scheme(), slot);
     }
 
+    /** The key that eats from belt stack {@code belt} (0 first), in the scheme played: 1-4, or action's 5-8. */
+    public char beltKey(int belt) {
+        return controls.beltKey(scheme(), belt);
+    }
+
     public Hud hud() {
         return hud;
     }
@@ -1729,6 +1734,33 @@ public final class DungeonSettings {
                         "Controls: ModernSkillKeys says no letter for " + hero.name() + "'s " + skill.key());
             }
         }
+        validateAction(taken);
+    }
+
+    /**
+     * The action scheme's keys (docs/plan/2026-10-15-action-controls.md): every slot a digit of its own, the belt on
+     * as many other digits as it has stacks, and the interact key a letter nothing else of the scheme presses -- not a
+     * step, a screen, the tracker, the fire, H or P ({@code taken}). Q R F are free there: the skills are on digits.
+     */
+    private void validateAction(java.util.Set<Character> taken) {
+        var action = controls.actionKeys();
+        var belt = controls.actionBeltKeys();
+        var digits = new java.util.ArrayList<Character>(action.values());
+        belt.chars().forEach(key -> digits.add((char) key));
+        require(action.keySet().containsAll(List.of('Q', 'W', 'E', 'R'))
+                && digits.stream().allMatch(key -> key >= '1' && key <= '9')
+                && digits.stream().distinct().count() == digits.size(),
+                "Controls: ActionSkillKeys and ActionBeltKeys press each slot and stack on a digit of its own: "
+                        + action + " " + belt);
+        require(belt.length() >= itemRules.beltSize(),
+                "Controls: ActionBeltKeys needs a digit for each of the belt's " + itemRules.beltSize() + " stacks");
+        var interact = controls.interactKey();
+        require(interact.length() == 1 && interact.charAt(0) >= 'A' && interact.charAt(0) <= 'Z'
+                && !taken.contains(interact.charAt(0)),
+                "Controls: InteractKey is one letter of its own, not a step's or another key's: " + interact);
+        require(controls.interactOrders().size() == controls.interactWords().size()
+                && controls.interactWords().stream().allMatch(DungeonSettings::sayable),
+                "Controls: InteractOrders and InteractWords go in pairs, each word sayable");
     }
 
     /** Ground the generator can carve: every percentage a percentage, and no slope steep enough to be a cliff. */

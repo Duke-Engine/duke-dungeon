@@ -294,7 +294,8 @@ class ModernControlsTest {
         var shell = FrontMenu.shell(settings, java.util.List.of(), java.util.List.of());
         var row = shell.settingsRows().stream()
                 .filter(each -> each.key().equals(uz.dukeengine.dungeon.world.Controls.ROW)).findFirst().orElseThrow();
-        assertEquals(java.util.List.of("Zamonaviy (WASD)", "Klassik (sichqoncha)"), row.choices());
+        assertEquals(java.util.List.of("Zamonaviy (WASD)", "Klassik (sichqoncha)", "Jangovar (hozircha Zamonaviy kabi)"),
+                row.choices());
         assertTrue(row.word().startsWith("Boshqaruv"));
         assertEquals(0, row.fallback(), "a new player plays the modern way");
         assertEquals(Scheme.CLASSIC, uz.dukeengine.dungeon.world.Controls.ofChoice(1));

@@ -98,6 +98,12 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E86 | the open world's hour while it is drawn: a sun and ambient changed at runtime, the haze's colour, lights stronger at night, a tint under the GUI, rain with a colour and a streak | waiting (day and night; the game washes its canvas meanwhile) |
 | E88 | a rider on a mount: one unit drawn on another's bone, both animating, picked and barred as the rider; and a unit's sounds keyed by the template it is drawn as | waiting (mounts, `2026-10-15-mounts.md`); the game draws one combined model a hero through `drawAs` (`<Hero>Riding`) and plays the gallop as an event (`mount.gallop`) |
 | E89 | mounting in the skill system: a `MOUNT` shape (or at least a `MOVE_SPEED` buff the book holds and `HeroProgress` multiplies into his legs), cast over the mount clip, ended by a blow, a cast or an attack; zones of a map a skill is refused and ended in | waiting (mounts); `run/Stable` sets his legs every frame he rides and watches his health, his weapon and the zones itself |
+
+| E90 | a captured mouse: the pointer hidden and held in the window, relative motion events, released while a screen, a menu, Alt or a lost focus asks | waiting (action controls, `2026-10-15-action-controls.md`); the action scheme plays as modern, with its pointer, meanwhile |
+| E91 | the follow camera turned round the hero by the mouse: yaw from relative x, sensitivity, invert, a pitch band | waiting (action controls); the arrows' look-away meanwhile |
+| E92 | a skill aimed by relative motion: a key arms it, its indicator from the hero along the camera's forward, mouse y the distance, confirm (LMB, the key again, or release) and cancel (RMB, Esc) | waiting (action controls); modern's quick-cast at the pointer meanwhile |
+| E93 | `MouseScheme.ACTION`: the left button strikes along the camera's forward (`AttackToward` by angle), a ranged hero's soft lock in a forward cone, the hold resent by angle | waiting (action controls); modern's left button meanwhile |
+| E94 | interact with the nearest: the context-order target in a front cone within reach, its word for a prompt drawn over it, sent on a key | waiting (action controls); the words are in the Controls block (`promptOf`), E unbound meanwhile |
 | E95 | a PUSH that throws a crowd: the farthest moved first, and a body in the way pushed on with it rather than stopping the one behind | waiting (seamless campaign, small); the landing throws those with a clear way, and stuns all |
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
@@ -1846,6 +1852,82 @@ Asked, the least first:
 Done when a test gives a hero the MOUNT skill, casts it, he walks twice as far in 30 frames, a blow of 1 ends it, a
 cast while mounted is refused or ends it as data says, and casting it inside a `NotIn` zone is refused with nothing
 spent.
+
+## E90 — A captured mouse (2026-10-15, small; action controls)
+
+The third scheme, Jangovar (`2026-10-15-action-controls.md`), has no pointer in play: the mouse turns the camera.
+The client today always shows the pointer (`DukeRtsApp`: `inputManager.setCursorVisible(true)`) and hands the game
+absolute positions only.
+
+Asked: `Duke3D.captureMouse(boolean)` and a `MouseCapture` state the client keeps: captured, the pointer is hidden and
+held in the window (re-centred each frame, or the platform's raw/relative mode) and the client reports
+**relative motion** (`dx`, `dy` in pixels a frame) to whatever wants it (E91, E92) rather than moving a pointer;
+hover picks, edge scroll and the pointer's pictures are off. It is **released** -- the pointer shown where it was left,
+absolute events as today -- while any of these holds: a screen that takes the keys (`CanvasInput.holdsKeys`, the
+same test E75's walking uses), the options and pause menus, the main menu and the launch screen, a cutscene, the chat
+line, **Alt held** (a `KeyMap.Control.FREE_POINTER`, held, rebindable), and the window without focus. Released and
+held again, the next motion is not a jump (the first relative event after a capture is zero). Done when a test
+captures, sends motion and reads relative events with the pointer hidden; opens a screen and gets the pointer and
+absolute events back; holds Alt likewise; and after both close is captured again.
+
+## E91 — The follow camera turned by the mouse (2026-10-15, small; action controls)
+
+E77's `CameraFollow` eases after the hero; its yaw is the free camera's (Q/E turn keys, `TURN_LEFT`/`TURN_RIGHT`).
+
+Asked: `CameraFollow` gains `orbitByMouse` (sensitivity in radians a pixel, default 0.25 degrees; `invertX`; a
+`pitchBand` in radians, default 0: pitch fixed at the camera's own; non-zero lets mouse y tilt it within plus or
+minus the band). While E90 has the mouse captured, relative x turns the camera's yaw round the followed unit (the
+centre stays his eased position plus look-ahead), unsmoothed (a mouse turn wants no lag); released, nothing turns.
+The arrows' look-away is off while orbiting. The camera's current yaw is readable (`GameCamera.current().angle()`,
+already) for the game's WASD and forward. Client only, no checksum. Done when a test captures, moves the mouse
+100 pixels and the yaw changed by 100 x sensitivity, with the hero still centred, and pitch unchanged at band 0.
+
+## E92 — A skill aimed by relative motion (2026-10-15, medium; action controls)
+
+Today a skill's key arms an aim that follows the **pointer** (`Hotkeys.onGround/onUnit/onOpenGround`, `SkillRange`
+rings; E78's quick-cast casts at the pointer at once). With no pointer the aim has to come from the hero.
+
+Asked, a `Hotkeys` aim mode (`AimBy.FORWARD`, set by the game for the scheme): a SELF key casts at once, as now. An
+aimed key arms its skill and draws its existing indicator (the lane, the circle at a spot, the circle on a creature,
+the cone) **from the hero along the camera's forward** (E91's yaw), at a distance that starts at the skill's reach
+for a lane and two thirds of it for a spot; relative mouse x still turns the camera (so the indicator turns with
+it), relative y moves the distance within 0 and `SkillRange.reach`. A UNIT aim snaps to the nearest valid creature
+(enemy, or friend for a heal) within 6 of the aim point (quick-cast's rule), none: the aim shows refused. **Confirm**:
+LMB, or the same key again, or (an option, `releaseToCast`) letting the key go. **Cancel**: RMB, Esc, or another
+skill's key (which arms that one). The order is the one the binding sends today (`CastSkill` with the point or the
+unit), the point rounded as orders are. Done when a test arms a GROUND skill, sends dy, confirms, and the command's
+point lies along the forward at the expected distance; RMB sends nothing; a SELF key casts at once.
+
+## E93 — The left button strikes ahead (2026-10-15, small; action controls)
+
+E78's `MouseScheme.MODERN` swings toward the **pointer's** ground point or locks on the creature under it.
+
+Asked: `MouseScheme.ACTION` (or `MouseScheme` fields `forward` and `softLockCone`): LMB turns him to the camera's
+forward. A melee hero (`AttackRange` at most a threshold the scheme says, default 20) sends E76's
+`AttackToward(point, held)` with point = his position + forward x his reach; the hold resends when the forward
+angle, quantized to 1/256 of a turn, changed, at most every 3 frames (E78's `Swing` by angle). A ranged hero gets a
+**soft lock**: the nearest visible enemy within his `AttackRange` whose centre is inside a cone of `softLockCone`
+(default 30 degrees) round the forward, ties to the smaller angle; found, `AttackObject` (E76's lock-on rules), held
+on: a new pick when it dies; none, `AttackToward` along the forward at his full range. The cone's candidate is
+marked (the target ring, faint) while the button is up. The pick is made on the poster's machine and carried by the
+order, so the simulation reads no camera. Done when a test with a forward of +x and enemies at 10 degrees and 40
+degrees locks the first; with only the second, sends `AttackToward` along +x; a melee hero sends the point at his reach.
+
+## E94 — Interact with the nearest, on a key (2026-10-15, small; action controls)
+
+The context orders (E20: `addContextOrder`, `groundOrder`, the floor's `PickUp`, the gate's `ToTheGate`) are given
+by a right-click **on** a thing. With no pointer, the thing has to be found.
+
+Asked: `Hotkeys.onInteract(char key, reach, coneDegrees, BiFunction<String, Character, String> prompt)`: each frame
+in play the client finds, among the things whose context order (the game's rules, as the pointer's cursor asks)
+is not null, the nearest within `reach` (default 14) of the hero whose centre is inside `coneDegrees` (default 100)
+round his facing (the camera's forward while he walks), ties to the smaller angle; and draws over it the string
+`prompt(word, key)` gives (null: nothing, and the thing is not offered) -- the game passes `Controls.promptOf`,
+"[E] Gaplashish". The key sends exactly what a right-click on that thing sends today. Not while a screen holds the
+keys, a cutscene runs, or the hero is DISABLED/HELD. Done when a test stands the hero before a tree and behind him a
+well, finds the tree with the prompt "[E] Kesish", and the key posts the tree's Chop; turned round, the well's Fill.
+His horse standing by is one more such target (the game's `Ride` word, "[E] Minish"): E mounts it, nothing
+more is asked for riding (`2026-10-15-action-controls.md` 6b).
 
 ## E95 — A PUSH that throws a crowd (2026-10-15, small; seamless campaign)
 

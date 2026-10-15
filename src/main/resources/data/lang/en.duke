@@ -465,6 +465,16 @@
 "Klassik (sichqoncha)" => "Classic (mouse)"
 "Boshqaruv (keyingi ochilishda)" => "Controls (after a restart)"
 "Chetlanish" => "Dodge"
+"Jangovar (hozircha Zamonaviy kabi)" => "Action (plays as Modern for now)"
+"Gaplashish" => "Talk"
+"Kesish" => "Chop"
+"Terish" => "Gather"
+"Suv olish" => "Fill"
+"Pishirish" => "Cook"
+"Olish" => "Pick up"
+"Darvozaga" => "To the gate"
+"Qazish" => "Mine"
+"Minish" => "Ride"
 
 ; ---- world/food.duke ----
 "Gulxan yoqish" => "Light a campfire"

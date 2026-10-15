@@ -300,7 +300,7 @@ final class HeroStatus {
         // modules. It comes out of the file now, beside the word.
         char[] keys = {'F', 'A', 'S', 'D'};
         card.ordersAreHis(his);
-        if (settings.scheme() == uz.dukeengine.dungeon.world.Controls.Scheme.MODERN) {
+        if (uz.dukeengine.dungeon.world.Controls.walksOnKeys(settings.scheme())) {
             return; // no order buttons: A S D are his feet, F a skill, the mouse fights and works
         }
         for (int i = 0; i < keys.length; i++) {
