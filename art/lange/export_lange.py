@@ -86,11 +86,11 @@ BORROWED = [
     # a long-striding run between them. The game paces it to his speed (WalkStride in units/knight.duke, measured
     # by HeroClipFitTest), so whatever it measures his feet stay where they land.
     ("Walk", "ual", None, ("Walk_Loop", "Jog_Fwd_Loop", 0.5, 24), False, 1.0, 0.0),
-    # A lunging one-handed slash, made left-handed. The client starts it on the frame the blow LANDS, so it
-    # is cut in at the top of its wind-up and the blade's fastest frame -- the impact -- comes a tenth of a
-    # second after the blow instead of three tenths. Faster too, so it is over before his next blow
-    # (ReloadFrames 34 = 1.133s, DungeonMonsterArtTest); the impact is checked by HeroClipFitTest.
-    ("Attack", "ual", None, "Sword_Attack", True, 1.3, 0.24),
+    # A lunging one-handed slash, made left-handed, wind-up and all. The client starts it as his weapon winds up
+    # (E69, WeaponWoundUp) and the blow lands PreAttackFrames later, which units/knight.duke sets to the blade's
+    # fastest frame (HeroClipFitTest). 1.45 times as fast, so it runs 1.083s and is over before the next wind-up
+    # (ReloadFrames + PreAttackFrames = 34 = 1.133s between blows).
+    ("Attack", "ual", None, "Sword_Attack", True, 1.45, 0.0),
     ("Hurt", "ual", None, "Hit_Chest", False, 1.0, 0.0),
     # Onto his back, twice as fast: 1.208s.
     ("Death", "ual", None, "Death01", False, 2.0, 0.0),
@@ -102,10 +102,12 @@ BORROWED = [
     ("Cast_Charge", "ual", None, "Push_Loop", False, 1.0, 0.0),
     # R, the pull: one hand raised to call the room in.
     ("Cast_Pull", "kaykit", "Rig_Medium_CombatRanged.glb", "Ranged_Magic_Raise", False, 1.0, 0.0),
-    # Work, for standing still at a fire or a bush (the food state): not named by any block yet -- the engine is
-    # to loop one while he works (E67). Under their own names, as the Huntress has them, so one name serves both.
-    ("Interact", "ual", None, "Interact", False, 1.0, 0.0),
-    ("Fixing_Kneeling", "ual", None, "Fixing_Kneeling", False, 1.0, 0.0),
+    # Work, for the food state: the engine loops one by its exact name while he works (E67, GameObject.busy). Chop
+    # is his slash at its own pace, Gather Quaternius' Interact, Cook Quaternius' Fixing_Kneeling: the Huntress has the same
+    # three names.
+    ("Chop", "ual", None, "Sword_Attack", True, 1.0, 0.0),
+    ("Gather", "ual", None, "Interact", False, 1.0, 0.0),
+    ("Cook", "ual", None, "Fixing_Kneeling", False, 1.0, 0.0),
 ]
 SWORD_BONE = "sword"
 HAND = "L.forearm"  # the rig has no hand bone: the fingers start at the forearm's end

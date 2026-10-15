@@ -88,10 +88,12 @@ CLIPS = {
     "Running_A": KAYKIT, "Death_A": KAYKIT,
     "Idle_Loop": UAL, "Hit_Chest": UAL, "Death01": UAL, "Roll": UAL,
     "Spell_Simple_Shoot": UAL,
-    # Work, for standing still at a fire or a bush (the food state): not named by any block yet -- the engine is
-    # to loop one while she works (E67). The knight has the same two under the same names.
-    "Interact": UAL, "Fixing_Kneeling": UAL,
+    # Work, for the food state: the engine loops one by its exact name while she works (E67, GameObject.busy).
+    # Written under RENAME's names -- Chop, Gather, Cook -- the same three the knight has.
+    "Sword_Attack": UAL, "Interact": UAL, "Fixing_Kneeling": UAL,
 }
+# The name a clip is written under, where it is not its library's.
+RENAME = {"Sword_Attack": "Chop", "Interact": "Gather", "Fixing_Kneeling": "Cook"}
 # Frames a clip is cut to. The client plays her Attack from the frame the arrow leaves, once a shot, and she
 # shoots every ReloadFrames 24 = 0.8s: Ranged_Bow_Release looses on its first frames and has settled by its 19th,
 # so its last half second, which every next shot cut off, is dropped (HeroClipFitTest).
@@ -772,7 +774,8 @@ def retarget(her, rigs, holder, grip):
         their_rest = {n: turn @ rest_world(rig, n) for n in set(table.values())}
         hand_pose = {PREFIX + "LeftHand_018": closed,
                      PREFIX + "RightHand_041": DRAW if clip in DRAWING else RELAXED}
-        made = bpy.data.actions.new(clip)
+        written = RENAME.get(clip, clip)
+        made = bpy.data.actions.new(written)
         her.animation_data.action = made
         start, end = action.frame_range
         end = min(end, start + CUT.get(clip, end))
@@ -825,8 +828,8 @@ def retarget(her, rigs, holder, grip):
                     if name == PREFIX + "Hips_03":
                         pose_bone.keyframe_insert("location", frame=frame, group=name)
         track = her.animation_data.nla_tracks.new()
-        track.name = clip
-        track.strips.new(clip, int(start), made)
+        track.name = written
+        track.strips.new(written, int(start), made)
         her.animation_data.action = None
         print(f"HUNTRESS clip {clip} from {source} frames={len(frames)}")
     for bone in her.pose.bones:

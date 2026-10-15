@@ -83,6 +83,7 @@ import java.util.List;
  * @param hurt       the clip he flinches in, or {@code null} for a hero who does
  *                   not flinch
  * @param death      the clip he falls in
+ * @param upperBody  the joint a blow or flinch on the move plays from, or {@code null} for the whole of him
  * @param held       what he carries, in the order the file names it — see
  *     {@link Held}. A list because a hero is rarely one thing in one hand: a
  *     knight is a sword AND a shield, an archer a bow and the arrows for it
@@ -107,6 +108,7 @@ public record HeroLook(
         String attack,
         String hurt,
         String death,
+        String upperBody,
         java.util.List<Held> held) implements uz.dukeengine.rpg.hero.HeroSheet {
 
     public HeroLook {
@@ -118,7 +120,7 @@ public record HeroLook(
     /** No art: he is drawn as a shape, as he was before there was a model. */
     public static final HeroLook NONE = new HeroLook("Rogue", "", 0f, 0, 0, 0, 0,
             uz.dukeengine.rpg.hero.HeroAttributes.NONE, null, null, 1f, 0f,
-            List.of(), null, null, 0f, null, null, null, List.of());
+            List.of(), null, null, 0f, null, null, null, null, List.of());
 
     public boolean hasModel() {
         return model != null;

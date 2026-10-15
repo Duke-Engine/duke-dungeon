@@ -28,8 +28,8 @@ import uz.dukeengine.dungeon.content.HeroLook;
  * <p>The owner (2026-10-15): the heroes' walk and swing "don't stick". Two numbers in the files decide that and
  * neither is visible in them. The client plays the walk at the rate that covers {@code WalkStride} at his speed
  * (the engine's {@code UnitVisual.walk(clip, distance)}), so a stride written wrong is feet skating; and it starts
- * the attack clip on the frame the blow lands ({@code WeaponFired}), so a swing whose blade is fastest half a
- * second in is a blow that lands before it is struck.
+ * the attack clip as the weapon winds up (E69, {@code WeaponWoundUp}; on {@code WeaponFired} for one that does not),
+ * and the blow lands {@code PreAttackFrames} later -- which has to be where the swing's blade is fastest.
  */
 class HeroClipFitTest {
 
@@ -38,8 +38,8 @@ class HeroClipFitTest {
     private static final double STEP = 1 / 60.0;
     /** How far apart WalkStride and the clip may be: the measurement's own accuracy, checked on Quaternius' rigs. */
     private static final float STRIDE_SLACK = 0.12f;
-    /** How long after the blow the swing may be fastest: three frames of the game's thirty. */
-    private static final double IMPACT_WITHIN = 0.15;
+    /** How far apart the blow and the swing's fastest frame may be: three frames of the game's thirty. */
+    private static final double IMPACT_WITHIN = 0.1;
 
     /** One clip sampled every STEP: each joint's world position, per sample. */
     private record Samples(List<String> joints, List<Vector3f[]> at, double length) {
@@ -61,11 +61,28 @@ class HeroClipFitTest {
         for (var hero : heroes()) {
             var attack = sample(hero, hero.attack());
             double impact = fastestHand(attack);
-            assertTrue(impact <= IMPACT_WITHIN, hero.name() + "'s " + hero.attack() + " is fastest " + impact
-                    + "s in, and the client starts it on the frame the blow lands: cut its wind-up off");
-            double between = reloadFramesOf(hero.name()) / (double) GameConstants.LOGICFRAMES_PER_SECOND;
+            var weapon = weaponOf(hero.name());
+            double lands = weapon.preAttackFrames() / (double) GameConstants.LOGICFRAMES_PER_SECOND;
+            assertTrue(Math.abs(impact - lands) <= IMPACT_WITHIN, hero.name() + "'s " + hero.attack()
+                    + " is fastest " + impact + "s in and his blow lands " + lands
+                    + "s in (PreAttackFrames): set it to the impact");
+            double between = (weapon.reloadFrames() + weapon.preAttackFrames())
+                    / (double) GameConstants.LOGICFRAMES_PER_SECOND;
             assertTrue(attack.length() <= between + 1e-3, hero.name() + "'s " + hero.attack() + " runs "
                     + attack.length() + "s and he strikes every " + between + "s: every one is cut off");
+        }
+    }
+
+    @Test
+    void everyHerosUpperBodyIsAJointOfHis() {
+        for (var hero : heroes()) {
+            if (hero.upperBody() == null) {
+                continue;
+            }
+            var him = ASSETS.loadModel(hero.model());
+            assertTrue(control(him, SkinningControl.class).getArmature().getJoint(hero.upperBody()) != null,
+                    hero.name() + "'s UpperBody " + hero.upperBody() + " is no joint of his: his blows on the move"
+                            + " would play over the whole of him");
         }
     }
 
@@ -161,12 +178,12 @@ class HeroClipFitTest {
         return name.matches(".*(foot|hand|sword|slot).*");
     }
 
-    private static int reloadFramesOf(String template) {
+    private static WeaponUpdate.Data weaponOf(String template) {
         var game = Dungeon.world(".....\n.....\n.....\n", SETTINGS).game();
         game.runHeadless(1);
         for (var module : game.getLogic().getThingFactory().findTemplate(template).modules()) {
             if (module instanceof WeaponUpdate.Data weapon) {
-                return weapon.reloadFrames();
+                return weapon;
             }
         }
         throw new AssertionError(template + " carries no weapon");

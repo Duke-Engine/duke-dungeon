@@ -1338,7 +1338,8 @@ public final class Main {
                         .walk(hero.walk(), hero.walkStride())
                         .attack(hero.attack())
                         .hurt(hero.hurt())
-                        .die(hero.death());
+                        .die(hero.death())
+                        .upperBody(hero.upperBody());
                 if (hero.texture() != null) {
                     unit.texture(hero.texture());
                 }
