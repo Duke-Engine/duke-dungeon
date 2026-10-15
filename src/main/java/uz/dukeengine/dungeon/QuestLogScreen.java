@@ -126,12 +126,14 @@ final class QuestLogScreen {
             case REACH -> {
                 return zoneMiddle(where, step.target());
             }
-            case KILL -> {
+            case KILL, FOLLOW -> {
+                // The nearest standing of what is to be killed, or the one to follow, wherever they have got to.
+                boolean any = step.goal() == uz.dukeengine.dungeon.story.Quest.Goal.FOLLOW;
                 float[] nearest = null;
                 double best = Double.MAX_VALUE;
                 for (var unit : seen) {
                     double far = Math.hypot(unit.x() - fromX, unit.y() - fromY);
-                    if (unit.templateName().equals(step.target()) && unit.health() > 0f && far < best) {
+                    if (unit.templateName().equals(step.target()) && (any || unit.health() > 0f) && far < best) {
                         best = far;
                         nearest = new float[] {unit.x(), unit.y()};
                     }

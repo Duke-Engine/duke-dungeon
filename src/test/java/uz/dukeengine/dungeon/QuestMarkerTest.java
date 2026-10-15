@@ -32,21 +32,21 @@ class QuestMarkerTest {
     /** The cellar's KILL names its Where: with no skeleton in sight, the mark stands on the cellar. */
     @Test
     void theCellarsSkeletonsAreMarkedOnTheCellar() {
-        var cellar = StaticMap.Zone.of("Cellar 33 2 4 4");
+        var cellar = StaticMap.Zone.of("Yerto'la 121 453 2");
         var poytaxt = new MapStory(List.of(), List.of(cellar), List.of(), List.of());
 
         assertArrayEquals(new float[] {cellar.middleX(CELL), cellar.middleY(CELL)},
                 QuestLogScreen.whereIs("Cellar", killing("Cellar"), SETTINGS.story(), poytaxt));
-        assertEquals("Cellar", uz.dukeengine.dungeon.run.DungeonRun.placeOf(SETTINGS.story(), "Cellar", 0),
+        assertEquals("Yerto'la", uz.dukeengine.dungeon.run.DungeonRun.placeOf(SETTINGS.story(), "Cellar", 0),
                 "and its pillar of light stands there");
         assertTrue(SETTINGS.story().quest("Cellar").steps().getFirst().text().contains("yerto'la"),
                 "the tracker says where the cellar is");
     }
 
-    /** The cellar the quest names is a zone of the capital, the map it is given on. */
+    /** The cellar the quest names is a zone of the world's capital, where it is given (the seamless campaign). */
     @Test
     void theCellarIsAZoneOfTheCapital() {
-        assertTrue(Stages.load("poytaxt", SETTINGS).story().zones().stream().anyMatch(z -> z.name().equals("Cellar")),
+        assertTrue(Stages.load("world", SETTINGS).story().zones().stream().anyMatch(z -> z.name().equals("Yerto'la")),
                 "the capital has its cellar");
         assertFalse(SETTINGS.story().quest("Cellar").steps().getFirst().where().isBlank());
     }
@@ -73,15 +73,15 @@ class QuestMarkerTest {
         assertArrayEquals(new float[] {near.x(), near.y()}, at, "the nearest skeleton");
     }
 
-    /** On the capital, the cellar quest taken, a pillar of light stands on the cellar. */
+    /** On the world's capital, the cellar quest taken, a pillar of light stands on the cellar. */
     @Test
     void theCellarStandsInAPillarOfLightWhileTheQuestWantsIt() {
-        var session = Dungeon.newStageSession(Stages.load("poytaxt", SETTINGS), SETTINGS);
+        var session = Dungeon.newStageSession(Stages.load("world", SETTINGS), SETTINGS);
         var game = session.game();
         game.runHeadless(1);
         session.run().getQuests().start("Cellar");
-        var cellar = Stages.load("poytaxt", SETTINGS).story().zones().stream()
-                .filter(z -> z.name().equals("Cellar")).findFirst().orElseThrow();
+        var cellar = Stages.load("world", SETTINGS).story().zones().stream()
+                .filter(z -> z.name().equals("Yerto'la")).findFirst().orElseThrow();
         game.watch();
         boolean lit = false;
         for (int frame = 0; frame <= SETTINGS.items().rules().beamFrames() && !lit; frame++) {
@@ -107,12 +107,12 @@ class QuestMarkerTest {
     /** On the minimap (E61): the cellar quest's target, a still diamond in the quest colour. */
     @Test
     void theCellarIsMarkedOnTheMinimap() {
-        var session = Dungeon.newStageSession(Stages.load("poytaxt", SETTINGS), SETTINGS);
+        var session = Dungeon.newStageSession(Stages.load("world", SETTINGS), SETTINGS);
         session.game().runHeadless(1);
         session.run().getQuests().start("Cellar");
         session.game().runHeadless(2);
-        var cellar = Stages.load("poytaxt", SETTINGS).story().zones().stream()
-                .filter(z -> z.name().equals("Cellar")).findFirst().orElseThrow();
+        var cellar = Stages.load("world", SETTINGS).story().zones().stream()
+                .filter(z -> z.name().equals("Yerto'la")).findFirst().orElseThrow();
 
         var marks = MissionScreen.minimapMarks(session, SETTINGS);
         assertTrue(marks.contains(new uz.dukeengine.client3d.MinimapMark(cellar.middleX(CELL), cellar.middleY(CELL),

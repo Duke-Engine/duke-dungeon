@@ -389,7 +389,10 @@ class HeroStatusTest {
      */
     @Test
     void theLineCarriesEveryPartOfTheDesign() {
-        var session = Dungeon.newSession(7L);
+        // The classic scheme's, whose four orders have their buttons (the modern one has none: ModernControlsTest).
+        var classic = uz.dukeengine.dungeon.content.DungeonSettings.load();
+        classic.useScheme(uz.dukeengine.dungeon.world.Controls.Scheme.CLASSIC);
+        var session = Dungeon.newSession(7L, classic);
         var game = session.game();
         game.runHeadless(2);
         pickOutTheHero(session);

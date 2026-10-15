@@ -415,3 +415,84 @@ Monster
     Scale = 1.3
   End
 End
+
+; ---------------------------------------------------------------------------
+; The seamless campaign's opening (docs/plan/2026-10-15-seamless-campaign.md).
+; ---------------------------------------------------------------------------
+
+; The three ritualists who call the hero down, standing apart from the battle round his landing.
+; No body and the neutral side: nothing targets or hurts them, an area blow does not take them in,
+; and they fight nobody (the Battle block lays them). Drawn as the Skeleton Summoner is: the
+; licensed Ritualist where licensed-assets/ is shipped, the purple skeleton mage where not. Their
+; ritual is the story's POSE: her own Ritual clip, the stand-in's summoning gesture.
+Monster
+  Name = Ritualist
+  DisplayName = Kohin
+  KindOf = [INFANTRY]
+  Geometry = Cylinder
+    Radius = 4
+    Height = 13
+  End
+  VisionRange = 0
+  Modules = [
+    MoveUpdate
+      Speed = 10
+      TurnRate = 0
+    End
+  ]
+  MinDepth = 99
+  Weight = 0
+  Colour = 0xB06AE8
+  Scale = 1
+  Model = models/monsters/skeleton_mage.glb
+  Animations = Humanoid
+  Texture = models/monsters/skeleton_texture_purple.png
+  Effect = EmberEyes
+  ; A little taller than the Skeleton Summoner, and paler: the queen's, not the dungeon's.
+  ModelScale = 6.3
+  Tint = 0xE0D8F0
+  Idle = Ranged_Magic_Spellcasting_Long
+  Licensed = MonsterLook
+    Model = models/licensed/ritualist.glb
+    ModelScale = 7.9
+    Tint = 0xE0D8F0
+    Facing = 90
+    Idle = Idle
+    Walk = Walk
+    Attack = Attack
+    Death = Death
+    WalkStride = 10.4
+    UpperBody = spine
+  End
+End
+
+; The kingdom's guards where the corridor to the capital ends: the world is shut past them for now.
+Monster
+  Name = Soqchi
+  DisplayName = "Qirol soqchisi"
+  KindOf = [INFANTRY, SELECTABLE]
+  Geometry = Cylinder
+    Radius = 4
+    Height = 12
+  End
+  VisionRange = 0
+  Modules = [
+    MoveUpdate
+      Speed = 10
+      TurnRate = 0
+    End
+  ]
+  MinDepth = 99
+  Weight = 0
+  Colour = 0x8A7A58
+  Scale = 1.0
+  Model = models/heroes/knight.glb
+  Tint = 0xA89878
+  ModelScale = 4.72
+  Facing = 90
+  Animations = Humanoid
+  Held = Held
+    Model = models/weapons/medieval/sword.glb
+    Bone = handslot.r
+  End
+End

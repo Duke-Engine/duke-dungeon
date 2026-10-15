@@ -430,8 +430,11 @@ public final class Dungeon {
                 // hero is casting; a player with no hero casts nothing.
                 case CastSkill cast -> {
                     var learnt = run.learntOf(cast.playerIndex());
+                    // A skill of his book outside his four -- his dodge -- is never bought: his at its first rank.
+                    int rank = learnt == null ? 0 : learnt.getSkills().stream().anyMatch(s -> s.key() == cast.key())
+                            ? learnt.rankOf(cast.key()) : 1;
                     if (learnt != null && Skills.cast(game.getLogic(),
-                            toTheEndOfItsLane(game.getLogic(), cast, learnt.getSkills()), learnt.rankOf(cast.key()))) {
+                            toTheEndOfItsLane(game.getLogic(), cast, learnt.getSkills()), rank)) {
                         // Heard as cast.<Template>.<key>: the knight's wave and the huntress's volley are two sounds.
                         var hero = Skills.heroOf(game.getLogic(), cast.playerIndex());
                         if (hero != null) {

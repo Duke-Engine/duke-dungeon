@@ -114,6 +114,9 @@ public final class DungeonRun {
         volatile int soulPercent;
         /** How many of the conversations said this run his machine has shown to the end (or had skipped). */
         int read;
+        /** Where his hero last stood inside the gate kept now, and the frame he was last told it is shut. */
+        uz.dukeengine.core.math.Coord3D lastInside;
+        int toldShutAt = Integer.MIN_VALUE / 2;
 
         Seat(GamePlayer player, HeroProgress progress, SkillRanks learnt, String hero) {
             this.player = player;
@@ -388,10 +391,24 @@ public final class DungeonRun {
         } else {
             quests.restore(save.quests());
         }
-        if (save.script() == null) {
+        // A save on a map the act left (the seamless campaign folded jang, poytaxt and mashq into the world) loads
+        // as the joint that took its place: its flags added, its quests started, put in its At.
+        var moved = settings.replacing(save.stage());
+        var kept = save.script();
+        if (moved != null) {
+            var flags = new ArrayList<String>(kept == null ? List.of() : kept.flags());
+            moved.flags().stream().filter(flag -> !flags.contains(flag)).forEach(flags::add);
+            kept = new uz.dukeengine.dungeon.story.Script.State(kept == null ? List.of() : kept.fired(), flags,
+                    List.of(), List.of());
+        }
+        if (kept == null) {
             script.reset();
         } else {
-            script.restore(save.script());
+            script.restore(kept);
+        }
+        if (moved != null) {
+            moved.quests().forEach(quests::start);
+            skippedTo = moved.at();
         }
         loading = true;
     }
@@ -422,7 +439,9 @@ public final class DungeonRun {
         var flags = new ArrayList<String>();
         if (!campaign.follows().isBlank()) {
             if (carried != null && carried.script() != null) {
-                flags.addAll(carried.script().flags());
+                // What happened, but not that it was the act before: its own flag (Act1 of act1) would wake its story.
+                var own = Character.toUpperCase(campaign.follows().charAt(0)) + campaign.follows().substring(1);
+                carried.script().flags().stream().filter(flag -> !flag.equals(own)).forEach(flags::add);
             }
             flags.add(campaign.levelFlag(carried == null ? campaign.defaultLevel()
                     : settings.levelling().levelFor(carried.experience())));
@@ -484,6 +503,16 @@ public final class DungeonRun {
                 seat.learnt, seat.progress.getLoot(), quests.state(), script.state(), seat.gold)
                 .withMedallion(seat.souls, givenTo).withPlaces(visited)
                 .withFelled(lastLogic == null ? List.of() : lastLogic.getRemovedScenery());
+    }
+
+    /** The first seat's hero on the floor now, by its id, or null: the menu's backdrop keeps him out of sight. */
+    public ObjectId heroId() {
+        return seats.getFirst().heroId;
+    }
+
+    /** The dungeon's side, which every monster the floors place is on. */
+    public int dungeonSide() {
+        return dungeonPlayer.getIndex();
     }
 
     /** Whoever the first player plays — the file's answer until somebody chooses. */
@@ -633,6 +662,15 @@ public final class DungeonRun {
         camp.lay(game.getLogic(), floors.stageName(), floors.seed(), zones(), dungeonPlayer.getIndex(), heroLevel(),
                 paint == null ? List.of() : paint.scenery().stream().map(piece -> piece.model()).toList(),
                 loading ? felled : List.of());
+        sky = null;
+        holding = null;
+        trails.clear();
+        beams.clear();
+        seats.forEach(seat -> seat.lastInside = null);
+        var gate = gate();
+        if (loading && skippedTo.isBlank() && gate != null && !gate.start().isBlank()) {
+            skippedTo = gate.start(); // back from a save or a death under a gate: where the story has him
+        }
         if (loading && skippedTo.isBlank() && lastTowerFound() != null) {
             skippedTo = lastTowerFound(); // back from a save or a death: at the last tower he found, not the way in
         }
@@ -834,6 +872,8 @@ public final class DungeonRun {
         }
         story(game);
         scripted(game);
+        intro(game);
+        gated(game);
         if (state != State.RUNNING) {
             return; // a trigger won it: the banner has the screen
         }
@@ -849,6 +889,8 @@ public final class DungeonRun {
         var what = condition.target();
         return switch (condition.is()) {
             case FLAG_SET, FLAG_UNSET -> script.flagsAlone(condition);
+            case LACKS -> !holds(new uz.dukeengine.dungeon.story.Trigger.Condition(
+                    uz.dukeengine.dungeon.story.Trigger.Is.HOLDS, what));
             case HOLDS, WEARS -> bags().stream().anyMatch(bag -> {
                 for (int place = 0; place < bag.slots().size(); place++) {
                     var item = bag.at(place);
@@ -1496,6 +1538,104 @@ public final class DungeonRun {
                     }
                 }
             }
+            case LAY -> {
+                var zone = zoneNamed(action.zone());
+                var loot = zone == null ? null : settings.items().resolve(what);
+                if (loot != null) {
+                    uz.dukeengine.rpg.item.GroundItem.lay(logic, loot.liesAs(settings.lootDrops().template()), loot,
+                            ground(logic, new uz.dukeengine.dungeon.map.StaticMap.Placed(what, zone.x(), zone.y())),
+                            dungeonPlayer.getIndex());
+                }
+            }
+            case BATTLE -> {
+                var battle = settings.battle(what);
+                if (battle != null) {
+                    Battles.lay(logic, battle, this::zoneNamed, seats.getFirst().player.getIndex(),
+                            dungeonPlayer.getIndex(), settings, depth, this::pay);
+                }
+            }
+            case POSE -> {
+                boolean heroes = uz.dukeengine.dungeon.story.Trigger.HEROES.equals(what);
+                for (var thing : List.copyOf(logic.getObjects())) {
+                    if (heroes ? seats.stream().anyMatch(seat -> thing.getId().equals(seat.heroId))
+                            : thing.getTemplate().name().equals(what) && !thing.isEffectivelyDead()) {
+                        var legs = thing.getLocomotor();
+                        if (legs != null && legs.isMoving()) {
+                            legs.stop();
+                        }
+                        thing.busy(Battles.clipFor(settings, thing.getTemplate().name(), action.clip(),
+                                action.orElse()), action.frames());
+                    }
+                }
+            }
+            case BEAM -> {
+                var zone = zoneNamed(action.zone());
+                if (zone == null) {
+                    return;
+                }
+                var foot = groundAt(logic, zone);
+                var top = new uz.dukeengine.core.math.Coord3D(foot.x(), foot.y(), foot.z() + action.height());
+                if (what.isBlank()) {
+                    beams.add(new Lit(logic.beam(action.drawn(), foot, top, 1f), logic.getFrame() + action.frames()));
+                } else {
+                    for (var thing : logic.getObjects()) {
+                        if (thing.getTemplate().name().equals(what) && !thing.isEffectivelyDead()) {
+                            var at = thing.getPosition();
+                            beams.add(new Lit(logic.beam(action.drawn(), new uz.dukeengine.core.math.Coord3D(at.x(), at.y(),
+                                    at.z() + Battles.HANDS), top, 1f), logic.getFrame() + action.frames()));
+                        }
+                    }
+                }
+            }
+            case SKY -> {
+                var zone = zoneNamed(action.zone());
+                if (zone != null) {
+                    var foot = groundAt(logic, zone);
+                    sky = new uz.dukeengine.core.math.Coord3D(foot.x(), foot.y(), foot.z() + action.height());
+                }
+            }
+            case STREAK -> {
+                var zone = zoneNamed(action.zone());
+                if (zone == null) {
+                    return;
+                }
+                sky = null; // let go of: the streak carries him from here
+                var to = groundAt(logic, zone);
+                double bearing = Math.toRadians(action.bearing());
+                var from = new uz.dukeengine.core.math.Coord3D(to.x() + action.lean() * (float) Math.cos(bearing),
+                        to.y() + action.lean() * (float) Math.sin(bearing), to.z() + action.height());
+                for (var seat : seats) {
+                    var hero = seat.heroId == null ? null : logic.findObject(seat.heroId);
+                    if (hero == null) {
+                        continue;
+                    }
+                    uz.dukeengine.combat.module.Errand.giveUpAll(hero);
+                    hero.setPosition(from);
+                    var move = uz.dukeengine.core.module.ScriptedMove.along(hero, to, action.frames(), 0f);
+                    if (!action.landed().isBlank()) {
+                        move.onLanded(() -> logic.effect(action.landed(), hero));
+                    }
+                    if (!action.drawn().isBlank()) {
+                        trails.add(new Trail(hero.getId(), action.drawn(), logic.getFrame() + action.frames()));
+                    }
+                }
+            }
+            case SHOCKWAVE -> {
+                var wave = settings.shockwave(what);
+                var zone = zoneNamed(action.zone());
+                if (wave != null && zone != null) {
+                    Battles.shockwave(logic, wave, groundAt(logic, zone), dungeonPlayer.getIndex(),
+                            settings.combat().stunLook());
+                }
+            }
+            case HOLD -> holding = action.zone();
+            case SOUND -> {
+                var zone = zoneNamed(action.zone());
+                if (zone != null) {
+                    logic.sound(what, groundAt(logic, zone), 0); // heard, not decided: an event, out of the checksum
+                }
+            }
+            case RELEASE -> holding = null;
             case MENU -> theEnd.run();
             case CREDITS -> {
                 // Drawn only (E49): the window rolls them, Esc or a click skips, and once they are gone it goes to the
@@ -1509,6 +1649,9 @@ public final class DungeonRun {
             case REMOVE -> {
                 for (var thing : List.copyOf(logic.getObjects())) {
                     if (thing.getTemplate().name().equals(what)) {
+                        if (!action.drawn().isBlank()) {
+                            logic.effect(action.drawn(), thing.getPosition(), 0f); // gone in a flash
+                        }
                         people.removeIf(who -> who.id().equals(thing.getId()));
                         logic.destroyObject(thing);
                     }
@@ -1607,6 +1750,206 @@ public final class DungeonRun {
                 }
             }
             case CURSE -> curse(game, what);
+        }
+    }
+
+    /** The middle of {@code zone}, on the ground. */
+    private static uz.dukeengine.core.math.Coord3D groundAt(uz.dukeengine.core.GameLogic logic, uz.dukeengine.dungeon.map.StaticMap.Zone zone) {
+        float cell = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
+        var flat = new uz.dukeengine.core.math.Coord3D(zone.middleX(cell), zone.middleY(cell), 0f);
+        return new uz.dukeengine.core.math.Coord3D(flat.x(), flat.y(), logic.groundHeight(flat));
+    }
+
+    // ---- the seamless campaign's intro: see docs/plan/2026-10-15-seamless-campaign.md ----
+
+    /** A beam the story lit, and the frame it goes out. Drawing only: not saved. */
+    private record Lit(int beam, int until) {
+    }
+
+    private final List<Lit> beams = new ArrayList<>();
+
+    /** An Effect played on what a STREAK carries, every frame until {@code until}: its burning trail. */
+    private record Trail(ObjectId on, String look, int until) {
+    }
+
+    private final List<Trail> trails = new ArrayList<>();
+    /** Where SKY holds the heroes, out of sight, until a STREAK; null while it holds none. */
+    private uz.dukeengine.core.math.Coord3D sky;
+    /** The zone a HOLD keeps still, until a RELEASE; null while nothing is held. */
+    private String holding;
+
+    // ---- the follow mission and the gated world: docs/plan/2026-10-15-seamless-campaign.md, sections 5 and 6 ----
+
+    /**
+     * Every frame: whoever a FOLLOW step leads him after walks to its Where while a hero keeps within FollowNear, stops
+     * and turns to wait for him past FollowFar, and the step is done when they stand in it with a hero near.
+     */
+    private void follow(DukeGame game) {
+        var dialogue = settings.story().dialogue();
+        var logic = game.getLogic();
+        float cell = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
+        for (var each : List.copyOf(quests.active())) {
+            var step = settings.story().quest(each.quest()).steps().get(each.step());
+            var where = step.goal() == uz.dukeengine.dungeon.story.Quest.Goal.FOLLOW ? zoneNamed(step.where()) : null;
+            if (where == null) {
+                continue;
+            }
+            for (var who : people) {
+                var there = who.npc().equals(step.target()) ? logic.findObject(who.id()) : null;
+                var legs = there == null ? null : there.getLocomotor();
+                if (legs == null) {
+                    continue;
+                }
+                GameObject nearest = null;
+                float best = Float.MAX_VALUE;
+                for (var seat : seats) {
+                    var hero = seat.heroId == null ? null : logic.findObject(seat.heroId);
+                    if (hero != null && !hero.isEffectivelyDead()) {
+                        float d = (float) Math.hypot(hero.getPosition().x() - there.getPosition().x(),
+                                hero.getPosition().y() - there.getPosition().y());
+                        if (d < best) {
+                            best = d;
+                            nearest = hero;
+                        }
+                    }
+                }
+                if (nearest == null) {
+                    continue;
+                }
+                if (where.holds(there.getPosition().x(), there.getPosition().y(), cell)
+                        && best <= dialogue.followNear()) {
+                    quests.followed(who.npc(), bags().getFirst());
+                } else if (best > dialogue.followFar()) {
+                    if (legs.isMoving()) {
+                        legs.stop(); // he has strayed: she waits for him
+                    }
+                    face(there, nearest);
+                } else if (best <= dialogue.followNear() && !legs.isMoving()
+                        && !where.holds(there.getPosition().x(), there.getPosition().y(), cell)) {
+                    legs.moveTo(new uz.dukeengine.core.math.Coord3D(where.middleX(cell), where.middleY(cell), 0f));
+                }
+            }
+        }
+    }
+
+    /** The gate kept now: the first of the files' on this map whose If holds; null where none does. */
+    private uz.dukeengine.dungeon.story.Gate gate() {
+        var map = floors.stageName();
+        for (var gate : settings.gates()) {
+            if (gate.map().equals(map) && gate.If().stream().allMatch(this::holds)) {
+                return gate;
+            }
+        }
+        return null;
+    }
+
+    /** The gate kept now, by its name, or null: for a test and the window. */
+    public String gateName() {
+        var gate = gate();
+        return gate == null ? null : gate.name();
+    }
+
+    /**
+     * Every frame: a hero outside every Open zone of the gate kept now is put back where he last stood inside it, his
+     * walk given up, and told so (its Word, once every three seconds). One carried by the story (a fall, a streak) or
+     * held in the sky is let be until he comes down. The barrier is this leash, not the path: E84 asks for path regions
+     * the game shuts, so a route never plans through closed land.
+     */
+    private void gated(DukeGame game) {
+        var gate = gate();
+        if (gate == null || sky != null) {
+            return;
+        }
+        var logic = game.getLogic();
+        float cell = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
+        for (var seat : seats) {
+            var hero = seat.heroId == null ? null : logic.findObject(seat.heroId);
+            if (hero == null || hero.isEffectivelyDead()
+                    || hero.findModule(uz.dukeengine.core.module.ScriptedMove.class) != null
+                    && !hero.findModule(uz.dukeengine.core.module.ScriptedMove.class).isDone()) {
+                continue;
+            }
+            var at = hero.getPosition();
+            boolean inside = false;
+            for (var open : gate.open()) {
+                var zone = zoneNamed(open);
+                inside |= zone != null && zone.holds(at.x(), at.y(), cell);
+            }
+            if (inside) {
+                seat.lastInside = at;
+                continue;
+            }
+            var back = seat.lastInside;
+            if (back == null) {
+                var start = zoneNamed(gate.start());
+                if (start == null) {
+                    continue; // nowhere inside known yet, and nowhere to start: let be
+                }
+                back = Battles.middleOf(logic, start);
+            }
+            uz.dukeengine.combat.module.Errand.giveUpAll(hero);
+            var legs = hero.getLocomotor();
+            if (legs != null && legs.isMoving()) {
+                legs.stop();
+            }
+            hero.setPosition(back);
+            seat.lastInside = back;
+            int frame = logic.getFrame();
+            if (!gate.word().isBlank() && frame - seat.toldShutAt >= 3 * uz.dukeengine.core.GameConstants.LOGICFRAMES_PER_SECOND) {
+                seat.toldShutAt = frame;
+                seat.progress.getLoot().say(gate.word(), frame, settings.lootDrops().noteFrames());
+            }
+        }
+    }
+
+    /** Whether the story holds the battle now: every fighter in its zone kept still. */
+    public boolean holdsTheBattle() {
+        return holding != null;
+    }
+
+    /**
+     * Every frame the floor is played: the heroes kept in the sky, everything a HOLD holds kept still, the trails
+     * played, the beams put out on time. Every fighter held is the engine's stun ({@code DISABLED}) renewed for two
+     * frames, so a RELEASE lets them go within one.
+     */
+    private void intro(DukeGame game) {
+        var logic = game.getLogic();
+        int frame = logic.getFrame();
+        if (sky != null) {
+            for (var seat : seats) {
+                var hero = seat.heroId == null ? null : logic.findObject(seat.heroId);
+                if (hero != null) {
+                    hero.setPosition(sky);
+                    Battles.daze(hero, 2);
+                }
+            }
+        }
+        if (holding != null) {
+            var zone = zoneNamed(holding);
+            float cell = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
+            for (var thing : logic.getObjects()) {
+                if (zone != null && thing.getBody() != null && !thing.isEffectivelyDead()
+                        && thing.getPlayerIndex() != uz.dukeengine.core.player.PlayerList.NEUTRAL_INDEX
+                        && zone.holds(thing.getPosition().x(), thing.getPosition().y(), cell)) {
+                    Battles.daze(thing, 2);
+                }
+            }
+        }
+        for (var each = trails.iterator(); each.hasNext(); ) {
+            var trail = each.next();
+            var on = logic.findObject(trail.on());
+            if (on == null || frame >= trail.until()) {
+                each.remove();
+            } else {
+                logic.effect(trail.look(), on);
+            }
+        }
+        for (var each = beams.iterator(); each.hasNext(); ) {
+            var lit = each.next();
+            if (frame >= lit.until()) {
+                logic.endBeam(lit.beam());
+                each.remove();
+            }
         }
     }
 
@@ -1908,12 +2251,15 @@ public final class DungeonRun {
         }
         for (var each : quests.active()) {
             var step = settings.story().quest(each.quest()).steps().get(each.step());
-            if (!step.glow()) {
+            // Whoever a FOLLOW leads him after wears the follow mark over their head, whatever its Glow says.
+            boolean follow = step.goal() == uz.dukeengine.dungeon.story.Quest.Goal.FOLLOW
+                    && !dialogue.followLook().isBlank();
+            if (!step.glow() && !follow) {
                 continue;
             }
             for (var thing : logic.getObjects()) {
                 if (glows(step, thing)) {
-                    logic.effect(dialogue.glowLook(), thing);
+                    logic.effect(follow ? dialogue.followLook() : dialogue.glowLook(), thing);
                 }
             }
         }
@@ -1927,7 +2273,7 @@ public final class DungeonRun {
                 yield lying != null && lying.getHolding() != null && lying.getHolding().id().equals(step.target());
             }
             case KILL -> thing.getTemplate().name().equals(step.target()) && !thing.isEffectivelyDead();
-            case TALK, GIVE -> thing.getTemplate().name().equals(step.target())
+            case TALK, GIVE, FOLLOW -> thing.getTemplate().name().equals(step.target())
                     && thing.getPlayerIndex() == uz.dukeengine.core.player.PlayerList.NEUTRAL_INDEX;
             case REACH -> false;
         };
@@ -1960,6 +2306,7 @@ public final class DungeonRun {
      */
     private void story(DukeGame game) {
         stroll(game);
+        follow(game);
         tellTheRanks(game);
         medallion(game);
         glow(game);
