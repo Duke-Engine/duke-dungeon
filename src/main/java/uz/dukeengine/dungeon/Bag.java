@@ -150,6 +150,10 @@ final class Bag {
         // And a tree, a bush, a well or a fire is worked: its word, and the pointer of that name (food-and-fire.md).
         var food = settings.food();
         match.game().addContextOrder((selection, target) -> food.wordOn(target.getTemplate().name()));
+        // And his horse is got onto: the Ride cursor (docs/plan/2026-10-15-mounts.md).
+        var horse = settings.mount().horse();
+        match.game().addContextOrder((selection, target) -> settings.mount().on()
+                && target.getTemplate().name().equals(horse) ? uz.dukeengine.dungeon.mount.Mount.RIDE : null);
         // And a tree of the map's own scenery is felled: a click on the ground under it (E66).
         match.game().groundOrder((selection, place) -> match.run().groundWord(match.game(), place));
         DialogueScreen.show(match);

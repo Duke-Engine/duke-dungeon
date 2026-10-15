@@ -563,7 +563,7 @@ class DungeonSettingsTest {
                 case STRIKE, AREA_AT_SPOT, SKILLSHOT, HEAL -> skill.range();
                 case DASH, BLINK, SKEWER, WAVE, DODGE -> skill.distance();
                 case METEOR -> skill.range();
-                case AREA_DAMAGE, SUMMON, PULL -> skill.radius();
+                case AREA_DAMAGE, SUMMON, PULL, PUSH -> skill.radius();
                 case HASTE -> skill.range();
                 case EMPOWER, GUARD -> 1f; // his own width; the look says how wide
                 // Never cast, so no ring is ever drawn: a stand-in to keep the switch whole.

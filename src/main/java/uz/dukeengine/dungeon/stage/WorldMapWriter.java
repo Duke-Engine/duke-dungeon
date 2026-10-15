@@ -1507,6 +1507,10 @@ public final class WorldMapWriter {
                     npcs.add(new StaticMap.Placed((String) walker[0], at.cellX(), at.cellY()));
                 }
             }
+            // The stable keeper, inside the city's east wall: he sells the horse's whistle (data/world/mounts.duke).
+            var city = SITES.get(CITY);
+            var stable = free(taken, city.x() + 9, city.y() + 3);
+            npcs.add(new StaticMap.Placed("Otboqar", stable.cellX(), stable.cellY()));
             pieces.addAll(temple(flatNear((int) (0.34 * SIZE), (int) (0.36 * SIZE)), zones));
             pieces.addAll(stones(flatNear((int) (0.52 * SIZE), (int) (0.67 * SIZE)), zones));
             pieces.addAll(battlefield(flatNear((int) (0.63 * SIZE), (int) (0.62 * SIZE)), zones));

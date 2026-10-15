@@ -233,3 +233,4 @@ loot,water,potion,all,gi:delapouite/holy-water,blue
 loot,tea,potion,all,gi:lorc/fizzing-flask,green
 loot,kompot,potion,all,gi:lorc/standing-potion,red
 loot,wood,material,all,gi:delapouite/log,wood
+loot,horse,animal,all,blender:horse,

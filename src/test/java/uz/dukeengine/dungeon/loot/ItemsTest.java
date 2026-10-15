@@ -26,7 +26,8 @@ class ItemsTest {
         assertEquals(35, ITEMS.bases().size());
         assertEquals(13, ITEMS.affixes().size());
         assertEquals(6, ITEMS.uniques().size());
-        assertEquals(14, ITEMS.potions().size(), "four old potions kept for old saves, nine meals and drinks, and wood");
+        assertEquals(15, ITEMS.potions().size(),
+                "four old potions kept for old saves, nine meals and drinks, wood, and the horse's whistle");
     }
 
     @Test

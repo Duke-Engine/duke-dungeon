@@ -480,6 +480,15 @@
 "Taom" => "Meal"
 "Jon/s" => "Health/s"
 
+
+; ---- world/mounts.duke ----
+"Ot" => "Horse"
+"Otingiz yo'q" => "You have no horse"
+"Bu yerda otga minib bo'lmaydi" => "You cannot ride here"
+"Ot hushtagi" => "Horse whistle"
+"Otboqar Rustam" => "Rustam the Stablemaster"
+"Otboqar" => "Stablemaster"
+"Yaxshi ot - yarim yo'l! Hushtagini oling, shahar tashqarisida T ni bosing, oting chopib keladi." => "A good horse is half the road! Take the whistle, press T outside the city, and your horse comes running."
 ; ---- world/hud.duke ----
 "CHUQURLIK" => "DEPTH"
 "MAHORAT" => "SKILLS"
