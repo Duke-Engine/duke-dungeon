@@ -555,7 +555,7 @@
 "%d-daraja" => "Level %d"
 "Kiyilgan bilan solishtiring" => "Compare with what is worn"
 "Soni: %d" => "Count: %d"
-"1-4: yeyish, ichish" => "1-4: eat, drink"
+"%s: yeyish, ichish" => "%s: eat, drink"
 "Belbog'dan yeyish: %d" => "Eat from belt: %d"
 "Kritik zarba" => "Critical hit"
 "Kritik zarba kuchi" => "Critical damage"

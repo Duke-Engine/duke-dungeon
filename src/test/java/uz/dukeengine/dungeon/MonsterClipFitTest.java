@@ -63,7 +63,7 @@ class MonsterClipFitTest {
     void everyMonstersStrideIsTheOneItsWalkPlantsItsFeetAt() {
         var problems = new ArrayList<String>();
         var table = new StringBuilder("| Monster | Model | Walk | Length | Stride (u) | WalkStride | Speed | Rate |\n");
-        for (var kind : SETTINGS.monsters()) {
+        for (var kind : SETTINGS.monsters().stream().filter(k -> !SETTINGS.isMount(k.name()) || k.name().equals(SETTINGS.mount().horse())).toList()) {
             var look = SETTINGS.lookOf(kind);
             if (!look.hasModel() || look.walk() == null) {
                 continue;
@@ -95,7 +95,7 @@ class MonsterClipFitTest {
     void everyMeleeMonstersBlowLandsAsItsSwingDoes() {
         var problems = new ArrayList<String>();
         var table = new StringBuilder("| Monster | Attack | Length | Fastest at | PreAttack | Between |\n");
-        for (var kind : SETTINGS.monsters()) {
+        for (var kind : SETTINGS.monsters().stream().filter(k -> !SETTINGS.isMount(k.name()) || k.name().equals(SETTINGS.mount().horse())).toList()) {
             var look = SETTINGS.lookOf(kind);
             if (!look.hasModel() || look.attack() == null || !melee(kind.name())) {
                 continue;
@@ -122,7 +122,7 @@ class MonsterClipFitTest {
 
     @Test
     void everyMonstersUpperBodyIsAJointOfIt() {
-        for (var kind : SETTINGS.monsters()) {
+        for (var kind : SETTINGS.monsters().stream().filter(k -> !SETTINGS.isMount(k.name()) || k.name().equals(SETTINGS.mount().horse())).toList()) {
             var look = SETTINGS.lookOf(kind);
             if (!look.hasModel() || look.upperBody() == null) {
                 continue;
@@ -136,7 +136,7 @@ class MonsterClipFitTest {
     /** FeelTest says every body names a death; this says the death is there to play, and plays for a while. */
     @Test
     void everyMonstersDeathIsAClipItPlays() {
-        for (var kind : SETTINGS.monsters()) {
+        for (var kind : SETTINGS.monsters().stream().filter(k -> !SETTINGS.isMount(k.name()) || k.name().equals(SETTINGS.mount().horse())).toList()) {
             var look = SETTINGS.lookOf(kind);
             if (!look.hasModel() || look.death() == null) {
                 continue;

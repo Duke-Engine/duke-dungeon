@@ -1,7 +1,9 @@
 package uz.dukeengine.dungeon.run;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.TreeMap;
 import uz.dukeengine.combat.module.WeaponUpdate;
 import uz.dukeengine.core.GameLogic;
@@ -15,16 +17,17 @@ import uz.dukeengine.dungeon.map.StaticMap;
 import uz.dukeengine.dungeon.mount.Mount;
 import uz.dukeengine.rpg.hero.HeroProgress;
 import uz.dukeengine.rpg.item.LootBag;
+import uz.dukeengine.rpg.skill.Skill;
+import uz.dukeengine.rpg.skill.SkillBook;
+import uz.dukeengine.rpg.skill.SkillEffect;
 
 /**
- * Riding as it is played: the horse a hero owns (the whistle in his bag) called to him, got up onto, ridden at twice his
- * walk and got off -- by his key, a blow, an attack or a cast, or a town or a map he may not ride in. See
- * docs/plan/2026-10-15-mounts.md.
+ * The horse a hero owns (the whistle in his bag): called to him, walked up to, and his MOUNT skill cast on it; ridden on
+ * its Saddle bone while the skill holds; laid beside him when it ends. See docs/plan/2026-10-15-mounts.md.
  *
- * <p>The simulation's, on its thread: frames, never a clock. While he rides the horse is no thing of the world: he is
- * drawn as his riding look ({@code drawAs}, which the checksum and the save leave out, so it is set again every
- * frame), and his legs are set to his riding speed every frame, since a level or a thing put on gives him new legs at
- * his walking speed. Engine requests E88 and E89 would make the look a rider on a mount and the speed a skill.
+ * <p>Riding is the skill's (E89): the mounting time, the speed, the look, the held fire, a blow, a second press and the
+ * zones he may not ride in. What is left here is the horse as a thing of the world, an attack he orders (which gets him
+ * off), the zones he rides into, and his legs shown quicker on the buff row. The simulation's, on its thread.
  */
 public final class Stable {
 
@@ -36,19 +39,16 @@ public final class Stable {
     private List<StaticMap.Zone> zones = List.of();
 
     private static final class Rider {
-        /** The horse standing about, or null while he rides it or has not called it on this map. */
+        /** His horse on this map, or null: standing about, or carrying him. */
         ObjectId horse;
-        boolean mounted;
-        /** Walked up to the horse to get on, and the frame he started getting up (-1 not yet). */
-        boolean mounting;
-        int startedAt = -1;
-        Coord3D standing;
+        /** Riding as the last frame ended, as his book said. */
+        boolean riding;
+        /** Walking up to the horse to get on: where he was sent, and when. */
+        boolean walking;
         Coord3D goal;
         int orderedAt;
-        /** His health the frame before: a fall in it is a blow, which unseats him. */
-        float health;
-        /** The look and the legs he was given, so a body he gets is given them again. */
-        ObjectId body;
+        /** Riding as this map was laid: back on a horse as soon as he stands on it. */
+        boolean ridesOnLay;
     }
 
     public Stable(DungeonSettings settings) {
@@ -58,7 +58,7 @@ public final class Stable {
 
     /**
      * A map laid: every horse of the last one gone with it. Each of {@code mounted} -- a save's riders, or whoever rode
-     * onto this map -- is back on his horse if he may ride here.
+     * onto this map -- is back on a horse if he may ride here.
      */
     public void lay(String map, List<StaticMap.Zone> zones, Collection<Integer> mounted) {
         this.map = map == null ? "" : map;
@@ -66,9 +66,24 @@ public final class Stable {
         riders.clear();
         if (mount.on() && mount.maps().contains(this.map)) {
             for (int player : mounted) {
-                rider(player).mounted = true;
+                rider(player).ridesOnLay = true;
             }
         }
+    }
+
+    /** The zones a point is in, as a skill's NotIn reads them: the map's, and Ichkari on a map not out of doors. */
+    public Set<String> zonesAt(Coord3D at) {
+        var in = new HashSet<String>();
+        if (!mount.maps().contains(map)) {
+            in.add(Mount.INDOORS);
+        }
+        float cell = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
+        for (var zone : zones) {
+            if (zone.holds(at.x(), at.y(), cell)) {
+                in.add(zone.name());
+            }
+        }
+        return in;
     }
 
     private Rider rider(int player) {
@@ -78,24 +93,25 @@ public final class Stable {
     /** Whether this player's hero is on his horse. */
     public boolean mounted(int player) {
         var rider = riders.get(player);
-        return rider != null && rider.mounted;
+        return rider != null && rider.riding;
     }
 
     /** The players riding now, for the save and the next map. */
     public List<Integer> riding() {
-        return riders.entrySet().stream().filter(entry -> entry.getValue().mounted).map(java.util.Map.Entry::getKey)
+        return riders.entrySet().stream().filter(entry -> entry.getValue().riding).map(java.util.Map.Entry::getKey)
                 .toList();
     }
 
-    /** Whether {@code hero} may ride where he stands: on a map out of doors and in none of its towns. */
+    /** His MOUNT skill, or null. */
+    private Skill skillOf(GameObject hero) {
+        return settings.bookFor(hero.getTemplate().name()).stream().filter(s -> s.effect() == SkillEffect.MOUNT)
+                .findFirst().orElse(null);
+    }
+
+    /** Whether {@code hero} may ride where he stands: he has the skill, and stands in none of its NotIn. */
     boolean mayRide(GameObject hero) {
-        if (!mount.on() || !mount.maps().contains(map) || hero == null) {
-            return false;
-        }
-        float cell = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
-        var at = hero.getPosition();
-        return zones.stream().noneMatch(zone -> mount.noRideZones().contains(zone.name())
-                && zone.holds(at.x(), at.y(), cell));
+        var skill = hero == null || !mount.on() ? null : skillOf(hero);
+        return skill != null && zonesAt(hero.getPosition()).stream().noneMatch(skill.notIn()::contains);
     }
 
     private boolean owns(LootBag bag) {
@@ -113,12 +129,12 @@ public final class Stable {
      * (walked over to it first); else called -- if he owns one and may ride here, which is said when not.
      */
     public void press(GameLogic logic, int player, GameObject hero, HeroProgress progress, ObjectId clicked) {
-        var bag = progress.getLoot();
         if (hero == null || hero.isEffectivelyDead() || !mount.on()) {
             return;
         }
         var rider = rider(player);
-        if (rider.mounted) {
+        var book = hero.findModule(SkillBook.class);
+        if (rider.riding || book != null && book.isRiding()) {
             dismount(logic, player, hero, progress);
             return;
         }
@@ -126,6 +142,7 @@ public final class Stable {
         if (clicked != null && (horse == null || !horse.getId().equals(clicked))) {
             return; // somebody else's horse
         }
+        var bag = progress.getLoot();
         if (!owns(bag)) {
             say(bag, mount.noHorseWord(), logic.getFrame());
             return;
@@ -139,18 +156,19 @@ public final class Stable {
             if (its != null) {
                 its.stop(); // it stands to be got onto
             }
-            rider.mounting = true;
-            rider.startedAt = -1;
-            rider.orderedAt = logic.getFrame();
-            rider.goal = null;
-            if (!near(hero, horse)) {
-                var legs = hero.getLocomotor();
-                if (legs != null) {
-                    legs.moveTo(horse.getPosition());
-                }
-                var move = hero.findModule(MoveUpdate.class);
-                rider.goal = move == null ? null : move.getGoal();
+            rider.walking = false;
+            if (near(hero, horse)) {
+                getUp(hero, horse);
+                return;
             }
+            var legs = hero.getLocomotor();
+            if (legs != null) {
+                legs.moveTo(horse.getPosition());
+            }
+            var move = hero.findModule(MoveUpdate.class);
+            rider.walking = true;
+            rider.goal = move == null ? null : move.getGoal();
+            rider.orderedAt = logic.getFrame();
             return;
         }
         call(logic, rider, hero, horse);
@@ -162,6 +180,21 @@ public final class Stable {
         return dx * dx + dy * dy <= mount.reach() * mount.reach();
     }
 
+    /** At the horse: his MOUNT skill cast -- its wind-up his getting up, called off by a step or a blow. */
+    private void getUp(GameObject hero, GameObject horse) {
+        var skill = skillOf(hero);
+        var book = hero.findModule(SkillBook.class);
+        var move = hero.findModule(MoveUpdate.class);
+        if (skill == null || book == null) {
+            return;
+        }
+        if (move != null && move.isMoving()) {
+            move.stop();
+        }
+        uz.dukeengine.rpg.Facing.turnToward(hero, horse);
+        book.cast(skill.key(), 1, null, null);
+    }
+
     /**
      * The horse called: one standing on this map runs to him; with none, a new one runs in from CallDistance away, out
      * of the first of eight ways round him -- from behind him on, the same on every machine -- that is open ground, or
@@ -171,10 +204,6 @@ public final class Stable {
         var here = hero.getPosition();
         logic.sound(mount.call(), hero, 0);
         if (horse == null) {
-            var template = logic.getThingFactory().findTemplate(mount.horse());
-            if (template == null) {
-                return;
-            }
             Coord3D from = null;
             for (int way = 0; way < 8 && from == null; way++) {
                 double angle = hero.getOrientation() + Math.PI + way * Math.PI / 4;
@@ -185,12 +214,12 @@ public final class Stable {
                 }
             }
             boolean puff = from == null;
-            if (puff) {
-                from = beside(logic, hero);
+            horse = spawn(logic, rider, puff ? beside(logic, hero) : from);
+            if (horse == null) {
+                return;
             }
-            horse = logic.spawn(template, from, PlayerList.NEUTRAL_INDEX);
-            horse.setOrientation((float) Math.atan2(here.y() - from.y(), here.x() - from.x()));
-            rider.horse = horse.getId();
+            horse.setOrientation((float) Math.atan2(here.y() - horse.getPosition().y(),
+                    here.x() - horse.getPosition().x()));
             if (puff) {
                 logic.effect(mount.puff(), horse);
                 return;
@@ -200,6 +229,16 @@ public final class Stable {
         if (legs != null) {
             legs.moveTo(beside(logic, hero));
         }
+    }
+
+    private GameObject spawn(GameLogic logic, Rider rider, Coord3D at) {
+        var template = logic.getThingFactory().findTemplate(mount.horse());
+        if (template == null) {
+            return null;
+        }
+        var horse = logic.spawn(template, at, PlayerList.NEUTRAL_INDEX);
+        rider.horse = horse.getId();
+        return horse;
     }
 
     /** A step to his right, where a horse comes to stand by him. */
@@ -226,141 +265,100 @@ public final class Stable {
     }
 
     /**
-     * A frame of this player's horse and seat: getting up (called off by a step, a blow or another order), or riding --
-     * his look and legs set, his weapon's own picks let go, and off it at a blow, an attack he ordered, or a place he
-     * may not ride.
+     * A frame of this player's horse and seat: walking up to it, then the skill cast; riding -- the horse under him,
+     * his legs on the buff row, and off at an attack he ordered or a place he may not ride; and the horse laid beside
+     * him the frame the skill ends, however it ended.
      */
     public void tick(GameLogic logic, int player, GameObject hero, HeroProgress progress) {
         var rider = riders.get(player);
         if (rider == null || hero == null) {
             return;
         }
-        if (hero.isEffectivelyDead()) {
-            if (rider.mounted) {
-                dismount(logic, player, hero, progress);
-            }
-            rider.mounting = false;
+        var book = hero.findModule(SkillBook.class);
+        if (book == null) {
             return;
         }
-        var body = hero.getBody();
-        float health = body == null ? 0f : body.getHealth();
-        boolean struck = body != null && hero.getId().equals(rider.body) && health < rider.health - 0.01f;
-        rider.health = health;
-        rider.body = hero.getId();
-        if (rider.mounting) {
-            getUp(logic, rider, hero, struck);
-            return;
-        }
-        if (!rider.mounted) {
-            // The horse he called stops by him, wherever he has gone since.
-            var horse = rider.horse == null ? null : logic.findObject(rider.horse);
-            var its = horse == null ? null : horse.findModule(MoveUpdate.class);
-            if (its != null && its.isMoving()) {
-                float dx = hero.getPosition().x() - horse.getPosition().x();
-                float dy = hero.getPosition().y() - horse.getPosition().y();
-                if (dx * dx + dy * dy <= mount.reach() * mount.reach()) {
-                    its.stop();
-                }
-            }
-            return;
-        }
-        var weapon = hero.findModule(WeaponUpdate.class);
-        if (struck || !mayRide(hero) || weapon != null && (weapon.isTargetOrdered() || weapon.getToward() != null
-                || weapon.getGroundTarget() != null)) {
-            dismount(logic, player, hero, progress);
-            return;
-        }
-        if (weapon != null && weapon.isAttacking()) {
-            weapon.holdFire(); // a target it picked for itself: riding past a camp does not unseat him
-        }
-        hero.drawAs(mount.lookOf(hero.getTemplate().name()), -1);
-        var legs = hero.findModule(MoveUpdate.class);
-        if (legs != null && progress != null) {
-            legs.setSpeed(mount.riding(walking(hero, progress)), turnRate(hero));
-            if (legs.isMoving() && logic.getFrame() % mount.gallopFrames() == 0) {
-                logic.sound(mount.gallop(), hero, 0); // heard, not decided: an event, out of the checksum
-            }
-        }
-    }
-
-    private void getUp(GameLogic logic, Rider rider, GameObject hero, boolean struck) {
         var horse = rider.horse == null ? null : logic.findObject(rider.horse);
-        var move = hero.findModule(MoveUpdate.class);
-        if (horse == null || move == null || struck) {
-            stopGettingUp(rider, hero);
-            return;
-        }
-        int frame = logic.getFrame();
-        if (rider.startedAt < 0) {
-            if (near(hero, horse)) {
-                if (move.isMoving()) {
-                    move.stop();
+        if (rider.ridesOnLay && !hero.isEffectivelyDead()) {
+            rider.ridesOnLay = false;
+            if (mayRide(hero)) {
+                horse = horse != null ? horse : spawn(logic, rider, hero.getPosition());
+                if (horse != null) {
+                    getUp(hero, horse);
                 }
-                uz.dukeengine.rpg.Facing.turnToward(hero, horse);
-                rider.startedAt = frame;
-                rider.standing = hero.getPosition();
-                hero.busy(mount.mountClip(), mount.mountFrames());
-            } else if (!move.isMoving() && frame > rider.orderedAt + 2
-                    || move.getGoal() != null && !move.getGoal().equals(rider.goal)) {
-                rider.mounting = false; // sent elsewhere, or got no nearer
             }
-            return;
         }
-        float dx = hero.getPosition().x() - rider.standing.x();
-        float dy = hero.getPosition().y() - rider.standing.y();
-        if (move.isMoving() || dx * dx + dy * dy > 0.25f) {
-            stopGettingUp(rider, hero);
-            return;
+        if (rider.walking) {
+            walkUp(logic, rider, hero, horse);
         }
-        if (frame >= rider.startedAt + mount.mountFrames()) {
-            rider.mounting = false;
-            rider.mounted = true;
-            logic.destroyObject(horse);
-            rider.horse = null;
-            logic.effect(mount.puff(), hero);
-            hero.drawAs(mount.lookOf(hero.getTemplate().name()), -1);
+        if (book.isRiding() && horse != null) {
+            var weapon = hero.findModule(WeaponUpdate.class);
+            if (!mayRide(hero) || weapon != null && (weapon.isTargetOrdered() || weapon.getToward() != null
+                    || weapon.getGroundTarget() != null)) {
+                book.dismount(); // an attack he ordered, or a town he rode into
+            } else {
+                rider.riding = true;
+                // The horse goes where he goes: drawn under him (E88), and where he gets off.
+                // Off the ground while it carries him (AIRBORNE): no walker bumps into it, he least of all.
+                horse.setStatus(uz.dukeengine.core.thing.ObjectStatus.AIRBORNE);
+                horse.setPosition(hero.getPosition());
+                horse.setOrientation(hero.getOrientation());
+                hero.rideOn(horse.getId(), mount.bone(), mount.seatOffset());
+                var skill = skillOf(hero);
+                book.give(SkillEffect.MOVE_SPEED, hero.getId().value(), skill == null ? 0 : skill.boostAt(1),
+                        logic.getFrame() + 1);
+                return;
+            }
+        }
+        if (rider.riding) {
+            offIt(logic, rider, hero, horse);
+        }
+        if (horse != null && !rider.riding) {
+            // The horse he called stops by him, wherever he has gone since.
+            var its = horse.findModule(MoveUpdate.class);
+            if (its != null && its.isMoving() && near(hero, horse)) {
+                its.stop();
+            }
         }
     }
 
-    private static void stopGettingUp(Rider rider, GameObject hero) {
-        if (rider.startedAt >= 0) {
-            hero.busy(null, 0);
+    /** Walking up to the horse: at it, the skill cast; sent elsewhere, or got no nearer, given up. */
+    private void walkUp(GameLogic logic, Rider rider, GameObject hero, GameObject horse) {
+        var move = hero.findModule(MoveUpdate.class);
+        if (horse == null || move == null) {
+            rider.walking = false;
+        } else if (near(hero, horse)) {
+            rider.walking = false;
+            getUp(hero, horse);
+        } else if (!move.isMoving() && logic.getFrame() > rider.orderedAt + 2
+                || move.getGoal() != null && !move.getGoal().equals(rider.goal)) {
+            rider.walking = false;
         }
-        rider.mounting = false;
-        rider.startedAt = -1;
     }
 
-    /** Off his horse, at once: drawn as himself, at his walk, the horse standing by him where he got off. */
-    public void dismount(GameLogic logic, int player, GameObject hero, HeroProgress progress) {
-        var rider = riders.get(player);
-        if (rider == null || !rider.mounted) {
-            return;
-        }
-        rider.mounted = false;
-        if (hero == null) {
-            return;
-        }
-        hero.drawAs(null, -1);
-        var legs = hero.findModule(MoveUpdate.class);
-        if (legs != null && progress != null) {
-            legs.setSpeed(walking(hero, progress), turnRate(hero));
-        }
-        var template = logic.getThingFactory().findTemplate(mount.horse());
-        if (template != null && !hero.isEffectivelyDead()) {
-            var horse = logic.spawn(template, beside(logic, hero), PlayerList.NEUTRAL_INDEX);
+    /** The skill ended: drawn as himself again, the horse standing beside him where he got off. */
+    private void offIt(GameLogic logic, Rider rider, GameObject hero, GameObject horse) {
+        rider.riding = false;
+        hero.rideOn(null, null, null);
+        if (horse != null) {
+            var at = beside(logic, hero);
+            horse.clearStatus(uz.dukeengine.core.thing.ObjectStatus.AIRBORNE);
+            horse.setPosition(at);
             horse.setOrientation(hero.getOrientation());
-            rider.horse = horse.getId();
         }
         logic.effect(mount.puff(), hero);
     }
 
-    /** His walking speed, as his level and what he carries make it: what his legs are given back. */
-    private static float walking(GameObject hero, HeroProgress progress) {
-        return progress.figuresOf(hero, progress.found()).speed();
-    }
-
-    private static float turnRate(GameObject hero) {
-        return uz.dukeengine.rpg.hero.HeroBase.of(hero.getTemplate()).turnRate();
+    /** Off his horse, at once: a skill pressed on horseback, work, his key again. The rest is the next tick's. */
+    public void dismount(GameLogic logic, int player, GameObject hero, HeroProgress progress) {
+        var rider = riders.get(player);
+        var book = hero == null ? null : hero.findModule(SkillBook.class);
+        if (book != null) {
+            book.dismount();
+        }
+        if (rider != null && rider.riding && hero != null) {
+            offIt(logic, rider, hero, rider.horse == null ? null : logic.findObject(rider.horse));
+        }
     }
 
     private void say(LootBag bag, String words, int frame) {

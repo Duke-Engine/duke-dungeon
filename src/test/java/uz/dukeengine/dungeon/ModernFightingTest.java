@@ -55,7 +55,10 @@ class ModernFightingTest {
             hero.findModule(WeaponUpdate.class).holdFire();
         }
         var skeletons = all.stream().filter(o -> o.getTemplate().name().equals("Skeleton")).toList();
-        assertTrue(hero.anyModule(m -> m instanceof uz.dukeengine.dungeon.ai.HeroBrain.Module), "his brain holds");
+        if (modern) {
+            game.runHeadless(1);
+            assertTrue(hero.findModule(WeaponUpdate.class).isAcquiringNothing(), "his weapon picks nothing by itself (E87)");
+        }
         return new Field(game, hero, skeletons);
     }
 

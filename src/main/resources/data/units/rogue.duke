@@ -572,6 +572,27 @@ Hero
       CastAnim = Roll
       MaxRank = 1
       Name = Chetlanish
+    End,
+    Skill
+      ; His horse, no slot of the four: pressed on T (data/world/mounts.duke), never bought, his from the
+      ; start, once he owns a horse (its whistle). Up onto it over WindUpFrames (0.6s), his reach played; a
+      ; step or a blow calls it off. Then he rides, BoostPercent quicker, drawn as RogueRiding on the horse's
+      ; Saddle bone (E88), his weapon holding fire; off at a second press, a blow (EndsOnHurt), an attack
+      ; he orders, a skill (the game gets him off and casts nothing), or a town or an indoor map (NotIn:
+      ; the zones the game names, Ichkari for every map that is not out of doors).
+      Key = T
+      Effect = MOUNT
+      ; Up again as soon as he is off: no wait between.
+      CooldownFrames = 1
+      WindUpFrames = 18
+      CastAnim = Gather
+      BoostPercent = 100
+      Look = RogueRiding
+      EndsOnHurt = Yes
+      NotIn = [Ichkari, Poytaxt, Olmazor, "Bog'iston", Qoratepa, Tolzor, Yangiobod]
+      MaxRank = 1
+      Name = Ot
+      Icon = icons/items/loot/horse_common.png
     End
   ]
 End

@@ -1,9 +1,7 @@
-The horse, and the heroes riding it, made by art/mounts/export_riders.py (Blender 5.2). docs/plan/2026-10-15-mounts.md.
+The horse, made by art/mounts/export_riders.py (Blender 5.2), with its Saddle bone a rider is hung on (E88).
+docs/plan/2026-10-15-mounts.md. Each hero's riding clips are animations/characters/riding_<hero>.glb, made by the same script
+on his own skeleton (his model's licence: see CREDITS.md).
 
 horse.glb          Horse, Quaternius (Ultimate Animated Animals), CC0 1.0   https://poly.pizza/m/qvTrSG9pZF
-knight_riding.glb  the Horse, with Lange seated on it (models/heroes/lange: phucpham1076, CC BY 4.0, see CREDITS.md)
-rogue_riding.glb   the Horse, with the Huntress seated on it (models/heroes/huntress.glb: Wilson / neilhancart, CC BY 4.0)
-mage_riding.glb    the Horse, with the KayKit mage seated on it (models/heroes/mage.glb: KayKit, CC0 1.0)
 
 CC0 1.0: https://creativecommons.org/publicdomain/zero/1.0/
-CC BY 4.0: https://creativecommons.org/licenses/by/4.0/

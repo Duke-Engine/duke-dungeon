@@ -36,6 +36,12 @@ class MountTest {
                 .findFirst().orElse(null);
     }
 
+    /** His MOUNT skill (E89): riding is it. */
+    private static uz.dukeengine.rpg.skill.Skill riding(GameObject hero) {
+        return SHIPPED.bookFor(hero.getTemplate().name()).stream()
+                .filter(s -> s.effect() == uz.dukeengine.rpg.skill.SkillEffect.MOUNT).findFirst().orElseThrow();
+    }
+
     private static StaticZone zone(String name) {
         return WORLD.story().zones().stream().filter(z -> z.name().equals(name)).findFirst()
                 .map(z -> new StaticZone(z.middleX(CELL), z.middleY(CELL), z)).orElseThrow();
@@ -71,24 +77,32 @@ class MountTest {
     /** Called, run in, and got up onto: the frames it took. */
     private static void mount(Dungeon.Session session) {
         var game = session.game();
-        press(game);
-        game.runHeadless(2);
         var horse = horse(game);
+        if (horse == null || Math.hypot(horse.getPosition().x() - hero(game).getPosition().x(),
+                horse.getPosition().y() - hero(game).getPosition().y()) > MOUNT.reach()) {
+            press(game); // called: it runs in; one standing by him is got onto at the first press
+            game.runHeadless(2);
+            horse = horse(game);
+        }
         assertNotNull(horse, "the whistle calls a horse");
         for (int run = 0; run < 400 && Math.hypot(horse.getPosition().x() - hero(game).getPosition().x(),
                 horse.getPosition().y() - hero(game).getPosition().y()) > MOUNT.reach(); run++) {
             game.runHeadless(1);
         }
         press(game);
-        game.runHeadless(MOUNT.mountFrames() + 3);
+        game.runHeadless(riding(hero(game)).windUpFrames() + 3);
         assertTrue(session.run().mounted(game.getLocalPlayerIndex()), "up on it");
     }
 
-    /** His speed at full stride, units a second: the way he went over a second, once under way on a long walk. */
+    /**
+     * His speed at full stride, units a second: the way he went over a second, once under way walking east on his keys
+     * (E74). On his keys, as the engine multiplies his MOUNT into a walk along (a click-to-move's step is held to his
+     * own top speed by its giving way: noted for the engine in E89's section).
+     */
     private static float stride(DukeGame game) {
         var hero = hero(game);
-        var here = hero.getPosition();
-        hero.getLocomotor().moveTo(new Coord3D(here.x() + 150f, here.y(), here.z()));
+        var legs = hero.findModule(MoveUpdate.class);
+        legs.moveAlong(0);
         game.runHeadless(10);
         float went = 0f;
         for (int frame = 0; frame < 30; frame++) {
@@ -97,6 +111,7 @@ class MountTest {
             var to = hero.getPosition();
             went += (float) Math.hypot(to.x() - from.x(), to.y() - from.y());
         }
+        legs.moveAlong(-1);
         return went;
     }
 
@@ -117,17 +132,24 @@ class MountTest {
                 horse.getPosition().y() - hero(game).getPosition().y());
         assertTrue(off > 60f, "from off the screen: " + off);
         mount(session);
-        assertNull(horse(game), "the horse is under him, no thing of its own");
-        String look = MOUNT.lookOf(hero(game).getTemplate().name());
-        assertNotNull(look);
-        assertEquals(look, hero(game).getDrawnAs(), "drawn as his riding look");
+        assertEquals(horse.getId(), hero(game).getMount(), "on the horse's back (E88)");
+        assertEquals(MOUNT.bone(), hero(game).getMountBone());
+        assertEquals(riding(hero(game)).look(), hero(game).getDrawnAs(), "drawn as his riding look");
         float riding = stride(game);
-        assertEquals(walking * (100 + MOUNT.speedPercent()) / 100f, riding, walking * 0.1f, "twice his walk");
+        assertEquals(walking * (100 + riding(hero(game)).boostPercent()) / 100f, riding, walking * 0.1f,
+                "twice his walk");
+        var book = hero(game).findModule(SkillBook.class);
+        assertTrue(book.buffOf(uz.dukeengine.rpg.skill.SkillEffect.MOVE_SPEED, game.getLogic().getFrame()) > 0,
+                "his quicker legs on the buff row");
+        float apart = (float) Math.hypot(horse.getPosition().x() - hero(game).getPosition().x(),
+                horse.getPosition().y() - hero(game).getPosition().y());
+        assertTrue(apart < 1f, "the horse goes where he goes: " + apart);
 
         press(game); // the key again: off it
         game.runHeadless(2);
         assertFalse(session.run().mounted(game.getLocalPlayerIndex()));
         assertNull(hero(game).getDrawnAs(), "drawn as himself");
+        assertNull(hero(game).getMount(), "off its back");
         assertNotNull(horse(game), "the horse stands where he got off");
         hero(game).getLocomotor().stop();
         game.runHeadless(2);
@@ -199,9 +221,9 @@ class MountTest {
 
         var again = Dungeon.newStageSession(WORLD, SHIPPED);
         again.run().resume(save, Floors.resumed(save, SHIPPED));
-        again.game().runHeadless(3);
+        again.game().runHeadless(riding(hero(game)).windUpFrames() + 4);
         assertTrue(again.run().mounted(again.game().getLocalPlayerIndex()), "loaded riding");
-        assertEquals(MOUNT.lookOf(hero(again.game()).getTemplate().name()), hero(again.game()).getDrawnAs());
+        assertEquals(riding(hero(again.game())).look(), hero(again.game()).getDrawnAs());
         assertFalse(SaveGame.read(save.withMounted(false).text(), "test").mounted(), "and on foot, on foot");
     }
 
