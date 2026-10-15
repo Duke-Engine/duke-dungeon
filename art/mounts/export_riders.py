@@ -1,22 +1,22 @@
-"""Writes the horse and the three heroes riding it -- docs/plan/2026-10-15-mounts.md.
+"""Writes the horse and each hero's riding clips -- docs/plan/2026-10-15-mounts.md.
 
     blender -b --factory-startup -P art/mounts/export_riders.py -- <horse.glb> <resources folder> <out folder>         [<shots folder> [<icon .png>]]
 
 The horse is Quaternius' "Horse" from his Ultimate Animated Animals (CC0; poly.pizza qvTrSG9pZF, as poly.pizza
-serves it). The engine draws no unit on another's bone yet (engine request E82), so a hero riding is ONE model: the
-horse's rig and clips, with the hero's own mesh -- his idle's first frame, his legs swung into a seat -- baked still
-and skinned whole to the horse's middle back bone, so the horse's gallop carries him. One such model a hero
-(<out>/<hero>_riding.glb), and the horse alone (<out>/horse.glb) for when he is off it.
+serves it), written to <out>/horse.glb with a bone of its own, SADDLE: a child of its middle back bone standing
+straight up at the top of its back, where a rider's seat goes. The engine hangs a rider there (E88,
+GameObject.rideOn): the rider's look under that bone, so the horse's gallop carries him while he plays his own clips.
+Standing straight up with no roll, the bone's frame is the horse model's own, so a rider hung on it faces the way the
+horse does with no turn of his own (his riding look's Facing is 0) and is drawn in the horse's units (his riding
+look's ModelScale is his own over the horse's HORSE_SCALE).
 
-Every file is sized for its hero: his look's ModelScale is the riding look's too, so the horse is scaled here to stand
-WITHERS game units at the withers whatever the hero's own size (the mage's chibi rig is larger in its own units).
-The horse alone stands at the same height under HORSE_SCALE. Its flat colours go onto one palette picture, as the
-food animals' do (art/food/export_food.py, whose helpers these are); the heroes keep their own pictures.
+Each hero's riding clips go to <out>/riding_<hero>.glb, an animation library on his own skeleton (a three-cornered
+mesh to carry its skin): Ride_Idle, sat with his thighs forward and apart, his shins back and his hands forward at the
+reins, and Ride_Gallop, the same rising and falling with the horse's stride, as long as its Gallop. In both his seat
+-- the lowest of him between his hips -- is lowered onto his feet's origin, so the saddle bone is where he sits.
 
-The heroes ride with nothing in their hands that is a Held of theirs (the rogue's bow and dagger, the mage's staff
-and book): those hang on bones this rig has not got. The knight's sword is part of his mesh, so he keeps it.
-With a shots folder, a picture of each rider at a gallop is rendered there; with an icon path, the horse's head on
-clear, for the whistle's picture in the bag (art/icons/items/painted/blender_horse.png, framed by ItemIcons).
+With a shots folder, each hero is rendered riding at a gallop there, as the game hangs him; with an icon path, the
+horse's head on clear, for the whistle's picture in the bag (art/icons/items/painted/blender_horse.png).
 """
 
 import math
@@ -33,11 +33,12 @@ ICON = args[4] if len(args) > 4 else None
 
 # Game units at the horse's withers (its back bone's middle): a hero is 12 tall, a horse's back about 0.85 of a man.
 WITHERS = 10.0
-# The horse alone is drawn at this ModelScale (data/world/mounts.duke): it stands WITHERS at the withers under it.
+# The horse is drawn at this ModelScale (data/world/mounts.duke): it stands WITHERS at the withers under it.
 HORSE_SCALE = 4.0
 CLIPS = {"Idle": "Idle", "Walk": "Walk", "Gallop": "Gallop", "Eating": "Eating", "Death": "Death",
          "Hurt": "Idle_HitReact_Left"}
-SADDLE_BONE = "Torso2"
+BACK_BONE = "Torso2"
+SADDLE = "Saddle"
 SWATCH = 8
 
 # Each hero: his file, where his idle comes from, his look's ModelScale, and his thigh, shin and upper-arm bones,
@@ -56,6 +57,8 @@ HEROES = {
 }
 # The seat, in degrees about the world's axes (the hero faces -Y): thighs forward and apart, shins back down.
 THIGH_FORWARD, THIGH_APART, SHIN_BACK, ARM_FORWARD = -55.0, 38.0, 50.0, -20.0
+# At a gallop: how far he rises and falls in the saddle, a share of his height, and his hands working the reins.
+BOB, REINS = 0.012, 8.0
 
 
 def to_srgb(c):
@@ -195,7 +198,7 @@ def horse(withers):
             rig.animation_data.nla_tracks.remove(track)
     scale_rig(rig, 1.0)  # the download's 100 applied
     play(rig, None, 1)
-    back = (rig.matrix_world @ rig.data.bones[SADDLE_BONE].head_local).z
+    back = (rig.matrix_world @ rig.data.bones[BACK_BONE].head_local).z
     scale_rig(rig, withers / back)
     palette("horse", skin)
     return rig, skin
@@ -226,63 +229,130 @@ def turn(armature, bone, axis, degrees):
     bpy.context.view_layer.update()
 
 
-def rider(hero):
-    """The hero's meshes, posed in the seat and baked still; returns them and where his seat is (between his thighs)."""
+def saddle(rig, skin):
+    """SADDLE: straight up from the top of the horse's back over BACK_BONE, a child of it, its frame the model's."""
+    play(rig, None, 1)
+    y = (rig.matrix_world @ rig.data.bones[BACK_BONE].head_local).y
+    top = surface_over(skin, y)
+    bpy.ops.object.select_all(action="DESELECT")
+    rig.select_set(True)
+    bpy.context.view_layer.objects.active = rig
+    bpy.ops.object.mode_set(mode="EDIT")
+    inverse = rig.matrix_world.inverted()
+    bone = rig.data.edit_bones.new(SADDLE)
+    bone.head = inverse @ Vector((0.0, y, top))
+    bone.tail = inverse @ Vector((0.0, y, top + 0.25))
+    bone.roll = 0.0
+    bone.parent = rig.data.edit_bones[BACK_BONE]
+    bone.use_connect = False
+    bone.use_deform = False
+    bpy.ops.object.mode_set(mode="OBJECT")
+
+
+def hero_in(hero):
+    """The hero imported beside what is there: his rig, his meshes and his idle."""
     before = set(bpy.data.objects)
     before_actions = set(bpy.data.actions)
     bpy.ops.import_scene.gltf(filepath=os.path.join(RESOURCES, hero["model"]))
     mine = [o for o in bpy.data.objects if o not in before]
-    for stray in [o for o in mine if o.type == "MESH" and o.parent is None
+    for stray in [o for o in mine if o.type == "EMPTY" or o.type == "MESH" and o.parent is None
                   and not any(m.type == "ARMATURE" for m in o.modifiers)]:
         mine.remove(stray)
         bpy.data.objects.remove(stray, do_unlink=True)
-    for empty in [o for o in mine if o.type == "EMPTY"]:
-        mine.remove(empty)
-        bpy.data.objects.remove(empty, do_unlink=True)
     rig = next(o for o in mine if o.type == "ARMATURE")
     meshes = [o for o in mine if o.type == "MESH"]
-    idle = next((a for a in bpy.data.actions if a not in before_actions and named(a, hero["idle"])), None)
     if hero["library"]:
         held = set(bpy.data.objects)
         bpy.ops.import_scene.gltf(filepath=os.path.join(RESOURCES, hero["library"]))
-        idle = next(a for a in bpy.data.actions if a not in before_actions and named(a, hero["idle"]))
         for obj in [o for o in bpy.data.objects if o not in held]:
             bpy.data.objects.remove(obj, do_unlink=True)
+    idle = next(a for a in bpy.data.actions if a not in before_actions and named(a, hero["idle"]))
+    return rig, meshes, idle
+
+
+def seated(rig, meshes, hero, idle, lift, reins):
+    """His idle's first frame swung into the seat, his seat lowered onto his origin and {@code lift} over it."""
     play(rig, idle, int(idle.frame_range[0]))
     for side, (thigh, shin, arm) in enumerate(zip(hero["thighs"], hero["shins"], hero["arms"])):
         apart = THIGH_APART if side == 0 else -THIGH_APART
         turn(rig, thigh, "X", THIGH_FORWARD)
         turn(rig, thigh, "Y", -apart)
         turn(rig, shin, "X", SHIN_BACK)
-        turn(rig, arm, "X", ARM_FORWARD)
+        turn(rig, arm, "X", ARM_FORWARD + reins)
     thighs = [rig.matrix_world @ rig.pose.bones[name].head for name in hero["thighs"]]
-    seat = (thighs[0] + thighs[1]) / 2
-    depsgraph = bpy.context.evaluated_depsgraph_get()
-    baked = []
-    for obj in meshes:
-        still = bpy.data.meshes.new_from_object(obj.evaluated_get(depsgraph), depsgraph=depsgraph)
-        world = obj.matrix_world.copy()
-        copy = bpy.data.objects.new(obj.name + "_riding", still)
-        bpy.context.collection.objects.link(copy)
-        copy.matrix_world = world
-        baked.append(copy)
-    for obj in meshes + [rig]:
-        bpy.data.objects.remove(obj, do_unlink=True)
-    for action in [a for a in bpy.data.actions if a not in before_actions]:
-        bpy.data.actions.remove(action)
-    for obj in baked:
-        obj.vertex_groups.clear()
-        if obj.data.shape_keys:
-            obj.shape_key_clear()
+    middle = (thighs[0] + thighs[1]) / 2
     # What he sits on: the lowest of him between his hip joints, a hand's breadth either side of them.
     tall = 12.0 / hero["scale"]
-    bottom = seat.z
-    for obj in baked:
-        for v in obj.data.vertices:
+    bottom = middle.z
+    depsgraph = bpy.context.evaluated_depsgraph_get()
+    for obj in meshes:
+        mesh = obj.evaluated_get(depsgraph).to_mesh()
+        for v in mesh.vertices:
             at = obj.matrix_world @ v.co
-            if abs(at.x - seat.x) < 0.05 * tall and abs(at.y - seat.y) < 0.07 * tall:
+            if abs(at.x - middle.x) < 0.05 * tall and abs(at.y - middle.y) < 0.07 * tall:
                 bottom = min(bottom, at.z)
-    return baked, Vector((seat.x, seat.y, bottom))
+        obj.evaluated_get(depsgraph).to_mesh_clear()
+    move = Matrix.Translation(Vector((-middle.x, -middle.y, lift * tall - bottom)))
+    for pb in rig.pose.bones:
+        if pb.parent is None:
+            pb.matrix = rig.matrix_world.inverted() @ move @ rig.matrix_world @ pb.matrix
+    bpy.context.view_layer.update()
+    return {pb.name: pb.matrix_basis.copy() for pb in rig.pose.bones}
+
+
+def clip(rig, name, keys):
+    """A clip of {@code keys}, (frame, every bone's pose) each, keyed on every bone."""
+    action = bpy.data.actions.new(name)
+    ad = rig.animation_data or rig.animation_data_create()
+    ad.action = action
+    for frame, pose in keys:
+        for pb in rig.pose.bones:
+            pb.rotation_mode = "QUATERNION"
+            pb.matrix_basis = pose[pb.name]
+            pb.keyframe_insert("location", frame=frame)
+            pb.keyframe_insert("rotation_quaternion", frame=frame)
+            pb.keyframe_insert("scale", frame=frame)
+    return action
+
+
+def riding_clips(hero, gallop):
+    """His Ride_Idle and Ride_Gallop, the gallop {@code gallop} frames long, on his rig; returns it and his meshes."""
+    rig, meshes, idle = hero_in(hero)
+    still = seated(rig, meshes, hero, idle, 0.0, 0.0)
+    strides = []
+    for step in range(5):
+        wave = math.sin(step / 4 * 2 * math.pi)
+        strides.append((1 + round(step * (gallop - 1) / 4), seated(rig, meshes, hero, idle, BOB * wave, REINS * wave)))
+    clip(rig, "Ride_Idle", [(1, still), (30, still)])
+    clip(rig, "Ride_Gallop", strides)
+    return rig, meshes
+
+
+def library(path, rig):
+    """His riding clips alone on his skeleton, a three-cornered mesh to carry its skin."""
+    for action in [a for a in bpy.data.actions if not a.name.startswith("Ride_")]:
+        bpy.data.actions.remove(action)
+    root = next(pb.name for pb in rig.pose.bones if pb.parent is None)
+    mesh = bpy.data.meshes.new("seat")
+    mesh.from_pydata([(0, 0, 0), (0.01, 0, 0), (0, 0.01, 0)], [], [(0, 1, 2)])
+    tri = bpy.data.objects.new("seat", mesh)
+    bpy.context.collection.objects.link(tri)
+    tri.parent = rig
+    tri.modifiers.new("Armature", "ARMATURE").object = rig
+    tri.vertex_groups.new(name=root).add([0, 1, 2], 1.0, "REPLACE")
+    export(path, rig, tri)
+
+
+def shoot_riding(name, horse_rig, horse_skin, rig, hero):
+    """Him riding at a gallop, hung as the engine hangs him: on SADDLE in the horse's frame, at his scale over its."""
+    gallop = bpy.data.actions["Gallop"]
+    play(horse_rig, gallop, int(sum(gallop.frame_range) / 2))
+    play(rig, bpy.data.actions["Ride_Gallop"], 3)
+    bone = horse_rig.pose.bones[SADDLE]
+    frame = bone.matrix @ bone.bone.matrix_local.to_3x3().inverted().to_4x4()
+    rig.matrix_world = horse_rig.matrix_world @ frame @ Matrix.Scale(hero["scale"] / HORSE_SCALE, 4)
+    bpy.context.view_layer.update()
+    shoot(name, horse_rig, horse_skin)
 
 
 def export(path, rig, skin):
@@ -339,12 +409,10 @@ def shoot(name, rig, skin, way=(-0.9, -0.75, 0.45)):
 
 
 os.makedirs(OUT, exist_ok=True)
-# The horse alone, drawn at HORSE_SCALE.
 rig, skin = horse(WITHERS / HORSE_SCALE)
+saddle(rig, skin)
 export(os.path.join(OUT, "horse.glb"), rig, skin)
 print("EXPORTED horse bytes=%d" % os.path.getsize(os.path.join(OUT, "horse.glb")))
-if SHOTS:
-    shoot("horse", rig, skin)
 
 if ICON:
     # Its head, from its left and a little in front, on clear: the neck and body run out of the picture.
@@ -375,36 +443,13 @@ if ICON:
         bpy.data.objects.remove(obj, do_unlink=True)
 
 for name, hero in HEROES.items():
-    rig, skin = horse(WITHERS / hero["scale"])
-    play(rig, None, 1)
-    saddle_y = (rig.matrix_world @ rig.data.bones[SADDLE_BONE].head_local).y
-    top = surface_over(skin, saddle_y)
-    baked, seat = rider(hero)
-    # What he sits on, on the horse's back, a little into it, as a man sits down into a saddle.
-    move = Vector((0.0, saddle_y, top)) - seat
-    move.z -= 0.01 * 12.0 / hero["scale"]
-    for obj in baked:
-        obj.location += move
-    bpy.context.view_layer.update()
-    for obj in baked:
-        bpy.ops.object.select_all(action="DESELECT")
-        obj.select_set(True)
-        bpy.context.view_layer.objects.active = obj
-        bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
-        group = obj.vertex_groups.new(name=SADDLE_BONE)
-        group.add(range(len(obj.data.vertices)), 1.0, "REPLACE")
-    bpy.ops.object.select_all(action="DESELECT")
-    for obj in baked:
-        obj.select_set(True)
-    skin.select_set(True)
-    bpy.context.view_layer.objects.active = skin
-    bpy.ops.object.join()
-    path = os.path.join(OUT, name + "_riding.glb")
-    export(path, rig, skin)
-    tris = sum(len(p.vertices) - 2 for p in skin.data.polygons)
-    gallop = bpy.data.actions["Gallop"].frame_range
-    print("EXPORTED %s tris=%d gallop=%s seconds bytes=%d" % (
-        name, tris, (gallop[1] - gallop[0]) / bpy.context.scene.render.fps, os.path.getsize(path)))
+    rig, skin = horse(WITHERS / HORSE_SCALE)
+    saddle(rig, skin)
+    span = tuple(bpy.data.actions["Gallop"].frame_range)
+    rider, meshes = riding_clips(hero, int(round(span[1] - span[0])) + 1)
     if SHOTS:
-        shoot(name + "_riding", rig, skin)
-        shoot(name + "_riding_front", rig, skin, (-0.25, -1.0, 0.3))
+        shoot_riding(name + "_riding", rig, skin, rider, hero)
+    path = os.path.join(OUT, "riding_" + name + ".glb")
+    library(path, rider)
+    print("EXPORTED riding_%s gallop=%.2fs bytes=%d" % (
+        name, (span[1] - span[0]) / bpy.context.scene.render.fps, os.path.getsize(path)))

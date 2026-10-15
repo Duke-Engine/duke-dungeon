@@ -70,7 +70,7 @@ class HuntressTest {
     void theRogueIsDrawnAsTheHuntress() {
         var rogue = SETTINGS.heroNamed("Rogue");
         assertEquals(MODEL, rogue.model());
-        assertEquals(java.util.List.of("animations/characters/huntress.glb"), rogue.animations(),
+        assertEquals(java.util.List.of("animations/characters/huntress.glb", "animations/characters/riding_rogue.glb"), rogue.animations(),
                 "her clips are on her own skeleton, not the kit's");
     }
 
