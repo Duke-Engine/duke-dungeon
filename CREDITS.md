@@ -73,11 +73,17 @@ written from there.
 | RPG Audio — cloth, coins, a door, a knife drawn | Kenney | CC0 | `audio/sfx/` |
 | Impact Sounds — what an arrow and a fist land like, and footsteps | Kenney | CC0 | `audio/sfx/` |
 | Interface Sounds — clicks and a gong | Kenney | CC0 | `audio/ui/` |
-| A climb of notes — the level-up | from the owner's own asset folder, maker not named | **unconfirmed, see below** | `audio/ui/level_up.ogg` |
+| Music Jingles — the level-up, a quest taken and a quest done | Kenney | CC0 | `audio/ui/level_up.ogg`, `audio/ui/quest_*.ogg` |
 | Fantasy UI Borders — the carved frames the hero panel's edges are painted with | Kenney | CC0 | `ui/borders/` |
 | Cursor Pack — the mouse pointers | Kenney | CC0 | `ui/cursors/` |
 | Voiceover Pack — what Erika says | Kenney | CC0 | `audio/voice/` |
-| Three pieces of music | freesound.org | **unconfirmed, see below** | `audio/music/` |
+| Ten pieces of music, from OpenGameArt's "CC0 - Cinematic Music" collection — see below | CodeManu, RandomMind, TAD, cynicmusic, Juhani Junkala, Cethiel | CC0 | `audio/music/` |
+| Loopable Dungeon Ambience — under the descent and the castles | JaggedStone | CC0 | `audio/ambience/` |
+| 80 CC0 RPG SFX, 80 CC0 Creature SFX, 100 CC0 Metal and Wood SFX — blades, chains, spells, fire, roars, bone, locks, keys, a chest's creak, coins, pages | rubberduck | CC0 | `audio/sfx/`, `audio/ui/` |
+| Fantasy Weapons and Apparel SFX Library — arrows drawn and loosed in a volley, boots leaping | Vehicle (Jan Schupke, vehiclemusic.eu) | CC0 | `audio/sfx/skill/` |
+| RPG Sound Pack — swings, a sword's ring, magic, ogres, giants, beasts, shades, armour put on, a bottle, coins | artisticdude | CC0 | `audio/sfx/`, `audio/ui/` |
+| Male Grunt/Yelling sounds — the knight's, the mage's and the soldiers' pain, shouts and deaths | HaelDB | CC0 (of its dual OGA-BY 3.0 / CC0) | `audio/sfx/voice/` |
+| Footsteps (grass/sand and stone) | Fantozzi | CC0 | `audio/sfx/step/` |
 | Cinzel — the lettering the menus are set in, baked, and its own Regular and Bold faces (from github.com/NDISCOVER/Cinzel) for the hero bar to bake at the size it is drawn | Natanael Gama / the Cinzel Project Authors | [SIL OFL 1.1](https://openfontlicense.org) | `fonts/` |
 
 ### The two that needed a decision, and no longer do
@@ -109,9 +115,7 @@ this section settled back on the page. It is set out in full below rather than
 folded away here, because a decision reversed deserves as plain a statement as
 the decision did.
 
-Another thing is open and is of a different kind: three pieces of music have
-licences nobody has looked up, set out further down this page. A second, of the
-music's kind, is the keep's key: it came out of the owner's own asset
+One thing is open and is of a different kind: the keep's key: it came out of the owner's own asset
 folder with no maker named, and its row in the table says it is to be asked of the
 owner before a release.
 
@@ -217,34 +221,48 @@ The owner animated the two leaves opening, in Blender, a clip apiece; the game's
 copy has the two joined into one, `open`, by `art/models/join_clips.pl`. The
 `License.txt` beside the file records the same.
 
-### The music — licences to confirm
+### The music and the rest of the sound
 
-Three tracks from [freesound.org](https://freesound.org), converted from WAV to
-Ogg Vorbis (12 MB of PCM to 200 KB, which is the whole reason):
+Every sound and every piece of music shipped is CC0. The three freesound.org
+tracks whose licences nobody had looked up, and the level-up out of the owner's
+folder whose maker was never named, were taken out on 2026-10-15 and replaced by
+the tracks and packs below; `SoundscapeTest` holds that no audio row here is left
+unconfirmed.
 
-| Track | Freesound | Author |
-|---|---|---|
-| Industrial | [862920](https://freesound.org/s/862920/) | looplicator |
-| Uncertainty | [774883](https://freesound.org/s/774883/) | destructo20 |
-| The Sentinel | [868449](https://freesound.org/s/868449/) | logicmoon |
+The music, all from OpenGameArt's "CC0 - Cinematic Music" collection, trimmed,
+levelled to about -18 LUFS and made Ogg Vorbis:
 
-Freesound hosts CC0, CC BY and CC BY-NC side by side, and which of them applies
-is per upload rather than per site. Before this is shipped anywhere, each of the
-three pages above needs looking at: CC0 needs nothing, CC BY needs a line here
-naming the author, and CC BY-NC would mean the track cannot ship in anything
-sold. They are named here so that the question is on the page rather than
-forgotten.
+| Track | Where it plays | Author | Page |
+|---|---|---|---|
+| A Legend Will Rise (orchestral) | the menu | CodeManu | [a-legend-will-rise-orchestral](https://opengameart.org/content/a-legend-will-rise-orchestral) |
+| Medieval: Market Day | the capital | RandomMind | [medieval-market-day](https://opengameart.org/content/medieval-market-day) |
+| The Hope | the open world | TAD | [the-hope](https://opengameart.org/content/the-hope) |
+| Once Upon a Time (loop) | the fields and the old woman's hut | TAD | [once-upon-a-time-loop](https://opengameart.org/content/once-upon-a-time-loop) |
+| Unexplored (short version) | the descent, the dark forest | TAD | [unexplored-short-ver-orchestra-music](https://opengameart.org/content/unexplored-short-ver-orchestra-music) |
+| Sinister Boss Appears | the dark castle, the queen's hall | cynicmusic ([cynicmusic.com](http://cynicmusic.com), [pixelsphere.org](http://pixelsphere.org)) | [sinister-boss-appears](https://opengameart.org/content/sinister-boss-appears) |
+| Battle Theme A | a fight, the opening battle | cynicmusic | [battle-theme-a](https://opengameart.org/content/battle-theme-a) |
+| Boss Battle Music | a boss in sight | Juhani Junkala | [boss-battle-music](https://opengameart.org/content/boss-battle-music) |
+| Laments of the War | the turning | Cethiel | [laments-of-the-war](https://opengameart.org/content/laments-of-the-war) |
+| Victory Theme for RPG | a run won | cynicmusic | [victory-theme-for-rpg](https://opengameart.org/content/victory-theme-for-rpg) |
 
-### The level-up sound — licence to confirm
+Two of them are the pages' own previews — *Boss Battle Music* (the page's
+"Preview") and *Laments of the War* (its MP3 preview) — the full versions being
+there to have; they are CC0 either way.
 
-`audio/ui/level_up.ogg` is `SFX_1up07.ogg` out of a folder of 110 short effects
-(`Sound FX_(ogg)`: 1up, Blip, Boom, Coin, Error, Hit, Hurt, Jump, Lose, Shoot and
-Slash, ten of each) that the owner keeps with his other game assets. It was chosen
-for being a climb of notes as long as the light it plays with. No licence file and
-no maker's name came with the folder, so where it came from and on what terms is
-the open question: it is named here rather than decided quietly. Kenney's own
-`level_up` from the Interface Sounds pack is what it replaced, and is the CC0 way
-back if the answer is the wrong one.
+The effects: rubberduck's three CC0 packs
+([RPG](https://opengameart.org/content/80-cc0-rpg-sfx),
+[creature](https://opengameart.org/content/80-cc0-creature-sfx),
+[metal and wood](https://opengameart.org/content/100-cc0-metal-and-wood-sfx)),
+Vehicle's [Fantasy Weapons and Apparel SFX Library](https://opengameart.org/content/fantasy-weapons-and-apparel-sfx-library),
+artisticdude's [RPG Sound Pack](https://opengameart.org/content/rpg-sound-pack),
+HaelDB's [Male Grunt/Yelling sounds](https://opengameart.org/content/male-gruntyelling-sounds)
+(dual-licensed OGA-BY 3.0 and CC0; taken as CC0),
+Fantozzi's [footsteps](https://opengameart.org/content/fantozzis-footsteps-grasssand-stone),
+JaggedStone's [Loopable Dungeon Ambience](https://opengameart.org/content/loopable-dungeon-ambience)
+and Kenney's [Music Jingles](https://kenney.nl/assets/music-jingles). Each was
+trimmed of silence, levelled to one peak and made mono, since OpenAL will not
+place a stereo sound; some of the swings are the same recording played lower (an
+axe) or higher (a dagger).
 
 ### The lettering
 
