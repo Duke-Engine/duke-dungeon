@@ -1025,3 +1025,36 @@ with a thing and its particles end at the thing, and a bouncing layer's particle
 **Landed** as 946409ed (branch e39-bouncing-homing-particles): `Layer` gains `Bounce`, `Home` with `HomeDelay`, and
 `Flip`; `World.effect(name, where, facing, toward)` and `EffectPlayed.toward`. The game reads the four in
 `Main.layerOf`, and the GoldBurst plays its CoinBurst toward the killer: the coins bounce, spin over and fly into him.
+
+## E46 — The game's own keys in the Settings key list (2026-10-15, small)
+
+The player screens (`2026-10-15-player-screens.md`) open on C, L and M, the tracker folds on J, and the skills and
+orders have their letters — all the game's, through `Hotkeys`. The client's Settings screen lists none of them, so
+the only place a player learns them is the small row of hints the game draws over the panel.
+
+Asked: Settings shows a read-only **Keys** page — the client's own controls (`KeyMap`) and every letter the game
+claimed (`Hotkeys.claimedKeys()`), each with a word the game gives (`Hotkeys.on(key, word, action)`, or a
+`Hotkeys.describe(key, word)` beside the existing calls), in the game's language through `Shell.word`. Rebinding can
+come later. Done when a test opens Settings with a game that claimed C with a word and finds the row.
+
+## E47 — A hero's whole figures in one place (2026-10-15, small)
+
+The character sheet shows what a hero's figures come to, and has to gather them from five places: `HeroFigures`
+(attributes, health, speed, attack, mana), the weapon's `reloadFrames` read off the template, the bag's
+`attackSpeedPercent`/`healthRegen`/`manaRegen`, the sheet's regen in tenths, and lifesteal summed by hand from the
+book's `LIFESTEAL` skills (its `passives()` is private, so a worn thing's lent lifesteal is missed) plus
+`SkillBook.auraOn`. There is no crit at all.
+
+Asked: `HeroFigures` (or a `HeroProgress.sheetOf(body)`) carries the rest of what the body uses — blows a second,
+health and mana a second, lifesteal percent (own, lent and aura), and crit chance and multiplier once the engine has
+them — worked out by the same code that applies them, so the sheet can never disagree with the fight. Done when a test
+gives a hero a worn lifesteal thing and a quicker weapon and reads both back from the one record.
+
+## E48 — The letter a key code is, for a game's canvas input (2026-10-15, small)
+
+`CanvasInput.Key` carries jME's scan code, and a game that takes letters on its canvas — the player screens take C, L,
+M while one is open — has to keep its own copy of the keyboard's rows (`PlayerScreens.codeOf`), as `DialogueScreen`
+keeps Esc, Space and Enter. `Hotkeys.codeOf(char)` already exists and is package-private.
+
+Asked: `Hotkeys.codeOf(char)` public (or `CanvasInput.Key.letter()`), and the few named keys a game's canvas answers
+(`CanvasInput.ESCAPE`, `ENTER`, `SPACE`) as constants. Done when the game's copies are deleted.
