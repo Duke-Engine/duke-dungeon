@@ -131,6 +131,7 @@ public final class DungeonSettings {
     private uz.dukeengine.dungeon.story.GoldBurst goldBurst = uz.dukeengine.dungeon.story.GoldBurst.DEFAULTS;
     private final List<HeavyBlow> heavyBlows = new java.util.ArrayList<>();
     private final List<BigDeath> bigDeaths = new java.util.ArrayList<>();
+    private final List<CritBlow> critBlows = new java.util.ArrayList<>();
     private uz.dukeengine.client3d.HitStop hitStop = new uz.dukeengine.client3d.HitStop(0f, 1f, true, false);
     private final List<uz.dukeengine.core.content.EffectList> effectLists = new java.util.ArrayList<>();
     private uz.dukeengine.dungeon.story.Medallion medallion = uz.dukeengine.dungeon.story.Medallion.DEFAULTS;
@@ -271,6 +272,11 @@ public final class DungeonSettings {
     /** The catch in the motion of a heavy blow; none (0 seconds) unless the files say. */
     public uz.dukeengine.client3d.HitStop hitStop() {
         return hitStop;
+    }
+
+    /** What a critical blow adds, see {@link CritBlow}. */
+    public List<CritBlow> critBlows() {
+        return List.copyOf(critBlows);
     }
 
     /** The deaths that are felt. */
@@ -548,6 +554,7 @@ public final class DungeonSettings {
                 case uz.dukeengine.dungeon.story.GoldBurst block -> goldBurst = once(block, once);
                 case HeavyBlow blow -> heavyBlows.add(blow);
                 case BigDeath death -> bigDeaths.add(death);
+                case CritBlow crit -> critBlows.add(crit);
                 case uz.dukeengine.client3d.HitStop block -> hitStop = once(block, once);
                 case uz.dukeengine.core.content.EffectList list -> effectLists.add(list);
                 case uz.dukeengine.dungeon.story.Medallion block -> medallion = once(block, once);
@@ -1102,6 +1109,10 @@ public final class DungeonSettings {
         for (var blow : heavyBlows) {
             require(blow.majorAt() > 0f && effectLists.stream().anyMatch(list -> list.name().equals(blow.plays())),
                     "HeavyBlow " + blow.template() + ": MajorAt is more than nothing and Plays names an EffectList");
+        }
+        for (var crit : critBlows) {
+            require(effectLists.stream().anyMatch(list -> list.name().equals(crit.plays())),
+                    "CritBlow " + crit.template() + ": Plays names no EffectList");
         }
         for (var death : bigDeaths) {
             require(effectLists.stream().anyMatch(list -> list.name().equals(death.plays())),

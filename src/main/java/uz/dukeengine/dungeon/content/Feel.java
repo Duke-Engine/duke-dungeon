@@ -32,6 +32,13 @@ public final class Feel {
                 visuals.moment(blow.momentFor(template), blow.plays(), 1f);
             }
         }
+        var crits = new ArrayList<>(settings.critBlows());
+        crits.sort(java.util.Comparator.comparing(crit -> !crit.template().isBlank()));
+        for (var crit : crits) {
+            for (var template : crit.template().isBlank() ? creatures(settings) : List.of(crit.template())) {
+                visuals.moment(crit.momentFor(template), crit.plays(), 1f);
+            }
+        }
         for (var death : settings.bigDeaths()) {
             visuals.moment(death.moment(), death.plays(), 1f);
         }
