@@ -67,6 +67,7 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E56 | a flat faded loop the game starts and stops (`Duke3D.loop` / `stopLoop`), and a held sound that fades | landed, 7b7f76c1 on the engine's branch `e55-57-sounds`; place ambience is looped by `Soundscape`, the held trick gone |
 | E57 | the bag's sounds (`bag_open`, `bag_close`, `item_lift`, `item_drop`), and `walking.<Template>.<surface>` | landed, 7b7f76c1 on the engine's branch `e55-57-sounds`; the cues are in `ui.duke`, creatures' footsteps by ground in `sfx.duke`, the hero-only step code gone |
 | E58 | feel: a number that is bigger and another colour for a heavy or critical blow, a short hit-stop, and a camera knock from an effect list that obeys `ShakeScale` | landed, 62e569ef on the engine's branch `e58-feel`; the numbers, `HitStop` and the effect-list shakes are in `hud.duke` and `feel.duke` |
+| E59 | closest-thing questions with no candidate list or sort; a weapon that does not copy its owner's module list every frame | asked 2026-10-15 (perf) |
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
 game builds against the local engine. E12–E15 reached it together at 668045f0 (their pull requests merged as
@@ -1240,3 +1241,19 @@ The game now knocks the camera only on big moments, through `hurt.<Template>.nor
 **Landed** as 62e569ef on the engine's branch `e58-feel`: `ObjectHurt.critical` (weapon shots, direct skill casts, single-target skill arrows; not yet looseAlong, wave or trample), five more `HitNumbers` figures (`BigAt`, `BigScale`, `BigColour`, `CritColour`, `CritScale`), `Visuals.hitStop(HitStop)` and list shakes that obey `ShakeScale`. The game's are in `hud.duke` and the new `HitStop` block in `feel.duke`. Still open: a hurt moment named by critical (`hurt.<T>.<type>.crit`), so a true crit can knock the camera -- the heavy-blow bars stand in for it.
 
 **Follow-up landed** as afa7af42 on the engine's branch `e58b-crit-moments`: a critical `ObjectHurt` plays `hurt.<Template>.<type>.crit` where the game names it (else `.major`), and the same name goes to the sound bank; WAVE, SKILLSHOT, SKEWER and trample set `critical`. The game's `CritBlow` blocks in `feel.duke` name it for every creature (a stronger knock on heroes).
+
+## E59 — Closest-thing questions without a sort, and a weapon that does not copy its owner's modules (2026-10-15, small, performance)
+
+Profiled headless (JFR) on the open world and on `maps/deep` with the hero idle: most of a frame is the
+engine answering "the closest thing within R". Every `GameLogic.findClosest` / `findClosestInReach` goes through
+`PartitionManager.candidates` → `SpatialIndex.near`, which copies every bucket the box touches into a new `ArrayList`
+and **sorts it by `getEntered`** before the caller walks it. Each idle monster asks twice a frame (the game's
+`MonsterBrain.nearestEnemy` and `somethingNearbyHasStarted`, and `WeaponUpdate.acquireTarget` once more), so on
+`deep` (226 things) the top of the profile is `TimSort.binarySort`, `Comparator.comparingLong`, `ArrayList.addAll` and
+`SpatialIndex.near` -- over half the samples of a run (0.46 ms a frame on `deep`, 0.09 on the world). (1) Asked: `closestObject` and `closestWithinReach` need no
+order — the best is the least distance, ties to the lowest id, the same whatever order the candidates come in (the
+filters the game passes are pure) — so let them walk the buckets in place, no list and no sort; keep the sorted
+`near` for questions whose answer is a list. (2) `WeaponUpdate.heldByAModule` calls `GameObject.getModules()`, which
+is `List.copyOf(modules)`, for every armed thing every frame; asked: walk the modules without the copy (or a
+`hasModule(Class)` / `anyModule(Predicate)` on `GameObject`). Done when the closest-thing tests still pass thing for
+thing and a frame of `deep` with every monster idle allocates no candidate lists.
