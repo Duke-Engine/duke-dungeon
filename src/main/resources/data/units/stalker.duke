@@ -1,6 +1,6 @@
 Monster
   Name = Stalker
-  DisplayName = Stalker
+  DisplayName = Izquvar
   KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
   Geometry = Cylinder
     Radius = 3

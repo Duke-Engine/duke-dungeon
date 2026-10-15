@@ -70,9 +70,13 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E59 | settings: an Ambience channel with its own volume, a Camera shake row (`ShakeScale` for the player), a Language row if there is more than one | landed (engine 01eb7029; game 2026-10-15) |
 | E60 | closest-thing questions with no candidate list or sort; a weapon that does not copy its owner's module list every frame | landed (engine 01eb7029; game 2026-10-15) |
 | E61 | where the hero is wanted: a `Mission` that drops its key with a few still standing, and the game's own marks on the minimap | landed, 6e789f32 on the engine's branch `e61-key-minimap`; the game passes `Run.keyLeeway` to `Mission.begin` (`run/EarlyKey` gone) and marks the key (gold, blinking) and each quest's target (QuestColour) on the minimap |
-| E62 | scenery a hero can work: a scenery piece the game can point at, take away (a tree felled) and lay again (grown back) | waiting; the game stands in with trees it places as things (`ChoppableTree`, `data/world/food.duke`) |
-| E63 | a busy state with its own clip: a creature plays a named clip on a loop for N frames, cut short by an order or a blow | waiting; the game stands in with a puff and a sound each second (`run/Camp`) |
-| E64 | health over time as a buff the skill book reads (as `MANA_AURA` is for mana), with its picture on the HUD | waiting; the game pays a `HEAL` buff out each frame (`Belt.digest`) |
+| E62 | settings kept as the player leaves them (Esc, closing the window), not only on the Save button | landed, 53923bd4 on the engine's branch `e62-65-settings-menu-looks`; Esc and closing the window keep the applied settings (`GameSettings.keep()`), Cancel is the one way back; the hint says `ESC chiqish` |
+| E63 | no bars, medallions or names over the front menu's backdrop (as on `Screen.FRONT`) | landed, 53923bd4 on `e62-65-settings-menu-looks`; `DukeRtsApp.barsHidden` clears bars and marks over the menu backdrop |
+| E64 | `dressModel` takes a glTF piece's base colour by name, not the first texture jME lists (a normal map) | landed, 53923bd4 on `e62-65-settings-menu-looks`; `dressModel` takes `BaseColorMap` first; the game keeps its stripped GLBs (smaller; `ModelPicturesTest` is now a size rule) |
+| E65 | a passive skill drawn as a passive on the hero's bar: framed, no key letter, no press or sweep, takes no click | landed, 53923bd4 on `e62-65-settings-menu-looks`; `HeroCard.skills` writes `passive`, drawn framed, letterless, unclickable; the game keeps a passive's key bound to a no-op and the `Passiv` card line |
+| E66 | scenery a hero can work: a scenery piece the game can point at, take away (a tree felled) and lay again (grown back) | waiting; the game stands in with trees it places as things (`ChoppableTree`, `data/world/food.duke`) |
+| E67 | a busy state with its own clip: a creature plays a named clip on a loop for N frames, cut short by an order or a blow | waiting; the game stands in with a puff and a sound each second (`run/Camp`) |
+| E68 | health over time as a buff the skill book reads (as `MANA_AURA` is for mana), with its picture on the HUD | waiting; the game pays a `HEAL` buff out each frame (`Belt.digest`) |
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
 game builds against the local engine. E12–E15 reached it together at 668045f0 (their pull requests merged as
@@ -1292,7 +1296,62 @@ game today draws its key and quest targets on its own world map, and an arrow ro
 
 **Landed** as 6e789f32 on the engine's branch `e61-key-minimap`: `Mission.begin(..., int leeway)` (clamped to 0..outside-1, one key, `killed()` capped at `outside()`) and `Duke3D.minimapMarks(Supplier<List<MinimapMark>>)`. The game: `DungeonRun.missionOf` passes `Run.keyLeeway`, and `run/EarlyKey` is deleted; `MissionScreen.minimapMarks` feeds the floor's key (the menu's gold, blinking) and every quest going's target (Run `QuestColour`, a still diamond), and quest places now stand in their own blue `QuestBeam`, not the key's gold. Tests: `MissionTest` (the early drop and the 0/0 last-of-them rule through the engine), `QuestMarkerTest.theCellarIsMarkedOnTheMinimap`, `theKeyIsMarkedOnTheMinimapAndBlinks`, `aQuestsPlaceLooksUnlikeTheKey`.
 
-## E62 — Scenery a hero can work: a tree pointed at, felled and grown again (2026-10-15, medium)
+## E62 — Settings kept as the player leaves them, not only on Save (2026-10-15, small)
+
+The owner played MSI 1.0.41: he set the game to a window in Settings, and the next launch was fullscreen again;
+`~/.duke-engine/settings.properties` was last written 2026-09-30. The file is the right one (`GameSettings`, beside
+the user; the packaged app writes its saves to `~/.duke-engine/saves` beside it, so the folder is writable) and the
+game does not move it. What loses the choice is the screen: every row is applied **live** (`fillTheScreen`,
+`applyDisplaySettings`, the volumes) into a draft, and only the **Save** button at the foot writes it. Escape is
+`undoSettings` (the hint says `ESC back`), and closing the window — its X appears the moment he picks a window, which is
+exactly when he is done — throws the draft away with no question. **Repro:** with the file saying `fullscreen=true`,
+open Settings from the front menu, set Fullscreen to NO (the window leaves the screen at once), then close the window
+with its X, or press Esc; relaunch: fullscreen, and the file's time is unchanged. Asked: what a player has *seen
+applied* is kept when he leaves the screen by Esc or closes the window (save the draft on leaving, or ask "save
+changes?" once); Cancel stays the one way back. Done when a test sets a row, leaves by Esc and by a stopped app, and
+finds the value in the file. The game, meanwhile: its Uzbek hint says `ESC bekor qilish` (Esc cancels), and with no
+file yet it starts in a 1280 × 720 window (`Duke3D.window`), not filling the screen (`DisplayModes.firstWindow`).
+
+## E63 — Nothing of play drawn over the menu's backdrop (2026-10-15, one line)
+
+The playtest of 1.0.41: the live fight behind the front menu (`Duke3D.backdrop`) wears every fighter's bar, medallion
+and name — "Knight", "Skeleton", a "0" in each medallion — over a picture that is meant to be a picture.
+`DukeRtsApp.showUnitBars` already clears them on `Screen.FRONT` ("behind a front end: a picture, with nothing of play
+laid over it") but not on `Screen.MENU` with a backdrop shown, which is the engine's own front menu over a backdrop.
+Asked: the same `unitBars.clear()` there (and the marks a bar carries with it). Done when a test shows a backdrop under
+the menu and finds no bar placed. The game, meanwhile, names each backdrop kind in Uzbek on its status line (`|who=`),
+so what is drawn is at least the game's words; the medallion's "0" stays until this lands.
+
+## E64 — A model dressed in its base colour, not in whichever picture comes first (2026-10-15, small)
+
+The playtest of 1.0.41: Lange (the knight hero, `models/heroes/lange/lange.glb`, its pictures inside the file) and his
+portrait were drawn pale lavender. `DukeRtsApp.dressModel` takes `skinOf(loaded)` — the **first** `Texture` among
+`Material.getParams()` — and jME 3.7 does not hand them in the file's order: a glTF piece with a normal map lists
+`NormalMap` before `BaseColorMap` (and `EmissiveMap` before both), so the piece was lit over its normal map, and his
+sword over its near-black emissive map. The animatedheaven gate (`models/props/gate/gate.glb`, normal maps) had the
+same. **Repro:** `new DesktopAssetManager(true).loadModel(".../lange.glb")` at 1.0.41's game commit and print each
+geometry's params: `NormalMap` comes first. Asked: `skinOf` asks by name — `BaseColorMap`, `DiffuseMap`, `ColorMap` —
+and only then any texture (`ListShow`'s colour lookup already orders its names). Done when a test dresses a glTF with a
+normal map and finds its base colour on the dressed material. The game, meanwhile, ships both files with their base
+colour only (`art/models/base_colour_only.js`, guarded by `ModelPicturesTest`); with this landed the maps can return.
+
+## E65 — A passive skill drawn as a passive on the hero's bar (2026-10-15, small)
+
+The owner, 2026-10-15: the knight's E (Dragon Blood, `SkillEffect.DRAGON_BLOOD`, a passive the book never casts) sits on
+the bar as a button like his three actives: its key letter, the hover and press wash, a cooldown sweep's place. In
+Warcraft III a passive is a framed picture you cannot press. `HeroCard.skills` writes every skill's state as `ready`,
+`cool,…` or `lock`, and `HeroPanel` draws every `ready` slot as pressable — neither can tell a passive. **Repro:** pick
+the knight, buy E: his E slot lights under the mouse and shows "E". Asked: `HeroCard.skills` writes `passive` for a
+learnt skill whose `effect().isPassive()` (unbought, `lock` as now), and `HeroPanel` draws such a slot in a plain,
+dimmer frame with no key letter, no hover or press wash and no sweep, takes no click on it (the raise badge stays
+clickable while a point can go there), and its card still shows (`tipAt` as the game sends it). Done when a panel test
+reads a `passive` slot and finds it unlit under a click and letterless. The game, meanwhile: a passive's key is bound
+to nothing (`Main.aimsFor`, so neither the key nor a click on the slot aims, orders or refuses), and its card says
+"1-daraja · Passiv" where an active one says its key (`HeroStatus.passives`, hud.duke `PassiveWord`).
+
+**Landed** as 53923bd4 on the engine's branch `e62-65-settings-menu-looks`. E62: Esc and closing the window keep what was applied (`GameSettings.keep()`); the game's hint says `ESC chiqish`. E63: `DukeRtsApp.barsHidden` hides bars and marks over the menu backdrop. E64: `dressModel` dresses in `BaseColorMap` first; the game keeps its base-colour-only GLBs for size (`ModelPicturesTest` is now a size rule; `lange.glb` left to the `anim` branch). E65: `HeroCard.skills` writes `passive`; the game keeps a passive's key bound to a no-op (it also replaces another hero's binding on that letter) and the `Passiv` card line; the knight's E (Dragon Blood) reports `isPassive()`.
+
+## E66 — Scenery a hero can work: a tree pointed at, felled and grown again (2026-10-15, medium)
 
 The owner's food and fire (`docs/plan/2026-10-15-food-and-fire.md`): as in Warcraft III or Dota, the hero right-clicks
 a tree, chops it for a few seconds, gets wood, and the tree is gone until it grows back. The world's trees are E10's
@@ -1306,7 +1365,7 @@ removed is part of the world's state a save can carry. Done when a test removes 
 its footprint was, the client draws it no more, and restoring it puts both back. Until then the game places its own
 choppable trees as things (`ChoppableTree`, the Food block's Forage, about 60 on the open world) beside the scenery.
 
-## E63 — A busy state with its own clip (2026-10-15, small)
+## E67 — A busy state with its own clip (2026-10-15, small)
 
 Chopping, picking, filling a waterskin and cooking keep the hero busy for 1.5 to 3.5 seconds (`run/Camp`); he should
 be seen doing it. Nothing lets a game play a clip on a creature but the engine's own states (idle, walk) and moments
@@ -1317,7 +1376,7 @@ name not there plays nothing). Done when a test sets a creature busy for 30 fram
 those frames and not after. Until then the game plays a puff (`WorkChop`, `WorkHarvest`, `WorkFill`, `WorkCook`) and a
 sound on him every second of the work.
 
-## E64 — Health over time as a buff the book reads (2026-10-15, small)
+## E68 — Health over time as a buff the book reads (2026-10-15, small)
 
 A meal heals over its seconds (Eternal Return's food), and the owner's rule is that buffs are the skill system's. The
 game gives the hero's `SkillBook` a buff of kind `HEAL` (its own id lending it) worth tenths of a point of health a

@@ -122,7 +122,7 @@ public final class Belt {
 
     /**
      * A frame of what he has eaten: the {@code HEAL} buff on his book, tenths of a point a second, given back as health.
-     * On the simulation thread, every frame. ponytail: the run pays it out until the engine's book does (E64).
+     * On the simulation thread, every frame. ponytail: the run pays it out until the engine's book does (E68).
      */
     public static void digest(GameObject hero) {
         var book = hero == null || hero.isEffectivelyDead() ? null : hero.findModule(SkillBook.class);

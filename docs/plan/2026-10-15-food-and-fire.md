@@ -87,11 +87,11 @@ the fires he built are not saved: a loaded game lays the map fresh.
 
 ## Not done / asked of the engine
 
-- E62: a scenery tree that can be pointed at, felled and grown again (today's trees are the client's scenery and the
+- E66: a scenery tree that can be pointed at, felled and grown again (today's trees are the client's scenery and the
   simulation only knows their footprints) -- until then the trees to chop are objects the game places.
-- E63: a busy state with its own clip: the hero plays a named clip on a loop while he works, cut short by an order or a
+- E67: a busy state with its own clip: the hero plays a named clip on a loop while he works, cut short by an order or a
   blow -- until then a puff and a sound each second.
-- E64: health over time as a buff the book reads (as `MANA_AURA` is for mana), with a picture on the HUD -- until then
+- E68: health over time as a buff the book reads (as `MANA_AURA` is for mana), with a picture on the HUD -- until then
   the run heals by the `HEAL` buff each frame.
 - No bear (no CC0 animated bear without an account) and no rabbit (the CC0 "rabbits" are characters); a stag's antlers
   came apart in conversion. Rivers do not fill the waterskin, only wells.

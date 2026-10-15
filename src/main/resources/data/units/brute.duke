@@ -1,6 +1,6 @@
 Monster
   Name = Brute
-  DisplayName = Brute
+  DisplayName = "Zo'ravon"
   KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
   Geometry = Cylinder
     Radius = 6

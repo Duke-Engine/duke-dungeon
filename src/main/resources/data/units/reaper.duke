@@ -2,7 +2,7 @@ Monster
   Name = Reaper
   ; Fast. The archer's whole game is the distance he keeps, and this is the first
   ; thing down here that closes it faster than he can back away.
-  DisplayName = Reaper
+  DisplayName = "O'roqchi"
   KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
   Geometry = Cylinder
     Radius = 6

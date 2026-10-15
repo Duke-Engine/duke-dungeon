@@ -185,6 +185,7 @@ final class HeroStatus {
                             hud.radiusWord(), hud.rangeWord(), hud.boostWord(), hud.raiseWord(),
                             hud.raiseKeyWord(), hud.maxedWord(), hud.noPointsWord(), hud.rankSuffix(),
                             hud.secondsWord(), hud.manaWord())));
+            passives(card, book, learnt, hud);
             // How many levels he has not spent yet, and the word for them. Beside
             // the heading rather than on a slot, because it belongs to none of
             // them: it is what the four are competing for.
@@ -231,6 +232,22 @@ final class HeroStatus {
      * the bar is worth as much as reading his own -- and with no hero of his the
      * buttons go dim, because a lit button that does nothing is worse than no button.
      */
+    /**
+     * A passive's card says so where an active one names its key -- "1-daraja · Passiv": it is never pressed (its key
+     * is bound to nothing, see Main.aimsFor). The panel reads the last {@code tipAt} it is sent. Its slot is drawn as a
+     * framed picture by the engine itself (HeroCard.skills writes "passive", E65).
+     */
+    static void passives(HeroCard card, SkillBook book, uz.dukeengine.rpg.skill.SkillRanks learnt,
+            uz.dukeengine.dungeon.world.Hud hud) {
+        for (var skill : book.getSkills()) {
+            if (skill.effect().isPassive()) {
+                int rank = learnt.rankOf(skill.key());
+                card.field("tipAt", skill.key() + ","
+                        + (rank > 0 ? rank + hud.rankSuffix() + " · " : "") + hud.passiveWord());
+            }
+        }
+    }
+
     private static void orders(HeroCard card, DungeonSettings settings, Doing doing, boolean his) {
         var words = settings.hud().orderWords();
         var pictures = settings.hud().orderIcons();

@@ -3,7 +3,7 @@ Monster
   ; The last one, and the numbers the single boss used to have: at level 35,
   ; where the fourth floor's boss stands, its level's bonus makes this 2640
   ; health and about 65 damage. Beat it and the run is over.
-  DisplayName = Champion
+  DisplayName = Pahlavon
   KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
   Geometry = Cylinder
     Radius = 8

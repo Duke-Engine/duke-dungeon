@@ -43,6 +43,20 @@ class MenuSceneTest {
         assertTrue(scene.game().getSnapshot().status().contains("|look=" + SETTINGS.mainMenu().sceneLook()));
     }
 
+    /** The playtest of 1.0.41: "Knight", "Skeleton" over the backdrop's fighters. Each kind is named in Uzbek. */
+    @Test
+    void theFightersAreNamedInTheGamesOwnWords() {
+        var scene = MenuScene.of(SETTINGS);
+        scene.game().runHeadless(2);
+        var status = scene.game().getSnapshot().status();
+        var reading = uz.dukeengine.client3d.UnitBarReading.read(status);
+        assertEquals("Skelet", reading.names().get("Skeleton"), status);
+        for (var kind : SETTINGS.mainMenu().foes()) {
+            assertTrue(reading.names().containsKey(kind) && !reading.names().get(kind).equals(kind),
+                    kind + " would be drawn by its template name: " + status);
+        }
+    }
+
     /** The owner, 2026-10-10: the camera somewhat higher, and the fight to the right of the menu at the left. */
     @Test
     void theCameraLooksFromHigherThanPlayAndLeftOfTheFight() {

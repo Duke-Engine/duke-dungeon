@@ -36,6 +36,7 @@ import uz.dukeengine.dungeon.content.PortraitArt;
  *     it, a haste -- in the pixels the panel was designed at, and grown as the panel is
  * @param lifestealWord     what a lifesteal aura's share is called on that picture's card, as the
  *     attack word is a might's
+ * @param passiveWord       what a passive skill's card says in place of its key: it is never pressed
  */
 public record Hud(String depthWord, String rankSuffix, String skillsWord, String pointsWord, String masterWord,
         String damageWord, String cooldownWord, String radiusWord, String rangeWord, String boostWord,
@@ -48,12 +49,12 @@ public record Hud(String depthWord, String rankSuffix, String skillsWord, String
         String primaryWord, String eachPointWord, String speedNowWord, String manaWord,
         boolean paintedSkillIcons, String cmdMoveIcon, String cmdAttackIcon, String cmdStopIcon,
         String cmdGuardIcon, String attackIcon, String armourIcon, String speedIcon, int portraitFps,
-        PortraitArt portrait, float buffIcon, String lifestealWord) {
+        PortraitArt portrait, float buffIcon, String lifestealWord, String passiveWord) {
 
     /** What a block leaves out. */
     public static final Hud DEFAULTS = new Hud("DEPTH", "-lv", "", "", "", "", "", "", "", "", "", "", "", "",
             "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
-            "", "", false, "", "", "", "", "", "", "", 24, null, 20f, "");
+            "", "", false, "", "", "", "", "", "", "", 24, null, 20f, "", "");
 
     /** The four orders on the buttons beside the map, in the order they are drawn. */
     public List<String> orderWords() {
