@@ -52,6 +52,9 @@ Screens
     "Qorong'i_o'rmon = Qorong'i o'rmon",
     "Throne = Taxt",
     "Altar = Mehrob",
+    "Square = Maydon",
+    "Gate = Darvoza",
+    "Cellar = Yerto'la",
   ]
 
   ; How many texels a side the world's picture is at most: the open world's 512
