@@ -598,6 +598,9 @@ public final class DungeonRun {
             monster.addModule(new Bounty(monster, uz.dukeengine.rpg.hero.LevelBonus.levelOf(monster), this::pay));
         }
         peopleOn(game);
+        if (loading && skippedTo.isBlank() && lastTowerFound() != null) {
+            skippedTo = lastTowerFound(); // back from a save or a death: at the last tower he found, not the way in
+        }
         if (!skippedTo.isBlank()) {
             // A joint skipped to on a great map: he starts where that joint's story is, not at the map's way in.
             act(game, new uz.dukeengine.dungeon.story.Trigger.Action(uz.dukeengine.dungeon.story.Trigger.Act.PLACE,
@@ -1837,6 +1840,13 @@ public final class DungeonRun {
             }
         }
         script.standing(standing);
+        // A land freed opens the tower nearest it (the Travel block's Opens): found as if he had stood in it.
+        for (var opened : settings.travel().opened(script::flagged)) {
+            var tower = nearestTower(opened);
+            if (tower != null && !standing.contains(tower) && !visited.contains(tower)) {
+                standing.add(tower);
+            }
+        }
         if (!visited.containsAll(standing)) {
             standing.stream().filter(zone -> !visited.contains(zone)).forEach(visited::add);
             visitedNow = List.copyOf(visited);
@@ -1999,6 +2009,35 @@ public final class DungeonRun {
             return List.of();
         }
         return story.zones().stream().filter(zone -> zone.name().startsWith(travel.towers())).toList();
+    }
+    /** The tower nearest the zone {@code near} of the map, by its zone's name; null for none or no such zone. */
+    private String nearestTower(String near) {
+        var zone = zoneNamed(near);
+        if (zone == null) {
+            return null;
+        }
+        float cell = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
+        String best = null;
+        double far = Double.MAX_VALUE;
+        for (var tower : towers(floors.story(), settings.travel())) {
+            double d = Math.hypot(tower.middleX(cell) - zone.middleX(cell), tower.middleY(cell) - zone.middleY(cell));
+            if (d < far) {
+                far = d;
+                best = tower.name();
+            }
+        }
+        return best;
+    }
+
+    /** The last tower of the map he found, by its zone's name, or null: where he comes back from a save or a death. */
+    private String lastTowerFound() {
+        var towers = towers(floors.story(), settings.travel()).stream().map(z -> z.name()).toList();
+        for (int i = visited.size() - 1; i >= 0; i--) {
+            if (towers.contains(visited.get(i))) {
+                return visited.get(i);
+            }
+        }
+        return null;
     }
 
     /**

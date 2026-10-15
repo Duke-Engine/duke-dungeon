@@ -156,4 +156,37 @@ class WorldDressingTest {
         played.run().travel(game, me, 0);
         assertEquals(poor, named(game, SETTINGS.run().defaultHero()).getPosition(), "travelled with no gold");
     }
+
+    /**
+     * Act 2's hooks: a land freed (its flag up) opens the tower nearest it, and a hero back from a save stands at the
+     * last tower he found rather than at the city's way in.
+     */
+    @Test
+    void aLandFreedOpensItsTowerAndALoadComesBackAtTheLastTowerFound() {
+        var stage = world();
+        var towers = DungeonRun.towers(stage.story(), SETTINGS.travel());
+        var meadow = stage.story().zones().stream().filter(z -> z.name().equals("Yashil_dala")).findFirst()
+                .orElseThrow();
+        var nearest = towers.stream().min(java.util.Comparator.comparingDouble(t -> Math.hypot(
+                t.middleX(CELL) - meadow.middleX(CELL), t.middleY(CELL) - meadow.middleY(CELL)))).orElseThrow();
+        var last = towers.get(3);
+
+        var session = Dungeon.newStageSession(stage, SETTINGS);
+        session.game().runHeadless(1);
+        var base = session.run().saveNow();
+        var flags = new uz.dukeengine.dungeon.story.Script.State(List.of(), List.of("FreedGreen"), List.of(),
+                List.of());
+        var save = new SaveGame(base.seed(), base.stage(), base.depth(), base.hero(), base.experience(),
+                base.ranks(), base.bag(), base.quests(), flags, 0, base.souls(), base.givenTo(),
+                List.of(last.name()));
+        var played = Dungeon.newStageSession(stage, SETTINGS);
+        played.run().resume(save, Floors.ofStage(stage));
+        var game = played.game();
+        game.runHeadless(SETTINGS.story().dialogue().checkFrames() + 2);
+
+        var at = named(game, SETTINGS.run().defaultHero()).getPosition();
+        assertEquals(last.middleX(CELL), at.x(), CELL, "loaded, he is not at the last tower he found");
+        assertEquals(last.middleY(CELL), at.y(), CELL);
+        assertTrue(played.run().visited().contains(nearest.name()), "the meadow freed did not open its tower");
+    }
 }
