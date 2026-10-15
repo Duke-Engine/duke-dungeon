@@ -16,9 +16,9 @@ import uz.dukeengine.dungeon.world.Controls;
 import uz.dukeengine.dungeon.world.Controls.Scheme;
 
 /**
- * The third scheme's keys (docs/plan/2026-10-15-action-controls.md): a hero's four on 1-4, the belt on 5-8, E left
- * for the interact, and everything else as modern until the engine's E90-E94 land. A skill keeps its own key as its
- * name: only the key pressed changes.
+ * The third scheme (docs/plan/2026-10-15-action-controls.md): a hero's four on 1-4 aimed ahead, the belt on 5-8, E
+ * on the nearest thing in front, the mouse held and turning the camera (E90-E94); WASD, Space and T as modern. A skill
+ * keeps its own key as its name: only the key pressed changes.
  */
 class ActionControlsTest {
 
@@ -60,7 +60,8 @@ class ActionControlsTest {
                 assertEquals(before.aimOf(skill.key()), keys.aimOf(digit), hero.name() + "'s " + skill.key());
                 assertEquals(skill.name(), keys.wordOf(digit), "the keys page names the skill, not the belt");
             }
-            for (char free : "WASDQRFE".toCharArray()) {
+            assertEquals(Hotkeys.Aim.NOW, keys.aimOf('E'), "E works the nearest thing in front of him (E94)");
+            for (char free : "WASDQRF".toCharArray()) {
                 assertFalse(keys.claimedKeys().contains(free), hero.name() + ": " + free + " is not bound in action");
             }
             assertTrue(keys.claimedKeys().contains(action.mount().key().charAt(0)), "T still calls his horse");
@@ -71,13 +72,16 @@ class ActionControlsTest {
     }
 
     @Test
-    void actionPlaysAsModernUntilTheEngineLands() {
+    void actionHoldsTheMouseTurnsTheCameraAndStrikesAhead() {
         assertTrue(Controls.walksOnKeys(Scheme.ACTION));
         assertTrue(Controls.walksOnKeys(Scheme.MODERN));
         assertFalse(Controls.walksOnKeys(Scheme.CLASSIC));
         var action = played(Scheme.ACTION);
-        assertEquals(uz.dukeengine.client3d.MouseScheme.MODERN, Main.mouseOf(action));
-        assertEquals(uz.dukeengine.client3d.CameraFollow.of(null), Main.looks(action).getCameraFollow());
+        assertEquals(uz.dukeengine.client3d.MouseScheme.ACTION, Main.mouseOf(action));
+        assertEquals(uz.dukeengine.client3d.CameraFollow.of(null).orbiting(
+                uz.dukeengine.client3d.CameraFollow.ORBIT_SENSITIVITY, false, 0f), Main.looks(action).getCameraFollow());
+        assertEquals(uz.dukeengine.client3d.MouseScheme.MODERN, Main.mouseOf(played(Scheme.MODERN)), "modern as it was");
+        assertEquals(uz.dukeengine.client3d.CameraFollow.of(null), Main.looks(played(Scheme.MODERN)).getCameraFollow());
     }
 
     /** The Settings row: a kept 0 or 1 is what it was, and the third choice is action. */
@@ -92,7 +96,7 @@ class ActionControlsTest {
         for (var scheme : Scheme.values()) {
             assertEquals(scheme, Controls.ofChoice(Controls.choiceOf(scheme)));
         }
-        assertTrue(controls.actionWord().contains("hozircha"), "the row says it plays as modern for now");
+        assertEquals("Jangovar", controls.actionWord(), "a choice of its own since E90-E94");
     }
 
     @Test

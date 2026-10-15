@@ -33,11 +33,9 @@ Controls
 
   ; The third way (docs/plan/2026-10-15-action-controls.md): no pointer in play,
   ; the mouse turns the camera round him, the left button strikes ahead, the
-  ; skills on the digits, E works the nearest thing in front of him. Until the
-  ; engine's E90-E94 land it plays as Zamonaviy with these keys on top (the
-  ; skills on 1-4, the belt on 5-8, no E yet), and its word says so: drop the
-  ; bracket's "hozircha ... kabi" once they do.
-  ActionWord = "Jangovar (hozircha Zamonaviy kabi)"
+  ; skills on the digits aimed ahead of him, E works the nearest thing in front
+  ; of him (the engine's E90-E94). WASD, Space, G and T as Zamonaviy.
+  ActionWord = Jangovar
   ; Slot = the digit that presses it, action. Every slot a digit of its own,
   ; the passive's too (its digit then does nothing, as R does in modern).
   ActionSkillKeys = ["Q = 1", "W = 2", "E = 3", "R = 4"]
