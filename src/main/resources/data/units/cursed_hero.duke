@@ -26,7 +26,10 @@ Monster
     WeaponUpdate
       Damage = 22
       AttackRange = 10
-      ReloadFrames = 30
+      ReloadFrames = 13
+      ; The swing up to the blow (MonsterClipFitTest): the client starts its attack as it winds up,
+      ; and the blow lands as the clip strikes. Taken off ReloadFrames, so it hits as often as before.
+      PreAttackFrames = 17
     End,
     Swing
     End,
@@ -62,6 +65,11 @@ Monster
   ModelScale = 4.72
   Facing = 90
   Animations = Humanoid
+  ; Moves at a jog, not a walk: Running_A at about its own pace rather than Walking_A several times over.
+  Walk = Running_A
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
+  WalkStride = 12.73
+  UpperBody = spine
   Held = Held
     ; panarth's sword (Low poly medieval weapons, CC BY 4.0), as long as the kit's.
     Model = models/weapons/medieval/sword.glb

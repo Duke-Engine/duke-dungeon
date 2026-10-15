@@ -118,7 +118,7 @@ public final class Content {
             named(uz.dukeengine.dungeon.story.Dialogue.class), named(uz.dukeengine.dungeon.world.SaveMenu.class),
             named(uz.dukeengine.dungeon.world.MainMenu.class), named(uz.dukeengine.dungeon.world.Splash.class), named(uz.dukeengine.dungeon.world.Screens.class),
             named(uz.dukeengine.dungeon.world.Controls.class),
-            named(uz.dukeengine.dungeon.world.Travel.class),
+            named(uz.dukeengine.dungeon.world.Travel.class), named(uz.dukeengine.dungeon.world.DayNight.class),
             named(uz.dukeengine.dungeon.story.Trigger.class), named(uz.dukeengine.dungeon.story.Cutscene.class),
             named(uz.dukeengine.dungeon.story.Merchant.class), named(uz.dukeengine.dungeon.story.Trade.class),
             named(uz.dukeengine.dungeon.story.GoldBurst.class),
@@ -278,8 +278,9 @@ public final class Content {
             if (stream == null) {
                 throw new IllegalStateException("missing dungeon data file: " + name);
             }
-            return new String(stream.readAllBytes(), StandardCharsets.UTF_8)
-                    .replace("\r\n", "\n").replace("\r", "\n");
+            // The language overlay, where English is spoken, is the one other thing that happens at this door (see Lang).
+            return Lang.apply(name, new String(stream.readAllBytes(), StandardCharsets.UTF_8)
+                    .replace("\r\n", "\n").replace("\r", "\n"));
         } catch (IOException e) {
             throw new UncheckedIOException("could not read dungeon data file: " + name, e);
         }

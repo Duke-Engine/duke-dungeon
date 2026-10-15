@@ -97,9 +97,11 @@ public final class Dungeon {
      *               have no other way to reach each other. See {@link Orders}
      * @param seal   the keep's shut gate, as every blow, shot and mending asks it: told of each floor by the run that
      *               lays it, and of none in a world nobody lays one in. See {@link Seal}
+     * @param clock  the run's clock, frames of play since it began, saved with it: the hour the night roamers wake by
+     *               (see {@link uz.dukeengine.dungeon.world.DayNight}), kept by the run and read by every brain
      */
     public record Arena(DukeGame game, GamePlayer hero, GamePlayer dungeon, Orders orders,
-            java.util.List<GamePlayer> heroes, Seal seal) {
+            java.util.List<GamePlayer> heroes, Seal seal, java.util.concurrent.atomic.AtomicInteger clock) {
     }
 
     /** A game, the run loop that keeps it going, and the hero's progression. */
@@ -153,6 +155,7 @@ public final class Dungeon {
             String creaturesIni, java.util.List<LootBag> bagsBySeat) {
         var orders = new Orders();
         var seal = new Seal();
+        var clock = new java.util.concurrent.atomic.AtomicInteger();
         var heroes = new java.util.ArrayList<GamePlayer>();
         // No subtitle here: what this world is called depends on why it was built,
         // and only the caller knows — an endless descent, or one named stage. See
@@ -162,9 +165,11 @@ public final class Dungeon {
                     // A brain is a module named by its class, like every other: the block word is the
                     // class, so the editor completes it, opens it and flags a typo. Which creature a
                     // MonsterBrain is the brain of is the block it was put on -- see MonsterBrain.onStart.
-                    ScriptModule.registerScript(factory, HeroBrain.Data.class, () -> new HeroBrain(settings, orders, seal));
+                    // His brain as a module that may also hold his weapon's fire: the modern way (HeroBrain.Module).
+                    factory.register(HeroBrain.Data.class, (owner, ignored) ->
+                            new HeroBrain.Module(owner, new HeroBrain(settings, orders, seal)));
                     ScriptModule.registerScript(factory, MonsterBrain.Data.class,
-                            () -> new MonsterBrain(settings, seal));
+                            () -> new MonsterBrain(settings, seal, clock));
                     // Hero and monsters alike need a body that can grow: levels
                     // raise his and theirs, and the engine's fixes its maximum
                     // when the unit is built.
@@ -259,7 +264,7 @@ public final class Dungeon {
             }
         }
         game.localPlayer(heroes.getFirst());
-        return new Arena(game, heroes.getFirst(), dungeonPlayer, orders, java.util.List.copyOf(heroes), seal);
+        return new Arena(game, heroes.getFirst(), dungeonPlayer, orders, java.util.List.copyOf(heroes), seal, clock);
     }
 
     /**
@@ -409,7 +414,7 @@ public final class Dungeon {
         var drops = new LootTable(settings.loot(), settings.lootDrops().dropPercent(),
                 settings.lootDrops().bossDropPercent(), settings.lootDrops().valuePercentPerDepth());
         var run = new DungeonRun(arena.hero(), arena.dungeon(), floors, settings, progresses.getFirst(),
-                drops, arena.orders(), learnts.getFirst(), arena.seal());
+                drops, arena.orders(), learnts.getFirst(), arena.seal(), arena.clock());
         for (int seat = 1; seat < heroes; seat++) {
             run.seat(arena.heroes().get(seat), progresses.get(seat), learnts.get(seat));
         }
@@ -453,6 +458,17 @@ public final class Dungeon {
                 // "Stand and pick no fights", which none of the engine's three
                 // orders can say. See HoldGround. Like every order after one, it
                 // calls off an errand for something on the floor.
+                // The modern way: his hero picks no fight of his own (HeroBrain).
+                case uz.dukeengine.dungeon.ai.FightOnlyWhenTold told -> {
+                    arena.orders().fightOnlyWhenTold(told.playerIndex(), told.on());
+                    // And whatever he picked by himself before it arrived is let go.
+                    var hero = Skills.heroOf(game.getLogic(), told.playerIndex());
+                    var weapon = hero == null ? null
+                            : hero.findModule(uz.dukeengine.combat.module.WeaponUpdate.class);
+                    if (told.on() && weapon != null) {
+                        weapon.holdFire();
+                    }
+                }
                 case uz.dukeengine.dungeon.ai.HoldGround hold -> {
                     giveUpErrands(game, hold.playerIndex());
                     arena.orders().hold(hold.playerIndex(), hold.stand());
@@ -659,7 +675,8 @@ public final class Dungeon {
         return new uz.dukeengine.combat.module.WeaponUpdate.Data(data.damage(), data.attackRange(),
                 data.reloadFrames(), data.damageType(), data.splashRadius(), data.attackOnTheMove(), data.targets(),
                 data.reloadFramesMax(), data.clipSize(), data.clipReloadFrames(), data.autoReload(),
-                owner.getTemplate().name(), data.weaponSets(), data.deathType(), data.targetScanFrames());
+                owner.getTemplate().name(), data.weaponSets(), data.deathType(), data.targetScanFrames(),
+                data.preAttackFrames(), data.swingArcDegrees()); // the wind-up too: the blow lands with the swing
     }
 
     /** A sound the simulation plays riding {@code thing} — see {@code World.sound}: an event, out of the checksum. */

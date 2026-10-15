@@ -35,6 +35,11 @@ Monster
   ModelScale = 5.5
   Facing = 90
   Animations = Humanoid
+  ; Moves at a jog, not a walk: Running_A at about its own pace rather than Walking_A several times over.
+  Walk = Running_A
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
+  WalkStride = 14.83
+  UpperBody = spine
   Held = Held
     Model = models/weapons/medieval/sword.glb
     Bone = handslot.r
@@ -67,6 +72,9 @@ Monster
   ModelScale = 4.8
   Facing = 90
   Animations = Humanoid
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
+  WalkStride = 3.58
+  UpperBody = spine
 End
 
 ; Two townsfolk of the capital who ask small things of him (the side quests). STAND-IN names and looks.
@@ -94,6 +102,9 @@ Monster
   ModelScale = 4.72
   Facing = 90
   Animations = Humanoid
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
+  WalkStride = 3.52
+  UpperBody = spine
 End
 
 Monster
@@ -120,6 +131,9 @@ Monster
   ModelScale = 5.0
   Facing = 90
   Animations = Humanoid
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
+  WalkStride = 3.72
+  UpperBody = spine
 End
 
 ; The kingdom's soldiers: KayKit adventurers fighting for the hero — the ALLY act puts them on his
@@ -144,7 +158,10 @@ Monster
     WeaponUpdate
       Damage = 6
       AttackRange = 10
-      ReloadFrames = 30
+      ReloadFrames = 13
+      ; The swing up to the blow (MonsterClipFitTest): the client starts its attack as it winds up,
+      ; and the blow lands as the clip strikes. Taken off ReloadFrames, so it hits as often as before.
+      PreAttackFrames = 17
     End,
     Swing
     End,
@@ -175,6 +192,11 @@ Monster
   ModelScale = 4.72
   Facing = 90
   Animations = Humanoid
+  ; Moves at a jog, not a walk: Running_A at about its own pace rather than Walking_A several times over.
+  Walk = Running_A
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
+  WalkStride = 12.73
+  UpperBody = spine
   Held = Held
     Model = models/weapons/medieval/sword.glb
     Bone = handslot.r
@@ -202,7 +224,10 @@ Monster
     WeaponUpdate
       Damage = 6
       AttackRange = 10
-      ReloadFrames = 26
+      ReloadFrames = 9
+      ; The swing up to the blow (MonsterClipFitTest): the client starts its attack as it winds up,
+      ; and the blow lands as the clip strikes. Taken off ReloadFrames, so it hits as often as before.
+      PreAttackFrames = 17
     End,
     Swing
     End,
@@ -233,6 +258,11 @@ Monster
   ModelScale = 5.0
   Facing = 90
   Animations = Humanoid
+  ; Moves at a jog, not a walk: Running_A at about its own pace rather than Walking_A several times over.
+  Walk = Running_A
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
+  WalkStride = 13.48
+  UpperBody = spine
   Held = Held
     Model = models/monsters/blade.gltf
     Bone = handslot.r
@@ -262,7 +292,10 @@ Monster
     WeaponUpdate
       Damage = 9
       AttackRange = 12
-      ReloadFrames = 34
+      ReloadFrames = 17
+      ; The swing up to the blow (MonsterClipFitTest): the client starts its attack as it winds up,
+      ; and the blow lands as the clip strikes. Taken off ReloadFrames, so it hits as often as before.
+      PreAttackFrames = 17
     End,
     Swing
     End,
@@ -289,6 +322,11 @@ Monster
   Scale = 1.6
   Model = models/monsters/skeleton_warrior.glb
   Animations = Humanoid
+  ; Moves at a jog, not a walk: Running_A at about its own pace rather than Walking_A several times over.
+  Walk = Running_A
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
+  WalkStride = 22.38
+  UpperBody = spine
   Effect = EmberEyes
   ModelScale = 8.3
   Tint = 0x7A4A5A
@@ -331,7 +369,10 @@ Monster
     WeaponUpdate
       Damage = 20
       AttackRange = 12
-      ReloadFrames = 30
+      ReloadFrames = 13
+      ; The swing up to the blow (MonsterClipFitTest): the client starts its attack as it winds up,
+      ; and the blow lands as the clip strikes. Taken off ReloadFrames, so it hits as often as before.
+      PreAttackFrames = 17
     End,
     Swing
     End,
@@ -363,6 +404,11 @@ Monster
   ModelScale = 6.3
   Facing = 90
   Animations = Humanoid
+  ; Moves at a jog, not a walk: Running_A at about its own pace rather than Walking_A several times over.
+  Walk = Running_A
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
+  WalkStride = 16.99
+  UpperBody = spine
   Held = Held
     Model = models/weapons/medieval/sword.glb
     Bone = handslot.r
@@ -445,6 +491,9 @@ Monster
   ModelScale = 4.72
   Facing = 90
   Animations = Humanoid
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
+  WalkStride = 3.52
+  UpperBody = spine
   Held = Held
     Model = models/weapons/medieval/sword.glb
     Bone = handslot.r

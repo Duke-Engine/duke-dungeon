@@ -507,6 +507,9 @@ public final class Main {
     }
 
     public static void main(String[] args) {
+        // The language comes first: every data file is read in it. Uzbek unless the player kept English (or --lang=en).
+        uz.dukeengine.dungeon.content.Lang.use(uz.dukeengine.dungeon.content.Lang.chosen(args,
+                Shell.setting(uz.dukeengine.dungeon.content.Lang.SETTING, 0)));
         // Which map the game opens on is settled before its data is read, because a map brings blocks of its
         // own with it — see MapPackage — and they are part of the settings everything else is built from.
         var wanted = Stages.chosen(args);
@@ -539,7 +542,8 @@ public final class Main {
         var bag = Bag.on(settings, duke);
         Bag.show(bag, session, settings);
         // And over it, the box a conversation is said in, which hands the bag whatever it does not take.
-        var talk = new DialogueScreen(bag, bag, settings);
+        // Under it all, the open world's hour and weather laid over the world -- see Atmosphere.
+        var talk = new DialogueScreen(new Atmosphere(bag, duke, settings, wordArg(args, "weather")), bag, settings);
         // And over that, the player's own screens -- the sheet, the quest log, the map -- each on its key, and the map
         // drawn from the engine's picture of the world as he knows it, asked for every map.
         var screens = new PlayerScreens(talk, settings);
@@ -578,6 +582,10 @@ public final class Main {
                 whoGoesIn(match, settings, visuals, keys, duke, bag), credits);
         var shell = FrontMenu.shell(settings, rows.apply(session),
                 List.of(saveRow(settings, slot -> saveTo(current.get(), saves, slot))));
+        // The language, flipped in Settings and spoken from the next launch (the data is read once, in one language).
+        shell.settingsRow(uz.dukeengine.dungeon.content.Lang.SETTING,
+                uz.dukeengine.dungeon.content.Lang.t("Til (qayta ochilganda)"), uz.dukeengine.dungeon.content.Lang.NAMES, 0,
+                choice -> { });
         duke.onLeaving(() -> {
             saveTo(current.get(), saves, Saves.AUTOSAVE);
             // Back at the front menu, the next game is a new match, its rows read afresh (a save just made is there
@@ -604,6 +612,12 @@ public final class Main {
                 duke.startMatch(session.game());
                 break;
             }
+        }
+        // The owner's testing: --hour=H (1 to 24) opens the open world at that hour -- after an --actN=, whose joint
+        // begins in the morning, or on the map --map= opens. A game begun from the menu begins in the morning.
+        int hour = actArg(args, "hour");
+        if (hour > 0) {
+            session.run().startAtHour(hour);
         }
         // The floor's key and every quest's target on the minimap too, held to its edge when off it (E61).
         duke.minimapMarks(() -> MissionScreen.minimapMarks(current.get(), settings));
@@ -943,6 +957,17 @@ public final class Main {
         // chair is a skill that does nothing at all.
         aimsFor(keys, settings, him);
         ringsFor(visuals, settings, him);
+        // The modern way, said to every machine: his hero fights only when the left button tells him.
+        if (settings.scheme() == uz.dukeengine.dungeon.world.Controls.Scheme.MODERN) {
+            java.util.function.Consumer<uz.dukeengine.game.DukeGame> tell = game -> game.postCommand(PartyOrders.of(
+                    new uz.dukeengine.dungeon.ai.FightOnlyWhenTold(game.getLocalPlayerIndex(), true)));
+            // Chosen on the menu, before the match runs: said as it starts; chosen in a running one: now.
+            if (session.game().getLogic() == null) {
+                session.game().onStart(tell);
+            } else {
+                tell.accept(session.game());
+            }
+        }
         attackRingFor(visuals, session.game(), him);
     }
 
@@ -989,6 +1014,16 @@ public final class Main {
             rows.addAll(asked.options());
         }
         return new Shell.Question(settings.hud().chooseModeWord(), settings.hud().chooseModeHint(), rows);
+    }
+
+    /** {@code --<name>=word}: the word, for testing -- {@code --weather=Rain} -- or null where none is given. */
+    static String wordArg(String[] args, String name) {
+        for (var arg : args) {
+            if (arg.startsWith("--" + name + "=")) {
+                return arg.substring(name.length() + 3).strip();
+            }
+        }
+        return null;
     }
 
     /** {@code --<act>=N}: that act's joint to open straight on, for testing it; 0 for none. */
@@ -1406,7 +1441,7 @@ public final class Main {
                         .scale(look.modelScale())
                         .facing(look.facing())
                         .idle(look.idle())
-                        // Paced to its speed where its look says how far a play carries it (a licensed look).
+                        // Paced to its speed by how far a play carries it (MonsterClipFitTest measures it).
                         .walk(look.walk(), look.walkStride())
                         .attack(look.attack())
                         .hurt(look.hurt())
@@ -1452,6 +1487,11 @@ public final class Main {
                 // disagree.
                 for (var skill : settings.skillsFor(hero.name())) {
                     unit.alsoAnimation(skill.castAnim());
+                }
+                // And his work's clips (Chop, Gather, Cook): a clip nobody names is never copied off a
+                // library, and a hero drawn from one (the Huntress, the mage) stood still at a tree.
+                for (var word : uz.dukeengine.dungeon.food.Food.WORDS) {
+                    unit.alsoAnimation(settings.food().clipOf(word));
                 }
                 for (var library : hero.animations()) {
                     unit.animationsFrom(library);

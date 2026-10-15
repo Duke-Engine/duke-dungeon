@@ -1,0 +1,119 @@
+; ===========================================================================
+; The open world's day and night, and its weather. See
+; docs/plan/2026-10-15-day-and-night.md.
+;
+; The hour is the run's clock -- frames of play, saved with the game -- read
+; round a day of CycleFrames. Every machine reads the same hour, so a ghost
+; that wakes at dusk wakes on every machine at once. Only the open world (a
+; wide map) is drawn by the hour; the castles, the halls and the descent keep
+; their own light, the keep's dark among them.
+;
+; Until the engine can relight a world while it is drawn (E86), the hour is a
+; colour laid over the world under the panel: the sun, the ambient and the
+; haze stay as scene.duke sets them, and the night is a dark blue wash over
+; them, the fires' halos added on top.
+; ===========================================================================
+DayNight
+  ; A whole day: 20 minutes of play (30 frames a second).
+  CycleFrames = 36000
+  ; A new game begins in the morning.
+  StartHour = 8
+  NightFrom = 20
+  NightTo = 5
+
+  ; The colour over the world at an hour, and how much of it in percent, eased
+  ; between the hours written and round midnight. Night is a dark blue at half:
+  ; dark, and every road and creature still read through it.
+  Light = [
+    "0 0x0A1838 50",
+    "4.5 0x0A1838 50",
+    "5.5 0x4A3A70 34",
+    "6.5 0xFF9A50 16",
+    "8 0xFFF2D0 0",
+    "17 0xFFF2D0 0",
+    "18.5 0xFF7A30 20",
+    "19.5 0x5A3468 34",
+    "20.5 0x0A1838 50",
+  ]
+
+  ; The marsh's will-o-the-wisp, the Arvoh, only roams at night: by day it
+  ; keeps to where it stands and senses nobody -- unless it is struck.
+  NightRoamers = [Wisp]
+
+  ; What glows by night, its colour and its reach in units: a halo laid over
+  ; the dark, as strong as the night is dark. A fire matters more at night.
+  Glows = [
+    "Campfire 0xFF9A3A 55",
+    "Fountain 0x8AC8FF 35",
+  ]
+  Glow = kit/effects/particles/light_01.png
+  ; Crickets, heard in the open world at night.
+  NightLoop = ambience.night
+
+  ; A weather lasts three minutes; then the next is drawn for the ground under
+  ; him, from the run's seed: the same weather on every machine and every load.
+  WeatherFrames = 5400
+  ; By the ground's paint character (data/maps/world): m the marsh's mud, n the
+  ; highlands' snow, r rock, f the wood, s sand; * any other.
+  Weathers = [
+    "m = Fog 40, Rain 25, Clear 35",
+    "n = Snow 60, Clear 40",
+    "r = Clear 55, Rain 20, Storm 15, Fog 10",
+    "f = Clear 60, Rain 30, Fog 10",
+    "s = Clear 90, Storm 10",
+    "* = Clear 65, Rain 25, Storm 10",
+  ]
+  ; How each looks and sounds. What falls is a picture round the camera, a
+  ; column every FallSpacing units across a box FallBox wide: the box over the
+  ; spacing, halved and squared four times, is how many -- kept under 4096.
+  Looks = [
+    Weather
+      Name = Rain
+      Tint = 0x28323C
+      TintPercent = 18
+      Falls = kit/effects/particles/trace_01.png
+      FallSpeed = 90
+      FallSize = 2.4
+      FallSpacing = 3
+      FallBox = 120
+      Sway = 0.2
+      Loop = weather.rain
+    End,
+    Weather
+      Name = Storm
+      Tint = 0x18202C
+      TintPercent = 30
+      Falls = kit/effects/particles/trace_01.png
+      FallSpeed = 120
+      FallSize = 2.8
+      FallSpacing = 2.5
+      FallBox = 120
+      Sway = 0.4
+      Loop = weather.rain
+      ; A flash and a clap about once in 25 seconds.
+      ThunderFrames = 750
+      Thunder = weather.thunder
+    End,
+    Weather
+      Name = Snow
+      Tint = 0xC8D2E0
+      TintPercent = 12
+      Falls = kit/effects/particles/circle_05.png
+      FallSpeed = 8
+      FallSize = 1
+      FallSpacing = 3
+      FallBox = 120
+      Sway = 3
+      Loop = weather.wind
+    End,
+    ; A fog bank over the marsh: nothing falls, the world goes pale and near.
+    Weather
+      Name = Fog
+      Tint = 0xB4BEC4
+      TintPercent = 34
+    End,
+  ]
+
+  ; The clock by the minimap names the part of the day.
+  ClockWords = [Tun, Tong, Kun, Shom]
+End

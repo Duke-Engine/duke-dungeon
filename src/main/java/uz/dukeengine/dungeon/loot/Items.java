@@ -88,8 +88,17 @@ public final class Items {
     /** The data's own things, by id: the key, the medallion, the old attribute things. */
     private final Map<String, Loot> plain = new LinkedHashMap<>();
 
+    /** The letter that presses a skill's key in the scheme played: a card's "+1 E mahorati" for the W skill, modern. */
+    private final java.util.function.UnaryOperator<Character> letterOf;
+
     public Items(List<ItemBase> bases, List<Affix> affixes, List<Unique> uniques, List<Potion> potions,
             ItemRules rules, Words words, List<Loot> plain) {
+        this(bases, affixes, uniques, potions, rules, words, plain, key -> key);
+    }
+
+    public Items(List<ItemBase> bases, List<Affix> affixes, List<Unique> uniques, List<Potion> potions,
+            ItemRules rules, Words words, List<Loot> plain, java.util.function.UnaryOperator<Character> letterOf) {
+        this.letterOf = letterOf;
         this.bases = List.copyOf(bases);
         this.affixes = List.copyOf(affixes);
         this.uniques = List.copyOf(uniques);
@@ -609,7 +618,9 @@ public final class Items {
             return sign + size + " " + words.attributes().get(stat);
         }
         if (stat.startsWith(Stat.SKILL_RANK + ":")) {
-            return sign + size + " " + rules.skillRankWord().formatted(stat.substring(Stat.SKILL_RANK.length() + 1));
+            var key = stat.substring(Stat.SKILL_RANK.length() + 1);
+            var pressed = key.length() == 1 ? String.valueOf(letterOf.apply(key.charAt(0))) : key;
+            return sign + size + " " + rules.skillRankWord().formatted(pressed);
         }
         return switch (stat) {
             case Stat.ATTACK -> sign + size + "% " + words.attack();

@@ -492,6 +492,8 @@ Monster
   Walk = Walk
   Attack = Attack
   Death = Death
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
+  WalkStride = 13.2
 End
 
 Monster
@@ -514,7 +516,10 @@ Monster
     WeaponUpdate
       Damage = 8
       AttackRange = 8
-      ReloadFrames = 30
+      ReloadFrames = 19
+      ; The swing up to the blow (MonsterClipFitTest): the client starts its attack as it winds up,
+      ; and the blow lands as the clip strikes. Taken off ReloadFrames, so it hits as often as before.
+      PreAttackFrames = 11
     End,
     Swing
     End,
@@ -547,6 +552,8 @@ Monster
   Walk = Walk
   Attack = Attack
   Death = Death
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
+  WalkStride = 10.73
 End
 
 ; Their sounds: the wolf's, which are beasts' (data/sounds/wilds.duke).

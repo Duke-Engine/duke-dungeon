@@ -30,11 +30,21 @@ import uz.dukeengine.rpg.skill.SkillRanks;
  * @param places     the zones a hero has stood in this run, the world map's places found; none in an older save
  * @param felled     the map's scenery taken away -- trees chopped -- by index (docs/plan/2026-10-15-food-and-fire.md);
  *                   none in an older save
+ * @param clock      frames of play since the run began, the open world's hour (docs/plan/2026-10-15-day-and-night.md);
+ *                   0, the morning a game begins at, in an older save
  */
 public record SaveGame(long seed, String stage, int depth, String hero, int experience, List<Rank> ranks,
         List<Item> bag, uz.dukeengine.dungeon.story.QuestLog.State quests,
         uz.dukeengine.dungeon.story.Script.State script, int gold, int souls, String givenTo, List<String> places,
-        List<Integer> felled) {
+        List<Integer> felled, int clock) {
+
+    /** A save with no clock in it: as one written before the day turned. */
+    public SaveGame(long seed, String stage, int depth, String hero, int experience, List<Rank> ranks,
+            List<Item> bag, uz.dukeengine.dungeon.story.QuestLog.State quests,
+            uz.dukeengine.dungeon.story.Script.State script, int gold, int souls, String givenTo, List<String> places,
+            List<Integer> felled) {
+        this(seed, stage, depth, hero, experience, ranks, bag, quests, script, gold, souls, givenTo, places, felled, 0);
+    }
 
     /** A save with no trees felled in it: as one written before chopping was. */
     public SaveGame(long seed, String stage, int depth, String hero, int experience, List<Rank> ranks,
@@ -124,19 +134,25 @@ public record SaveGame(long seed, String stage, int depth, String hero, int expe
     /** The same save, with what the medallion has drunk and whom the turning gave it to. */
     public SaveGame withMedallion(int souls, String givenTo) {
         return new SaveGame(seed, stage, depth, hero, experience, ranks, bag, quests, script, gold, souls, givenTo,
-                places, felled);
+                places, felled, clock);
     }
 
     /** The same save, with the map's places a hero has stood in this run (the world map's found places). */
     public SaveGame withPlaces(List<String> found) {
         return new SaveGame(seed, stage, depth, hero, experience, ranks, bag, quests, script, gold, souls, givenTo,
-                found, felled);
+                found, felled, clock);
     }
 
     /** The same save, with the map's scenery taken away -- the trees chopped -- by index. */
     public SaveGame withFelled(List<Integer> taken) {
         return new SaveGame(seed, stage, depth, hero, experience, ranks, bag, quests, script, gold, souls, givenTo,
-                places, taken);
+                places, taken, clock);
+    }
+
+    /** The same save, at {@code frames} of play: the open world's hour. */
+    public SaveGame withClock(int frames) {
+        return new SaveGame(seed, stage, depth, hero, experience, ranks, bag, quests, script, gold, souls, givenTo,
+                places, felled, frames);
     }
 
     /** What this hero has, as a save. */
@@ -224,6 +240,7 @@ public record SaveGame(long seed, String stage, int depth, String hero, int expe
         out.append("  Experience = ").append(experience).append('\n');
         out.append("  Gold = ").append(gold).append('\n');
         out.append("  Souls = ").append(souls).append('\n');
+        out.append("  Clock = ").append(clock).append('\n');
         if (!givenTo.isBlank()) {
             out.append("  GivenTo = ").append(givenTo).append('\n');
         }
@@ -349,7 +366,8 @@ public record SaveGame(long seed, String stage, int depth, String hero, int expe
                     field(save, "GivenTo") == null ? "" : word(save, "GivenTo"),
                     field(save, "Places") == null ? List.of() : items(save, "Places"),
                     field(save, "Felled") == null ? List.of()
-                            : items(save, "Felled").stream().map(Integer::parseInt).toList());
+                            : items(save, "Felled").stream().map(Integer::parseInt).toList(),
+                    field(save, "Clock") == null ? 0 : counted(save, "Clock"));
         } catch (RuntimeException e) {
             throw new Refused(source + " cannot be loaded: " + e.getMessage(), e);
         }

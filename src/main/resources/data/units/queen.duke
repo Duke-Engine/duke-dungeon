@@ -31,6 +31,9 @@ Monster
   ModelScale = 4.8
   Facing = 90
   Animations = Humanoid
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
+  WalkStride = 3.58
+  UpperBody = spine
   ; ★ LICENSED LOOK. Drawn as the "Dark Elf Shadow Enchantress" (CGTrader, Royalty Free -- see CREDITS.md) where
   ; models/licensed/queen.glb is shipped: it lives in the git-ignored licensed-assets/ folder,
   ; never in this repository, so a clone without it (and CI) draws the stand-in above. Her clips

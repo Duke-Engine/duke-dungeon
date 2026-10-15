@@ -98,6 +98,21 @@ public final class Orders {
     }
 
     /** Forget everything — a new run is a new set of orders. */
+    /** The players who play the modern way: their heroes fight only when told (FightOnlyWhenTold). Never cleared. */
+    private final java.util.Set<Integer> onlyWhenTold = new java.util.HashSet<>();
+
+    public void fightOnlyWhenTold(int playerIndex, boolean on) {
+        if (on) {
+            onlyWhenTold.add(playerIndex);
+        } else {
+            onlyWhenTold.remove(playerIndex);
+        }
+    }
+
+    public boolean fightsOnlyWhenTold(int playerIndex) {
+        return onlyWhenTold.contains(playerIndex);
+    }
+
     public void clear() {
         holding.clear();
         watching.clear();
