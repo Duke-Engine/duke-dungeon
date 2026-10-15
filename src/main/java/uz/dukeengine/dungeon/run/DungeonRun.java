@@ -558,6 +558,13 @@ public final class DungeonRun {
         lay(game, floor);
     }
 
+    /** A painted map's roads become the logic grid's step costs, so walkers keep to them (E52). */
+    private static void roadsOf(DukeGame game, Object map) {
+        if (game.getLogic() != null && game.getLogic().getPathGrid() != null) {
+            uz.dukeengine.dungeon.stage.Roads.lay(game.getLogic().getPathGrid(), map);
+        }
+    }
+
     /** The floor the world was built around, with everyone on it. */
     private void lay(DukeGame game, GeneratedDungeon floor) {
         look = lookOf(floor);
@@ -566,6 +573,7 @@ public final class DungeonRun {
             // The world was built around this floor's grid before the run knew its seed and depth; the grid stays
             // as it was, and the client is told what each of its cells wears.
             game.applyMapTerrain(game.getTerrain(), looks);
+            roadsOf(game, looks);
         }
         var placed = Spawner.place(game, heroPlayers(), heroTemplates(), dungeonPlayer, floor, settings, depth,
                 drops);
@@ -1045,7 +1053,9 @@ public final class DungeonRun {
 
         var logic = game.getLogic();
         logic.clearWorld();
-        game.applyMapTerrain(terrainOf(floor), looksOf(floor));
+        var looks = looksOf(floor);
+        game.applyMapTerrain(terrainOf(floor), looks);
+        roadsOf(game, looks);
 
         var placed = Spawner.place(game, heroPlayers(), heroTemplates(), dungeonPlayer, floor, settings, depth,
                 drops);
