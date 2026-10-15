@@ -1,0 +1,1221 @@
+; ---------------------------------------------------------------------------
+; Act 1, start to the turning, as one playable chain — see docs/plan/2026-10-15-act1.md.
+;
+;   1. jang       the opening battle: the hero lands in a beam of light
+;   2. poytaxt    the capital: the queen, her gold and her medallion; people's small asks
+;   3. mashq      the training: the descent's floors, two of them, then back to the capital
+;   4. urush      the war: the descent's keep floors, two of them
+;   5. qora_qasr  the dark castle: its lord's death, the medallion drinks him whole — the turning
+;
+; Each joint is a map or a descent (the Campaign block's Descents), chained by triggers' MAP;
+; every floor entered is the autosave's checkpoint, and a death goes back to it. Every name
+; the owner has not chosen is a STAND-IN: the commander ("Qo'mondon"), the queen ("Malika"),
+; the hero's beloved ("Nilufar"), the townsfolk, the enemy commander and the castle's lord.
+; The hero is the Knight (his DisplayName is the descent's).
+; ---------------------------------------------------------------------------
+
+Campaign
+  Word = "1-qism: Oxirgi qahramon"
+  Blurb = "Jang maydonidan qora qasrgacha. Hikoya shu yerdan boshlanadi."
+  Hero = Knight
+  ; Generated floors under names of their own: their bosses open the next floor as the descent's
+  ; do, and the story's DEPTH triggers say when they end.
+  Descents = [
+    Descent
+      Name = mashq
+      FirstDepth = 1
+    End,
+    Descent
+      Name = urush
+      FirstDepth = 3
+    End
+  ]
+  ; In order; the first is where a new game opens. What a hero skipped straight to one is given
+  ; (the --act1=N debug arg, N from 1): the flags, things and experience the joints before it give.
+  Joints = [
+    Joint
+      Map = jang
+    End,
+    Joint
+      Map = poytaxt
+      Flags = [HeroLanded]
+      Experience = 100
+      Gold = 20
+    End,
+    Joint
+      Map = mashq
+      Flags = [HeroLanded, Welcomed]
+      Items = [Medallion]
+      Experience = 120
+      Gold = 120
+    End,
+    Joint
+      Map = urush
+      Flags = [HeroLanded, Welcomed, Trained, WarBegun]
+      Items = [Medallion]
+      Experience = 400
+      Gold = 200
+    End,
+    Joint
+      Map = qora_qasr
+      Flags = [HeroLanded, Welcomed, Trained, WarBegun, LandsFreed]
+      Items = [Medallion]
+      Experience = 800
+      Gold = 300
+    End
+  ]
+End
+
+; ---------------------------------------------------------------------------
+; Who speaks. No pictures yet: the box frames the first letter of each name.
+; ---------------------------------------------------------------------------
+
+Speaker
+  Name = Act1Commander
+  ; STAND-IN name.
+  DisplayName = "Qo'mondon"
+  Picture =
+End
+
+Speaker
+  Name = Act1Queen
+  DisplayName = Malika
+  Picture =
+End
+
+Speaker
+  Name = EnemyCommander
+  ; STAND-IN name.
+  DisplayName = "Dushman sarkardasi"
+  Picture =
+End
+
+Speaker
+  Name = DarkLord
+  ; STAND-IN name.
+  DisplayName = "Qora ritsar"
+  Picture =
+End
+
+Speaker
+  Name = Blacksmith
+  DisplayName = "Temirchi Usta"
+  Picture =
+End
+
+Speaker
+  Name = OldWoman
+  DisplayName = "Zebo momo"
+  Picture =
+End
+
+; People: none of the act's greet of themselves but the queen and the townsfolk; the commander
+; speaks through the story.
+Npc
+  Name = Act1Commander
+  Role = "Qo'mondon"
+  Radius = 30
+End
+
+Npc
+  Name = Act1Queen
+  Talk = QueenWelcome
+  Role = Malika
+  Radius = 34
+End
+
+Npc
+  Name = Blacksmith
+  Talk = BlacksmithAsks
+  Role = Temirchi
+  Radius = 30
+  Wander = 10
+End
+
+Npc
+  Name = OldWoman
+  Talk = OldWomanAsks
+  Role = Momo
+  Radius = 30
+  Wander = 12
+End
+
+; The enemy commander cannot be killed by the hero, only beaten (his UNYIELDING); and before
+; the hero lands nothing hurts him, so the soldiers cannot beat him first.
+Boss
+  Name = EnemyCommander
+  BeatenLook = Beaten
+  Phases = [
+    Phase
+      Below = 100
+      DamageTaken = 0
+    End,
+    Phase
+      AfterFlag = HeroLanded
+      DamageTaken = 100
+    End
+  ]
+End
+
+; ===========================================================================
+; 1. jang — the opening battle.
+; ===========================================================================
+
+Conversation
+  Name = BattleHolds
+  Lines = [
+    Line
+      Speaker = Act1Commander
+      Text = "Safni ushlang! Darvozadan bir qadam ham chekinmaymiz!"
+    End,
+    Line
+      Speaker = EnemyCommander
+      Text = "Taslim bo'l, qo'mondon. Qahramonlaringiz allaqachon tugagan."
+    End,
+    Line
+      Speaker = Act1Commander
+      Text = "Qahramon bo'lmasa ham — biz bormiz!"
+    End
+  ]
+End
+
+Conversation
+  Name = HeroLands
+  Lines = [
+    Line
+      Speaker = Hero
+      Text = "Bu... qayer? Hozirgina Nilufar bilan mashq qilayotgan edim..."
+    End,
+    Line
+      Speaker = Act1Commander
+      Text = "Osmondan nur tushdi — demak, sen qahramonsan! Savollarni keyin ber, hozir qilichingni ol!"
+    End
+  ]
+End
+
+Conversation
+  Name = EnemyFalls
+  Lines = [
+    Line
+      Speaker = EnemyCommander
+      Text = "Yo'q... qayerdan kelding sen?.."
+    End
+  ]
+End
+
+Conversation
+  Name = CommanderStrikes
+  Lines = [
+    Line
+      Speaker = Act1Commander
+      Text = "Bu jang meniki edi."
+    End
+  ]
+End
+
+Conversation
+  Name = AfterBattle
+  Lines = [
+    Line
+      Speaker = Act1Commander
+      Text = "Ular qochmoqda! Bugun biz yutdik — sen tufayli."
+    End,
+    Line
+      Speaker = Act1Commander
+      Text = "Bu dunyoda qahramon qolmagan. Sen chaqirilgan oxirgi qahramonsan."
+    End,
+    Line
+      Speaker = Hero
+      Text = "Men uyga qaytishim kerak. U meni kutyapti."
+    End,
+    Line
+      Speaker = Act1Commander
+      Text = "Unda malikaning huzuriga yur. Yo'lni faqat u biladi."
+    End
+  ]
+End
+
+Quest
+  Name = HoldTheLine
+  Kind = MAIN
+  Title = "Darvoza oldidagi jang"
+  Steps = [
+    Step
+      Goal = KILL
+      Target = EnemyCommander
+      Text = "Dushman sarkardasini yiqiting"
+      Glow = Yes
+    End
+  ]
+End
+
+Cutscene
+  Name = BattleOpening
+  Shots = [
+    Shot
+      ; The kingdom's line before its gate...
+      Zone = Line
+      Frames = 1
+      Hold = 30
+    End,
+    Shot
+      Says = BattleHolds
+      Hold = 10
+    End,
+    Shot
+      ; ...and the army coming at it.
+      Zone = EnemyLine
+      Frames = 45
+      Hold = 20
+    End
+  ]
+End
+
+Cutscene
+  Name = Landing
+  Shots = [
+    Shot
+      ; The beam of light, and him in it.
+      Zone = Landing
+      Frames = 30
+      Hold = 40
+    End,
+    Shot
+      Says = HeroLands
+      Hold = 10
+    End
+  ]
+End
+
+Cutscene
+  Name = BattleOver
+  Shots = [
+    Shot
+      Zone = Line
+      Frames = 45
+      Hold = 15
+    End,
+    Shot
+      Says = AfterBattle
+      Hold = 15
+    End
+  ]
+End
+
+Trigger
+  Name = BattleStart
+  Map = jang
+  When = MAP_START
+  Actions = [
+    Action
+      Act = ALLY
+      Target = Soldier
+      Count = 4
+      Zone = Line
+    End,
+    Action
+      Act = ALLY
+      Target = Militia
+      Count = 3
+      Zone = Line
+    End,
+    Action
+      ; The army comes on at the line.
+      Act = CALL
+      Target = Skeleton
+      Zone = Line
+    End,
+    Action
+      Act = CALL
+      Target = Runner
+      Zone = Line
+    End,
+    Action
+      Act = CUTSCENE
+      Target = BattleOpening
+    End
+  ]
+End
+
+; The world stops for him: a beam of light, the hero in it, the enemy commander thrown back.
+Trigger
+  Name = HeroArrives
+  Map = jang
+  When = SEEN
+  Target = BattleOpening
+  Actions = [
+    Action
+      Act = EFFECT
+      Target = SkyLight
+      Zone = Landing
+    End,
+    Action
+      Act = PLACE
+      Zone = Landing
+    End,
+    Action
+      Act = KNOCK
+      Target = EnemyCommander
+      Zone = Thrown
+    End,
+    Action
+      Act = EFFECT
+      Target = Beaten
+      Zone = Thrown
+    End,
+    Action
+      Act = FLAG
+      Target = HeroLanded
+    End,
+    Action
+      Act = START_QUEST
+      Target = HoldTheLine
+    End,
+    Action
+      Act = CUTSCENE
+      Target = Landing
+    End
+  ]
+End
+
+; He rises and charges again, at the one who threw him...
+Trigger
+  Name = EnemyCharges
+  Map = jang
+  When = AFTER
+  Target = HeroArrives
+  Delay = 90
+  Actions = [
+    Action
+      Act = CALL
+      Target = EnemyCommander
+      Zone = Landing
+    End
+  ]
+End
+
+; ...beaten, he kneels — and the commander cuts him down.
+Trigger
+  Name = EnemyBeaten
+  Map = jang
+  When = BEATEN
+  Target = EnemyCommander
+  Actions = [
+    Action
+      Act = SAY
+      Target = EnemyFalls
+    End,
+    Action
+      Act = WALK
+      Target = Act1Commander
+      Zone = Landing
+    End
+  ]
+End
+
+Trigger
+  Name = CommanderCuts
+  Map = jang
+  When = AFTER
+  Target = EnemyBeaten
+  Delay = 60
+  Actions = [
+    Action
+      Act = SAY
+      Target = CommanderStrikes
+    End,
+    Action
+      Act = KILL
+      Target = EnemyCommander
+    End
+  ]
+End
+
+; His army breaks: what is left of it falls, and the commander says what he is.
+Trigger
+  Name = BattleWon
+  Map = jang
+  When = AFTER
+  Target = CommanderCuts
+  Delay = 30
+  Actions = [
+    Action
+      Act = KILL
+      Target = Skeleton
+    End,
+    Action
+      Act = KILL
+      Target = Runner
+    End,
+    Action
+      Act = KILL
+      Target = SkeletonMage
+    End,
+    Action
+      Act = CUTSCENE
+      Target = BattleOver
+    End
+  ]
+End
+
+Trigger
+  Name = ToTheCapital
+  Map = jang
+  When = SEEN
+  Target = BattleOver
+  Actions = [
+    Action
+      Act = MAP
+      Target = poytaxt
+    End
+  ]
+End
+
+; ===========================================================================
+; 2. poytaxt — the capital: the queen, the medallion, the merchant, people's asks.
+; ===========================================================================
+
+Conversation
+  Name = CommanderInCapital
+  Lines = [
+    Line
+      Speaker = Act1Commander
+      Text = "Bu — poytaxt. Malika saroyda kutmoqda. Ortimdan yur."
+    End
+  ]
+End
+
+Conversation
+  Name = QueenWelcome
+  Lines = [
+    Line
+      Speaker = Act1Queen
+      Text = "Xush kelibsiz, qahramon. Qo'mondon darvoza oldidagi jangni aytib berdi."
+    End,
+    Line
+      Speaker = Act1Queen
+      Text = "Saltanatimni qora ritsar bosib oldi: qal'alarimiz uning qo'lida, xalqim qo'rquvda."
+    End,
+    Line
+      Speaker = Act1Queen
+      Text = "Mana, oltin — va bu medalyon. U siz o'ldirgan har bir dushmanning jonini yutib, kuchini sizga quyadi."
+    End,
+    Line
+      Speaker = Act1Queen
+      Text = "Uni faqat qahramon taqa oladi."
+    End,
+    Line
+      Speaker = Hero
+      Text = "Qora ritsarni o'ldirsam, uyga qayta olamanmi?"
+    End,
+    Line
+      Speaker = Act1Queen
+      Text = "Ha. Uni o'ldiring — yo'l ochiladi. Ammo avval mashq qiling: hozir u sizni bir zarbada yiqitadi."
+    End
+  ]
+  Starts = [Training]
+End
+
+Conversation
+  Name = ToTrainingLine
+  Lines = [
+    Line
+      Speaker = Act1Commander
+      Text = "Mashq maydoni — shahar ostidagi eski qabrlar. Ikki qavat tushing, so'ng qayting."
+    End
+  ]
+End
+
+Quest
+  Name = Training
+  Kind = MAIN
+  Title = "Mashq"
+  Steps = [
+    Step
+      Goal = REACH
+      Target = Gate
+      Text = "Shahar darvozasidan mashq maydoniga chiqing"
+    End
+  ]
+End
+
+Cutscene
+  Name = CapitalShown
+  Shots = [
+    Shot
+      Zone = Square
+      Frames = 1
+      Hold = 20
+    End,
+    Shot
+      Says = CommanderInCapital
+      Hold = 10
+    End,
+    Shot
+      ; The castle's court, where the queen sits.
+      Zone = Throne
+      Frames = 60
+      Hold = 20
+    End
+  ]
+End
+
+Trigger
+  Name = CapitalArrival
+  Map = poytaxt
+  When = MAP_START
+  If = [
+    Condition
+      Is = FLAG_UNSET
+      Target = Trained
+    End
+  ]
+  Actions = [
+    Action
+      Act = CUTSCENE
+      Target = CapitalShown
+    End,
+    Action
+      ; She goes ahead to the court; he follows.
+      Act = WALK
+      Target = Act1Commander
+      Zone = CourtSide
+    End
+  ]
+End
+
+Trigger
+  Name = QueenGivesAct1
+  Map = poytaxt
+  When = HEARD
+  Target = QueenWelcome
+  Actions = [
+    Action
+      Act = GIVE
+      Target = Medallion
+    End,
+    Action
+      Act = GOLD
+      Count = 100
+    End,
+    Action
+      Act = FLAG
+      Target = Welcomed
+    End
+  ]
+End
+
+Trigger
+  Name = ToTraining
+  Map = poytaxt
+  When = QUEST_DONE
+  Target = Training
+  Actions = [
+    Action
+      Act = SAY
+      Target = ToTrainingLine
+    End,
+    Action
+      Act = MAP
+      Target = mashq
+    End
+  ]
+End
+
+; ---- the capital again, trained: the war council ----
+
+Conversation
+  Name = WarCouncil
+  Lines = [
+    Line
+      Speaker = Act1Queen
+      Text = "Qaytdingizmi, qahramon? Medalyon to'yinmoqda — sezyapsizmi?"
+    End,
+    Line
+      Speaker = Act1Commander
+      Text = "Endi urush. Bosib olingan qal'alarni birma-bir ozod qilamiz: kalitni topamiz, darvozani ochamiz, sarkardasini o'ldiramiz."
+    End,
+    Line
+      Speaker = Act1Queen
+      Text = "Boring. Har bir o'lim sizni kuchliroq qiladi."
+    End
+  ]
+End
+
+Quest
+  Name = ToWar
+  Kind = MAIN
+  Title = "Urushga"
+  Steps = [
+    Step
+      Goal = REACH
+      Target = Gate
+      Text = "Shahar darvozasidan urushga chiqing"
+    End
+  ]
+End
+
+Cutscene
+  Name = WarCouncilShown
+  Shots = [
+    Shot
+      Zone = Throne
+      Frames = 1
+      Hold = 20
+    End,
+    Shot
+      Says = WarCouncil
+      Hold = 10
+    End
+  ]
+End
+
+Trigger
+  Name = CapitalReturn
+  Map = poytaxt
+  When = MAP_START
+  If = [
+    Condition
+      Is = FLAG_SET
+      Target = Trained
+    End
+  ]
+  Actions = [
+    Action
+      Act = PLACE
+      Zone = CourtSide
+    End,
+    Action
+      Act = CUTSCENE
+      Target = WarCouncilShown
+    End,
+    Action
+      Act = START_QUEST
+      Target = ToWar
+    End,
+    Action
+      Act = FLAG
+      Target = WarBegun
+    End
+  ]
+End
+
+Trigger
+  Name = ToTheWar
+  Map = poytaxt
+  When = QUEST_DONE
+  Target = ToWar
+  Actions = [
+    Action
+      Act = MAP
+      Target = urush
+    End
+  ]
+End
+
+; ---- the side quests: the blacksmith's cellar, and the old woman's ring ----
+
+Conversation
+  Name = BlacksmithAsks
+  Lines = [
+    Line
+      Speaker = Blacksmith
+      Text = "Qahramon! Yerto'lamdan skeletlar chiqib kelyapti. Tozalab bering — evaziga qo'lqop beraman."
+    End
+  ]
+  Starts = [Cellar]
+End
+
+Conversation
+  Name = BlacksmithThanks
+  Lines = [
+    Line
+      Speaker = Blacksmith
+      Text = "Tinchlik qaytdi! Mana, va'da qilgan qo'lqopim."
+    End
+  ]
+End
+
+Conversation
+  Name = OldWomanAsks
+  Lines = [
+    Line
+      Speaker = OldWoman
+      Text = "O'g'lim, marhum cholimning uzugini yerto'lada tushirib qo'ydim. Topib bersang, duo qilaman."
+    End
+  ]
+  Starts = [LostRing]
+End
+
+Conversation
+  Name = OldWomanThanks
+  Lines = [
+    Line
+      Speaker = OldWoman
+      Text = "Topdingmi! Ilohim, yo'ling ochiq bo'lsin. Mana bu tumorni ol — senga asqatadi."
+    End
+  ]
+End
+
+Quest
+  Name = Cellar
+  Kind = SIDE
+  Title = "Yerto'ladagi skeletlar"
+  Steps = [
+    Step
+      Goal = KILL
+      Target = Skeleton
+      Count = 3
+      Text = "Yerto'ladagi skeletlarni qiring %d/%d"
+      Glow = Yes
+    End,
+    Step
+      Goal = TALK
+      Target = Blacksmith
+      Text = "Temirchiga qayting"
+      OnDone = Done
+        Says = BlacksmithThanks
+        Experience = 60
+        Item = Gauntlet
+      End
+    End
+  ]
+End
+
+Quest
+  Name = LostRing
+  Kind = SIDE
+  Title = "Momoning uzugi"
+  Steps = [
+    Step
+      Goal = COLLECT
+      Target = FamilyRing
+      Text = "Yerto'lada uzukni toping"
+      Glow = Yes
+    End,
+    Step
+      Goal = GIVE
+      Target = OldWoman
+      Item = FamilyRing
+      Text = "Uzukni Zebo momoga bering"
+      OnDone = Done
+        Says = OldWomanThanks
+        Experience = 40
+        Item = Amulet
+      End
+    End
+  ]
+End
+
+; Her late husband's ring: a thing a quest asks for, which gives nothing and is never dropped.
+LootItem
+  Name = FamilyRing
+  DisplayName = "Cholning uzugi"
+  Icon = icons/items/ring.png
+  Kind = QUEST
+  Value = 0
+  Weight = 0
+End
+
+Trigger
+  Name = CellarStirs
+  Map = poytaxt
+  When = QUEST_STARTED
+  Target = Cellar
+  Actions = [
+    Action
+      Act = SPAWN
+      Target = Skeleton
+      Count = 3
+      Zone = Cellar
+    End
+  ]
+End
+
+; ===========================================================================
+; 3. mashq — the training: the descent's first floors.
+; ===========================================================================
+
+Conversation
+  Name = TrainingOver
+  Lines = [
+    Line
+      Speaker = Hero
+      Text = "Yetarli. Medalyon kuchimni sezyapman. Endi poytaxtga qaytaman."
+    End
+  ]
+End
+
+Quest
+  Name = TrainingDeep
+  Kind = MAIN
+  Title = "Mashq: eski qabrlar"
+  Steps = [
+    Step
+      Goal = KILL
+      Target = Reaper
+      Text = "Ikkinchi qavat qo'riqchisini yenging"
+      OnDone = Done
+        Experience = 150
+      End
+    End
+  ]
+End
+
+Trigger
+  Name = TrainingBegins
+  Map = mashq
+  When = MAP_START
+  Actions = [
+    Action
+      Act = START_QUEST
+      Target = TrainingDeep
+    End
+  ]
+End
+
+; Two floors down and he has learnt enough: the third is not entered — back to the capital.
+Trigger
+  Name = TrainingDone
+  Map = mashq
+  When = DEPTH
+  Target = 3
+  Actions = [
+    Action
+      Act = FLAG
+      Target = Trained
+    End,
+    Action
+      Act = SAY
+      Target = TrainingOver
+    End,
+    Action
+      Act = MAP
+      Target = poytaxt
+    End
+  ]
+End
+
+; ===========================================================================
+; 4. urush — the war: the descent's keep floors (clear outside, key, gate, boss).
+; ===========================================================================
+
+Conversation
+  Name = WarFirstKeep
+  Lines = [
+    Line
+      Speaker = Act1Commander
+      Text = "Mana, birinchi bosib olingan qal'a. Tashqaridagilarni qiring, kalitni oling, darvozani oching — sarkardasi ichkarida."
+    End
+  ]
+End
+
+Conversation
+  Name = WarSecondKeep
+  Lines = [
+    Line
+      Speaker = Act1Commander
+      Text = "Bir qal'a ozod! Keyingisi — qora ritsar qasriga yo'l ochadigan oxirgi qal'a."
+    End
+  ]
+End
+
+Conversation
+  Name = WarToCastle
+  Lines = [
+    Line
+      Speaker = Act1Commander
+      Text = "Yerlarimiz ozod. Qolgani — qora qasr. U yerga sen yolg'iz borasan, qahramon."
+    End
+  ]
+End
+
+Quest
+  Name = War
+  Kind = MAIN
+  Title = "Bosib olingan yerlar"
+  Steps = [
+    Step
+      Goal = KILL
+      Target = Necromancer
+      Text = "Birinchi qal'a sarkardasini o'ldiring"
+      OnDone = Done
+        Experience = 150
+      End
+    End,
+    Step
+      Goal = KILL
+      Target = Champion
+      Text = "Ikkinchi qal'a sarkardasini o'ldiring"
+      OnDone = Done
+        Experience = 250
+      End
+    End
+  ]
+End
+
+Trigger
+  Name = WarBegins
+  Map = urush
+  When = MAP_START
+  Actions = [
+    Action
+      Act = START_QUEST
+      Target = War
+    End,
+    Action
+      Act = SAY
+      Target = WarFirstKeep
+    End
+  ]
+End
+
+Trigger
+  Name = SecondKeep
+  Map = urush
+  When = DEPTH
+  Target = 4
+  Actions = [
+    Action
+      Act = SAY
+      Target = WarSecondKeep
+    End
+  ]
+End
+
+Trigger
+  Name = WarWon
+  Map = urush
+  When = DEPTH
+  Target = 5
+  Actions = [
+    Action
+      Act = FLAG
+      Target = LandsFreed
+    End,
+    Action
+      Act = SAY
+      Target = WarToCastle
+    End,
+    Action
+      Act = MAP
+      Target = qora_qasr
+    End
+  ]
+End
+
+; ===========================================================================
+; 5. qora_qasr — the dark castle, its lord, and the turning.
+; ===========================================================================
+
+Conversation
+  Name = DarkLordWarns
+  Lines = [
+    Line
+      Speaker = DarkLord
+      Text = "Yana bittasi... Malika seni ham yubordimi?"
+    End,
+    Line
+      Speaker = Hero
+      Text = "Seni o'ldirsam, uyga qaytaman."
+    End,
+    Line
+      Speaker = DarkLord
+      Text = "Men ham bir vaqtlar shunday deganman."
+    End
+  ]
+End
+
+Conversation
+  Name = QueenLaughs
+  Lines = [
+    Line
+      Speaker = Act1Queen
+      Text = "Ha-ha-ha... Rahmat, qahramon."
+    End,
+    Line
+      Speaker = Act1Queen
+      Text = "Medalyon to'ldi — va u yana mening qo'limda."
+    End,
+    Line
+      Speaker = Hero
+      Text = "Sen... meni aldading. Qora ritsar ham men kabi chaqirilgan edi..."
+    End,
+    Line
+      Speaker = Act1Queen
+      Text = "Endi bu qasrning xo'jayini sensan. Abadiy. Menga yangi qahramon kerak bo'lganda — yana jang qilasan."
+    End
+  ]
+End
+
+Quest
+  Name = DarkCastle
+  Kind = MAIN
+  Title = "Qora qasr"
+  Steps = [
+    Step
+      Goal = KILL
+      Target = DarkLord
+      Text = "Qora ritsarni o'ldiring"
+      Glow = Yes
+    End
+  ]
+End
+
+Cutscene
+  Name = CastleShown
+  Shots = [
+    Shot
+      Zone = Throne
+      Frames = 60
+      Hold = 20
+    End,
+    Shot
+      Says = DarkLordWarns
+      Hold = 10
+    End
+  ]
+End
+
+Cutscene
+  Name = TurningAct1
+  Shots = [
+    Shot
+      ; On him, where the lord fell, as the dark comes over him...
+      Zone = Throne
+      Frames = 1
+      Hold = 60
+    End,
+    Shot
+      ; ...then to her, come in a vision, the medallion in her hand...
+      Zone = Vision
+      Frames = 45
+      Hold = 20
+    End,
+    Shot
+      Says = QueenLaughs
+      Hold = 20
+    End,
+    Shot
+      ; ...and back to him, bound to the castle.
+      Zone = Throne
+      Frames = 45
+      Hold = 30
+    End
+  ]
+End
+
+Trigger
+  Name = CastleEntered
+  Map = qora_qasr
+  When = MAP_START
+  Actions = [
+    Action
+      Act = CUTSCENE
+      Target = CastleShown
+    End
+  ]
+End
+
+; The lord dies, and the medallion drinks him whole: it leaves the hero for the queen's hand, he
+; darkens and goes over to the monsters — and the act ends, saved for Act 2.
+Trigger
+  Name = TheTurning
+  Map = qora_qasr
+  When = DIED
+  Target = DarkLord
+  Actions = [
+    Action
+      Act = SPAWN
+      Target = Act1Queen
+      Count = 1
+      Zone = Vision
+    End,
+    Action
+      Act = CURSE
+      Target = Act1Queen
+    End,
+    Action
+      Act = SAVE
+      Target = act1
+    End,
+    Action
+      Act = CUTSCENE
+      Target = TurningAct1
+    End
+  ]
+End
+
+Trigger
+  Name = ActOneEnds
+  Map = qora_qasr
+  When = SEEN
+  Target = TurningAct1
+  Actions = [
+    Action
+      Act = WIN
+      Target = "1-qism tugadi"
+    End
+  ]
+End
+
+; ---------------------------------------------------------------------------
+; Looks.
+; ---------------------------------------------------------------------------
+
+; The beam from the sky he lands in: a tall white-gold column, a ring of dust where it strikes,
+; and its light over the field for a moment.
+Effect
+  Name = SkyLight
+  Layers = [
+    Layer
+      Name = Beam
+      Type = IMPACT
+      Texture = kit/effects/particles/light_02.png
+      Blend = Additive
+      Count = 1
+      Life = [1.4, 1.4]
+      Size = [14, 70]
+      Colour = [0xFFF8E0, 0xFFD070]
+      Alpha = [1, 0]
+      Height = 30
+    End,
+    Layer
+      Name = Motes
+      Type = BURST
+      Texture = kit/effects/particles/star_01.png
+      Blend = Additive
+      Count = 30
+      Life = [0.8, 1.6]
+      Size = [2.2, 0.4]
+      Colour = [0xFFFFFF, 0xFFC040]
+      Alpha = [1, 0]
+      Speed = [6, 14]
+      Direction = UP
+      Spread = 25
+      Radius = 5
+      Height = 2
+    End,
+    Layer
+      Name = Ring
+      Type = RING
+      Texture = kit/effects/particles/circle_05.png
+      Blend = Additive
+      Count = 1
+      Life = [0.8, 0.8]
+      Size = [8, 40]
+      Colour = [0xFFF0C0, 0xC09040]
+      Alpha = [0.8, 0]
+      Height = 0.2
+    End,
+    Layer
+      Name = Glow
+      Type = LIGHT
+      LightColour = 0xFFE8B0
+      LightPower = 3
+      LightRadius = 50
+      Seconds = 1.5
+      Height = 20
+    End
+  ]
+End
