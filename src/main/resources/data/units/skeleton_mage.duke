@@ -5,7 +5,7 @@
 ; its R.
 Monster
   Name = SkeletonMage
-  DisplayName = Skeleton Mage
+  DisplayName = Skelet sehrgar
   KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
   Geometry = Cylinder
     Radius = 4

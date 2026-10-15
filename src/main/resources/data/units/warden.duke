@@ -20,7 +20,7 @@ Monster
   Name = Warden
   ; The first, and the one that teaches what a boss is: big, slow, and nothing
   ; else. Everything it does, an ordinary skeleton does smaller.
-  DisplayName = Warden
+  DisplayName = "Qo'riqchi"
   KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
   Geometry = Cylinder
     Radius = 7

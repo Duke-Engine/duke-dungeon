@@ -71,6 +71,7 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E60 | closest-thing questions with no candidate list or sort; a weapon that does not copy its owner's module list every frame | landed (engine 01eb7029; game 2026-10-15) |
 | E61 | where the hero is wanted: a `Mission` that drops its key with a few still standing, and the game's own marks on the minimap | landed, 6e789f32 on the engine's branch `e61-key-minimap`; the game passes `Run.keyLeeway` to `Mission.begin` (`run/EarlyKey` gone) and marks the key (gold, blinking) and each quest's target (QuestColour) on the minimap |
 | E62 | settings kept as the player leaves them (Esc, closing the window), not only on the Save button | asked 2026-10-15 (playtest of 1.0.41) |
+| E63 | no bars, medallions or names over the front menu's backdrop (as on `Screen.FRONT`) | asked 2026-10-15 (playtest of 1.0.41) |
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
 game builds against the local engine. E12–E15 reached it together at 668045f0 (their pull requests merged as
@@ -1305,3 +1306,13 @@ applied* is kept when he leaves the screen by Esc or closes the window (save the
 changes?" once); Cancel stays the one way back. Done when a test sets a row, leaves by Esc and by a stopped app, and
 finds the value in the file. The game, meanwhile: its Uzbek hint says `ESC bekor qilish` (Esc cancels), and with no
 file yet it starts in a 1280 × 720 window (`Duke3D.window`), not filling the screen (`DisplayModes.firstWindow`).
+
+## E63 — Nothing of play drawn over the menu's backdrop (2026-10-15, one line)
+
+The playtest of 1.0.41: the live fight behind the front menu (`Duke3D.backdrop`) wears every fighter's bar, medallion
+and name — "Knight", "Skeleton", a "0" in each medallion — over a picture that is meant to be a picture.
+`DukeRtsApp.showUnitBars` already clears them on `Screen.FRONT` ("behind a front end: a picture, with nothing of play
+laid over it") but not on `Screen.MENU` with a backdrop shown, which is the engine's own front menu over a backdrop.
+Asked: the same `unitBars.clear()` there (and the marks a bar carries with it). Done when a test shows a backdrop under
+the menu and finds no bar placed. The game, meanwhile, names each backdrop kind in Uzbek on its status line (`|who=`),
+so what is drawn is at least the game's words; the medallion's "0" stays until this lands.

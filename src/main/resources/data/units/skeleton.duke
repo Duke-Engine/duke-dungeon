@@ -1,6 +1,6 @@
 Monster
   Name = Skeleton
-  DisplayName = Skeleton
+  DisplayName = Skelet
   KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
   Geometry = Cylinder
     Radius = 4

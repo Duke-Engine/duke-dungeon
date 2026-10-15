@@ -3,7 +3,7 @@ Monster
   ; Mends itself, like the Revenant it is a bigger cousin of — so it is a damage
   ; check rather than a health check, and the third floor is where the hero finds
   ; out whether he has built enough of one.
-  DisplayName = Necromancer
+  DisplayName = Nekromant
   KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
   Geometry = Cylinder
     Radius = 7

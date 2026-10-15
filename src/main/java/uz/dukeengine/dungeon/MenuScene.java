@@ -53,9 +53,21 @@ final class MenuScene {
                 new Side(arena.dungeon(), menu.foes(), WIDTH - 9), arena.orders(),
                 settings.mainMenu().sceneShift());
         game.onStart(started -> {
+            var status = new StringBuilder();
             if (menu.sceneLook() != null && !menu.sceneLook().isBlank()) {
-                started.setStatus("|look=" + menu.sceneLook()); // the theme the clearing wears, as a run names one
+                status.append("|look=").append(menu.sceneLook()); // the theme the clearing wears, as a run names one
             }
+            // Each kind's own (Uzbek) name over it, as a run's status line gives them -- never the template's English.
+            // ponytail: the bars and medallions themselves stay until the engine hides them behind a backdrop (E63).
+            for (var kind : java.util.stream.Stream.concat(menu.soldiers().stream(), menu.foes().stream())
+                    .distinct().toList()) {
+                var template = started.getLogic().getThingFactory().findTemplate(kind);
+                if (template != null) {
+                    status.append("|who=").append(kind).append(',')
+                            .append(uz.dukeengine.core.thing.Titled.of(template));
+                }
+            }
+            started.setStatus(status.toString());
             scene.soldiers.fill(started, 0);
             scene.foes.fill(started, 0);
             var camera = started.camera();
