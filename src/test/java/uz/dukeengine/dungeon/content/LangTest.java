@@ -179,6 +179,9 @@ class LangTest {
         assertNotEquals(null, settings);
         assertEquals("Last Hero", settings.mainMenu().title());
         assertEquals("Settings", settings.mainMenu().settingsWord());
+        // The client's fixed words each say their English: "Resume = Resume".
+        assertEquals("Resume", settings.mainMenu().said().get("Resume"));
+        assertEquals("Quit to the desktop", settings.mainMenu().said().get("Quit to the desktop"));
         assertEquals("Commander", Lang.t("Qo'mondon"));
     }
 
