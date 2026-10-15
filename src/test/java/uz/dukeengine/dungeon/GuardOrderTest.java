@@ -36,7 +36,8 @@ import uz.dukeengine.combat.module.WeaponUpdate;
  */
 class GuardOrderTest {
 
-    private static final DungeonSettings SETTINGS = DungeonSettings.load();
+    /** The classic scheme's, whose D is Defend. */
+    private static final DungeonSettings SETTINGS = ModernControlsTest.classic();
 
     /** The real controls, out of the real file — the same object the client gets. */
     private static final Hotkeys KEYS = Main.controls(SETTINGS);

@@ -1374,6 +1374,11 @@ public final class DungeonSettings {
                                 && skill.castAnim() != null && !skill.castAnim().isBlank(),
                         skill.heroTemplate() + "'s STAGGER needs the least blow (Damage), StunFrames, and the flinch"
                                 + " it plays (CastAnim)");
+                case DODGE -> require(skill.distance() > 0f && skill.durationFrames() > 0 && skill.tickFrames() >= 0
+                                && skill.tickFrames() <= skill.durationFrames() && skill.castAnim() != null
+                                && !skill.castAnim().isBlank(),
+                        skill.heroTemplate() + "'s DODGE needs a Distance, its DurationFrames, its TickFrames out of"
+                                + " harm's way (no more than the roll) and the roll it plays (CastAnim)");
                 case HEAL -> {
                     var name = skill.heroTemplate() + "'s Skill " + skill.key();
                     require(skill.heal() > 0f && skill.range() > 0f, name + " mends nobody: it needs a Heal and a Range");
@@ -1997,7 +2002,7 @@ public final class DungeonSettings {
     public java.util.List<Skill> skillsFor(String heroTemplate) {
         var his = new java.util.ArrayList<Skill>();
         for (var skill : bookFor(heroTemplate)) {
-            if (skill.effect() != SkillEffect.STAGGER) {
+            if (skill.effect() != SkillEffect.STAGGER && skill.effect() != SkillEffect.DODGE) {
                 his.add(skill);
             }
         }
@@ -2005,7 +2010,8 @@ public final class DungeonSettings {
     }
 
     /**
-     * Everything his SkillBook holds: {@link #skillsFor} and his STAGGER, which is no slot of the four -- never bought
+     * Everything his SkillBook holds: {@link #skillsFor}, his DODGE (pressed on Space, no slot either) and his STAGGER,
+     * which is no slot of the four -- never bought
      * with a point, never drawn on his bar (HeroStatus hides it), held at its first rank from the start.
      */
     public java.util.List<Skill> bookFor(String heroTemplate) {

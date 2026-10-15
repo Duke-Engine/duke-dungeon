@@ -552,6 +552,10 @@ public final class Main {
         var launch = new LaunchScreen(new Soundscape(screens, duke, settings), screens, settings.splash(),
                 settings.mainMenu(), () -> duke.holdBackdrop(false), duke::sound);
         duke.canvas(launch).input(launch).onLoading(launch::loaded).onBackdropLoading(launch::loaded);
+        // What the dodge asks before it rolls him: whether a screen over the world holds the keys.
+        over = launch;
+        // The mouse of the scheme: modern's left button fights, its right one works (E78).
+        duke.mouseScheme(mouseOf(settings));
         duke.holdBackdrop(true);
         screensOn(keys, screens, settings);
         duke.worldPicture(settings.screens().mostTexels(), screens.map()::picture);
@@ -1163,6 +1167,9 @@ public final class Main {
             // His feet: the held W A S D as a direction the camera's way, sent as an order on the lock-step stream
             // only when it changes (E74, E75) -- the simulation never reads a key.
             keys.onDirection(uz.dukeengine.client3d.DirectionKeys.WASD, Main::walk);
+            // Space rolls him (E80): a key of the game's since E79, rebindable on the keys page like his letters. The
+            // client's Space (the camera home) is off in this scheme (modernKeyMap); Enter still does it.
+            keys.on(' ', settings.controls().dodgeWord(), game -> dodge(game, settings));
         }
         // Which single creature he has picked out. The target frame describes it, and
         // only the simulation can say what it is worth -- see Watching.
@@ -1173,8 +1180,54 @@ public final class Main {
 
     /** His hero walked along {@code angle} (256ths of a turn, or MoveAlong.NONE to stop): the held keys' order. */
     static void walk(uz.dukeengine.game.DukeGame game, int angle) {
+        walking = angle;
         game.postCommand(new uz.dukeengine.combat.message.CombatOrder.MoveAlong(game.getLocalPlayerIndex(),
                 selected(game), angle));
+    }
+
+    /**
+     * The mouse of the scheme played (E78): modern -- the left button locks on an enemy within 60 or swings at the
+     * ground, held to go on; the right one works (talk, chop, open); a skill's letter casts at the pointer -- or classic.
+     */
+    static uz.dukeengine.client3d.MouseScheme mouseOf(DungeonSettings settings) {
+        return settings.scheme() == uz.dukeengine.dungeon.world.Controls.Scheme.MODERN
+                ? uz.dukeengine.client3d.MouseScheme.MODERN : uz.dukeengine.client3d.MouseScheme.CLASSIC;
+    }
+
+    /** The way the held keys last said, for the dodge: MoveAlong.NONE while none is held. */
+    private static volatile int walking = uz.dukeengine.client3d.DirectionKeys.NONE;
+
+    /** The screens over the world, top first (the launch screen's chain): the dodge rolls only while none holds keys. */
+    static volatile uz.dukeengine.client3d.CanvasInput over;
+
+    /** Space, in the modern scheme: his dodge (E80) the way he walks, or faces when no key is held. */
+    static void dodge(uz.dukeengine.game.DukeGame game, DungeonSettings settings) {
+        var screens = over;
+        if (screens == null || !screens.holdsKeys()) {
+            roll(game, walking, settings);
+        }
+    }
+
+    /**
+     * His dodge cast along {@code angle} (256ths of a turn), or the way he faces for NONE: a point its Distance off,
+     * though the roll goes its Distance toward any point. Nothing if his hero has none.
+     */
+    static void roll(uz.dukeengine.game.DukeGame game, int angle, DungeonSettings settings) {
+        for (var unit : game.getSnapshot().units()) {
+            if (unit.playerIndex() != game.getLocalPlayerIndex()) {
+                continue;
+            }
+            for (var skill : settings.bookFor(unit.templateName())) {
+                if (skill.effect() == uz.dukeengine.rpg.skill.SkillEffect.DODGE) {
+                    double way = angle < 0 ? unit.orientation() : angle * 2.0 * Math.PI / 256.0;
+                    var point = new uz.dukeengine.core.math.Coord3D(unit.x() + 16f * (float) Math.cos(way),
+                            unit.y() + 16f * (float) Math.sin(way), 0f);
+                    game.postCommand(PartyOrders.of(new CastSkill(game.getLocalPlayerIndex(), skill.key(), null,
+                            point)));
+                    return;
+                }
+            }
+        }
     }
 
     /** The client's own keys in the modern scheme: its standard ones with W A S D taken off panning. */
@@ -1186,6 +1239,11 @@ public final class Main {
             map.bind(pan, map.keysOf(pan).stream().filter(key -> !feet.contains(key.code()))
                     .toArray(uz.dukeengine.client3d.KeyMap.Key[]::new));
         }
+        // Space is the dodge's here (Dodge); the camera comes home on Enter.
+        map.bind(uz.dukeengine.client3d.KeyMap.Control.CENTRE_ON_BASE, map.keysOf(
+                uz.dukeengine.client3d.KeyMap.Control.CENTRE_ON_BASE).stream()
+                .filter(key -> key.code() != uz.dukeengine.client3d.CanvasInput.SPACE)
+                .toArray(uz.dukeengine.client3d.KeyMap.Key[]::new));
         return map;
     }
 
@@ -1216,7 +1274,7 @@ public final class Main {
             // A blink is pointed at a spot exactly as a dash is. That it does not
             // cross what is between is the simulation's business; what the player
             // has to do with the mouse is the same thing, so the ring is the same.
-            case DASH, BLINK, DODGE -> uz.dukeengine.client3d.SkillRange.Shape.AT_A_SPOT;
+            case DASH, BLINK -> uz.dukeengine.client3d.SkillRange.Shape.AT_A_SPOT;
             case METEOR -> uz.dukeengine.client3d.SkillRange.Shape.AT_A_SPOT;
             // A summoning calls them up round him, as far out as its Radius; a haste finds one of
             // his own round him, as far out as its Range; a pull gathers whoever is within its Radius.
@@ -1225,16 +1283,16 @@ public final class Main {
             // his skin, and the passives -- never cast -- drink from his blows or
             // lend round him.
             case EMPOWER, GUARD, LIFESTEAL, DAMAGE_AURA, MANA_AURA, LIFESTEAL_AURA, SOUL_DRINK, UNYIELDING,
-                    DRAGON_BLOOD, STAGGER -> uz.dukeengine.client3d.SkillRange.Shape.ON_HIMSELF;
+                    DRAGON_BLOOD, STAGGER, DODGE -> uz.dukeengine.client3d.SkillRange.Shape.ON_HIMSELF;
         };
         float reach = switch (skill.effect()) {
             case STRIKE, AREA_AT_SPOT, SKILLSHOT, HEAL -> skill.range();
-            case DASH, BLINK, DODGE, SKEWER, WAVE -> skill.distance();
+            case DASH, BLINK, SKEWER, WAVE -> skill.distance();
             case METEOR -> skill.range();
             case AREA_DAMAGE, SUMMON, PULL -> skill.radius();
             case HASTE -> skill.range();
             case EMPOWER, GUARD, LIFESTEAL, DAMAGE_AURA, MANA_AURA, LIFESTEAL_AURA, SOUL_DRINK, UNYIELDING,
-                    DRAGON_BLOOD, STAGGER -> selfRadius;
+                    DRAGON_BLOOD, STAGGER, DODGE -> selfRadius;
         };
         // What it LEAVES where it lands: a blast's radius, a lane's width. A dash
         // leaves a man, and a circle round a man-sized spot is a second ring saying
