@@ -41,14 +41,18 @@ final class Bag {
     /**
      * A thing's card in the game's colours (E45): a generated thing's name in its rarity's colour, its rarity and item
      * level, figure, affixes and story — and under its hints what it would change against what is worn in its slot,
-     * green and red. The data's own things keep the bag's own lines. See docs/plan/2026-10-15-loot.md.
+     * green and red. The data's own things say what they always said, in the bag's bone. See
+     * docs/plan/2026-10-15-loot.md.
      */
     private static BagScreen coloured(BagScreen bag, DungeonSettings settings) {
         var items = settings.items();
         return bag.colouredBy(item -> {
             var lines = cardLines(item, settings);
-            return lines == null ? null : lines.stream().map(line -> new BagScreen.Line(line.text(), line.colour()))
-                    .toList();
+            if (lines == null) {
+                return gives(item, settings).stream().filter(said -> !said.isEmpty())
+                        .map(said -> new BagScreen.Line(said, settings.menu().boneColour())).toList();
+            }
+            return lines.stream().map(line -> new BagScreen.Line(line.text(), line.colour())).toList();
         }, item -> items.colourOf(item, settings.menu().torchColour()), (item, worn) -> compared(item, worn, settings)
                 .stream().map(line -> new BagScreen.Line(line.text(), line.colour())).toList());
     }
