@@ -62,6 +62,7 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E46 | the game's keys in Settings | landed, 9ce15e4e |
 | E47 | a hero's whole figures in one place | landed, 9ce15e4e |
 | E48 | a key's code and name for a game's canvas | landed, 9ce15e4e |
+| E52 | a route that prefers the roads: a cost per cell a walker's path weighs (travellers keep to the roads) | waiting (small) |
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
 game builds against the local engine. E12–E15 reached it together at 668045f0 (their pull requests merged as
@@ -1162,3 +1163,14 @@ checksum), the game's input taken while it shows unless the game says otherwise.
 the client reports it gone after its frames.
 
 **Landed** as fa3e72a0: `DukeGame.titleCard(text, subtext, fadeIn, hold, fadeOut[, takesInput])`, `titleCardShowing()`, `titleCardGone(card)`. The story's `TITLE` act shows a `Title` block: each Act 1 chapter's name as it opens, and "1-qism tugadi" at its end.
+
+## E52 — A route that prefers the roads (2026-10-15, small)
+
+The open world's travellers and its pedlar (data/story/villages.duke, `Npc.Route`) walk from village to village by
+`Locomotor.moveTo`, and the engine's path is the shortest over walkable ground: across a meadow, over a hill, never
+along the dirt road the world's writer laid for them. A traveller cutting across a field looks lost.
+
+Asked: the path grid takes a cost per cell -- or a set of preferred cells and how much cheaper they are -- that the
+pathfinder (and the sector router on a wide map) weighs, from the map (its painted roads, `d` in the world's paint,
+or a game-handed mask); every map that hands none routes as today. Done when a test routes between two points joined
+by a road with a shortcut over open ground and the path keeps to the road where the cost says it should.
