@@ -40,7 +40,9 @@ concurrency:
   cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
 
 env:
-  APP_NAME: Duke Dungeon
+  # "Last Hero" is a stand-in until the owner names the game. The MSI keeps the upgrade code the name "Duke Dungeon" made
+  # (vendor + name), spelled out so an installed 1.0.x is upgraded by this, not sat beside.
+  APP_NAME: Last Hero
   MAIN_CLASS: uz.dukeengine.dungeon.Main
 
 jobs:
@@ -172,7 +174,8 @@ jobs:
           case "${{ matrix.type }}" in
             msi)
               # Per-user, so nobody has to be an administrator to play a game.
-              EXTRA=(--win-dir-chooser --win-menu --win-shortcut --win-per-user-install)
+              EXTRA=(--win-dir-chooser --win-menu --win-shortcut --win-per-user-install
+                     --win-upgrade-uuid 05e2eb51-00a8-3343-9491-610dc3899eb4)
               ;;
             dmg)
               # GLFW wants the process's first thread on macOS, and the flag has
@@ -293,7 +296,7 @@ jobs:
             gh release upload "$TAG" bundles/* --clobber
           else
             gh release create "$TAG" bundles/* \
-              --title "Duke Dungeon ${{ steps.version.outputs.value }}" \
+              --title "Last Hero ${{ steps.version.outputs.value }}" \
               --notes-file notes.md \
               --target "$GITHUB_SHA"
           fi

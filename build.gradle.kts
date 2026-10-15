@@ -410,7 +410,7 @@ tasks.register<Exec>("packageInstaller") {
         buildList {
             addAll(listOf(
                 "--type", type,
-                "--name", "Duke Dungeon",
+                "--name", "Last Hero", // a stand-in title; the owner names the game
                 "--app-version", appVersion,
                 // The release workflow's vendor, its repository's owner: the MSI's
                 // upgrade code is made from vendor and name, and any other vendor
@@ -432,7 +432,9 @@ tasks.register<Exec>("packageInstaller") {
             when (type) {
                 // Per-user, so nobody has to be an administrator to play a game.
                 "msi" -> addAll(listOf("--win-dir-chooser", "--win-menu",
-                        "--win-shortcut", "--win-per-user-install"))
+                        "--win-shortcut", "--win-per-user-install",
+                        // What "Duke-Engine" + "Duke Dungeon" made (read from the 1.0.37 MSI): kept, so 1.0.x installs upgrade.
+                        "--win-upgrade-uuid", "05e2eb51-00a8-3343-9491-610dc3899eb4"))
                 // GLFW wants the process's first thread on macOS, and there is no
                 // command line to add that to afterwards.
                 "dmg" -> addAll(listOf("--java-options", "-XstartOnFirstThread"))
