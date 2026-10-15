@@ -522,7 +522,12 @@ public final class Main {
         Bag.show(bag, session, settings);
         // And over it, the box a conversation is said in, which hands the bag whatever it does not take.
         var talk = new DialogueScreen(bag, bag, settings);
-        duke.canvas(talk).input(talk);
+        // And over that, the player's own screens -- the sheet, the quest log, the map -- each on its key, and the map
+        // drawn from the engine's picture of the world as he knows it, asked for every map.
+        var screens = new PlayerScreens(talk, settings);
+        duke.canvas(screens).input(screens);
+        screensOn(keys, screens, settings);
+        duke.worldPicture(settings.screens().mostTexels(), screens.map()::picture);
         // The run saves itself as each floor is entered, as the game is left by any door, and into a slot from the
         // pause menu -- see docs/plan/2026-10-08-saving.md.
         var saves = Saves.ofThePlayer();
@@ -983,6 +988,19 @@ public final class Main {
      * The client keeps the press-then-click; this only says what to send once the
      * player has chosen.
      */
+    /**
+     * The screens' keys: a thing of the window, as the tracker's fold is, so each flips the window's own state and
+     * sends nothing to the simulation. Through the hotkeys, which the client answers only in play -- never on a menu,
+     * nor while chat is typed; while a screen is open it takes the keys itself.
+     */
+    static void screensOn(Hotkeys keys, PlayerScreens screens, DungeonSettings settings) {
+        var letters = settings.screens().keys();
+        for (int i = 0; i < letters.size(); i++) {
+            var which = PlayerScreens.Open.values()[i + 1];
+            keys.on(letters.get(i), game -> screens.toggle(which));
+        }
+    }
+
     static Hotkeys controls(DungeonSettings settings) {
         var keys = Hotkeys.create();
         // The file's default hero to begin with, and whoever is actually chosen
