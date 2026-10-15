@@ -561,7 +561,7 @@ class DungeonSettingsTest {
         for (var skill : DungeonSettings.load().skills()) {
             float reach = switch (skill.effect()) {
                 case STRIKE, AREA_AT_SPOT, SKILLSHOT, HEAL -> skill.range();
-                case DASH, BLINK, SKEWER, WAVE -> skill.distance();
+                case DASH, BLINK, SKEWER, WAVE, DODGE -> skill.distance();
                 case METEOR -> skill.range();
                 case AREA_DAMAGE, SUMMON, PULL -> skill.radius();
                 case HASTE -> skill.range();

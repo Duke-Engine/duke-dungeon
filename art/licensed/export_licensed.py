@@ -25,7 +25,9 @@ never a shin, so a stride swings the hem instead of tearing it between her knees
 
 CLIPS FROM QUATERNIUS (CC0). Retargeted by role onto her bones (retarget.py), under the names her
 block plays (CLIPS). The summoner's summoning gesture is named Ranged_Magic_Summon, as the KayKit clip
-her stand-in plays is, so one CastAnim serves both looks.
+her stand-in plays is, so one CastAnim serves both looks. And the summoner's Ritual -- arms spread to
+the sky, then hands snapped together forward -- posed on her by ritual.py (the seamless campaign's intro;
+add_ritual.py puts it into an already exported .glb).
 
 ONE PICTURE, 2048 AT MOST, base colour only (art/models/base_colour_only.js is run after this), drawn
 opaque as the game draws every creature.
@@ -599,6 +601,15 @@ if WHO == "queen":
             clips[i] = rework(a, e)
             r = e.cache.get("reach", [0])
             print(f"REGAL {clips[i].name}: legs reach {min(r):.2f}..{max(r):.2f} of their length")
+
+# ---- the ritual: posed on her, not borrowed (art/licensed/ritual.py) ----
+
+if WHO == "ritualist":
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import ritual  # noqa: E402
+
+    clips.append(ritual.add(arm, scene, FPS, next(a for a in clips if a.name == "Idle")))
+    print("RITUAL posed:", tuple(clips[-1].frame_range))
 
 ad = arm.animation_data
 ad.action = None

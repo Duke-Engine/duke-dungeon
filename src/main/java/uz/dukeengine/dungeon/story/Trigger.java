@@ -33,6 +33,8 @@ public record Trigger(String name, String map, When when, String target, int ste
         HOLDS,
         /** A hero wears the LootItem. */
         WEARS,
+        /** No hero carries the LootItem anywhere: HOLDS turned round. */
+        LACKS,
         /** The quest is going. */
         QUEST_ACTIVE,
         /** The quest is finished. */
@@ -105,7 +107,32 @@ public record Trigger(String name, String map, When when, String target, int ste
         /** The Credits block rolled over the screen with its music; the front menu once it has rolled or is skipped. */
         CREDITS,
         /** Every one of a Monster or a person standing taken away, unheard: the caged girl's cage, once she is out. */
-        REMOVE
+        REMOVE,
+        /** A LootItem laid on the ground at the zone's middle: the ring in the cellar, laid as she asks for it. */
+        LAY,
+        /** The Battle block the Target names laid: both armies and the ritualists round its landing. */
+        BATTLE,
+        /** Every one of a Monster standing plays {@code Clip} -- {@code Else} where it is drawn as a stand-in without it
+         * -- for Frames, standing still: the ritualists' ritual (E67's busy clip). */
+        POSE,
+        /** A beam of the Laser {@code Drawn} for Frames: from each of a Monster standing (9 up, at their hands) to Height
+         * above the zone's middle; with no Target, from the zone's ground straight up Height: a pillar of light. */
+        BEAM,
+        /** The heroes (Target Hero) lifted Height above the zone's middle and held there, out of sight, until a
+         * STREAK brings them down. */
+        SKY,
+        /** The heroes carried down onto the zone over Frames from Height above it and Lean off toward Bearing (degrees,
+         * 0 east, 90 south): a meteor's angled fall. {@code Drawn} is played on them every frame of it (the burning
+         * trail), {@code Landed} as they come down (the impact). */
+        STREAK,
+        /** The Shockwave block the Target names, from the zone's middle: the dungeon's side thrown out and stunned. */
+        SHOCKWAVE,
+        /** Every fighter standing in the zone held still -- no blow, no step -- from now until a RELEASE. */
+        HOLD,
+        /** What a HOLD holds, let go. */
+        RELEASE,
+        /** The sound cue the Target names, heard at the zone's middle: the meteor's boom. */
+        SOUND
     }
 
     /** The Target of a MOVE, LEAP or FALL that is the heroes rather than a Monster. */
@@ -120,11 +147,20 @@ public record Trigger(String name, String map, When when, String target, int ste
      * @param zone   where, for SPAWN, ALLY, WALK, CALL, EFFECT, PLACE, KNOCK, MOVE, LEAP and FALL
      * @param frames how long a MOVE, LEAP or FALL takes
      * @param height a LEAP's arc at its middle; how far above the zone a FALL begins
-     * @param landed an Effect played on the thing as a MOVE, LEAP or FALL comes down — its dust, its knock of the
-     *               camera (the Effect's ShakeSeconds and ShakePower); blank for none
+     * @param landed an Effect played on the thing as a MOVE, LEAP, FALL or STREAK comes down — its dust, its knock of
+     *               the camera (the Effect's ShakeSeconds and ShakePower); blank for none
+     * @param clip   the clip a POSE plays; {@code orElse} where the look drawn has none of that name (a stand-in)
+     * @param drawn  a BEAM's Laser; an Effect a STREAK plays on what it carries every frame, or REMOVE on what it takes
+     * @param lean   how far off, in units, a STREAK begins, toward {@code bearing} (degrees: 0 east, 90 south)
      */
-    public record Action(Act act, String target, int count, String zone, int frames, float height, String landed) {
+    public record Action(Act act, String target, int count, String zone, int frames, float height, String landed,
+            String clip, String orElse, String drawn, float lean, float bearing) {
 
-        public static final Action DEFAULTS = new Action(null, "", 1, "", 30, 0f, "");
+        public static final Action DEFAULTS = new Action(null, "", 1, "", 30, 0f, "", "", "", "", 0f, 0f);
+
+        /** An action of only the first fields, the rest as a file leaving them out. */
+        public Action(Act act, String target, int count, String zone, int frames, float height, String landed) {
+            this(act, target, count, zone, frames, height, landed, "", "", "", 0f, 0f);
+        }
     }
 }
