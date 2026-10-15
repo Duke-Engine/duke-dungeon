@@ -77,6 +77,8 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E66 | scenery a hero can work: a scenery piece the game can point at, take away (a tree felled) and lay again (grown back) | waiting; the game stands in with trees it places as things (`ChoppableTree`, `data/world/food.duke`) |
 | E67 | a busy state with its own clip: a creature plays a named clip on a loop for N frames, cut short by an order or a blow | waiting; the game stands in with a puff and a sound each second (`run/Camp`) |
 | E68 | health over time as a buff the skill book reads (as `MANA_AURA` is for mana), with its picture on the HUD | waiting; the game pays a `HEAL` buff out each frame (`Belt.digest`) |
+| E69 | a melee blow struck at its swing's impact: the attack clip started a lead before the blow lands (an inline `PreAttackFrames`, the clip played from the wind-up) | waiting; the game cuts the knight's slash in at the top of its wind-up so the blade is fastest 0.12s after the blow (`HeroClipFitTest`) |
+| E70 | a blow struck on the move drawn on the upper body only, the legs keeping the paced walk | waiting; the knight (`AttackOnTheMove = Yes`) holds his slash's stance on his legs for 1.0s and slides that second |
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
 game builds against the local engine. E12–E15 reached it together at 668045f0 (their pull requests merged as
@@ -1386,3 +1388,28 @@ holds (tenths a second, the way `regenerate` counts mana), `healthPerSecond()` a
 buff row (`BuffScreen`) shows a held `HEAL` and `MANA_AURA` on the hero with a picture the game names. Done when a
 test gives a book a `HEAL` buff of 100 for 60 frames and its body is 20 points fuller two seconds later and no fuller
 after. Then `Belt.digest` goes.
+
+## E69 — A melee blow struck at its swing's impact (2026-10-15, small)
+
+The owner, 2026-10-15: the heroes' blows "don't stick". The client starts a unit's attack clip on `WeaponFired`
+(`DukeRtsApp`, `playOnce(node, attackAnim)`), and a melee blow lands that same frame (`Swing` declines the launch and
+the weapon lands it). So the damage, its number and the hit-stop come on the clip's first frame and the blade arrives
+later: the knight's Quaternius slash was fastest 0.29s in. Today a wind-up can only be kept by cutting it off, which
+is what the game does (`art/lange/export_lange.py` starts Sword_Attack 0.24s in, so the blow lands at the top of the
+swing and the blade is fastest 0.12s later). **Repro:** with master's lange.glb, the knight attacks a skeleton: the
+number rises before the sword comes down. Asked: an inline `PreAttackFrames` on `WeaponUpdate.Data` (today only a
+named `Weapon` has one), and the client playing the attack clip when a wind-up starts (the `PREATTACK` moment) rather
+than when the shot fires, for a weapon that winds up; one that does not plays it on `WeaponFired` as now. Done when a
+test winds a weapon up 9 frames and the client's attack clip begins 9 frames before the `ObjectHurt`. Then the
+knight's slash gets its whole wind-up back with `PreAttackFrames` set to its impact (0.42s at its own pace, 13 frames),
+and `HeroClipFitTest` checks the impact against that instead of against 0.
+
+## E70 — A blow struck on the move drawn on the upper body (2026-10-15, small)
+
+The knight swings as he closes (`AttackOnTheMove = Yes`), and `playOnce` plays his slash over the whole body on the
+default layer: for its 1.0s his legs keep the slash's stance while he keeps moving, so he slides. Asked: for a unit
+whose look names an upper-body joint (`UpperBody = spine`), an attack (and a hurt) played while it moves goes on a
+second `AnimComposer` layer masked (`ArmatureMask`) to that joint and below, the paced walk staying on the legs;
+standing, as now. Done when a test plays an attack on a moving unit and its leg joints follow the walk while its arm
+joints follow the attack. The game then names `UpperBody = spine` for the knight (Lange's rig) and the Huntress's
+`QuickRigCharacter_Spine1_013`; nothing until then.
