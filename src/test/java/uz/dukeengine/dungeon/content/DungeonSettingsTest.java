@@ -119,7 +119,13 @@ class DungeonSettingsTest {
     /** The numbers that come off a creature are the file's too, and the shipped file writes the client's own. */
     @Test
     void theHitNumbersAreTheFilesToo() {
-        assertEquals(uz.dukeengine.client3d.HitNumbers.DEFAULTS, DungeonSettings.load().hitNumbers());
+        var d = uz.dukeengine.client3d.HitNumbers.DEFAULTS;
+        var shipped = DungeonSettings.load().hitNumbers();
+        // White for what he deals (the feel pass), the engine's defaults for all else.
+        assertEquals(0xFFFFFF, shipped.hurtColour());
+        assertEquals(new uz.dukeengine.client3d.HitNumbers(d.seconds(), d.popScale(), d.textScale(), d.spread(),
+                d.fanDegrees(), d.height(), d.leastWorth(), 0xFFFFFF, d.takenColour(), d.healColour(),
+                d.brightness(), d.shown()), shipped);
         var quick = DungeonSettings.parse("""
                 HitNumbers
                   Seconds = 0.25
