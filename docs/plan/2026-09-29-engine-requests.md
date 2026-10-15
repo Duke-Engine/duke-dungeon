@@ -94,17 +94,18 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E83 | the menu's backdrop kept as the match: "New game" hands the running backdrop game over instead of tearing it down and loading the world again | landed, 2e12257e on `e82-85-seamless`: `Duke3D.adoptBackdrop`, `onBackdropAdopted`, `DukeGame.takeSeat`; "New game" of Act 1 adopts the running world backdrop (`MenuScene.adoptAsMatch`, `DungeonRun.adopt`): no load, the same frames going on |
 | E84 | path regions the game shuts and opens (walls by a story flag): a route never plans through closed land | landed, 2e12257e on `e82-85-seamless`: `PathGrid.shut`/`open`/`isShut`; each `Gate` shuts a band round its Open zones (`DungeonRun.gated`), the per-frame leash is gone, the hero is told at the edge |
 | E85 | a cutscene camera path: a list of points, each with its pitch, zoom and ease, flown as one move | landed, 2e12257e on `e82-85-seamless`: `GameCamera.along`; a cutscene shot's `Path` of `Key`s, the opening's camera one move from the menu's framing to the landing |
-| E87 | a weapon that acquires nothing by itself, per unit (`WeaponUpdate.acquiresNothing`), for a hero who fights only when told | waiting (modern controls; the game holds fire through its brain meanwhile) |
-| E86 | the open world's hour while it is drawn: a sun and ambient changed at runtime, the haze's colour, lights stronger at night, a tint under the GUI, rain with a colour and a streak | waiting (day and night; the game washes its canvas meanwhile) |
-| E88 | a rider on a mount: one unit drawn on another's bone, both animating, picked and barred as the rider; and a unit's sounds keyed by the template it is drawn as | waiting (mounts, `2026-10-15-mounts.md`); the game draws one combined model a hero through `drawAs` (`<Hero>Riding`) and plays the gallop as an event (`mount.gallop`) |
-| E89 | mounting in the skill system: a `MOUNT` shape (or at least a `MOVE_SPEED` buff the book holds and `HeroProgress` multiplies into his legs), cast over the mount clip, ended by a blow, a cast or an attack; zones of a map a skill is refused and ended in | waiting (mounts); `run/Stable` sets his legs every frame he rides and watches his health, his weapon and the zones itself |
+| E87 | a weapon that acquires nothing by itself, per unit (`WeaponUpdate.acquiresNothing`), for a hero who fights only when told | landed, 6f48703b (on e86-89-hour-mounts); the hero's brain sets it on his weapon from `FightOnlyWhenTold`, `HeroBrain.Module` gone |
+| E86 | the open world's hour while it is drawn: a sun and ambient changed at runtime, the haze's colour, lights stronger at night, a tint under the GUI, rain with a colour and a streak | landed, d18b0070 (on e86-89-hour-mounts); `Atmosphere` lights the hour by `DayNight`'s Sky keys (sun, shade, haze), the fires by `NightLights`, a weather's tint and the storm's flash under the HUD, rain as pale streaks; scene.duke's Sun back off the open world |
+| E88 | a rider on a mount: one unit drawn on another's bone, both animating, picked and barred as the rider; and a unit's sounds keyed by the template it is drawn as | landed, d18b0070; the hero rides the real horse on its `Saddle` bone, drawn as `<Hero>Riding` (his own model playing `Ride_Idle`/`Ride_Gallop`, art/mounts/export_riders.py), his hooves `walking.<Hero>Riding.<surface>`; the combined models are gone |
+| E89 | mounting in the skill system: a `MOUNT` shape (or at least a `MOVE_SPEED` buff the book holds and `HeroProgress` multiplies into his legs), cast over the mount clip, ended by a blow, a cast or an attack; zones of a map a skill is refused and ended in | landed, 6f48703b; each hero's `MOUNT` skill on T (`NotIn` the towns and `Ichkari`, the zone `Stable.zonesAt` gives every map not out of doors), `MOVE_SPEED` on the buff row; `Stable` keeps the horse as a thing, an ordered attack and riding into a town. **One thing left:** a click-to-move's step is held to the unit's own top speed by `MoveUpdate.giveWay` (`allowed`), so the mount's speed reaches only a walk along (WASD); the share wants multiplying into `topSpeed` there too |
 
-| E90 | a captured mouse: the pointer hidden and held in the window, relative motion events, released while a screen, a menu, Alt or a lost focus asks | waiting (action controls, `2026-10-15-action-controls.md`); the action scheme plays as modern, with its pointer, meanwhile |
-| E91 | the follow camera turned round the hero by the mouse: yaw from relative x, sensitivity, invert, a pitch band | waiting (action controls); the arrows' look-away meanwhile |
-| E92 | a skill aimed by relative motion: a key arms it, its indicator from the hero along the camera's forward, mouse y the distance, confirm (LMB, the key again, or release) and cancel (RMB, Esc) | waiting (action controls); modern's quick-cast at the pointer meanwhile |
-| E93 | `MouseScheme.ACTION`: the left button strikes along the camera's forward (`AttackToward` by angle), a ranged hero's soft lock in a forward cone, the hold resent by angle | waiting (action controls); modern's left button meanwhile |
-| E94 | interact with the nearest: the context-order target in a front cone within reach, its word for a prompt drawn over it, sent on a key | waiting (action controls); the words are in the Controls block (`promptOf`), E unbound meanwhile |
+| E90 | a captured mouse: the pointer hidden and held in the window, relative motion events, released while a screen, a menu, Alt or a lost focus asks | landed, db83232a on `e90-94-action`: adopted on the game's branch `action2` (the Jangovar scheme) |
+| E91 | the follow camera turned round the hero by the mouse: yaw from relative x, sensitivity, invert, a pitch band | landed, db83232a on `e90-94-action`: adopted on the game's branch `action2` (the Jangovar scheme) |
+| E92 | a skill aimed by relative motion: a key arms it, its indicator from the hero along the camera's forward, mouse y the distance, confirm (LMB, the key again, or release) and cancel (RMB, Esc) | landed, db83232a on `e90-94-action`: adopted on the game's branch `action2` (the Jangovar scheme) |
+| E93 | `MouseScheme.ACTION`: the left button strikes along the camera's forward (`AttackToward` by angle), a ranged hero's soft lock in a forward cone, the hold resent by angle | landed, db83232a on `e90-94-action`: adopted on the game's branch `action2` (the Jangovar scheme) |
+| E94 | interact with the nearest: the context-order target in a front cone within reach, its word for a prompt drawn over it, sent on a key | landed, db83232a on `e90-94-action`: adopted on the game's branch `action2` (the Jangovar scheme) |
 | E95 | a PUSH that throws a crowd: the farthest moved first, and a body in the way pushed on with it rather than stopping the one behind | waiting (seamless campaign, small); the landing throws those with a clear way, and stuns all |
+| E96 | interact with the map's own scenery: E94's nearest target taken from the ground rule (`groundOrder`) too, a scenery piece (a felled tree, E66) its prompt and its click | waiting (action controls, small); E on a scenery tree finds nothing meanwhile, a right-click still chops it |
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
 game builds against the local engine. E12–E15 reached it together at 668045f0 (their pull requests merged as
@@ -1928,6 +1929,19 @@ keys, a cutscene runs, or the hero is DISABLED/HELD. Done when a test stands the
 well, finds the tree with the prompt "[E] Kesish", and the key posts the tree's Chop; turned round, the well's Fill.
 His horse standing by is one more such target (the game's `Ride` word, "[E] Minish"): E mounts it, nothing
 more is asked for riding (`2026-10-15-action-controls.md` 6b).
+
+## E96 — Interact with the map's own scenery (2026-10-15, small; action controls)
+
+E94's `onInteract` finds the nearest **thing** a context rule names a word for. The open world's trees are not things:
+they are pieces of the map's scenery, worked through the ground rule (`DukeGame.groundOrder`, E66: a click on the
+ground under a tree gives the game's `Chop` and the felling redraws its chunk). So in the action scheme E on a forest
+tree finds nothing, while a right-click in modern chops it.
+
+Asked: the interact search also looks at the scenery pieces within its reach and cone (their placed position on the
+map), asks the ground rule for each piece's place, and takes the nearest of things and pieces alike; the prompt is
+drawn over the piece and the key gives what a click on the ground under it gives. Done when a test stands the hero
+before a scenery tree the game's ground rule names `Chop`, finds it with the prompt "[E] Kesish", and the key posts the
+same order a click there posts; a piece the rule names nothing for is not offered.
 
 ## E95 — A PUSH that throws a crowd (2026-10-15, small; seamless campaign)
 

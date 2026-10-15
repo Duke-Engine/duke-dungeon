@@ -137,6 +137,15 @@ public final class HeroBrain extends UnitScript {
         if (weapon == null || move == null) {
             return;
         }
+        // The modern way, at his weapon (E87): it picks nothing by itself, and what it picked before he was told so --
+        // a hero new on a floor, his weapon's first look before this -- is let go.
+        boolean told = orders.fightsOnlyWhenTold(unit().getPlayerIndex());
+        if (weapon.isAcquiringNothing() != told) {
+            weapon.acquiresNothing(told);
+            if (told) {
+                weapon.holdFire();
+            }
+        }
         var book = unit().findModule(SkillBook.class);
         if (book != null && book.keepsBusy()) {
             return; // a shield charge under way has his legs until it ends (SKEWER)
@@ -593,45 +602,6 @@ public final class HeroBrain extends UnitScript {
             picked = seen.getId();
             weapon.attack(seen.getId());
         }
-    }
-
-    /**
-     * His brain run as the engine's ScriptModule runs it, and a {@link uz.dukeengine.combat.module.WeaponHold} beside
-     * it: the weapon asks its unit's modules, and a script is no module, so this is how the brain reaches the weapon.
-     */
-    public static final class Module extends uz.dukeengine.core.module.UpdateModule
-            implements uz.dukeengine.combat.module.WeaponHold {
-
-        private final uz.dukeengine.game.script.ScriptModule runs;
-        private final HeroBrain brain;
-
-        public Module(GameObject owner, HeroBrain brain) {
-            super(owner);
-            this.brain = brain;
-            this.runs = new uz.dukeengine.game.script.ScriptModule(owner, brain);
-        }
-
-        @Override
-        public void update() {
-            runs.update();
-        }
-
-        @Override
-        public boolean holdingFire() {
-            return brain.holdingFire();
-        }
-    }
-
-    /**
-     * The modern way, at his weapon: while his player plays it and the weapon has nothing it was given -- no target,
-     * no swing toward a point, no ground -- it keeps quiet, so it acquires nothing by itself (the engine's weapon looks
-     * for the nearest enemy whenever it is idle; a per-unit "acquires nothing" in the engine, E87, would say
-     * this without the hold). A lock-on whose target dies leaves him idle, and so standing.
-     */
-    boolean holdingFire() {
-        var weapon = unit() == null ? null : unit().findModule(WeaponUpdate.class);
-        return weapon != null && orders.fightsOnlyWhenTold(unit().getPlayerIndex()) && weapon.getTarget() == null
-                && weapon.getToward() == null && weapon.getGroundTarget() == null;
     }
 
     /**

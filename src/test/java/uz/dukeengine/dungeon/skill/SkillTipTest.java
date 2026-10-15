@@ -33,6 +33,7 @@ class SkillTipTest {
         return SETTINGS.skills().stream().filter(skill -> heroes.contains(skill.heroTemplate()))
                 .filter(skill -> skill.effect() != uz.dukeengine.rpg.skill.SkillEffect.STAGGER
                         && skill.effect() != uz.dukeengine.rpg.skill.SkillEffect.DODGE
+                        && skill.effect() != uz.dukeengine.rpg.skill.SkillEffect.MOUNT
                         && skill.effect() != uz.dukeengine.rpg.skill.SkillEffect.PUSH) // nor the story's landing push
                 .toList();
     }

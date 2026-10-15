@@ -19,6 +19,8 @@ AnimationSet
   Name = Lange
   Libraries = [
     models/heroes/lange/lange.glb,
+    ; His seat on the horse (Ride_Idle, Ride_Gallop): art/mounts/export_riders.py.
+    animations/characters/riding_knight.glb,
   ]
   Idle = Idle
   Walk = Walk

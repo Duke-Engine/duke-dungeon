@@ -165,9 +165,8 @@ public final class Dungeon {
                     // A brain is a module named by its class, like every other: the block word is the
                     // class, so the editor completes it, opens it and flags a typo. Which creature a
                     // MonsterBrain is the brain of is the block it was put on -- see MonsterBrain.onStart.
-                    // His brain as a module that may also hold his weapon's fire: the modern way (HeroBrain.Module).
-                    factory.register(HeroBrain.Data.class, (owner, ignored) ->
-                            new HeroBrain.Module(owner, new HeroBrain(settings, orders, seal)));
+                    ScriptModule.registerScript(factory, HeroBrain.Data.class,
+                            () -> new HeroBrain(settings, orders, seal));
                     ScriptModule.registerScript(factory, MonsterBrain.Data.class,
                             () -> new MonsterBrain(settings, seal, clock));
                     // Hero and monsters alike need a body that can grow: levels
@@ -464,11 +463,15 @@ public final class Dungeon {
                 case uz.dukeengine.dungeon.ai.FightOnlyWhenTold told -> {
                     arena.orders().fightOnlyWhenTold(told.playerIndex(), told.on());
                     // And whatever he picked by himself before it arrived is let go.
+                    // His weapon picks nothing by itself from now (E87); his brain says so to every hero he is.
                     var hero = Skills.heroOf(game.getLogic(), told.playerIndex());
                     var weapon = hero == null ? null
                             : hero.findModule(uz.dukeengine.combat.module.WeaponUpdate.class);
-                    if (told.on() && weapon != null) {
-                        weapon.holdFire();
+                    if (weapon != null) {
+                        weapon.acquiresNothing(told.on());
+                        if (told.on()) {
+                            weapon.holdFire();
+                        }
                     }
                 }
                 case uz.dukeengine.dungeon.ai.HoldGround hold -> {

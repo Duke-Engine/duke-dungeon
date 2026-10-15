@@ -23,6 +23,8 @@ AnimationSet
   Name = Huntress
   Libraries = [
     animations/characters/huntress.glb,
+    ; Her seat on the horse (Ride_Idle, Ride_Gallop): art/mounts/export_riders.py.
+    animations/characters/riding_rogue.glb,
   ]
   Idle = Ranged_Bow_Idle
   Walk = Running_A

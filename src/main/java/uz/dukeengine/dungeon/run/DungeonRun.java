@@ -693,8 +693,11 @@ public final class DungeonRun {
         // Whoever rode as the last map ended rides on, where he may; a loaded save's rider is back on his horse.
         stable.lay(floors.stageName(), zones(), !loading ? stable.riding()
                 : ridingOnLoad ? List.of(seats.getFirst().player.getIndex()) : List.of());
+        // The zones a skill is refused and ended in (a MOUNT's NotIn): the towns, and every map not out of doors.
+        game.getLogic().setZones(stable::zonesAt);
         sky = null;
         holding = null;
+        streakUntil = Integer.MIN_VALUE;
         trails.clear();
         beams.clear();
         laidBattles.clear();
@@ -1636,6 +1639,7 @@ public final class DungeonRun {
                     return;
                 }
                 sky = null; // let go of: the streak carries him from here
+                streakUntil = logic.getFrame() + action.frames();
                 var to = groundAt(logic, zone);
                 double bearing = Math.toRadians(action.bearing());
                 var from = new uz.dukeengine.core.math.Coord3D(to.x() + action.lean() * (float) Math.cos(bearing),
@@ -1816,6 +1820,8 @@ public final class DungeonRun {
     private final List<Trail> trails = new ArrayList<>();
     /** Where SKY holds the heroes, out of sight, until a STREAK; null while it holds none. */
     private uz.dukeengine.core.math.Coord3D sky;
+    /** The last frame a STREAK carries the heroes down: the intro's, until then. */
+    private int streakUntil = Integer.MIN_VALUE;
     /** The zone a HOLD keeps still, until a RELEASE; null while nothing is held. */
     private String holding;
 
@@ -2063,6 +2069,8 @@ public final class DungeonRun {
     public void adopt(DukeGame game, uz.dukeengine.dungeon.story.Campaign campaign) {
         var joint = campaign.joints().getFirst();
         lastLogic = game.getLogic();
+        awaitingAdoption = false;
+        introNow = true; // its MAP_START holds him in the sky from the next frame: no light, no mouse until it is over
         joint.flags().forEach(script::flag);
         joint.quests().forEach(quests::start);
         script.mapStarted(floors.stageName());
@@ -2072,6 +2080,25 @@ public final class DungeonRun {
             lastCheckpoint = save;
             checkpoint.accept(save);
         }
+    }
+
+    /** Whether a story's intro has the screen: told by the simulation each frame, read by the window. */
+    private volatile boolean introNow;
+    /** Set as "New game" asks for the backdrop (E83), until the adopted match begins its act: the menu is going. */
+    private volatile boolean awaitingAdoption;
+
+    /** The backdrop is about to be made this match (E83): until it begins, the hour's light and the mouse wait. */
+    public void awaitAdoption() {
+        awaitingAdoption = true;
+    }
+
+    /**
+     * Whether an intro has the screen -- a cutscene, the heroes held in the sky, the battle held, or the backdrop about
+     * to become the match: the window keeps the hour's light, the weather and the captured mouse off until it is over,
+     * and the player's keys held. From any thread.
+     */
+    public boolean inIntro() {
+        return inCutscene || introNow || awaitingAdoption;
     }
 
     /** Whether the story holds the battle now: every fighter in its zone kept still. */
@@ -2087,6 +2114,7 @@ public final class DungeonRun {
     private void intro(DukeGame game) {
         var logic = game.getLogic();
         int frame = logic.getFrame();
+        introNow = sky != null || holding != null || frame <= streakUntil;
         if (sky != null) {
             for (var seat : seats) {
                 var hero = seat.heroId == null ? null : logic.findObject(seat.heroId);

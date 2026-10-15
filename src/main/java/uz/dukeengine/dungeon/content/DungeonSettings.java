@@ -987,7 +987,7 @@ public final class DungeonSettings {
         }
     }
 
-    /** Riding: the whistle a Potion, the horse and every look a Monster, a key, and frames of one at least. */
+    /** Riding: the whistle a Potion, the horse a Monster, a key, and each MOUNT skill's look a Monster. */
     private void validateMount() {
         if (!mount.on()) {
             return;
@@ -995,21 +995,20 @@ public final class DungeonSettings {
         require(potions.stream().anyMatch(potion -> potion.name().equals(mount.whistle())),
                 "Mount: Whistle " + mount.whistle() + " is no Potion");
         require(monster(mount.horse()) != null, "Mount: Horse " + mount.horse() + " is no Monster");
-        for (var line : mount.looks()) {
-            var sides = line.split("=");
-            require(sides.length == 2 && monster(sides[1].strip()) != null,
-                    "Mount: Looks are a hero = the Monster he is drawn as riding: " + line);
+        for (var skill : skills) {
+            require(skill.effect() != SkillEffect.MOUNT || !skill.hasLook() || monster(skill.look()) != null,
+                    skill.heroTemplate() + "'s MOUNT: Look " + skill.look() + " is no Monster to be drawn as riding");
         }
-        require(mount.key().length() == 1 && Character.isLetter(mount.key().charAt(0)) && mount.mountFrames() >= 1
-                && mount.gallopFrames() >= 1 && mount.reach() > 0f && mount.callDistance() > 0f
-                && mount.speedPercent() > -100, "Mount: one letter, frames of one at least, a Reach and a CallDistance");
+        require(mount.key().length() == 1 && Character.isLetter(mount.key().charAt(0)) && mount.reach() > 0f
+                && mount.callDistance() > 0f, "Mount: one letter, a Reach and a CallDistance");
         // Nobody else's: the orders' and walking's, the client's halt and pause, the screens', the tracker's, the
         // fire's, and every skill's own key.
         char key = Character.toUpperCase(mount.key().charAt(0));
         var taken = new java.util.HashSet<Character>(List.of('W', 'A', 'S', 'D', 'F', 'H', 'P',
                 Character.toUpperCase(run.foldKey().charAt(0))));
         screens.keys().forEach(each -> taken.add(Character.toUpperCase(each)));
-        skills.forEach(skill -> taken.add(Character.toUpperCase(skill.key())));
+        skills.stream().filter(skill -> skill.effect() != SkillEffect.MOUNT) // his MOUNT is the key's own
+                .forEach(skill -> taken.add(Character.toUpperCase(skill.key())));
         if (!food.buildKey().isBlank()) {
             taken.add(Character.toUpperCase(food.buildKey().charAt(0)));
         }
@@ -1025,9 +1024,9 @@ public final class DungeonSettings {
             require(hour >= 0f && hour < 24f, "DayNight: an hour is 0 to 24, not " + hour);
         }
         float last = -1f;
-        for (var key : day.light()) {
-            require(key.hour() > last && key.hour() < 24f, "DayNight: the Light keys go up the clock, 0 to 24");
-            require(key.percent() >= 0 && key.percent() <= 100, "DayNight: a Light key's strength is a percent");
+        for (var key : day.sky()) {
+            require(key.hour() > last && key.hour() < 24f, "DayNight: the Sky keys go up the clock, 0 to 24");
+            require(key.strength() >= 0f && key.ambient() >= 0f, "DayNight: a Sky key's sun and shade are percents");
             last = key.hour();
         }
         for (var roamer : day.nightRoamers()) {
@@ -2167,9 +2166,9 @@ public final class DungeonSettings {
     public java.util.List<Skill> skillsFor(String heroTemplate) {
         var his = new java.util.ArrayList<Skill>();
         for (var skill : bookFor(heroTemplate)) {
-            // His stagger, his dodge (Space) and his landing's PUSH (the story's) are no slot of the four.
+            // His stagger, his dodge (Space), his horse (T) and his landing's PUSH (the story's) are no slot of the four.
             if (skill.effect() != SkillEffect.STAGGER && skill.effect() != SkillEffect.DODGE
-                    && skill.effect() != SkillEffect.PUSH) {
+                    && skill.effect() != SkillEffect.MOUNT && skill.effect() != SkillEffect.PUSH) {
                 his.add(skill);
             }
         }
@@ -2181,6 +2180,12 @@ public final class DungeonSettings {
      * which is no slot of the four -- never bought
      * with a point, never drawn on his bar (HeroStatus hides it), held at its first rank from the start.
      */
+    /** Whether {@code template} is riding's own -- the horse, or a hero's riding look -- and no creature that fights. */
+    public boolean isMount(String template) {
+        return template.equals(mount.horse()) || skills.stream()
+                .anyMatch(skill -> skill.effect() == SkillEffect.MOUNT && template.equals(skill.look()));
+    }
+
     public java.util.List<Skill> bookFor(String heroTemplate) {
         var his = new java.util.ArrayList<Skill>();
         for (var skill : skills) {

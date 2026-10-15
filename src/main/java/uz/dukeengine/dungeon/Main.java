@@ -567,6 +567,10 @@ public final class Main {
         over = launch;
         // The mouse of the scheme: modern's left button fights, its right one works (E78).
         duke.mouseScheme(mouseOf(settings));
+        // Action: no pointer in play -- the mouse turns the camera and aims (E90); a screen, a menu or Alt lets it go.
+        if (settings.scheme() == uz.dukeengine.dungeon.world.Controls.Scheme.ACTION) {
+            duke.captureMouse(true);
+        }
         duke.holdBackdrop(true);
         screensOn(keys, screens, settings);
         duke.worldPicture(settings.screens().mostTexels(), screens.map()::picture);
@@ -590,6 +594,7 @@ public final class Main {
                 return;
             }
             var played = scene.session();
+            played.run().awaitAdoption(); // no hour's light, no captured mouse until the seat is taken and the intro ends
             played.run().onCheckpoint(save -> write(saves, Saves.AUTOSAVE, save));
             played.run().onSaveInto((slot, save) -> write(saves, slot, save));
             played.run().onTheEnd(duke::frontEnd);
@@ -1240,6 +1245,9 @@ public final class Main {
             // Space rolls him (E80): a key of the game's since E79, rebindable on the keys page like his letters. The
             // client's Space (the camera home) is off in this scheme (modernKeyMap); Enter still does it.
             keys.on(' ', settings.controls().dodgeWord(), game -> dodge(game, settings));
+            if (settings.scheme() == uz.dukeengine.dungeon.world.Controls.Scheme.ACTION) {
+                action(keys, settings.controls());
+            }
         }
         // Which single creature he has picked out. The target frame describes it, and
         // only the simulation can say what it is worth -- see Watching.
@@ -1247,6 +1255,17 @@ public final class Main {
                 game.getLocalPlayerIndex(), id < 0 ? null : new ObjectId(id)))));
         return keys;
     }
+
+    /** Action, on top of modern's keys: skills aimed ahead of him (E92), E on the nearest thing in front (E94). */
+    static void action(Hotkeys keys, uz.dukeengine.dungeon.world.Controls controls) {
+        keys.aimBy(Hotkeys.AimBy.FORWARD, false);
+        // Its prompt in the game's words, "[E] Gaplashish"; a word the file names none for is not offered.
+        keys.onInteract(controls.interactKey().charAt(0), INTERACT_REACH, INTERACT_CONE, controls::promptOf);
+    }
+
+    /** How near, and how far round his facing, the interact key looks (docs/plan/2026-10-15-action-controls.md). */
+    static final float INTERACT_REACH = 14f;
+    static final float INTERACT_CONE = 100f;
 
     /** His hero walked along {@code angle} (256ths of a turn, or MoveAlong.NONE to stop): the held keys' order. */
     static void walk(uz.dukeengine.game.DukeGame game, int angle) {
@@ -1260,7 +1279,9 @@ public final class Main {
      * ground, held to go on; the right one works (talk, chop, open); a skill's letter casts at the pointer -- or classic.
      */
     static uz.dukeengine.client3d.MouseScheme mouseOf(DungeonSettings settings) {
-        return uz.dukeengine.dungeon.world.Controls.walksOnKeys(settings.scheme())
+        return settings.scheme() == uz.dukeengine.dungeon.world.Controls.Scheme.ACTION
+                ? uz.dukeengine.client3d.MouseScheme.ACTION
+                : uz.dukeengine.dungeon.world.Controls.walksOnKeys(settings.scheme())
                 ? uz.dukeengine.client3d.MouseScheme.MODERN : uz.dukeengine.client3d.MouseScheme.CLASSIC;
     }
 
@@ -1353,7 +1374,8 @@ public final class Main {
             // his skin, and the passives -- never cast -- drink from his blows or
             // lend round him.
             case EMPOWER, GUARD, LIFESTEAL, DAMAGE_AURA, MANA_AURA, LIFESTEAL_AURA, SOUL_DRINK, UNYIELDING,
-                    DRAGON_BLOOD, STAGGER, DODGE -> uz.dukeengine.client3d.SkillRange.Shape.ON_HIMSELF;
+                    DRAGON_BLOOD, STAGGER, DODGE, MOVE_SPEED, MOUNT
+                    -> uz.dukeengine.client3d.SkillRange.Shape.ON_HIMSELF;
         };
         float reach = switch (skill.effect()) {
             case STRIKE, AREA_AT_SPOT, SKILLSHOT, HEAL -> skill.range();
@@ -1362,7 +1384,7 @@ public final class Main {
             case AREA_DAMAGE, SUMMON, PULL, PUSH -> skill.radius();
             case HASTE -> skill.range();
             case EMPOWER, GUARD, LIFESTEAL, DAMAGE_AURA, MANA_AURA, LIFESTEAL_AURA, SOUL_DRINK, UNYIELDING,
-                    DRAGON_BLOOD, STAGGER, DODGE -> selfRadius;
+                    DRAGON_BLOOD, STAGGER, DODGE, MOVE_SPEED, MOUNT -> selfRadius;
         };
         // What it LEAVES where it lands: a blast's radius, a lane's width. A dash
         // leaves a man, and a circle round a man-sized spot is a second ring saying
@@ -1654,8 +1676,12 @@ public final class Main {
         // Shoving the camera with the cursor, on top of the keys — see
         // Camera in data/world/world.duke.
         // Modern: the camera follows his hero, the arrows look away and it eases back (E77); classic: the free camera.
-        visuals.cameraFollow(uz.dukeengine.dungeon.world.Controls.walksOnKeys(settings.scheme())
-                ? uz.dukeengine.client3d.CameraFollow.of(null) : uz.dukeengine.client3d.CameraFollow.NONE);
+        // Action: the held mouse turns it round him, a quarter of a degree a pixel, its pitch fixed (E91).
+        var follow = uz.dukeengine.client3d.CameraFollow.of(null);
+        visuals.cameraFollow(settings.scheme() == uz.dukeengine.dungeon.world.Controls.Scheme.ACTION
+                ? follow.orbiting(uz.dukeengine.client3d.CameraFollow.ORBIT_SENSITIVITY, false, 0f)
+                : uz.dukeengine.dungeon.world.Controls.walksOnKeys(settings.scheme()) ? follow
+                : uz.dukeengine.client3d.CameraFollow.NONE);
         // Not in the modern scheme, whose camera follows him.
         visuals.edgeScroll(uz.dukeengine.dungeon.world.Controls.walksOnKeys(settings.scheme()) ? EdgeScroll.NONE
                 : new EdgeScroll(settings.camera().edgeMargin(), settings.camera().edgeSpeedPercent()));

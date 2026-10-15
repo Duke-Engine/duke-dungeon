@@ -7,6 +7,7 @@ import java.util.Set;
 import uz.dukeengine.client3d.Canvas;
 import uz.dukeengine.client3d.Duke3D;
 import uz.dukeengine.client3d.Painter;
+import uz.dukeengine.client3d.Sunlight;
 import uz.dukeengine.client3d.WeatherLook;
 import uz.dukeengine.core.view.UnitView;
 import uz.dukeengine.dungeon.content.DungeonSettings;
@@ -14,14 +15,15 @@ import uz.dukeengine.dungeon.stage.StagePaint;
 import uz.dukeengine.dungeon.world.DayNight;
 
 /**
- * The open world's hour and weather, as this machine draws them: the hour's colour over the world (dawn, day, dusk, a
- * dark-blue night), the fires' halos by night, the weather falling round the camera with its loop and a storm's
- * flash, and a small clock by the minimap. Only on a wide map: the castles, halls and the descent keep their own light.
+ * The open world's hour and weather, as this machine draws them: the hour's sun, shade and haze (dawn, day, dusk, a
+ * cold low moon), the fires reaching further by night, the weather falling round the camera with its loop, its tint and
+ * a storm's flash over the world alone, and a small clock by the minimap. Only on a wide map: the castles, halls and
+ * the descent keep scene.duke's Sun, given back the moment he is off the open world.
  *
  * <p>The hour and the weather are the run's (its clock, saved; its seed) and so the same on every machine; how they are
- * drawn is this client's. Until the engine can relight a world while it is drawn (E86) the hour is a colour laid over
- * the world under the panel, as the game's own canvas can: a fill, the halos added, nothing more a frame. Drawn under
- * the game's other screens, whose painter it wraps.
+ * drawn is this client's: the engine's light (E86) -- {@code Duke3D.sunlight}, {@code hazeColour}, {@code lightScale}
+ * and {@code worldTint} -- told a few times a second and eased by the client between. Drawn under the game's other
+ * screens, whose painter it wraps.
  */
 final class Atmosphere implements Painter {
 
@@ -30,6 +32,8 @@ final class Atmosphere implements Painter {
     /** A storm's flash: so many frames, from so strong to nothing. */
     private static final int FLASH_FRAMES = 12;
     private static final float FLASH_ALPHA = 0.5f;
+    /** How often the hour's light is told the client, in seconds: it eases between. */
+    private static final float RELIGHT_SECONDS = 0.5f;
     /** How far apart the ground is sampled round him, in cells, for the ground's weather. */
     private static final int SAMPLE = 6;
 
@@ -37,12 +41,15 @@ final class Atmosphere implements Painter {
     private final Duke3D duke;
     private final DungeonSettings settings;
     private final DayNight day;
-    private final java.util.Map<String, DayNight.Glow> glows = new HashMap<>();
 
     private DayNight.Weather falling;
     private boolean fallingSet;
     private final Set<String> looping = new HashSet<>();
     private int weatherShown;
+    /** The tint last told the client; whether the hour's light is on, and how long since it was last told. */
+    private int tinted;
+    private boolean lit;
+    private float sinceLit;
     private long lastThunder = -1;
     private long lastNanos;
     private char biome = '*';
@@ -55,20 +62,20 @@ final class Atmosphere implements Painter {
         this.duke = duke;
         this.settings = settings;
         this.day = settings.dayNight();
-        for (var glow : day.glows()) {
-            glows.put(glow.template(), glow);
-        }
     }
 
     @Override
     public void paint(Canvas canvas) {
         var match = DialogueScreen.match();
+        // Not while an intro has the screen: the backdrop made the match shows the hour once the seat is taken and the
+        // act's opening is over (the seamless campaign).
         boolean open = match != null && match.game().getLogic() != null
-                && StagePaint.isWide(match.game().getMapRecord());
+                && StagePaint.isWide(match.game().getMapRecord()) && !match.run().inIntro();
         if (!open) {
             fall(null);
             loops(Set.of());
             weatherShown = 0;
+            unlit();
             under.paint(canvas);
             return;
         }
@@ -97,12 +104,11 @@ final class Atmosphere implements Painter {
 
         var panel = canvas.bottomPanel();
         float bottom = panel == null ? canvas.height() : panel.y();
-        cover(canvas, panel, day.lightAt(hour));
+        relight(hour, seconds);
         int target = weather == null ? weatherShown & 0xFFFFFF : weather.argb();
         weatherShown = DayNight.mix(weatherShown, target, 1f - (float) Math.exp(-seconds * EASE_PER_SECOND));
-        cover(canvas, panel, weatherShown);
-        glows(canvas, units, night, bottom);
-        thunder(canvas, run.seed(), clock, weather, panel);
+        int flash = thunder(run.seed(), clock, weather);
+        tint(flash != 0 ? flash : weatherShown);
         clock(canvas, hour, bottom);
         under.paint(canvas);
     }
@@ -112,59 +118,73 @@ final class Atmosphere implements Painter {
         under.resized(width, height);
     }
 
-    /** The world, all of the window but the panel, washed with {@code argb}. */
-    private static void cover(Canvas canvas, Canvas.Box panel, int argb) {
+    /** The hour's sun, shade, haze and lights, told the client every RELIGHT_SECONDS and eased by it between. */
+    private void relight(float hour, float seconds) {
+        sinceLit += seconds;
+        if (lit && sinceLit < RELIGHT_SECONDS) {
+            return;
+        }
+        var sky = day.skyAt(hour);
+        if (sky == null) {
+            return;
+        }
+        float ease = lit ? RELIGHT_SECONDS : 0f; // straight to the hour as he comes out under it
+        duke.sunlight(sunOf(sky, settings.sun().yaw()), ease);
+        duke.hazeColour(sky.haze() & 0xFFFFFF, ease);
+        duke.lightScale(day.lightScaleAt(hour));
+        lit = true;
+        sinceLit = 0f;
+    }
+
+    /** Off the open world: scene.duke's Sun and the fog's own haze back, the lights as written, no tint. */
+    private void unlit() {
+        if (lit) {
+            var sun = settings.sun();
+            duke.sunlight(new Sunlight(sun.pitch(), sun.yaw(), sun.strengthPercent() / 100f,
+                    sun.ambientPercent() / 100f, sun.colour(), sun.ambientTint()), 0f);
+            duke.hazeColour(-1, 0f);
+            duke.lightScale(1f);
+            lit = false;
+        }
+        tint(0);
+    }
+
+    /** The colour over the world alone (under the panel and the bars), told the client as it changes. */
+    private void tint(int argb) {
         if ((argb >>> 24) == 0) {
-            return;
+            argb = 0;
         }
-        float bottom = panel == null ? canvas.height() : panel.y();
-        canvas.fillRect(0f, 0f, canvas.width(), bottom, argb);
-        if (panel != null) { // beside a panel narrower than the window
-            canvas.fillRect(0f, bottom, panel.x(), canvas.height() - bottom, argb);
-            float right = panel.x() + panel.width();
-            canvas.fillRect(right, bottom, canvas.width() - right, canvas.height() - bottom, argb);
+        if (argb != tinted) {
+            duke.worldTint(argb);
+            tinted = argb;
         }
     }
 
-    /** The fires' halos, as strong as the night is dark: added over the dark, so a fire reads further at night. */
-    private void glows(Canvas canvas, List<UnitView> units, float night, float bottom) {
-        if (night < 0.05f || day.glow().isBlank() || glows.isEmpty()) {
-            return;
-        }
-        var picture = Canvas.Image.of(day.glow());
-        for (var unit : units) {
-            var glow = glows.get(unit.templateName());
-            if (glow == null) {
-                continue;
-            }
-            var middle = canvas.screenOf(unit.x(), unit.y(), 4f);
-            var edge = canvas.screenOf(unit.x() + glow.radius(), unit.y(), 4f);
-            if (middle == null || edge == null || middle.y() > bottom) {
-                continue;
-            }
-            float r = (float) Math.hypot(edge.x() - middle.x(), edge.y() - middle.y());
-            int alpha = Math.round(Math.clamp(night * 0.8f, 0f, 1f) * 255f);
-            canvas.drawImage(picture, middle.x() - r, middle.y() - r, middle.x() + r, middle.y() + r,
-                    alpha << 24 | glow.colour() & 0xFFFFFF, Canvas.Blend.ADDITIVE);
-        }
+    /** The sun a Sky key stands for, from {@code yaw} round the compass (scene.duke's: the side walls are lit on). */
+    static Sunlight sunOf(DayNight.Sky sky, float yaw) {
+        return new Sunlight(sky.pitch(), yaw, sky.strength() / 100f, sky.ambient() / 100f, sky.colour() & 0xFFFFFF,
+                sky.ambientTint() & 0xFFFFFF);
     }
 
-    /** A storm's flash, white and gone in a few frames, and its clap: on the same frame on every machine. */
-    private void thunder(Canvas canvas, long seed, int clock, DayNight.Weather weather, Canvas.Box panel) {
+    /**
+     * A storm's flash, white and gone in a few frames, and its clap: on the same frame on every machine. The flash's
+     * colour over the world now, or 0 for none.
+     */
+    private int thunder(long seed, int clock, DayNight.Weather weather) {
         if (weather == null || weather.thunderFrames() <= 0) {
-            return;
+            return 0;
         }
         long at = DayNight.thunderIn(seed, clock, weather.thunderFrames());
         long since = clock - at;
         if (since < 0 || since >= FLASH_FRAMES) {
-            return;
+            return 0;
         }
         if (at != lastThunder && !weather.thunder().isBlank()) {
             duke.sound(weather.thunder());
         }
         lastThunder = at;
         int alpha = Math.round(FLASH_ALPHA * (1f - since / (float) FLASH_FRAMES) * 255f);
-        cover(canvas, panel, alpha << 24 | 0xE8F0FF);
+        return alpha << 24 | 0xE8F0FF;
     }
 
     /** A sun or a moon and the hour, over the minimap's corner, above the key hints. */
@@ -192,9 +212,11 @@ final class Atmosphere implements Painter {
         if (fallingSet && java.util.Objects.equals(look, falling)) {
             return;
         }
-        duke.weather(look == null ? null
+        var drawn = look == null ? null
                 : new WeatherLook(look.falls(), look.fallBox(), look.fallSpacing(), look.fallSpeed(), look.sway(),
-                        0.0533f, 0.0275f, 0f, 0f, 256f, look.fallSize()));
+                        0.0533f, 0.0275f, 0f, 0f, 256f, look.fallSize());
+        duke.weather(drawn == null || look.fallColour() == 0 ? drawn
+                : drawn.rain(0xFF000000 | look.fallColour(), look.stretch()));
         falling = look;
         fallingSet = true;
     }

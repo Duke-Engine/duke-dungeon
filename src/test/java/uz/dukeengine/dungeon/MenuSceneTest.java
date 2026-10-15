@@ -1,6 +1,7 @@
 package uz.dukeengine.dungeon;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
@@ -142,8 +143,11 @@ class MenuSceneTest {
         int frame = logic.getFrame();
         var battle = SETTINGS.battle(SETTINGS.mainMenu().sceneBattle());
         var soldiers = logic.getObjects().stream().filter(o -> o.getTemplate().name().equals("Soldier")).toList();
-        scene.adoptAsMatch(game, SETTINGS.campaign());
         var run = scene.session().run();
+        assertFalse(run.inIntro(), "the backdrop alone: no intro");
+        run.awaitAdoption();
+        assertTrue(run.inIntro(), "asked for: the hour's light and the mouse wait");
+        scene.adoptAsMatch(game, SETTINGS.campaign());
         assertEquals(run.heroPlayer().getIndex(), game.getLocalPlayerIndex(), "the seat taken");
         assertTrue(run.getScript().flagged("Act1"), "the act begun");
         for (int i = 0; i < 2400 && !run.getScript().flagged("BattleWon"); i++) {
@@ -152,6 +156,9 @@ class MenuSceneTest {
                 run.skipCutscene(game);
             }
             game.runHeadless(1);
+            if (!run.getScript().flagged("BattleWon")) {
+                assertTrue(run.inIntro(), "the intro holds the screen until the commander leads: frame " + i);
+            }
             long laid = logic.getObjects().stream().filter(o -> o.getTemplate().name().equals("Soldier")).count();
             assertTrue(laid <= battle.kingdom().stream().filter("Soldier"::equals).count(), "the battle laid once");
             if (i == 5) {
@@ -165,5 +172,7 @@ class MenuSceneTest {
         assertTrue(soldiers.stream().anyMatch(o -> logic.findObject(o.getId()) != null),
                 "the backdrop's own soldiers fight on in it");
         assertEquals(SETTINGS.campaign().hero(), run.getHeroTemplate(), "the act's hero came down");
+        game.runHeadless(2);
+        assertFalse(run.inIntro(), "over: the hour's light and the captured mouse are his");
     }
 }
