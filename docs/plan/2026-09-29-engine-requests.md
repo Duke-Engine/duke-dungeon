@@ -82,6 +82,14 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E71 | a flinch that never cuts short a blow or a cast: the hurt clip played only when the unit is not mid-attack, mid-gesture or moving, at most once per a look-set interval, optionally only on a major/critical blow | landed, 8c9b234d on `e71-flinches`; the heroes name `Hurt` again, `Flinch` in world/feel.duke (1.0s, `HeavyOnly`), `DungeonMonsterArtTest.aHeroFlinchesOnlyAtAHeavyBlowAndNotEveryBlow`; monsters still name none |
 | E72 | a hero's stagger in the skill system: a passive `STAGGER` (StunFrames on a heavy or critical blow, his hurt clip busy for those frames, DurationFrames of immunity after), and a busy clip that starts cutting an attack clip already playing | landed, 80cbdaf7 on `e72-stagger`; each hero carries a `STAGGER` skill (Key X, Damage = his HeavyBlow MajorAt 45/35/35, StunFrames 11, DurationFrames 36, CastAnim = his hurt clip), held out of his four (`skillsFor`), his ranks and his bar (`HeroStatus.withoutHisStagger`); `run.Staggering` is gone; `StaggerTest` |
 | E73 | a blow inside a stagger keeps its busy clip: `BodyModule.hurt` ends a busy clip on every blow, and the book sets it only as the stagger begins, so in a crowd the flinch stops on the next blow while the stun goes on | landed, 62e1c7c0 on `e73-stagger-holds`; a blow inside a stagger sets the busy clip again for the stun's frames left, and a DISABLED or HELD unit is drawn standing and keeps its order; `StaggerTest.hisHurtClipIsBusyForExactlyTheStaggersFrames` strikes him inside it again; OnBar not done, so `HeroStatus.withoutHisStagger` stays |
+| E74 | a directional move order: `MoveAlong(angle)` walks a unit along a direction every frame until told otherwise, sliding along walls, deterministic, sent only on change | waiting (modern controls, `2026-10-15-modern-controls.md`) |
+| E75 | the client turns held keys (WASD, later a stick) into a direction relative to the camera each frame and gives it to the game on change | waiting (modern controls) |
+| E76 | an attack toward a point: a melee swing in an arc with no target, a ranged shot at a spot, and holding it to repeat | waiting (modern controls) |
+| E77 | the camera follows a unit: centred with a look-ahead, eased, no edge scroll, a look away with the arrows that eases back | waiting (modern controls) |
+| E78 | the modern mouse: LMB attacks (lock on an enemy, swing at ground, hold to repeat), RMB the context orders, quick-cast; classic untouched | waiting (modern controls) |
+| E79 | a game's own rows on Settings (the scheme), its keys rebindable on the Keys page, and the bar showing the letter pressed, not the skill's name | waiting (modern controls) |
+| E80 | a `DODGE` skill shape: a quick dash over frames with i-frames, aimed by a direction, on a non-letter key (Space) | waiting (modern controls) |
+| E81 | traversal links in the path graph (jump, vault, climb, drop) a route can use | after WASD (E74-E80) |
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
 game builds against the local engine. E12–E15 reached it together at 668045f0 (their pull requests merged as
@@ -1489,3 +1497,159 @@ a `DISABLED` or `HELD` unit is drawn standing (its view's `moving` false) while 
 staggered on the move shows his flinch, not a walk in place, and walks on when it ends. `StaggerTest` strikes him
 inside the stagger again. A hero's `STAGGER` is still taken off his bar by the game's string filter
 (`HeroStatus.withoutHisStagger`): no `OnBar` was asked or done.
+
+## E74 — A directional move order (2026-10-15, medium; modern controls)
+
+The game moves to modern action-RPG controls (`docs/plan/2026-10-15-modern-controls.md`): W A S D held walk the hero
+directly. The engine has `CombatOrder.MoveTo` (a destination, pathed) and `StopMoving`; nothing walks a unit along a
+direction until told otherwise, and sending a `MoveTo` a few units ahead every few frames would path, stutter and
+flood the stream.
+
+Asked: `CombatOrder.MoveAlong(int playerIndex, List<ObjectId> units, int angle)`: `angle` 0-255 (1/256 of a turn,
+0 = +X, counter-clockwise seen from above; any value, so a stick fits later), or `MoveAlong.NONE` (-1) = stop where
+he is. Applied on its frame like every order: it replaces the unit's order (a walk, an attack, a lock-on), and each
+frame after he moves `speed / 30` along the angle, faces it, and plays his walk, until another order or `NONE`.
+- **Stone**: no pathing. If the step is blocked, he slides: the step's component along the wall (try the full step,
+  then its X part alone, then its Z part alone, in that order, so every peer picks the same); if none is free he
+  stands, still facing the way, the order kept.
+- **Bodies**: as a walking unit is kept apart today (the movers' separation), never a path around them.
+- **Seal / shut gate**: blocked as stone.
+- **Interplay**: a stun or a stagger (DISABLED/HELD) holds him and the order is kept (as E73 keeps a walk); a skill's
+  gesture (`CastSeconds`) or a busy clip holds him, then he walks on; the hold-to-attack of E76 keeps running while he
+  walks (the upper body, E70).
+- Codec: the angle a byte, so it costs a few bytes on the wire; replays and checksums carry it.
+
+Done when a test gives a hero `MoveAlong(64)` (+Z) for 30 frames and he has walked his speed, `NONE` stops him on the
+frame it is applied, a wall at 45 degrees slides him along it, two runs with the same orders end bit-identical, and
+the codec round-trips it.
+
+## E75 — Held keys to a direction, on change (2026-10-15, small; modern controls)
+
+The orders of E74 must come from held keys read by the client, never by the simulation. Hotkeys today are presses
+(`Hotkeys.on`), and the client's W A S D pan the camera (`KeyMap.Control.PAN_*`; the game takes them off panning
+with `KeyMap.bind` in its modern scheme already).
+
+Asked: `Hotkeys.onDirection(DirectionKeys keys, BiConsumer<DukeGame, Integer> changed)`: the client reads the four
+keys each render frame (rebindable, default W A S D), sums them in screen space (up = W), turns the sum by the
+camera's yaw onto the ground, quantizes it as E74's angle (or `NONE` when none is held or they cancel), and calls
+`changed` only when the value differs from the last one it gave: a key pressed or let go, or the camera turned. Not
+while a menu, a game screen that takes the keys (`CanvasInput` focus) or chat is open: then it gives `NONE` once.
+Window focus lost: `NONE` once. Designed so a stick later calls the same `changed` with its own angle.
+
+Done when a test with a fake key state and a camera at yaw 90 degrees sees W give the angle for the camera's forward,
+W+D its diagonal, holding W for 60 frames call `changed` once, letting go call it with `NONE`, and a turn of the
+camera with W held call it again.
+
+## E76 — An attack toward a point, and holding it (2026-10-15, medium; modern controls)
+
+LMB on ground swings toward the cursor. `CombatOrder.AttackGround` exists but only for a weapon that may hit ground
+(it closes to its range and fires at the place); a melee weapon has no blow without a target, and nothing repeats a
+swing while a button is held.
+
+Asked: `CombatOrder.AttackToward(int playerIndex, List<ObjectId> units, Coord3D point, boolean held)`:
+- He turns to the point and makes **one** attack with his weapon at its own timing (wind-up `PreAttackFrames`, then
+  the blow, then its reload), without walking to anything.
+- **Melee** (a weapon with no projectile): at the blow, the ONE enemy nearest his front within his `AttackRange`
+  plus its radius and inside an arc (`SwingArcDegrees` on the weapon, default 120) is struck exactly as a targeted
+  blow (crit, lifesteal, E58 feel); none, and the swing is drawn and hits nothing.
+- **Ranged**: its projectile flies toward the point out to the weapon's range and strikes the first body it meets, or
+  stops at stone (SKILLSHOT's rule).
+- `held = true`: again every time the weapon is ready, toward the latest point sent, until `held = false` or another
+  order (a `MoveAlong` does not end it: he swings while walking, E70); `held = false` ends it after the swing in
+  progress.
+- Its blow names its dealer (E27) and goes through the skill book's passives like any blow.
+
+Done when a test puts a knight with a skeleton 8 in front and another 8 behind, gives `AttackToward` at a point in
+front, and only the one in front loses a blow's health at frame `PreAttackFrames`; held for 100 frames he strikes 3
+times; a rogue's arrow toward an empty spot flies 60 and hits nothing; and with `MoveAlong` he swings while walking.
+
+## E77 — The camera follows a unit (2026-10-15, small; modern controls)
+
+`CameraFocus` is a one-shot ("put the camera on his units once"); the modern scheme wants the camera on the hero
+always.
+
+Asked: `Visuals.cameraFollow(CameraFollow follow)` (or a `Duke3D` call the game can switch live), `CameraFollow(String
+of, float lookAhead, float easeSeconds, float lookAheadEaseSeconds, float lookAwaySeconds)` with `of` the player's
+own unit of that template (or "the local player's first unit"): each render frame the point looked at eases
+(exponentially, time constant `easeSeconds`, default 0.15) to his drawn position plus `lookAhead` (default 8) along
+his facing while he walks (that offset eased by `lookAheadEaseSeconds`, default 0.4). Zoom and turn as now. The pan
+controls move the view away from him; `lookAwaySeconds` (default 1.0) after the last pan it eases back. Edge scroll is
+the game's to switch off (`EdgeScroll.NONE`, done). `CameraFollow.NONE` gives back the free camera, for classic.
+Cutscene cameras (E41) win while they run and give it back.
+
+Done when a test steps a followed unit 30 units over 30 frames and the camera's target ends within 1 of its
+position plus the look-ahead, and `NONE` leaves the camera where it is.
+
+## E78 — The modern mouse (2026-10-15, medium; modern controls)
+
+Today the left button selects (click, drag box -- off for this game since E26), the right button moves, attacks or
+does a context order (E20), and a skill key arms an aim the next left click fires.
+
+Asked: a switch `Duke3D.mouse(MouseScheme.MODERN | CLASSIC)` the game can flip live; CLASSIC is everything as today.
+MODERN:
+- **LMB** on an enemy (the pick under the cursor): `AttackObject` (the lock-on; it ends on its own when the target
+  dies, and E74's `MoveAlong` replaces it). On anything else: `AttackToward(point, held = true)` and while held the
+  point re-sent when it moved 2 or more, at most every 3 frames; on release `AttackToward(.., false)`. The game may
+  veto a lock past a distance (`lockReach`, default 60: past it the click is a ground swing). No selection by LMB in
+  MODERN (single hero).
+- **RMB**: the context orders exactly as E20 runs them (talk, chop, gather, open, pick up, cook, a gate); on plain
+  ground, nothing (`rmbOnGroundWalks` true makes it a `MoveTo`, for players who want it).
+- **Quick-cast** (`quickCast` true by default in MODERN): a skill letter casts at once at the cursor, as if the aim
+  had been clicked where the cursor is (a UNIT skill on the creature under or within 6 of the cursor, refused as now
+  if none); false keeps press-then-click, with LMB firing and RMB cancelling.
+- The order mark (E21) is not drawn for these orders; a small swing/aim marker may be.
+
+Done when a test drives the client's input with a fake pick: LMB on a skeleton posts `AttackObject`, LMB on floor
+posts `AttackToward(.., true)` then `false` on release, RMB on a tree posts the game's context order, and a Q with
+quick-cast posts `CastSkill` at the cursor's point with no click; and CLASSIC posts what it posts today.
+
+## E79 — A game's rows on Settings, its keys rebindable, the letter pressed on the bar (2026-10-15, small; modern controls)
+
+Three things the scheme choice needs from the client:
+1. **A game row on Settings**: `Shell.settingsRow(String word, List<String> choices, IntSupplier now,
+   IntConsumer chosen)`, a choice the player flips with the other rows, kept in `settings.properties` under a key the
+   game names (`game.controls`) and read back by `Shell.setting(key)` at launch, `chosen` told at once (and on Save,
+   E62 rules). The game's "Boshqaruv: Zamonaviy (WASD) / Klassik (sichqoncha)".
+2. **Rebinding on the Keys page (E46)**: each listed key may be pressed again to rebind it, game letters included
+   (`Hotkeys.on` keyed by an action id, the letter the default); kept in `settings.properties`; a clash asked about.
+   Including E75's four direction keys and the dodge's Space.
+3. **The letter pressed on the bar**: a skill is named by its own key (its `CastSkill`, ranks, save, an item's
+   `SKILL_RANK:E`), but in the modern scheme W's skill is pressed on E. `HeroCard.skills` (or the bar) takes a
+   `letter` per skill to draw and to press when the slot is clicked (`pressNow(letter)`), defaulting to the key.
+   Hotkeys today bind only `char`s: a non-letter key (Space, for the dodge) needs `Hotkeys.on(KeyMap.Key, ...)`.
+
+Done when a test sets the game row, reads it back after a restart of the settings, rebinds the game's C to K and K
+opens what C did, and the bar's W skill shows and presses E.
+
+## E80 — A dodge, in the skill system (2026-10-15, small; modern controls)
+
+Space = a quick roll with i-frames and a cooldown. The skill shapes: `DASH` and `BLINK` arrive in one frame (no
+travel, no i-frames), `SKEWER` travels over frames but carries what it meets, and `GUARD` cuts damage by a percent
+for a while but is its own skill (one skill has one effect). Nothing gives a short travel with invulnerability.
+
+Asked: `SkillEffect.DODGE(Aim.GROUND)`: `Distance`, `Frames` (the travel), `ImmuneFrames` (from its first frame: no
+blow, projectile or effect takes health, staggers or stuns), `CooldownFrames`, `CastAnim` (the roll, played for
+`Frames`), optional `ManaCost`. Aimed by a point: he goes `Distance` toward it whatever the point's distance (a
+direction). He passes through creatures and never ends inside one (shortened to the nearest free spot along the
+line); stops at stone and the shut gate; refused over a seal as DASH is (nothing spent). Not castable while
+DISABLED/HELD; it cuts his own weapon's wind-up (no blow lands) but not a skill's gesture. A passive-like "no slot":
+like STAGGER the game keeps it off his four. Numbers to test with: Distance 16, Frames 9, ImmuneFrames 7, Cooldown 75.
+
+Done when a test dodges a hero toward a skeleton line, he ends 16 away having passed through, a blow landing on frame
+5 takes no health and one on frame 9 does, a dodge into a wall stops at it, a second one inside 75 frames is refused,
+and a staggered hero cannot dodge.
+
+## E81 — Traversal links in the path graph (2026-10-15, after WASD: E74-E80 first)
+
+The owner approved Diablo IV / Lost Ark traversal for after WASD (`2026-10-15-modern-controls.md`, section 5): a
+map-placed link between two points to jump a gap, vault a low wall or fallen tree, climb or drop a ledge. The move
+exists (E40 `ScriptedMove.along` with an arc; E67 `busy` for the clip), so the game can make a press-to-traverse
+point alone. What it cannot do is let a route use one.
+
+Asked: a `TraversalLink(Coord3D a, Coord3D b, String kind, int frames, float arcHeight, String clip, boolean
+bothWays, boolean low)` a map carries (data and the editor's: a scenery-like piece with two ends), added to
+`PathGrid` as an edge from A's cell to B's at a cost of its frames. A walker whose route crosses it walks to A, is
+moved by `ScriptedMove` with `busy(clip, frames)`, and walks on from B; the AI may take it if `bothWays` or from A.
+`low` links are crossed by an E80 dodge whose line crosses them. Done when a test lays a gap no walk can cross with a
+link over it, a `MoveTo` to the far side arrives through it in its frames, and a link one-way from A is never taken
+from B.
