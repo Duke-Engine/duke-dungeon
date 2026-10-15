@@ -318,6 +318,7 @@ public final class DungeonRun {
         // standing, and opening on it would put the player in the game he did not
         // choose while everything else said he had.
         this.openingIsStale = true;
+        this.lastCheckpoint = null; // a game chosen afresh goes back to nothing of the last one's
     }
 
     /** Whether the floor the world was built around belongs to a game nobody chose. */
@@ -331,6 +332,15 @@ public final class DungeonRun {
     public void onCheckpoint(java.util.function.Consumer<SaveGame> told) {
         this.checkpoint = told;
     }
+
+    /** Where a story's SAVE writes the run, into the slot it names — the act's end. Nothing until somebody asks. */
+    public void onSaveInto(java.util.function.BiConsumer<String, SaveGame> told) {
+        this.keeper = told;
+    }
+
+    private java.util.function.BiConsumer<String, SaveGame> keeper = (slot, save) -> { };
+    /** The last checkpoint written or loaded: where a campaign's death goes back to. Null before there is one. */
+    private SaveGame lastCheckpoint;
 
     /**
      * Pick up a saved run: its floors, its depth, its hero, and what he had learnt and carried — his experience goes
@@ -349,6 +359,7 @@ public final class DungeonRun {
         seat.souls = save.souls();
         seat.cursed = !save.givenTo().isBlank();
         givenTo = save.givenTo();
+        lastCheckpoint = save;
         // And its quests, before the floor is laid: the map's starting quests are then going or finished already,
         // and are not started again. A save from before quests were saved starts them, as a new run does.
         if (save.quests() == null) {
@@ -362,6 +373,25 @@ public final class DungeonRun {
             script.restore(save.script());
         }
         loading = true;
+    }
+
+    /**
+     * The campaign from its joint {@code n}, 1 its first — the {@code --act1=N} debug arg: the joint's map, the
+     * campaign's hero with the experience, gold, flags and things (worn where their slot is free) the joints before
+     * it would have given. Recorded as {@link #resume} is: the floor is laid when the game starts.
+     */
+    public void skipTo(int n) {
+        var campaign = settings.campaign();
+        var joint = campaign.joints().get(Math.clamp(n, 1, campaign.joints().size()) - 1);
+        var chosen = Floors.named(joint.map(), floors.seed(), settings, false);
+        var items = new ArrayList<SaveGame.Item>();
+        for (var id : joint.items()) {
+            settings.loot().stream().filter(item -> item.id().equals(id)).findFirst()
+                    .ifPresent(item -> items.add(new SaveGame.Item(-1, item.id(), 1, item.value(), 0)));
+        }
+        resume(new SaveGame(chosen.seed(), joint.map(), chosen.firstDepth(), campaign.hero(), joint.experience(),
+                List.of(), items, null, new uz.dukeengine.dungeon.story.Script.State(List.of(), joint.flags(),
+                        List.of(), List.of()), joint.gold()), chosen);
     }
 
     /**
@@ -527,6 +557,7 @@ public final class DungeonRun {
         var save = loading ? null : save();
         loading = false;
         if (save != null) {
+            lastCheckpoint = save;
             checkpoint.accept(save);
         }
     }
@@ -562,7 +593,7 @@ public final class DungeonRun {
      * descent does, and a stage only when its file says {@code FloorMission = Yes}. A story map lists its own quests.
      */
     private boolean floorMission() {
-        return floors.stageName() == null || floors.story().floorMission();
+        return floors.descends() || floors.story().floorMission();
     }
 
     /** What a step said as it was finished: the count full where it counts. */
@@ -778,6 +809,19 @@ public final class DungeonRun {
         if (game.getLogic().getFrame() - endedFrame < settings.run().respawnDelayFrames()) {
             return;
         }
+        if (lastCheckpoint != null && seats.size() == 1 && settings.campaign().holds(floors.stageName())) {
+            // ★ A campaign is not a roguelike: a death goes back to the last floor entered, as he entered it — the
+            // checkpoint the autosave holds — not to the opening battle with nothing. See docs/plan/2026-10-15-act1.md.
+            var back = lastCheckpoint;
+            resume(back, Floors.resumed(back, settings));
+            openingIsStale = false;
+            cued.clear();
+            endCutscene(game);
+            descend(game);
+            state = State.RUNNING;
+            game.setBanner("");
+            return;
+        }
         begin(game);
     }
 
@@ -812,6 +856,9 @@ public final class DungeonRun {
      * names it. The descent and a plain stage have none — a stage is learnt and won again — and the open world has one.
      */
     private boolean storied() {
+        if (floors.descends()) {
+            return false; // a campaign's descent too: its bosses open the next floor, and its triggers say the rest
+        }
         var story = floors.story();
         var name = floors.stageName();
         return !story.npcs().isEmpty() || !story.zones().isEmpty() || !story.items().isEmpty()
@@ -1029,6 +1076,8 @@ public final class DungeonRun {
         }
         restock(); // every merchant's stock is the data's again
         script.mapStarted(floors.stageName());
+        // A campaign's descent says how deep it has come: DEPTH, the floor's depth. See docs/plan/2026-10-15-act1.md.
+        script.heard(uz.dukeengine.dungeon.story.Trigger.When.DEPTH, Integer.toString(depth), 0);
         marks();
     }
 
@@ -1086,7 +1135,7 @@ public final class DungeonRun {
             var name = nextMap;
             nextMap = null;
             try {
-                floors = Floors.ofStage(uz.dukeengine.dungeon.stage.Stages.load(name, settings));
+                floors = Floors.named(name, floors.seed(), settings, false);
             } catch (RuntimeException e) {
                 java.util.logging.Logger.getLogger(DungeonRun.class.getName())
                         .warning("a trigger asked for the map " + name + ", which cannot be played: " + e.getMessage());
@@ -1095,10 +1144,10 @@ public final class DungeonRun {
             depth = floors.firstDepth();
             endCutscene(game);
             descend(game);
+            game.setBanner(""); // a floor's "the next depth" said as its boss fell is not this map's
             if (state == State.WON) {
                 // A won map's story sent the heroes on: the next chapter is played, not watched.
                 state = State.RUNNING;
-                game.setBanner("");
             }
         }
     }
@@ -1144,6 +1193,63 @@ public final class DungeonRun {
                     tracker = Tracker.NONE;
                     // The story's own words, or nothing: there is no generic "won" (the owner, 2026-10-09).
                     game.setBanner(what.isBlank() ? "" : "won|" + what);
+                } else if (state == State.WON && !what.isBlank()) {
+                    game.setBanner("won|" + what); // a story won already (the turning) says its last words: "1-qism tugadi"
+                }
+            }
+            case ALLY -> {
+                // On the first hero's side, fighting as any monster does — for him. Grown to the floor's depth.
+                var zone = zoneNamed(action.zone());
+                var template = logic.getThingFactory().findTemplate(what);
+                if (zone == null || template == null) {
+                    return;
+                }
+                var cells = zone.cells();
+                for (int i = 0; i < action.count(); i++) {
+                    var cell = cells.get(i % cells.size());
+                    var spawned = logic.spawn(template, ground(logic,
+                            new uz.dukeengine.dungeon.map.StaticMap.Placed(what, cell[0], cell[1])),
+                            seats.getFirst().player.getIndex());
+                    Spawner.scale(spawned, settings.beforeBossLevel(depth), settings);
+                }
+            }
+            case PLACE, KNOCK -> {
+                var zone = zoneNamed(action.zone());
+                if (zone == null) {
+                    return;
+                }
+                float cell = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
+                var flat = new uz.dukeengine.core.math.Coord3D(zone.middleX(cell), zone.middleY(cell), 0f);
+                var to = new uz.dukeengine.core.math.Coord3D(flat.x(), flat.y(), logic.groundHeight(flat));
+                for (var thing : List.copyOf(logic.getObjects())) {
+                    boolean moved = action.act() == uz.dukeengine.dungeon.story.Trigger.Act.PLACE
+                            ? seats.stream().anyMatch(seat -> thing.getId().equals(seat.heroId))
+                            : thing.getTemplate().name().equals(what) && !thing.isEffectivelyDead();
+                    if (moved) {
+                        uz.dukeengine.combat.module.Errand.giveUpAll(thing);
+                        var legs = thing.getLocomotor();
+                        if (legs != null && legs.isMoving()) {
+                            legs.stop();
+                        }
+                        thing.setPosition(to);
+                    }
+                }
+            }
+            case KILL -> {
+                for (var thing : List.copyOf(logic.getObjects())) {
+                    var body = thing.getBody();
+                    if (thing.getTemplate().name().equals(what) && body != null && !thing.isEffectivelyDead()) {
+                        body.setLeastHealth(0f); // an UNYIELDING's floor, and a beaten one's guard, let go
+                        body.setDamageScale(1f);
+                        body.damage(body.getHealth() + 1f);
+                    }
+                }
+            }
+            case GOLD -> seats.getFirst().gold += action.count();
+            case SAVE -> {
+                var save = save(); // won or not: the turning has ended the act, and this is what Act 2 reads
+                if (save != null) {
+                    keeper.accept(what, save);
                 }
             }
             case SAY -> quests.play(what);

@@ -210,6 +210,11 @@ public record Story(Dialogue dialogue, List<Speaker> speakers, List<Conversation
                 }
             }
             case HEARD -> conversation(target, named, wrong);
+            case DEPTH -> {
+                if (!target.matches("[1-9][0-9]*")) {
+                    wrong.add(named + " waits on DEPTH " + target + ": a depth is a number, 1 or more");
+                }
+            }
             case AFTER -> {
                 if (trigger(target) == null) {
                     wrong.add(named + " comes after " + target + ", and no Trigger is called that");
@@ -260,7 +265,7 @@ public record Story(Dialogue dialogue, List<Speaker> speakers, List<Conversation
             }
             case SAY -> conversation(what, named, wrong);
             case START_QUEST, FINISH_QUEST -> quest(what, named, wrong);
-            case SPAWN -> {
+            case SPAWN, ALLY -> {
                 if (!monsters.contains(what)) {
                     wrong.add(named + " spawns " + what + ", and no Monster is called that");
                 }
@@ -294,6 +299,26 @@ public record Story(Dialogue dialogue, List<Speaker> speakers, List<Conversation
                 }
             }
             case OPEN_GATE -> {
+            }
+            case PLACE -> {
+                if (action.zone().isBlank()) {
+                    wrong.add(named + " places the heroes at no Zone");
+                }
+            }
+            case KNOCK, KILL -> {
+                if (!monsters.contains(what) || action.act() == Trigger.Act.KNOCK && action.zone().isBlank()) {
+                    wrong.add(named + " " + action.act() + "s " + what + ", who is no Monster, or to no Zone");
+                }
+            }
+            case GOLD -> {
+                if (action.count() < 1) {
+                    wrong.add(named + " gives fewer than one gold");
+                }
+            }
+            case SAVE -> {
+                if (!what.matches("[a-z0-9]+")) {
+                    wrong.add(named + " saves into " + what + ": a slot is a name of small letters and digits");
+                }
             }
         }
     }
