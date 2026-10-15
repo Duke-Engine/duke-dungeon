@@ -1037,6 +1037,10 @@ claimed (`Hotkeys.claimedKeys()`), each with a word the game gives (`Hotkeys.on(
 `Hotkeys.describe(key, word)` beside the existing calls), in the game's language through `Shell.word`. Rebinding can
 come later. Done when a test opens Settings with a game that claimed C with a word and finds the row.
 
+**Landed** as 9ce15e4e: `Hotkeys.on(key, word, action)` / `describe(key, word)` and a read-only `Keys` list in
+Settings. The game says C, L, M (the screens' titles), J (`TrackerWord`), the orders F A S D (the Hud's order words)
+and each hero's skills (their names), and `data/world/menu.duke` gives Uzbek for `Keys` and every client control.
+
 ## E47 — A hero's whole figures in one place (2026-10-15, small)
 
 The character sheet shows what a hero's figures come to, and has to gather them from five places: `HeroFigures`
@@ -1050,6 +1054,10 @@ health and mana a second, lifesteal percent (own, lent and aura), and crit chanc
 them — worked out by the same code that applies them, so the sheet can never disagree with the fight. Done when a test
 gives a hero a worn lifesteal thing and a quicker weapon and reads both back from the one record.
 
+**Landed** as 9ce15e4e: `HeroProgress.sheetOf(body)` → `Sheet(HeroFigures, HeroRates)`. The character sheet reads its
+blows a second, health and mana a second and lifesteal (worn things' lent included) from `HeroRates`; no crit row,
+the engine has none yet.
+
 ## E48 — The letter a key code is, for a game's canvas input (2026-10-15, small)
 
 `CanvasInput.Key` carries jME's scan code, and a game that takes letters on its canvas — the player screens take C, L,
@@ -1058,3 +1066,6 @@ keeps Esc, Space and Enter. `Hotkeys.codeOf(char)` already exists and is package
 
 Asked: `Hotkeys.codeOf(char)` public (or `CanvasInput.Key.letter()`), and the few named keys a game's canvas answers
 (`CanvasInput.ESCAPE`, `ENTER`, `SPACE`) as constants. Done when the game's copies are deleted.
+
+**Landed** as 9ce15e4e: `Hotkeys.codeOf` public and `CanvasInput.ESCAPE`, `ENTER`, `SPACE`. The game's copies are
+gone (`PlayerScreens.codeOf`, `DialogueScreen`'s three); only Enter on the number pad stays the game's own.

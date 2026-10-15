@@ -2,7 +2,6 @@ package uz.dukeengine.dungeon.run;
 
 import java.util.ArrayList;
 import java.util.List;
-import uz.dukeengine.core.GameConstants;
 import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.core.thing.Titled;
 import uz.dukeengine.dungeon.content.DungeonSettings;
@@ -10,11 +9,11 @@ import uz.dukeengine.rpg.hero.HeroFigures;
 import uz.dukeengine.rpg.hero.HeroProgress;
 import uz.dukeengine.rpg.item.LootBag;
 import uz.dukeengine.rpg.skill.SkillBook;
-import uz.dukeengine.rpg.skill.SkillEffect;
 
 /**
  * What the character sheet shows of this machine's hero: worked out on the simulation's thread, where his figures
- * live, from the same sums his panel and his body use ({@link HeroProgress#figuresOf}, {@link HeroStatus#armourOf}),
+ * live, from the same sums his panel and his body use ({@link HeroProgress#figuresOf}, {@link HeroStatus#armourOf},
+ * {@link HeroProgress#sheetOf} for what his body does each second),
  * and handed to the window whole, as the target frame is. Numbers and names only: the sheet says them in the data's
  * words.
  *
@@ -70,27 +69,20 @@ public record Sheet(int id, String name, String title, int level, int experience
         }
         var bag = progress.getLoot();
         var book = hero.findModule(SkillBook.class);
-        int quicker = bag.attackSpeedPercent();
-        int reload = reloadFrames(hero);
-        int blows = reload <= 0 ? 0
-                : Math.round(100f * GameConstants.LOGICFRAMES_PER_SECOND / reload * (100 + quicker) / 100f);
-        int lifesteal = SkillBook.auraOn(hero, SkillEffect.LIFESTEAL_AURA);
-        if (book != null) {
-            for (var skill : book.getSkills()) {
-                if (skill.effect() == SkillEffect.LIFESTEAL) {
-                    lifesteal += skill.boostAt(1); // as SkillBook.drink counts it
-                }
-            }
-        }
+        // The engine's own figures a second (E47), worked out by the code that applies them: a worn thing's lent
+        // lifesteal and every haste included.
+        var rates = progress.sheetOf(hero).rates();
         var medallion = settings.medallion().item();
         boolean wearsIt = !medallion.isBlank() && bag.acting().stream().anyMatch(item -> item.id().equals(medallion));
         return new Sheet(hero.getId().value(), Titled.of(hero.getTemplate()), HeroStatus.titleOf(hero, settings),
                 progress.getLevel(), progress.getExperienceIntoLevel(), progress.getExperienceForNextLevel(),
-                attributes, Math.round(now.attack()), blows, quicker, HeroStatus.armourOf(progress, settings, true),
+                attributes, Math.round(now.attack()), Math.round(rates.blowsPerSecond() * 100f),
+                bag.attackSpeedPercent(), HeroStatus.armourOf(progress, settings, true),
                 Math.round(now.speed()), Math.round(hero.getBody().getHealth()),
                 Math.round(hero.getBody().getMaxHealth()), book == null ? 0 : book.getMana(),
-                book == null ? 0 : book.getMaxMana(), his.healthRegen() + 10 * bag.healthRegen(),
-                his.manaRegen() + 10 * bag.manaRegen(), lifesteal, worn(bag), gold, wearsIt ? souls : -1);
+                book == null ? 0 : book.getMaxMana(), Math.round(rates.healthPerSecond() * 10f),
+                Math.round(rates.manaPerSecond() * 10f), rates.lifestealPercent(), worn(bag), gold,
+                wearsIt ? souls : -1);
     }
 
     /** What he wears, a slot each. */
@@ -103,13 +95,4 @@ public record Sheet(int id, String name, String title, int level, int experience
         return worn;
     }
 
-    /** The frames between two blows of his weapon, as its block writes them; 0 for none. */
-    private static int reloadFrames(GameObject hero) {
-        for (var entry : hero.getTemplate().modules()) {
-            if (entry instanceof uz.dukeengine.combat.module.WeaponUpdate.Data weapon) {
-                return weapon.reloadFrames();
-            }
-        }
-        return 0;
-    }
 }

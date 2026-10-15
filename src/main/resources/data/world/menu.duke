@@ -15,6 +15,7 @@ MainMenu
   CreditsTitle = MUALLIFLAR
   CreditsHint = "YUQORI PAST tanlang    ESC ortga"
   ; The client's fixed words, each "the English it says when a game names none = what this game says".
+  ; The Keys list in Settings (E46) is among them: its heading, and the client's own controls by their English names.
   Words = [
     "PAUSED = TO'XTATILDI",
     "Resume = Davom etish",
@@ -48,6 +49,34 @@ MainMenu
     "unsaved changes = saqlanmagan o'zgarishlar",
     "UP DOWN choose    LEFT RIGHT change    ESC back = YUQORI PAST tanlang    CHAP O'NG o'zgartiring    ESC ortga",
     "UP DOWN choose    ENTER take = YUQORI PAST tanlang    ENTER tanlash",
+    "Keys = Tugmalar",
+    "Pan up = Kamera yuqoriga",
+    "Pan left = Kamera chapga",
+    "Pan down = Kamera pastga",
+    "Pan right = Kamera o'ngga",
+    "Turn left = Chapga burish",
+    "Turn right = O'ngga burish",
+    "Zoom in = Yaqinlashtirish",
+    "Zoom out = Uzoqlashtirish",
+    "Reset view = Kamerani tiklash",
+    "Stop = To'xta",
+    "Scatter = Tarqalish",
+    "Force attack = Majburiy hujum",
+    "Queue waypoints = Yo'l nuqtalari navbati",
+    "Add to selection = Tanlovga qo'shish",
+    "Select all = Hammasini tanlash",
+    "Select all of kind = Shu turdagilarni tanlash",
+    "Select same type = Bir xilini tanlash",
+    "Next unit = Keyingi jangchi",
+    "Previous unit = Oldingi jangchi",
+    "Centre on base = Qarorgohga qaytish",
+    "Latest alert = So'nggi ogohlantirish",
+    "Options = Menyu",
+    "Toggle command bar = Buyruqlar paneli",
+    "Chat all = Hammaga xabar",
+    "Chat allies = Ittifoqchilarga xabar",
+    "Screenshot = Skrinshot",
+    "Pause = Pauza",
   ]
   ; ---- the scene behind the menu: the kingdom's soldiers holding a clearing against the skeletons ----
   ; A real fight of the game's own creatures and brains, the fallen coming back, so it never ends.

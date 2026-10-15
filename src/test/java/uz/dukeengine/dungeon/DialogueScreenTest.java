@@ -121,23 +121,23 @@ class DialogueScreenTest {
                 "no black bars while her greeting is on the screen");
         assertTrue(game.getLogic().isGamePaused(), "alone, the world waits for her");
 
-        assertTrue(screen.take(new CanvasInput.Key(DialogueScreen.SPACE, true, false)));
+        assertTrue(screen.take(new CanvasInput.Key(CanvasInput.SPACE, true, false)));
         var second = painted(screen);
         assertTrue(second.text.contains(Main.displayNameOf(session, SETTINGS.run().defaultHero())),
                 "the hero answers, by his own name: " + second.text);
         assertTrue(screen.take(new CanvasInput.Button(10, 10, CanvasInput.Mouse.RIGHT, true, false)),
                 "no order goes through the box");
 
-        assertTrue(screen.take(new CanvasInput.Key(DialogueScreen.ESCAPE, true, false)));
+        assertTrue(screen.take(new CanvasInput.Key(CanvasInput.ESCAPE, true, false)));
         var after = painted(screen);
         assertFalse(after.text.contains(SETTINGS.story().dialogue().continueHint()), "skipped");
         assertFalse(game.getLogic().isGamePaused(), "and the world goes on");
         game.runHeadless(2); // her greeting read, the locket's cutscene begins — only now: see LocketShownTest
         assertTrue(session.run().inCutscene());
         assertTrue(painted(screen).rects.stream().anyMatch(r -> r[1] == 0f && r[2] == 1600f), "now the bars");
-        assertTrue(screen.take(new CanvasInput.Key(DialogueScreen.ESCAPE, true, false)));
+        assertTrue(screen.take(new CanvasInput.Key(CanvasInput.ESCAPE, true, false)));
         game.runHeadless(2);
-        assertFalse(screen.take(new CanvasInput.Key(DialogueScreen.SPACE, true, false)),
+        assertFalse(screen.take(new CanvasInput.Key(CanvasInput.SPACE, true, false)),
                 "with nothing said, a key is the game's again");
     }
 
@@ -171,7 +171,7 @@ class DialogueScreenTest {
                 "no order goes to the world");
         assertTrue(screen.take(new CanvasInput.Key(30, true, false)), "nor a key");
 
-        assertTrue(screen.take(new CanvasInput.Key(DialogueScreen.ESCAPE, true, false)));
+        assertTrue(screen.take(new CanvasInput.Key(CanvasInput.ESCAPE, true, false)));
         game.runHeadless(2);
         assertFalse(session.run().inCutscene(), "skipped");
         assertFalse(screen.take(new CanvasInput.Key(30, true, false)), "and his hand is his again");
@@ -199,7 +199,7 @@ class DialogueScreenTest {
                 new uz.dukeengine.dungeon.run.TalkTo(hero.getPlayerIndex(), merchant.getId())));
         game.runHeadless(2);
         int gold = session.run().goldOf(hero.getPlayerIndex());
-        assertTrue(screen.take(new CanvasInput.Key(DialogueScreen.ESCAPE, true, false)), "the greeting first");
+        assertTrue(screen.take(new CanvasInput.Key(CanvasInput.ESCAPE, true, false)), "the greeting first");
 
         var canvas = painted(screen);
         assertTrue(canvas.text.contains("Savdogar Botir"), canvas.text.toString());
@@ -213,7 +213,7 @@ class DialogueScreenTest {
         game.runHeadless(2);
         assertEquals(gold - 80, session.run().goldOf(hero.getPlayerIndex()), "bought, through the world");
 
-        assertTrue(screen.take(new CanvasInput.Key(DialogueScreen.ESCAPE, true, false)));
+        assertTrue(screen.take(new CanvasInput.Key(CanvasInput.ESCAPE, true, false)));
         assertTrue(painted(screen).text.stream().noneMatch(t -> t.equals("Savdogar Botir")), "closed");
     }
 }

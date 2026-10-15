@@ -708,6 +708,7 @@ public final class Main {
     static void aimsFor(Hotkeys keys, DungeonSettings settings, String hero) {
         for (var skill : settings.skillsFor(hero)) {
             char key = skill.key();
+            keys.describe(key, skill.name()); // its name on the Settings screen's list of keys (E46)
             switch (skill.effect().aim()) {
                 case UNIT -> keys.onUnit(key, (game, id) -> game.postCommand(PartyOrders.of(new CastSkill(
                         game.getLocalPlayerIndex(), key, new ObjectId(id), null))));
@@ -973,6 +974,22 @@ public final class Main {
     }
 
     /**
+     * The screens' keys: a thing of the window, as the tracker's fold is, so each flips the window's own state and
+     * sends nothing to the simulation. Through the hotkeys, which the client answers only in play -- never on a menu,
+     * nor while chat is typed; while a screen is open it takes the keys itself.
+     */
+    static void screensOn(Hotkeys keys, PlayerScreens screens, DungeonSettings settings) {
+        var letters = settings.screens().keys();
+        // Each said in the game's words on the Settings screen's list of keys (E46).
+        var words = List.of(settings.screens().sheetTitle(), settings.screens().questsTitle(),
+                settings.screens().mapTitle());
+        for (int i = 0; i < letters.size(); i++) {
+            var which = PlayerScreens.Open.values()[i + 1];
+            keys.on(letters.get(i), words.get(i), game -> screens.toggle(which));
+        }
+    }
+
+    /**
      * The keys that cast skills, taken from the same file that says what the
      * skills are.
      *
@@ -988,18 +1005,6 @@ public final class Main {
      * The client keeps the press-then-click; this only says what to send once the
      * player has chosen.
      */
-    /**
-     * The screens' keys: a thing of the window, as the tracker's fold is, so each flips the window's own state and
-     * sends nothing to the simulation. Through the hotkeys, which the client answers only in play -- never on a menu,
-     * nor while chat is typed; while a screen is open it takes the keys itself.
-     */
-    static void screensOn(Hotkeys keys, PlayerScreens screens, DungeonSettings settings) {
-        var letters = settings.screens().keys();
-        for (int i = 0; i < letters.size(); i++) {
-            var which = PlayerScreens.Open.values()[i + 1];
-            keys.on(letters.get(i), game -> screens.toggle(which));
-        }
-    }
 
     static Hotkeys controls(DungeonSettings settings) {
         var keys = Hotkeys.create();
@@ -1013,8 +1018,13 @@ public final class Main {
                 game.getLocalPlayerIndex(), key))));
         // The mission list folds to its tab and unfolds again: a thing of the window, so it flips the window's own
         // flag and sends nothing to the simulation.
-        keys.on(settings.run().foldKey().charAt(0), game -> MissionScreen.fold());
+        keys.on(settings.run().foldKey().charAt(0), settings.screens().trackerWord(), game -> MissionScreen.fold());
         orders(keys);
+        // The four orders said as the panel's buttons say them: walk, attack, stop, guard (see HeroStatus.orders).
+        var orderWords = settings.hud().orderWords();
+        for (int i = 0; i < orderWords.size(); i++) {
+            keys.describe("FASD".charAt(i), orderWords.get(i));
+        }
         // Which single creature he has picked out. The target frame describes it, and
         // only the simulation can say what it is worth -- see Watching.
         keys.onWatch((game, id) -> game.postCommand(PartyOrders.of(new uz.dukeengine.dungeon.run.Watching(
