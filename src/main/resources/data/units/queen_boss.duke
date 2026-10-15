@@ -89,7 +89,8 @@ Monster
     ModelScale = 7.65
     Facing = 90
     Idle = Cast_Idle
-    Walk = Walk
+    ; The fighting walk, Quaternius' formal one as it was: the slow regal Walk is the person's, not the boss's.
+    Walk = Walk_Fight
     Attack = Attack
     Death = Death
     WalkStride = 10.3

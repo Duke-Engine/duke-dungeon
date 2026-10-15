@@ -17,7 +17,7 @@ Monster
   VisionRange = 0
   Modules = [
     MoveUpdate
-      Speed = 10
+      Speed = 8
       TurnRate = 0
     End
   ]
@@ -36,6 +36,7 @@ Monster
   ; never in this repository, so a clone without it (and CI) draws the stand-in above. Her clips
   ; are in her own file (art/licensed/export_licensed.py), her size 12 units over her 1.7, and
   ; WalkStride is how far one play of her Walk carries her at that size, so her feet stay put.
+  ; Her Walk is a queen's: short steps nearly in line, hands clasped, unhurried (Speed 8, a villager's pace).
   Licensed = MonsterLook
     Model = models/licensed/queen.glb
     ModelScale = 7.06
@@ -44,7 +45,7 @@ Monster
     Walk = Walk
     Attack = Attack
     Death = Death
-    WalkStride = 9.5
+    WalkStride = 7.15
     UpperBody = spine
   End
 End
