@@ -85,13 +85,26 @@ villages. About 150 things, all still but the animals (16).
 What was cut or picked comes back after its time, where it stood (not while a hero stands on it). What grows back and
 the fires he built are not saved: a loaded game lays the map fresh.
 
+## Since the engine's E66-E68 (2026-10-15)
+
+- The trees chopped are the open world's own scenery trees (ten tree models; dead trees give 2 wood, the rest 3),
+  felled from the ground and the picture on every machine and grown back after 10 min; a stump stands meanwhile. Only
+  on maps streamed in chunks (`SceneryMaps`: the world), where a tree felled redraws its chunk; on a map built whole
+  it would redraw all of the ground. The save keeps the trees felled; a load fells them again and their growing starts
+  over. The game's placed trees are gone.
+- While he works he loops a clip (`Clips`): his `Chop` (a sword's swing) to chop, `Gather` (Interact) to pick and
+  fill, `Cook` (Fixing_Kneeling) to cook -- the heroes' own clip names, which the anim2 branch adds. A hero whose
+  model lacks the clip stands still.
+- The book heals a meal's `HEAL` buff itself; the buff row shows it as "Taom", +N Jon/s and its seconds.
+- Every fire crackles where it burns (PagDev's "Fireplace Sound loop", CC0).
+
 ## Not done / asked of the engine
 
-- E66: a scenery tree that can be pointed at, felled and grown again (today's trees are the client's scenery and the
+- (landed) E66: a scenery tree that can be pointed at, felled and grown again (today's trees are the client's scenery and the
   simulation only knows their footprints) -- until then the trees to chop are objects the game places.
-- E67: a busy state with its own clip: the hero plays a named clip on a loop while he works, cut short by an order or a
+- (landed) E67: a busy state with its own clip: the hero plays a named clip on a loop while he works, cut short by an order or a
   blow -- until then a puff and a sound each second.
-- E68: health over time as a buff the book reads (as `MANA_AURA` is for mana), with a picture on the HUD -- until then
+- (landed) E68: health over time as a buff the book reads (as `MANA_AURA` is for mana), with a picture on the HUD -- until then
   the run heals by the `HEAL` buff each frame.
 - No bear (no CC0 animated bear without an account) and no rabbit (the CC0 "rabbits" are characters); a stag's antlers
   came apart in conversion. Rivers do not fill the waterskin, only wells.

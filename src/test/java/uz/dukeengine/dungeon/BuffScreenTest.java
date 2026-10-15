@@ -604,4 +604,13 @@ class BuffScreenTest {
             assertFalse(skill.blurb().isBlank(), skill.name() + " says what it does");
         }
     }
+
+    /** A meal's health a second is shown as the Food block's own skill, in its word and its seconds (E68). */
+    @Test
+    void aMealIsShownByItsOwnPictureAndWord() {
+        var meal = SETTINGS.food().skills().getFirst();
+        assertEquals(uz.dukeengine.rpg.skill.SkillEffect.HEAL, meal.effect());
+        assertNotNull(BuffScreenTest.class.getResource("/" + meal.icon()), meal.icon());
+        assertEquals("+2.5 Jon/s · 2s", BUFFS.addsOf(new BuffScreen.Buff(meal, 25, 60)));
+    }
 }

@@ -543,7 +543,7 @@ public final class Dungeon {
                 case uz.dukeengine.dungeon.run.TalkTo talk ->
                         run.talkTo(game, talk.playerIndex(), talk.person());
                 // Sent to chop, pick, fill or cook, or to build a fire at his feet. See DungeonRun.work.
-                case uz.dukeengine.dungeon.run.Work work -> run.work(game, work.playerIndex(), work.thing());
+                case uz.dukeengine.dungeon.run.Work work -> run.work(game, work.playerIndex(), work.thing(), work.place());
                 default -> {
                     // Not one of ours; rts has already said so.
                 }

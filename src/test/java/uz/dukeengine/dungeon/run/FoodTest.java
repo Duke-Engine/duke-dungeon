@@ -13,6 +13,7 @@ import uz.dukeengine.core.player.PlayerList;
 import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.dungeon.Dungeon;
 import uz.dukeengine.dungeon.content.DungeonSettings;
+import uz.dukeengine.dungeon.food.Food;
 import uz.dukeengine.dungeon.loot.Items;
 import uz.dukeengine.dungeon.party.PartyOrders;
 import uz.dukeengine.game.DukeGame;
@@ -164,23 +165,65 @@ class FoodTest {
         assertTrue(session.run().working(player), "he walked up and set to it");
     }
 
+    private static final uz.dukeengine.dungeon.stage.Stage WORLD = uz.dukeengine.dungeon.stage.Stages.load("world",
+            SHIPPED);
+
+    /** The tree of the world's own scenery nearest the hero that may be felled, by index. */
+    private static int nearestTree(DukeGame game) {
+        var logic = game.getLogic();
+        var here = hero(game).getPosition();
+        var models = WORLD.paint().scenery();
+        int best = -1;
+        float bestGap = Float.MAX_VALUE;
+        for (int piece = 0; piece < models.size(); piece++) {
+            var footprint = logic.sceneryPiece(piece);
+            if (footprint == null || FOOD.gather(models.get(piece).model()) == null) {
+                continue;
+            }
+            float gap = (float) Math.hypot(footprint.x() - here.x(), footprint.y() - here.y());
+            if (gap < bestGap) {
+                best = piece;
+                bestGap = gap;
+            }
+        }
+        return best;
+    }
+
     @Test
-    void choppingATreeGivesWoodAndFellsIt() {
-        var session = Dungeon.newSession(21L);
+    void choppingATreeOfTheWorldGivesWoodFellsItAndTheSaveKeepsItFelled() {
+        var session = Dungeon.newStageSession(WORLD, SHIPPED);
         var game = session.game();
         game.runHeadless(2);
-        var tree = lay(game, "ChoppableTree", open(game, hero(game), 20f));
-        var chop = FOOD.gather("ChoppableTree");
+        var logic = game.getLogic();
+        int player = game.getLocalPlayerIndex();
+        int tree = nearestTree(game);
+        var footprint = logic.sceneryPiece(tree);
+        var chop = FOOD.gather(WORLD.paint().scenery().get(tree).model());
+        assertEquals(Food.CHOP, session.run().groundWord(game, new Coord3D(footprint.x() + 3f, footprint.y(), 0f)),
+                "the pointer over its crown is an axe");
 
-        workAt(session, tree);
+        game.postCommand(PartyOrders.of(new Work(player, null, new Coord3D(footprint.x(), footprint.y(), 0f))));
+        for (int walked = 0; walked < 1200 && !session.run().working(player); walked++) {
+            game.runHeadless(1);
+        }
+        assertTrue(session.run().working(player), "he walked up to the tree and set to it");
+        assertEquals("Chop", hero(game).getBusyClip(), "looping his work's clip");
         game.runHeadless(chop.frames() - 10);
         assertEquals(0, count(session.progress().getLoot(), "otin"), "a few seconds' work, not yet done");
-        assertNotNull(game.getLogic().findObject(tree.getId()), "and the tree still stands");
+        assertFalse(logic.isSceneryRemoved(tree), "and the tree still stands");
         game.runHeadless(12);
         assertEquals(chop.count(), count(session.progress().getLoot(), "otin"), "his wood");
-        assertNull(game.getLogic().findObject(tree.getId()), "the tree is felled");
+        assertTrue(logic.isSceneryRemoved(tree), "the tree is felled from the world's scenery");
         assertTrue(standing(game, "Stump"), "and its stump stands until it grows back");
-        assertFalse(session.run().working(game.getLocalPlayerIndex()));
+        assertEquals(null, hero(game).getBusyClip(), "done, his clip ends");
+
+        var save = SaveGame.read(session.run().saveNow().text(), "test");
+        assertEquals(List.of(tree), save.felled(), "the save keeps it felled");
+        var again = Dungeon.newStageSession(WORLD, SHIPPED);
+        again.run().resume(save, Floors.resumed(save, SHIPPED));
+        again.game().runHeadless(2);
+        assertTrue(again.game().getLogic().isSceneryRemoved(tree), "and a load fells it again");
+        assertTrue(standing(again.game(), "Stump"));
     }
 
     @Test
@@ -189,14 +232,17 @@ class FoodTest {
         var game = session.game();
         game.runHeadless(2);
         var hero = hero(game);
-        var tree = lay(game, "ChoppableTree", open(game, hero, 20f));
-        workAt(session, tree);
+        var bush = lay(game, "BerryBush", open(game, hero, 20f));
+        workAt(session, bush);
+        assertEquals("Gather", hero.getBusyClip());
         game.runHeadless(20);
-        hero.getBody().setHealth(hero.getBody().getHealth() - 5f); // struck
-        game.runHeadless(FOOD.gather("ChoppableTree").frames());
+        hero.getBody().damage(5f); // struck: a blow, which ends his clip too (E67)
+        game.runHeadless(1);
+        game.runHeadless(FOOD.gather("BerryBush").frames());
         assertFalse(session.run().working(game.getLocalPlayerIndex()), "called off");
-        assertEquals(0, count(session.progress().getLoot(), "otin"));
-        assertNotNull(game.getLogic().findObject(tree.getId()), "the tree stands");
+        assertEquals(null, hero.getBusyClip(), "and his clip with it");
+        assertEquals(0, count(session.progress().getLoot(), "rezavor"));
+        assertNotNull(game.getLogic().findObject(bush.getId()), "the bush stands");
     }
 
     @Test
@@ -249,7 +295,7 @@ class FoodTest {
     }
 
     private static List<String> laid(DukeGame game) {
-        var kinds = List.of("Campfire", "ChoppableTree", "BerryBush", "PumpkinPatch", "Deer", "Boar");
+        var kinds = List.of("Campfire", "BerryBush", "PumpkinPatch", "Deer", "Boar");
         return game.getLogic().getObjects().stream().filter(thing -> kinds.contains(thing.getTemplate().name()))
                 .map(thing -> thing.getTemplate().name() + " " + Math.round(thing.getPosition().x()) + " "
                         + Math.round(thing.getPosition().y()))
@@ -258,14 +304,13 @@ class FoodTest {
 
     @Test
     void theOpenWorldIsLaidWithItsThingsTheSameEveryTimeAndADeerLeavesMeat() {
-        var stage = uz.dukeengine.dungeon.stage.Stages.load("world", SHIPPED);
+        var stage = WORLD;
         var game = Dungeon.newStageSession(stage, SHIPPED).game();
         game.runHeadless(1);
         var things = laid(game);
         java.util.function.Function<String, Long> of = kind -> things.stream()
                 .filter(line -> line.startsWith(kind + " ")).count();
         assertTrue(of.apply("Campfire") >= 12, "a fire by the villages and towers: " + of.apply("Campfire"));
-        assertTrue(of.apply("ChoppableTree") >= 40, "trees to chop: " + of.apply("ChoppableTree"));
         assertTrue(of.apply("BerryBush") >= 12 && of.apply("PumpkinPatch") >= 10, "bushes and pumpkins");
         assertTrue(of.apply("Deer") >= 8 && of.apply("Boar") >= 4, "animals: " + things);
         var again = Dungeon.newStageSession(stage, SHIPPED).game();

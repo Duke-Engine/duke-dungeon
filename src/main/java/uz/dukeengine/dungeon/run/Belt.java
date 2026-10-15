@@ -14,8 +14,7 @@ import uz.dukeengine.rpg.skill.SkillEffect;
  * of one kind joined into the first as they come in (wood too, which is never on the belt). Nothing of its own but a
  * cooldown, kept by the run: what is on the belt is what is in the bag, so it is saved with the bag. A meal gives its
  * share over its frames as a buff on his skill book (the owner's rule: buffs are the skill system's) -- health as a
- * {@code HEAL} buff the run pays out each frame ({@link #digest}), mana as a {@code MANA_AURA} the book's own trickle
- * reads. See docs/plan/2026-10-15-loot.md and docs/plan/2026-10-15-food-and-fire.md.
+ * {@code HEAL} buff the book heals by (E68), mana as a {@code MANA_AURA} its own trickle reads. See docs/plan/2026-10-15-loot.md and docs/plan/2026-10-15-food-and-fire.md.
  */
 public final class Belt {
 
@@ -118,21 +117,5 @@ public final class Belt {
 
     private static int tenthsASecond(float total, int frames) {
         return Math.max(1, Math.round(total * 10f * GameConstants.LOGICFRAMES_PER_SECOND / frames));
-    }
-
-    /**
-     * A frame of what he has eaten: the {@code HEAL} buff on his book, tenths of a point a second, given back as health.
-     * On the simulation thread, every frame. ponytail: the run pays it out until the engine's book does (E68).
-     */
-    public static void digest(GameObject hero) {
-        var book = hero == null || hero.isEffectivelyDead() ? null : hero.findModule(SkillBook.class);
-        var world = hero == null ? null : hero.getWorld();
-        if (book == null || world == null || hero.getBody() == null) {
-            return;
-        }
-        int tenths = book.buffOf(SkillEffect.HEAL, world.getFrame());
-        if (tenths > 0) {
-            hero.getBody().heal(tenths / (10f * GameConstants.LOGICFRAMES_PER_SECOND));
-        }
     }
 }

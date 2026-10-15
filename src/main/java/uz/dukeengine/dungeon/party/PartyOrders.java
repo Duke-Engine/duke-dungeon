@@ -105,6 +105,8 @@ public final class PartyOrders {
                     null, null, travel.tower());
             case uz.dukeengine.dungeon.run.TalkTo talk -> new GameOrder(talk.playerIndex(), TALK, List.of(), null,
                     talk.person(), 0);
+            case uz.dukeengine.dungeon.run.Work work when work.place() != null -> new GameOrder(work.playerIndex(),
+                    uz.dukeengine.dungeon.food.Food.CHOP, List.of(), work.place(), null, 0);
             case uz.dukeengine.dungeon.run.Work work -> work.thing() == null
                     ? new GameOrder(work.playerIndex(), BUILD, List.of(), null, null, 0)
                     : new GameOrder(work.playerIndex(), uz.dukeengine.dungeon.food.Food.COOK, List.of(), null,
@@ -120,7 +122,9 @@ public final class PartyOrders {
     public static Command commandOf(GameOrder order) {
         var word = order.word();
         if (uz.dukeengine.dungeon.food.Food.WORDS.contains(word)) {
-            return order.target() == null ? null : new uz.dukeengine.dungeon.run.Work(order.playerIndex(), order.target());
+            return order.target() != null ? new uz.dukeengine.dungeon.run.Work(order.playerIndex(), order.target())
+                    : order.place() != null
+                            ? new uz.dukeengine.dungeon.run.Work(order.playerIndex(), null, order.place()) : null;
         }
         if (word.startsWith(HERO)) {
             return new ChooseHero(order.playerIndex(), word.substring(HERO.length()));

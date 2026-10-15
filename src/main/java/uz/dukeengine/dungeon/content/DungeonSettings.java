@@ -909,11 +909,18 @@ public final class DungeonSettings {
                     "Food: the recipe for " + recipe.makes() + " names a Potion there is not");
         }
         for (var gather : food.gathers()) {
-            require(thing.test(gather.thing()) && named.contains(gather.item()) && gather.count() >= 1
+            // A thing worked is a template, or the model of a piece of a map's scenery (a tree felled).
+            require((thing.test(gather.thing()) || gather.thing().contains("/")) && named.contains(gather.item())
+                    && gather.count() >= 1
                     && gather.frames() >= 1 && (gather.leaves().isEmpty() || thing.test(gather.leaves())),
                     "Food: working " + gather.thing() + " needs a Prop, a Potion, a count and frames");
             require(uz.dukeengine.dungeon.food.Food.WORDS.contains(gather.word()),
                     "Food: " + gather.word() + " is not a word of work " + uz.dukeengine.dungeon.food.Food.WORDS);
+        }
+        for (var clip : food.clips()) {
+            var said = clip.strip().split("\\s+");
+            require(said.length == 2 && uz.dukeengine.dungeon.food.Food.WORDS.contains(said[0]),
+                    "Food: Clips are a word of work and a clip: " + clip);
         }
         for (var hunt : food.hunts()) {
             require(monster(hunt.animal()) != null && named.contains(hunt.item()) && hunt.count() >= 1,

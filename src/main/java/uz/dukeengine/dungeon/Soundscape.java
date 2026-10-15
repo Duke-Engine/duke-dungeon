@@ -66,6 +66,7 @@ final class Soundscape implements Painter {
         long now = System.nanoTime();
         if (!playing) {
             loop(null);
+            firesHeard(List.of()); // no match, no fire
             play(musicFor(music, false, null, null, List.of(), null, false, false), now);
             return;
         }
@@ -91,6 +92,7 @@ final class Soundscape implements Painter {
         screensHeard();
         questsHeard(run.questsNow());
         coinsHeard(run.payments(), match.game().getLocalPlayerIndex());
+        firesHeard(match.game().getSnapshot().units());
     }
 
     @Override
@@ -187,6 +189,37 @@ final class Soundscape implements Painter {
     }
 
     /** Coins, as gold is paid to him or by him: once a frame it happened on, from the first one after he is seen. */
+    /** The fires crackling now, by their keys: {@code fire:} and the fire's id. */
+    private final Set<String> fires = new HashSet<>();
+
+    /**
+     * Every fire the window sees crackles where it stands, a placed loop the client starts when the listener comes
+     * near (Duke3D.loopAt); one gone -- burnt out, or out of sight -- fades. See docs/plan/2026-10-15-food-and-fire.md.
+     */
+    private void firesHeard(List<UnitView> units) {
+        var food = settings.food();
+        if (food.crackle().isBlank()) {
+            return;
+        }
+        var now = new HashSet<String>();
+        for (var unit : units) {
+            if (unit.templateName().equals(food.campfire())) {
+                var key = "fire:" + unit.id();
+                now.add(key);
+                if (fires.add(key)) {
+                    duke.loopAt(key, food.crackle(), unit.x(), unit.y());
+                }
+            }
+        }
+        for (var it = fires.iterator(); it.hasNext(); ) {
+            var key = it.next();
+            if (!now.contains(key)) {
+                duke.stopLoopAt(key, 1f);
+                it.remove();
+            }
+        }
+    }
+
     private void coinsHeard(List<DungeonRun.Payment> payments, int him) {
         int latest = paidUpTo;
         for (var paid : payments) {

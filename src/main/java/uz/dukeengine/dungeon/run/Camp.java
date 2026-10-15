@@ -6,6 +6,7 @@ import java.util.TreeMap;
 import uz.dukeengine.core.GameLogic;
 import uz.dukeengine.core.math.Coord3D;
 import uz.dukeengine.core.module.MoveUpdate;
+import uz.dukeengine.core.player.PlayerList;
 import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.core.thing.ObjectId;
 import uz.dukeengine.core.thing.World;
@@ -17,14 +18,19 @@ import uz.dukeengine.rpg.item.GroundItem;
 import uz.dukeengine.rpg.item.LootBag;
 
 /**
- * Food and fire as they are played: the world's trees, bushes, wells, fires and animals laid with the map, a hero's
- * work at one of them -- walked to, then a few seconds busy, then what it gives in his bag -- what was taken growing
- * back, the fires he builds going out, and an animal's meat where it fell. See docs/plan/2026-10-15-food-and-fire.md.
+ * Food and fire as they are played: the world's bushes, wells, fires and animals laid with the map, its own scenery
+ * trees felled (E66), a hero's work at one of them -- walked to, then a few seconds busy looping his work's clip (E67),
+ * then what it gives in his bag -- what was taken growing back, the fires he builds going out, and an animal's meat where
+ * it fell. See docs/plan/2026-10-15-food-and-fire.md.
  *
  * <p>All of it the simulation's, on its thread: frames and never a clock, a draw from the map's seed, and lists in the
- * order they were made. Nothing here is saved: a loaded game lays the map, and with it the world's things, fresh.
+ * order they were made. Of it the save keeps the trees felled (the logic's removed scenery); what is laid is laid fresh,
+ * and what was felled grows back its whole time after a load.
  */
 public final class Camp {
+
+    /** How near a click must come to a tree's footprint to mean the tree: a click on its crown counts. */
+    static final float CLICK_REACH = 8f;
 
     private final DungeonSettings settings;
     private final Food food;
@@ -36,9 +42,13 @@ public final class Camp {
     private final List<Burning> burning = new ArrayList<>();
     /** The animals the world laid: not the dungeon's creatures a zone is cleared of. */
     private final List<ObjectId> animals = new ArrayList<>();
+    /** The map laid, and the model of each piece of its scenery by index, for the trees that may be felled. */
+    private String map = "";
+    private List<String> scenery = List.of();
 
     private static final class Chore {
-        final ObjectId thing;
+        final ObjectId thing; // null for a piece of scenery
+        final int piece; // the scenery's index, or -1
         final Food.Gather gather; // null for a meal at a fire
         Coord3D goal;
         final int orderedAt;
@@ -47,15 +57,17 @@ public final class Camp {
         Coord3D standing;
         float health;
 
-        Chore(ObjectId thing, Food.Gather gather, Coord3D goal, int orderedAt) {
+        Chore(ObjectId thing, int piece, Food.Gather gather, Coord3D goal, int orderedAt) {
             this.thing = thing;
+            this.piece = piece;
             this.gather = gather;
             this.goal = goal;
             this.orderedAt = orderedAt;
         }
     }
 
-    private record Growing(String thing, Coord3D at, float facing, int frame, ObjectId leaves) {
+    /** What grows back: a thing of {@code thing}, or the scenery {@code piece}, at {@code at}. */
+    private record Growing(String thing, int piece, Coord3D at, float facing, int frame, ObjectId leaves) {
     }
 
     private record Burning(ObjectId fire, int outAt) {
@@ -69,16 +81,34 @@ public final class Camp {
     /**
      * The world's things for map {@code map}, laid as the map is: each Forage line's count of its thing round its zone,
      * between its two distances, on ground a hero stands on and clear of scenery, drawn from {@code seed}. Animals
-     * stand for {@code animalsSide} at {@code level}. What grew and burnt on the map before is forgotten.
+     * stand for {@code animalsSide} at {@code level}. {@code models} is the model of each piece of the map's scenery,
+     * by index; {@code felled} the pieces a save says were felled, taken away again and growing back from now. What grew
+     * and burnt on the map before is forgotten.
      */
-    public void lay(GameLogic logic, String map, long seed, List<StaticMap.Zone> zones, int animalsSide, int level) {
+    public void lay(GameLogic logic, String map, long seed, List<StaticMap.Zone> zones, int animalsSide, int level,
+            List<String> models, List<Integer> felled) {
         chores.clear();
         growing.clear();
         burning.clear();
         animals.clear();
+        this.map = map;
+        this.scenery = models == null ? List.of() : List.copyOf(models);
         var grid = logic.getPathGrid();
         if (grid == null) {
             return;
+        }
+        if (felled != null && !felled.isEmpty() && food.sceneryMaps().contains(map)) {
+            logic.setRemovedScenery(felled);
+            for (int piece : felled) {
+                var gather = gatherOf(piece);
+                var footprint = logic.sceneryPiece(piece);
+                if (gather != null && footprint != null) {
+                    var at = new Coord3D(footprint.x(), footprint.y(),
+                            logic.groundHeight(new Coord3D(footprint.x(), footprint.y(), 0f)));
+                    growing.add(new Growing("", piece, at, 0f, logic.getFrame() + gather.regrow(),
+                            leave(logic, gather, at, 0f)));
+                }
+            }
         }
         float cell = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
         var laid = new ArrayList<Coord3D>();
@@ -104,7 +134,7 @@ public final class Camp {
                     continue;
                 }
                 var at = new Coord3D(x, y, logic.groundHeight(new Coord3D(x, y, 0f)));
-                var thing = logic.spawn(template, at, animal ? animalsSide : uz.dukeengine.core.player.PlayerList.NEUTRAL_INDEX);
+                var thing = logic.spawn(template, at, animal ? animalsSide : PlayerList.NEUTRAL_INDEX);
                 thing.setOrientation(rng.nextInt(360) * (float) Math.PI / 180f);
                 if (animal) {
                     Spawner.scale(thing, level, settings);
@@ -122,8 +152,17 @@ public final class Camp {
         var at = new Coord3D(x, y, 0f);
         int cx = grid.toCellX(at);
         int cy = grid.toCellY(at);
-        if (grid.isBlocked(cx, cy) || grid.isCliff(cx, cy) || !grid.clearOfCircles(x, y, 5f)) {
-            return false;
+        if (grid.isBlocked(cx, cy) || grid.isCliff(cx, cy) || !grid.clearOfCircles(x, y, 5f)
+                || grid.hasStepCosts() && grid.stepPercent(cx, cy) < 100) {
+            return false; // nor on a road
+        }
+        // Open all round, so a thing never shuts a gap one cell wide.
+        for (int dy = -1; dy <= 1; dy++) {
+            for (int dx = -1; dx <= 1; dx++) {
+                if (grid.isBlocked(cx + dx, cy + dy)) {
+                    return false;
+                }
+            }
         }
         for (var other : laid) {
             float dx = other.x() - x;
@@ -133,6 +172,27 @@ public final class Camp {
             }
         }
         return true;
+    }
+
+    /** The work of the scenery piece {@code piece}: its model's, on a map whose scenery is worked; null for none. */
+    private Food.Gather gatherOf(int piece) {
+        return piece < 0 || piece >= scenery.size() || !food.sceneryMaps().contains(map) ? null
+                : food.gather(scenery.get(piece));
+    }
+
+    /** The piece of this map's scenery a click at {@code place} means and that may be felled, or -1. */
+    public int pieceAt(GameLogic logic, Coord3D place) {
+        if (place == null || !food.sceneryMaps().contains(map)) {
+            return -1;
+        }
+        int piece = logic.sceneryNear(place, CLICK_REACH);
+        return gatherOf(piece) == null ? -1 : piece;
+    }
+
+    /** What a click on the ground at {@code place} gives: the chop's word over a tree that may be felled, else null. */
+    public String wordAt(GameLogic logic, Coord3D place) {
+        int piece = pieceAt(logic, place);
+        return piece < 0 ? null : gatherOf(piece).word();
     }
 
     /** Whether {@code thing} is one of the world's animals: hunted, but no camp's guard. */
@@ -153,39 +213,72 @@ public final class Camp {
     }
 
     /**
-     * A player's hero sent to work {@code id}: at it now if he is near enough, or walked over. A thing nobody works is
-     * no work. Whatever he was doing is the caller's to call off.
+     * A player's hero sent to work {@code id} -- or, with none, the tree of the map's scenery at {@code place}: at it
+     * now if he is near enough, or walked over. A thing nobody works is no work. Whatever he was doing is the caller's
+     * to call off.
      */
-    public void order(GameLogic logic, int player, GameObject hero, ObjectId id) {
-        chores.remove(player);
-        var thing = id == null ? null : logic.findObject(id);
-        if (hero == null || hero.isEffectivelyDead() || thing == null) {
+    public void order(GameLogic logic, int player, GameObject hero, ObjectId id, Coord3D place) {
+        stop(player, hero);
+        if (hero == null || hero.isEffectivelyDead()) {
             return;
         }
-        var name = thing.getTemplate().name();
-        var gather = food.gather(name);
-        if (gather == null && !name.equals(food.campfire())) {
-            return;
+        Chore chore;
+        if (id == null) {
+            int piece = pieceAt(logic, place);
+            var footprint = piece < 0 ? null : logic.sceneryPiece(piece);
+            if (footprint == null) {
+                return;
+            }
+            // Beside its trunk, on his side of it.
+            var here = hero.getPosition();
+            float dx = here.x() - footprint.x();
+            float dy = here.y() - footprint.y();
+            float length = Math.max(0.001f, (float) Math.sqrt(dx * dx + dy * dy));
+            float off = footprint.radius() + food.reach() * 0.6f;
+            float x = footprint.x() + dx / length * off;
+            float y = footprint.y() + dy / length * off;
+            chore = new Chore(null, piece, gatherOf(piece),
+                    new Coord3D(x, y, logic.groundHeight(new Coord3D(x, y, 0f))), logic.getFrame());
+        } else {
+            var thing = logic.findObject(id);
+            if (thing == null) {
+                return;
+            }
+            var name = thing.getTemplate().name();
+            var gather = food.gather(name);
+            if (gather == null && !name.equals(food.campfire())) {
+                return;
+            }
+            chore = new Chore(id, -1, gather,
+                    gather == null || uz.dukeengine.core.thing.Solid.of(thing.getTemplate()).footprintRadius() <= 0f
+                            ? thing.getPosition() : logic.standingNextTo(hero, thing), logic.getFrame());
         }
-        var goal = gather == null ? thing.getPosition() : logic.standingNextTo(hero, thing);
-        var chore = new Chore(id, gather, goal, logic.getFrame());
         chores.put(player, chore);
-        if (!near(hero, thing, gather)) {
+        if (!near(logic, hero, chore)) {
             var legs = hero.getLocomotor();
             if (legs != null) {
-                legs.moveTo(goal);
+                legs.moveTo(chore.goal);
             }
             var move = hero.findModule(MoveUpdate.class);
             chore.goal = move == null ? null : move.getGoal(); // where the legs took it to be
         }
     }
 
-    private boolean near(GameObject hero, GameObject thing, Food.Gather gather) {
-        if (gather != null) {
+    private boolean near(GameLogic logic, GameObject hero, Chore chore) {
+        var here = hero.getPosition();
+        if (chore.piece >= 0) {
+            var footprint = logic.sceneryPiece(chore.piece);
+            float dx = here.x() - footprint.x();
+            float dy = here.y() - footprint.y();
+            float reach = footprint.radius() + food.reach() + uz.dukeengine.core.thing.Solid.of(hero.getTemplate()).footprintRadius();
+            return dx * dx + dy * dy <= reach * reach;
+        }
+        var thing = logic.findObject(chore.thing);
+        if (chore.gather != null) {
             return World.reachBetween(hero, thing) <= food.reach();
         }
-        float dx = hero.getPosition().x() - thing.getPosition().x();
-        float dy = hero.getPosition().y() - thing.getPosition().y();
+        float dx = here.x() - thing.getPosition().x();
+        float dy = here.y() - thing.getPosition().y();
         return dx * dx + dy * dy <= food.fireRadius() * food.fireRadius();
     }
 
@@ -193,6 +286,19 @@ public final class Camp {
     public boolean working(int player) {
         var chore = chores.get(player);
         return chore != null && chore.startedAt >= 0;
+    }
+
+    /** This player's work called off: his clip ended (E67). */
+    private void stop(int player, GameObject hero) {
+        var chore = chores.remove(player);
+        if (chore != null && chore.startedAt >= 0 && hero != null) {
+            hero.busy(null, 0);
+        }
+    }
+
+    /** Whether the work's thing is still there: the thing standing, or the tree not yet felled. */
+    private static boolean there(GameLogic logic, Chore chore) {
+        return chore.piece >= 0 ? !logic.isSceneryRemoved(chore.piece) : logic.findObject(chore.thing) != null;
     }
 
     /**
@@ -204,16 +310,15 @@ public final class Camp {
         if (chore == null) {
             return;
         }
-        var thing = logic.findObject(chore.thing);
         var move = hero == null ? null : hero.findModule(MoveUpdate.class);
-        if (thing == null || hero == null || hero.isEffectivelyDead() || move == null) {
-            chores.remove(player);
+        if (!there(logic, chore) || hero == null || hero.isEffectivelyDead() || move == null) {
+            stop(player, hero);
             return;
         }
         int frame = logic.getFrame();
         var body = hero.getBody();
         if (chore.startedAt < 0) {
-            if (near(hero, thing, chore.gather)) {
+            if (near(logic, hero, chore)) {
                 start(logic, player, hero, bag, chore, move, frame);
             } else if (!move.isMoving() && frame > chore.orderedAt + 2
                     || move.getGoal() != null && chore.goal != null && !move.getGoal().equals(chore.goal)) {
@@ -224,25 +329,32 @@ public final class Camp {
         var here = hero.getPosition();
         float dx = here.x() - chore.standing.x();
         float dy = here.y() - chore.standing.y();
-        if (move.isMoving() || dx * dx + dy * dy > 0.25f || body.getHealth() < chore.health - 0.01f) {
-            chores.remove(player);
+        // A blow taken ends his clip (E67), and so his work; a fall in health the same frame a fountain makes up for
+        // would not show.
+        boolean struck = food.clipOf(word(chore)) != null && hero.getBusyClip() == null && frame < chore.endsAt;
+        if (move.isMoving() || dx * dx + dy * dy > 0.25f || struck || body.getHealth() < chore.health - 0.01f) {
+            stop(player, hero);
             return;
         }
         chore.health = body.getHealth();
-        var word = chore.gather == null ? Food.COOK : chore.gather.word();
+        var word = word(chore);
         if ((frame - chore.startedAt) % food.beatFrames() == 0) {
             // Seen and heard, not decided: events, out of the checksum.
             logic.effect("Work" + word, hero);
             logic.sound("work." + word.toLowerCase(java.util.Locale.ROOT), hero, 0);
         }
         if (frame >= chore.endsAt) {
-            chores.remove(player);
+            stop(player, hero);
             if (chore.gather == null) {
-                cook(logic, bag, frame, player);
+                cook(bag, frame, player);
             } else {
-                gathered(logic, bag, thing, chore.gather, frame, player);
+                gathered(logic, bag, chore, frame, player);
             }
         }
+    }
+
+    private static String word(Chore chore) {
+        return chore.gather == null ? Food.COOK : chore.gather.word();
     }
 
     private void start(GameLogic logic, int player, GameObject hero, LootBag bag, Chore chore, MoveUpdate move,
@@ -255,12 +367,19 @@ public final class Camp {
         if (move.isMoving()) {
             move.stop();
         }
-        var thing = logic.findObject(chore.thing);
-        uz.dukeengine.rpg.Facing.turnToward(hero, thing);
+        if (chore.piece >= 0) {
+            var footprint = logic.sceneryPiece(chore.piece);
+            hero.setOrientation((float) Math.atan2(footprint.y() - hero.getPosition().y(),
+                    footprint.x() - hero.getPosition().x()));
+        } else {
+            uz.dukeengine.rpg.Facing.turnToward(hero, logic.findObject(chore.thing));
+        }
         chore.startedAt = frame;
-        chore.endsAt = frame + (chore.gather == null ? food.cookFrames() : chore.gather.frames());
+        int frames = chore.gather == null ? food.cookFrames() : chore.gather.frames();
+        chore.endsAt = frame + frames;
         chore.standing = hero.getPosition();
         chore.health = hero.getBody().getHealth();
+        hero.busy(food.clipOf(word(chore)), frames); // his work's clip, looped while he stands at it (E67)
     }
 
     /** The first recipe, best first, whose every part is in the bag; null for none. */
@@ -293,7 +412,7 @@ public final class Camp {
         }
     }
 
-    private void cook(GameLogic logic, LootBag bag, int frame, int player) {
+    private void cook(LootBag bag, int frame, int player) {
         var recipe = recipe(bag);
         if (recipe == null) {
             return; // eaten or dropped while it cooked
@@ -302,7 +421,8 @@ public final class Camp {
         give(bag, recipe.makes(), 1, frame, player);
     }
 
-    private void gathered(GameLogic logic, LootBag bag, GameObject thing, Food.Gather gather, int frame, int player) {
+    private void gathered(GameLogic logic, LootBag bag, Chore chore, int frame, int player) {
+        var gather = chore.gather;
         if (!give(bag, gather.item(), gather.count(), frame, player)) {
             say(bag, settings.story().trade().fullWord(), frame);
             return;
@@ -310,17 +430,32 @@ public final class Camp {
         if (gather.regrow() <= 0) {
             return; // a well is never used up
         }
+        if (chore.piece >= 0) {
+            // A tree of the map's own felled: gone from the ground and the picture, on every machine (E66).
+            var footprint = logic.sceneryPiece(chore.piece);
+            var at = new Coord3D(footprint.x(), footprint.y(),
+                    logic.groundHeight(new Coord3D(footprint.x(), footprint.y(), 0f)));
+            logic.removeScenery(chore.piece);
+            growing.add(new Growing("", chore.piece, at, 0f, frame + gather.regrow(), leave(logic, gather, at, 0f)));
+            return;
+        }
+        var thing = logic.findObject(chore.thing);
         var at = thing.getPosition();
         float facing = thing.getOrientation();
         logic.destroyObject(thing);
-        ObjectId leaves = null;
+        growing.add(new Growing(gather.thing(), -1, at, facing, frame + gather.regrow(),
+                leave(logic, gather, at, facing)));
+    }
+
+    /** What stands where a thing was taken until it grows back -- a stump -- or null for nothing. */
+    private static ObjectId leave(GameLogic logic, Food.Gather gather, Coord3D at, float facing) {
         var stump = gather.leaves().isEmpty() ? null : logic.getThingFactory().findTemplate(gather.leaves());
-        if (stump != null) {
-            var left = logic.spawn(stump, at, uz.dukeengine.core.player.PlayerList.NEUTRAL_INDEX);
-            left.setOrientation(facing);
-            leaves = left.getId();
+        if (stump == null) {
+            return null;
         }
-        growing.add(new Growing(gather.thing(), at, facing, frame + gather.regrow(), leaves));
+        var left = logic.spawn(stump, at, PlayerList.NEUTRAL_INDEX);
+        left.setOrientation(facing);
+        return left.getId();
     }
 
     /** {@code count} of {@code potion} into the bag, a stack of its own until the run joins it; false for no room. */
@@ -366,9 +501,9 @@ public final class Camp {
         float x = here.x() + (float) Math.cos(facing) * 8f;
         float y = here.y() + (float) Math.sin(facing) * 8f;
         var fire = logic.spawn(template, new Coord3D(x, y, logic.groundHeight(new Coord3D(x, y, 0f))),
-                uz.dukeengine.core.player.PlayerList.NEUTRAL_INDEX);
+                PlayerList.NEUTRAL_INDEX);
         burning.add(new Burning(fire.getId(), frame + food.fireFrames()));
-        chores.remove(player);
+        stop(player, hero);
     }
 
     /** A frame of the world's own: what was taken grows back (not under a hero), and built fires go out. */
@@ -391,13 +526,16 @@ public final class Camp {
                     && Math.abs(hero.getPosition().y() - grown.at().y()) < 5f)) {
                 continue;
             }
-            var template = logic.getThingFactory().findTemplate(grown.thing());
             if (grown.leaves() != null && logic.findObject(grown.leaves()) != null) {
                 logic.destroyObject(logic.findObject(grown.leaves()));
             }
-            if (template != null) {
-                logic.spawn(template, grown.at(), uz.dukeengine.core.player.PlayerList.NEUTRAL_INDEX)
-                        .setOrientation(grown.facing());
+            if (grown.piece() >= 0) {
+                logic.restoreScenery(grown.piece());
+            } else {
+                var template = logic.getThingFactory().findTemplate(grown.thing());
+                if (template != null) {
+                    logic.spawn(template, grown.at(), PlayerList.NEUTRAL_INDEX).setOrientation(grown.facing());
+                }
             }
             it.remove();
         }
