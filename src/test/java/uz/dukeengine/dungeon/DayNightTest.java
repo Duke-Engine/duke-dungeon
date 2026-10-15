@@ -54,22 +54,36 @@ class DayNightTest {
         assertEquals(40, session.run().saveNow().clock());
     }
 
+    /** The hour's sun (E86): scene.duke's at noon, low and warm at dawn and dusk, a cold low moon at night. */
     @Test
-    void theLightAtTheKeyHours() {
-        assertEquals(0, DAY.lightAt(12f) >>> 24, "noon lays nothing over the world");
-        int midnight = DAY.lightAt(0f);
-        assertEquals(128, midnight >>> 24, "night is half dark");
-        assertEquals(0x0A1838, midnight & 0xFFFFFF, "and dark blue");
-        assertEquals(midnight, DAY.lightAt(23f), "and the same either side of midnight");
-        int dawn = DAY.lightAt(6.5f);
-        assertTrue((dawn >> 16 & 0xFF) > (dawn & 0xFF), "dawn is warm");
-        int dusk = DAY.lightAt(18.5f);
-        assertTrue((dusk >> 16 & 0xFF) > (dusk & 0xFF), "dusk is warm");
-        assertTrue((dawn >>> 24) < 128 && (dusk >>> 24) < 128, "and neither as dark as night");
-        int between = DAY.lightAt(7.25f);
-        assertTrue((between >>> 24) > 0 && (between >>> 24) < (dawn >>> 24), "eased between the keys");
+    void theSunAtTheKeyHours() {
+        float yaw = SHIPPED.sun().yaw();
+        var noon = Atmosphere.sunOf(DAY.skyAt(12f), yaw);
+        var scene = SHIPPED.sun();
+        assertEquals(scene.pitch(), noon.pitch(), 1e-3, "noon is scene.duke's own sun");
+        assertEquals(scene.strengthPercent() / 100f, noon.strength(), 1e-3);
+        assertEquals(scene.ambientPercent() / 100f, noon.ambient(), 1e-3);
+        assertEquals(scene.colour(), noon.colour());
+        assertEquals(yaw, noon.yaw(), 1e-3, "the walls are lit on the same side all day");
+
+        var midnight = Atmosphere.sunOf(DAY.skyAt(0f), yaw);
+        assertTrue(midnight.strength() < 0.4f, "the night is dark");
+        assertTrue((midnight.colour() & 0xFF) > (midnight.colour() >> 16 & 0xFF), "and its moon cold");
+        assertEquals(midnight, Atmosphere.sunOf(DAY.skyAt(23f), yaw), "the same either side of midnight");
+        for (float hour : new float[] {6.5f, 18.5f}) {
+            var low = Atmosphere.sunOf(DAY.skyAt(hour), yaw);
+            assertTrue(low.pitch() < 20f, "dawn's and dusk's sun is low");
+            assertTrue((low.colour() >> 16 & 0xFF) > (low.colour() & 0xFF), "and warm");
+            assertTrue(low.strength() > midnight.strength() && low.strength() < noon.strength());
+        }
+        var between = DAY.skyAt(7.25f);
+        assertTrue(between.pitch() > DAY.skyAt(6.5f).pitch() && between.pitch() < DAY.skyAt(8f).pitch(),
+                "eased between the keys");
         assertEquals(1f, DAY.nightShare(0f), 1e-4);
         assertEquals(0f, DAY.nightShare(12f), 1e-4);
+        assertEquals(DAY.nightLights(), DAY.lightScaleAt(0f), 1e-4, "the fires reach furthest at night");
+        assertEquals(1f, DAY.lightScaleAt(12f), 1e-4, "and as written by day");
+        assertTrue((DAY.skyAt(0f).haze() & 0xFF) > (DAY.skyAt(0f).haze() >> 16 & 0xFF), "the night's haze is blue");
     }
 
     @Test

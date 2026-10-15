@@ -1032,9 +1032,9 @@ public final class DungeonSettings {
             require(hour >= 0f && hour < 24f, "DayNight: an hour is 0 to 24, not " + hour);
         }
         float last = -1f;
-        for (var key : day.light()) {
-            require(key.hour() > last && key.hour() < 24f, "DayNight: the Light keys go up the clock, 0 to 24");
-            require(key.percent() >= 0 && key.percent() <= 100, "DayNight: a Light key's strength is a percent");
+        for (var key : day.sky()) {
+            require(key.hour() > last && key.hour() < 24f, "DayNight: the Sky keys go up the clock, 0 to 24");
+            require(key.strength() >= 0f && key.ambient() >= 0f, "DayNight: a Sky key's sun and shade are percents");
             last = key.hour();
         }
         for (var roamer : day.nightRoamers()) {

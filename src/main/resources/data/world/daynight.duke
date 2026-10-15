@@ -8,10 +8,11 @@
 ; wide map) is drawn by the hour; the castles, the halls and the descent keep
 ; their own light, the keep's dark among them.
 ;
-; Until the engine can relight a world while it is drawn (E86), the hour is a
-; colour laid over the world under the panel: the sun, the ambient and the
-; haze stay as scene.duke sets them, and the night is a dark blue wash over
-; them, the fires' halos added on top.
+; The hour is real light (E86): the sun's height and colour, the shade's,
+; and the haze at the world's edge, eased from key to key; at night every
+; fire's and lamp's light (a LIGHT layer) reaches further. A weather's Tint
+; lies over the world alone, under the panel and the bars. Inside, scene.duke's
+; Sun.
 ; ===========================================================================
 DayNight
   ; A whole day: 20 minutes of play (30 frames a second).
@@ -21,32 +22,30 @@ DayNight
   NightFrom = 20
   NightTo = 5
 
-  ; The colour over the world at an hour, and how much of it in percent, eased
-  ; between the hours written and round midnight. Night is a dark blue at half:
-  ; dark, and every road and creature still read through it.
-  Light = [
-    "0 0x0A1838 50",
-    "4.5 0x0A1838 50",
-    "5.5 0x4A3A70 34",
-    "6.5 0xFF9A50 16",
-    "8 0xFFF2D0 0",
-    "17 0xFFF2D0 0",
-    "18.5 0xFF7A30 20",
-    "19.5 0x5A3468 34",
-    "20.5 0x0A1838 50",
+  ; The sky at an hour, eased between the hours written and round midnight:
+  ; the hour, the sun's height in degrees, its strength and the shade's in
+  ; percent (scene.duke's Sun is 40, 100, 55), then the sun's colour, the
+  ; shade's and the haze's. Night is a cold low "moon": dark, and every road
+  ; and creature still read through it.
+  Sky = [
+    "0 30 28 40 0x8CA8E0 0x4A5A9A 0x0A1428",
+    "4.5 30 28 40 0x8CA8E0 0x4A5A9A 0x0A1428",
+    "5.5 8 40 42 0xB08AC0 0x6A5A90 0x3A2E50",
+    "6.5 12 75 48 0xFFA868 0x9A86B0 0x8A6070",
+    "8 30 95 54 0xFFE8C8 0xD8DCF4 0x8AA0B8",
+    "12 40 100 55 0xFFF7E6 0xE6E6FF 0x9AB0C8",
+    "17 28 95 54 0xFFE8C8 0xD8DCF4 0x8AA0B8",
+    "18.5 10 80 46 0xFF8A48 0xA07A9A 0x8A5040",
+    "19.5 6 45 42 0xB070A0 0x5A4A88 0x3A2448",
+    "20.5 30 28 40 0x8CA8E0 0x4A5A9A 0x0A1428",
   ]
+  ; Every fire's and lamp's light at the darkest hour, times its own.
+  NightLights = 2
 
   ; The marsh's will-o-the-wisp, the Arvoh, only roams at night: by day it
   ; keeps to where it stands and senses nobody -- unless it is struck.
   NightRoamers = [Wisp]
 
-  ; What glows by night, its colour and its reach in units: a halo laid over
-  ; the dark, as strong as the night is dark. A fire matters more at night.
-  Glows = [
-    "Campfire 0xFF9A3A 55",
-    "Fountain 0x8AC8FF 35",
-  ]
-  Glow = kit/effects/particles/light_01.png
   ; Crickets, heard in the open world at night.
   NightLoop = ambience.night
 
@@ -72,6 +71,9 @@ DayNight
       Tint = 0x28323C
       TintPercent = 18
       Falls = kit/effects/particles/trace_01.png
+      ; Pale blue streaks, five widths long.
+      FallColour = 0xC8E0FF
+      Stretch = 5
       FallSpeed = 90
       FallSize = 2.4
       FallSpacing = 3
@@ -84,6 +86,9 @@ DayNight
       Tint = 0x18202C
       TintPercent = 30
       Falls = kit/effects/particles/trace_01.png
+      ; Pale blue streaks, five widths long.
+      FallColour = 0xC8E0FF
+      Stretch = 5
       FallSpeed = 120
       FallSize = 2.8
       FallSpacing = 2.5
