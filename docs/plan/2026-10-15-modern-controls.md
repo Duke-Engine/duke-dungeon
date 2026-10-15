@@ -136,7 +136,7 @@ modern, and the item card's `+1` to a skill still names its own key. E81 (traver
 **Game, phase 2c (done, branch `wasd4`)**: in modern the hero picks no fight of his own. The client sends
 `FightOnlyWhenTold` once his hero is chosen (an order, so every machine of a party agrees); `HeroBrain` then never
 auto-acquires or chases, and its `HeroBrain.Module` holds his weapon's fire while it was given nothing, so the
-engine's idle weapon picks nothing either (E82 asks the engine for a per-unit flag). A lock-on fights its target to its
+engine's idle weapon picks nothing either (E86 asks the engine for a per-unit flag). A lock-on fights its target to its
 death and he stands; classic is as ever. An item's "+1" to a skill names the letter pressed (`Items` through
 `letterOf`): "+1 E mahorati" for the W skill, modern.
 

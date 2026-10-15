@@ -27,7 +27,12 @@ public record Quest(String name, Tracker.Kind kind, String title, List<Step> ste
         /** A hero talking to an Npc. */
         TALK,
         /** A hero who holds the item talking to an Npc; it leaves his bag. */
-        GIVE
+        GIVE,
+        /**
+         * A hero following an Npc to the step's {@code Where}: they walk there while he keeps near and wait when he
+         * strays; done when they stand in it with him near (docs/plan/2026-10-15-seamless-campaign.md, section 5).
+         */
+        FOLLOW
     }
 
     /**

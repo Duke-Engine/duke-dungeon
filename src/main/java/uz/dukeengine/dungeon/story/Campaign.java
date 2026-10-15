@@ -18,15 +18,34 @@ import java.util.List;
  * @param defaultLevel the level that act's hero is taken to have reached when there is no such save
  * @param descents     generated floors a MAP may name as if they were a map: the descent's, under a name of their own
  * @param joints       in order: the first is where a new game opens
+ * @param retired      the maps the act no longer plays, each with the joint that took its place: a save on one
+ *                     loads as that joint (see docs/plan/2026-10-15-seamless-campaign.md, "Old saves")
  */
 public record Campaign(String name, String word, String blurb, String hero, String follows, int defaultLevel,
-        List<Descent> descents, List<Joint> joints) {
+        List<Descent> descents, List<Joint> joints, List<Retired> retired) {
 
-    public static final Campaign DEFAULTS = new Campaign("act1", "", "", "", "", 1, List.of(), List.of());
+    public static final Campaign DEFAULTS = new Campaign("act1", "", "", "", "", 1, List.of(), List.of(), List.of());
 
     public Campaign {
         descents = descents == null ? List.of() : List.copyOf(descents);
         joints = joints == null ? List.of() : List.copyOf(joints);
+        retired = retired == null ? List.of() : List.copyOf(retired);
+    }
+
+    /** A map the act left, and the joint (1 its first) that took its place. */
+    public record Retired(String map, int joint) {
+
+        public static final Retired DEFAULTS = new Retired("", 1);
+    }
+
+    /** The joint that took the place of the retired {@code map}, or null for a map the act still plays or never did. */
+    public Joint replacing(String map) {
+        for (var each : retired) {
+            if (each.map().equals(map) && each.joint() >= 1 && each.joint() <= joints.size()) {
+                return joints.get(each.joint() - 1);
+            }
+        }
+        return null;
     }
 
     /**

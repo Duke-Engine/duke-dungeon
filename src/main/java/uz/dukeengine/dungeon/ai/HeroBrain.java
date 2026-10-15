@@ -616,7 +616,7 @@ public final class HeroBrain extends UnitScript {
     /**
      * The modern way, at his weapon: while his player plays it and the weapon has nothing it was given -- no target,
      * no swing toward a point, no ground -- it keeps quiet, so it acquires nothing by itself (the engine's weapon looks
-     * for the nearest enemy whenever it is idle; a per-unit "acquires nothing" in the engine, E82, would say
+     * for the nearest enemy whenever it is idle; a per-unit "acquires nothing" in the engine, E86, would say
      * this without the hold). A lock-on whose target dies leaves him idle, and so standing.
      */
     boolean holdingFire() {

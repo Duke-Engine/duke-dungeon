@@ -45,8 +45,7 @@ class Act1Test {
     /** A new game as the front menu's campaign row starts it. */
     private static Dungeon.Session newGame() {
         var session = Dungeon.newSession(7L, SETTINGS);
-        session.run().playing(Floors.named(CAMPAIGN.joints().getFirst().map(), 7L, SETTINGS, false));
-        session.run().startWith(session.game(), CAMPAIGN.hero());
+        session.run().skipTo(CAMPAIGN, 1, null);
         session.game().runHeadless(1);
         return session;
     }
@@ -71,9 +70,15 @@ class Act1Test {
         assertEquals(map, session.run().getStageName(), "the chain went on to " + map);
     }
 
+    /** A zone of the map being played, its own or a place the story adds to it. */
+    static uz.dukeengine.dungeon.map.StaticMap.Zone zone(String map, String name) {
+        var all = new ArrayList<>(Stages.load(map, SETTINGS).story().zones());
+        all.addAll(SETTINGS.placesOn(map));
+        return all.stream().filter(z -> z.name().equals(name)).findFirst().orElseThrow(() -> new AssertionError(name));
+    }
+
     private static void standIn(Dungeon.Session session, String zone) {
-        var at = Stages.load(session.run().getStageName(), SETTINGS).story().zones().stream()
-                .filter(z -> z.name().equals(zone)).findFirst().orElseThrow();
+        var at = zone(session.run().getStageName(), zone);
         var hero = hero(session);
         hero.setPosition(new Coord3D(at.middleX(CELL), at.middleY(CELL), hero.getPosition().z()));
         play(session, SETTINGS.story().dialogue().checkFrames() + 3);
@@ -121,49 +126,43 @@ class Act1Test {
         var game = session.game();
         var run = session.run();
         var script = run.getScript();
-        assertEquals("jang", run.getStageName());
+        assertEquals("world", run.getStageName(), "the act opens on the one world");
 
-        // 1. The battle: the soldiers on his side, the opening seen, the light, the hero landed, the foe thrown back.
+        // 1. The battle before the north gate: the soldiers on his side, the hero landed, the foe beaten and cut down.
         var soldiers = all(game, "Soldier");
         assertEquals(4, soldiers.size(), "the kingdom's soldiers stand in the line");
         assertEquals(hero(session).getPlayerIndex(), soldiers.getFirst().getPlayerIndex(), "on his side");
-        play(session, 30);
-        assertTrue(script.flagged("HeroLanded"), "the opening seen, he lands");
-        var landing = Stages.load("jang", SETTINGS).story().zones().stream().filter(z -> z.name().equals("Landing"))
-                .findFirst().orElseThrow();
-        assertTrue(landing.holds(hero(session).getPosition().x(), hero(session).getPosition().y(), CELL)
-                || script.flagged("HeroLanded"), "in the light");
-        var foe = all(game, "EnemyCommander").getFirst();
-        strike(session, "EnemyCommander");
-        assertTrue(all(game, "EnemyCommander").contains(foe), "the hero beats him, never kills him");
-        play(session, 120);
-        assertTrue(foe.isEffectivelyDead() || !all(game, "EnemyCommander").contains(foe), "the commander cuts him down");
-        playUntil(session, "poytaxt", 400);
+        playUntilFlag(session, "HeroLanded", 1200);
+        playUntilFlag(session, "BattleWon", 1200);
+        assertEquals("world", run.getStageName(), "no other map: the battle won, he stays on the world");
+        assertTrue(all(game, "EnemyCommander").isEmpty(), "the enemy commander is dead");
 
-        // 2. The capital: the queen's welcome, her gold and her medallion, worn; the training begun at the gate.
+        // 2. The palace: the queen's welcome, her gold and her medallion, worn; the training begun.
+        standIn(session, "Saroy");
         walkUpTo(session, "Act1Queen");
         play(session, 5);
         var bag = run.progressOf(hero(session).getPlayerIndex()).getLoot();
         assertEquals("Medallion", bag.at(bag.wornPlace("Tumor")).id(), "worn at his neck");
         assertTrue(run.goldOf(hero(session).getPlayerIndex()) >= 100, "her gold");
+        assertTrue(run.getQuests().finished().contains("FollowCommander"), "the commander has led him here");
         assertTrue(run.getQuests().active().stream().anyMatch(q -> q.quest().equals("Training")));
-        assertFalse(all(game, "Merchant").isEmpty(), "the merchant is there");
-        standIn(session, "Gate");
-        playUntil(session, "mashq", 60);
+        assertFalse(all(game, "Merchant").isEmpty(), "the merchant is on the plaza");
 
-        // 3. The training: two floors of the descent, then back to the capital.
-        assertEquals(1, run.getDepth());
-        throughTheFloor(session);
-        assertEquals(2, run.getDepth(), "a boss of a campaign's descent opens its next floor");
-        throughTheFloor(session);
-        playUntil(session, "poytaxt", 60);
-        assertTrue(script.flagged("Trained"));
-        assertEquals("Medallion", bag.at(bag.wornPlace("Tumor")).id(), "he still wears it");
-
-        // 4. The war: the council, the gate, two keep floors.
+        // 3. The training at the old graves: the keeper rises and falls; back to the palace for the war council.
+        standIn(session, "Eski_qabrlar");
         play(session, 5);
+        assertFalse(all(game, "Reaper").isEmpty(), "the graves' keeper rose");
+        strike(session, "Reaper");
+        play(session, 5);
+        assertTrue(script.flagged("Trained"));
+        standIn(session, "Saroy");
+        play(session, 5);
+        assertTrue(script.flagged("WarBegun"), "the war council held");
         assertTrue(run.getQuests().active().stream().anyMatch(q -> q.quest().equals("ToWar")));
-        standIn(session, "Gate");
+        assertEquals("world", run.getStageName(), "all of it on the world");
+
+        // 4. The war: out by the field, two keep floors.
+        standIn(session, "Darvoza_oldi");
         playUntil(session, "urush", 60);
         assertEquals(3, run.getDepth());
         assertNotNull(run.getMission(), "a keep floor: clear outside, the key, the gate, the boss");
@@ -178,7 +177,6 @@ class Act1Test {
         strike(session, "DarkLord");
         play(session, 20);
         assertEquals("Act1Queen", run.medallionGivenTo(), "the medallion is back in her hand");
-        assertTrue(run.isCursed(hero(session).getPlayerIndex()) || run.medallionGivenTo().equals("Act1Queen"));
         assertEquals(List.of("act1:Act1Queen"), saved, "the run saved for Act 2");
         assertFalse(all(game, "Act1Queen").isEmpty(), "she is seen, in a vision");
         play(session, 100);
@@ -187,45 +185,12 @@ class Act1Test {
         assertEquals("1-qism tugadi", game.titleCardShowing().text(), "the act ends on its title card");
     }
 
-    /**
-     * The landing played as the player sees it, nothing skipped: the chapter's card, then the hero falls out of the
-     * sky onto the landing (E40) while the camera draws in low and close (E41), and the enemy commander is thrown
-     * back through the air, coming down at the zone he was thrown to.
-     */
-    @Test
-    void heFallsOutOfTheSkyAndTheEnemyCommanderIsThrownBack() {
-        var session = newGame();
-        var game = session.game();
-        assertEquals("Darvoza oldidagi jang", game.titleCardShowing().text(), "the chapter's name as it opens");
-        var zones = Stages.load("jang", SETTINGS).story().zones();
-        var landing = zones.stream().filter(z -> z.name().equals("Landing")).findFirst().orElseThrow();
-        var thrown = zones.stream().filter(z -> z.name().equals("Thrown")).findFirst().orElseThrow();
-        var foe = all(game, "EnemyCommander").getFirst();
-
-        float highest = 0f;
-        float foeHighest = 0f;
-        for (int i = 0; i < 900 && !session.run().getScript().flagged("HeroLanded"); i++) {
-            session.run().read(game.getLocalPlayerIndex(), 10_000);
-            game.runHeadless(1);
+    /** Played on until {@code flag} is set, at most {@code frames}. */
+    static void playUntilFlag(Dungeon.Session session, String flag, int frames) {
+        for (int i = 0; i < frames && !session.run().getScript().flagged(flag); i++) {
+            play(session, 1);
         }
-        assertTrue(session.run().getScript().flagged("HeroLanded"), "the opening seen");
-        for (int i = 0; i < 40; i++) {
-            float ground = game.getLogic().groundHeight(hero(session).getPosition());
-            highest = Math.max(highest, hero(session).getPosition().z() - ground);
-            foeHighest = Math.max(foeHighest, foe.getPosition().z() - game.getLogic().groundHeight(foe.getPosition()));
-            game.runHeadless(1);
-        }
-        assertTrue(highest > 50f, "he came down from high in the beam: " + highest);
-        var at = hero(session).getPosition();
-        assertTrue(landing.holds(at.x(), at.y(), CELL), "and stands in the light");
-        assertEquals(game.getLogic().groundHeight(at), at.z(), 0.01f, "on the ground");
-        assertTrue(foeHighest > 5f, "the enemy commander went through the air: " + foeHighest);
-        assertTrue(thrown.holds(foe.getPosition().x(), foe.getPosition().y(), CELL), "and came down where he was thrown");
-
-        // The landing's first shot draws the camera in, low: 30 degrees down, 85 back.
-        var view = game.camera().current();
-        assertEquals(Math.toRadians(30), view.pitch(), 0.01, "tilted");
-        assertEquals(85f, view.zoom(), 0.5f, "drawn in");
+        assertTrue(session.run().getScript().flagged(flag), flag);
     }
 
     /** A shot's camera framing and a title are read and checked with the files. */
@@ -248,21 +213,20 @@ class Act1Test {
     }
 
     @Test
-    void aDeathInTheCampaignGoesBackToTheFloorHeEntered() {
+    void aDeathInTheCampaignGoesBackToItsLastCheckpoint() {
         var session = newGame();
-        play(session, 30);
-        strike(session, "EnemyCommander");
-        play(session, 120);
-        playUntil(session, "poytaxt", 400);
+        playUntilFlag(session, "BattleWon", 1200);
+        standIn(session, "Saroy");
         walkUpTo(session, "Act1Queen");
-        int gold = session.run().goldOf(hero(session).getPlayerIndex());
+        play(session, 5);
+        assertTrue(session.run().getScript().flagged("Welcomed"));
         hero(session).getBody().damage(1e7f);
         play(session, SETTINGS.run().respawnDelayFrames() + 5);
         assertEquals(DungeonRun.State.RUNNING, session.run().getState());
-        assertEquals("poytaxt", session.run().getStageName(), "back in the capital, not the battle");
-        assertTrue(session.run().getScript().flagged("HeroLanded"), "with the battle behind him");
-        assertTrue(session.run().goldOf(hero(session).getPlayerIndex()) < gold || gold == 0,
-                "as he came in: the queen's gift is hers to give again");
+        assertEquals("world", session.run().getStageName(), "back on the world, not the battle");
+        assertTrue(session.run().getScript().flagged("Welcomed"), "with the queen's welcome behind him");
+        var bag = session.run().progressOf(hero(session).getPlayerIndex()).getLoot();
+        assertEquals("Medallion", bag.at(bag.wornPlace("Tumor")).id(), "and her medallion on");
     }
 
     @Test
@@ -287,13 +251,39 @@ class Act1Test {
     @Test
     void aCampaignDescentSaveLoadsBackOntoItsFloors() {
         var session = Dungeon.newSession(3L, SETTINGS);
-        session.run().skipTo(3);
+        session.run().skipTo(4);
         session.game().runHeadless(3);
         var save = SaveGame.read(session.run().saveNow().text(), "test");
-        assertEquals("mashq", save.stage());
+        assertEquals("urush", save.stage());
         var floors = Floors.resumed(save, SETTINGS);
-        assertEquals("mashq", floors.stageName());
+        assertEquals("urush", floors.stageName());
         assertTrue(floors.descends());
         assertEquals(0, floors.lastDepth(), "the story says where it ends");
+    }
+
+    /**
+     * A save on a map the act left (docs/plan/2026-10-15-seamless-campaign.md, "Old saves") loads on the world at the
+     * joint that took its place: the training descent's at the old graves, its hero and his things kept.
+     */
+    @Test
+    void anOldSaveOnARetiredMapLoadsOnTheWorld() {
+        for (var old : List.of("jang", "poytaxt", "mashq")) {
+            var save = new SaveGame(5L, old, 1, CAMPAIGN.hero(), 333, List.of(), List.of(), null,
+                    new Script.State(List.of(), List.of("HeroLanded"), List.of(), List.of()), 77);
+            var floors = Floors.resumed(save, SETTINGS);
+            assertEquals("world", floors.stageName(), old + " is the world now");
+            var session = Dungeon.newSession(5L, SETTINGS);
+            session.run().resume(save, floors);
+            session.game().runHeadless(3);
+            assertEquals("world", session.run().getStageName());
+            assertTrue(session.run().getScript().flagged("Act1"), old + ": the act's world story on");
+            assertTrue(session.run().getScript().flagged("HeroLanded"), old + ": its own flags kept");
+            assertEquals(77, session.run().goldOf(hero(session).getPlayerIndex()), old + ": his gold kept");
+            if (old.equals("mashq")) {
+                var graves = zone("world", "Eski_qabrlar");
+                var at = hero(session).getPosition();
+                assertTrue(graves.holds(at.x(), at.y(), CELL), "the training's save starts at the old graves");
+            }
+        }
     }
 }
