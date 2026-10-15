@@ -67,8 +67,8 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E56 | a flat faded loop the game starts and stops (`Duke3D.loop` / `stopLoop`), and a held sound that fades | landed, 7b7f76c1 on the engine's branch `e55-57-sounds`; place ambience is looped by `Soundscape`, the held trick gone |
 | E57 | the bag's sounds (`bag_open`, `bag_close`, `item_lift`, `item_drop`), and `walking.<Template>.<surface>` | landed, 7b7f76c1 on the engine's branch `e55-57-sounds`; the cues are in `ui.duke`, creatures' footsteps by ground in `sfx.duke`, the hero-only step code gone |
 | E58 | feel: a number that is bigger and another colour for a heavy or critical blow, a short hit-stop, and a camera knock from an effect list that obeys `ShakeScale` | landed, 62e569ef on the engine's branch `e58-feel`; the numbers, `HitStop` and the effect-list shakes are in `hud.duke` and `feel.duke` |
-| E59 | settings: an Ambience channel with its own volume, a Camera shake row (`ShakeScale` for the player), a Language row if there is more than one | requested (2026-10-15) |
-| E60 | closest-thing questions with no candidate list or sort; a weapon that does not copy its owner's module list every frame | asked 2026-10-15 (perf) |
+| E59 | settings: an Ambience channel with its own volume, a Camera shake row (`ShakeScale` for the player), a Language row if there is more than one | landed (engine 01eb7029; game 2026-10-15) |
+| E60 | closest-thing questions with no candidate list or sort; a weapon that does not copy its owner's module list every frame | landed (engine 01eb7029; game 2026-10-15) |
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
 game builds against the local engine. E12–E15 reached it together at 668045f0 (their pull requests merged as
@@ -1262,3 +1262,7 @@ filters the game passes are pure) — so let them walk the buckets in place, no 
 is `List.copyOf(modules)`, for every armed thing every frame; asked: walk the modules without the copy (or a
 `hasModule(Class)` / `anyModule(Predicate)` on `GameObject`). Done when the closest-thing tests still pass thing for
 thing and a frame of `deep` with every monster idle allocates no candidate lists.
+
+**E59 landed** as 01eb7029 on the engine's branch `e59-60-settings-perf`: `SoundBank.Channel.AMBIENCE` with `volAmbience` (default 70, `say("Ambience")`), loops follow their channel's knob live, and a "Camera shake" row (Full / Half / Off). The game: `ambience.dungeon` in `sfx.duke` is `Channel = Ambience` (`Main.channelOf` already maps any enum word, so no parser change), the five new words are in `menu.duke`'s `Words` in Uzbek (Muhit, Kamera titrashi, To'liq, Yarim, O'chiq), and `HitFeel.ShakeScale` is set in `Main.looks` before `duke.launch()`. Tests: `DungeonSoundTest.theAmbienceLoopsAreOnTheAmbienceChannel`, `MainMenuTest.everyFixedWordOfTheClientsMenusIsSaidInUzbek`.
+
+**E60 landed** in the same commit: closest-thing questions walk the buckets unsorted. The game's three filters (`MonsterBrain.nearestEnemy`, `somethingNearbyHasStarted`, `HeroBrain.closestHeCanShoot`) were audited and are pure (no RNG, no mutation). `deep` idle: 0.414 -> 0.208 ms a frame; the open world is unchanged at 0.087.

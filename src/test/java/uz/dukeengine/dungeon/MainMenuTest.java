@@ -44,7 +44,7 @@ class MainMenuTest {
         for (var english : List.of("PAUSED", "Resume", "Settings", "Quit to the main menu", "Quit to the desktop",
                 "ESC resume", "QUIT TO THE MAIN MENU?", "QUIT TO THE DESKTOP?", "everything on this floor is lost",
                 "Keep playing", "Quit", "ESC keep playing", "SETTINGS", "Fullscreen", "NO", "YES", "Size",
-                "MONITOR", "Anti-aliasing", "OFF", "Volume", "Effects", "Voice", "Music", "Track", "Save", "Cancel", "Back",
+                "MONITOR", "Anti-aliasing", "OFF", "Volume", "Effects", "Voice", "Music", "Ambience", "Camera shake", "Full", "Half", "Off", "Track", "Save", "Cancel", "Back",
                 "anti-aliasing from the next launch", "unsaved changes",
                 "UP DOWN choose    LEFT RIGHT change    ESC back", "UP DOWN choose    ENTER take")) {
             assertTrue(SETTINGS.mainMenu().said().containsKey(english), "not said: " + english);

@@ -2957,7 +2957,7 @@ End
 ; JaggedStone's loopable dungeon ambience, looped flat by the client (Soundscape).
 Sound
   Name = ambience.dungeon
-  Channel = Effects
+  Channel = Ambience
   Positional = No
   Gain = 0.8
   Files = [audio/ambience/dungeon.ogg]
