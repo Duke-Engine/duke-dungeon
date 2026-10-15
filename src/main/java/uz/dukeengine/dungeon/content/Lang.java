@@ -39,6 +39,15 @@ public final class Lang {
     /** Fields holding a list of words that are text too (bare or quoted): the worn places' names, the rarities. */
     private static final Set<String> BARE_LISTS = Set.of("Slots", "WornSlots", "Rarities", "FirstNames", "SecondNames");
 
+    /**
+     * Fields whose strings are ids -- zones, maps, paths, sounds, lists of ids -- whatever they look like: never offered,
+     * so an id that spells a word the table has (a zone called "Yo'lak") is never changed.
+     */
+    static final Set<String> ID_KEYS = Set.of("Zone", "Open", "Where", "At", "Cells", "Map", "Model", "Icon", "Picture",
+            "Look", "Sound", "Music", "Plays", "Flags", "Items", "Needs", "Gives", "Forage", "Recipes", "Gathers",
+            "Hunts", "Clips", "Opens", "Ambience", "ModernSkillKeys", "SceneLook", "Also", "Route", "Files", "Kind",
+            "Modules", "Animations", "Cue", "Cues", "Sfx", "Footsteps", "Start", "Talk", "Says", "Starts", "Base");
+
     private static volatile Map<String, String> english;
     private static volatile Map<String, String> loaded;
 
@@ -91,7 +100,11 @@ public final class Lang {
             return text;
         }
         return rewrite(text, (key, value, unquoted, indent) -> {
-            if (unquoted && !textKey(key)) {
+            if (ID_KEYS.contains(key) || unquoted && !textKey(key)) {
+                return null;
+            }
+            // A block's own Name (indent 2) is its id; a skill's Name, nested in a Skills list, is what it is called.
+            if (unquoted && key.equals("Name") && indent < 4) {
                 return null;
             }
             // A row may be for one field alone ("@BoostWord Kuch" says Kuch there and nowhere else), or one file's

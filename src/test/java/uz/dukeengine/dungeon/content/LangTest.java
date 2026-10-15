@@ -29,12 +29,6 @@ class LangTest {
             "data/world/screens.duke", "data/world/saves.duke", "data/world/party.duke", "data/world/controls.duke",
             "data/world/travel.duke", "data/world/world.duke");
 
-    /** Fields whose strings are ids, paths, coordinates or sound names, whatever they look like. */
-    private static final Set<String> NOT_TEXT = Set.of("Zone", "Cells", "Model", "Icon", "Picture", "Map", "Look",
-            "Sound", "Music", "Plays", "Flags", "Items", "Needs", "Gives", "Forage", "Recipes", "Gathers", "Hunts",
-            "Clips", "Opens", "Ambience", "ModernSkillKeys", "SceneLook", "Also", "Route", "Files", "Kind",
-            "Modules", "Animations", "Cue", "Cues", "Sfx", "Footsteps");
-
     private static final Pattern PLACEHOLDER = Pattern.compile("%[-0-9.]*[sdf]|\\{\\w+}");
 
     @AfterEach
@@ -64,7 +58,7 @@ class LangTest {
             boolean text = unquoted
                     ? key.equals("Name") ? value.contains(" ") || value.contains("'") : Lang.textKey(key)
                     : !key.equals("Cells");
-            if (!text || NOT_TEXT.contains(key) || !value.matches(".*\\p{L}.*")
+            if (!text || Lang.ID_KEYS.contains(key) || !value.matches(".*\\p{L}.*")
                     || !unquoted && value.matches("[^\\s%]*/[^\\s%]*")) {
                 return null;
             }
