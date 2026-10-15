@@ -115,7 +115,7 @@ class DungeonSoundTest {
      */
     @Test
     void whatIsHeardMostIsHeardSeveralWays() {
-        for (var name : new String[] {"fired.Rogue", "fired.Knight", "step", "step.grass"}) {
+        for (var name : new String[] {"fired.Rogue", "fired.Knight", "walking.Knight", "walking.Knight.grass"}) {
             var cue = SETTINGS.sounds().stream()
                     .filter(c -> c.name().equals(name)).findFirst().orElseThrow();
             assertTrue(cue.files().size() > 1,
@@ -127,7 +127,7 @@ class DungeonSoundTest {
     @Test
     void theFootstepHasAStride() {
         var cue = SETTINGS.sounds().stream()
-                .filter(c -> c.name().equals("step")).findFirst().orElseThrow();
+                .filter(c -> c.name().equals("walking.Knight")).findFirst().orElseThrow();
 
         assertTrue(cue.gapSeconds() > 0f, "without a gap the client plays one per frame");
     }

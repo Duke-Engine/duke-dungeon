@@ -356,10 +356,10 @@ Audio
   BossReach = 70
   Bosses = [Boss, DarkLord]
 
-  ; ---- the loop under a place (DungeonRun.ambience) ----
+  ; ---- the loop under a place (Soundscape) ----
   ;
-  ; As the music: "Where = cue", his zones before his map. Riding him, so it is
-  ; mono and placed; let go of a moment after he leaves the place. No forest or
+  ; As the music: "Where = cue", his zones before his map. Looped flat by the client, faded
+  ; in and out as he changes place. No forest or
   ; wind loop is in the packs yet: the open world is quiet under its music.
   Ambience = [
     "descent = ambience.dungeon",

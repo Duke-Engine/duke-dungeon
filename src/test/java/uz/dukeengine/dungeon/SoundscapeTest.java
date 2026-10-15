@@ -90,7 +90,7 @@ class SoundscapeTest {
         for (var where : SETTINGS.audio().ambienceByPlace().entrySet()) {
             var cue = BANK.find(where.getValue());
             assertNotNull(cue, where.getKey() + "'s loop " + where.getValue() + " is no sound");
-            assertTrue(cue.positional(), "a loop rides him, so it is placed (and mono): " + where.getValue());
+            assertFalse(cue.positional(), "a place's loop is flat, started by the client: " + where.getValue());
         }
         for (var moment : List.of("menu", "battle", "boss", "won", "descent", "default")) {
             assertTrue(SETTINGS.audio().musicByPlace().containsKey(moment), moment + " has music");
@@ -131,7 +131,7 @@ class SoundscapeTest {
     @Test
     void everyMomentTheCodeNamesHasASound() {
         for (var name : List.of("fired", "equip", "drink", "coins", "screen_open", "screen_close", "quest_taken",
-                "quest_done", "level_up", "loot", "step", "struck.Chest", "spawned.OpenGate")) {
+                "quest_done", "level_up", "loot", "bag_open", "bag_close", "item_lift", "item_drop", "struck.Chest", "spawned.OpenGate")) {
             var cue = BANK.find(name);
             assertNotNull(cue, name);
             assertEquals(name, cue.name(), name + " is its own");
@@ -139,22 +139,28 @@ class SoundscapeTest {
         assertNull(BANK.find("skill.Q"), "a skill is heard by whose it is, not by its key: cast.<Hero>.<Key>");
     }
 
-    // ---- the footstep ----
+    // ---- the loop and the footstep ----
 
     @Test
-    void theFootstepIsTheGroundPaintedUnderHim() {
-        float cell = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
-        var paint = new uz.dukeengine.dungeon.stage.StagePaint("field", List.of("gs", "r#"),
-                Map.of("g", "ground/grass.png", "s", "ground/sand.png", "r", "ground/rock.png", "#", "#202020"),
-                Map.of());
+    void theLoopIsTheZoneHeStandsInBeforeHisMap() {
+        var loops = Map.of("cave", "ambience.cave", "dungeon", "ambience.dungeon");
+        assertEquals("ambience.cave", Soundscape.ambienceFor(loops, List.of("cave"), "dungeon"));
+        assertEquals("ambience.dungeon", Soundscape.ambienceFor(loops, List.of("meadow"), "dungeon"));
+        assertNull(Soundscape.ambienceFor(loops, List.of(), "world"), "a place with none is quiet");
+    }
 
-        assertEquals("step.grass", Soundscape.stepOn(paint, cell * 0.5f, cell * 0.5f));
-        assertEquals("step.sand", Soundscape.stepOn(paint, cell * 1.5f, cell * 0.5f), "x is the column");
-        assertEquals("step.rock", Soundscape.stepOn(paint, cell * 0.5f, cell * 1.5f), "y is the row");
-        assertEquals("step", Soundscape.stepOn(paint, cell * 1.5f, cell * 1.5f), "a colour is no surface");
-        assertEquals("step", Soundscape.stepOn(paint, -cell, cell * 9f), "off the map");
-        assertEquals("step", Soundscape.stepOn(null, 0f, 0f), "and a floor nobody painted is the descent's stone");
-        assertNotNull(BANK.find("step.rock"), "every surface falls back to a footstep");
+    /** The engine plays walking.<Template>.<surface>; every hero has one for each ground, and for stone. */
+    @Test
+    void everyHeroWalksOnEveryGround() {
+        for (var hero : SETTINGS.heroes()) {
+            for (var ground : List.of("", ".grass", ".forest", ".mud", ".sand", ".snow", ".dirt")) {
+                var name = "walking." + hero.name() + ground;
+                assertNotNull(BANK.find(name), name);
+                assertEquals(name, BANK.find(name).name(), name + " is its own");
+            }
+        }
+        assertEquals("walking.Brute.grass", BANK.find("walking.Brute.grass").name(), "a creature too");
+        assertEquals("walking.Brute", BANK.find("walking.Brute.rock").name(), "an unsounded ground falls back");
     }
 
     // ---- the weapon's name ----

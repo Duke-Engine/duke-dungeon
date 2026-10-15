@@ -63,6 +63,9 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E47 | a hero's whole figures in one place | landed, 9ce15e4e |
 | E48 | a key's code and name for a game's canvas | landed, 9ce15e4e |
 | E52 | a route that prefers the roads: a cost per cell a walker's path weighs (travellers keep to the roads) | landed, eedd090b on the engine's branch `e52-road-costs`: `PathGrid.setStepCosts`; the game lays its painted roads (`Roads`) |
+| E55 | music the game chooses (`Duke3D.musicByGame`), and a weapon that keeps its name through `HeroBuild` | landed, 7b7f76c1 on the engine's branch `e55-57-sounds`; the game sets `musicByGame(true)` |
+| E56 | a flat faded loop the game starts and stops (`Duke3D.loop` / `stopLoop`), and a held sound that fades | landed, 7b7f76c1 on the engine's branch `e55-57-sounds`; place ambience is looped by `Soundscape`, the held trick gone |
+| E57 | the bag's sounds (`bag_open`, `bag_close`, `item_lift`, `item_drop`), and `walking.<Template>.<surface>` | landed, 7b7f76c1 on the engine's branch `e55-57-sounds`; the cues are in `ui.duke`, creatures' footsteps by ground in `sfx.duke`, the hero-only step code gone |
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
 game builds against the local engine. E12–E15 reached it together at 668045f0 (their pull requests merged as
@@ -1204,6 +1207,8 @@ constructor and drops its `name` (and `targets`, the clip and `targetScanFrames`
 its holder (`Dungeon.namedFor`, after HeroBuild) so `fired.<Template>` sounds per creature. Asked: HeroBuild keeps every
 field but the damage. Done when a test builds a hero from a named, targeted weapon and gets both back.
 
+**Landed** as 7b7f76c1 on the engine's branch `e55-57-sounds`: `Duke3D.musicByGame(true)` (set in `Main`) and `HeroBuild.weapon` keeps the weapon's name and targets. `Dungeon.namedFor` stays only to name weapons their block left unnamed after their holder.
+
 ## E56 — A flat loop the game starts and stops, faded (2026-10-15, small)
 
 Ambience per place rides the hero today: the simulation plays `ambience.<place>` with `World.sound(cue, hero, hold)`
@@ -1212,6 +1217,8 @@ the hold runs out. Asked: `Duke3D.loop(String cue, float fadeIn)` / `Duke3D.stop
 loop on the cue's channel, one per cue, started and faded by the game's client — and, for a held `SoundPlayed`, a fade
 of a few tenths of a second when it is let go of rather than a cut. Done when a test starts a loop, stops it with a
 fade, and the sink sees the gain fall over that time.
+
+**Landed** as 7b7f76c1 on the engine's branch `e55-57-sounds`: `Duke3D.loop(cue, fadeIn)` / `stopLoop(cue, fadeOut)`. `Soundscape` starts and fades the Audio block's Ambience loop as the place changes; `DungeonRun.ambience` (the held sound riding the hero) is gone.
 
 ## E57 — The bag's sounds, and a footstep with its ground (2026-10-15, small)
 
@@ -1222,3 +1229,5 @@ it walks; the game plays its hero's own by the paint under him (`Soundscape.step
 `walking.<Template>.<surface>` where the map is painted — the surface the palette picture's file name without its
 folder and extension — falling back as every name does. Done when a test walks a creature from grass onto rock and
 hears `walking.X.grass` then `walking.X.rock`.
+
+**Landed** as 7b7f76c1 on the engine's branch `e55-57-sounds`: `BagScreen` raises the four cues through the bank and has `isOpen()`; a walker on a painted map plays `walking.<Template>.<surface>`. The game's cues are in `ui.duke` and `sfx.duke` (heroes and walking creatures, six grounds and stone); `Soundscape.stepOn` is gone.
