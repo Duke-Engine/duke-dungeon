@@ -1,0 +1,539 @@
+; ---------------------------------------------------------------------------
+; The meadow's roads (Act 1): bandits and their chief, the meadow's wolves and wild bulls.
+; The bestiary (docs/plan/2026-10-15-bestiary.md): WorldMapWriter's Wild camps and roamers place them by name.
+; Models: Quaternius (CC0; the zombie ghoul, brute and crawler, the witch and the cult mage CC-BY 3.0 -- see
+; CREDITS.md), converted by art/monsters/export_bestiary.py. A Licensed look is a CGTrader Royalty Free model in the
+; git-ignored licensed-assets/ (art/monsters/export_licensed_monsters.py), drawn where it is shipped.
+; Levels are the walk's from the city, as every monster's in the world: these figures are level 1's.
+; ---------------------------------------------------------------------------
+
+; common: comes in a crowd off the road.
+Monster
+  Name = Bandit
+  DisplayName = "Qaroqchi"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 4
+    Height = 12
+  End
+  VisionRange = 70
+  Modules = [
+    GrowableBody
+      MaxHealth = 60
+    End,
+    MoveUpdate
+      Speed = 18
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 7
+      AttackRange = 9
+      ReloadFrames = 12
+      ; The swing up to the blow (MonsterClipFitTest), taken off ReloadFrames.
+      PreAttackFrames = 8
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 11
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 45
+  ChaseRadius = 95
+  CloseDistance = 4
+  AlertRadius = 70
+  RepathFrames = 10
+  SwingFrames = 14
+  ; Never on a floor of the descent: the open world places it by name.
+  MinDepth = 99
+  Weight = 0
+  Colour = 0xC8B890
+  Scale = 1
+  Model = models/bestiary/bandit.glb
+  ModelScale = 6.39
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest).
+  WalkStride = 11.5
+  ; The licensed look (CGTrader Royalty Free, licensed-assets/ only; see CREDITS.md) where it is
+  ; shipped, the look above where it is not.
+  Licensed = MonsterLook
+    Model = models/licensed/bandit.glb
+    ModelScale = 6.88
+    Idle = Idle
+    Walk = Walk
+    Attack = Attack
+    Death = Death
+    WalkStride = 5.8
+  End
+End
+
+; stronger: a heavy blade, slower.
+Monster
+  Name = Brigand
+  DisplayName = "Yo'lto'sar"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 4
+    Height = 12
+  End
+  VisionRange = 70
+  Modules = [
+    GrowableBody
+      MaxHealth = 160
+    End,
+    MoveUpdate
+      Speed = 13
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 17
+      AttackRange = 11
+      ReloadFrames = 29
+      ; The swing up to the blow (MonsterClipFitTest), taken off ReloadFrames.
+      PreAttackFrames = 5
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 26
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 45
+  ChaseRadius = 95
+  CloseDistance = 4
+  AlertRadius = 70
+  RepathFrames = 10
+  SwingFrames = 14
+  ; Never on a floor of the descent: the open world places it by name.
+  MinDepth = 99
+  Weight = 0
+  Colour = 0xC8B890
+  Scale = 1.04
+  Model = models/bestiary/brigand.glb
+  ModelScale = 6.84
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest).
+  WalkStride = 12.3
+End
+
+; ranged: shoots from the roadside.
+Monster
+  Name = BanditArcher
+  DisplayName = "Kamonchi qaroqchi"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 4
+    Height = 12
+  End
+  VisionRange = 64
+  Modules = [
+    GrowableBody
+      MaxHealth = 50
+    End,
+    MoveUpdate
+      Speed = 13
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 7
+      AttackRange = 58
+      ReloadFrames = 54
+      AttackOnTheMove = No
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    Bow
+      Projectile = Arrow
+      Speed = 190
+      MuzzleOffset = 8
+    End,
+    EyesOnly
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 18
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 64
+  ChaseRadius = 120
+  CloseDistance = 6
+  AlertRadius = 70
+  RepathFrames = 10
+  SwingFrames = 14
+  ; Never on a floor of the descent: the open world places it by name.
+  MinDepth = 99
+  Weight = 0
+  KeepDistance = [30, 50]
+  Colour = 0xC8B890
+  Scale = 1
+  Model = models/bestiary/brigand_2.glb
+  ModelScale = 6.46
+  ; Its download faces away from where the rest face.
+  Facing = 270
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest).
+  WalkStride = 11.6
+End
+
+; ELITE of the bandits: bigger, red, two affixes.
+Monster
+  Name = BanditVeteran
+  DisplayName = "Qaroqchi bahodir"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 5
+    Height = 15
+  End
+  VisionRange = 70
+  Modules = [
+    GrowableBody
+      MaxHealth = 160
+    End,
+    MoveUpdate
+      Speed = 20
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 12
+      AttackRange = 11
+      ReloadFrames = 12
+      ; The swing up to the blow (MonsterClipFitTest), taken off ReloadFrames.
+      PreAttackFrames = 8
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 45
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 45
+  ChaseRadius = 95
+  CloseDistance = 4
+  AlertRadius = 70
+  RepathFrames = 8
+  SwingFrames = 14
+  ; Never on a floor of the descent: the open world places it by name.
+  MinDepth = 99
+  Weight = 0
+  SkillDistance = [0, 50]
+  Colour = 0xB04030
+  Scale = 1.25
+  Model = models/bestiary/bandit.glb
+  ModelScale = 7.99
+  Tint = 0xB04030
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest).
+  WalkStride = 14.4
+  ; The licensed look (CGTrader Royalty Free, licensed-assets/ only; see CREDITS.md) where it is
+  ; shipped, the look above where it is not.
+  Licensed = MonsterLook
+    Model = models/licensed/bandit.glb
+    ModelScale = 8.54
+    Tint = 0xB04030
+    Idle = Idle
+    Walk = Walk
+    Attack = Attack
+    Death = Death
+    WalkStride = 7.1
+  End
+
+  Skills = [
+    Skill
+      Key = Q
+      ; Drinks a share of every blow it lands.
+      Effect = LIFESTEAL
+      BoostPercent = 30
+      MaxRank = 1
+      Name = "Qonxo'r"
+    End,
+    Skill
+      Key = W
+      ; Strikes faster for five seconds -- itself, or the sturdiest of its own near it.
+      Effect = HASTE
+      BoostPercent = 60
+      DurationFrames = 150
+      Range = 50
+      CooldownFrames = 300
+      Look = Hasted
+      MaxRank = 1
+      Icon = icons/stats/stat_speed.png
+      Blurb = Bir necha soniya ancha tezroq uradi.
+      Name = Shiddat
+    End
+  ]
+End
+
+; CAMP BOSS: a blade-dancer who dashes through the hero and drops him dazed.
+Monster
+  Name = BanditChief
+  DisplayName = "Qaroqchilar sardori"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 7
+    Height = 16
+  End
+  VisionRange = 130
+  Modules = [
+    GrowableBody
+      MaxHealth = 480
+    End,
+    MoveUpdate
+      Speed = 17
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 20
+      AttackRange = 12
+      ReloadFrames = 18
+      ; The swing up to the blow (MonsterClipFitTest), taken off ReloadFrames.
+      PreAttackFrames = 10
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 140
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 55
+  ChaseRadius = 150
+  CloseDistance = 4
+  AlertRadius = 110
+  RepathFrames = 8
+  SwingFrames = 14
+  ; Never on a floor of the descent: the open world places it by name.
+  MinDepth = 99
+  Weight = 0
+  SkillDistance = [0, 50]
+  Colour = 0xC8B890
+  Scale = 1.33
+  Model = models/bestiary/ninja_master.glb
+  ModelScale = 5.3
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest).
+  WalkStride = 13.9
+
+  Skills = [
+    Skill
+      Key = Q
+      ; A charge that carries whoever stands in its way and drops them stunned.
+      Effect = SKEWER
+      Distance = 40
+      Range = 50
+      ProjectileSpeed = 36
+      Radius = 8
+      Damage = 30
+      StunFrames = 20
+      CooldownFrames = 330
+      MaxRank = 1
+      Look = Charge
+      Name = Yashin zarbasi
+    End,
+    Skill
+      Key = W
+      ; Strikes faster for five seconds -- itself, or the sturdiest of its own near it.
+      Effect = HASTE
+      BoostPercent = 50
+      DurationFrames = 150
+      Range = 50
+      CooldownFrames = 300
+      Look = Hasted
+      MaxRank = 1
+      Icon = icons/stats/stat_speed.png
+      Blurb = Bir necha soniya ancha tezroq uradi.
+      Name = Shiddat
+    End
+  ]
+End
+
+; the meadow's wolves, walking the land in packs.
+Monster
+  Name = GreyWolf
+  DisplayName = "Kulrang bo'ri"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 3
+    Height = 8
+  End
+  VisionRange = 70
+  Modules = [
+    GrowableBody
+      MaxHealth = 45
+    End,
+    MoveUpdate
+      Speed = 22
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 6
+      AttackRange = 9
+      ReloadFrames = 8
+      ; The swing up to the blow (MonsterClipFitTest), taken off ReloadFrames.
+      PreAttackFrames = 28
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 9
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 45
+  ChaseRadius = 95
+  CloseDistance = 4
+  AlertRadius = 70
+  RepathFrames = 10
+  SwingFrames = 14
+  ; Never on a floor of the descent: the open world places it by name.
+  MinDepth = 99
+  Weight = 0
+  Colour = 0xC8B890
+  Scale = 0.67
+  Model = models/bestiary/wolf_grey.glb
+  ModelScale = 2.98
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest).
+  WalkStride = 7.8
+End
+
+; a wild bull: charges whoever comes near.
+Monster
+  Name = Bull
+  DisplayName = "Yovvoyi buqa"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 6
+    Height = 12
+  End
+  VisionRange = 70
+  Modules = [
+    GrowableBody
+      MaxHealth = 170
+    End,
+    MoveUpdate
+      Speed = 15
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 16
+      AttackRange = 11
+      ReloadFrames = 20
+      ; The swing up to the blow (MonsterClipFitTest), taken off ReloadFrames.
+      PreAttackFrames = 16
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 24
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 45
+  ChaseRadius = 95
+  CloseDistance = 4
+  AlertRadius = 70
+  RepathFrames = 10
+  SwingFrames = 14
+  ; Never on a floor of the descent: the open world places it by name.
+  MinDepth = 99
+  Weight = 0
+  SkillDistance = [10, 45]
+  Colour = 0xC8B890
+  Scale = 1
+  Model = models/bestiary/bull.glb
+  ModelScale = 2.62
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest).
+  WalkStride = 8.3
+
+  Skills = [
+    Skill
+      Key = Q
+      ; A charge that carries whoever stands in its way and drops them stunned.
+      Effect = SKEWER
+      Distance = 40
+      Range = 50
+      ProjectileSpeed = 36
+      Radius = 8
+      Damage = 22
+      StunFrames = 24
+      CooldownFrames = 330
+      MaxRank = 1
+      Look = Charge
+      Name = Shox zarbasi
+    End
+  ]
+End

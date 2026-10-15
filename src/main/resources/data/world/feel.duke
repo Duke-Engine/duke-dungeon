@@ -192,6 +192,153 @@ BigDeath
   Plays = Thud
 End
 
+; The bestiary (data/units/bestiary_*.duke): a camp boss is hit hard at about a fifth of his health and slams as
+; he falls; an elite and the big bodies thud.
+HeavyBlow
+  Template = BanditChief
+  MajorAt = 96
+  Plays = HeavyHit
+End
+HeavyBlow
+  Template = MushroomKing
+  MajorAt = 112
+  Plays = HeavyHit
+End
+HeavyBlow
+  Template = Troll
+  MajorAt = 124
+  Plays = HeavyHit
+End
+HeavyBlow
+  Template = FallenKing
+  MajorAt = 120
+  Plays = HeavyHit
+End
+HeavyBlow
+  Template = Kraken
+  MajorAt = 140
+  Plays = HeavyHit
+End
+HeavyBlow
+  Template = Wyvern
+  MajorAt = 112
+  Plays = HeavyHit
+End
+HeavyBlow
+  Template = DemonBrute
+  MajorAt = 130
+  Plays = HeavyHit
+End
+HeavyBlow
+  Template = Minotaur
+  MajorAt = 130
+  Plays = HeavyHit
+End
+BigDeath
+  Template = BanditChief
+  Plays = Slam
+End
+BigDeath
+  Template = MushroomKing
+  Plays = Slam
+End
+BigDeath
+  Template = Troll
+  Plays = Slam
+End
+BigDeath
+  Template = FallenKing
+  Plays = Slam
+End
+BigDeath
+  Template = Kraken
+  Plays = Slam
+End
+BigDeath
+  Template = Wyvern
+  Plays = Slam
+End
+BigDeath
+  Template = DemonBrute
+  Plays = Slam
+End
+BigDeath
+  Template = Minotaur
+  Plays = Slam
+End
+BigDeath
+  Template = BanditVeteran
+  Plays = Thud
+End
+BigDeath
+  Template = GiantArmabee
+  Plays = Thud
+End
+BigDeath
+  Template = OrcWarlord
+  Plays = Thud
+End
+BigDeath
+  Template = ZombieGiant
+  Plays = Thud
+End
+BigDeath
+  Template = BroodMother
+  Plays = Thud
+End
+BigDeath
+  Template = BloodShark
+  Plays = Thud
+End
+BigDeath
+  Template = PirateCaptain
+  Plays = Thud
+End
+BigDeath
+  Template = FrostYeti
+  Plays = Thud
+End
+BigDeath
+  Template = HellDemon
+  Plays = Thud
+End
+BigDeath
+  Template = FireGolem
+  Plays = Thud
+End
+BigDeath
+  Template = LightGolem
+  Plays = Thud
+End
+BigDeath
+  Template = ShadowGolem
+  Plays = Thud
+End
+BigDeath
+  Template = OrcWarrior
+  Plays = Thud
+End
+BigDeath
+  Template = ZombieBrute
+  Plays = Thud
+End
+BigDeath
+  Template = Yeti
+  Plays = Thud
+End
+BigDeath
+  Template = IceGolem
+  Plays = Thud
+End
+BigDeath
+  Template = BlueDemon
+  Plays = Thud
+End
+BigDeath
+  Template = EarthGolem
+  Plays = Thud
+End
+
 ; The catch in the motion: a MAJOR blow (critical, or HitNumbers' BigAt and over) slows the one struck and the one
 ; striking to Slow of their speed for Seconds -- the window's animation only, the simulation runs on. A second blow
 ; inside it does not lengthen it. Particles are not dipped. CritOnly would keep it for crits alone.

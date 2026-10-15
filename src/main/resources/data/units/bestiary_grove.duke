@@ -1,0 +1,494 @@
+; ---------------------------------------------------------------------------
+; The forest's grove: giant bees and wasps, the stag and the fox, and the mushroom king.
+; The bestiary (docs/plan/2026-10-15-bestiary.md): WorldMapWriter's Wild camps and roamers place them by name.
+; Models: Quaternius (CC0; the zombie ghoul, brute and crawler, the witch and the cult mage CC-BY 3.0 -- see
+; CREDITS.md), converted by art/monsters/export_bestiary.py. A Licensed look is a CGTrader Royalty Free model in the
+; git-ignored licensed-assets/ (art/monsters/export_licensed_monsters.py), drawn where it is shipped.
+; Levels are the walk's from the city, as every monster's in the world: these figures are level 1's.
+; ---------------------------------------------------------------------------
+
+; common: quick and weak, in swarms.
+Monster
+  Name = Armabee
+  DisplayName = "Zirhli ari"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 3
+    Height = 8
+  End
+  VisionRange = 70
+  Modules = [
+    GrowableBody
+      MaxHealth = 45
+    End,
+    MoveUpdate
+      Speed = 22
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 6
+      AttackRange = 9
+      ReloadFrames = 13
+      ; The swing up to the blow (MonsterClipFitTest), taken off ReloadFrames.
+      PreAttackFrames = 7
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 10
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 45
+  ChaseRadius = 95
+  CloseDistance = 4
+  AlertRadius = 70
+  RepathFrames = 10
+  SwingFrames = 14
+  ; Never on a floor of the descent: the open world places it by name.
+  MinDepth = 99
+  Weight = 0
+  Colour = 0xC8B890
+  Scale = 0.67
+  Model = models/bestiary/armabee.glb
+  ModelScale = 4.24
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest).
+  WalkStride = 0
+End
+
+; stronger: the forest's antlered beast.
+Monster
+  Name = Stag
+  DisplayName = "Bug'u"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 6
+    Height = 14
+  End
+  VisionRange = 70
+  Modules = [
+    GrowableBody
+      MaxHealth = 150
+    End,
+    MoveUpdate
+      Speed = 15
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 16
+      AttackRange = 12
+      ReloadFrames = 22
+      ; The swing up to the blow (MonsterClipFitTest), taken off ReloadFrames.
+      PreAttackFrames = 12
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 24
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 45
+  ChaseRadius = 95
+  CloseDistance = 4
+  AlertRadius = 70
+  RepathFrames = 10
+  SwingFrames = 14
+  ; Never on a floor of the descent: the open world places it by name.
+  MinDepth = 99
+  Weight = 0
+  Colour = 0xC8B890
+  Scale = 1.17
+  Model = models/bestiary/stag.glb
+  ModelScale = 2.52
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest).
+  WalkStride = 8.2
+End
+
+; ranged: stings from the air.
+Monster
+  Name = Wasp
+  DisplayName = "Zaharli ari"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 3
+    Height = 8
+  End
+  VisionRange = 64
+  Modules = [
+    GrowableBody
+      MaxHealth = 45
+    End,
+    MoveUpdate
+      Speed = 15
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 7
+      AttackRange = 55
+      ReloadFrames = 54
+      AttackOnTheMove = No
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    Bow
+      Projectile = HolySpark
+      Speed = 190
+      MuzzleOffset = 8
+    End,
+    EyesOnly
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 18
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 64
+  ChaseRadius = 120
+  CloseDistance = 6
+  AlertRadius = 70
+  RepathFrames = 10
+  SwingFrames = 14
+  ; Never on a floor of the descent: the open world places it by name.
+  MinDepth = 99
+  Weight = 0
+  KeepDistance = [30, 50]
+  Colour = 0xC8B890
+  Scale = 0.67
+  Model = models/bestiary/wasp.glb
+  ModelScale = 2
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest).
+  WalkStride = 0
+End
+
+; stronger: the queen's guard.
+Monster
+  Name = ArmabeeGuard
+  DisplayName = "Ari qo'riqchisi"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 3
+    Height = 10
+  End
+  VisionRange = 70
+  Modules = [
+    GrowableBody
+      MaxHealth = 120
+    End,
+    MoveUpdate
+      Speed = 16
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 13
+      AttackRange = 10
+      ReloadFrames = 23
+      ; The swing up to the blow (MonsterClipFitTest), taken off ReloadFrames.
+      PreAttackFrames = 7
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 22
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 45
+  ChaseRadius = 95
+  CloseDistance = 4
+  AlertRadius = 70
+  RepathFrames = 10
+  SwingFrames = 14
+  ; Never on a floor of the descent: the open world places it by name.
+  MinDepth = 99
+  Weight = 0
+  Colour = 0xC8B890
+  Scale = 0.83
+  Model = models/bestiary/armabee_evolved.glb
+  ModelScale = 4.68
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest).
+  WalkStride = 0
+End
+
+; ELITE of the bees: bigger, golden, two affixes.
+Monster
+  Name = GiantArmabee
+  DisplayName = "Ulkan ari"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 4
+    Height = 12
+  End
+  VisionRange = 70
+  Modules = [
+    GrowableBody
+      MaxHealth = 150
+    End,
+    MoveUpdate
+      Speed = 22
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 11
+      AttackRange = 11
+      ReloadFrames = 13
+      ; The swing up to the blow (MonsterClipFitTest), taken off ReloadFrames.
+      PreAttackFrames = 7
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 45
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 45
+  ChaseRadius = 95
+  CloseDistance = 4
+  AlertRadius = 70
+  RepathFrames = 8
+  SwingFrames = 14
+  ; Never on a floor of the descent: the open world places it by name.
+  MinDepth = 99
+  Weight = 0
+  SkillDistance = [0, 50]
+  Colour = 0xE0A020
+  Scale = 1
+  Model = models/bestiary/armabee.glb
+  ModelScale = 6.36
+  Tint = 0xE0A020
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest).
+  WalkStride = 0
+
+  Skills = [
+    Skill
+      Key = Q
+      ; Drinks a share of every blow it lands.
+      Effect = LIFESTEAL
+      BoostPercent = 25
+      MaxRank = 1
+      Name = "Qon so'rish"
+    End,
+    Skill
+      Key = W
+      ; Strikes faster for five seconds -- itself, or the sturdiest of its own near it.
+      Effect = HASTE
+      BoostPercent = 60
+      DurationFrames = 150
+      Range = 50
+      CooldownFrames = 300
+      Look = Hasted
+      MaxRank = 1
+      Icon = icons/stats/stat_speed.png
+      Blurb = Bir necha soniya ancha tezroq uradi.
+      Name = Shiddat
+    End
+  ]
+End
+
+; CAMP BOSS: calls up sporelings and makes his own hit harder.
+Monster
+  Name = MushroomKing
+  DisplayName = "Qo'ziqorin qirol"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 8
+    Height = 18
+  End
+  VisionRange = 130
+  Modules = [
+    GrowableBody
+      MaxHealth = 560
+    End,
+    MoveUpdate
+      Speed = 12
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 22
+      AttackRange = 14
+      ReloadFrames = 26
+      ; The swing up to the blow (MonsterClipFitTest), taken off ReloadFrames.
+      PreAttackFrames = 10
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 150
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 55
+  ChaseRadius = 150
+  CloseDistance = 4
+  AlertRadius = 110
+  RepathFrames = 8
+  SwingFrames = 14
+  ; Never on a floor of the descent: the open world places it by name.
+  MinDepth = 99
+  Weight = 0
+  SkillDistance = [0, 60]
+  Colour = 0xC8B890
+  Scale = 1.5
+  Model = models/bestiary/mushroom_king.glb
+  ModelScale = 4.99
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest).
+  WalkStride = 13.1
+
+  Skills = [
+    Skill
+      Key = Q
+      ; Rifts round it, and one of its own out of each.
+      Effect = SUMMON
+      Summons = [Sporeling = 2]
+      MaxSummoned = 4
+      Radius = 16
+      DurationFrames = 600
+      SummonExperiencePercent = 0
+      WindUpFrames = 20
+      Projectile = SummoningRift
+      CooldownFrames = 420
+      MaxRank = 1
+      Name = "Qo'ziqorin bolalari"
+    End,
+    Skill
+      Key = E
+      ; Everyone of its own round it hits harder.
+      Effect = DAMAGE_AURA
+      BoostPercent = 25
+      Radius = 50
+      Look = MightAura
+      TickFrames = 30
+      MaxRank = 1
+      Icon = icons/stats/stat_attack.png
+      Blurb = Atrofidagi o'zinikilar qattiqroq uradi.
+      Name = "G'azab"
+    End
+  ]
+End
+
+; a fox: the forest's quick small hunter.
+Monster
+  Name = Fox
+  DisplayName = "Tulki"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 3
+    Height = 6
+  End
+  VisionRange = 70
+  Modules = [
+    GrowableBody
+      MaxHealth = 35
+    End,
+    MoveUpdate
+      Speed = 23
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 5
+      AttackRange = 8
+      ReloadFrames = 8
+      ; The swing up to the blow (MonsterClipFitTest), taken off ReloadFrames.
+      PreAttackFrames = 28
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 7
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 45
+  ChaseRadius = 95
+  CloseDistance = 4
+  AlertRadius = 70
+  RepathFrames = 10
+  SwingFrames = 14
+  ; Never on a floor of the descent: the open world places it by name.
+  MinDepth = 99
+  Weight = 0
+  Colour = 0xC8B890
+  Scale = 0.54
+  Model = models/bestiary/fox.glb
+  ModelScale = 2.43
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest).
+  WalkStride = 6.4
+End

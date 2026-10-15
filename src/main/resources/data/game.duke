@@ -100,6 +100,15 @@ Game
     data/units/wilds_desert.duke,
     data/units/wilds_highlands.duke,
     data/units/wilds_marsh.duke,
+    ; The bestiary: eight more families and their camps, see docs/plan/2026-10-15-bestiary.md.
+    data/units/bestiary_roads.duke,
+    data/units/bestiary_grove.duke,
+    data/units/bestiary_orcs.duke,
+    data/units/bestiary_crypt.duke,
+    data/units/bestiary_coast.duke,
+    data/units/bestiary_snow.duke,
+    data/units/bestiary_demons.duke,
+    data/units/bestiary_ruins.duke,
 
     data/projectiles/arrow.duke,
     data/projectiles/heavy_arrow.duke,
@@ -158,6 +167,7 @@ Game
 
     data/sounds/sfx.duke,
     data/sounds/wilds.duke,
+    data/sounds/bestiary.duke,
     data/sounds/ui.duke,
     data/sounds/voice.duke,
     data/sounds/music.duke,

@@ -1,0 +1,969 @@
+; ---------------------------------------------------------------------------
+; The graveyard: the dead, the crypt's vermin, cave spiders and the fallen king.
+; The bestiary (docs/plan/2026-10-15-bestiary.md): WorldMapWriter's Wild camps and roamers place them by name.
+; Models: Quaternius (CC0; the zombie ghoul, brute and crawler, the witch and the cult mage CC-BY 3.0 -- see
+; CREDITS.md), converted by art/monsters/export_bestiary.py. A Licensed look is a CGTrader Royalty Free model in the
+; git-ignored licensed-assets/ (art/monsters/export_licensed_monsters.py), drawn where it is shipped.
+; Levels are the walk's from the city, as every monster's in the world: these figures are level 1's.
+; ---------------------------------------------------------------------------
+
+; common: slow, and it feeds on what it bites.
+Monster
+  Name = Zombie
+  DisplayName = "Murda"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 4
+    Height = 12
+  End
+  VisionRange = 70
+  Modules = [
+    GrowableBody
+      MaxHealth = 70
+    End,
+    MoveUpdate
+      Speed = 11
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 8
+      AttackRange = 9
+      ReloadFrames = 17
+      ; The swing up to the blow (MonsterClipFitTest), taken off ReloadFrames.
+      PreAttackFrames = 7
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 11
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 45
+  ChaseRadius = 95
+  CloseDistance = 4
+  AlertRadius = 70
+  RepathFrames = 10
+  SwingFrames = 14
+  ; Never on a floor of the descent: the open world places it by name.
+  MinDepth = 99
+  Weight = 0
+  Colour = 0xC8B890
+  Scale = 1
+  Model = models/bestiary/zombie.glb
+  ModelScale = 8.81
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest).
+  WalkStride = 9
+  ; The licensed look (CGTrader Royalty Free, licensed-assets/ only; see CREDITS.md) where it is
+  ; shipped, the look above where it is not.
+  Licensed = MonsterLook
+    Model = models/licensed/zombie.glb
+    ModelScale = 6.51
+    Idle = Idle
+    Walk = Walk
+    Attack = Attack
+    Death = Death
+    WalkStride = 1.2
+  End
+
+  Skills = [
+    Skill
+      Key = Q
+      ; Drinks a share of every blow it lands.
+      Effect = LIFESTEAL
+      BoostPercent = 20
+      MaxRank = 1
+      Name = "Go'sht yeyish"
+    End
+  ]
+End
+
+; stronger: quicker than the dead should be.
+Monster
+  Name = ZombieGhoul
+  DisplayName = "Gul"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 4
+    Height = 12
+  End
+  VisionRange = 70
+  Modules = [
+    GrowableBody
+      MaxHealth = 150
+    End,
+    MoveUpdate
+      Speed = 16
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 15
+      AttackRange = 10
+      ReloadFrames = 21
+      ; The swing up to the blow (MonsterClipFitTest), taken off ReloadFrames.
+      PreAttackFrames = 7
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 24
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 45
+  ChaseRadius = 95
+  CloseDistance = 4
+  AlertRadius = 70
+  RepathFrames = 10
+  SwingFrames = 14
+  ; Never on a floor of the descent: the open world places it by name.
+  MinDepth = 99
+  Weight = 0
+  Colour = 0xC8B890
+  Scale = 1.04
+  Model = models/bestiary/zombie_ghoul.glb
+  ModelScale = 7.62
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest).
+  WalkStride = 7.8
+End
+
+; ranged: a flying skull spitting shadow.
+Monster
+  Name = GhostSkull
+  DisplayName = "Kalla arvoh"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 3
+    Height = 9
+  End
+  VisionRange = 64
+  Modules = [
+    GrowableBody
+      MaxHealth = 45
+    End,
+    MoveUpdate
+      Speed = 14
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 8
+      AttackRange = 58
+      ReloadFrames = 54
+      AttackOnTheMove = No
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    Bow
+      Projectile = ShadowSpark
+      Speed = 190
+      MuzzleOffset = 8
+    End,
+    EyesOnly
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 18
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 64
+  ChaseRadius = 120
+  CloseDistance = 6
+  AlertRadius = 70
+  RepathFrames = 10
+  SwingFrames = 14
+  ; Never on a floor of the descent: the open world places it by name.
+  MinDepth = 99
+  Weight = 0
+  KeepDistance = [30, 50]
+  Colour = 0xC8B890
+  Scale = 0.75
+  Model = models/bestiary/ghost_skull.glb
+  ModelScale = 2.9
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest).
+  WalkStride = 0
+End
+
+; stronger: a great swollen arm.
+Monster
+  Name = ZombieBrute
+  DisplayName = "Murda pahlavon"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 6
+    Height = 15
+  End
+  VisionRange = 70
+  Modules = [
+    GrowableBody
+      MaxHealth = 220
+    End,
+    MoveUpdate
+      Speed = 9
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 24
+      AttackRange = 12
+      ReloadFrames = 30
+      ; The swing up to the blow (MonsterClipFitTest), taken off ReloadFrames.
+      PreAttackFrames = 8
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 30
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 45
+  ChaseRadius = 95
+  CloseDistance = 4
+  AlertRadius = 70
+  RepathFrames = 10
+  SwingFrames = 14
+  ; Never on a floor of the descent: the open world places it by name.
+  MinDepth = 99
+  Weight = 0
+  Colour = 0xC8B890
+  Scale = 1.25
+  Model = models/bestiary/zombie_brute.glb
+  ModelScale = 9.57
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest).
+  WalkStride = 9.7
+End
+
+; ELITE of the dead: bigger, green-rotten, two affixes.
+Monster
+  Name = ZombieGiant
+  DisplayName = "Ulkan murda"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 7
+    Height = 18
+  End
+  VisionRange = 70
+  Modules = [
+    GrowableBody
+      MaxHealth = 260
+    End,
+    MoveUpdate
+      Speed = 10
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 26
+      AttackRange = 13
+      ReloadFrames = 26
+      ; The swing up to the blow (MonsterClipFitTest), taken off ReloadFrames.
+      PreAttackFrames = 8
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 55
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 45
+  ChaseRadius = 95
+  CloseDistance = 4
+  AlertRadius = 70
+  RepathFrames = 8
+  SwingFrames = 14
+  ; Never on a floor of the descent: the open world places it by name.
+  MinDepth = 99
+  Weight = 0
+  SkillDistance = [0, 50]
+  Colour = 0x6A9050
+  Scale = 1.5
+  Model = models/bestiary/zombie_brute.glb
+  ModelScale = 11.49
+  Tint = 0x6A9050
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest).
+  WalkStride = 11.7
+
+  Skills = [
+    Skill
+      Key = Q
+      ; Drinks a share of every blow it lands.
+      Effect = LIFESTEAL
+      BoostPercent = 25
+      MaxRank = 1
+      Name = "Qon so'rish"
+    End,
+    Skill
+      Key = E
+      ; Everyone of its own round it hits harder.
+      Effect = DAMAGE_AURA
+      BoostPercent = 25
+      Radius = 50
+      Look = MightAura
+      TickFrames = 30
+      MaxRank = 1
+      Icon = icons/stats/stat_attack.png
+      Blurb = Atrofidagi o'zinikilar qattiqroq uradi.
+      Name = "G'azab"
+    End
+  ]
+End
+
+; CAMP BOSS: a king the curse keeps -- he calls the dead up, and they drink from their blows round him.
+Monster
+  Name = FallenKing
+  DisplayName = "La'natlangan qirol"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 7
+    Height = 16
+  End
+  VisionRange = 130
+  Modules = [
+    GrowableBody
+      MaxHealth = 580
+    End,
+    MoveUpdate
+      Speed = 14
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 24
+      AttackRange = 13
+      ReloadFrames = 20
+      ; The swing up to the blow (MonsterClipFitTest), taken off ReloadFrames.
+      PreAttackFrames = 10
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 170
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 55
+  ChaseRadius = 150
+  CloseDistance = 4
+  AlertRadius = 110
+  RepathFrames = 8
+  SwingFrames = 14
+  ; Never on a floor of the descent: the open world places it by name.
+  MinDepth = 99
+  Weight = 0
+  SkillDistance = [0, 60]
+  Colour = 0xA8B0C8
+  Scale = 1.33
+  Model = models/bestiary/fallen_king.glb
+  ModelScale = 8.4
+  Tint = 0xA8B0C8
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest).
+  WalkStride = 15.1
+
+  Skills = [
+    Skill
+      Key = Q
+      ; Rifts round it, and one of its own out of each.
+      Effect = SUMMON
+      Summons = [Skeleton = 2, Stalker = 1]
+      MaxSummoned = 3
+      Radius = 16
+      DurationFrames = 600
+      SummonExperiencePercent = 0
+      WindUpFrames = 20
+      Projectile = SummoningRift
+      CooldownFrames = 420
+      MaxRank = 1
+      Name = Qabrdan turganlar
+    End,
+    Skill
+      Key = E
+      ; Everyone of its own round it drinks a share of its blows.
+      Effect = LIFESTEAL_AURA
+      BoostPercent = 20
+      Radius = 50
+      Look = BloodAura
+      TickFrames = 30
+      MaxRank = 1
+      Icon = icons/stats/stat_lifesteal.png
+      Blurb = Atrofidagi o'zinikilar har zarbasidan jon qaytarib oladi.
+      Name = "La'nat"
+    End,
+    Skill
+      Key = W
+      ; Thrown down a line, bursting where it stops: it can be stepped out of.
+      Effect = SKILLSHOT
+      Damage = 40
+      Range = 70
+      Radius = 16
+      HitWidth = 6
+      ProjectileSpeed = 120
+      Projectile = SkullFireball
+      StunFrames = 20
+      CooldownFrames = 210
+      MaxRank = 1
+      Name = Qora olov
+    End
+  ]
+End
+
+; half a body, dragging itself on.
+Monster
+  Name = ZombieCrawler
+  DisplayName = "Sudraluvchi murda"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 3
+    Height = 6
+  End
+  VisionRange = 70
+  Modules = [
+    GrowableBody
+      MaxHealth = 40
+    End,
+    MoveUpdate
+      Speed = 9
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 6
+      AttackRange = 8
+      ReloadFrames = 21
+      ; The swing up to the blow (MonsterClipFitTest), taken off ReloadFrames.
+      PreAttackFrames = 1
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 8
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 45
+  ChaseRadius = 95
+  CloseDistance = 4
+  AlertRadius = 70
+  RepathFrames = 10
+  SwingFrames = 14
+  ; The crypt's vermin come up in the descent too, from the floor MinDepth says, as often as Weight.
+  MinDepth = 3
+  Weight = 8
+  Colour = 0xC8B890
+  Scale = 0.52
+  Model = models/bestiary/zombie_crawler.glb
+  ModelScale = 5.83
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest).
+  WalkStride = 1.4
+End
+
+; a skull on legs: quick, weak.
+Monster
+  Name = SkullCrawler
+  DisplayName = "Kalla o'rgimchak"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 3
+    Height = 6
+  End
+  VisionRange = 70
+  Modules = [
+    GrowableBody
+      MaxHealth = 35
+    End,
+    MoveUpdate
+      Speed = 19
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 5
+      AttackRange = 8
+      ReloadFrames = 9
+      ; The swing up to the blow (MonsterClipFitTest), taken off ReloadFrames.
+      PreAttackFrames = 11
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 7
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 45
+  ChaseRadius = 95
+  CloseDistance = 4
+  AlertRadius = 70
+  RepathFrames = 10
+  SwingFrames = 14
+  ; The crypt's vermin come up in the descent too, from the floor MinDepth says, as often as Weight.
+  MinDepth = 3
+  Weight = 8
+  Colour = 0xC8B890
+  Scale = 0.54
+  Model = models/bestiary/skull_crawler.glb
+  ModelScale = 4.35
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest).
+  WalkStride = 0
+End
+
+; a bat of the crypt, in swarms.
+Monster
+  Name = Bat
+  DisplayName = "Ko'rshapalak"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 3
+    Height = 7
+  End
+  VisionRange = 70
+  Modules = [
+    GrowableBody
+      MaxHealth = 30
+    End,
+    MoveUpdate
+      Speed = 24
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 4
+      AttackRange = 8
+      ReloadFrames = 4
+      ; The swing up to the blow (MonsterClipFitTest), taken off ReloadFrames.
+      PreAttackFrames = 14
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 6
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 45
+  ChaseRadius = 95
+  CloseDistance = 4
+  AlertRadius = 70
+  RepathFrames = 10
+  SwingFrames = 14
+  ; The crypt's vermin come up in the descent too, from the floor MinDepth says, as often as Weight.
+  MinDepth = 2
+  Weight = 10
+  Colour = 0xC8B890
+  Scale = 0.58
+  Model = models/bestiary/bat.glb
+  ModelScale = 1.72
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest).
+  WalkStride = 0
+End
+
+; a rat of the crypt and the ruins.
+Monster
+  Name = Rat
+  DisplayName = "Kalamush"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 3
+    Height = 6
+  End
+  VisionRange = 70
+  Modules = [
+    GrowableBody
+      MaxHealth = 35
+    End,
+    MoveUpdate
+      Speed = 20
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 5
+      AttackRange = 8
+      ReloadFrames = 10
+      ; The swing up to the blow (MonsterClipFitTest), taken off ReloadFrames.
+      PreAttackFrames = 10
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 6
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 45
+  ChaseRadius = 95
+  CloseDistance = 4
+  AlertRadius = 70
+  RepathFrames = 10
+  SwingFrames = 14
+  ; The crypt's vermin come up in the descent too, from the floor MinDepth says, as often as Weight.
+  MinDepth = 2
+  Weight = 10
+  Colour = 0xC8B890
+  Scale = 0.52
+  Model = models/bestiary/rat.glb
+  ModelScale = 2.71
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest).
+  WalkStride = 5.4
+End
+
+; ranged: a cultist hag with shadow on her hands.
+Monster
+  Name = Witch
+  DisplayName = "Jodugar"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 4
+    Height = 12
+  End
+  VisionRange = 64
+  Modules = [
+    GrowableBody
+      MaxHealth = 55
+    End,
+    MoveUpdate
+      Speed = 13
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 9
+      AttackRange = 60
+      ReloadFrames = 54
+      AttackOnTheMove = No
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    Bow
+      Projectile = ShadowSpark
+      Speed = 190
+      MuzzleOffset = 8
+    End,
+    EyesOnly
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 22
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 64
+  ChaseRadius = 120
+  CloseDistance = 6
+  AlertRadius = 70
+  RepathFrames = 10
+  SwingFrames = 14
+  ; Never on a floor of the descent: the open world places it by name.
+  MinDepth = 99
+  Weight = 0
+  KeepDistance = [30, 55]
+  Colour = 0xC8B890
+  Scale = 1
+  Model = models/bestiary/witch.glb
+  ModelScale = 5.87
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest).
+  WalkStride = 10.6
+End
+
+; a cave spider: its web holds whoever it lands on.
+Monster
+  Name = CaveSpider
+  DisplayName = "G'or o'rgimchagi"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 3
+    Height = 8
+  End
+  VisionRange = 70
+  Modules = [
+    GrowableBody
+      MaxHealth = 70
+    End,
+    MoveUpdate
+      Speed = 17
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 9
+      AttackRange = 10
+      ReloadFrames = 11
+      ; The swing up to the blow (MonsterClipFitTest), taken off ReloadFrames.
+      PreAttackFrames = 13
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 13
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 45
+  ChaseRadius = 95
+  CloseDistance = 4
+  AlertRadius = 70
+  RepathFrames = 10
+  SwingFrames = 14
+  ; The crypt's vermin come up in the descent too, from the floor MinDepth says, as often as Weight.
+  MinDepth = 4
+  Weight = 6
+  SkillDistance = [15, 60]
+  Colour = 0x707078
+  Scale = 0.67
+  Model = models/wilds/spider.glb
+  ModelScale = 4.1
+  Tint = 0x707078
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest).
+  WalkStride = 12
+  ; The licensed look (CGTrader Royalty Free, licensed-assets/ only; see CREDITS.md) where it is
+  ; shipped, the look above where it is not.
+  Licensed = MonsterLook
+    Model = models/licensed/spider.glb
+    ModelScale = 10.83
+    Idle = Idle
+    Walk = Walk
+    Attack = Attack
+    Death = Death
+    WalkStride = 4.9
+  End
+
+  Skills = [
+    Skill
+      Key = Q
+      ; Thrown down a line, bursting where it stops: it can be stepped out of.
+      Effect = SKILLSHOT
+      Damage = 12
+      Range = 70
+      Radius = 16
+      HitWidth = 6
+      ProjectileSpeed = 120
+      Projectile = SkullFireball
+      StunFrames = 45
+      CooldownFrames = 300
+      MaxRank = 1
+      Name = "To'r"
+    End
+  ]
+End
+
+; ELITE of the spiders: the brood's mother, her web longer.
+Monster
+  Name = BroodMother
+  DisplayName = "O'rgimchak ona"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 4
+    Height = 11
+  End
+  VisionRange = 70
+  Modules = [
+    GrowableBody
+      MaxHealth = 220
+    End,
+    MoveUpdate
+      Speed = 15
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 16
+      AttackRange = 12
+      ReloadFrames = 15
+      ; The swing up to the blow (MonsterClipFitTest), taken off ReloadFrames.
+      PreAttackFrames = 13
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 50
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 45
+  ChaseRadius = 95
+  CloseDistance = 4
+  AlertRadius = 70
+  RepathFrames = 8
+  SwingFrames = 14
+  ; Never on a floor of the descent: the open world places it by name.
+  MinDepth = 99
+  Weight = 0
+  SkillDistance = [15, 60]
+  Colour = 0x803040
+  Scale = 0.92
+  Model = models/wilds/spider.glb
+  ModelScale = 5.64
+  Tint = 0x803040
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest).
+  WalkStride = 16.6
+  ; The licensed look (CGTrader Royalty Free, licensed-assets/ only; see CREDITS.md) where it is
+  ; shipped, the look above where it is not.
+  Licensed = MonsterLook
+    Model = models/licensed/spider.glb
+    ModelScale = 15.28
+    Texture = models/licensed/spider_3.png
+    Idle = Idle
+    Walk = Walk
+    Attack = Attack
+    Death = Death
+    WalkStride = 6.9
+  End
+
+  Skills = [
+    Skill
+      Key = Q
+      ; Thrown down a line, bursting where it stops: it can be stepped out of.
+      Effect = SKILLSHOT
+      Damage = 18
+      Range = 70
+      Radius = 16
+      HitWidth = 6
+      ProjectileSpeed = 120
+      Projectile = SkullFireball
+      StunFrames = 60
+      CooldownFrames = 300
+      MaxRank = 1
+      Name = "To'r"
+    End,
+    Skill
+      Key = W
+      ; Drinks a share of every blow it lands.
+      Effect = LIFESTEAL
+      BoostPercent = 25
+      MaxRank = 1
+      Name = "Qon so'rish"
+    End
+  ]
+End

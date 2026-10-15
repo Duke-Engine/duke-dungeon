@@ -1,0 +1,580 @@
+; ---------------------------------------------------------------------------
+; The lake's shore: crabs, shark-folk, pirates and the tentacle of what lives in the lake.
+; The bestiary (docs/plan/2026-10-15-bestiary.md): WorldMapWriter's Wild camps and roamers place them by name.
+; Models: Quaternius (CC0; the zombie ghoul, brute and crawler, the witch and the cult mage CC-BY 3.0 -- see
+; CREDITS.md), converted by art/monsters/export_bestiary.py. A Licensed look is a CGTrader Royalty Free model in the
+; git-ignored licensed-assets/ (art/monsters/export_licensed_monsters.py), drawn where it is shipped.
+; Levels are the walk's from the city, as every monster's in the world: these figures are level 1's.
+; ---------------------------------------------------------------------------
+
+; common: hard-shelled and slow.
+Monster
+  Name = Crab
+  DisplayName = "Qisqichbaqa"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 3
+    Height = 7
+  End
+  VisionRange = 70
+  Modules = [
+    GrowableBody
+      MaxHealth = 60
+    End,
+    MoveUpdate
+      Speed = 14
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 7
+      AttackRange = 9
+      ReloadFrames = 11
+      ; The swing up to the blow (MonsterClipFitTest), taken off ReloadFrames.
+      PreAttackFrames = 11
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 10
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 45
+  ChaseRadius = 95
+  CloseDistance = 4
+  AlertRadius = 70
+  RepathFrames = 10
+  SwingFrames = 14
+  ; Never on a floor of the descent: the open world places it by name.
+  MinDepth = 99
+  Weight = 0
+  Colour = 0xC8B890
+  Scale = 0.58
+  Model = models/bestiary/crab.glb
+  ModelScale = 4.63
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest).
+  WalkStride = 0
+End
+
+; stronger: a shark on two legs with a cleaver.
+Monster
+  Name = Sharkman
+  DisplayName = "Akula-odam"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 4
+    Height = 13
+  End
+  VisionRange = 70
+  Modules = [
+    GrowableBody
+      MaxHealth = 170
+    End,
+    MoveUpdate
+      Speed = 13
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 18
+      AttackRange = 11
+      ReloadFrames = 22
+      ; The swing up to the blow (MonsterClipFitTest), taken off ReloadFrames.
+      PreAttackFrames = 10
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 26
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 45
+  ChaseRadius = 95
+  CloseDistance = 4
+  AlertRadius = 70
+  RepathFrames = 10
+  SwingFrames = 14
+  ; Never on a floor of the descent: the open world places it by name.
+  MinDepth = 99
+  Weight = 0
+  Colour = 0xC8B890
+  Scale = 1.08
+  Model = models/bestiary/sharkman.glb
+  ModelScale = 8.34
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest).
+  WalkStride = 12.7
+End
+
+; ranged: a pistol from the boats.
+Monster
+  Name = PirateAnne
+  DisplayName = "Dengiz qaroqchi qiz"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 4
+    Height = 11
+  End
+  VisionRange = 64
+  Modules = [
+    GrowableBody
+      MaxHealth = 50
+    End,
+    MoveUpdate
+      Speed = 14
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 8
+      AttackRange = 60
+      ReloadFrames = 54
+      AttackOnTheMove = No
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    Bow
+      Projectile = Bolt
+      Speed = 190
+      MuzzleOffset = 8
+    End,
+    EyesOnly
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 18
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 64
+  ChaseRadius = 120
+  CloseDistance = 6
+  AlertRadius = 70
+  RepathFrames = 10
+  SwingFrames = 14
+  ; Never on a floor of the descent: the open world places it by name.
+  MinDepth = 99
+  Weight = 0
+  KeepDistance = [30, 55]
+  Colour = 0xC8B890
+  Scale = 0.92
+  Model = models/bestiary/pirate_anne.glb
+  ModelScale = 6.7
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest).
+  WalkStride = 10.2
+End
+
+; ELITE of the shark-folk: bigger, red, two affixes.
+Monster
+  Name = BloodShark
+  DisplayName = "Qonli akula"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 5
+    Height = 16
+  End
+  VisionRange = 70
+  Modules = [
+    GrowableBody
+      MaxHealth = 200
+    End,
+    MoveUpdate
+      Speed = 15
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 21
+      AttackRange = 12
+      ReloadFrames = 18
+      ; The swing up to the blow (MonsterClipFitTest), taken off ReloadFrames.
+      PreAttackFrames = 10
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 55
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 45
+  ChaseRadius = 95
+  CloseDistance = 4
+  AlertRadius = 70
+  RepathFrames = 8
+  SwingFrames = 14
+  ; Never on a floor of the descent: the open world places it by name.
+  MinDepth = 99
+  Weight = 0
+  SkillDistance = [0, 50]
+  Colour = 0xA03030
+  Scale = 1.33
+  Model = models/bestiary/sharkman.glb
+  ModelScale = 10.27
+  Tint = 0xA03030
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest).
+  WalkStride = 15.6
+
+  Skills = [
+    Skill
+      Key = Q
+      ; Drinks a share of every blow it lands.
+      Effect = LIFESTEAL
+      BoostPercent = 30
+      MaxRank = 1
+      Name = "Qon so'rish"
+    End,
+    Skill
+      Key = W
+      ; Strikes faster for five seconds -- itself, or the sturdiest of its own near it.
+      Effect = HASTE
+      BoostPercent = 60
+      DurationFrames = 150
+      Range = 50
+      CooldownFrames = 300
+      Look = Hasted
+      MaxRank = 1
+      Icon = icons/stats/stat_speed.png
+      Blurb = Bir necha soniya ancha tezroq uradi.
+      Name = Shiddat
+    End
+  ]
+End
+
+; CAMP BOSS: a tentacle of the thing in the lake -- it hardly moves, but drags the hero to it.
+Monster
+  Name = Kraken
+  DisplayName = "Ko'l maxluqi"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 8
+    Height = 26
+  End
+  VisionRange = 130
+  Modules = [
+    GrowableBody
+      MaxHealth = 600
+    End,
+    MoveUpdate
+      Speed = 3
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 28
+      AttackRange = 22
+      ReloadFrames = 39
+      ; The swing up to the blow (MonsterClipFitTest), taken off ReloadFrames.
+      PreAttackFrames = 1
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 170
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 60
+  ChaseRadius = 60
+  CloseDistance = 4
+  AlertRadius = 110
+  RepathFrames = 8
+  SwingFrames = 14
+  ; Never on a floor of the descent: the open world places it by name.
+  MinDepth = 99
+  Weight = 0
+  SkillDistance = [0, 30]
+  Colour = 0xC8B890
+  Scale = 2.17
+  Model = models/bestiary/kraken_tentacle.glb
+  ModelScale = 1.32
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest).
+  WalkStride = 0
+
+  Skills = [
+    Skill
+      Key = Q
+      ; Everyone round it dragged to its front, hurt and held.
+      Effect = PULL
+      Radius = 32
+      Range = 12
+      Damage = 25
+      StunFrames = 45
+      CooldownFrames = 600
+      MaxRank = 1
+      Look = Whirlwind
+      Name = Chirmovchi
+    End,
+    Skill
+      Key = W
+      ; A wave down a line that hurts everyone it runs through.
+      Effect = WAVE
+      Damage = 35
+      Distance = 50
+      Range = 50
+      HitWidth = 16
+      ProjectileSpeed = 55
+      Projectile = SwordWave
+      StunFrames = 20
+      CooldownFrames = 360
+      MaxRank = 1
+      Name = "To'lqin"
+    End
+  ]
+End
+
+; a pirate walking the lake's shore.
+Monster
+  Name = PirateMako
+  DisplayName = "Dengiz bosqinchisi"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 4
+    Height = 12
+  End
+  VisionRange = 70
+  Modules = [
+    GrowableBody
+      MaxHealth = 120
+    End,
+    MoveUpdate
+      Speed = 15
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 13
+      AttackRange = 10
+      ReloadFrames = 18
+      ; The swing up to the blow (MonsterClipFitTest), taken off ReloadFrames.
+      PreAttackFrames = 10
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 20
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 45
+  ChaseRadius = 95
+  CloseDistance = 4
+  AlertRadius = 70
+  RepathFrames = 10
+  SwingFrames = 14
+  ; Never on a floor of the descent: the open world places it by name.
+  MinDepth = 99
+  Weight = 0
+  Colour = 0xC8B890
+  Scale = 0.96
+  Model = models/bestiary/pirate_mako.glb
+  ModelScale = 7.21
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest).
+  WalkStride = 11
+End
+
+; a pirate captain: an elite among them.
+Monster
+  Name = PirateCaptain
+  DisplayName = "Kapitan"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 4
+    Height = 13
+  End
+  VisionRange = 70
+  Modules = [
+    GrowableBody
+      MaxHealth = 240
+    End,
+    MoveUpdate
+      Speed = 14
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 18
+      AttackRange = 11
+      ReloadFrames = 18
+      ; The swing up to the blow (MonsterClipFitTest), taken off ReloadFrames.
+      PreAttackFrames = 10
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 50
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 45
+  ChaseRadius = 95
+  CloseDistance = 4
+  AlertRadius = 70
+  RepathFrames = 8
+  SwingFrames = 14
+  ; Never on a floor of the descent: the open world places it by name.
+  MinDepth = 99
+  Weight = 0
+  SkillDistance = [0, 50]
+  Colour = 0xC8B890
+  Scale = 1.08
+  Model = models/bestiary/pirate_captain.glb
+  ModelScale = 7.45
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest).
+  WalkStride = 13.9
+
+  Skills = [
+    Skill
+      Key = Q
+      ; Drinks a share of every blow it lands.
+      Effect = LIFESTEAL
+      BoostPercent = 25
+      MaxRank = 1
+      Name = "Qon so'rish"
+    End,
+    Skill
+      Key = W
+      ; Strikes faster for five seconds -- itself, or the sturdiest of its own near it.
+      Effect = HASTE
+      BoostPercent = 60
+      DurationFrames = 150
+      Range = 50
+      CooldownFrames = 300
+      Look = Hasted
+      MaxRank = 1
+      Icon = icons/stats/stat_speed.png
+      Blurb = Bir necha soniya ancha tezroq uradi.
+      Name = Shiddat
+    End
+  ]
+End
+
+; a drowned sailor walking out of the lake.
+Monster
+  Name = SkeletonPirate
+  DisplayName = "Cho'kkan dengizchi"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 4
+    Height = 11
+  End
+  VisionRange = 70
+  Modules = [
+    GrowableBody
+      MaxHealth = 90
+    End,
+    MoveUpdate
+      Speed = 15
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 10
+      AttackRange = 10
+      ReloadFrames = 16
+      ; The swing up to the blow (MonsterClipFitTest), taken off ReloadFrames.
+      PreAttackFrames = 10
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 15
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 45
+  ChaseRadius = 95
+  CloseDistance = 4
+  AlertRadius = 70
+  RepathFrames = 10
+  SwingFrames = 14
+  ; Never on a floor of the descent: the open world places it by name.
+  MinDepth = 99
+  Weight = 0
+  Colour = 0xC8B890
+  Scale = 0.92
+  Model = models/bestiary/skeleton_pirate.glb
+  ModelScale = 10.32
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest).
+  WalkStride = 15.7
+End

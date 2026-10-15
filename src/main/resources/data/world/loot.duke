@@ -35,10 +35,13 @@ ItemRules
   ; The chance an elite drops anything (a monster's and a boss's are LootDrops').
   EliteDropPercent = 40
   ; The wilds' elites too (data/units/wilds_*.duke): bigger, tinted, with an affix or two.
-  Elites = [Brute, Champion, Warden, Reaper, BloodWolf, FireLizard, StoneGoleling, VenomFrog]
+  Elites = [Brute, Champion, Warden, Reaper, BloodWolf, FireLizard, StoneGoleling, VenomFrog, BanditVeteran,
+    GiantArmabee, OrcWarlord, ZombieGiant, BroodMother, BloodShark, PirateCaptain, FrostYeti, HellDemon, FireGolem,
+    LightGolem, ShadowGolem]
   ; Who guards a camp of the open world: each drops as a boss does -- always, BossDrops things,
   ; BossLevel above its own -- wherever it stands.
-  CampBosses = [GoblinChief, Dragon, GiantKing, BogHorror]
+  CampBosses = [GoblinChief, Dragon, GiantKing, BogHorror, BanditChief, MushroomKing, Troll, FallenKing, Kraken,
+    Wyvern, DemonBrute, Minotaur]
   ; Of an ordinary or elite drop, how many in a hundred are food or drink.
   PotionPercent = 35
   ; A boss drops two things, a level above its own.

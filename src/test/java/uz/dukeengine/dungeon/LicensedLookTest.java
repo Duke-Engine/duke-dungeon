@@ -25,10 +25,23 @@ class LicensedLookTest {
 
     private static final DungeonSettings SETTINGS = DungeonSettings.load();
     /** Who wears which licensed model. */
-    private static final Map<String, String> LICENSED = Map.of(
-            "Queen", "models/licensed/queen.glb",
-            "QueenBoss", "models/licensed/queen.glb",
-            "SkeletonSummoner", "models/licensed/ritualist.glb");
+    private static final Map<String, String> LICENSED = Map.ofEntries(
+            Map.entry("Queen", "models/licensed/queen.glb"),
+            Map.entry("QueenBoss", "models/licensed/queen.glb"),
+            Map.entry("SkeletonSummoner", "models/licensed/ritualist.glb"),
+            // The bestiary's (data/units/bestiary_*.duke).
+            Map.entry("Bandit", "models/licensed/bandit.glb"),
+            Map.entry("BanditVeteran", "models/licensed/bandit.glb"),
+            Map.entry("Troll", "models/licensed/troll.glb"),
+            Map.entry("Zombie", "models/licensed/zombie.glb"),
+            Map.entry("CaveSpider", "models/licensed/spider.glb"),
+            Map.entry("BroodMother", "models/licensed/spider.glb"),
+            Map.entry("EarthGolem", "models/licensed/golem.glb"),
+            Map.entry("IceGolem", "models/licensed/golem.glb"),
+            Map.entry("FireGolem", "models/licensed/golem.glb"),
+            Map.entry("LightGolem", "models/licensed/golem.glb"),
+            Map.entry("ShadowGolem", "models/licensed/golem.glb"),
+            Map.entry("Minotaur", "models/licensed/minotaur.glb"));
 
     private static boolean shipped(String path) {
         return LicensedLookTest.class.getClassLoader().getResource(path) != null;
