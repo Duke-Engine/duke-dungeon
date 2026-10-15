@@ -1239,6 +1239,7 @@ StaticMap
     TowerKeeper 332 225,
     Traveller 151 428,
     Pedlar 248 246,
+    Otboqar 122 464,
   ]
   ; Named places, in cells: name x y width height, or name x y radius.
   Zones = [

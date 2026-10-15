@@ -238,3 +238,4 @@ loot,ore_iron,ore,all,gi:faithtoken/ore,iron
 loot,herbs,material,all,gi:delapouite/herbs-bundle,nature
 loot,fire_gem,gem,all,gi:delapouite/fire-gem,fire
 loot,scroll_quill,scroll,all,gi:delapouite/scroll-quill,parchment
+loot,horse,animal,all,blender:horse,

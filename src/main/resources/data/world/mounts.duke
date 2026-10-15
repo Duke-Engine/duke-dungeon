@@ -1,0 +1,314 @@
+; ---------------------------------------------------------------------------
+; A horse on the open world (docs/plan/2026-10-15-mounts.md). Owning one is
+; carrying its whistle (the Potion "ot" below), sold by the capital's stable
+; keeper or given by the story. T calls it -- it neighs and runs in -- and gets
+; him up onto it and off it again; a right-click on it gets him up too. Riding,
+; he goes twice his walk and does nothing else: a blow, an attack or a skill
+; gets him off, and so does a town or any map that is not out of doors.
+;
+; While he rides, the horse is no thing of the world: he is drawn as his riding
+; look below, the horse's rig and clips with him seated on its back (made by
+; art/mounts/export_riders.py), until the engine can sit one unit on another
+; (engine request E88).
+; ---------------------------------------------------------------------------
+
+Mount
+  Whistle = ot
+  Horse = Horse
+  Looks = [
+    "Knight = KnightRiding",
+    "Rogue = RogueRiding",
+    "Mage = MageRiding",
+  ]
+  ; Twice his walk: the knight's 21 is 42, the rogue's 27 is 54.
+  SpeedPercent = 100
+  Key = T
+  KeyWord = Ot
+  ; Up onto it in 0.6s (30 frames a second), his reach for a thing played meanwhile.
+  MountFrames = 18
+  MountClip = Gather
+  ; How near the horse's middle he gets up onto it; how far off it starts its run in.
+  Reach = 14
+  CallDistance = 70
+  ; Out of doors: the open world only. Not in the city or the villages.
+  Maps = [world]
+  NoRideZones = [Poytaxt, Olmazor, "Bog'iston", Qoratepa, Tolzor, Yangiobod]
+  ; A stride's hooves while he rides and moves: the gallop's 0.58s.
+  GallopFrames = 17
+  NoHorseWord = Otingiz yo'q
+  IndoorsWord = Bu yerda otga minib bo'lmaydi
+  Call = mount.call
+  Gallop = mount.gallop
+  Puff = MountDust
+End
+
+; Owning a horse: its whistle. Never eaten, one to a place, sold by the stable
+; keeper (data/story below) and never dropped (Weight 0).
+Potion
+  Name = ot
+  DisplayName = "Ot hushtagi"
+  Icon = horse
+  Level = 1
+  Price = 300
+  Weight = 0
+  Stack = 1
+End
+
+; The horse standing about while he is off it: Quaternius' "Horse" (CC0). On the
+; engine's neutral side with no Body, so nothing fights it. It runs in at 48 a
+; second when he whistles; its own hooves are walking.Horse below.
+Monster
+  Name = Horse
+  DisplayName = Ot
+  KindOf = [INFANTRY, SELECTABLE]
+  Geometry = Cylinder
+    Radius = 5
+    Height = 10
+  End
+  VisionRange = 0
+  Modules = [
+    MoveUpdate
+      Speed = 48
+      TurnRate = 0
+    End
+  ]
+  MinDepth = 99
+  Weight = 0
+  Colour = 0x8A5A30
+  ; Its withers stand 10 under this ModelScale, as under each riding look's.
+  Model = models/mounts/horse.glb
+  ModelScale = 4.0
+  Facing = 90
+  Idle = Idle
+  Walk = Gallop
+  ; A gallop's stride, in world units, as MonsterClipFitTest measures it: the clip paced to its speed.
+  WalkStride = 22
+  Death = Death
+End
+
+; Each hero riding: drawn as one of these while he is on his horse (drawAs). The
+; same ModelScale as his own look, which is what each file was sized for.
+Monster
+  Name = KnightRiding
+  DisplayName = Garen
+  KindOf = [INFANTRY]
+  Geometry = Cylinder
+    Radius = 5
+    Height = 12
+  End
+  VisionRange = 0
+  MinDepth = 99
+  Weight = 0
+  Colour = 0x8A5A30
+  Model = models/mounts/knight_riding.glb
+  ModelScale = 6.82
+  Facing = 90
+  Idle = Idle
+  Walk = Gallop
+  ; A gallop's stride, in world units, as MonsterClipFitTest measures it: the clip paced to its speed.
+  WalkStride = 22
+  Death = Death
+End
+
+Monster
+  Name = RogueRiding
+  DisplayName = Erika
+  KindOf = [INFANTRY]
+  Geometry = Cylinder
+    Radius = 5
+    Height = 12
+  End
+  VisionRange = 0
+  MinDepth = 99
+  Weight = 0
+  Colour = 0x8A5A30
+  Model = models/mounts/rogue_riding.glb
+  ModelScale = 5.50
+  Facing = 90
+  Idle = Idle
+  Walk = Gallop
+  ; A gallop's stride, in world units, as MonsterClipFitTest measures it: the clip paced to its speed.
+  WalkStride = 22
+  Death = Death
+End
+
+Monster
+  Name = MageRiding
+  DisplayName = Lira
+  KindOf = [INFANTRY]
+  Geometry = Cylinder
+    Radius = 5
+    Height = 12
+  End
+  VisionRange = 0
+  MinDepth = 99
+  Weight = 0
+  Colour = 0x8A5A30
+  Model = models/mounts/mage_riding.glb
+  ModelScale = 4.52
+  Facing = 90
+  Idle = Idle
+  Walk = Gallop
+  ; A gallop's stride, in world units, as MonsterClipFitTest measures it: the clip paced to its speed.
+  WalkStride = 22
+  Death = Death
+End
+
+; The pointer over his horse: a right-click gets him up onto it.
+Cursor
+  Name = Ride
+  Image = ui/cursors/default/hand_open.png
+  HotX = 15
+  HotY = 15
+  Tint = 0xC89A5A
+End
+
+; Dust kicked up where the horse appears from nowhere, and where he gets on and off.
+Effect
+  Name = MountDust
+  Layers = [
+    Layer
+      Name = Dust
+      Type = BURST
+      Texture = kit/effects/particles/smoke_01.png
+      Blend = Alpha
+      Count = 12
+      Life = [0.6, 1.0]
+      Size = [3, 7]
+      Colour = [0xB8A88A, 0x786A58]
+      Alpha = [0.6, 0]
+      Speed = [6, 12]
+      Direction = OUT
+      Spread = 20
+      Radius = 2
+      Height = 1
+      TurnJitter = 360
+    End
+  ]
+End
+
+; The horse answering his call: a whinny (Peet J van Eeden, via antumdeluge, CC BY 3.0).
+Sound
+  Name = mount.call
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.7
+  Files = [audio/sfx/horse/whinny.ogg]
+End
+
+; A stride's hooves while he rides (congusbongus's "Horse gallop on different
+; surfaces", its CC0 strides).
+Sound
+  Name = mount.gallop
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.45
+  Files = [audio/sfx/horse/gallop_grass.ogg, audio/sfx/horse/gallop_ground.ogg]
+End
+
+; The horse's own hooves as it runs in, by the ground under it.
+Sound
+  Name = walking.Horse
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.4
+  GapSeconds = 0.55
+  Files = [audio/sfx/horse/gallop_ground.ogg]
+End
+
+Sound
+  Name = walking.Horse.grass
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.4
+  GapSeconds = 0.55
+  Files = [audio/sfx/horse/gallop_grass.ogg]
+End
+
+Sound
+  Name = walking.Horse.forest
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.4
+  GapSeconds = 0.55
+  Files = [audio/sfx/horse/gallop_muffled.ogg]
+End
+
+Sound
+  Name = walking.Horse.mud
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.4
+  GapSeconds = 0.55
+  Files = [audio/sfx/horse/gallop_muffled.ogg]
+End
+
+Sound
+  Name = walking.Horse.sand
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.4
+  GapSeconds = 0.55
+  Files = [audio/sfx/horse/gallop_muffled.ogg]
+End
+
+; The capital's stable keeper, by the city's east gate (stage/WorldMapWriter):
+; he sells the whistle.
+Monster
+  Name = Otboqar
+  DisplayName = "Otboqar Rustam"
+  KindOf = [INFANTRY, SELECTABLE]
+  Geometry = Cylinder
+    Radius = 4
+    Height = 12
+  End
+  VisionRange = 0
+  Modules = [
+    MoveUpdate
+      Speed = 8
+      TurnRate = 0
+    End
+  ]
+  MinDepth = 99
+  Weight = 0
+  Colour = 0x806040
+  Scale = 1.0
+  Model = models/heroes/ranger.glb
+  Tint = 0x9A7A58
+  ModelScale = 5.5
+  Facing = 90
+  Animations = Humanoid
+  WalkStride = 4.1
+End
+
+Speaker
+  Name = Otboqar
+  DisplayName = "Otboqar Rustam"
+  Picture =
+End
+
+Conversation
+  Name = OtboqarGreets
+  Lines = [
+    Line
+      Speaker = Otboqar
+      Text = "Yaxshi ot - yarim yo'l! Hushtagini oling, shahar tashqarisida T ni bosing, oting chopib keladi."
+    End
+  ]
+End
+
+Npc
+  Name = Otboqar
+  Talk = OtboqarGreets
+  Role = Otboqar
+  Radius = 30
+  Wander = 0
+End
+
+Merchant
+  Name = Otboqar
+  Stock = [
+    ot 300 1,
+    suv 5 6,
+  ]
+End

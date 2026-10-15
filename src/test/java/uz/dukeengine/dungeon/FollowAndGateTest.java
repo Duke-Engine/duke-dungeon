@@ -94,13 +94,11 @@ class FollowAndGateTest {
         var session = led();
         var commander = all(session, "Act1Commander").getFirst();
         var near = SETTINGS.story().dialogue();
-        // By her side she sets off (however the intro ended, which moves with everything the world lays) ...
-        var start = commander.getPosition();
-        put(hero(session), start.x() - 20f, start.y() + 20f);
-        play(session, 30);
-        // ... then he stays back on the field, far from her: she stops and waits.
+        // He stays back on the field, far from her: she stops and waits.
         var field = zone("Darvoza_oldi");
-        put(hero(session), field.middleX(CELL) - 8 * CELL, field.middleY(CELL) - 8 * CELL);
+        // To the field's north edge, the far side from the line she stands at: 8 cells each way was within a few units
+        // of FollowFar, and one more person on the map put her that much nearer.
+        put(hero(session), field.middleX(CELL), field.middleY(CELL) - 11 * CELL);
         play(session, 10);
         assertTrue(Math.hypot(hero(session).getPosition().x() - commander.getPosition().x(),
                 hero(session).getPosition().y() - commander.getPosition().y()) > near.followFar(), "the premise");
