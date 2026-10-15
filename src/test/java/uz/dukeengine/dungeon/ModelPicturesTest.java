@@ -12,9 +12,9 @@ import java.util.ArrayList;
 import org.junit.jupiter.api.Test;
 
 /**
- * Every model the game ships carries its base colour and no other picture. The client dresses each piece over the
- * first texture jME's material hands it, and jME hands a normal map before the base colour: Lange was drawn in his
- * normal map, pale lavender, in the playtest of 1.0.41. See art/models/base_colour_only.js and E62.
+ * Every model the game ships carries its base colour and no other picture. Since E64 the client dresses a piece in
+ * its base colour by name, so this is a size rule, not a correctness one: the engine does not light by normal,
+ * occlusion, metal-rough or emissive maps, and they only fatten the files. See art/models/base_colour_only.js.
  */
 class ModelPicturesTest {
 

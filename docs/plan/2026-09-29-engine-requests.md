@@ -70,10 +70,10 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E59 | settings: an Ambience channel with its own volume, a Camera shake row (`ShakeScale` for the player), a Language row if there is more than one | landed (engine 01eb7029; game 2026-10-15) |
 | E60 | closest-thing questions with no candidate list or sort; a weapon that does not copy its owner's module list every frame | landed (engine 01eb7029; game 2026-10-15) |
 | E61 | where the hero is wanted: a `Mission` that drops its key with a few still standing, and the game's own marks on the minimap | landed, 6e789f32 on the engine's branch `e61-key-minimap`; the game passes `Run.keyLeeway` to `Mission.begin` (`run/EarlyKey` gone) and marks the key (gold, blinking) and each quest's target (QuestColour) on the minimap |
-| E62 | settings kept as the player leaves them (Esc, closing the window), not only on the Save button | asked 2026-10-15 (playtest of 1.0.41) |
-| E63 | no bars, medallions or names over the front menu's backdrop (as on `Screen.FRONT`) | asked 2026-10-15 (playtest of 1.0.41) |
-| E64 | `dressModel` takes a glTF piece's base colour by name, not the first texture jME lists (a normal map) | asked 2026-10-15 (playtest of 1.0.41) |
-| E65 | a passive skill drawn as a passive on the hero's bar: framed, no key letter, no press or sweep, takes no click | asked 2026-10-15 (the owner) |
+| E62 | settings kept as the player leaves them (Esc, closing the window), not only on the Save button | landed, 53923bd4 on the engine's branch `e62-65-settings-menu-looks`; Esc and closing the window keep the applied settings (`GameSettings.keep()`), Cancel is the one way back; the hint says `ESC chiqish` |
+| E63 | no bars, medallions or names over the front menu's backdrop (as on `Screen.FRONT`) | landed, 53923bd4 on `e62-65-settings-menu-looks`; `DukeRtsApp.barsHidden` clears bars and marks over the menu backdrop |
+| E64 | `dressModel` takes a glTF piece's base colour by name, not the first texture jME lists (a normal map) | landed, 53923bd4 on `e62-65-settings-menu-looks`; `dressModel` takes `BaseColorMap` first; the game keeps its stripped GLBs (smaller; `ModelPicturesTest` is now a size rule) |
+| E65 | a passive skill drawn as a passive on the hero's bar: framed, no key letter, no press or sweep, takes no click | landed, 53923bd4 on `e62-65-settings-menu-looks`; `HeroCard.skills` writes `passive`, drawn framed, letterless, unclickable; the game keeps a passive's key bound to a no-op and the `Passiv` card line |
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
 game builds against the local engine. E12–E15 reached it together at 668045f0 (their pull requests merged as
@@ -1345,3 +1345,5 @@ clickable while a point can go there), and its card still shows (`tipAt` as the 
 reads a `passive` slot and finds it unlit under a click and letterless. The game, meanwhile: a passive's key is bound
 to nothing (`Main.aimsFor`, so neither the key nor a click on the slot aims, orders or refuses), and its card says
 "1-daraja · Passiv" where an active one says its key (`HeroStatus.passives`, hud.duke `PassiveWord`).
+
+**Landed** as 53923bd4 on the engine's branch `e62-65-settings-menu-looks`. E62: Esc and closing the window keep what was applied (`GameSettings.keep()`); the game's hint says `ESC chiqish`. E63: `DukeRtsApp.barsHidden` hides bars and marks over the menu backdrop. E64: `dressModel` dresses in `BaseColorMap` first; the game keeps its base-colour-only GLBs for size (`ModelPicturesTest` is now a size rule; `lange.glb` left to the `anim` branch). E65: `HeroCard.skills` writes `passive`; the game keeps a passive's key bound to a no-op (it also replaces another hero's binding on that letter) and the `Passiv` card line; the knight's E (Dragon Blood) reports `isPassive()`.

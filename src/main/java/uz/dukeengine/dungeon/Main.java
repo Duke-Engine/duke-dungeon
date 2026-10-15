@@ -747,8 +747,9 @@ public final class Main {
             char key = skill.key();
             keys.describe(key, skill.name()); // its name on the Settings screen's list of keys (E46)
             if (skill.effect().isPassive()) {
-                // Never cast: its key, or a click on its slot, does nothing -- no aim, no order, no refusal. Bound to
-                // nothing rather than left alone, so another hero's skill on the same letter does not stay behind.
+                // Never cast: its key does nothing -- no aim, no order, no refusal (the panel takes no click on its
+                // slot since E65). Bound to nothing rather than left alone, so another hero's skill on the same
+                // letter does not stay behind.
                 keys.on(key, game -> { });
                 continue;
             }
