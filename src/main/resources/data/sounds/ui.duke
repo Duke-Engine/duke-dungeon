@@ -26,6 +26,15 @@ End
 
 ; ---- the screen -----------------------------------------------------------
 
+; The game's name landing on the splash (data/world/menu.duke Splash): Kenney's jingle, CC0.
+Sound
+  Name = splash
+  Channel = Ui
+  Positional = No
+  Gain = 0.8
+  Files = [audio/ui/quest_done.ogg]
+End
+
 Sound
   Name = menu_hover
   Channel = Ui
