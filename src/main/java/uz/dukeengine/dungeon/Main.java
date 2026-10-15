@@ -746,6 +746,12 @@ public final class Main {
         for (var skill : settings.skillsFor(hero)) {
             char key = skill.key();
             keys.describe(key, skill.name()); // its name on the Settings screen's list of keys (E46)
+            if (skill.effect().isPassive()) {
+                // Never cast: its key, or a click on its slot, does nothing -- no aim, no order, no refusal. Bound to
+                // nothing rather than left alone, so another hero's skill on the same letter does not stay behind.
+                keys.on(key, game -> { });
+                continue;
+            }
             switch (skill.effect().aim()) {
                 case UNIT -> keys.onUnit(key, (game, id) -> game.postCommand(PartyOrders.of(new CastSkill(
                         game.getLocalPlayerIndex(), key, new ObjectId(id), null))));

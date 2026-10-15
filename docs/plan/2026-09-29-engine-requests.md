@@ -73,6 +73,7 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E62 | settings kept as the player leaves them (Esc, closing the window), not only on the Save button | asked 2026-10-15 (playtest of 1.0.41) |
 | E63 | no bars, medallions or names over the front menu's backdrop (as on `Screen.FRONT`) | asked 2026-10-15 (playtest of 1.0.41) |
 | E64 | `dressModel` takes a glTF piece's base colour by name, not the first texture jME lists (a normal map) | asked 2026-10-15 (playtest of 1.0.41) |
+| E65 | a passive skill drawn as a passive on the hero's bar: framed, no key letter, no press or sweep, takes no click | asked 2026-10-15 (the owner) |
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
 game builds against the local engine. E12–E15 reached it together at 668045f0 (their pull requests merged as
@@ -1330,3 +1331,17 @@ geometry's params: `NormalMap` comes first. Asked: `skinOf` asks by name — `Ba
 and only then any texture (`ListShow`'s colour lookup already orders its names). Done when a test dresses a glTF with a
 normal map and finds its base colour on the dressed material. The game, meanwhile, ships both files with their base
 colour only (`art/models/base_colour_only.js`, guarded by `ModelPicturesTest`); with this landed the maps can return.
+
+## E65 — A passive skill drawn as a passive on the hero's bar (2026-10-15, small)
+
+The owner, 2026-10-15: the knight's E (Dragon Blood, `SkillEffect.DRAGON_BLOOD`, a passive the book never casts) sits on
+the bar as a button like his three actives: its key letter, the hover and press wash, a cooldown sweep's place. In
+Warcraft III a passive is a framed picture you cannot press. `HeroCard.skills` writes every skill's state as `ready`,
+`cool,…` or `lock`, and `HeroPanel` draws every `ready` slot as pressable — neither can tell a passive. **Repro:** pick
+the knight, buy E: his E slot lights under the mouse and shows "E". Asked: `HeroCard.skills` writes `passive` for a
+learnt skill whose `effect().isPassive()` (unbought, `lock` as now), and `HeroPanel` draws such a slot in a plain,
+dimmer frame with no key letter, no hover or press wash and no sweep, takes no click on it (the raise badge stays
+clickable while a point can go there), and its card still shows (`tipAt` as the game sends it). Done when a panel test
+reads a `passive` slot and finds it unlit under a click and letterless. The game, meanwhile: a passive's key is bound
+to nothing (`Main.aimsFor`, so neither the key nor a click on the slot aims, orders or refuses), and its card says
+"1-daraja · Passiv" where an active one says its key (`HeroStatus.passives`, hud.duke `PassiveWord`).
