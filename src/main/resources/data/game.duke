@@ -37,6 +37,8 @@ Game
     data/world/screens.duke,
     data/world/travel.duke,
     data/world/scene.duke,
+    data/world/feel.duke,
+    data/world/knight_knocks.duke,
     data/world/themes/dungeon.duke,
     data/world/themes/forest.duke,
     data/world/themes/pinewood.duke,

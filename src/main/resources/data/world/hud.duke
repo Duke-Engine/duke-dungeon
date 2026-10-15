@@ -537,7 +537,7 @@ HitNumbers
   ; A trickle of regeneration one point at a time is not news.
   LeastWorth = 1
   ; What he deals, what he takes -- the one he has to notice -- and healing.
-  HurtColour = 0xFFE0A0
+  HurtColour = 0xFFFFFF
   TakenColour = 0xC22A22
   HealColour = 0x4FBF4F
   Brightness = 1

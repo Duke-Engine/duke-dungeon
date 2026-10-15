@@ -1,0 +1,242 @@
+; ---------------------------------------------------------------------------
+; The knight's W and R knock the camera harder than the kit's own do.
+;
+; These two are the kit's Charge and Whirlwind, layer for layer, with ONE change:
+; the knock (ShakeSeconds, ShakePower). The kit made them a nudge (1.1 for 0.16 s and
+; 0.6 for 0.10 s) beside the Meteor's 1.8 -- but here they are the two skills a
+; knight spends a room's worth of stun on, and the screen should say so. A game's
+; Effect of a kit Effect's Name is the one drawn (see DungeonSettings.read), so
+; Look = Charge and Look = Whirlwind in knight.duke pick these up unchanged.
+; Camera shake is for the big moments only -- a hit is a number and a flash; see
+; data/world/feel.duke.
+; ---------------------------------------------------------------------------
+Effect
+  Name = Charge
+  ; W. Both ends again, like the archer's sprint -- and heavier at both, because
+  ; this one goes THROUGH what is in the way. The knock is what says so.
+  ShakeSeconds = 0.22
+  ShakePower = 1.7
+
+  Layers = [
+    ; The charge: dust kicked up along the whole run in the order he ran it, a streak of
+    ; speed over it for a breath, and where he stopped a hard ring, a ring of dust
+    ; rolling out after it, grit thrown up and a thump of light.
+    Layer
+      Name = Dust
+      Type = TRAIL
+      At = PATH
+      Texture = kit/effects/particles/smoke_03.png
+      Blend = Alpha
+      Seconds = 0.2
+      Count = 20
+      Radius = 3
+      Life = [0.6, 0.9]
+      Size = [6, 14]
+      SizeEase = 2
+      SizeJitter = 0.3
+      Colour = [0x8A7A68, 0x5A5048]
+      Alpha = [0.7, 0]
+      FadeIn = 0.1
+      Speed = [3, 8]
+      Direction = UP
+      Spread = 50
+      Drag = 2.5
+      Gravity = -3
+      Spin = 30
+      Height = 1
+    End,
+
+    Layer
+      Name = Streak
+      Type = BEAM
+      At = PATH
+      Texture = kit/effects/particles/trace_07.png
+      Blend = Additive
+      Count = 1
+      Life = [0.22, 0.22]
+      Size = [30, 10]
+      Colour = [0xFFE6C0, 0xFF9040]
+      Alpha = [0.7, 0]
+      Height = 5
+    End,
+
+    Layer
+      Name = Wave
+      Type = RING
+      At = TO
+      Measure = Reach
+      Texture = kit/effects/particles/circle_03.png
+      Blend = Additive
+      Cover = 0.2
+      Count = 1
+      Life = [0.34, 0.34]
+      Size = [0.4, 3.2]
+      SizeEase = 2.8
+      Colour = [0xFFE6C0, 0xFF8A30]
+      Alpha = [1, 0]
+      FadeOut = 0.5
+      Height = 0.5
+      TurnJitter = 0
+    End,
+
+    Layer
+      Name = Ring
+      Type = RING
+      At = TO
+      Measure = Reach
+      Texture = kit/effects/particles/smoke_10.png
+      Blend = Alpha
+      Delay = 0.03
+      Count = 1
+      Life = [0.7, 0.7]
+      Size = [0.6, 3.6]
+      SizeEase = 2.4
+      Colour = [0x9A8A78, 0x6A5E54]
+      Alpha = [0.6, 0]
+      FadeOut = 0.6
+      Spin = 20
+      Height = 0.6
+    End,
+
+    Layer
+      Name = Grit
+      Type = BURST
+      At = TO
+      Texture = kit/effects/particles/dirt_01.png
+      Blend = Alpha
+      Count = 12
+      Life = [0.5, 0.8]
+      Size = [3, 2]
+      SizeJitter = 0.5
+      Colour = [0x6A5A4A, 0x4A3E34]
+      Alpha = [1, 0.8]
+      FadeOut = 0.3
+      Speed = [20, 40]
+      Direction = UP
+      Spread = 70
+      Gravity = 90
+      Drag = 0.5
+      Spin = 200
+      Height = 1
+    End,
+
+    Layer
+      Name = Thump
+      Type = IMPACT
+      At = TO
+      Texture = kit/effects/particles/circle_05.png
+      Blend = Additive
+      Cover = 0.3
+      Count = 1
+      Life = [0.2, 0.2]
+      Size = [8, 22]
+      SizeEase = 2.5
+      Colour = [0xFFF0D8, 0xFFA050]
+      Alpha = [1, 0]
+      FadeOut = 0.6
+      Height = 3
+    End,
+
+    Layer
+      Name = Light
+      Type = LIGHT
+      At = TO
+      Seconds = 0.25
+      LightColour = 0xFFC080
+      LightPower = 2
+      LightRadius = 48
+      FadeOut = 0.8
+    End
+  ]
+End
+
+Effect
+  Name = Whirlwind
+  ; R. The only ring in the game that is cast again and again -- the whirlwind
+  ; lands every TickFrames for four seconds -- so it is deliberately the cheapest
+  ; heavy-looking thing here: no sparks, no light, one wide fast ring. Eight of
+  ; those over four seconds reads as a man turning; eight bursts with lights
+  ; would be the whole light budget for the fight.
+  ;
+  ; ★ Every blow draws one now: SkillBook marks each tick, so the rings and sparks
+  ; below come on every blow and the blades, which are an aura, once.
+  ShakeSeconds = 0.20
+  ShakePower = 1.5
+
+  Layers = [
+    ; The whirlwind: blades of light turning round him for the whole run -- no
+    ; Seconds, so the skill's DurationFrames -- a gust turning the other way inside
+    ; them, and on every blow it lands a ring of dust and a spray of sparks, so the
+    ; player can see it is still going without counting. The blades are one each and
+    ; are never stacked: every blow arrives as a cast, and a running aura is not
+    ; started twice.
+    Layer
+      Name = Blades
+      Type = AURA
+      Measure = Reach
+      Texture = kit/effects/particles/twirl_03.png
+      Blend = Additive
+      Cover = 0.15
+      Count = 1
+      Size = [1.9, 1.9]
+      Colour = [0xFFF0D8, 0xFFF0D8]
+      Alpha = [0.85, 0.85]
+      FadeIn = 0.03
+      FadeOut = 0.08
+      Spin = 900
+      Height = 5
+    End,
+
+    Layer
+      Name = Gust
+      Type = AURA
+      Measure = Reach
+      Texture = kit/effects/particles/twirl_01.png
+      Blend = Additive
+      Count = 1
+      Size = [1.3, 1.3]
+      Colour = [0xFFD8A0, 0xFFD8A0]
+      Alpha = [0.5, 0.5]
+      FadeIn = 0.03
+      FadeOut = 0.08
+      Spin = -600
+      Height = 4
+    End,
+
+    Layer
+      Name = Dust
+      Type = RING
+      Measure = Reach
+      Texture = kit/effects/particles/smoke_10.png
+      Blend = Alpha
+      Count = 1
+      Life = [0.5, 0.5]
+      Size = [0.8, 2.6]
+      SizeEase = 2.4
+      Colour = [0x9A8A78, 0x6A5E54]
+      Alpha = [0.35, 0]
+      FadeOut = 0.6
+      Spin = 60
+      Height = 0.5
+    End,
+
+    Layer
+      Name = Sparks
+      Type = BURST
+      Texture = kit/effects/particles/star_04.png
+      Blend = Additive
+      Count = 10
+      Radius = 20
+      Life = [0.25, 0.4]
+      Size = [1.4, 0.2]
+      Stretch = 0.05
+      Colour = [0xFFF0C0, 0xFF8A30]
+      Speed = [30, 50]
+      Direction = OUT
+      Spread = 30
+      Drag = 3
+      Gravity = 40
+      Height = 4
+    End
+  ]
+End

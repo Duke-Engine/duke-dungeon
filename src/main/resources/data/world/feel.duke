@@ -1,0 +1,134 @@
+; ---------------------------------------------------------------------------
+; How a fight FEELS. Drawing only: nothing here is read by the simulation.
+;
+; Three things carry it, each in its own place:
+;   * the number and the flash on every hit -- HitNumbers (hud.duke), HitFeel (scene.duke);
+;   * the camera knock, which is for BIG moments only -- the knight's W and R
+;     (knight_knocks.duke), the meteor, and what is below;
+;   * nothing else shakes the screen: an ordinary blow is a number and a flash.
+;
+; A HeavyBlow says that a creature of Template, struck for MajorAt or more (after its
+; armour), has been hit hard, and plays Look on it. Look is an EffectList, which is where
+; a camera knock lives; its strengths are the reference's six (SUBTLE, NORMAL, STRONG,
+; SEVERE, CINE_EXTREME, CINE_INSANE) and several land at once, added up to a ceiling -- a
+; wave through five skeletons is a rumble, not a quake, so the per-blow ones stay SUBTLE.
+; No block for a template means no knock for it: fodder dies to a Q and nobody feels it.
+;
+; A BigDeath plays Look where a Template fell.
+;
+; The hero's thresholds are what a boss's slam or a brute's swing is worth; the beasts'
+; are about a fifth of their health, so only the blow that is a real part of the fight.
+; ---------------------------------------------------------------------------
+EffectList
+  Name = HeavyHit
+  Entries = [
+    Shake
+      Strength = SUBTLE
+    End
+  ]
+End
+
+EffectList
+  Name = HeroHit
+  Entries = [
+    Shake
+      Strength = NORMAL
+    End
+  ]
+End
+
+EffectList
+  Name = Thud
+  Entries = [
+    Shake
+      Strength = NORMAL
+    End
+  ]
+End
+
+EffectList
+  Name = Slam
+  Entries = [
+    Shake
+      Strength = STRONG
+    End
+  ]
+End
+
+; What knocks the screen when it is HIM that is hurt hard.
+HeavyBlow
+  Template = Knight
+  MajorAt = 45
+  Look = HeroHit
+End
+HeavyBlow
+  Template = Mage
+  MajorAt = 35
+  Look = HeroHit
+End
+HeavyBlow
+  Template = Rogue
+  MajorAt = 35
+  Look = HeroHit
+End
+
+; And the big things, when a blow on them is a big one.
+HeavyBlow
+  Template = Brute
+  MajorAt = 60
+  Look = HeavyHit
+End
+HeavyBlow
+  Template = Reaper
+  MajorAt = 90
+  Look = HeavyHit
+End
+HeavyBlow
+  Template = Warden
+  MajorAt = 110
+  Look = HeavyHit
+End
+HeavyBlow
+  Template = Champion
+  MajorAt = 130
+  Look = HeavyHit
+End
+HeavyBlow
+  Template = QueenBoss
+  MajorAt = 130
+  Look = HeavyHit
+End
+
+; Deaths worth feeling: the bodies that fall hard.
+BigDeath
+  Template = Brute
+  Look = Thud
+End
+BigDeath
+  Template = Reaper
+  Look = Thud
+End
+BigDeath
+  Template = Warden
+  Look = Slam
+End
+BigDeath
+  Template = Champion
+  Look = Slam
+End
+BigDeath
+  Template = QueenBoss
+  Look = Slam
+End
+BigDeath
+  Template = Knight
+  Look = Thud
+End
+BigDeath
+  Template = Mage
+  Look = Thud
+End
+BigDeath
+  Template = Rogue
+  Look = Thud
+End
