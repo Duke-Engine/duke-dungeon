@@ -555,6 +555,23 @@ Hero
       DurationFrames = 36
       CastAnim = Hit_Chest
       MaxRank = 1
+    End,
+    Skill
+      ; His dodge, no slot of the four: pressed on Space in the modern scheme (Main.Dodge), never bought, never
+      ; on his bar (HeroStatus leaves it off, as his stagger), his from the start. A roll of Distance toward the
+      ; way he walks (or faces) over DurationFrames (0.3s), out of harm's way its first TickFrames (0.23s: no
+      ; blow takes health or staggers him), through creatures, short of stone, refused over a seal or while held.
+      ; Every 2.5 seconds, no mana (docs/plan/2026-10-15-modern-controls.md, E80).
+      ; Quaternius' UAL Roll, retargeted onto her rig with her other clips.
+      Key = V
+      Effect = DODGE
+      Distance = 16
+      DurationFrames = 9
+      TickFrames = 7
+      CooldownFrames = 75
+      CastAnim = Roll
+      MaxRank = 1
+      Name = Chetlanish
     End
   ]
 End

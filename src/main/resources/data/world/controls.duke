@@ -8,11 +8,15 @@
 ; changes, since W is a step forward in the modern scheme.
 ; ---------------------------------------------------------------------------
 Controls
-  ; CLASSIC until the engine can walk him on WASD (E74-E80); then MODERN, the
-  ; owner's choice for a new player (2026-10-15). A player's own choice wins.
-  Scheme = CLASSIC
+  ; MODERN, the owner's choice for a new player (2026-10-15), since the engine
+  ; walks him on WASD, swings and locks on by the left button and rolls him on
+  ; Space (E74-E80). A player's own choice wins (-Dlasthero.controls=classic, or
+  ; the "controls" preference until E79's Settings row).
+  Scheme = MODERN
 
-  SchemeWord = Boshqaruv
+  ; The Settings row (E79). The new scheme takes hold the next time the game is
+  ; opened: the keys, the mouse and the camera all change together.
+  SchemeWord = "Boshqaruv (keyingi ochilishda)"
   ModernWord = "Zamonaviy (WASD)"
   ClassicWord = "Klassik (sichqoncha)"
 
@@ -22,4 +26,7 @@ Controls
   ; (walking), the screens' C L M, the tracker's J, the fire's G, the client's
   ; H and P or the belt's digits: the file is refused if so.
   ModernSkillKeys = ["Q = Q", "W = E", "E = R", "R = F"]
+
+  ; Space, modern: his roll (each hero's DODGE skill), on the keys page.
+  DodgeWord = Chetlanish
 End
