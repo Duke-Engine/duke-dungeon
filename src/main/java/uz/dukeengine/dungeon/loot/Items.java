@@ -447,6 +447,11 @@ public final class Items {
         return rarity < MAGIC || rarity - 1 >= rules.beams().size() ? "" : rules.beams().get(rarity - 1);
     }
 
+    /** Whether a camp of the open world is guarded by this one: it drops as a boss does, wherever it stands. */
+    public boolean isCampBoss(String template) {
+        return rules.campBosses().contains(template);
+    }
+
     public boolean isElite(String template) {
         return rules.elites().contains(template);
     }

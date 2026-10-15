@@ -1,0 +1,354 @@
+; ---------------------------------------------------------------------------
+; The forest (Qorong'i o'rmon and the hut's road): wolves, spiders and a mushroom that spits spores; a goblin chief over the camp.
+; One of the wilds' four families (docs/plan/2026-10-15-big-plan.md, Phase 2 item 5): a common one,
+; a stronger one, one that shoots, the stronger one's ELITE (bigger, tinted, more health and blows, a
+; better drop -- ItemRules' Elites in data/world/loot.duke -- and one or two affixes, each a skill of the
+; skill system) and the CAMP BOSS (ItemRules' CampBosses: drops as a boss does). WorldMapWriter's WILDS
+; puts a camp of them in the forest. Models: Quaternius (CC0) -- see CREDITS.md and art/monsters.
+; Levels are the walk's from the city, as every monster's in the world: these figures are level 1's.
+; ---------------------------------------------------------------------------
+
+; common: quick, weak, comes in packs.
+Monster
+  Name = Wolf
+  DisplayName = "Bo'ri"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 4
+    Height = 9
+  End
+  VisionRange = 70
+  Modules = [
+    GrowableBody
+      MaxHealth = 50
+    End,
+    MoveUpdate
+      Speed = 21
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 6
+      AttackRange = 9
+      ReloadFrames = 24
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 10
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 45
+  ChaseRadius = 95
+  CloseDistance = 4
+  AlertRadius = 70
+  RepathFrames = 10
+  SwingFrames = 10
+  ; Never on a floor of the descent: the open world's camps place it by name.
+  MinDepth = 99
+  Weight = 0
+  Colour = 0xC8B890
+  Scale = 0.75
+  Model = models/wilds/wolf.glb
+  ModelScale = 5
+  ; Its own clips, renamed by art/monsters/export_monsters.py.
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+End
+
+; stronger: slow and hard-hitting.
+Monster
+  Name = Spider
+  DisplayName = "O'rgimchak"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 7
+    Height = 10
+  End
+  VisionRange = 70
+  Modules = [
+    GrowableBody
+      MaxHealth = 140
+    End,
+    MoveUpdate
+      Speed = 13
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 16
+      AttackRange = 12
+      ReloadFrames = 40
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 24
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 45
+  ChaseRadius = 95
+  CloseDistance = 4
+  AlertRadius = 70
+  RepathFrames = 10
+  SwingFrames = 16
+  ; Never on a floor of the descent: the open world's camps place it by name.
+  MinDepth = 99
+  Weight = 0
+  Colour = 0xC8B890
+  Scale = 0.83
+  Model = models/wilds/spider.glb
+  ModelScale = 4.6
+  ; Its own clips, renamed by art/monsters/export_monsters.py.
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+End
+
+; ranged: spits spores from a distance.
+Monster
+  Name = Sporeling
+  DisplayName = "Zaharli qo'ziqorin"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 5
+    Height = 13
+  End
+  VisionRange = 64
+  Modules = [
+    GrowableBody
+      MaxHealth = 45
+    End,
+    MoveUpdate
+      Speed = 12
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 7
+      AttackRange = 55
+      ReloadFrames = 54
+      AttackOnTheMove = No
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    Bow
+      Projectile = HolySpark
+      Speed = 190
+      MuzzleOffset = 8
+    End,
+    EyesOnly
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 18
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 64
+  ChaseRadius = 120
+  CloseDistance = 6
+  AlertRadius = 70
+  RepathFrames = 10
+  SwingFrames = 18
+  ; Never on a floor of the descent: the open world's camps place it by name.
+  MinDepth = 99
+  Weight = 0
+  KeepDistance = [30, 50]
+  Colour = 0xC8B890
+  Scale = 1.08
+  Model = models/wilds/sporeling.glb
+  ModelScale = 2.96
+  ; Its own clips, renamed by art/monsters/export_monsters.py.
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+End
+
+; ELITE of the wolves: bigger, red, two affixes.
+Monster
+  Name = BloodWolf
+  DisplayName = "Qonxo'r bo'ri"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 5
+    Height = 12
+  End
+  VisionRange = 70
+  Modules = [
+    GrowableBody
+      MaxHealth = 150
+    End,
+    MoveUpdate
+      Speed = 23
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 11
+      AttackRange = 11
+      ReloadFrames = 22
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 45
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 45
+  ChaseRadius = 95
+  CloseDistance = 4
+  AlertRadius = 70
+  RepathFrames = 10
+  SwingFrames = 10
+  ; Never on a floor of the descent: the open world's camps place it by name.
+  MinDepth = 99
+  Weight = 0
+  SkillDistance = [0, 50]
+  Colour = 0xD04838
+  Scale = 1.00
+  Model = models/wilds/wolf.glb
+  ModelScale = 7
+  Tint = 0xD04838
+  ; Its own clips, renamed by art/monsters/export_monsters.py.
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+
+  Skills = [
+    Skill
+      Key = Q
+      ; Elite affix: drinks a third of every blow it lands.
+      Effect = LIFESTEAL
+      BoostPercent = 30
+      MaxRank = 1
+      Name = "Qonxo'r"
+    End,
+    Skill
+      Key = W
+      ; Elite affix: strikes faster for five seconds -- itself, or the sturdiest of its own near it.
+      Effect = HASTE
+      BoostPercent = 60
+      DurationFrames = 150
+      Range = 50
+      CooldownFrames = 300
+      Look = Hasted
+      MaxRank = 1
+      Name = Shiddat
+      Icon = icons/stats/stat_speed.png
+      Blurb = Bir necha soniya ancha tezroq uradi.
+    End
+  ]
+End
+
+; CAMP BOSS: the camp hits harder round him, and he drinks from his blows.
+Monster
+  Name = GoblinChief
+  DisplayName = "Pakana sardor"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 8
+    Height = 20
+  End
+  VisionRange = 130
+  Modules = [
+    GrowableBody
+      MaxHealth = 520
+    End,
+    MoveUpdate
+      Speed = 14
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 22
+      AttackRange = 14
+      ReloadFrames = 34
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 140
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 55
+  ChaseRadius = 150
+  CloseDistance = 4
+  AlertRadius = 110
+  RepathFrames = 8
+  SwingFrames = 20
+  ; Never on a floor of the descent: the open world's camps place it by name.
+  MinDepth = 99
+  Weight = 0
+  Colour = 0xC8B890
+  Scale = 1.67
+  Model = models/wilds/goblin.glb
+  ModelScale = 7
+  ; Its own clips, renamed by art/monsters/export_monsters.py.
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+
+  Skills = [
+    Skill
+      Key = Q
+      ; Drinks a quarter of every blow it lands.
+      Effect = LIFESTEAL
+      BoostPercent = 25
+      MaxRank = 1
+      Name = Qon so'rish
+    End,
+    Skill
+      Key = E
+      ; Elite affix: everyone of its own round it hits a quarter harder.
+      Effect = DAMAGE_AURA
+      BoostPercent = 25
+      Radius = 50
+      Look = MightAura
+      TickFrames = 30
+      MaxRank = 1
+      Name = "G'azab"
+      Icon = icons/stats/stat_attack.png
+      Blurb = Atrofidagi o'zinikilar qattiqroq uradi.
+    End
+  ]
+End

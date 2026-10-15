@@ -37,6 +37,7 @@ import java.util.List;
  * @param critChanceWord a critical blow's chance on a card and the sheet; {@code critDamageWord} how much harder it lands;
  *     {@code moveSpeedWord} quicker legs; {@code skillRankWord} a rank on a key's skill, {@code %s} the key
  * @param wrap           the longest a card's line is, in letters: a unique's story is broken to it
+ * @param campBosses     the monsters, by template, that guard a camp of the open world: each drops as a boss does
  */
 public record ItemRules(List<String> rarities, List<Integer> colours, List<Integer> normal, List<Integer> elite,
         List<Integer> boss, List<Integer> chest, List<Integer> shop, List<Integer> magicAffixes,
@@ -46,7 +47,7 @@ public record ItemRules(List<String> rarities, List<Integer> colours, List<Integ
         String compareWord, String countWord, String drinkHint, String beltKeyWord, String treasure, int figureColour,
         int affixColour,
         int loreColour, int betterColour, int worseColour, String critChanceWord, String critDamageWord,
-        String moveSpeedWord, String skillRankWord, int wrap) {
+        String moveSpeedWord, String skillRankWord, int wrap, List<String> campBosses) {
 
     public static final ItemRules DEFAULTS = new ItemRules(List.of("Oddiy", "Sehrli", "Noyob", "Afsonaviy"),
             List.of(0xC8CCD2, 0x5B9BFF, 0xE8B23A, 0xB46CFF), List.of(700, 250, 45, 5), List.of(380, 430, 160, 30),
@@ -54,7 +55,7 @@ public record ItemRules(List<String> rarities, List<Integer> colours, List<Integ
             List.of(3, 4), List.of(100, 250, 500, 1200), 8, 40, 35, 2, 1, 6, List.of(), List.of("Qora"),
             List.of("tish"), List.of(), 45, 4, 30, "%d-daraja", "Kiyilgan bilan solishtiring", "Soni: %d",
             "1-4: ichish", "Belbog'dan ichish: %d", "Xazina", 0xFFFFFF, 0x7FB2FF, 0xD8B05A, 0x6CD86C, 0xE05A4A,
-            "Kritik zarba", "Kritik zarba kuchi", "Yurish tezligi", "%s mahorati", 40);
+            "Kritik zarba", "Kritik zarba kuchi", "Yurish tezligi", "%s mahorati", 40, List.of());
 
     public ItemRules {
         rarities = rarities == null ? List.of() : List.copyOf(rarities);
@@ -71,5 +72,6 @@ public record ItemRules(List<String> rarities, List<Integer> colours, List<Integ
         firstNames = firstNames == null ? List.of() : List.copyOf(firstNames);
         secondNames = secondNames == null ? List.of() : List.copyOf(secondNames);
         beams = beams == null ? List.of() : List.copyOf(beams);
+        campBosses = campBosses == null ? List.of() : List.copyOf(campBosses);
     }
 }

@@ -596,7 +596,8 @@ class BuffScreenTest {
     void everyAuraAndHasteHasAPictureThereToBeDrawnAndALineOnWhatItDoes() {
         var shown = SETTINGS.skills().stream()
                 .filter(skill -> skill.effect().isAura() || skill.effect() == SkillEffect.HASTE).toList();
-        assertEquals(4, shown.size(), "the premise: three auras and a haste");
+        assertEquals(4, shown.stream().map(skill -> skill.look()).distinct().count(),
+                "the premise: three kinds of aura and a haste, the wilds' elites wearing the same");
         for (var skill : shown) {
             assertFalse(skill.icon().isBlank(), skill.name() + " names a picture");
             assertNotNull(BuffScreenTest.class.getResource("/" + skill.icon()), skill.name() + " draws " + skill.icon());

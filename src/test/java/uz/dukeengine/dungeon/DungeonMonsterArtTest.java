@@ -122,6 +122,24 @@ class DungeonMonsterArtTest {
         }
     }
 
+    /**
+     * A creature that walks, strikes and dies by clips of its own -- the wilds' monsters, Quaternius's rigs -- carries
+     * every one it names: a missing one is a creature that slides, mimes or blinks out.
+     */
+    @Test
+    void everyoneWhoFightsByClipsOfTheirOwnCarriesThemAll() {
+        var own = looks().stream().filter(look -> look.animations() == null && look.walk() != null).toList();
+        assertFalse(own.isEmpty(), "nobody walks by clips of their own");
+        for (var look : own) {
+            var composer = control(assets().loadModel(look.model()), AnimComposer.class);
+            assertNotNull(composer, look.model() + " carries no clips");
+            for (var clip : new String[] {look.idle(), look.walk(), look.attack(), look.death()}) {
+                assertNotNull(clip, look.model() + " names no clip for one of its four");
+                assertNotNull(composer.getAnimClip(clip), look.model() + " has no " + clip);
+            }
+        }
+    }
+
     /** Every kind the file describes has been given something to be drawn as. */
     @Test
     void everyMonsterHasAModel() {

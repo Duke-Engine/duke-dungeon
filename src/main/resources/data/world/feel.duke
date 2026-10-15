@@ -133,6 +133,65 @@ BigDeath
   Plays = Thud
 End
 
+; The wilds (data/units/wilds_*.duke): a camp boss is hit hard at about a fifth of his health and
+; slams as he falls; an elite and the ogre are big bodies that thud.
+HeavyBlow
+  Template = GoblinChief
+  MajorAt = 105
+  Plays = HeavyHit
+End
+HeavyBlow
+  Template = Dragon
+  MajorAt = 110
+  Plays = HeavyHit
+End
+HeavyBlow
+  Template = GiantKing
+  MajorAt = 130
+  Plays = HeavyHit
+End
+HeavyBlow
+  Template = BogHorror
+  MajorAt = 110
+  Plays = HeavyHit
+End
+BigDeath
+  Template = GoblinChief
+  Plays = Slam
+End
+BigDeath
+  Template = Dragon
+  Plays = Slam
+End
+BigDeath
+  Template = GiantKing
+  Plays = Slam
+End
+BigDeath
+  Template = BogHorror
+  Plays = Slam
+End
+BigDeath
+  Template = BloodWolf
+  Plays = Thud
+End
+BigDeath
+  Template = FireLizard
+  Plays = Thud
+End
+BigDeath
+  Template = StoneGoleling
+  Plays = Thud
+End
+BigDeath
+  Template = VenomFrog
+  Plays = Thud
+End
+BigDeath
+  Template = Ogre
+  Plays = Thud
+End
+
 ; The catch in the motion: a MAJOR blow (critical, or HitNumbers' BigAt and over) slows the one struck and the one
 ; striking to Slow of their speed for Seconds -- the window's animation only, the simulation runs on. A second blow
 ; inside it does not lengthen it. Particles are not dipped. CritOnly would keep it for crits alone.

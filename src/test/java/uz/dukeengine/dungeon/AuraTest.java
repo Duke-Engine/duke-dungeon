@@ -663,7 +663,8 @@ public class AuraTest {
         var visuals = Visuals.create();
         Main.measureLooks(visuals, SETTINGS);
         var auras = SETTINGS.skills().stream().filter(skill -> skill.effect().isAura()).toList();
-        assertEquals(3, auras.size(), "the premise: three auras");
+        assertEquals(3, auras.stream().map(skill -> skill.look()).distinct().count(),
+                "the premise: three kinds of aura");
         var bearers = room(SETTINGS, NO_WALL, one(SUMMONER, 60f, 150f), one(HEALER, 180f, 150f),
                 one(REVENANT, 300f, 150f)).ones();
         assertEquals(List.of("MightAura", "ManaAura", "BloodAura"),

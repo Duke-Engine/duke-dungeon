@@ -15,7 +15,8 @@ import uz.dukeengine.rpg.item.GroundItem;
  * thing off the same death; the rest — potion or gear, rarity, base, affixes — is drawn from that seed.
  *
  * <p>An ordinary monster drops at {@code LootDrops.DropPercent}, an elite ({@code ItemRules.Elites}) at its
- * {@code EliteDropPercent}, a boss always and {@code BossDrops} things. A thing's item level is the monster's level, a
+ * {@code EliteDropPercent}, a boss -- the map's, or a camp's ({@code ItemRules.CampBosses}) -- always and
+ * {@code BossDrops} things. A thing's item level is the monster's level, a
  * boss's {@code BossLevel} more. See docs/plan/2026-10-15-loot.md.
  */
 @ModuleGroup(RpgModuleGroups.ITEMS)
@@ -44,6 +45,8 @@ public final class ItemDrop extends Module implements DieModule {
             return;
         }
         var rules = items.rules();
+        // A camp's boss drops as the map's does: always, BossDrops things, BossLevel above its own.
+        boolean boss = this.boss || items.isCampBoss(owner.getTemplate().name());
         boolean elite = !boss && items.isElite(owner.getTemplate().name());
         int chance = boss ? bossDropPercent : elite ? rules.eliteDropPercent() : dropPercent;
         var random = world.random();
