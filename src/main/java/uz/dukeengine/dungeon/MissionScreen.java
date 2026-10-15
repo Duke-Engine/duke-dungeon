@@ -97,9 +97,10 @@ final class MissionScreen {
     }
 
     /**
-     * Where the hero is wanted, shown from where he stands: the floor's key lying, with its {@code KeyDroppedWord}
-     * floating up over it as it drops. Off the screen, an arrow on a ring round him points the way; on it, the key's
-     * own pillar of light says where. Nothing while the tracker lists nothing (the banner has the screen).
+     * Where the hero is wanted, shown from where he stands: every quest going whose step is on this map (in the
+     * Dialogue block's mark colour), and the floor's key lying, with its {@code KeyDroppedWord} floating up over it as
+     * it drops. Off the screen, an arrow on a ring round him points the way; on it, the target's glow or pillar of light
+     * says where. Nothing while the tracker lists nothing (the banner has the screen).
      */
     static void pointers(Canvas canvas, Dungeon.Session match, uz.dukeengine.core.view.WorldSnapshot snapshot,
             DungeonSettings settings) {
@@ -107,8 +108,18 @@ final class MissionScreen {
             return;
         }
         var hero = WorldMapScreen.heroOf(match, settings);
+        if (hero == null) {
+            return;
+        }
+        int questColour = 0xFF000000 | settings.story().dialogue().markColour();
+        for (var going : match.run().questsNow().active()) {
+            var target = QuestLogScreen.whereIs(going.quest(), match, settings);
+            if (target != null) {
+                point(canvas, hero, target[0], target[1], hero.z(), questColour);
+            }
+        }
         var key = match.run().keyLying();
-        if (hero == null || key == null) {
+        if (key == null) {
             return;
         }
         int gold = 0xFF000000 | settings.menu().torchColour();

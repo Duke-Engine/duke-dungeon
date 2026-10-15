@@ -250,7 +250,7 @@ final class WorldMapScreen {
         float mark = text * 1.6f;
         var state = run.questsNow();
         for (var going : state.active()) {
-            var target = QuestLogScreen.whereIs(going.quest(), state, settings.story(), story);
+            var target = QuestLogScreen.whereIs(going.quest(), match, settings);
             if (target != null) {
                 var at = view.toScreen(target[0], target[1]);
                 canvas.drawImage(Canvas.Image.of(dialogue.giveMark()), at.x() - mark / 2f, at.y() - mark,

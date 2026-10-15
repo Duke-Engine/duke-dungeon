@@ -1768,7 +1768,8 @@ public final class DungeonRun {
     /**
      * Every BeamFrames, every magic, rare and epic thing lying on the floor stands in a column of its rarity's light
      * (ItemRules' Beams): an event the client plays riding the thing, as a quest's glow is; nothing in the world reads it.
-     * The floor's key stands in the run's KeyBeam, the tallest.
+     * The floor's key stands in the run's KeyBeam, the tallest, and so does the place every quest going sends him to on
+     * this map: a REACH's zone, or the zone a step names as its Where.
      */
     private void beams(DukeGame game) {
         var items = settings.items();
@@ -1785,6 +1786,31 @@ public final class DungeonRun {
                 logic.effect(beam, thing);
             }
         }
+        if (keyBeam.isBlank()) {
+            return;
+        }
+        float cell = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
+        for (var each : quests.active()) {
+            var place = zoneNamed(placeOf(settings.story(), each.quest(), each.step()));
+            if (place != null) {
+                logic.effect(keyBeam, new uz.dukeengine.core.math.Coord3D(place.middleX(cell), place.middleY(cell),
+                        0f), 0f);
+            }
+        }
+    }
+
+    /**
+     * The zone the step {@code at} of {@code quest} sends him to, for its pillar of light: its Where, or a REACH's own
+     * zone; blank for a step with none (a person, a thing, a creature: they glow where they stand).
+     */
+    public static String placeOf(uz.dukeengine.dungeon.story.Story story, String quest, int at) {
+        var known = story.quest(quest);
+        if (known == null || at >= known.steps().size()) {
+            return "";
+        }
+        var step = known.steps().get(at);
+        return !step.where().isBlank() ? step.where()
+                : step.goal() == uz.dukeengine.dungeon.story.Quest.Goal.REACH ? step.target() : "";
     }
 
     /** Every hero's potion stacks joined, as things come into his bag. See {@link Belt#stack}. */

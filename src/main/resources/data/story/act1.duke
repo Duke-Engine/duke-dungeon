@@ -243,6 +243,7 @@ Quest
     Step
       Goal = KILL
       Target = EnemyCommander
+      Where = EnemyLine
       Text = "Dushman sarkardasini yiqiting"
       Glow = Yes
     End
@@ -746,7 +747,7 @@ Conversation
   Lines = [
     Line
       Speaker = Blacksmith
-      Text = "Qahramon! Yerto'lamdan skeletlar chiqib kelyapti. Tozalab bering — evaziga qo'lqop beraman."
+      Text = "Qahramon! Yerto'lamdan skeletlar chiqib kelyapti. Yerto'la shaharning o'ng yuqori burchagida, mening ustaxonam tepasida. Uchala skeletni qirib bering — evaziga qo'lqop beraman."
     End
   ]
   Starts = [Cellar]
@@ -787,12 +788,14 @@ Quest
   Name = Cellar
   Kind = SIDE
   Title = "Yerto'ladagi skeletlar"
+  Description = "Temirchining yerto'lasi shaharning o'ng yuqori (shimoli-sharqiy) burchagida, ustaxonasining tepasida — M xaritada belgilangan. U yerga boring, uchala skeletni o'ldiring, so'ng temirchiga qayting."
   Steps = [
     Step
       Goal = KILL
       Target = Skeleton
       Count = 3
-      Text = "Yerto'ladagi skeletlarni qiring %d/%d"
+      Text = "Shaharning o'ng yuqori burchagidagi yerto'laga boring, skeletlarni qiring %d/%d"
+      Where = Cellar
       Glow = Yes
     End,
     Step
@@ -812,11 +815,13 @@ Quest
   Name = LostRing
   Kind = SIDE
   Title = "Momoning uzugi"
+  Description = "Zebo momo cholining uzugini yerto'lada tushirib qo'ygan. Yerto'la shaharning o'ng yuqori burchagida — M xaritada belgilangan."
   Steps = [
     Step
       Goal = COLLECT
       Target = FamilyRing
-      Text = "Yerto'lada uzukni toping"
+      Text = "Shaharning o'ng yuqori burchagidagi yerto'lada uzukni toping"
+      Where = Cellar
       Glow = Yes
     End,
     Step
@@ -1092,6 +1097,7 @@ Quest
     Step
       Goal = KILL
       Target = DarkLord
+      Where = Throne
       Text = "Qora ritsarni o'ldiring"
       Glow = Yes
     End
