@@ -21,6 +21,17 @@ class DungeonSoundTest {
 
     private static final DungeonSettings SETTINGS = DungeonSettings.load();
 
+    /** E59: the word Ambience is the engine's AMBIENCE channel, and the place loops sit on it, not under Effects. */
+    @Test
+    void theAmbienceLoopsAreOnTheAmbienceChannel() {
+        assertEquals(uz.dukeengine.client3d.SoundBank.Channel.AMBIENCE, Main.channelOf("Ambience"));
+        var loops = SETTINGS.sounds().stream().filter(cue -> cue.name().startsWith("ambience.")).toList();
+        assertFalse(loops.isEmpty());
+        for (var cue : loops) {
+            assertEquals(uz.dukeengine.client3d.SoundBank.Channel.AMBIENCE, Main.channelOf(cue.channel()), cue.name());
+        }
+    }
+
     /** The file describes sounds at all, which is the thing most likely to break. */
     @Test
     void theShippedFileDescribesSounds() {
