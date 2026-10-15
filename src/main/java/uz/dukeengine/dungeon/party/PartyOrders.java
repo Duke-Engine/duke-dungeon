@@ -66,6 +66,8 @@ public final class PartyOrders {
     static final String SELL = "sell";
     /** A draught from the belt: the order's number is which of its stacks. */
     static final String DRINK = "drink";
+    /** A journey to a found watchtower: the order's number is which of the map's towers. */
+    static final String TRAVEL = "travel";
 
     private PartyOrders() {
     }
@@ -97,6 +99,8 @@ public final class PartyOrders {
                     drink.belt());
             case uz.dukeengine.dungeon.run.SkipCutscene skip -> new GameOrder(skip.playerIndex(), SKIP, List.of(), null,
                     null, 0);
+            case uz.dukeengine.dungeon.run.TravelTo travel -> new GameOrder(travel.playerIndex(), TRAVEL, List.of(),
+                    null, null, travel.tower());
             case uz.dukeengine.dungeon.run.TalkTo talk -> new GameOrder(talk.playerIndex(), TALK, List.of(), null,
                     talk.person(), 0);
             default -> throw new IllegalArgumentException("not one of this game's orders: " + command);
@@ -127,6 +131,7 @@ public final class PartyOrders {
                     : new UseItem(order.playerIndex(), (int) order.number(), order.target());
             case SKIP -> new uz.dukeengine.dungeon.run.SkipCutscene(order.playerIndex());
             case DRINK -> new uz.dukeengine.dungeon.run.Drink(order.playerIndex(), (int) order.number());
+            case TRAVEL -> new uz.dukeengine.dungeon.run.TravelTo(order.playerIndex(), (int) order.number());
             case READ -> new uz.dukeengine.dungeon.run.Read(order.playerIndex(), (int) order.number());
             case BUY -> order.target() == null ? null
                     : new uz.dukeengine.dungeon.run.Buy(order.playerIndex(), order.target(), (int) order.number());

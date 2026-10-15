@@ -157,6 +157,16 @@ public final class WorldMapWriter {
     };
     private static final int ROAMING_GROUPS = 4;
 
+    /** The villages, one by each road but the forest's, in the order of those roads. */
+    static final List<String> VILLAGES = List.of("Olmazor", "Bog'iston", "Qoratepa", "Tolzor", "Yangiobod");
+
+    /** The watchtowers' zones, numbered from 1 in the order of the roads: see data/world/travel.duke. */
+    static final String TOWER = "Minora_";
+    static final String TEMPLE = "Eski_ibodatxona";
+    static final String STONES = "Tosh_doira";
+    static final String BATTLEFIELD = "Jang_maydoni";
+
+
     private WorldMapWriter() {
     }
 
@@ -995,6 +1005,8 @@ public final class WorldMapWriter {
             var props = new ArrayList<Prop>();
             var npcs = new ArrayList<StaticMap.Placed>();
             var yard = yard(taken, props, npcs);
+            var places = new ArrayList<Zone>();
+            var dressed = dressing(taken, props, npcs, places);
             var rng = new DeterministicRng(seed ^ 0x776F726C64L);
             var monsters = new ArrayList<Monster>();
             for (var camp : CAMPS) {
@@ -1012,7 +1024,10 @@ public final class WorldMapWriter {
                 for (int g = 0; g < ROAMING_GROUPS; g++) {
                     int x = (int) (HEARTS[b][0] * SIZE) + rng.nextInt(-60, 60);
                     int y = (int) (HEARTS[b][1] * SIZE) + rng.nextInt(-60, 60);
-                    if (Math.hypot(x - city.x(), y - city.y()) < 50) {
+                    int gx = x;
+                    int gy = y;
+                    if (Math.hypot(x - city.x(), y - city.y()) < 50
+                            || quiet.stream().anyMatch(q -> Math.hypot(q[0] - gx, q[1] - gy) < 16)) {
                         continue; // the city's own ground is kept quiet
                     }
                     for (var kind : ROAMERS[b]) {
@@ -1049,6 +1064,7 @@ public final class WorldMapWriter {
             }
             zones.add(new Zone(FOREST_ZONE, (int) (HEARTS[Biome.FOREST.ordinal()][0] * SIZE),
                     (int) (HEARTS[Biome.FOREST.ordinal()][1] * SIZE), 0, 0, 44));
+            zones.addAll(places); // the villages, the towers and the landmarks, after the sites
             for (var monster : monsters) {
                 keep(monster.at().cellX(), monster.at().cellY(), 1);
             }
@@ -1062,7 +1078,8 @@ public final class WorldMapWriter {
                     monsters, boss, CASTLE, rooms, links, storeys, props, relief, 0f);
             return new Stage(NAME, "Ochiq dunyo",
                     "Butun qirollik bir xaritada: shahar, qorong'i o'rmon, ozod qilinadigan yerlar va malika qasri.",
-                    1, 1, seed, floor, new StagePaint(NAME, paint, PALETTE, COVERAGE, scenery(yard, castles), waters),
+                    1, 1, seed, floor, new StagePaint(NAME, paint, PALETTE, COVERAGE, scenery(yard, castles, dressed),
+                    waters),
                     new MapStory(npcs, zones, List.of(), List.of()));
         }
 
@@ -1259,6 +1276,7 @@ public final class WorldMapWriter {
                 var spot = besideTheRoad((a.x() + b.x()) / 2, (a.y() + b.y()) / 2);
                 if (spot != null) {
                     pieces.add(piece("town/town_tower_slim", spot[0] + 0.5f, spot[1] + 0.5f, 0, false));
+                    towers.add(spot);
                 }
             }
             return pieces;
@@ -1379,6 +1397,261 @@ public final class WorldMapWriter {
             }
         }
 
+        // ---- the dressing: villages, travellers, towers to travel between, landmarks, bridges ----
+
+        /** Where each watchtower stands, in the order the roads are, as castles laid them. */
+        private final List<int[]> towers = new ArrayList<>();
+        /** The middles of the villages, landmarks and towers: no roaming band is set down near one. */
+        private final List<int[]> quiet = new ArrayList<>();
+
+        /**
+         * The world's ordinary places, after its castles and before its monsters: a village a third of the way along
+         * each road but the forest's (houses, house fronts, a fence, a well, a scarecrow, its villagers), a keeper and
+         * a clear zone to land in by each watchtower, a traveller and a pedlar on their rounds, a ruined temple in the
+         * highlands, a stone circle on the meadow, an old battlefield in the steppe, and a bridge wherever a road
+         * fords the river. Solid things go into {@code props}, people into {@code npcs}, the named places into
+         * {@code zones}; what is only looked at is returned.
+         */
+        private List<Piece> dressing(Set<Long> taken, List<Prop> props, List<StaticMap.Placed> npcs,
+                List<Zone> zones) {
+            var pieces = new ArrayList<Piece>();
+            int village = 0;
+            for (var join : ROADS) {
+                if (join[0] == HUT || join[1] == HUT) {
+                    continue;
+                }
+                var a = SITES.get(join[0]);
+                var b = SITES.get(join[1]);
+                int[] at = null; // a third of the way along, or further on where the ground there will not do
+                for (double t = 0.3; at == null && t < 0.8; t += 0.15) {
+                    at = nearTheRoad((int) Math.round(a.x() + t * (b.x() - a.x())),
+                            (int) Math.round(a.y() + t * (b.y() - a.y())), 6);
+                }
+                if (at != null) {
+                    pieces.addAll(village(VILLAGES.get(village), at[0], at[1], village, taken, props, npcs, zones));
+                }
+                village++;
+            }
+            for (int t = 0; t < towers.size(); t++) {
+                var tower = towers.get(t);
+                // The keeper by the tower; the ground he lands on, kept clear, the tower's zone.
+                var keeper = free(taken, tower[0] + 2, tower[1]);
+                npcs.add(new StaticMap.Placed("TowerKeeper", keeper.cellX(), keeper.cellY()));
+                var landing = free(taken, tower[0], tower[1] + 2);
+                zones.add(new Zone(TOWER + (t + 1), landing.cellX(), landing.cellY(), 0, 0, 3));
+                quiet.add(tower);
+            }
+            // Who walks the roads: their rounds are their Npc blocks' (data/story/villages.duke).
+            for (var walker : new Object[][] {{"Traveller", 0}, {"Pedlar", 2}}) {
+                var home = zones.stream().filter(z -> z.name().equals(VILLAGES.get((int) walker[1]))).findFirst();
+                if (home.isPresent()) {
+                    var at = free(taken, home.get().x() + 2, home.get().y() - 1);
+                    npcs.add(new StaticMap.Placed((String) walker[0], at.cellX(), at.cellY()));
+                }
+            }
+            pieces.addAll(temple(flatNear((int) (0.34 * SIZE), (int) (0.36 * SIZE)), zones));
+            pieces.addAll(stones(flatNear((int) (0.52 * SIZE), (int) (0.67 * SIZE)), zones));
+            pieces.addAll(battlefield(flatNear((int) (0.63 * SIZE), (int) (0.62 * SIZE)), zones));
+            pieces.addAll(bridges());
+            closeUnder(pieces, taken);
+            return pieces;
+        }
+
+        /** A village round (x, y): houses, a row of house fronts, a fence, a well and a scarecrow, its people. */
+        private List<Piece> village(String name, int x, int y, int number, Set<Long> taken, List<Prop> props,
+                List<StaticMap.Placed> npcs, List<Zone> zones) {
+            var pieces = new ArrayList<Piece>();
+            pieces.add(piece("town/town_house", x - 3 + 0.5f, y - 3 + 0.5f, 0, false));
+            pieces.add(piece("town/town_house", x + 3 + 0.5f, y - 3 + 0.5f, 0, false));
+            String[] fronts = {"fort/fort_house_front", "fort/fort_house_front_narrow"};
+            for (int i = 0; i < 4; i++) {
+                if (!roadNear(x - 2 + i, y + 3, 1)) {
+                    pieces.add(piece(fronts[(i + number) % 2], x - 2 + i, y + 3, 0, false));
+                }
+            }
+            for (int i = 0; i < 5; i++) {
+                float fx = x - 2.4f + i * 1.2f;
+                if (!roadNear((int) fx, y + 5, 1)) {
+                    pieces.add(new Piece(INUCIIAN + "props/fence.glb", fx, y + 5.5f, 0, 1f, 0xFFFFFF, 0.2f));
+                }
+            }
+            closeUnder(pieces, taken);
+            props.add(new Prop("Well", free(taken, x + 1, y - 1))); // beside the middle, which is kept walkable
+            props.add(new Prop("Scarecrow", free(taken, x + 5, y + 1)));
+            for (int i = 0; i <= number % 3; i++) {
+                var at = free(taken, x - 1 + 2 * i, y + 1);
+                npcs.add(new StaticMap.Placed(i % 2 == 0 ? "Villager" : "Farmer", at.cellX(), at.cellY()));
+            }
+            zones.add(new Zone(name, x, y, 0, 0, 6));
+            keep(x, y, 7);
+            quiet.add(new int[] {x, y});
+            return pieces;
+        }
+
+        /** A ruined temple at {@code at}: three rows of columns, some fallen, two broken walls, its old floor. */
+        private List<Piece> temple(int[] at, List<Zone> zones) {
+            var pieces = new ArrayList<Piece>();
+            int x = at[0];
+            int y = at[1];
+            pieces.add(Piece.of(KITS + "room/room_floor.gltf " + (x - 3) + " " + (y - 2) + " 0 1 0"));
+            String[] columns = {"room/room_column", "room/room_column_half", "room/room_column", "room/room_column_stump"};
+            int n = 0;
+            for (int row = 0; row < 3; row++) {
+                for (int col = 0; col < 2; col++) {
+                    float cx = x - 2 + col * 3 + 0.5f;
+                    float cy = y - 1 + row * 1.5f + 0.5f;
+                    pieces.add(Piece.of(KITS + columns[n++ % columns.length] + ".gltf " + cx + " " + cy + " 0 1 0.25"));
+                }
+            }
+            pieces.add(piece("fort/fort_wall_ruined", x - 3, y - 2, 0, false));
+            pieces.add(piece("fort/fort_wall_ruined", x - 3, y + 3, 90, false));
+            zones.add(new Zone(TEMPLE, x, y, 0, 0, 6));
+            keep(x, y, 7);
+            quiet.add(at);
+            return pieces;
+        }
+
+        /** A circle of standing stones at {@code at}, grey with age. */
+        private List<Piece> stones(int[] at, List<Zone> zones) {
+            var pieces = new ArrayList<Piece>();
+            for (int i = 0; i < 10; i++) {
+                double a = 2 * Math.PI * i / 10;
+                float sx = (float) (at[0] + 0.5 + 4 * Math.cos(a));
+                float sy = (float) (at[1] + 0.5 + 4 * Math.sin(a));
+                pieces.add(Piece.of(KITS + "room/room_column_half.gltf " + tenth(sx) + " " + tenth(sy) + " "
+                        + (i * 37 % 360) + " 1.2 0.3 0xA8A89C"));
+            }
+            zones.add(new Zone(STONES, at[0], at[1], 0, 0, 6));
+            keep(at[0], at[1], 6);
+            quiet.add(at);
+            return pieces;
+        }
+
+        /** An old battlefield at {@code at}: axes and hammers stuck in the ground, shields half sunk, banners, a ruin. */
+        private List<Piece> battlefield(int[] at, List<Zone> zones) {
+            var pieces = new ArrayList<Piece>();
+            var rng = new DeterministicRng(seed ^ 0x62617474L);
+            String[] arms = {"weapons/medieval/axe.glb", "weapons/medieval/warhammer.glb",
+                "weapons/medieval/shield_round.glb", "weapons/medieval/shield_heater.glb",
+                KITS + "room/room_sword.gltf", "weapons/medieval/axe.glb"};
+            for (int i = 0; i < 18; i++) {
+                double a = rng.nextInt(360) * Math.PI / 180;
+                double r = 1 + rng.nextInt(60) / 10.0;
+                float wx = (float) (at[0] + 0.5 + r * Math.cos(a));
+                float wy = (float) (at[1] + 0.5 + r * Math.sin(a));
+                var model = arms[i % arms.length];
+                var path = model.startsWith(KITS) ? model : "models/" + model;
+                float scale = model.startsWith(KITS) ? 1f : 4f;
+                pieces.add(new Piece(path, tenth(wx), tenth(wy), rng.nextInt(360), scale, 0xFFFFFF, 0f));
+            }
+            pieces.add(piece("town/town_tower_slim", at[0] - 4 + 0.5f, at[1] - 3 + 0.5f, 0, false));
+            pieces.add(new Piece(KITS + "town/town_banner_post.gltf", at[0] + 4.5f, at[1] - 2.5f, 30, 0.8f, 0xC8B8B8,
+                    0f));
+            pieces.add(new Piece(KITS + "town/town_banner_post.gltf", at[0] - 2.5f, at[1] + 4.5f, 200, 0.8f, 0xC8B8B8,
+                    0f));
+            pieces.add(piece("fort/fort_wall_ruined", at[0] + 2, at[1] + 4, 180, false));
+            zones.add(new Zone(BATTLEFIELD, at[0], at[1], 0, 0, 7));
+            keep(at[0], at[1], 8);
+            quiet.add(at);
+            return pieces;
+        }
+
+        /** A bridge wherever a road fords the river: over the middle of the ford, along the road's way across. */
+        private List<Piece> bridges() {
+            var pieces = new ArrayList<Piece>();
+            var seen = new boolean[SIZE * SIZE];
+            for (int start = 0; start < SIZE * SIZE; start++) {
+                if (seen[start] || !road[start] || !channel[start]) {
+                    continue;
+                }
+                // The ford: road over the channel, cell by cell.
+                var queue = new java.util.ArrayDeque<Integer>();
+                queue.add(start);
+                seen[start] = true;
+                int minX = SIZE;
+                int minY = SIZE;
+                int maxX = 0;
+                int maxY = 0;
+                while (!queue.isEmpty()) {
+                    int here = queue.poll();
+                    int hx = here % SIZE;
+                    int hy = here / SIZE;
+                    minX = Math.min(minX, hx);
+                    maxX = Math.max(maxX, hx);
+                    minY = Math.min(minY, hy);
+                    maxY = Math.max(maxY, hy);
+                    for (int[] way : new int[][] {{1, 0}, {-1, 0}, {0, 1}, {0, -1}}) {
+                        int nx = hx + way[0];
+                        int ny = hy + way[1];
+                        int next = ny * SIZE + nx;
+                        if (nx >= 0 && ny >= 0 && nx < SIZE && ny < SIZE && !seen[next] && road[next]
+                                && channel[next]) {
+                            seen[next] = true;
+                            queue.add(next);
+                        }
+                    }
+                }
+                // The bridge runs along the map's y as made: turned a quarter where the road crosses east to west.
+                int facing = maxX - minX > maxY - minY ? 90 : 0;
+                float bx = tenth((minX + maxX + 1) / 2.0);
+                float by = tenth((minY + maxY + 1) / 2.0);
+                if (pieces.stream().noneMatch(p -> Math.hypot(p.x() - bx, p.y() - by) < 5)) { // one bridge a ford
+                    pieces.add(Piece.of(KITS + "town/town_bridge.gltf " + bx + " " + by + " " + facing + " 1 0"));
+                }
+            }
+            return pieces;
+        }
+
+        /** The cell {@code off} from a road near (x, y): flat, walked to, off the road and away from the sites. */
+        private int[] nearTheRoad(int x, int y, int off) {
+            for (int reach = 0; reach < 60; reach++) {
+                for (int dy = -reach; dy <= reach; dy++) {
+                    for (int dx = -reach; dx <= reach; dx++) {
+                        int cx = x + dx;
+                        int cy = y + dy;
+                        if (Math.max(Math.abs(dx), Math.abs(dy)) == reach && cx > 14 && cy > 14 && cx < SIZE - 14
+                                && cy < SIZE - 14 && walked[cy * SIZE + cx] && lean(cx, cy) < 10
+                                && !roadNear(cx, cy, off - 3) && roadNear(cx, cy, off + 1) && !nearASite(cx, cy, 8)
+                                && quiet.stream().noneMatch(q -> Math.hypot(q[0] - cx, q[1] - cy) < 14)) {
+                            return new int[] {cx, cy};
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
+        /** The flat, walked cell nearest (x, y) with room round it: off the roads, away from the sites. */
+        private int[] flatNear(int x, int y) {
+            for (int reach = 0; reach < 80; reach++) {
+                for (int dy = -reach; dy <= reach; dy++) {
+                    for (int dx = -reach; dx <= reach; dx++) {
+                        int cx = x + dx;
+                        int cy = y + dy;
+                        if (Math.max(Math.abs(dx), Math.abs(dy)) == reach && cx > 14 && cy > 14 && cx < SIZE - 14
+                                && cy < SIZE - 14 && roomAt(cx, cy, 5) && !roadNear(cx, cy, 6)
+                                && !nearASite(cx, cy, 10)) {
+                            return new int[] {cx, cy};
+                        }
+                    }
+                }
+            }
+            throw new IllegalStateException("no flat ground near " + x + "," + y);
+        }
+
+        /** Whether every cell within {@code reach} of (x, y) is walked to and gentle. */
+        private boolean roomAt(int x, int y, int reach) {
+            for (int dy = -reach; dy <= reach; dy++) {
+                for (int dx = -reach; dx <= reach; dx++) {
+                    int at = (y + dy) * SIZE + x + dx;
+                    if (!walked[at] || wet[at] || lean(x + dx, y + dy) >= 6) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
         // ---- the paint ----
 
         private List<String> paint() {
@@ -1491,7 +1764,7 @@ public final class WorldMapWriter {
          * What stands about, cell by cell in a fixed order: never on a road or a step from one, on a site, by a
          * monster or a prop, or on ground too steep to stand on.
          */
-        private List<Piece> scenery(List<Piece> yard, List<Piece> castles) {
+        private List<Piece> scenery(List<Piece> yard, List<Piece> castles, List<Piece> dressed) {
             for (var site : SITES) {
                 // The kampir's yard is walled in by the wood up to its fence; every other site has open ground round it.
                 keep(site.x(), site.y(), site == SITES.get(HUT) ? site.radius() - 1 : site.radius() + 2);
@@ -1523,6 +1796,7 @@ public final class WorldMapWriter {
             }
             pieces.addAll(yard);
             pieces.addAll(castles);
+            pieces.addAll(dressed);
             // A line a row of cells, as the file writes them: the yard's pieces go into their rows.
             pieces.sort(java.util.Comparator.comparingInt(piece -> (int) Math.floor(piece.y())));
             return pieces;

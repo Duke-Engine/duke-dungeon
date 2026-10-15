@@ -526,6 +526,9 @@ public final class Dungeon {
                 case uz.dukeengine.dungeon.run.Sell sell -> run.sell(game, sell.playerIndex(), sell.merchant(), sell.slot());
                 // A draught from the belt, keys 1-4. See Belt.
                 case uz.dukeengine.dungeon.run.Drink drink -> run.drink(game, drink.playerIndex(), drink.belt());
+                // A journey to a found watchtower, paid for. See DungeonRun.travel.
+                case uz.dukeengine.dungeon.run.TravelTo travel ->
+                        run.travel(game, travel.playerIndex(), travel.tower());
                 case uz.dukeengine.dungeon.run.TalkTo talk ->
                         run.talkTo(game, talk.playerIndex(), talk.person());
                 default -> {
