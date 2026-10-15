@@ -5,8 +5,7 @@ The owner, 2026-10-15: a **third** control scheme beside Zamonaviy and Klassik
 round the hero, the left button strikes ahead of him, the skills on the digits, E works what is in front of him.
 
 Settings: **Boshqaruv: Zamonaviy (WASD) / Klassik (sichqoncha) / Jangovar**. The row's third choice (index 2; a kept
-0 or 1 stays what it was). Until the engine requests below land it says **"Jangovar (hozircha Zamonaviy kabi)"** and
-plays as modern with the action keys on top (section 6). Data: the `Controls` block (`data/world/controls.duke`),
+0 or 1 stays what it was), a scheme of its own since E90-E94 landed (phase 2). Data: the `Controls` block (`data/world/controls.duke`),
 Java: `world/Controls` (`Scheme.ACTION`, `actionKeys`, `beltKey`, `promptOf`, `walksOnKeys`).
 
 Frames are the simulation's: 30 a second.
@@ -148,6 +147,7 @@ nothing here.
 | E92 | aiming by relative motion: arm, indicator from the hero along forward, confirm/cancel/release-to-cast | skills without a pointer |
 | E93 | `MouseScheme.ACTION`: LMB along the camera's forward, soft-lock cone for ranged, resend by angle | strike ahead |
 | E94 | interact-nearest: the context-order target in a front cone within reach, its word, a prompt hook, a key | E |
+| E96 | E94 over the map's scenery too (the ground rule's trees) | E on a forest tree |
 
 Not asked: digits on the bar (E79's `letterOf` draws any key), the belt on 5-8 (game-side), the dodge (E80).
 
@@ -159,8 +159,12 @@ Settings choice; in action the game plays as modern (`Controls.walksOnKeys`: WAS
 `MouseScheme.MODERN`, `FightOnlyWhenTold`, no order buttons) with the skills on 1-4 and the belt on 5-8 (the belt
 slots draw their key); E is left unbound until E94. `ActionControlsTest`. File default stays MODERN.
 
-**Phase 2 (after E90-E94)**: `Main` hands the client `MouseScheme.ACTION`, captures the mouse, the yaw orbit, the
-armed-skill aims, `onInteract` with `promptOf`; the row's word loses "hozircha ... kabi"; Settings rows for the
-sensitivity and invert; the item and potion hints that say "1-4" say the scheme's keys (`DrinkHint` in loot.duke).
-Tests: an `AttackToward` along a forward angle strikes the enemy in the arc; the soft lock picks the nearest in the
-cone and not one behind; E on a tree sends Chop; two runs with the same orders end the same (checksum).
+**Phase 2 (done, branch `action2`, engine E90-E94 at db83232a)**: in action `Main` holds the mouse
+(`captureMouse`), the follow camera orbits by it (`CameraFollow.orbiting(ORBIT_SENSITIVITY, false, 0)`),
+`MouseScheme.ACTION` strikes ahead, `Hotkeys.aimBy(FORWARD)` aims 1-4 ahead of him, and
+`onInteract(E, 14, 100, Controls::promptOf)` works the nearest thing in front (a person, a bush, a well, a fire, a thing
+on the floor, the gate, his horse). The row's word is plain "Jangovar"; modern and classic are unchanged.
+
+Not yet: E on a scenery tree. The open world's forest is map scenery, worked through the ground rule, which E94 does
+not search, so in action (no pointer) a forest tree waits for **E96**. Also later: Settings rows for the sensitivity
+and invert, and `DrinkHint`'s "1-4".
