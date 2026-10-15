@@ -142,3 +142,41 @@ HitStop
   MajorOnly = true
   CritOnly = false
 End
+
+; A critical blow, on top of a heavy one: it plays its own list on the creature struck -- hurt.<T>.normal.crit, which
+; the client uses where it is named and otherwise falls back to the heavy blow's. A knock for every creature (a
+; crit is rare and is the moment to feel), a stronger one where it is a hero that is struck, so the crit on him lands
+; harder than the crit he deals.
+EffectList
+  Name = CritHit
+  Entries = [
+    Shake
+      Strength = NORMAL
+    End
+  ]
+End
+
+EffectList
+  Name = HeroCrit
+  Entries = [
+    Shake
+      Strength = STRONG
+    End
+  ]
+End
+
+CritBlow
+  Plays = CritHit
+End
+CritBlow
+  Template = Knight
+  Plays = HeroCrit
+End
+CritBlow
+  Template = Mage
+  Plays = HeroCrit
+End
+CritBlow
+  Template = Rogue
+  Plays = HeroCrit
+End

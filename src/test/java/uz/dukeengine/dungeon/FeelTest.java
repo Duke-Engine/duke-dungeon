@@ -109,4 +109,14 @@ class FeelTest {
         assertTrue(stop.slow() < 0.5f && stop.majorOnly());
         assertEquals(stop, wired().getHitStop());
     }
+
+    @Test
+    void aCriticalBlowKnocksTheCameraHarderOnAHeroThanOnAnythingElse() {
+        var visuals = wired();
+        assertEquals("CritHit", visuals.getMoment("hurt.Skeleton.normal.crit").effect());
+        assertEquals("CritHit", visuals.getMoment("hurt.Champion.normal.crit").effect());
+        assertEquals("HeroCrit", visuals.getMoment("hurt.Knight.normal.crit").effect());
+        assertTrue(shakes("CritHit") && shakes("HeroCrit"));
+        assertNull(visuals.getMoment("hurt.Skeleton.normal.minor"), "an ordinary blow still only flashes");
+    }
 }
