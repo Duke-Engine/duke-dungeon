@@ -143,6 +143,7 @@ public final class DungeonSettings {
     private final List<uz.dukeengine.core.content.EffectList> effectLists = new java.util.ArrayList<>();
     private uz.dukeengine.dungeon.story.Medallion medallion = uz.dukeengine.dungeon.story.Medallion.DEFAULTS;
     private uz.dukeengine.dungeon.food.Food food = uz.dukeengine.dungeon.food.Food.DEFAULTS;
+    private uz.dukeengine.dungeon.craft.Crafting crafting = uz.dukeengine.dungeon.craft.Crafting.DEFAULTS;
     private uz.dukeengine.dungeon.mount.Mount mount = uz.dukeengine.dungeon.mount.Mount.DEFAULTS;
     private final List<uz.dukeengine.dungeon.story.Campaign> campaigns = new java.util.ArrayList<>();
     private final List<uz.dukeengine.dungeon.story.Place> places = new java.util.ArrayList<>();
@@ -358,6 +359,11 @@ public final class DungeonSettings {
     /** Food and fire: see {@code docs/plan/2026-10-15-food-and-fire.md}. */
     public uz.dukeengine.dungeon.food.Food food() {
         return food;
+    }
+
+    /** Crafting by recipe: see {@code docs/plan/2026-10-15-crafting.md}. */
+    public uz.dukeengine.dungeon.craft.Crafting crafting() {
+        return crafting;
     }
 
     /** The queen's medallion and its passive: see {@code docs/plan/2026-10-09-medallion.md}. */
@@ -658,6 +664,7 @@ public final class DungeonSettings {
                 case uz.dukeengine.core.content.EffectList list -> effectLists.add(list);
                 case uz.dukeengine.dungeon.story.Medallion block -> medallion = once(block, once);
                 case uz.dukeengine.dungeon.food.Food block -> food = once(block, once);
+                case uz.dukeengine.dungeon.craft.Crafting block -> crafting = once(block, once);
                 case uz.dukeengine.dungeon.mount.Mount block -> mount = once(block, once);
                 case uz.dukeengine.dungeon.story.Campaign block -> campaigns.add(block);
                 case uz.dukeengine.dungeon.story.Place place -> places.add(place);
@@ -963,6 +970,7 @@ public final class DungeonSettings {
                     "Potion " + potion.name() + ": a name with no '-', and a Stack of one at least");
         }
         validateFood();
+        validateCrafting();
         validateMount();
         var item = itemRules;
         for (var list : java.util.List.of(item.rarities(), item.colours(), item.normal(), item.elite(), item.boss(),
@@ -1070,7 +1078,8 @@ public final class DungeonSettings {
         }
         for (var clip : food.clips()) {
             var said = clip.strip().split("\\s+");
-            require(said.length == 2 && uz.dukeengine.dungeon.food.Food.WORDS.contains(said[0]),
+            require(said.length == 2 && (uz.dukeengine.dungeon.food.Food.WORDS.contains(said[0])
+                    || said[0].equals(uz.dukeengine.dungeon.food.Food.CRAFT)),
                     "Food: Clips are a word of work and a clip: " + clip);
         }
         for (var hunt : food.hunts()) {
@@ -1080,6 +1089,43 @@ public final class DungeonSettings {
         for (var place : food.forage()) {
             require(thing.test(place.thing()) && place.count() >= 0 && place.to() >= place.from(),
                     "Food: Forage places " + place.thing() + ", and nothing is called that");
+        }
+    }
+
+    /** Crafting: every recipe makes a thing there is, of parts there are. See docs/plan/2026-10-15-crafting.md. */
+    private void validateCrafting() {
+        var items = items();
+        require(crafting.scroll().isBlank() || items.potion(crafting.scroll()) != null,
+                "Crafting: Scroll " + crafting.scroll() + " is no Potion");
+        require(crafting.frames() >= 1, "Crafting: Frames is one at least");
+        var names = new java.util.HashSet<String>();
+        for (var recipe : crafting.recipes()) {
+            var named = "Crafting: the recipe " + recipe.name();
+            require(!recipe.name().isBlank() && names.add(recipe.name()), named + ": a Name, and one of its own");
+            require(items.base(recipe.makes()) != null || items.potion(recipe.makes()) != null
+                    || items.uniques().stream().anyMatch(unique -> unique.name().equals(recipe.makes())),
+                    named + " makes " + recipe.makes() + ", and no base, unique or Potion is called that");
+            require(recipe.rarity().isEmpty() || recipe.rarity().size() == 4, named + ": Rarity is four weights");
+            require(recipe.count() >= 1 && recipe.gold() >= 0 && recipe.frames() >= 0 && !recipe.from().isEmpty(),
+                    named + ": a Count of one at least, gold and frames not below none, and something it takes");
+            require(recipe.hero().isBlank() || heroes.stream().anyMatch(hero -> hero.name().equals(recipe.hero())),
+                    named + " is the hero " + recipe.hero() + "'s, and no Hero is called that");
+            for (var written : recipe.from()) {
+                uz.dukeengine.dungeon.craft.Crafting.Part part;
+                try {
+                    part = uz.dukeengine.dungeon.craft.Crafting.Part.of(written);
+                } catch (IllegalArgumentException wrong) {
+                    throw new IllegalArgumentException("settings: " + named + ": " + wrong.getMessage(), wrong);
+                }
+                var what = part.what();
+                require(what.startsWith("#") && !crafting.tag(what.substring(1)).isEmpty()
+                        || items.knows(what), named + " takes " + what + ", and nothing is called that");
+            }
+        }
+        for (var line : crafting.tags()) {
+            require(line.indexOf('=') > 0, "Crafting: Tags are \"tag = base base\": " + line);
+            crafting.tag(line.substring(0, line.indexOf('=')).strip()).forEach(base -> require(items.base(base) != null,
+                    "Crafting: the tag " + line + " names " + base + ", and no ItemBase is called that"));
         }
     }
 
@@ -1649,8 +1695,8 @@ public final class DungeonSettings {
     /** The screens' keys: three letters, none of them a key something else is already on. */
     private void validateScreens() {
         var keys = screens.keys();
-        require(keys.stream().allMatch(key -> key >= 'A' && key <= 'Z') && keys.stream().distinct().count() == 3,
-                "Screens: SheetKey, QuestsKey and MapKey are three different letters: " + keys);
+        require(keys.stream().allMatch(key -> key >= 'A' && key <= 'Z') && keys.stream().distinct().count() == 4,
+                "Screens: SheetKey, QuestsKey, MapKey and CraftKey are four different letters: " + keys);
         // The orders' four, the client's halt and pause, the tracker's fold, and every skill's.
         var taken = new java.util.HashSet<Character>(List.of('A', 'S', 'D', 'F', 'H', 'P',
                 Character.toUpperCase(run.foldKey().charAt(0))));

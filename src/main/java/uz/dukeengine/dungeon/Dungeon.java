@@ -565,6 +565,8 @@ public final class Dungeon {
                         run.talkTo(game, talk.playerIndex(), talk.person());
                 // Sent to chop, pick, fill or cook, or to build a fire at his feet. See DungeonRun.work.
                 case uz.dukeengine.dungeon.run.Work work -> run.work(game, work.playerIndex(), work.thing(), work.place());
+                // A recipe crafted where he stands. See DungeonRun.craft.
+                case uz.dukeengine.dungeon.run.Craft craft -> run.craft(game, craft.playerIndex(), craft.recipe());
                 // His horse: called, got onto or got off. See DungeonRun.ride.
                 case uz.dukeengine.dungeon.run.Ride ride -> run.ride(game, ride.playerIndex(), ride.horse());
                 default -> {

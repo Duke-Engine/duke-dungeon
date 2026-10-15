@@ -153,7 +153,7 @@ final class ItemCard {
     }
 
     /** A card beside {@code (x, y)}, its first line big, kept on the screen. */
-    private void tip(Canvas canvas, List<Items.Line> lines, float x, float y) {
+    void tip(Canvas canvas, List<Items.Line> lines, float x, float y) {
         var look = settings.menu();
         float slot = Math.clamp(Math.round(canvas.height() * 0.05f), 34, 72);
         float pad = Math.max(6f, slot / 6f);

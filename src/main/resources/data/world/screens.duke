@@ -15,6 +15,8 @@ Screens
   SheetKey = C
   QuestsKey = L
   MapKey = M
+  ; The Hunar (crafting) screen: docs/plan/2026-10-15-crafting.md.
+  CraftKey = K
 
   SheetTitle = Qahramon
   QuestsTitle = Topshiriqlar

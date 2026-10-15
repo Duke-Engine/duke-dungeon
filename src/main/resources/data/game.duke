@@ -35,6 +35,7 @@ Game
     data/world/saves.duke,
     data/world/menu.duke,
     data/world/screens.duke,
+    data/world/crafting.duke,
     data/world/controls.duke,
     data/world/travel.duke,
     ; The open world's day, night and weather. See docs/plan/2026-10-15-day-and-night.md.

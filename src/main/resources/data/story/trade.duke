@@ -139,6 +139,11 @@ Merchant
     qovurilgan_gosht 20 6,
     choy 15 6,
     shorva 40 3,
+    ; Crafting's (docs/plan/2026-10-15-crafting.md): recipe scrolls and ember stones.
+    chizma 80 3,
+    olov_toshi 60 2,
+    teri 6 10,
+    ruda 8 10,
   ]
   ; And six things more, rolled at the hero's level each time a map stocks him (data/world/loot.duke).
   Gear = 6

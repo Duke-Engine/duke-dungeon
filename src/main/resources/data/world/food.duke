@@ -49,6 +49,9 @@ Food
     "BerryBush rezavor 2 45 5400 Harvest -",
     "PumpkinPatch qovoq 1 45 7200 Harvest -",
     "Well suv 1 45 0 Fill -",
+    ; Crafting's (docs/plan/2026-10-15-crafting.md): ore mined, herbs picked.
+    "OreRock ruda 2 75 10800 Mine -",
+    "HerbPatch giyoh 2 45 7200 Harvest -",
   ]
   ; The maps whose scenery trees are felled: those streamed in chunks, where a
   ; tree felled redraws its chunk (a map built whole would redraw all of it).
@@ -61,6 +64,9 @@ Food
     "Harvest Gather",
     "Fill Gather",
     "Cook Cook",
+    "Mine Chop",
+    ; Crafting, anywhere (docs/plan/2026-10-15-crafting.md): kneeling over it.
+    "Craft Cook",
   ]
   ; What the buff row shows a meal as (E68): its picture and name, and the word
   ; after its health a second.
@@ -82,6 +88,9 @@ Food
     "Deer xom_gosht 2",
     "Boar xom_gosht 2",
     "Wolf xom_gosht 1",
+    "Deer teri 1",
+    "Boar teri 2",
+    "Wolf teri 1",
   ]
   ; The map, a thing, the zone, how many, from and to how many cells of the
   ; zone's middle -- laid with the map, on open ground, drawn from its seed.
@@ -120,6 +129,17 @@ Food
     "world Boar Qorong'i_o'rmon 3 10 40",
     "world Boar Tolzor 2 10 18",
     "world Boar Qoratepa 2 10 18",
+    ; Crafting's ore and herbs.
+    "world OreRock Toshli_adir 6 4 20",
+    "world OreRock Qumli_dasht 4 4 20",
+    "world OreRock Qorong'i_o'rmon 3 10 40",
+    "world OreRock Tosh_doira 2 3 8",
+    "world OreRock Eski_ibodatxona 2 3 8",
+    "world HerbPatch Yashil_dala 5 10 30",
+    "world HerbPatch Qorong'i_o'rmon 5 6 40",
+    "world HerbPatch Olmazor 2 5 11",
+    "world HerbPatch Tolzor 2 5 11",
+    "world HerbPatch Yangiobod 2 5 11",
   ]
 End
 
@@ -723,3 +743,76 @@ Sound
   Files = [audio/sfx/footstep_1.ogg, audio/sfx/footstep_2.ogg, audio/sfx/footstep_3.ogg, audio/sfx/footstep_4.ogg, audio/sfx/footstep_5.ogg]
 End
 
+
+; ---------------------------------------------------------------------------
+; Crafting's things to work (docs/plan/2026-10-15-crafting.md): an ore rock,
+; mined with his sword's swing for iron ore, and a herb patch, picked. Like a
+; bush, no shape: in nobody's way. Inuciian's pieces (CC BY 4.0, CREDITS.md).
+; ---------------------------------------------------------------------------
+
+Prop
+  Name = OreRock
+  DisplayName = Temir ruda
+  KindOf = [STRUCTURE, SELECTABLE]
+  VisionRange = 0
+  Weight = 0
+End
+
+ThemeMonster
+  Name = OreRock
+  Model = models/inuciian/nature/rock.glb
+  ModelScale = 1.2
+End
+
+Prop
+  Name = HerbPatch
+  DisplayName = Dorivor giyoh
+  KindOf = [STRUCTURE, SELECTABLE]
+  VisionRange = 0
+  Weight = 0
+End
+
+ThemeMonster
+  Name = HerbPatch
+  Model = models/inuciian/nature/bush_large.glb
+  ModelScale = 0.6
+End
+
+Cursor
+  Name = Mine
+  Image = ui/cursors/default/tool_pickaxe.png
+  HotX = 15
+  HotY = 15
+  Tint = 0xE8A33D
+End
+
+Effect
+  Name = WorkMine
+
+  Layers = [
+    Layer
+      Name = Chips
+      Type = BURST
+      Texture = kit/effects/particles/dirt_02.png
+      Blend = Alpha
+      Count = 10
+      Life = [0.4, 0.7]
+      Size = [1, 0.6]
+      Colour = [0xB8B4AC, 0x6A665E]
+      Alpha = [1, 0.6]
+      Speed = [8, 14]
+      Direction = UP
+      Spread = 50
+      Gravity = 30
+      Height = 3
+    End
+  ]
+End
+
+Sound
+  Name = work.mine
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.5
+  Files = [audio/sfx/weapon/metal_hit_1.ogg, audio/sfx/weapon/metal_hit_3.ogg]
+End

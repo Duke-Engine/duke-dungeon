@@ -2254,10 +2254,78 @@ public final class DungeonRun {
         for (var seat : seats) {
             var bag = seat.progress.getLoot();
             if (bag.version() != seat.stackedAt) {
+                learn(seat, bag);
                 Belt.stack(bag, items);
                 seat.stackedAt = bag.version();
             }
         }
+    }
+
+    // ---- crafting: docs/plan/2026-10-15-crafting.md ----
+
+    /** Whether this player's hero knows the recipe: known from the start or learnt, and his hero's or anybody's. */
+    public boolean knows(int playerIndex, uz.dukeengine.dungeon.craft.Crafting.Recipe recipe) {
+        var seat = seatOf(playerIndex);
+        return seat != null && (recipe.hero().isBlank() || recipe.hero().equals(seat.hero))
+                && (recipe.known() || script.flagged(uz.dukeengine.dungeon.craft.Crafting.FLAG + recipe.name()));
+    }
+
+    /** Each recipe scroll in his backpack teaches the first recipe of the file he does not know, and is used up. */
+    private void learn(Seat seat, uz.dukeengine.rpg.item.LootBag bag) {
+        var crafting = settings.crafting();
+        var items = settings.items();
+        for (int place = 0; place < bag.backpackSize() && !crafting.scroll().isBlank(); place++) {
+            var kind = items.potionOf(bag.at(place));
+            if (kind == null || !kind.name().equals(crafting.scroll())) {
+                continue;
+            }
+            for (int read = bag.at(place).value(); read > 0; read--) {
+                var next = crafting.recipes().stream().filter(recipe -> !knows(seat.player.getIndex(), recipe)
+                        && (recipe.hero().isBlank() || recipe.hero().equals(seat.hero))).findFirst().orElse(null);
+                if (next == null) {
+                    return; // nothing left to learn: the scrolls stay, to sell
+                }
+                script.flag(uz.dukeengine.dungeon.craft.Crafting.FLAG + next.name());
+                var stack = bag.remove(place);
+                if (stack.value() > 1) {
+                    bag.put(place, stack.worth(stack.value() - 1));
+                }
+                var made = items.resolve(next.makes());
+                bag.say(crafting.learnWord().formatted(made == null ? next.makes()
+                        : uz.dukeengine.rpg.item.LootBag.nameOf(made)),
+                        lastLogic == null ? 0 : lastLogic.getFrame(), settings.lootDrops().noteFrames());
+            }
+        }
+    }
+
+    /**
+     * The player asked his hero to craft the {@code recipe}th recipe of the file where he stands: refused, said why,
+     * if he does not know it or his purse is short; else set to it -- whatever he was doing called off. See
+     * {@link Camp#craft}.
+     */
+    public void craft(DukeGame game, int playerIndex, int recipe) {
+        var seat = seatOf(playerIndex);
+        var hero = seat == null || seat.heroId == null ? null : game.getLogic().findObject(seat.heroId);
+        var recipes = settings.crafting().recipes();
+        if (hero == null || hero.isEffectivelyDead()) {
+            return;
+        }
+        var bag = seat.progress.getLoot();
+        int frame = game.getLogic().getFrame();
+        int notes = settings.lootDrops().noteFrames();
+        if (recipe < 0 || recipe >= recipes.size() || !knows(playerIndex, recipes.get(recipe))) {
+            bag.say(settings.crafting().unknownWord(), frame, notes);
+            return;
+        }
+        if (seat.gold < recipes.get(recipe).gold()) {
+            bag.say(settings.story().trade().noGoldWord(), frame, notes);
+            return;
+        }
+        seat.talkingTo = null;
+        orders.attackMove(playerIndex, null);
+        uz.dukeengine.combat.module.Errand.giveUpAll(hero);
+        camp.craft(game.getLogic(), playerIndex, hero, bag, recipes.get(recipe),
+                Math.max(1, seat.progress.getLevel()));
     }
 
     /**
@@ -2371,7 +2439,8 @@ public final class DungeonRun {
         var heroes = new ArrayList<GameObject>();
         for (var seat : seats) {
             var hero = seat.heroId == null ? null : game.getLogic().findObject(seat.heroId);
-            camp.tick(game.getLogic(), seat.player.getIndex(), hero, seat.progress.getLoot());
+            seat.gold -= camp.tick(game.getLogic(), seat.player.getIndex(), hero, seat.progress.getLoot(),
+                    seat.gold);
             stable.tick(game.getLogic(), seat.player.getIndex(), hero, seat.progress);
             heroes.add(hero);
         }
