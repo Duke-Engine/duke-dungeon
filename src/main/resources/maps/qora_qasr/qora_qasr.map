@@ -1,0 +1,135 @@
+; Last Hero — Act 1, joint 5 (docs/plan/2026-10-15-act1.md): the dark castle.
+;
+; In by the yard, through a court its guards hold, up to the hall where its lord waits: an earlier
+; hero the queen cursed (a STAND-IN look). His death is the turning — the medallion drinks him
+; whole, leaves the hero for the queen's hand (she is seen in a vision by the throne), and Act 1
+; ends. The fort's pieces drawn with its dark pictures (FelikinRuslan, CC BY 4.0) stand round it.
+
+StaticMap
+  Name = qora_qasr
+  DisplayName = "1-qism: Qora qasr"
+  Description = "Qora ritsar va medalyonning siri."
+  Difficulty = 5
+  Players = 1
+  Seed = 20261017
+  Entrance = [20, 28]
+  Cells = [
+    "########################################",
+    "########################################",
+    "##########00000000000000000000##########",
+    "##########00000000000000000000##########",
+    "##########00000000000000000000##########",
+    "##########00000000000000000000##########",
+    "##########00000000000000000000##########",
+    "##########00000000000000000000##########",
+    "##########00000000000000000000##########",
+    "##########00000000000000000000##########",
+    "###################00###################",
+    "###################00###################",
+    "######0000000000000000000000000000######",
+    "######0000000000000000000000000000######",
+    "######0000000000000000000000000000######",
+    "######0000000000000000000000000000######",
+    "######0000000000000000000000000000######",
+    "######0000000000000000000000000000######",
+    "######0000000000000000000000000000######",
+    "######0000000000000000000000000000######",
+    "######0000000000000000000000000000######",
+    "######0000000000000000000000000000######",
+    "###################00###################",
+    "###################00###################",
+    "##############000000000000##############",
+    "##############000000000000##############",
+    "##############000000000000##############",
+    "##############000000000000##############",
+    "##############000000000000##############",
+    "##############000000000000##############",
+    "########################################",
+  ]
+  Rooms = [
+    14 24 12 6 0,
+    6 12 28 10 0,
+    10 2 20 8 0,
+  ]
+  Links = [
+    0 1,
+    1 2,
+  ]
+  ; Its lord on his throne. His death is the turning, not a win: see data/story/act1.duke.
+  Boss = DarkLord 20 4
+  Monsters = [
+    Skeleton 12 14,
+    Skeleton 15 18,
+    Skeleton 25 18,
+    Skeleton 28 14,
+    Brute 20 15,
+    SkeletonMage 9 19,
+    SkeletonMage 31 19,
+    Revenant 14 6,
+    Revenant 26 6,
+  ]
+  Props = [
+    Pillar 13 4,
+    Pillar 27 4,
+    Pillar 13 8,
+    Pillar 27 8,
+  ]
+  Npcs = []
+  Zones = [
+    Throne 20 4 2,
+    Vision 24 3 2 2,
+    HallDoor 19 9 2 2,
+  ]
+  Items = []
+  Paint = [
+    "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm",
+    "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm",
+    "mmmmmmmmmmrrrrrrrrrrrrrrrrrrrrmmmmmmmmmm",
+    "mmmmmmmmmmrrrrrrrrrrrrrrrrrrrrmmmmmmmmmm",
+    "mmmmmmmmmmrrrrrrrrrrrrrrrrrrrrmmmmmmmmmm",
+    "mmmmmmmmmmrrrrrrrrrrrrrrrrrrrrmmmmmmmmmm",
+    "mmmmmmmmmmrrrrrrrrrrrrrrrrrrrrmmmmmmmmmm",
+    "mmmmmmmmmmrrrrrrrrrrrrrrrrrrrrmmmmmmmmmm",
+    "mmmmmmmmmmrrrrrrrrrrrrrrrrrrrrmmmmmmmmmm",
+    "mmmmmmmmmmrrrrrrrrrrrrrrrrrrrrmmmmmmmmmm",
+    "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm",
+    "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm",
+    "mmmmmmrrrrrrrrrrrrrrrrrrrrrrrrrrrrmmmmmm",
+    "mmmmmmrrrrrrrrrrrrrrrrrrrrrrrrrrrrmmmmmm",
+    "mmmmmmrrrrrrrrrrrrrrrrrrrrrrrrrrrrmmmmmm",
+    "mmmmmmrrrrrrrrrrrrrrrrrrrrrrrrrrrrmmmmmm",
+    "mmmmmmrrrrrrrrrrrrrrrrrrrrrrrrrrrrmmmmmm",
+    "mmmmmmrrrrrrrrrrrrrrrrrrrrrrrrrrrrmmmmmm",
+    "mmmmmmrrrrrrrrrrrrrrrrrrrrrrrrrrrrmmmmmm",
+    "mmmmmmrrrrrrrrrrrrrrrrrrrrrrrrrrrrmmmmmm",
+    "mmmmmmrrrrrrrrrrrrrrrrrrrrrrrrrrrrmmmmmm",
+    "mmmmmmrrrrrrrrrrrrrrrrrrrrrrrrrrrrmmmmmm",
+    "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm",
+    "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm",
+    "mmmmmmmmmmmmmmddddddddddddmmmmmmmmmmmmmm",
+    "mmmmmmmmmmmmmmddddddddddddmmmmmmmmmmmmmm",
+    "mmmmmmmmmmmmmmddddddddddddmmmmmmmmmmmmmm",
+    "mmmmmmmmmmmmmmddddddddddddmmmmmmmmmmmmmm",
+    "mmmmmmmmmmmmmmddddddddddddmmmmmmmmmmmmmm",
+    "mmmmmmmmmmmmmmddddddddddddmmmmmmmmmmmmmm",
+    "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm",
+  ]
+  Palette = [
+    m = "ground/mud.png",
+    d = "ground/dirt.png",
+    r = "ground/rock.png",
+  ]
+  Coverage = [
+    m = 6.0,
+    d = 4.0,
+    r = 5.0,
+  ]
+  Scenery = [
+    "models/castles/fort/fort_keep.gltf@models/castles/fort/textures/fort_15_dark.jpg 20 0.5 0 1 0 0xF0D8E0",
+    "models/castles/fort/fort_tower_stepped.gltf@models/castles/fort/textures/fort_5_dark.jpg 8 1 0 1 0; models/castles/fort/fort_tower_stepped.gltf@models/castles/fort/textures/fort_5_dark.jpg 32 1 0 1 0",
+    "models/castles/hall/hall_torch.gltf 11 3 0 1 0; models/castles/hall/hall_torch.gltf 29 3 180 1 0",
+    "models/castles/fort/fort_wall.gltf@models/castles/fort/textures/fort_9_dark.jpg 3 12 270 1 0; models/castles/fort/fort_wall.gltf@models/castles/fort/textures/fort_9_dark.jpg 36 12 270 1 0",
+    "models/castles/fort/fort_turret.gltf@models/castles/fort/textures/fort_12_dark.jpg 4 17 0 1 0; models/castles/fort/fort_turret.gltf@models/castles/fort/textures/fort_12_dark.jpg 36 17 0 1 0",
+    "models/castles/fort/fort_gatehouse.gltf@models/castles/fort/textures/fort_14_dark.jpg 20 30.5 0 1 0",
+  ]
+End

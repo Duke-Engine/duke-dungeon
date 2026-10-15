@@ -1,0 +1,126 @@
+; Last Hero — Act 1, joint 1 (docs/plan/2026-10-15-act1.md): the opening battle before the kingdom's walls.
+;
+; The kingdom's soldiers (the story's ALLY: KayKit adventurers) hold a line before the gate against
+; the enemy army and its commander. A beam of light: the hero lands between them and the enemy
+; commander is thrown back. He rises and charges; beaten, the commander cuts him down, the army
+; breaks, and she takes the hero to the queen (MAP poytaxt). The walls are the rampart kit's
+; (FelikinRuslan, CC BY 4.0), standing on the stone west of the field.
+
+StaticMap
+  Name = jang
+  DisplayName = "1-qism: Darvoza oldidagi jang"
+  Description = "Qahramon osmondan tushadi."
+  Difficulty = 1
+  Players = 1
+  Seed = 20261015
+  ; Where he waits, out of the fight's way, until the light puts him in it.
+  Entrance = [9, 23]
+  Cells = [
+    "############################################",
+    "#######000000000000000000000000000000000000#",
+    "#######000000000000000000000000000000000000#",
+    "#######000000000000000000000000000000000000#",
+    "#######000000000000000000000000000000000000#",
+    "#######000000000000000000000000000000000000#",
+    "#######000000000000000000000000000000000000#",
+    "#######000000000000000000000000000000000000#",
+    "#######000000000000000000000000000000000000#",
+    "#######000000000000000000000000000000000000#",
+    "#######000000000000000000000000000000000000#",
+    "#######000000000000000000000000000000000000#",
+    "#######000000000000000000000000000000000000#",
+    "#######000000000000000000000000000000000000#",
+    "#######000000000000000000000000000000000000#",
+    "#######000000000000000000000000000000000000#",
+    "#######000000000000000000000000000000000000#",
+    "#######000000000000000000000000000000000000#",
+    "#######000000000000000000000000000000000000#",
+    "#######000000000000000000000000000000000000#",
+    "#######000000000000000000000000000000000000#",
+    "#######000000000000000000000000000000000000#",
+    "#######000000000000000000000000000000000000#",
+    "#######000000000000000000000000000000000000#",
+    "#######000000000000000000000000000000000000#",
+    "############################################",
+  ]
+  Rooms = [
+    7 1 36 24 0,
+  ]
+  Links = []
+  ; The enemy commander, behind his army. He is the story's, not a win: see data/story/act1.duke.
+  Boss = EnemyCommander 36 13
+  Monsters = [
+    Skeleton 29 8,
+    Skeleton 29 11,
+    Skeleton 29 14,
+    Skeleton 29 17,
+    Skeleton 31 9,
+    Skeleton 31 13,
+    Skeleton 31 16,
+    Runner 33 10,
+    Runner 33 15,
+    SkeletonMage 34 12,
+  ]
+  Props = []
+  Npcs = [
+    Act1Commander 15 13,
+  ]
+  ; Named places, in cells: name x y width height, or name x y radius.
+  Zones = [
+    Line 17 9 2 9,
+    EnemyLine 31 13 3,
+    Landing 23 12 2 2,
+    Thrown 33 13 2 2,
+  ]
+  Items = []
+  ; Grass, and the road out of the gate trodden to dirt.
+  Paint = [
+    "gggggggggggggggggggggggggggggggggggggggggggg",
+    "gggggggggggggggggggggggggggggggggggggggggggg",
+    "gggggggggggggggggggggggggggggggggggggggggggg",
+    "gggggggggggggggggggggggggggggggggggggggggggg",
+    "gggggggggggggggggggggggggggggggggggggggggggg",
+    "gggggggggggggggggggggggggggggggggggggggggggg",
+    "gggggggggggggggggggggggggggggggggggggggggggg",
+    "ggggggggggggggggggggggggggddddddddddgggggggg",
+    "ggggggggggggggddddddddggggddddddddddgggggggg",
+    "ggggggggggggggddddddddggggddddddddddgggggggg",
+    "ggggggggggggggddddddddggggddddddddddgggggggg",
+    "dddddddddddddddddddddddddddddddddddddddddddd",
+    "dddddddddddddddddddddddddddddddddddddddddddd",
+    "dddddddddddddddddddddddddddddddddddddddddddd",
+    "dddddddddddddddddddddddddddddddddddddddddddd",
+    "ggggggggggggggddddddddggggddddddddddgggggggg",
+    "ggggggggggggggddddddddggggddddddddddgggggggg",
+    "ggggggggggggggddddddddggggddddddddddgggggggg",
+    "ggggggggggggggggggggggggggddddddddddgggggggg",
+    "gggggggggggggggggggggggggggggggggggggggggggg",
+    "gggggggggggggggggggggggggggggggggggggggggggg",
+    "gggggggggggggggggggggggggggggggggggggggggggg",
+    "gggggggggggggggggggggggggggggggggggggggggggg",
+    "gggggggggggggggggggggggggggggggggggggggggggg",
+    "gggggggggggggggggggggggggggggggggggggggggggg",
+    "gggggggggggggggggggggggggggggggggggggggggggg",
+  ]
+  Palette = [
+    g = "ground/grass.png",
+    d = "ground/dirt.png",
+  ]
+  Coverage = [
+    g = 6.0,
+    d = 4.0,
+  ]
+  ; The kingdom's wall on the stone west of the field: towers five cells apart, walls between, the gate on the road.
+  Scenery = [
+    "models/castles/rampart/rampart_tower_tall.gltf 5 3 0 1 0",
+    "models/castles/rampart/rampart_wall.gltf 5 4 270 1 0",
+    "models/castles/rampart/rampart_tower.gltf 5 8 0 1 0",
+    "models/castles/rampart/rampart_wall_arcade.gltf 5 9 270 1 0",
+    "models/castles/rampart/rampart_wall_gate.gltf 5 12 270 1 0",
+    "models/castles/rampart/rampart_tower_tall.gltf 5 15 0 1 0",
+    "models/castles/rampart/rampart_wall.gltf 5 16 270 1 0",
+    "models/castles/rampart/rampart_tower.gltf 5 20 0 1 0",
+    "models/castles/rampart/rampart_wall.gltf 5 21 270 1 0",
+    "models/castles/town/town_banner_post.gltf 13 10 0 1 0; models/castles/town/town_banner_post.gltf 13 16 0 1 0",
+  ]
+End

@@ -52,6 +52,13 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E36 | scenery that blocks along its length, turned with its facing (castle walls) | landed, 5971fa0b; every castle wall is a `WxD` box, the qasr courtyard is entered only by its gate |
 | E37 | placing one piece on the grid in the editor — the plugin's, done in duke-plugin | plugin |
 | E38 | a map that starts explored: its ground seen from the first frame, its creatures only in sight | landed, 7f17f626 (with E34–E36); the open world begins seen, the descent black |
+| E39 | particles that bounce, fly home and turn over (the kill's coins) | landed, 946409ed |
+| E40 | a creature moved by the story over frames (the landing, the knock-back) | waiting (small) |
+| E41 | a cutscene camera that turns, tilts and zooms, eased | waiting (small) |
+| E42 | a title card | waiting (small) |
+| E46 | the game's keys in Settings | landed, 9ce15e4e |
+| E47 | a hero's whole figures in one place | landed, 9ce15e4e |
+| E48 | a key's code and name for a game's canvas | landed, 9ce15e4e |
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
 game builds against the local engine. E12–E15 reached it together at 668045f0 (their pull requests merged as
@@ -1069,3 +1076,33 @@ Asked: `Hotkeys.codeOf(char)` public (or `CanvasInput.Key.letter()`), and the fe
 
 **Landed** as 9ce15e4e: `Hotkeys.codeOf` public and `CanvasInput.ESCAPE`, `ENTER`, `SPACE`. The game's copies are
 gone (`PlayerScreens.codeOf`, `DialogueScreen`'s three); only Enter on the number pad stays the game's own.
+
+## E40 — A creature moved by the story over frames: a slide, a leap, a fall from the sky (2026-10-15, medium)
+
+Act 1's opening (`docs/plan/2026-10-15-act1.md`) has three moves the engine cannot make: the hero **lands** in a beam
+of light, the enemy commander is **knocked back** by it, and (the campaign's) the commander **leaps**. The game does
+them today with what there is: its `PLACE` and `KNOCK` acts set a thing's position at once (`GameObject.setPosition`)
+under an effect — a jump cut, not a move.
+
+Asked: a scripted move a game may put on any thing for so many frames — `Locomotor`-free, in the simulation and
+checksummed — from where it stands to a point, along a straight line or an arc of a given height (a leap, a
+knock-back's hop), or straight down from a height (a fall from the sky), the thing taking no orders and no blows'
+pushes meanwhile, and told when it lands (an event the story can hear). Done when a test moves a creature 60 units
+over 20 frames along an arc 15 high, it stands where it was sent on frame 20, and the landing is heard once.
+
+## E41 — A cutscene camera that turns, tilts and zooms, eased (2026-10-15, small)
+
+A story's shot flies the camera to a point in a straight line at an even speed (`GameCamera.moveTo`); turning,
+pitch, zoom and easing are not there (the story-scripting spec's "Deferred"). Act 1's shots want a low, close look
+at the landing and a slow pull back over the battle. Asked: `GameCamera.moveTo(x, y, frames, Ease)` and
+`turnTo(angle, frames)`, `pitchTo(degrees, frames)`, `zoomTo(distance, frames)`, each eased (linear, in, out,
+in-out), stepped with the world and given back at `release()` to the player's own. Done when a test moves, turns and
+zooms the camera together over 30 frames, eased in-out, and it ends exactly where asked.
+
+## E42 — A title card (2026-10-15, small)
+
+Act 1 ends on "1-qism tugadi"; Act 2 will open on its own card. Today the game says it with the run's banner (the
+`won|` line of a `WIN`), the same strip a floor's "next depth" uses. Asked: `DukeGame.titleCard(text, subtext,
+fadeIn, hold, fadeOut)` — big centred lettering over a darkened screen in the shell's font, drawn only (out of the
+checksum), the game's input taken while it shows unless the game says otherwise. Done when a test shows a card and
+the client reports it gone after its frames.

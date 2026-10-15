@@ -1,0 +1,141 @@
+; Last Hero — Act 1, joint 2 (docs/plan/2026-10-15-act1.md): the capital.
+;
+; Its own small map rather than the open world's Poytaxt: the world is Act 2's, and a whole open
+; world is a heavy thing to lay for three conversations. In by the south gate; the square with the
+; merchant and two townsfolk who ask small things of him; north up the steps to the castle court,
+; where the queen sits; east down to the blacksmith's cellar. The hero leaves by the gate he came
+; in by — to the training, and later to the war. Castle and town pieces (FelikinRuslan, CC BY 4.0)
+; stand on the stone round the rooms.
+
+StaticMap
+  Name = poytaxt
+  DisplayName = "1-qism: Poytaxt"
+  Description = "Malika, medalyon va mashqqa yo'l."
+  Difficulty = 1
+  Players = 1
+  Seed = 20261016
+  Entrance = [20, 27]
+  Cells = [
+    "########################################",
+    "##########00000000000000000000#00000000#",
+    "##########00000000000000000000#00000000#",
+    "##########00000000000000000000#00000000#",
+    "##########00000000000000000000#00000000#",
+    "##########00000000000000000000#00000000#",
+    "##########00000000000000000000#00000000#",
+    "##########00000000000000000000#00000000#",
+    "##########00000000000000000000#00000000#",
+    "##########00000000000000000000####00####",
+    "###################00#############00####",
+    "###################00#############00####",
+    "####00000000000000000000000000000000####",
+    "####00000000000000000000000000000000####",
+    "####00000000000000000000000000000000####",
+    "####00000000000000000000000000000000####",
+    "####00000000000000000000000000000000####",
+    "####00000000000000000000000000000000####",
+    "####00000000000000000000000000000000####",
+    "####00000000000000000000000000000000####",
+    "####00000000000000000000000000000000####",
+    "####00000000000000000000000000000000####",
+    "####00000000000000000000000000000000####",
+    "###################00###################",
+    "###################00###################",
+    "###################00###################",
+    "###############0000000000###############",
+    "###############0000000000###############",
+    "###############0000000000###############",
+    "###############0000000000###############",
+    "###############0000000000###############",
+    "###############0000000000###############",
+    "########################################",
+  ]
+  ; x y width height storey: the gate yard (where he comes in), the square, the court, the cellar.
+  Rooms = [
+    15 26 10 6 0,
+    4 12 32 11 0,
+    10 1 20 9 0,
+    31 1 8 8 0,
+  ]
+  Links = [
+    0 1,
+    1 2,
+    1 3,
+  ]
+  ; A skeleton keeping the cellar: the story's, not a win.
+  Boss = Skeleton 36 3
+  Monsters = []
+  Props = []
+  Npcs = [
+    Act1Queen 20 2,
+    Act1Commander 22 27,
+    Merchant 11 15,
+    Blacksmith 29 15,
+    OldWoman 8 20,
+  ]
+  Zones = [
+    Throne 20 2 2,
+    CourtSide 19 6 2 2,
+    Square 20 17 3,
+    Gate 16 30 8 2,
+    Cellar 33 2 4 4,
+  ]
+  ; The old woman's ring, lost in the cellar's far corner.
+  Items = [
+    FamilyRing 37 7,
+  ]
+  Paint = [
+    "gggggggggggggggggggggggggggggggggggggggg",
+    "ggggggggggssssssssssssssssssssgddddddddg",
+    "ggggggggggssssssssssssssssssssgddddddddg",
+    "ggggggggggssssssssssssssssssssgddddddddg",
+    "ggggggggggssssssssssssssssssssgddddddddg",
+    "ggggggggggssssssssssssssssssssgddddddddg",
+    "ggggggggggssssssssssssssssssssgddddddddg",
+    "ggggggggggssssssssssssssssssssgddddddddg",
+    "ggggggggggssssssssssssssssssssgddddddddg",
+    "ggggggggggssssssssssssssssssssgggggggggg",
+    "gggggggggggggggggggddggggggggggggggggggg",
+    "gggggggggggggggggggddggggggggggggggggggg",
+    "ggggssssssssssssssssssssssssssssssssgggg",
+    "ggggssssssssssssssssssssssssssssssssgggg",
+    "ggggssssssssssssssssssssssssssssssssgggg",
+    "ggggssssssssssssssssssssssssssssssssgggg",
+    "ggggssssssssssssssssssssssssssssssssgggg",
+    "ggggssssssssssssssssssssssssssssssssgggg",
+    "ggggssssssssssssssssssssssssssssssssgggg",
+    "ggggssssssssssssssssssssssssssssssssgggg",
+    "ggggssssssssssssssssssssssssssssssssgggg",
+    "ggggssssssssssssssssssssssssssssssssgggg",
+    "ggggssssssssssssssssssssssssssssssssgggg",
+    "gggggggggggggggggggddggggggggggggggggggg",
+    "gggggggggggggggggggddggggggggggggggggggg",
+    "gggggggggggggggggggddggggggggggggggggggg",
+    "gggggggggggggggddddddddddggggggggggggggg",
+    "gggggggggggggggddddddddddggggggggggggggg",
+    "gggggggggggggggddddddddddggggggggggggggg",
+    "gggggggggggggggddddddddddggggggggggggggg",
+    "gggggggggggggggddddddddddggggggggggggggg",
+    "gggggggggggggggddddddddddggggggggggggggg",
+    "gggggggggggggggggggggggggggggggggggggggg",
+  ]
+  Palette = [
+    g = "ground/grass.png",
+    d = "ground/dirt.png",
+    s = "ground/rock.png",
+  ]
+  Coverage = [
+    g = 6.0,
+    d = 4.0,
+    s = 5.0,
+  ]
+  Scenery = [
+    "models/castles/fort/fort_keep.gltf 20 0.5 0 1 0",
+    "models/castles/town/town_palace_tower.gltf 8 3 0 1 0; models/castles/town/town_palace_tower.gltf 32 10.5 0 1 0",
+    "models/castles/room/room_banners.gltf 17 1.5 0 1 0; models/castles/room/room_banners.gltf 23 1.5 0 1 0",
+    "models/castles/town/town_house.gltf 2 13 90 1 0; models/castles/town/town_house.gltf 37.5 14 270 1 0",
+    "models/castles/room/room_barrel.gltf 13 14 0 1 0; models/castles/room/room_crate.gltf 13.8 14.2 20 1 0; models/castles/town/town_banner_post.gltf 20 18 0 1 0",
+    "models/castles/town/town_house.gltf 2 19 90 1 0; models/castles/town/town_house.gltf 37.5 20 270 1 0",
+    "models/castles/town/town_tower_round.gltf 13 26 0 1 0; models/castles/town/town_gatehouse.gltf 20 32 0 1 0; models/castles/town/town_tower_round.gltf 26 26 0 1 0",
+  ]
+End

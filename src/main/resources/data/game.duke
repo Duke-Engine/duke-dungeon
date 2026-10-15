@@ -84,6 +84,8 @@ Game
     data/units/baba_yaga.duke,
     data/units/damsel.duke,
     data/units/imp.duke,
+    ; Act 1's people, soldiers, enemy commander and the dark castle's lord: see data/story/act1.duke.
+    data/units/act1.duke,
 
     data/projectiles/arrow.duke,
     data/projectiles/heavy_arrow.duke,
@@ -151,5 +153,6 @@ Game
     data/story/medallion.duke,
     data/story/final.duke,
     data/story/kampir.duke,
+    data/story/act1.duke,
   ]
 End
