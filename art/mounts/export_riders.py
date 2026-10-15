@@ -144,13 +144,13 @@ def strays():
 
 def scale_rig(armature, factor):
     """The rig and its skin scaled by {@code factor} and applied, so every node is 1, every clip's moves scaled too."""
+    whole = armature.scale.x * factor  # the download's 100, the first time: every move keyed in its hundredths
     armature.scale = armature.scale * factor
     bpy.ops.object.select_all(action="DESELECT")
     for obj in bpy.data.objects:  # only the horse is in the scene yet
         obj.select_set(True)
     bpy.context.view_layer.objects.active = armature
     bpy.ops.object.transform_apply(location=False, rotation=True, scale=True)
-    whole = factor * 1.0
     for action in bpy.data.actions:
         for layer in action.layers:
             for strip in layer.strips:
