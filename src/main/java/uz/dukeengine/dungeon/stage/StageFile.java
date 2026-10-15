@@ -203,7 +203,7 @@ public final class StageFile {
         var props = map.props().stream().map(placed -> new Prop(placed.kind(), at(placed))).toList();
         var floor = new GeneratedDungeon(walls, levels, entrance, monsters, boss, bossRoom(map), rooms, links, storeys,
                 props, reliefOf(map, source), map.levelHeight());
-        return new Stage(map.name(), map.displayName(), map.description(), map.difficulty(), map.players(), map.seed(),
+        return new Stage(map.name(), uz.dukeengine.dungeon.content.Lang.t(map.displayName()), uz.dukeengine.dungeon.content.Lang.t(map.description()), map.difficulty(), map.players(), map.seed(),
                 floor, paintOf(map, source),
                 new uz.dukeengine.dungeon.story.MapStory(map.npcs(), map.zones(), map.items(), map.quests(),
                         map.floorMission()));

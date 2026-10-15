@@ -507,6 +507,9 @@ public final class Main {
     }
 
     public static void main(String[] args) {
+        // The language comes first: every data file is read in it. Uzbek unless the player kept English (or --lang=en).
+        uz.dukeengine.dungeon.content.Lang.use(uz.dukeengine.dungeon.content.Lang.chosen(args,
+                Shell.setting(uz.dukeengine.dungeon.content.Lang.SETTING, 0)));
         // Which map the game opens on is settled before its data is read, because a map brings blocks of its
         // own with it — see MapPackage — and they are part of the settings everything else is built from.
         var wanted = Stages.chosen(args);
@@ -574,6 +577,10 @@ public final class Main {
                 whoGoesIn(match, settings, visuals, keys, duke, bag), credits);
         var shell = FrontMenu.shell(settings, rows.apply(session),
                 List.of(saveRow(settings, slot -> saveTo(current.get(), saves, slot))));
+        // The language, flipped in Settings and spoken from the next launch (the data is read once, in one language).
+        shell.settingsRow(uz.dukeengine.dungeon.content.Lang.SETTING,
+                uz.dukeengine.dungeon.content.Lang.t("Til (qayta ochilganda)"), uz.dukeengine.dungeon.content.Lang.NAMES, 0,
+                choice -> { });
         duke.onLeaving(() -> {
             saveTo(current.get(), saves, Saves.AUTOSAVE);
             // Back at the front menu, the next game is a new match, its rows read afresh (a save just made is there
@@ -1208,7 +1215,7 @@ public final class Main {
             // his skin, and the passives -- never cast -- drink from his blows or
             // lend round him.
             case EMPOWER, GUARD, LIFESTEAL, DAMAGE_AURA, MANA_AURA, LIFESTEAL_AURA, SOUL_DRINK, UNYIELDING,
-                    DRAGON_BLOOD, STAGGER -> uz.dukeengine.client3d.SkillRange.Shape.ON_HIMSELF;
+                    DRAGON_BLOOD, STAGGER, DODGE -> uz.dukeengine.client3d.SkillRange.Shape.ON_HIMSELF;
         };
         float reach = switch (skill.effect()) {
             case STRIKE, AREA_AT_SPOT, SKILLSHOT, HEAL -> skill.range();
@@ -1217,7 +1224,7 @@ public final class Main {
             case AREA_DAMAGE, SUMMON, PULL -> skill.radius();
             case HASTE -> skill.range();
             case EMPOWER, GUARD, LIFESTEAL, DAMAGE_AURA, MANA_AURA, LIFESTEAL_AURA, SOUL_DRINK, UNYIELDING,
-                    DRAGON_BLOOD, STAGGER -> selfRadius;
+                    DRAGON_BLOOD, STAGGER, DODGE -> selfRadius;
         };
         // What it LEAVES where it lands: a blast's radius, a lane's width. A dash
         // leaves a man, and a circle round a man-sized spot is a second ring saying
