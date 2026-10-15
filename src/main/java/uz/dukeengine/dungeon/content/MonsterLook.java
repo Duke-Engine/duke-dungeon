@@ -35,6 +35,9 @@ import uz.dukeengine.core.content.AnimationSet;
  *                    monster absorbs a blow with no sign that it landed, which
  *                    reads as the weapon having missed
  * @param death       what it plays once as it falls, before the body is taken away
+ * @param walkStride  how far one play of its walk carries it, in units, so the client paces the walk to its speed;
+ *                    0 plays the walk at its own pace
+ * @param upperBody   the joint its upper body hangs from, for a blow on the move; null for none
  */
 public record MonsterLook(
         String model,
@@ -50,7 +53,9 @@ public record MonsterLook(
         String hurt,
         String death,
         Held held,
-        String effect) {
+        String effect,
+        float walkStride,
+        String upperBody) {
 
     public MonsterLook {
         libraries = libraries == null ? java.util.List.of() : java.util.List.copyOf(libraries);
@@ -59,7 +64,26 @@ public record MonsterLook(
 
     /** No art at all: this kind is drawn as a coloured shape, as everything was. */
     public static final MonsterLook NONE = new MonsterLook(null, null, 1f, 0xFFFFFF, 90f,
-            null, java.util.List.of(), null, null, null, null, null, Held.NOTHING, null);
+            null, java.util.List.of(), null, null, null, null, null, Held.NOTHING, null, 0f, null);
+
+    /** What a {@code Licensed = MonsterLook} block leaves out: as a Monster block's look leaves it. */
+    static final MonsterLook DEFAULTS = NONE;
+
+    /**
+     * {@code licensed} where its model is on the classpath, else {@code standIn}.
+     *
+     * <p>A licensed model (CGTrader Royalty Free) ships in the game but may not be in the public repository: it
+     * lives in the git-ignored licensed-assets/ folder, which the build adds to the resources only where it is
+     * (build.gradle.kts). A clone without it, and CI, draw the stand-in the block also names.
+     */
+    public static MonsterLook licensedOr(MonsterLook licensed, MonsterLook standIn) {
+        return licensed != null && licensed.hasModel() && shipped(licensed.model()) ? licensed : standIn;
+    }
+
+    /** Whether a resource is on the classpath, where the client's loader looks for it. */
+    static boolean shipped(String path) {
+        return MonsterLook.class.getClassLoader().getResource(path) != null;
+    }
 
     /** This look moving by {@code set}: its libraries, and its clip wherever this names none of its own. */
     public MonsterLook in(AnimationSet set) {
@@ -69,7 +93,7 @@ public record MonsterLook(
                 attack != null ? attack : set.attack(),
                 hurt != null ? hurt : set.hurt(),
                 death != null ? death : set.death(),
-                held, effect);
+                held, effect, walkStride, upperBody);
     }
 
     /** Whether there is a model to draw rather than a shape. */

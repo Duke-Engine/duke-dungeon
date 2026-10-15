@@ -289,7 +289,7 @@ public record Theme(
         /** What it is drawn as, which is a monster's look and nothing else. */
         public MonsterLook look() {
             return new MonsterLook(model, texture, modelScale, tint, facing, animations, List.of(), idle, walk,
-                    attack, hurt, death, held, effect);
+                    attack, hurt, death, held, effect, 0f, null);
         }
     }
 

@@ -29,6 +29,15 @@ tasks.processResources {
     from("CREDITS.md")
 }
 
+// Licensed models (CGTrader Royalty Free: the game may ship them, this public repository may not) live in the
+// git-ignored licensed-assets/, laid out as resources are (licensed-assets/models/licensed/queen.glb). Where the
+// folder is, it is one more resource folder -- in the jar, so in installDist and packageInstaller's MSI, and on
+// the tests' classpath; where it is not (CI, a fresh clone), every block naming one draws its stand-in
+// (a Monster's Licensed look -- see MonsterLook.licensedOr).
+if (file("licensed-assets").isDirectory) {
+    sourceSets["main"].resources.srcDir("licensed-assets")
+}
+
 dependencies {
     // The engine, from Maven Central. The BOM names the version once and the modules below take it, so
     // there is one number to change and no way to mix two of them. See settings.gradle.kts for building
