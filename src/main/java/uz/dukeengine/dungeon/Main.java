@@ -958,7 +958,7 @@ public final class Main {
         aimsFor(keys, settings, him);
         ringsFor(visuals, settings, him);
         // The modern way, said to every machine: his hero fights only when the left button tells him.
-        if (settings.scheme() == uz.dukeengine.dungeon.world.Controls.Scheme.MODERN) {
+        if (uz.dukeengine.dungeon.world.Controls.walksOnKeys(settings.scheme())) {
             java.util.function.Consumer<uz.dukeengine.game.DukeGame> tell = game -> game.postCommand(PartyOrders.of(
                     new uz.dukeengine.dungeon.ai.FightOnlyWhenTold(game.getLocalPlayerIndex(), true)));
             // Chosen on the menu, before the match runs: said as it starts; chosen in a running one: now.
@@ -1145,12 +1145,12 @@ public final class Main {
         // The file's default hero to begin with, and whoever is actually chosen
         // the moment he is -- see aimsFor, and whoToPlay, which calls it again.
         aimsFor(keys, settings, settings.run().defaultHero());
-        // The belt's keys, 1 to its size: a draught from that stack, as this game's order, named on the Settings
+        // The belt's keys, 1 to its size (action: 5 to 8, after the skills' digits): a draught from that stack, as this game's order, named on the Settings
         // screen's list of keys (E46; digits bind since E45's fix).
         var rules = settings.items().rules();
         for (int key = 1; key <= rules.beltSize(); key++) {
             int belt = key - 1;
-            keys.on((char) ('0' + key), rules.beltKeyWord().formatted(key), game -> game.postCommand(
+            keys.on(settings.beltKey(belt), rules.beltKeyWord().formatted(key), game -> game.postCommand(
                     PartyOrders.of(new uz.dukeengine.dungeon.run.Drink(game.getLocalPlayerIndex(), belt))));
         }
         // A fire built at his feet from his wood, as this game's order (docs/plan/2026-10-15-food-and-fire.md).
@@ -1210,7 +1210,7 @@ public final class Main {
      * ground, held to go on; the right one works (talk, chop, open); a skill's letter casts at the pointer -- or classic.
      */
     static uz.dukeengine.client3d.MouseScheme mouseOf(DungeonSettings settings) {
-        return settings.scheme() == uz.dukeengine.dungeon.world.Controls.Scheme.MODERN
+        return uz.dukeengine.dungeon.world.Controls.walksOnKeys(settings.scheme())
                 ? uz.dukeengine.client3d.MouseScheme.MODERN : uz.dukeengine.client3d.MouseScheme.CLASSIC;
     }
 
@@ -1604,10 +1604,10 @@ public final class Main {
         // Shoving the camera with the cursor, on top of the keys — see
         // Camera in data/world/world.duke.
         // Modern: the camera follows his hero, the arrows look away and it eases back (E77); classic: the free camera.
-        visuals.cameraFollow(settings.scheme() == uz.dukeengine.dungeon.world.Controls.Scheme.MODERN
+        visuals.cameraFollow(uz.dukeengine.dungeon.world.Controls.walksOnKeys(settings.scheme())
                 ? uz.dukeengine.client3d.CameraFollow.of(null) : uz.dukeengine.client3d.CameraFollow.NONE);
         // Not in the modern scheme, whose camera follows him.
-        visuals.edgeScroll(settings.scheme() == uz.dukeengine.dungeon.world.Controls.Scheme.MODERN ? EdgeScroll.NONE
+        visuals.edgeScroll(uz.dukeengine.dungeon.world.Controls.walksOnKeys(settings.scheme()) ? EdgeScroll.NONE
                 : new EdgeScroll(settings.camera().edgeMargin(), settings.camera().edgeSpeedPercent()));
 
         visuals.fog(new Fog(settings.fog().lineOfSight(),
