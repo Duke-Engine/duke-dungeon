@@ -88,4 +88,96 @@ class ModernControlsTest {
                 () -> DungeonSettings.parse(data.replace("\"W = E\", ", "").replace("Scheme = CLASSIC", "Scheme = MODERN")),
                 "a slot on a step's key needs a letter of its own where modern is the file's");
     }
+
+    private static uz.dukeengine.core.thing.GameObject heroOf(uz.dukeengine.game.DukeGame game) {
+        var name = DungeonSettings.load().run().defaultHero();
+        return game.getLogic().getObjects().stream().filter(thing -> thing.getTemplate().name().equals(name))
+                .findFirst().orElseThrow();
+    }
+
+    /** What the held keys send (E74/E75): MoveAlong for his hero, on the stream, so a replay walks him the same. */
+    @Test
+    void aDirectionChangeWalksHisHeroAndLettingGoStopsHimTheSameOnEveryRun() {
+        float[][] ends = new float[2][];
+        for (int run = 0; run < 2; run++) {
+            var session = Dungeon.newSession(7L, DungeonSettings.load());
+            var game = session.game();
+            game.runHeadless(2);
+            var hero = heroOf(game);
+            var from = hero.getPosition();
+            Main.walk(game, 0); // along +x
+            game.runHeadless(20);
+            Main.walk(game, uz.dukeengine.client3d.DirectionKeys.NONE);
+            game.runHeadless(2);
+            var stopped = hero.getPosition();
+            game.runHeadless(10);
+            assertTrue(Math.hypot(stopped.x() - from.x(), stopped.z() - from.z()) > 1.0,
+                    "he walked: " + from + " -> " + stopped);
+            assertEquals(stopped.x(), hero.getPosition().x(), 1e-4, "NONE stops him where he is");
+            assertEquals(stopped.z(), hero.getPosition().z(), 1e-4);
+            ends[run] = new float[] {hero.getPosition().x(), hero.getPosition().y(), hero.getPosition().z()};
+        }
+        assertEquals(java.util.Arrays.toString(ends[0]), java.util.Arrays.toString(ends[1]), "the same orders, the same walk");
+    }
+
+    @Test
+    void theCameraFollowsHimInModernAndIsFreeInClassic() {
+        assertEquals(uz.dukeengine.client3d.CameraFollow.of(null), Main.looks(played(Scheme.MODERN)).getCameraFollow());
+        assertEquals(uz.dukeengine.client3d.CameraFollow.NONE, Main.looks(played(Scheme.CLASSIC)).getCameraFollow());
+        assertEquals(uz.dukeengine.client3d.EdgeScroll.NONE, Main.looks(played(Scheme.MODERN)).getEdgeScroll());
+    }
+
+    /** The screens over the world hold his feet while they are up (E75): the client then sends NONE once. */
+    @Test
+    void theLaunchScreenAndHisOwnScreensHoldTheKeysAndTheWorldDoesNot() {
+        var settings = DungeonSettings.load();
+        var talk = new DialogueScreen(null, (uz.dukeengine.client3d.CanvasInput) event -> false, settings);
+        var screens = new PlayerScreens(talk, settings);
+        assertFalse(screens.holdsKeys(), "nothing open, nothing said: WASD walks");
+        screens.toggle(PlayerScreens.Open.SHEET);
+        assertTrue(screens.holdsKeys(), "the sheet is open");
+        screens.toggle(PlayerScreens.Open.SHEET);
+        assertFalse(screens.holdsKeys());
+
+        var launch = new LaunchScreen(canvas -> { }, screens, settings.splash(), settings.mainMenu(), () -> { },
+                cue -> { });
+        assertTrue(launch.holdsKeys(), "the splash is up");
+        for (float t = 0f; t < settings.splash().skipAfter() + 0.02f; t += 0.01f) {
+            launch.step(0.01f);
+        }
+        launch.skip();
+        launch.loaded(100);
+        for (float t = 0f; t < 3f; t += 0.01f) {
+            launch.step(0.01f);
+        }
+        assertEquals(LaunchScreen.Phase.DONE, launch.phase());
+        assertFalse(launch.holdsKeys(), "gone: the screens under it say");
+    }
+
+    /** A conversation and the cutscene after it hold his feet; once both are done they are his again. */
+    @Test
+    void aConversationAndACutsceneHoldTheKeys() {
+        var settings = DungeonSettings.load();
+        var session = Dungeon.newStageSession(uz.dukeengine.dungeon.stage.Stages.load("talk", settings), settings);
+        var game = session.game();
+        game.runHeadless(1);
+        var screen = new DialogueScreen(null, (uz.dukeengine.client3d.CanvasInput) event -> false, settings);
+        DialogueScreen.show(session);
+        assertFalse(screen.holdsKeys(), "nobody has talked yet");
+        var hero = heroOf(game);
+        var commander = game.getLogic().getObjects().stream()
+                .filter(thing -> thing.getTemplate().name().equals("Commander")).findFirst().orElseThrow();
+        hero.setPosition(new uz.dukeengine.core.math.Coord3D(commander.getPosition().x() + 12f,
+                commander.getPosition().y(), commander.getPosition().z()));
+        game.runHeadless(settings.story().dialogue().checkFrames() + 1);
+        screen.paint(new PlayerScreensTest.Drawn());
+        assertTrue(screen.holdsKeys(), "she is talking to him");
+        screen.take(new uz.dukeengine.client3d.CanvasInput.Key(uz.dukeengine.client3d.CanvasInput.SPACE, true, false));
+        screen.paint(new PlayerScreensTest.Drawn());
+        screen.take(new uz.dukeengine.client3d.CanvasInput.Key(uz.dukeengine.client3d.CanvasInput.ESCAPE, true, false));
+        screen.paint(new PlayerScreensTest.Drawn());
+        game.runHeadless(2);
+        assertTrue(session.run().inCutscene(), "the premise: the locket's cutscene");
+        assertTrue(screen.holdsKeys(), "a cutscene holds his feet");
+    }
 }

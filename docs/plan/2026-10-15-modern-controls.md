@@ -114,7 +114,15 @@ useScheme` and its validation; `Main.aimsFor`/`ringsFor` bind and ring each skil
 panning (`modernKeyMap`); no edge scroll in modern; the choice read at launch from the user's preferences
 (`Controls.remembered`, key `controls`) or `-Dlasthero.controls=modern`. `ModernControlsTest`. File default Klassik.
 
-**Game, phase 2 (after E74-E80)**:
+**Game, phase 2a (done, branch `wasd2`, engine E74/E75/E77 at c5f942f2)**: modern posts `MoveAlong` from
+`Hotkeys.onDirection` (`Main.walk`) and follows the hero (`CameraFollow.of(null)`, arrows look away); classic is
+unchanged. The launch screen, the player screens and a conversation or cutscene hold the keys (`holdsKeys`); a story
+that holds the hero is covered the way a click is today, on the client: the keys give `NONE` once and nothing more
+is sent. The bag is no opening window (it is on the screen all game), so it holds nothing. The file stays Klassik:
+without E78 there is no left-click attack (A, the classic attack key, is a step now) and without E79 no row to
+switch back, so modern is reachable only by `-Dlasthero.controls=modern` for playtests.
+
+**Game, phase 2 (after E76, E78-E80)**:
 - `Main`: post `MoveAlong` from E75's hook; LMB/RMB through E78; Space to the dodge; the camera into follow (E77);
   the Settings row (E79), its change saved to the preferences and applied at once (rebind the hotkeys, KeyMap,
   edge scroll, camera).
