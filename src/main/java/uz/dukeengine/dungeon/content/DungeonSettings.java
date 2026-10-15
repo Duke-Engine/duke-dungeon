@@ -129,6 +129,7 @@ public final class DungeonSettings {
     private uz.dukeengine.dungeon.story.Trade trade = uz.dukeengine.dungeon.story.Trade.DEFAULTS;
     private uz.dukeengine.dungeon.story.GoldBurst goldBurst = uz.dukeengine.dungeon.story.GoldBurst.DEFAULTS;
     private uz.dukeengine.dungeon.story.Medallion medallion = uz.dukeengine.dungeon.story.Medallion.DEFAULTS;
+    private uz.dukeengine.dungeon.story.Campaign campaign = uz.dukeengine.dungeon.story.Campaign.DEFAULTS;
 
     /** Every attribute, in file order — the order a hero's are held in and the panel draws them. */
     private final List<Attribute> attributes = new java.util.ArrayList<>();
@@ -257,6 +258,11 @@ public final class DungeonSettings {
     /** The queen's medallion and its passive: see {@code docs/plan/2026-10-09-medallion.md}. */
     public uz.dukeengine.dungeon.story.Medallion medallion() {
         return medallion;
+    }
+
+    /** The campaign a new game opens: see {@code docs/plan/2026-10-15-act1.md}. */
+    public uz.dukeengine.dungeon.story.Campaign campaign() {
+        return campaign;
     }
 
     /** Every moment the files give a look, in the order they give them. */
@@ -445,6 +451,7 @@ public final class DungeonSettings {
                 case uz.dukeengine.dungeon.story.Trade block -> trade = once(block, once);
                 case uz.dukeengine.dungeon.story.GoldBurst block -> goldBurst = once(block, once);
                 case uz.dukeengine.dungeon.story.Medallion block -> medallion = once(block, once);
+                case uz.dukeengine.dungeon.story.Campaign block -> campaign = once(block, once);
                 case uz.dukeengine.dungeon.world.SaveMenu block -> saveMenu = once(block, once);
                 case uz.dukeengine.dungeon.world.MainMenu block -> mainMenu = once(block, once);
                 case uz.dukeengine.dungeon.world.Screens block -> screens = once(block, once);
@@ -918,6 +925,17 @@ public final class DungeonSettings {
                     named + ": its Wisp " + medallion.wisp() + " is no Projectile");
             require(!medallion.cursedWord().isBlank() && sayable(medallion.cursedWord()),
                     named + ": CursedWord is a word, without ',' or '|'");
+        }
+        if (!campaign.word().isBlank()) {
+            // Its maps are checked as they are laid, as a MAP's are; its hero, things and descents here.
+            require(heroes.stream().anyMatch(hero -> hero.name().equals(campaign.hero())),
+                    "Campaign: its Hero " + campaign.hero() + " is no Hero block");
+            require(!campaign.joints().isEmpty(), "Campaign: it has no Joints, so a new game has nowhere to open");
+            campaign.descents().forEach(named -> require(named.firstDepth() >= 1 && !named.name().isBlank(),
+                    "Campaign: a Descent has a Name and a FirstDepth of 1 or more"));
+            campaign.joints().forEach(joint -> joint.items().forEach(item -> require(
+                    loot.stream().anyMatch(each -> each.id().equals(item)),
+                    "Campaign: the joint at " + joint.map() + " gives " + item + ", and no LootItem is called that")));
         }
         require(dialogue.checkFrames() >= 1, "Dialogue's CheckFrames is how often people are looked for: at least 1");
         require(dialogue.glowLook().isBlank()
