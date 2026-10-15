@@ -136,9 +136,12 @@ Hero
   ; as a man casting nothing, over and over.
   Idle = Idle_A
   ; He moves at 25, between the knight's walk at 21 and the rogue's run at 29.
-  ; Running_B is the slower of the two runs. ★ If he reads as skating, this is
-  ; the line and Walking_A is the other end of it.
+  ; Running_B is the slower of the two runs.
   Walk = Running_B
+  ; How far one play of it carries him, in units: the client plays it at the rate that
+  ; covers this at his speed. At its own pace it carried him 13.5 a play against his 25 a
+  ; second, and he slid. Measured off the clip by HeroClipFitTest.
+  WalkStride = 13.5
   ; The cast itself. The shot leaves at the start, exactly as the rogue's arrow
   ; leaves at the start of his release -- which is why neither of them has to fit
   ; inside ReloadFrames the way the knight's chop does.

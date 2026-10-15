@@ -160,8 +160,12 @@ Hero
   ; He moves at 45 against a monster's 24 -- a walk cycle at that speed reads as
   ; skating, so he runs.
   Walk = Running_A
+  ; How far one play of it carries her, in units, so the client paces it to her speed and
+  ; her feet stay where they land. Measured off the clip by HeroClipFitTest.
+  WalkStride = 28.5
   ; The loose, not the draw: the arrow leaves at the start of this clip, which is
-  ; the frame the simulation fires on. Ranged_Bow_Draw is the other half of the
+  ; the frame the simulation fires on. Cut to 0.79s by her exporter (CUT), inside her
+  ; 0.8s between shots, so no shot is cut short by the next. Ranged_Bow_Draw is the other half of the
   ; shot if that reads better -- one word here, and one name in CLIPS in her
   ; exporter, which is the list of what is retargeted onto her.
   Attack = Ranged_Bow_Release

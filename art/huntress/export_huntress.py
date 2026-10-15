@@ -88,10 +88,17 @@ CLIPS = {
     "Running_A": KAYKIT, "Death_A": KAYKIT,
     "Idle_Loop": UAL, "Hit_Chest": UAL, "Death01": UAL, "Roll": UAL,
     "Spell_Simple_Shoot": UAL,
+    # Work, for standing still at a fire or a bush (the food state): not named by any block yet -- the engine is
+    # to loop one while she works (E67). The knight has the same two under the same names.
+    "Interact": UAL, "Fixing_Kneeling": UAL,
 }
+# Frames a clip is cut to. The client plays her Attack from the frame the arrow leaves, once a shot, and she
+# shoots every ReloadFrames 24 = 0.8s: Ranged_Bow_Release looses on its first frames and has settled by its 19th,
+# so its last half second, which every next shot cut off, is dropped (HeroClipFitTest).
+CUT = {"Ranged_Bow_Release": 19}
 LIBRARIES = ["ranged.glb", "movement.glb", "general.glb"]
 # Made on the spot, but their hips wander: the drift from first frame to last is taken out.
-IN_PLACE = {"Idle_Loop", "Roll", "Spell_Simple_Shoot", "Running_A"}
+IN_PLACE = {"Idle_Loop", "Roll", "Spell_Simple_Shoot", "Running_A", "Interact", "Fixing_Kneeling"}
 
 # Hers <- theirs, a table a library. ALIGN: her bone is swung from her A-pose onto their T-pose
 # first, by the direction to the bone named; RIDE: it keeps her bone's rest relative to the one
@@ -768,6 +775,7 @@ def retarget(her, rigs, holder, grip):
         made = bpy.data.actions.new(clip)
         her.animation_data.action = made
         start, end = action.frame_range
+        end = min(end, start + CUT.get(clip, end))
         frames = [float(f) for f in range(int(start), int(math.floor(end)) + 1)]
         if end - frames[-1] > 1e-4:
             frames.append(end)
@@ -847,6 +855,13 @@ def write(rig, meshes):
     bpy.ops.export_scene.gltf(
         filepath=CLIPS_OUT, export_skins=False, export_animations=True, export_animation_mode="NLA_TRACKS",
         export_force_sampling=True, export_anim_slide_to_zero=True, **common)
+    preview = os.environ.get("HUNTRESS_PREVIEW")
+    if preview:  # her and her clips in one file, to look at in Blender; the game does not read it
+        select([rig] + meshes, rig)
+        bpy.ops.export_scene.gltf(
+            filepath=preview, export_materials="EXPORT", export_image_format="JPEG", export_skins=True,
+            export_influence_nb=4, export_animations=True, export_animation_mode="NLA_TRACKS",
+            export_force_sampling=True, export_anim_slide_to_zero=True, **common)
 
 
 def main():

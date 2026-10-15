@@ -2,7 +2,7 @@
 
     ./gradlew exportLange -PlangeSource=".../lange-half-elf-knight" \
         -PualSource=".../UAL1_Standard.glb" -PkaykitAnimations=".../Animations/gltf/Rig_Medium"
-    blender -b --factory-startup -P art/lange/export_lange.py -- <posing.fbx> <idle.fbx> <walk.fbx> \
+    blender -b --factory-startup -P art/lange/export_lange.py -- <posing.fbx> <idle.fbx> \
         <textures> <UAL1_Standard.glb> <KayKit Rig_Medium folder> <out folder>
 
 The download (Sketchfab, CC BY 4.0 -- see CREDITS.md) is three FBX files in
@@ -41,7 +41,8 @@ SIZE first. The game itself draws the base colour only (the client re-lights
 every model with plain lighting, see DukeRtsApp.dressModel); the rest is there
 for whatever else reads the file.
 
-THE CLIPS ARE THE GAME'S NAMES. Idle and Walk are his own, from their files.
+THE CLIPS ARE THE GAME'S NAMES. Idle is his own, from its file (his own walk
+is not used: it plants his feet at a quarter of his speed). Walk (a jog),
 Attack, Hurt, Death and his three casts (Cast_Wave, Cast_Charge, Cast_Pull) are
 borrowed from Quaternius' Universal Animation Library and KayKit's Character
 Animations (both CC0) and put onto his rig by retarget.py -- see BORROWED for
@@ -68,31 +69,43 @@ import eyes  # noqa: E402
 import retarget  # noqa: E402
 
 args = sys.argv[sys.argv.index("--") + 1:]
-if len(args) != 7:
-    raise SystemExit("usage: blender -b -P export_lange.py -- <posing.fbx> <idle.fbx> <walk.fbx> <textures> "
+if len(args) != 6:
+    raise SystemExit("usage: blender -b -P export_lange.py -- <posing.fbx> <idle.fbx> <textures> "
                      "<UAL1_Standard.glb> <KayKit Rig_Medium folder> <out>")
-POSING, IDLE, WALK, TEXTURES, UAL_FILE, KAYKIT_DIR, OUT = args
+POSING, IDLE, TEXTURES, UAL_FILE, KAYKIT_DIR, OUT = args
 
 # Pixels a side each set's pictures are written at.
 SIZE = {"clothes_leather": 1024, "hair_skin_steel": 1024, "weapons": 1024}
 FPS = 24
-# What he borrows: (his clip, which library, its file, its clip, mirrored, how much faster). Mirrored is a right-handed
-# swing made left-handed, for his sword hand. See retarget.py.
+# What he borrows: (his clip, which library, its file, its clip, mirrored, how much faster, seconds cut off its
+# start). Mirrored is a right-handed swing made left-handed, for his sword hand. See retarget.py.
 BORROWED = [
-    # A lunging one-handed slash, made left-handed; 1.45 times as fast so it runs 1.083s and is over
-    # before his next blow (ReloadFrames 34 = 1.133s, checked by DungeonMonsterArtTest).
-    ("Attack", "ual", None, "Sword_Attack", True, 1.45),
-    ("Hurt", "ual", None, "Hit_Chest", False, 1.0),
+    # His run. He moves 21 a second and stands 12 tall, so 3.1 m/s for a man 1.76 m high. His own download's walk
+    # plants its feet at 0.8 m/s and skated four times over; Quaternius' walk plants them at 1 m/s and his jog at
+    # 5, so this is the two half and half, both stretched to a second (24 frames, both start on the left foot):
+    # a long-striding run between them. The game paces it to his speed (WalkStride in units/knight.duke, measured
+    # by HeroClipFitTest), so whatever it measures his feet stay where they land.
+    ("Walk", "ual", None, ("Walk_Loop", "Jog_Fwd_Loop", 0.5, 24), False, 1.0, 0.0),
+    # A lunging one-handed slash, made left-handed. The client starts it on the frame the blow LANDS, so it
+    # is cut in at the top of its wind-up and the blade's fastest frame -- the impact -- comes a tenth of a
+    # second after the blow instead of three tenths. Faster too, so it is over before his next blow
+    # (ReloadFrames 34 = 1.133s, DungeonMonsterArtTest); the impact is checked by HeroClipFitTest.
+    ("Attack", "ual", None, "Sword_Attack", True, 1.3, 0.24),
+    ("Hurt", "ual", None, "Hit_Chest", False, 1.0, 0.0),
     # Onto his back, twice as fast: 1.208s.
-    ("Death", "ual", None, "Death01", False, 2.0),
+    ("Death", "ual", None, "Death01", False, 2.0, 0.0),
     # Q, the wave: the same slash at its own pace, the stronger for being slower.
-    ("Cast_Wave", "ual", None, "Sword_Attack", True, 1.0),
+    ("Cast_Wave", "ual", None, "Sword_Attack", True, 1.0, 0.0),
     # W, the charge: leaning in and driving, which is what the charge does to what it meets. KayKit's
     # Melee_Blocking was tried first: its chibi arms block with the upper arm straight out, which on a
     # man's proportions is a scarecrow, not a guard.
-    ("Cast_Charge", "ual", None, "Push_Loop", False, 1.0),
+    ("Cast_Charge", "ual", None, "Push_Loop", False, 1.0, 0.0),
     # R, the pull: one hand raised to call the room in.
-    ("Cast_Pull", "kaykit", "Rig_Medium_CombatRanged.glb", "Ranged_Magic_Raise", False, 1.0),
+    ("Cast_Pull", "kaykit", "Rig_Medium_CombatRanged.glb", "Ranged_Magic_Raise", False, 1.0, 0.0),
+    # Work, for standing still at a fire or a bush (the food state): not named by any block yet -- the engine is
+    # to loop one while he works (E67). Under their own names, as the Huntress has them, so one name serves both.
+    ("Interact", "ual", None, "Interact", False, 1.0, 0.0),
+    ("Fixing_Kneeling", "ual", None, "Fixing_Kneeling", False, 1.0, 0.0),
 ]
 SWORD_BONE = "sword"
 HAND = "L.forearm"  # the rig has no hand bone: the fingers start at the forearm's end
@@ -225,8 +238,7 @@ def borrow(path, name):
 
 
 idle = borrow(IDLE, "Idle")
-walk = borrow(WALK, "Walk")
-clips = [idle, walk]
+clips = [idle]
 # His fingers as his own idle closes them on the sword (and lets the other hand hang), for every borrowed clip.
 ad = arm.animation_data
 ad.action = idle
@@ -241,6 +253,14 @@ bpy.context.view_layer.update()
 target = retarget.Target(arm, fingers)
 
 
+def source_clip(by_name, clip):
+    """A clip of the library by name, or (first, second, weight, frames): a blend of two -- see retarget.Blend."""
+    if isinstance(clip, tuple):
+        first, second, weight, frames = clip
+        return retarget.Blend(by_name[first], by_name[second], weight, frames)
+    return by_name[clip]
+
+
 def import_gltf(path):
     before = {o.name for o in bpy.data.objects}
     actions_before = set(bpy.data.actions)
@@ -250,14 +270,25 @@ def import_gltf(path):
 
 
 TABLES = {"kaykit": retarget.KAYKIT, "ual": retarget.UAL}
-for path in sorted({(lib, file) for _, lib, file, _, _, _ in BORROWED}, key=str):
+# Clips whose sword is not steered by their hand but held as he holds it at rest, low and trailing: on the run,
+# Quaternius' fist stands a blade straight up, which from above is a pin, not a sword.
+SWORD_AT_REST = {"Walk"}
+
+
+def table_for(lib, clip):
+    table = TABLES[lib]
+    return {k: v for k, v in table.items() if k != "sword"} if clip in SWORD_AT_REST else table
+
+
+for path in sorted({(lib, file) for _, lib, file, _, _, _, _ in BORROWED}, key=str):
     lib, file = path
     source_objs, source_arm, source_actions = import_gltf(UAL_FILE if lib == "ual" else os.path.join(KAYKIT_DIR, file))
     by_name = {a.name: a for a in source_actions}
-    for name, l, f, clip, mirror, speed in BORROWED:
+    for name, l, f, clip, mirror, speed, start in BORROWED:
         if (l, f) == path:
-            clips.append(retarget.retarget(scene, target, source_arm, by_name[clip], TABLES[lib], mirror, name, FPS,
-                                           speed))
+            clips.append(retarget.retarget(scene, target, source_arm, source_clip(by_name, clip), table_for(lib, name),
+                                           mirror, name, FPS,
+                                           speed, start))
     remove(source_objs)
     for action in source_actions:
         bpy.data.actions.remove(action)
