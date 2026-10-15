@@ -6,11 +6,14 @@ Own-made (CC0). Built and exported headless with Blender, then a preview drawn f
 
 Writes <out dir>/knight_wave.glb (copy into src/main/resources/models/effects/) and knight_wave_top.png.
 
-The shape: 14 tip to tip -- the skill's HitWidth, the lane the game draws -- and bulging 4.5 the way it
-flies, which is +X (the client's forward; Facing = 0 in sword_wave.duke). It lies flat in the ground plane.
-Its picture is light on black, brightest at the leading edge and gone at the tips and the inner edge, and the
-material is marked unlit (KHR_materials_unlit) and ADDITIVE (extras.blend, read by the client's ModelBlends),
-so it glows over the floor rather than being lit by it.
+The shape: 24 tip to tip -- a third wider than the skill's HitWidth (18), the lane it cuts, its faded tips
+the rest -- and 8 deep, bulging the way it flies, which is +X (the client's forward; Facing = 0 in
+sword_wave.duke). Its leading edge is the model's origin, where the wave really is, and the band trails behind
+it: so as it leaves his sword its tips sweep back round him, a slash not a dot ahead. The band is 6.8 thick in
+the middle and tapers to nothing at the tips (the owner's playtest of 1.0.43: "bigger and thicker").
+It lies flat in the ground plane. Its picture is a fat white-hot blade with a soft pale-blue glow round it,
+gone at the tips, and the material is marked unlit (KHR_materials_unlit) and ADDITIVE (extras.blend, read by
+the client's ModelBlends), so it glows over the floor rather than being lit by it.
 """
 import json
 import math
@@ -25,8 +28,8 @@ OUT = sys.argv[sys.argv.index('--') + 1] if '--' in sys.argv else os.getcwd()
 os.makedirs(OUT, exist_ok=True)
 GLB = os.path.join(OUT, 'knight_wave.glb')
 
-HALF_SPAN, BULGE, INNER = 7.0, 4.5, 0.4  # inner edge bulges INNER of the outer: the moon's hollow
-SEGMENTS = 32
+HALF_SPAN, BULGE, INNER = 12.0, 8.0, 0.15  # inner edge bulges INNER of the outer: the moon's hollow
+SEGMENTS = 96
 
 bpy.ops.wm.read_factory_settings(use_empty=True)
 
@@ -36,8 +39,8 @@ for k in range(SEGMENTS + 1):
     t = -1.0 + 2.0 * k / SEGMENTS
     bow = 1.0 - t * t
     y = HALF_SPAN * t
-    outer = BULGE * bow - BULGE / 2
-    inner = BULGE * INNER * bow - BULGE / 2
+    outer = BULGE * bow - BULGE  # the apex at the origin: the leading edge is where the wave is
+    inner = BULGE * INNER * bow - BULGE
     verts += [(inner, y, 0.0), (outer, y, 0.0)]
 for k in range(SEGMENTS):
     i0, o0, i1, o1 = 2 * k, 2 * k + 1, 2 * k + 2, 2 * k + 3
@@ -60,13 +63,13 @@ u = (np.arange(W) + 0.5) / W
 v = (np.arange(H) + 0.5) / H
 U, V = np.meshgrid(u, v)
 along = np.abs(V * 2 - 1)
-tips = np.clip(1 - along ** 2.5, 0, 1)                          # gone at the tips
-body = np.clip(U, 0, 1) ** 1.2                                   # faint at the hollow, strong forward
-edge = np.exp(-((U - 0.86) / 0.09) ** 2)                         # the white-hot leading edge
-front = 1 - np.clip((U - 0.93) / 0.07, 0, 1)                     # soft at the very rim
-glow = np.clip((0.55 * body + 0.9 * edge) * front * tips, 0, 1)
-core = np.clip(edge * front * tips, 0, 1)
-rgb = np.stack([glow * 0.80 + core * 0.20, glow * 0.88 + core * 0.12, glow], axis=-1)
+tips = np.clip(1 - along ** 3, 0, 1)                            # gone at the tips
+halo = np.exp(-((U - 0.6) / 0.34) ** 2)                          # the soft glow round the blade
+blade = np.exp(-((U - 0.66) / 0.17) ** 2)                        # the fat white-hot blade itself
+fade = np.clip(U / 0.12, 0, 1) * np.clip((1 - U) / 0.1, 0, 1)    # soft at the hollow and the rim
+glow = np.clip((0.7 * halo + 1.2 * blade) * fade * tips, 0, 1)
+core = np.clip(1.4 * blade * fade * tips, 0, 1)
+rgb = np.stack([glow * 0.72 + core * 0.28, glow * 0.84 + core * 0.16, glow], axis=-1)
 rgba = np.concatenate([np.clip(rgb, 0, 1), glow[..., None]], axis=-1).astype(np.float32)
 image = bpy.data.images.new('knight_wave', W, H, alpha=True)
 image.pixels.foreach_set(rgba.ravel())
@@ -141,7 +144,7 @@ floor.data.materials.append(stone)
 scene.collection.objects.link(floor)
 cam = bpy.data.objects.new('cam', bpy.data.cameras.new('cam'))
 scene.collection.objects.link(cam)
-cam.location = (-14, 0, 24)  # behind and above, the way it is thrown away from the knight
+cam.location = (-28, 0, 42)  # behind and above, the way it is thrown away from the knight
 cam.rotation_euler = (math.radians(30), 0, math.radians(-90))
 scene.camera = cam
 scene.render.filepath = os.path.join(OUT, 'knight_wave_top.png')

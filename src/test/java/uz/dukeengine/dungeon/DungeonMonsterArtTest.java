@@ -387,6 +387,19 @@ class DungeonMonsterArtTest {
     }
 
     /**
+     * Nor does a hero. The client plays a flinch over whatever he is doing -- his swing and his casts too -- so
+     * in a crowd every blow taken cut his own short: the owner's playtest of 1.0.43, "the enemy's health goes
+     * down but the hero is stuck trembling". Until the client can hold a flinch for a blow (engine request E71),
+     * no hero names one, in his block or in the set he moves by.
+     */
+    @Test
+    void noHeroFlinchesOverHisOwnBlows() {
+        for (var hero : SETTINGS.heroes()) {
+            assertNull(hero.hurt(), hero.name() + " flinches over his own swing again -- see units/knight.duke");
+        }
+    }
+
+    /**
      * Everything down here has something to play as it falls.
      *
      * <p>A body that blinks out of existence the instant it dies reads as a bug
@@ -1085,8 +1098,8 @@ class DungeonMonsterArtTest {
     @Test
     void everyClipTheHeroAsksForIsInOneOfHisLibraries() {
         var hero = hero();
-        assertEquals(5, hero.clips().size(),
-                "idle, walk, attack, hurt and death — he was left short of " + hero.clips());
+        assertEquals(4, hero.clips().size(), // no hurt: see noHeroFlinchesOverHisOwnBlows
+                "idle, walk, attack and death — he was left short of " + hero.clips());
         for (var clip : hero.clips()) {
             assertTrue(inOneOfHisLibraries(clip),
                     clip + " is asked for but is in none of " + hero.animations());

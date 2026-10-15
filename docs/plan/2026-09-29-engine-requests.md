@@ -79,6 +79,7 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E68 | health over time as a buff the skill book reads (as `MANA_AURA` is for mana), with its picture on the HUD | landed, 7b8e8069 on `e66-68-food-fire`; `Belt.digest` is gone, the buff row shows a meal by the Food block's `Taom` skill and `Jon/s`; fires crackle by the placed loop `Duke3D.loopAt` |
 | E69 | a melee blow struck at its swing's impact: the attack clip started a lead before the blow lands (an inline `PreAttackFrames`, the clip played from the wind-up) | landed, 7fda6418 on the engine's branch `e69-70-attack-clips`; the knight's whole slash is back, `PreAttackFrames = 9` (its blade's fastest frame, 0.3s) with `ReloadFrames` 34 -> 25 so blows stay 34 frames apart (`HeroClipFitTest`) |
 | E70 | a blow struck on the move drawn on the upper body only, the legs keeping the paced walk | landed, 7fda6418 on `e69-70-attack-clips`; `UpperBody` on the three heroes (`spine`, `QuickRigCharacter_Spine_012`, `spine`); monsters not yet |
+| E71 | a flinch that never cuts short a blow or a cast: the hurt clip played only when the unit is not mid-attack, mid-gesture or moving, at most once per a look-set interval, optionally only on a major/critical blow | asked 2026-10-15; until then the heroes name no `Hurt` (`DungeonMonsterArtTest.noHeroFlinchesOverHisOwnBlows`) |
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
 game builds against the local engine. E12–E15 reached it together at 668045f0 (their pull requests merged as
@@ -1416,3 +1417,17 @@ joints follow the attack. The game then names `UpperBody = spine` for the knight
 
 **E66-E68 landed** as 7b8e8069 on the engine's branch `e66-68-food-fire`, with a placed sound loop beside them (`Duke3D.loopAt`/`stopLoopAt`). The game (branch `food2`): a click on the ground under a tree of the open world's scenery answers `Chop` (`DukeGame.groundOrder`, `GameLogic.sceneryNear` within 8 units, ten tree models in the Food block's Gathers, on `SceneryMaps = [world]` only, which is streamed in chunks), the tree is felled with `removeScenery`, a stump stands until `restoreScenery` grows it back, and `SaveGame.Felled` carries the felled ones (a load fells them again and starts their growing over); the game's own `ChoppableTree` is gone. Work loops `GameObject.busy` with the Food block's `Clips`; `Belt.digest` is gone and the book heals by the meal's `HEAL` buff, shown by the Food block's `Taom` skill; every fire seen crackles (`Soundscape.firesHeard`, the `fire.crackle` cue, PagDev's CC0 loop). Tests: `FoodTest.choppingATreeOfTheWorldGivesWoodFellsItAndTheSaveKeepsItFelled`, `aBlowTakenCallsTheWorkOffAndNothingIsSpent` (the clip ends), `BuffScreenTest.aMealIsShownByItsOwnPictureAndWord`.
 **E69 and E70 landed** as 7fda6418 on the engine's branch `e69-70-attack-clips`. E69: `WeaponUpdate.Data.preAttackFrames` inline, `WeaponWoundUp` starts the attack clip; the knight's Attack is Sword_Attack whole at 1.45x (1.083s), his `PreAttackFrames = 9` and `ReloadFrames = 25` (34 between blows as before); the Huntress and the mage loose on their clips' first frames and wind up 0. E70: `Drawn.upperBody`; the knight, the Huntress and the mage name their spine joint (`UpperBody`), checked by `HeroClipFitTest.everyHerosUpperBodyIsAJointOfHis`.
+
+## E71 — A flinch that never cuts short a blow or a cast (2026-10-15, small)
+
+The owner's playtest of 1.0.43: "the flinch-back covers the attack: fighting many enemies, the enemy's health goes
+down but the hero is stuck trembling from the incoming blows". `DukeRtsApp.flinch` calls `playOnce(hurtAnim)` on
+every drop in health, and `playOnce` refuses only while a gesture (`gestureUntil`) runs, so a flinch replaces a
+swing in progress (and, on the move, the E70 upper-body swing too) and sets `actionUntil` so the next blow starts
+late. Asked: a unit's look may say when it flinches -- `FlinchWhen = IDLE` (never over its own attack clip, its
+gesture or while it moves; `actionUntil` from an attack holds the flinch off rather than the other way round),
+`FlinchEvery` seconds (no second flinch within it; 1.5s for the heroes) and `FlinchOn = MAJOR` (only an `ObjectHurt`
+that is critical or at least the look's hit-feel `majorAt`). Defaults as today. Done when a test hurts a unit
+mid-swing and its attack clip runs to its end, and hurts a standing one twice in 0.5s and it flinches once.
+Then the game names `Hurt` again for the knight (`Hurt`), the Huntress (`Hit_Chest`) and the mage (`Hit_A`) with
+`FlinchWhen = IDLE`, `FlinchEvery = 1.5`, `FlinchOn = MAJOR`, and drops `noHeroFlinchesOverHisOwnBlows`.

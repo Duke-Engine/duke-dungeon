@@ -13,9 +13,10 @@ Projectile
   ]
 
 
-; Its body is a model: a flat half-moon of white steel, 14 tip to tip -- the skill's
-; HitWidth, the lane the game draws -- lying just off the floor and turned the way it
-; flies as every arrow is (its bulge is the model's +X, so Facing 0). Unlit and added
+; Its body is a model: a fat half-moon of white light, 24 tip to tip and 6.8 thick in
+; the middle -- the skill's HitWidth (18) and its faded tips -- lying just off the floor
+; and turned the way it flies as every arrow is (its bulge is the model's +X, so Facing
+; 0). Its leading edge is where the wave is; the band trails behind it. Unlit and added
 ; to the floor, so it glows. Made for this, CC0: art/effects/knight_wave.py.
 ;
 ; ★ Why a model and not a layer of the effect (the owner's playtest of 1.0.39: "a plain
