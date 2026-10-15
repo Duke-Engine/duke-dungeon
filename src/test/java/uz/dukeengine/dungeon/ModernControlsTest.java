@@ -20,6 +20,11 @@ import uz.dukeengine.dungeon.world.Controls.Scheme;
  */
 class ModernControlsTest {
 
+    /** The shipped settings played the classic way. */
+    static DungeonSettings classic() {
+        return played(Scheme.CLASSIC);
+    }
+
     private static DungeonSettings played(Scheme scheme) {
         var settings = DungeonSettings.load();
         settings.useScheme(scheme);
@@ -27,11 +32,12 @@ class ModernControlsTest {
     }
 
     @Test
-    void theFileIsClassicUntilTheEngineWalksHimAndTheMigrationIsQErf() {
+    void theFileIsModernAndTheMigrationIsQErf() {
         var shipped = DungeonSettings.load();
-        assertEquals(Scheme.CLASSIC, shipped.scheme(), "modern waits for E74-E80");
+        assertEquals(Scheme.MODERN, shipped.scheme(), "the owner's default for a new player, since E74-E80");
         assertEquals(Map.of('Q', 'Q', 'W', 'E', 'E', 'R', 'R', 'F'), shipped.controls().modernKeys());
-        assertEquals('W', shipped.letterOf('W'), "classic presses a skill on its own key");
+        assertEquals('E', shipped.letterOf('W'));
+        assertEquals('W', classic().letterOf('W'), "classic presses a skill on its own key");
     }
 
     /** Every hero's four, pressed on the modern letters, each asking for what its own key asked for in classic. */
@@ -179,5 +185,118 @@ class ModernControlsTest {
         game.runHeadless(2);
         assertTrue(session.run().inCutscene(), "the premise: the locket's cutscene");
         assertTrue(screen.holdsKeys(), "a cutscene holds his feet");
+    }
+
+    @Test
+    void theMouseIsModernInTheModernSchemeAndClassicInTheClassic() {
+        assertEquals(uz.dukeengine.client3d.MouseScheme.MODERN, Main.mouseOf(played(Scheme.MODERN)));
+        assertEquals(uz.dukeengine.client3d.MouseScheme.CLASSIC, Main.mouseOf(classic()));
+        assertEquals(60f, uz.dukeengine.client3d.MouseScheme.MODERN.lockReach(), "the spec's lock-on reach");
+        assertTrue(uz.dukeengine.client3d.MouseScheme.MODERN.quickCast());
+    }
+
+    /** E76: a swing at the ground strikes the one enemy nearest the knight's front within 120 degrees. */
+    @Test
+    void theKnightSwingsInA120DegreeArc() {
+        var game = Dungeon.world("""
+                .....
+                .....
+                .....
+                """, DungeonSettings.load()).game();
+        game.runHeadless(1);
+        for (var module : game.getLogic().getThingFactory().findTemplate("Knight").modules()) {
+            if (module instanceof uz.dukeengine.combat.module.WeaponUpdate.Data weapon) {
+                assertEquals(120f, weapon.swingArcDegrees());
+                return;
+            }
+        }
+        throw new AssertionError("the knight carries no weapon");
+    }
+
+    /** Every hero has his dodge: the spec's numbers, no slot of his four, nor on his bar's keys. */
+    @Test
+    void everyHeroHasHisDodgeOffHisFourAtTheSpecsNumbers() {
+        var settings = DungeonSettings.load();
+        for (var hero : settings.heroes()) {
+            var dodges = settings.bookFor(hero.name()).stream()
+                    .filter(skill -> skill.effect() == uz.dukeengine.rpg.skill.SkillEffect.DODGE).toList();
+            assertEquals(1, dodges.size(), hero.name() + " rolls on Space");
+            var dodge = dodges.getFirst();
+            assertEquals(16f, dodge.distance());
+            assertEquals(9, dodge.durationFrames());
+            assertEquals(7, dodge.tickFrames());
+            assertEquals(75, dodge.cooldownFrames());
+            assertEquals(0, dodge.manaCost());
+            assertFalse(settings.skillsFor(hero.name()).contains(dodge), "no slot of the four");
+            assertFalse(Main.controls(settings).claimedKeys().contains(dodge.key()), "pressed on Space, no letter");
+        }
+    }
+
+    /** Space, with nothing over the world holding the keys, rolls him his 16 and he is out of harm's way at once. */
+    @Test
+    void spaceRollsHimTheWayHeWalksAndAScreenOverTheWorldKeepsIt() {
+        var settings = DungeonSettings.load();
+        var session = Dungeon.newSession(7L, settings);
+        var game = session.game();
+        game.runHeadless(2);
+        var hero = heroOf(game);
+        var from = hero.getPosition();
+        var keys = Main.controls(settings);
+        assertEquals(Hotkeys.Aim.NOW, keys.aimOf(' '), "Space is a key of the game's, the dodge's");
+        assertFalse(Main.controls(classic()).claimedKeys().contains(' '), "classic: Space is the camera's");
+
+        uz.dukeengine.client3d.CanvasInput held = new uz.dukeengine.client3d.CanvasInput() {
+            @Override
+            public boolean take(Event event) {
+                return false;
+            }
+
+            @Override
+            public boolean holdsKeys() {
+                return true;
+            }
+        };
+        Main.over = held;
+        assertTrue(keys.pressNow(game, ' '));
+        game.runHeadless(3);
+        assertEquals(from.x(), hero.getPosition().x(), 1e-4, "a screen holds the keys: no roll");
+
+        Main.over = null;
+        assertTrue(keys.pressNow(game, ' '));
+        game.runHeadless(3);
+        assertTrue(hero.hasStatus(uz.dukeengine.core.thing.ObjectStatus.INVULNERABLE), "out of harm's way");
+        game.runHeadless(12);
+        assertFalse(hero.hasStatus(uz.dukeengine.core.thing.ObjectStatus.INVULNERABLE));
+        double rolled = Math.hypot(hero.getPosition().x() - from.x(), hero.getPosition().y() - from.y());
+        assertTrue(rolled > 10.0 && rolled < 16.5, "a roll of 16 or short of stone: " + rolled);
+    }
+
+    /** E79: his bar draws and presses each slot on the letter of the scheme, and modern has no order buttons. */
+    @Test
+    void theBarShowsTheLetterPressedAndModernHasNoOrderButtons() {
+        var game = Dungeon.newSession(7L, DungeonSettings.load()).game();
+        game.runHeadless(32);
+        var line = game.getSnapshot().status();
+        assertTrue(line.contains("|letter=W,E"), "W's skill on E: " + line);
+        assertTrue(line.contains("|letter=R,F"), line);
+        assertFalse(line.contains("|letter=V,"), "his dodge is no slot: " + line);
+        assertFalse(line.contains("|cmd="), "no order buttons in modern: " + line);
+
+        var classicGame = Dungeon.newSession(7L, classic()).game();
+        classicGame.runHeadless(32);
+        assertFalse(classicGame.getSnapshot().status().contains("|letter="), "classic: each on its own key");
+    }
+
+    /** E79's row: Boshqaruv, Zamonaviy first, the file's scheme its fallback. */
+    @Test
+    void theSettingsRowIsTheSchemeWithModernFirst() {
+        var settings = DungeonSettings.load();
+        var shell = FrontMenu.shell(settings, java.util.List.of(), java.util.List.of());
+        var row = shell.settingsRows().stream()
+                .filter(each -> each.key().equals(uz.dukeengine.dungeon.world.Controls.ROW)).findFirst().orElseThrow();
+        assertEquals(java.util.List.of("Zamonaviy (WASD)", "Klassik (sichqoncha)"), row.choices());
+        assertTrue(row.word().startsWith("Boshqaruv"));
+        assertEquals(0, row.fallback(), "a new player plays the modern way");
+        assertEquals(Scheme.CLASSIC, uz.dukeengine.dungeon.world.Controls.ofChoice(1));
     }
 }
