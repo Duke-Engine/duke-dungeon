@@ -1,7 +1,8 @@
 ; ---------------------------------------------------------------------------
 ; How the hero is played: the modern way (WASD walks him, the mouse aims, the left
-; button attacks, the right one works) or the classic Dota/WC3 way (the mouse does
-; everything) -- see docs/plan/2026-10-15-modern-controls.md.
+; button attacks, the right one works), the classic Dota/WC3 way (the mouse does
+; everything) or the action way (the mouse turns the camera, no pointer) -- see
+; docs/plan/2026-10-15-modern-controls.md and 2026-10-15-action-controls.md.
 ;
 ; A skill keeps its own Key (Q W E R in its hero's file) as its name everywhere:
 ; the cast, his ranks, the save, an item's SKILL_RANK:E. Only the letter pressed
@@ -29,4 +30,25 @@ Controls
 
   ; Space, modern: his roll (each hero's DODGE skill), on the keys page.
   DodgeWord = Chetlanish
+
+  ; The third way (docs/plan/2026-10-15-action-controls.md): no pointer in play,
+  ; the mouse turns the camera round him, the left button strikes ahead, the
+  ; skills on the digits, E works the nearest thing in front of him. Until the
+  ; engine's E90-E94 land it plays as Zamonaviy with these keys on top (the
+  ; skills on 1-4, the belt on 5-8, no E yet), and its word says so: drop the
+  ; bracket's "hozircha ... kabi" once they do.
+  ActionWord = "Jangovar (hozircha Zamonaviy kabi)"
+  ; Slot = the digit that presses it, action. Every slot a digit of its own,
+  ; the passive's too (its digit then does nothing, as R does in modern).
+  ActionSkillKeys = ["Q = 1", "W = 2", "E = 3", "R = 4"]
+  ; The belt's stacks in order, on the digits after the skills: one a stack
+  ; (ItemRules' BeltSize is 4).
+  ActionBeltKeys = "5678"
+  ; Work, talk or take the nearest thing in front of him (E94). Q R F are free.
+  InteractKey = E
+  ; The prompt over that thing, "[E] Gaplashish": each context order's word
+  ; (the cursor's name -- a person's Talk, data/world/food.duke's Gathers, a
+  ; thing on the floor's PickUp, the gate's ToTheGate), then what it says.
+  InteractOrders = [Talk, Chop, Harvest, Fill, Cook, PickUp, ToTheGate]
+  InteractWords = ["Gaplashish", "Kesish", "Terish", "Suv olish", "Pishirish", "Olish", "Darvozaga"]
 End
