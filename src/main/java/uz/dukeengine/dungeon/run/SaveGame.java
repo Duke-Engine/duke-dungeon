@@ -73,6 +73,19 @@ public record SaveGame(long seed, String stage, int depth, String hero, int expe
      */
     public static final int VERSION = 2;
 
+    /**
+     * The highest level a thing is read back at. Alike things join into one of the next level, so a level is a power of
+     * what was found: none comes near this. A save past it was written by a hand or a broken disk, and its level would
+     * be drawn as that many marks (the bag names a thing {@code Boots III}).
+     */
+    static final int MOST_JOINED = 30;
+
+    /**
+     * The most a thing is read back worth, either way, figure or extra: far past what any is found at, and low enough
+     * that a bag full of them still adds up, in hundredths, inside an int (the hero's figures are summed so).
+     */
+    static final int MOST_WORTH = 1_000_000;
+
     public record Rank(char key, int rank) {
     }
 
@@ -275,6 +288,9 @@ public record SaveGame(long seed, String stage, int depth, String hero, int expe
                     throw new IllegalArgumentException("a skill key is one letter: " + keys.get(at));
                 }
                 ranks.add(new Rank(keys.get(at).charAt(0), Integer.parseInt(levels.get(at))));
+                if (ranks.getLast().rank() < 0) {
+                    throw new IllegalArgumentException("a rank below nothing: " + levels.get(at));
+                }
             }
             var bag = new ArrayList<Item>();
             var going = new ArrayList<uz.dukeengine.dungeon.story.QuestLog.Active>();
@@ -282,20 +298,21 @@ public record SaveGame(long seed, String stage, int depth, String hero, int expe
             for (var item : save.blocks()) {
                 if (item.word().equals("Waiting")) {
                     waiting.add(new uz.dukeengine.dungeon.story.Script.Waiting(word(item, "Trigger"),
-                            number(item, "Frames")));
+                            counted(item, "Frames")));
                     continue;
                 }
                 if (item.word().equals("Quest")) {
                     going.add(new uz.dukeengine.dungeon.story.QuestLog.Active(word(item, "Name"),
-                            number(item, "Step"), number(item, "Count"), 0));
+                            counted(item, "Step"), counted(item, "Count"), 0));
                     continue;
                 }
                 if (!item.word().equals("Item")) {
                     throw new IllegalArgumentException("an unknown block: " + item.word());
                 }
                 // Version 1's slots were all acting ones, which a bag that wears things numbers otherwise.
-                bag.add(new Item(version == 1 ? -1 : number(item, "Slot"), word(item, "Id"), number(item, "Level"),
-                        number(item, "Value"), number(item, "Extra")));
+                bag.add(new Item(version == 1 ? -1 : counted(item, "Slot"), word(item, "Id"),
+                        within(item, "Level", 1, MOST_JOINED), within(item, "Value", -MOST_WORTH, MOST_WORTH),
+                        within(item, "Extra", -MOST_WORTH, MOST_WORTH)));
             }
             var quests = field(save, "Quests") == null ? null
                     : new uz.dukeengine.dungeon.story.QuestLog.State(going, items(save, "Finished"),
@@ -305,9 +322,9 @@ public record SaveGame(long seed, String stage, int depth, String hero, int expe
                             items(save, "Occupied"));
             var stage = field(save, "Stage");
             return new SaveGame(Long.parseLong(word(save, "Seed")), stage == null ? null : text(stage, "Stage"),
-                    number(save, "Depth"), word(save, "Hero"), number(save, "Experience"), ranks, bag, quests,
-                    script, field(save, "Gold") == null ? 0 : number(save, "Gold"),
-                    field(save, "Souls") == null ? 0 : number(save, "Souls"),
+                    within(save, "Depth", 1, Integer.MAX_VALUE), word(save, "Hero"), counted(save, "Experience"),
+                    ranks, bag, quests, script, field(save, "Gold") == null ? 0 : counted(save, "Gold"),
+                    field(save, "Souls") == null ? 0 : counted(save, "Souls"),
                     field(save, "GivenTo") == null ? "" : word(save, "GivenTo"),
                     field(save, "Places") == null ? List.of() : items(save, "Places"));
         } catch (RuntimeException e) {
@@ -336,6 +353,19 @@ public record SaveGame(long seed, String stage, int depth, String hero, int expe
 
     private static int number(Block block, String key) {
         return Integer.parseInt(word(block, key));
+    }
+
+    /** A number no game writes below 0: a count, a slot, a frame. */
+    private static int counted(Block block, String key) {
+        return within(block, key, 0, Integer.MAX_VALUE);
+    }
+
+    private static int within(Block block, String key, int least, int most) {
+        int number = number(block, key);
+        if (number < least || number > most) {
+            throw new IllegalArgumentException(key + " is " + number + ", and a game writes " + least + " to " + most);
+        }
+        return number;
     }
 
     private static List<String> items(Block block, String key) {

@@ -260,9 +260,18 @@ public final class DungeonSettings {
 
     /** People, their talk and the quests: see {@code docs/plan/2026-10-08-dialogue-and-quests.md}. */
     public uz.dukeengine.dungeon.story.Story story() {
-        return new uz.dukeengine.dungeon.story.Story(dialogue, speakers, conversations, npcs, quests, triggers,
-                cutscenes, trade, merchants, bosses);
+        // Made once and kept: the run asks it every frame (its people, bosses, quest marks), and the settings do not
+        // change once read. Unguarded on purpose -- two threads at worst each make an equal one.
+        var made = story;
+        if (made == null) {
+            made = new uz.dukeengine.dungeon.story.Story(dialogue, speakers, conversations, npcs, quests, triggers,
+                    cutscenes, trade, merchants, bosses);
+            story = made;
+        }
+        return made;
     }
+
+    private uz.dukeengine.dungeon.story.Story story;
 
     /** The blows that are felt, and what they play: see {@link HeavyBlow}. */
     public List<HeavyBlow> heavyBlows() {
@@ -474,6 +483,7 @@ public final class DungeonSettings {
      * skills are its own, written inside it, and its framing is its own face.
      */
     private void read(List<Record> records) {
+        story = null; // a block read after it was asked for makes another
         var once = new java.util.HashSet<Class<?>>();
         for (var record : records) {
             switch (record) {

@@ -621,7 +621,7 @@ public final class Main {
     }
 
     /** The saves this build can play: a hero it has, and floors it can lay — the rest are left out, and said so. */
-    private static List<Saves.Saved> loadable(List<Saves.Saved> saves, DungeonSettings settings) {
+    static List<Saves.Saved> loadable(List<Saves.Saved> saves, DungeonSettings settings) {
         var heroes = settings.heroes().stream().map(hero -> hero.name()).toList();
         var log = java.util.logging.Logger.getLogger(Main.class.getName());
         var playable = new java.util.ArrayList<Saves.Saved>();

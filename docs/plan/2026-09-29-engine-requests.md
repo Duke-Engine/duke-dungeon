@@ -68,6 +68,7 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E57 | the bag's sounds (`bag_open`, `bag_close`, `item_lift`, `item_drop`), and `walking.<Template>.<surface>` | landed, 7b7f76c1 on the engine's branch `e55-57-sounds`; the cues are in `ui.duke`, creatures' footsteps by ground in `sfx.duke`, the hero-only step code gone |
 | E58 | feel: a number that is bigger and another colour for a heavy or critical blow, a short hit-stop, and a camera knock from an effect list that obeys `ShakeScale` | landed, 62e569ef on the engine's branch `e58-feel`; the numbers, `HitStop` and the effect-list shakes are in `hud.duke` and `feel.duke` |
 | E59 | settings: an Ambience channel with its own volume, a Camera shake row (`ShakeScale` for the player), a Language row if there is more than one | requested (2026-10-15) |
+| E60 | closest-thing questions with no candidate list or sort; a weapon that does not copy its owner's module list every frame | asked 2026-10-15 (perf) |
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
 game builds against the local engine. E12–E15 reached it together at 668045f0 (their pull requests merged as
@@ -1245,3 +1246,19 @@ The game now knocks the camera only on big moments, through `hurt.<Template>.nor
 ## E59 — Settings: an Ambience volume, the camera-shake scale, and a language row (2026-10-15, small)
 
 The settings screen (`DukeRtsApp.showSettingsMenu`) has Volume, Effects, Voice and Music and no more. (1) The dungeon's ambience loop is on the `Effects` channel (`ambience.dungeon` in `sfx.duke`), so a player who finds the loop tiring can only mute every blow and footstep with it. Asked: a `SoundBank.Channel.AMBIENCE` the game can name in a Sound block, with its own knob (`volAmbience`, default 70) between Effects and Music, worded through `say("Ambience")`. (2) `Visuals.shakeScale` is set by the `HitFeel` block (`ShakeScale = 1` in `scene.duke`) and no player can change it; E58 added knocks on big moments, so a player who dislikes a moving camera has no way out. Asked: a "Camera shake" row (Full / Half / Off, saved as `shake`, applied through `Visuals.shakeScale` over the block's value), worded through `say`. (3) Asked, lowest priority: a "Language" row only if the game lists more than one word set (`Words` in `menu.duke` is one); the game is Uzbek-first and has no second language yet. Done when a test sets `volAmbience` to 0 and the loop's gain is 0 while effects still sound, and a test with `shake` Off sees no knock offset.
+
+## E60 — Closest-thing questions without a sort, and a weapon that does not copy its owner's modules (2026-10-15, small, performance)
+
+Profiled headless (JFR) on the open world and on `maps/deep` with the hero idle: most of a frame is the
+engine answering "the closest thing within R". Every `GameLogic.findClosest` / `findClosestInReach` goes through
+`PartitionManager.candidates` → `SpatialIndex.near`, which copies every bucket the box touches into a new `ArrayList`
+and **sorts it by `getEntered`** before the caller walks it. Each idle monster asks twice a frame (the game's
+`MonsterBrain.nearestEnemy` and `somethingNearbyHasStarted`, and `WeaponUpdate.acquireTarget` once more), so on
+`deep` (226 things) the top of the profile is `TimSort.binarySort`, `Comparator.comparingLong`, `ArrayList.addAll` and
+`SpatialIndex.near` -- over half the samples of a run (0.46 ms a frame on `deep`, 0.09 on the world). (1) Asked: `closestObject` and `closestWithinReach` need no
+order — the best is the least distance, ties to the lowest id, the same whatever order the candidates come in (the
+filters the game passes are pure) — so let them walk the buckets in place, no list and no sort; keep the sorted
+`near` for questions whose answer is a list. (2) `WeaponUpdate.heldByAModule` calls `GameObject.getModules()`, which
+is `List.copyOf(modules)`, for every armed thing every frame; asked: walk the modules without the copy (or a
+`hasModule(Class)` / `anyModule(Predicate)` on `GameObject`). Done when the closest-thing tests still pass thing for
+thing and a frame of `deep` with every monster idle allocates no candidate lists.
