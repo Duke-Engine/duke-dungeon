@@ -27,6 +27,8 @@ final class TradeScreen {
     private int open = -1;
     /** Where each row was drawn this frame, for a click: a ware by its place, or a bag slot. */
     private final List<Row> rows = new ArrayList<>();
+    /** What each row is, in the order of {@link #rows}: for its card. */
+    private final List<uz.dukeengine.rpg.item.Loot> things = new ArrayList<>();
 
     record Row(float x, float y, float width, float height, boolean ware, int index) {
         boolean holds(int px, int py) {
@@ -180,6 +182,7 @@ final class TradeScreen {
     /** The window, over everything but the dialogue box. */
     void paint(Canvas canvas, Dungeon.Session match) {
         rows.clear();
+        things.clear();
         int merchant = open(match);
         if (merchant < 0) {
             return;
@@ -221,7 +224,8 @@ final class TradeScreen {
             var item = item(ware.item());
             var said = (item == null ? ware.item() : item.name()) + " — " + ware.price() + " (" + ware.count() + ")";
             row(canvas, font, left + pad, y + i * line, column, line, item == null ? null : item.icon(), said,
-                    ware.count() > 0 ? bone : dim, true, i);
+                    ware.count() <= 0 ? dim : 0xFF000000 | settings.items().colourOf(item, look.boneColour()), true, i);
+            things.add(item);
         }
         for (int slot = 0; slot < bagRows; slot++) {
             var thing = bag.at(slot);
@@ -229,9 +233,11 @@ final class TradeScreen {
                 continue;
             }
             int worth = match.run().worth(thing);
-            var said = LootBag.nameOf(thing) + (worth < 0 ? "" : " — " + worth);
+            var stack = settings.items().potionOf(thing) == null ? "" : " x" + thing.value();
+            var said = LootBag.nameOf(thing) + stack + (worth < 0 ? "" : " — " + worth);
             row(canvas, font, left + pad * 2f + column, y + slot * line, column, line, thing.icon(), said,
-                    worth < 0 ? dim : bone, false, slot);
+                    worth < 0 ? dim : 0xFF000000 | settings.items().colourOf(thing, look.boneColour()), false, slot);
+            things.add(thing);
         }
         var hint = trade.closeHint();
         canvas.drawText(font, hint, left + wide - pad - canvas.measure(font, hint).width(), top + high - pad - line * 0.6f,
@@ -299,12 +305,17 @@ final class TradeScreen {
         return x >= minX && x <= maxX && y >= minY - 80 && y <= maxY + 80;
     }
 
+    /** What each row of {@link #rows} is: a ware or a thing of the bag. */
+    List<uz.dukeengine.rpg.item.Loot> things() {
+        return List.copyOf(things);
+    }
+
     List<Row> rows() {
         return List.copyOf(rows);
     }
 
     private uz.dukeengine.rpg.item.Loot item(String id) {
-        return settings.loot().stream().filter(loot -> loot.id().equals(id)).findFirst().orElse(null);
+        return settings.items().resolve(id);
     }
 
     private static String npcOf(Dungeon.Session match, int id) {

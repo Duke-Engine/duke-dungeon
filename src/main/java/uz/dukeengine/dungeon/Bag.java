@@ -88,6 +88,7 @@ final class Bag {
                 target.getPlayerIndex() == uz.dukeengine.core.player.PlayerList.NEUTRAL_INDEX
                         && story.npc(target.getTemplate().name()) != null ? PartyOrders.TALK : null);
         DialogueScreen.show(match);
+        ItemCard.watch(match.game());
     }
 
     /** The target frame over {@code match}: the run's pick, with what the buffs say is on it. */
@@ -116,6 +117,11 @@ final class Bag {
 
     /** What a thing gives, a line each: its figure, and its extra past the first level; nothing said for nothing. */
     static List<String> gives(Loot item, DungeonSettings settings) {
+        // A generated thing or a potion says its figure, affixes and story (ItemCard paints them in colour over it).
+        var made = settings.items().lines(item);
+        if (made != null) {
+            return made.stream().map(uz.dukeengine.dungeon.loot.Items.Line::text).toList();
+        }
         var said = new ArrayList<String>();
         var bonus = bonusOf(item, settings);
         if (!bonus.isEmpty()) {
