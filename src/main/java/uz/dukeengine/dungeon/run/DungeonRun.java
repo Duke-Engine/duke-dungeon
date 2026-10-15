@@ -1667,6 +1667,31 @@ public final class DungeonRun {
         return inCutscene;
     }
 
+    /** The cutscene playing, by its name, or null — from any thread: the music may be its own. */
+    public String cutsceneName() {
+        var playing = inCutscene ? cutscene : null;
+        return playing == null ? null : playing.name();
+    }
+
+    /** The map he plays by its name, or {@code descent} for the generated floors — as the Audio block names places. */
+    public String placeName() {
+        var name = getStageName();
+        return name == null ? "descent" : name;
+    }
+
+    /**
+     * The loop under where {@code hero} stands — the Audio block's Ambience, his zones before his map — kept going
+     * riding him while he stays, and let go once he leaves it: asked again every check, held for three of them.
+     */
+    private void ambience(uz.dukeengine.core.GameLogic logic, GameObject hero, List<String> zones) {
+        var places = new ArrayList<>(zones);
+        places.add(placeName());
+        var cue = uz.dukeengine.dungeon.world.Audio.firstOf(settings.audio().ambienceByPlace(), places);
+        if (cue != null) {
+            logic.sound(cue, hero, settings.story().dialogue().checkFrames() * 3);
+        }
+    }
+
     /** The run's triggers: what has fired, the flags, what waits. */
     public uz.dukeengine.dungeon.story.Script getScript() {
         return script;
@@ -1744,8 +1769,10 @@ public final class DungeonRun {
         var bag = seat.progress.getLoot();
         var items = settings.items();
         Belt.stack(bag, items);
-        if (Belt.drink(game.getLogic().findObject(seat.heroId), bag, items, belt)) {
+        var hero = game.getLogic().findObject(seat.heroId);
+        if (Belt.drink(hero, bag, items, belt)) {
             seat.beltReady = frame + items.rules().beltFrames();
+            game.getLogic().sound("drink", hero, 0); // heard, not decided: an event, out of the checksum
         }
     }
 
@@ -1854,14 +1881,17 @@ public final class DungeonRun {
             if (hero == null || hero.isEffectivelyDead()) {
                 continue;
             }
+            var his = new ArrayList<String>();
             for (var zone : zones()) {
                 if (zone.holds(hero.getPosition().x(), hero.getPosition().y(), cell)) {
                     quests.reached(zone.name(), seat.progress.getLoot());
+                    his.add(zone.name());
                     if (!standing.contains(zone.name())) {
                         standing.add(zone.name());
                     }
                 }
             }
+            ambience(logic, hero, his);
         }
         script.standing(standing);
         // A land freed opens the tower nearest it (the Travel block's Opens): found as if he had stood in it.
