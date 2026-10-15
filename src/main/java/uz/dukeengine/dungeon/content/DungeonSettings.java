@@ -102,6 +102,7 @@ public final class DungeonSettings {
     private uz.dukeengine.dungeon.world.Party party = uz.dukeengine.dungeon.world.Party.DEFAULTS;
     private uz.dukeengine.dungeon.world.SaveMenu saveMenu = uz.dukeengine.dungeon.world.SaveMenu.DEFAULTS;
     private uz.dukeengine.dungeon.world.MainMenu mainMenu = uz.dukeengine.dungeon.world.MainMenu.DEFAULTS;
+    private uz.dukeengine.dungeon.world.Screens screens = uz.dukeengine.dungeon.world.Screens.DEFAULTS;
     private UnitBar unitBar = UnitBar.DEFAULTS;
     private StatBlock statBlock = StatBlock.DEFAULTS;
     private SkillRing skillRing = SkillRing.DEFAULTS;
@@ -173,6 +174,11 @@ public final class DungeonSettings {
     /** The front menu's rows, the client's menu words, and the live scene behind them. */
     public uz.dukeengine.dungeon.world.MainMenu mainMenu() {
         return mainMenu;
+    }
+
+    /** The character sheet, the quest log and the world map: their keys and words. */
+    public uz.dukeengine.dungeon.world.Screens screens() {
+        return screens;
     }
 
     public Hud hud() {
@@ -441,6 +447,7 @@ public final class DungeonSettings {
                 case uz.dukeengine.dungeon.story.Medallion block -> medallion = once(block, once);
                 case uz.dukeengine.dungeon.world.SaveMenu block -> saveMenu = once(block, once);
                 case uz.dukeengine.dungeon.world.MainMenu block -> mainMenu = once(block, once);
+                case uz.dukeengine.dungeon.world.Screens block -> screens = once(block, once);
                 case UnitBar block -> unitBar = once(block, once);
                 case StatBlock block -> statBlock = once(block, once);
                 case SkillRing block -> skillRing = once(block, once);
@@ -821,6 +828,7 @@ public final class DungeonSettings {
         require(progression.xpStep() >= 0, "XpStep cannot make later levels cheaper");
         require(progression.armourPercentPerLevel() >= 0, "a level cannot take armour away");
         validateAttributes();
+        validateScreens();
         require(progression.minDamageTakenPercent() > 0 && progression.minDamageTakenPercent() <= 100,
                 "the damage floor must leave some way to lose");
         require(progression.levelUpBannerFrames() >= 0, "the level-up message cannot last negative frames");
@@ -1153,6 +1161,20 @@ public final class DungeonSettings {
                 "PrimaryWord and EachPointWord may not contain '|'");
         require(hud.buffIcon() >= 1f, "Hud: BuffIcon is how big each picture over a picked creature's bar is drawn, at"
                 + " least a pixel: " + hud.buffIcon());
+    }
+
+    /** The screens' keys: three letters, none of them a key something else is already on. */
+    private void validateScreens() {
+        var keys = screens.keys();
+        require(keys.stream().allMatch(key -> key >= 'A' && key <= 'Z') && keys.stream().distinct().count() == 3,
+                "Screens: SheetKey, QuestsKey and MapKey are three different letters: " + keys);
+        // The orders' four, the client's halt and pause, the tracker's fold, and every skill's.
+        var taken = new java.util.HashSet<Character>(List.of('A', 'S', 'D', 'F', 'H', 'P',
+                Character.toUpperCase(run.foldKey().charAt(0))));
+        skills.forEach(skill -> taken.add(Character.toUpperCase(skill.key())));
+        require(keys.stream().noneMatch(taken::contains), "Screens: a screen's key is already another's: " + keys);
+        screens.placeNames(); // every place is "Zone = said"
+        require(screens.mostTexels() >= 16, "Screens: MostTexels is at least 16");
     }
 
     /** Ground the generator can carve: every percentage a percentage, and no slope steep enough to be a cliff. */

@@ -5,13 +5,15 @@ import uz.dukeengine.dungeon.run.Tracker;
 
 /**
  * Something to do, step by step: its kind (the tracker's ◆ MAIN or ◇ SIDE), its title and its steps, done in order.
+ * Its description is what the quest log says of it under its steps, in the game's words.
  */
-public record Quest(String name, Tracker.Kind kind, String title, List<Step> steps) {
+public record Quest(String name, Tracker.Kind kind, String title, List<Step> steps, String description) {
 
-    public static final Quest DEFAULTS = new Quest("", Tracker.Kind.SIDE, "", List.of());
+    public static final Quest DEFAULTS = new Quest("", Tracker.Kind.SIDE, "", List.of(), "");
 
     public Quest {
         steps = steps == null ? List.of() : List.copyOf(steps);
+        description = description == null ? "" : description;
     }
 
     /** What a step waits for. */
