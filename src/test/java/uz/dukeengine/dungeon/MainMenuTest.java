@@ -20,6 +20,12 @@ class MainMenuTest {
     private static final DungeonSettings SETTINGS = DungeonSettings.load();
 
     @Test
+    void theGameIsCalledLastHeroFromTheMenuData() {
+        assertEquals("Last Hero", SETTINGS.mainMenu().title());
+        assertEquals("Last Hero", Dungeon.newSession(1L, SETTINGS).game().getTitle(), "the window title and the menu heading");
+    }
+
+    @Test
     void theRowsAreTheGamesWordsAtTheLeft() {
         var shell = FrontMenu.shell(SETTINGS, List.of(), List.of());
 

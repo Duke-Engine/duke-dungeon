@@ -157,7 +157,7 @@ public final class Dungeon {
         // No subtitle here: what this world is called depends on why it was built,
         // and only the caller knows — an endless descent, or one named stage. See
         // the two entry points below.
-        var game = DukeGame.create("Duke Dungeon")
+        var game = DukeGame.create(settings.mainMenu().title())
                 .customModules(factory -> {
                     // A brain is a module named by its class, like every other: the block word is the
                     // class, so the editor completes it, opens it and flags a typo. Which creature a

@@ -1,6 +1,8 @@
 ; Duke Dungeon — the front menu: its rows, every fixed word of the client's menus in the game's own,
 ; and the live scene behind them. See docs/plan/2026-09-30-main-menu.md.
 MainMenu
+  ; The game's name: window title and the heading over the menu. "Last Hero" is a stand-in until the owner names it.
+  Title = "Last Hero"
   ; The line under the title.
   Subtitle = "Har safar boshqa zindon"
   ; The front menu: Davom ettirish (with a save), Yangi o'yin, Yuklash (with saves), Mualliflar -- the game's own
