@@ -137,8 +137,8 @@ public final class StageCheck {
             standsOn(problems, grid, taken, npc.kind(), Placement.atCell(npc.x(), npc.y()));
         }
         for (var item : stage.story().items()) {
-            if (settings.loot().stream().noneMatch(loot -> loot.id().equals(item.kind()))) {
-                problems.add("there is no such thing as " + item.kind() + " — see the LootItem blocks");
+            if (!settings.items().knows(item.kind()) && !item.kind().equals(settings.items().rules().treasure())) {
+                problems.add("there is no such thing as " + item.kind() + " — see the LootItem, ItemBase, Unique and Potion blocks");
             }
             standsOn(problems, grid, taken, "the " + item.kind(), Placement.atCell(item.x(), item.y()));
         }

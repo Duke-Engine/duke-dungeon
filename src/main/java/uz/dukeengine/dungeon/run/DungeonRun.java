@@ -1018,11 +1018,17 @@ public final class DungeonRun {
                         person.getPosition().y()));
             }
         }
+        var items = settings.items();
         for (var placed : story.items()) {
-            var item = settings.loot().stream().filter(loot -> loot.id().equals(placed.kind())).findFirst();
-            item.ifPresent(loot -> uz.dukeengine.rpg.item.GroundItem.lay(logic,
-                    loot.liesAs(settings.lootDrops().template()), loot, ground(logic, placed),
-                    dungeonPlayer.getIndex()));
+            // One of the data's own, a base, a unique or a potion by name — or a treasure, rolled at the hero's level
+            // as a chest's drop (docs/plan/2026-10-15-loot.md).
+            var loot = placed.kind().equals(items.rules().treasure()) && items.active()
+                    ? items.drop(logic.random().nextInt(0, (1 << 30) - 1), heroLevel(), uz.dukeengine.dungeon.loot.Items.Source.CHEST)
+                    : items.resolve(placed.kind());
+            if (loot != null) {
+                uz.dukeengine.rpg.item.GroundItem.lay(logic, loot.liesAs(settings.lootDrops().template()), loot,
+                        ground(logic, placed), dungeonPlayer.getIndex());
+            }
         }
         for (var quest : story.quests()) {
             quests.start(quest);
@@ -1195,8 +1201,12 @@ public final class DungeonRun {
                     }
                 }
             }
-            case GIVE -> settings.loot().stream().filter(item -> item.id().equals(what)).findFirst()
-                    .ifPresent(item -> seats.getFirst().progress.getLoot().take(item, logic.getFrame(), 0));
+            case GIVE -> {
+                var given = settings.items().resolve(what);
+                if (given != null) {
+                    seats.getFirst().progress.getLoot().take(given, logic.getFrame(), 0);
+                }
+            }
             case TAKE -> {
                 for (var bag : bags()) {
                     for (int slot = 0; slot < bag.slots().size(); slot++) {
@@ -1359,6 +1369,30 @@ public final class DungeonRun {
     }
 
     /**
+     * Every BeamFrames, every magic, rare and epic thing lying on the floor stands in a column of its rarity's light
+     * (ItemRules' Beams): an event the client plays riding the thing, as a quest's glow is; nothing in the world reads it.
+     */
+    private void beams(DukeGame game) {
+        var items = settings.items();
+        var logic = game.getLogic();
+        if (items.rules().beams().isEmpty() || logic.getFrame() % items.rules().beamFrames() != 0) {
+            return;
+        }
+        for (var thing : logic.getObjects()) {
+            var lying = thing.findModule(uz.dukeengine.rpg.item.GroundItem.class);
+            var beam = lying == null || lying.getHolding() == null ? "" : items.beamOf(lying.getHolding());
+            if (!beam.isBlank()) {
+                logic.effect(beam, thing);
+            }
+        }
+    }
+
+    /** The level things are rolled at for the party: its first hero's. */
+    private int heroLevel() {
+        return Math.max(1, seats.getFirst().progress.getLevel());
+    }
+
+    /**
      * Every GlowFrames, the Dialogue block's GlowLook played on the target of every quest step that says Glow, for as
      * long as the step wants it: the thing lying that it asks for, the creature it asks to kill, the person it sends
      * him to. An event, which the client plays riding the thing; nothing in the world reads it.
@@ -1426,6 +1460,7 @@ public final class DungeonRun {
         tellTheRanks(game);
         medallion(game);
         glow(game);
+        beams(game);
         var logic = game.getLogic();
         quests.frame(logic.getFrame());
         int paid = quests.takeExperience();

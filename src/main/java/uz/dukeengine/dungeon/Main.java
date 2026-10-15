@@ -222,6 +222,13 @@ public final class Main {
         if (!dialogue.glowLook().isBlank()) {
             visuals.effectSeconds(dialogue.glowLook(), 2 * dialogue.glowFrames() / perSecond);
         }
+        // A thing's light on the ground, likewise: each beam lasts two beats. See DungeonRun.beams.
+        var itemRules = settings.items().rules();
+        for (var beam : itemRules.beams()) {
+            if (!beam.isBlank()) {
+                visuals.effectSeconds(beam, 2 * itemRules.beamFrames() / perSecond);
+            }
+        }
         // The medallion appearing in the hand it is given to glows this long.
         var medallion = settings.medallion();
         if (!medallion.givenLook().isBlank()) {
