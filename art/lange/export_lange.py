@@ -102,10 +102,12 @@ BORROWED = [
     ("Cast_Charge", "ual", None, "Push_Loop", False, 1.0, 0.0),
     # R, the pull: one hand raised to call the room in.
     ("Cast_Pull", "kaykit", "Rig_Medium_CombatRanged.glb", "Ranged_Magic_Raise", False, 1.0, 0.0),
-    # Work, for standing still at a fire or a bush (the food state): not named by any block yet -- the engine is
-    # to loop one while he works (E67). Under their own names, as the Huntress has them, so one name serves both.
-    ("Interact", "ual", None, "Interact", False, 1.0, 0.0),
-    ("Fixing_Kneeling", "ual", None, "Fixing_Kneeling", False, 1.0, 0.0),
+    # Work, for the food state: the engine loops one by its exact name while he works (E67, GameObject.busy). Chop
+    # is his slash at its own pace, Gather Quaternius' Interact, Cook Quaternius' Fixing_Kneeling: the Huntress has the same
+    # three names.
+    ("Chop", "ual", None, "Sword_Attack", True, 1.0, 0.0),
+    ("Gather", "ual", None, "Interact", False, 1.0, 0.0),
+    ("Cook", "ual", None, "Fixing_Kneeling", False, 1.0, 0.0),
 ]
 SWORD_BONE = "sword"
 HAND = "L.forearm"  # the rig has no hand bone: the fingers start at the forearm's end
