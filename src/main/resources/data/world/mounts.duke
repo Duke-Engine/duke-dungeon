@@ -75,19 +75,23 @@ Monster
   MinDepth = 99
   Weight = 0
   Colour = 0x8A5A30
-  Model = models/mounts/horse.glb
-  ; Its withers stand 10 under this scale, as under each riding look's.
-  ModelScale = 4.0
-  Facing = 90
-  Idle = Idle
-  Walk = Gallop
-  ; A gallop's stride, in world units: the clip paced to its speed.
-  WalkStride = 28
-  Death = Death
+  ; Its look is a MonsterLook block, the one that carries a WalkStride (its model ships, so it is the one drawn).
+  ; Its withers stand 10 under this ModelScale, as under each riding look's.
+  Licensed = MonsterLook
+    Model = models/mounts/horse.glb
+    ModelScale = 4.0
+    Facing = 90
+    Idle = Idle
+    Walk = Gallop
+    ; A gallop's stride, in world units: the clip paced to its speed.
+    WalkStride = 28
+    Death = Death
+  End
 End
 
 ; Each hero riding: drawn as one of these while he is on his horse (drawAs). The
-; same ModelScale as his own look, which is what each file was sized for.
+; same ModelScale as his own look, which is what each file was sized for; the
+; look a MonsterLook block, as the horse's, for its WalkStride.
 Monster
   Name = KnightRiding
   DisplayName = Garen
@@ -100,14 +104,17 @@ Monster
   MinDepth = 99
   Weight = 0
   Colour = 0x8A5A30
-  Model = models/mounts/knight_riding.glb
-  ModelScale = 6.82
-  Facing = 90
-  Idle = Idle
-  Walk = Gallop
-  WalkStride = 28
-  Hurt = Hurt
-  Death = Death
+  Licensed = MonsterLook
+    Model = models/mounts/knight_riding.glb
+    ModelScale = 6.82
+    Facing = 90
+    Idle = Idle
+    Walk = Gallop
+    ; A gallop's stride, in world units: the clip paced to its speed.
+    WalkStride = 28
+    Hurt = Hurt
+    Death = Death
+  End
 End
 
 Monster
@@ -122,14 +129,17 @@ Monster
   MinDepth = 99
   Weight = 0
   Colour = 0x8A5A30
-  Model = models/mounts/rogue_riding.glb
-  ModelScale = 5.50
-  Facing = 90
-  Idle = Idle
-  Walk = Gallop
-  WalkStride = 28
-  Hurt = Hurt
-  Death = Death
+  Licensed = MonsterLook
+    Model = models/mounts/rogue_riding.glb
+    ModelScale = 5.50
+    Facing = 90
+    Idle = Idle
+    Walk = Gallop
+    ; A gallop's stride, in world units: the clip paced to its speed.
+    WalkStride = 28
+    Hurt = Hurt
+    Death = Death
+  End
 End
 
 Monster
@@ -144,14 +154,17 @@ Monster
   MinDepth = 99
   Weight = 0
   Colour = 0x8A5A30
-  Model = models/mounts/mage_riding.glb
-  ModelScale = 4.52
-  Facing = 90
-  Idle = Idle
-  Walk = Gallop
-  WalkStride = 28
-  Hurt = Hurt
-  Death = Death
+  Licensed = MonsterLook
+    Model = models/mounts/mage_riding.glb
+    ModelScale = 4.52
+    Facing = 90
+    Idle = Idle
+    Walk = Gallop
+    ; A gallop's stride, in world units: the clip paced to its speed.
+    WalkStride = 28
+    Hurt = Hurt
+    Death = Death
+  End
 End
 
 ; The pointer over his horse: a right-click gets him up onto it.

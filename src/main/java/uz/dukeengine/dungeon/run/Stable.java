@@ -39,7 +39,7 @@ public final class Stable {
         /** The horse standing about, or null while he rides it or has not called it on this map. */
         ObjectId horse;
         boolean mounted;
-        /** Walked up to the horse to get on: -1 not started, else the frame he started getting up. */
+        /** Walked up to the horse to get on, and the frame he started getting up (-1 not yet). */
         boolean mounting;
         int startedAt = -1;
         Coord3D standing;
@@ -135,6 +135,10 @@ public final class Stable {
             return;
         }
         if (horse != null && (clicked != null || near(hero, horse))) {
+            var its = horse.getLocomotor();
+            if (its != null) {
+                its.stop(); // it stands to be got onto
+            }
             rider.mounting = true;
             rider.startedAt = -1;
             rider.orderedAt = logic.getFrame();
@@ -248,10 +252,21 @@ public final class Stable {
             return;
         }
         if (!rider.mounted) {
+            // The horse he called stops by him, wherever he has gone since.
+            var horse = rider.horse == null ? null : logic.findObject(rider.horse);
+            var its = horse == null ? null : horse.findModule(MoveUpdate.class);
+            if (its != null && its.isMoving()) {
+                float dx = hero.getPosition().x() - horse.getPosition().x();
+                float dy = hero.getPosition().y() - horse.getPosition().y();
+                if (dx * dx + dy * dy <= mount.reach() * mount.reach()) {
+                    its.stop();
+                }
+            }
             return;
         }
         var weapon = hero.findModule(WeaponUpdate.class);
-        if (struck || !mayRide(hero) || weapon != null && weapon.isTargetOrdered()) {
+        if (struck || !mayRide(hero) || weapon != null && (weapon.isTargetOrdered() || weapon.getToward() != null
+                || weapon.getGroundTarget() != null)) {
             dismount(logic, player, hero, progress);
             return;
         }

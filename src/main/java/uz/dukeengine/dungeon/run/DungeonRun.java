@@ -134,8 +134,8 @@ public final class DungeonRun {
     private List<Integer> felled = List.of();
     /** Each hero's horse, and whether he rides it. See {@link Stable}. */
     private final Stable stable;
-    /** Who rides onto the next map laid: a loaded save's rider, or whoever rode as the last map ended. */
-    private List<Integer> riding = List.of();
+    /** Whether a loaded save's hero rode: he is put back on his horse as its map is laid. */
+    private boolean ridingOnLoad;
     private final LootTable drops;
 
     /** The players' seats, the first player's first: a game alone has that one. */
@@ -390,7 +390,7 @@ public final class DungeonRun {
         visited.clear();
         visited.addAll(save.places()); // the places found, as the save left them
         felled = save.felled(); // and the trees felled, taken away again as the floor is laid
-        riding = save.mounted() ? List.of(seat.player.getIndex()) : List.of(); // and on his horse, if he rode
+        ridingOnLoad = save.mounted(); // and on his horse, if he rode
         visitedNow = List.copyOf(visited);
         if (save.quests() == null) {
             quests.reset();
@@ -669,7 +669,9 @@ public final class DungeonRun {
         camp.lay(game.getLogic(), floors.stageName(), floors.seed(), zones(), dungeonPlayer.getIndex(), heroLevel(),
                 paint == null ? List.of() : paint.scenery().stream().map(piece -> piece.model()).toList(),
                 loading ? felled : List.of());
-        stable.lay(floors.stageName(), zones(), loading ? riding : stable.riding());
+        // Whoever rode as the last map ended rides on, where he may; a loaded save's rider is back on his horse.
+        stable.lay(floors.stageName(), zones(), !loading ? stable.riding()
+                : ridingOnLoad ? List.of(seats.getFirst().player.getIndex()) : List.of());
         sky = null;
         holding = null;
         trails.clear();
