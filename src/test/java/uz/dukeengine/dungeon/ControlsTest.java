@@ -330,6 +330,10 @@ class ControlsTest {
                 var at = line.substring(line.lastIndexOf("|tipAt=" + skill.key() + ","));
                 at = at.substring(0, at.indexOf('|', 1) < 0 ? at.length() : at.indexOf('|', 1));
                 assertTrue(at.endsWith(SHIPPED.hud().passiveWord()), him + "'s card says " + at);
+                // The bar's slot is never "ready" or "cool": the engine draws it as a framed picture (E65) once learnt.
+                var slot = line.substring(line.lastIndexOf("|skill=" + skill.key() + ","));
+                slot = slot.substring(0, slot.indexOf('|', 1) < 0 ? slot.length() : slot.indexOf('|', 1));
+                assertTrue(slot.endsWith(",lock") || slot.endsWith(",passive"), him + "'s slot says " + slot);
             }
         }
         assertTrue(passives > 0, "no hero has a passive to show");
