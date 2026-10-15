@@ -8,13 +8,13 @@
 ;   * nothing else shakes the screen: an ordinary blow is a number and a flash.
 ;
 ; A HeavyBlow says that a creature of Template, struck for MajorAt or more (after its
-; armour), has been hit hard, and plays Look on it. Look is an EffectList, which is where
+; armour), has been hit hard, and plays Plays on it. Plays is an EffectList, which is where
 ; a camera knock lives; its strengths are the reference's six (SUBTLE, NORMAL, STRONG,
 ; SEVERE, CINE_EXTREME, CINE_INSANE) and several land at once, added up to a ceiling -- a
 ; wave through five skeletons is a rumble, not a quake, so the per-blow ones stay SUBTLE.
 ; No block for a template means no knock for it: fodder dies to a Q and nobody feels it.
 ;
-; A BigDeath plays Look where a Template fell.
+; A BigDeath plays Plays where a Template fell.
 ;
 ; The hero's thresholds are what a boss's slam or a brute's swing is worth; the beasts'
 ; are about a fifth of their health, so only the blow that is a real part of the fight.
@@ -59,76 +59,76 @@ End
 HeavyBlow
   Template = Knight
   MajorAt = 45
-  Look = HeroHit
+  Plays = HeroHit
 End
 HeavyBlow
   Template = Mage
   MajorAt = 35
-  Look = HeroHit
+  Plays = HeroHit
 End
 HeavyBlow
   Template = Rogue
   MajorAt = 35
-  Look = HeroHit
+  Plays = HeroHit
 End
 
 ; And the big things, when a blow on them is a big one.
 HeavyBlow
   Template = Brute
   MajorAt = 60
-  Look = HeavyHit
+  Plays = HeavyHit
 End
 HeavyBlow
   Template = Reaper
   MajorAt = 90
-  Look = HeavyHit
+  Plays = HeavyHit
 End
 HeavyBlow
   Template = Warden
   MajorAt = 110
-  Look = HeavyHit
+  Plays = HeavyHit
 End
 HeavyBlow
   Template = Champion
   MajorAt = 130
-  Look = HeavyHit
+  Plays = HeavyHit
 End
 HeavyBlow
   Template = QueenBoss
   MajorAt = 130
-  Look = HeavyHit
+  Plays = HeavyHit
 End
 
 ; Deaths worth feeling: the bodies that fall hard.
 BigDeath
   Template = Brute
-  Look = Thud
+  Plays = Thud
 End
 BigDeath
   Template = Reaper
-  Look = Thud
+  Plays = Thud
 End
 BigDeath
   Template = Warden
-  Look = Slam
+  Plays = Slam
 End
 BigDeath
   Template = Champion
-  Look = Slam
+  Plays = Slam
 End
 BigDeath
   Template = QueenBoss
-  Look = Slam
+  Plays = Slam
 End
 BigDeath
   Template = Knight
-  Look = Thud
+  Plays = Thud
 End
 BigDeath
   Template = Mage
-  Look = Thud
+  Plays = Thud
 End
 BigDeath
   Template = Rogue
-  Look = Thud
+  Plays = Thud
 End

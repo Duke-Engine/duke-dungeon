@@ -1093,12 +1093,12 @@ public final class DungeonSettings {
         require(goldBurst.goldPerBurst() > 0 && goldBurst.mostBursts() > 0 && goldBurst.floatSeconds() > 0f,
                 "GoldBurst: GoldPerBurst, MostBursts and FloatSeconds are more than nothing");
         for (var blow : heavyBlows) {
-            require(blow.majorAt() > 0f && effectLists.stream().anyMatch(list -> list.name().equals(blow.look())),
-                    "HeavyBlow " + blow.template() + ": MajorAt is more than nothing and Look names an EffectList");
+            require(blow.majorAt() > 0f && effectLists.stream().anyMatch(list -> list.name().equals(blow.plays())),
+                    "HeavyBlow " + blow.template() + ": MajorAt is more than nothing and Plays names an EffectList");
         }
         for (var death : bigDeaths) {
-            require(effectLists.stream().anyMatch(list -> list.name().equals(death.look())),
-                    "BigDeath " + death.template() + ": Look names no EffectList");
+            require(effectLists.stream().anyMatch(list -> list.name().equals(death.plays())),
+                    "BigDeath " + death.template() + ": Plays names no EffectList");
         }
         if (!medallion.item().isBlank()) {
             var named = "Medallion " + medallion.item();

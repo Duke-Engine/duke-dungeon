@@ -38,7 +38,6 @@ Game
     data/world/travel.duke,
     data/world/scene.duke,
     data/world/feel.duke,
-    data/world/knight_knocks.duke,
     data/world/themes/dungeon.duke,
     data/world/themes/forest.duke,
     data/world/themes/pinewood.duke,
@@ -132,8 +131,8 @@ Game
     kit/data/effects/strike/shot.duke,
     kit/data/effects/strike/sprint.duke,
     kit/data/effects/strike/volley.duke,
-    kit/data/effects/strike/charge.duke,
-    kit/data/effects/strike/whirlwind.duke,
+    ; The knight's W and R: the kit's Charge and Whirlwind with a harder knock (see the file).
+    data/world/knight_knocks.duke,
     kit/data/effects/aura/focus.duke,
     kit/data/effects/aura/ember_eyes.duke,
     kit/data/effects/moments/arrival.duke,

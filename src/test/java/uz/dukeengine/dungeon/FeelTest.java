@@ -38,8 +38,8 @@ class FeelTest {
     void everyFeltBlowAndDeathPlaysAListThatKnocksTheCamera() {
         assertFalse(SETTINGS.heavyBlows().isEmpty());
         assertFalse(SETTINGS.bigDeaths().isEmpty());
-        SETTINGS.heavyBlows().forEach(blow -> assertTrue(shakes(blow.look()), blow.template() + " plays " + blow.look()));
-        SETTINGS.bigDeaths().forEach(death -> assertTrue(shakes(death.look()), death.template() + " plays " + death.look()));
+        SETTINGS.heavyBlows().forEach(blow -> assertTrue(shakes(blow.plays()), blow.template() + " plays " + blow.plays()));
+        SETTINGS.bigDeaths().forEach(death -> assertTrue(shakes(death.plays()), death.template() + " plays " + death.plays()));
     }
 
     @Test

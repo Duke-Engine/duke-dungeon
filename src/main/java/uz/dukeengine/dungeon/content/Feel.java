@@ -29,11 +29,11 @@ public final class Feel {
             boolean all = blow.template().isBlank();
             visuals.hurt(all ? null : blow.template(), blow.damageType(), blow.majorAt(), 0);
             for (var template : all ? creatures(settings) : List.of(blow.template())) {
-                visuals.moment(blow.momentFor(template), blow.look(), 1f);
+                visuals.moment(blow.momentFor(template), blow.plays(), 1f);
             }
         }
         for (var death : settings.bigDeaths()) {
-            visuals.moment(death.moment(), death.look(), 1f);
+            visuals.moment(death.moment(), death.plays(), 1f);
         }
     }
 }

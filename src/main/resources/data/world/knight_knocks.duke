@@ -4,11 +4,9 @@
 ; These two are the kit's Charge and Whirlwind, layer for layer, with ONE change:
 ; the knock (ShakeSeconds, ShakePower). The kit made them a nudge (1.1 for 0.16 s and
 ; 0.6 for 0.10 s) beside the Meteor's 1.8 -- but here they are the two skills a
-; knight spends a room's worth of stun on, and the screen should say so. A game's
-; Effect of a kit Effect's Name is the one drawn (see DungeonSettings.read), so
-; Look = Charge and Look = Whirlwind in knight.duke pick these up unchanged.
-; Camera shake is for the big moments only -- a hit is a number and a flash; see
-; data/world/feel.duke.
+; knight spends a room's worth of stun on, and the screen should say so. game.duke lists
+; this file where the kit's two stood. Camera shake is for the big moments only -- a hit
+; is a number and a flash; see data/world/feel.duke.
 ; ---------------------------------------------------------------------------
 Effect
   Name = Charge
