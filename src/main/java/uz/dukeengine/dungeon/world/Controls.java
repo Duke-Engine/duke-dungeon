@@ -55,8 +55,8 @@ public record Controls(String scheme, String schemeWord, String modernWord, Stri
     }
 
     /**
-     * Whether {@code played} walks him on W A S D: modern, or action -- which plays as modern (the camera following
-     * him, the dodge, the left button's swing) with its own keys on top until its engine requests land (E90-E95).
+     * Whether {@code played} walks him on W A S D: modern, or action -- which walks, dodges and fights only when told
+     * as modern, with the mouse held, the camera turned by it and its own keys on top (E90-E94).
      */
     public static boolean walksOnKeys(Scheme played) {
         return played != Scheme.CLASSIC;
