@@ -94,7 +94,11 @@ class FollowAndGateTest {
         var session = led();
         var commander = all(session, "Act1Commander").getFirst();
         var near = SETTINGS.story().dialogue();
-        // He stays back on the field, far from her: she stops and waits.
+        // By her side she sets off (however the intro ended, which moves with everything the world lays) ...
+        var start = commander.getPosition();
+        put(hero(session), start.x() - 20f, start.y() + 20f);
+        play(session, 30);
+        // ... then he stays back on the field, far from her: she stops and waits.
         var field = zone("Darvoza_oldi");
         put(hero(session), field.middleX(CELL) - 8 * CELL, field.middleY(CELL) - 8 * CELL);
         play(session, 10);

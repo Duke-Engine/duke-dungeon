@@ -69,7 +69,7 @@ public record Crafting(int frames, String scroll, List<String> tags, List<Recipe
 
     /**
      * A part of a recipe: {@code otin 3} a material, {@code keng_qilich/R} a thing on that base (or that unique) of
-     * rare or better, {@code *Uzuk/M 2} two things of that slot, {@code #qilich} a thing of that tag.
+     * rare or better, {@code #uzuk/M 2} two things of that tag, magic or better.
      */
     public record Part(String what, int least, int count) {
 
@@ -112,7 +112,7 @@ public record Crafting(int frames, String scroll, List<String> tags, List<Recipe
     /**
      * Whether {@code bag}'s backpack -- never what he wears -- holds each of {@code recipe}'s parts, and which of its
      * places the things would be spent from: the least rare that fits first, and a thing named by its base before one
-     * of a slot or a tag, so a part never takes what a stricter one needs.
+     * of a tag, so a part never takes what a stricter one needs.
      */
     public Match match(Recipe recipe, LootBag bag, Items items) {
         var parts = recipe.parts();
@@ -148,7 +148,7 @@ public record Crafting(int frames, String scroll, List<String> tags, List<Recipe
     }
 
     private static int loose(Part part) {
-        return part.what().startsWith("*") || part.what().startsWith("#") ? 1 : 0;
+        return part.what().startsWith("#") ? 1 : 0;
     }
 
     /** How many of a material the backpack holds, all its stacks. */
@@ -171,9 +171,6 @@ public record Crafting(int frames, String scroll, List<String> tags, List<Recipe
         var what = part.what();
         if (made.unique() != null) {
             return made.unique().name().equals(what); // a unique is never spent but by its own name
-        }
-        if (what.startsWith("*")) {
-            return made.base().slot().equals(what.substring(1));
         }
         if (what.startsWith("#")) {
             return tag(what.substring(1)).contains(made.base().name());

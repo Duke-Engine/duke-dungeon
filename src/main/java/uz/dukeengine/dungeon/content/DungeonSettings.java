@@ -1081,8 +1081,7 @@ public final class DungeonSettings {
                     throw new IllegalArgumentException("settings: " + named + ": " + wrong.getMessage(), wrong);
                 }
                 var what = part.what();
-                require(what.startsWith("*") && lootDrops.wornSlots().contains(what.substring(1))
-                        || what.startsWith("#") && !crafting.tag(what.substring(1)).isEmpty()
+                require(what.startsWith("#") && !crafting.tag(what.substring(1)).isEmpty()
                         || items.knows(what), named + " takes " + what + ", and nothing is called that");
             }
         }

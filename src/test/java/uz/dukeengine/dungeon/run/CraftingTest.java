@@ -176,7 +176,7 @@ class CraftingTest {
         bag.take(ITEMS.loot(ITEMS.make(ring, Items.MAGIC, 3, 3L)), 0, 0);
         session.run().getScript().flag(Crafting.FLAG + "olmos_uzuk");
         // ponytail: no gold to give a test hero here, so the recipe's gold is checked by the refusal test alone.
-        var free = new Crafting.Recipe("olmos", "olmos_uzuk", 1, List.of(0, 0, 1000, 0), 1, List.of("*Uzuk/M 2"), 0,
+        var free = new Crafting.Recipe("olmos", "olmos_uzuk", 1, List.of(0, 0, 1000, 0), 1, List.of("#uzuk/M 2"), 0,
                 30, true, "");
         var match = CRAFTING.match(free, bag, ITEMS);
         assertTrue(match.all());

@@ -58,7 +58,7 @@ final class CraftScreen {
         var items = settings.items();
         var what = part.what();
         String name;
-        if (what.startsWith("*") || what.startsWith("#")) {
+        if (what.startsWith("#")) {
             name = what.substring(1).replace('_', ' ');
         } else if (items.potion(what) != null) {
             name = items.potion(what).displayName();
