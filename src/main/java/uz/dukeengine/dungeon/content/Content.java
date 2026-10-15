@@ -278,8 +278,9 @@ public final class Content {
             if (stream == null) {
                 throw new IllegalStateException("missing dungeon data file: " + name);
             }
-            return new String(stream.readAllBytes(), StandardCharsets.UTF_8)
-                    .replace("\r\n", "\n").replace("\r", "\n");
+            // The language overlay, where English is spoken, is the one other thing that happens at this door (see Lang).
+            return Lang.apply(name, new String(stream.readAllBytes(), StandardCharsets.UTF_8)
+                    .replace("\r\n", "\n").replace("\r", "\n"));
         } catch (IOException e) {
             throw new UncheckedIOException("could not read dungeon data file: " + name, e);
         }

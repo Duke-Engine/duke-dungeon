@@ -71,7 +71,8 @@ public final class Stages {
             try {
                 var head = map.head();
                 var title = head.getOrDefault("DisplayName", "").isBlank() ? map.name() : head.get("DisplayName");
-                found.add(new Listed(map.name(), title, head.getOrDefault("Description", ""), map));
+                found.add(new Listed(map.name(), uz.dukeengine.dungeon.content.Lang.t(title),
+                        uz.dukeengine.dungeon.content.Lang.t(head.getOrDefault("Description", "")), map));
             } catch (RuntimeException e) {
                 LOG.warning(() -> map.name() + " is not offered: " + e.getMessage());
             }
