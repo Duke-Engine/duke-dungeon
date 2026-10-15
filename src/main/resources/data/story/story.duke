@@ -95,6 +95,7 @@ Quest
   Name = WallSkeletons
   Kind = MAIN
   Title = "Devordagi skeletlar"
+  Description = "Qo'mondon Laylo aytdi: devor ortidagi zalda skeletlar to'planmoqda. Beshtasini yo'q qiling va unga qayting."
   Steps = [
     Step
       Goal = KILL
@@ -119,6 +120,7 @@ Quest
   Name = LostLocket
   Kind = SIDE
   Title = "Yo'qolgan tumor"
+  Description = "Qo'mondonga onasidan qolgan tumor uzoq zalda yo'qolgan. Uni topib, egasiga qaytaring."
   Steps = [
     Step
       Goal = COLLECT

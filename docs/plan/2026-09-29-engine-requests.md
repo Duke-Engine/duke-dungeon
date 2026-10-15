@@ -52,9 +52,19 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E36 | scenery that blocks along its length, turned with its facing (castle walls) | landed, 5971fa0b; every castle wall is a `WxD` box, the qasr courtyard is entered only by its gate |
 | E37 | placing one piece on the grid in the editor — the plugin's, done in duke-plugin | plugin |
 | E38 | a map that starts explored: its ground seen from the first frame, its creatures only in sight | landed, 7f17f626 (with E34–E36); the open world begins seen, the descent black |
+<<<<<<< HEAD
 | E43 | a `Loot` carries affixes: several (figure, value) pairs that `LootBag.total` and `extra` add beside its own | waiting; the game carries at most three affixes an item meanwhile (docs/plan/2026-10-15-loot.md) |
 | E44 | crit chance and move speed as figures the hero reads; a worn thing that raises a skill's rank | waiting; those affixes are left out until then |
 | E45 | the bag's card in the game's colours: a colour for each line, the name's by rarity | waiting; the game paints its own coloured card over the engine's (`ItemCard`) |
+=======
+| E39 | particles that bounce, fly home and turn over (the kill's coins) | landed, 946409ed |
+| E40 | a creature moved by the story over frames (the landing, the knock-back) | waiting (small) |
+| E41 | a cutscene camera that turns, tilts and zooms, eased | waiting (small) |
+| E42 | a title card | waiting (small) |
+| E46 | the game's keys in Settings | landed, 9ce15e4e |
+| E47 | a hero's whole figures in one place | landed, 9ce15e4e |
+| E48 | a key's code and name for a game's canvas | landed, 9ce15e4e |
+>>>>>>> master
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
 game builds against the local engine. E12–E15 reached it together at 668045f0 (their pull requests merged as
@@ -1029,6 +1039,7 @@ with a thing and its particles end at the thing, and a bouncing layer's particle
 `Flip`; `World.effect(name, where, facing, toward)` and `EffectPlayed.toward`. The game reads the four in
 `Main.layerOf`, and the GoldBurst plays its CoinBurst toward the killer: the coins bounce, spin over and fly into him.
 
+<<<<<<< HEAD
 ## E43 — A thing carries several figures: affixes (2026-10-15, medium)
 
 The big plan's items (docs/plan/2026-10-15-loot.md) are Diablo's: a magic sword is +9 % damage and +6 % attack speed,
@@ -1069,3 +1080,66 @@ Asked: the bag's `gives` may hand back coloured lines — `Function<Loot, List<B
 `Line(String text, int colour)`, beside today's strings — and the name's colour from the game; and a hook for lines
 under the hints (the comparison). Done when the client test draws a card with a blue line. The game then drops
 `ItemCard`'s overlay and keeps only its belt.
+=======
+## E46 — The game's own keys in the Settings key list (2026-10-15, small)
+
+The player screens (`2026-10-15-player-screens.md`) open on C, L and M, the tracker folds on J, and the skills and
+orders have their letters — all the game's, through `Hotkeys`. The client's Settings screen lists none of them, so
+the only place a player learns them is the small row of hints the game draws over the panel.
+
+Asked: Settings shows a read-only **Keys** page — the client's own controls (`KeyMap`) and every letter the game
+claimed (`Hotkeys.claimedKeys()`), each with a word the game gives (`Hotkeys.on(key, word, action)`, or a
+`Hotkeys.describe(key, word)` beside the existing calls), in the game's language through `Shell.word`. Rebinding can
+come later. Done when a test opens Settings with a game that claimed C with a word and finds the row.
+
+## E47 — A hero's whole figures in one place (2026-10-15, small)
+
+The character sheet shows what a hero's figures come to, and has to gather them from five places: `HeroFigures`
+(attributes, health, speed, attack, mana), the weapon's `reloadFrames` read off the template, the bag's
+`attackSpeedPercent`/`healthRegen`/`manaRegen`, the sheet's regen in tenths, and lifesteal summed by hand from the
+book's `LIFESTEAL` skills (its `passives()` is private, so a worn thing's lent lifesteal is missed) plus
+`SkillBook.auraOn`. There is no crit at all.
+
+Asked: `HeroFigures` (or a `HeroProgress.sheetOf(body)`) carries the rest of what the body uses — blows a second,
+health and mana a second, lifesteal percent (own, lent and aura), and crit chance and multiplier once the engine has
+them — worked out by the same code that applies them, so the sheet can never disagree with the fight. Done when a test
+gives a hero a worn lifesteal thing and a quicker weapon and reads both back from the one record.
+
+## E48 — The letter a key code is, for a game's canvas input (2026-10-15, small)
+
+`CanvasInput.Key` carries jME's scan code, and a game that takes letters on its canvas — the player screens take C, L,
+M while one is open — has to keep its own copy of the keyboard's rows (`PlayerScreens.codeOf`), as `DialogueScreen`
+keeps Esc, Space and Enter. `Hotkeys.codeOf(char)` already exists and is package-private.
+
+Asked: `Hotkeys.codeOf(char)` public (or `CanvasInput.Key.letter()`), and the few named keys a game's canvas answers
+(`CanvasInput.ESCAPE`, `ENTER`, `SPACE`) as constants. Done when the game's copies are deleted.
+## E40 — A creature moved by the story over frames: a slide, a leap, a fall from the sky (2026-10-15, medium)
+
+Act 1's opening (`docs/plan/2026-10-15-act1.md`) has three moves the engine cannot make: the hero **lands** in a beam
+of light, the enemy commander is **knocked back** by it, and (the campaign's) the commander **leaps**. The game does
+them today with what there is: its `PLACE` and `KNOCK` acts set a thing's position at once (`GameObject.setPosition`)
+under an effect — a jump cut, not a move.
+
+Asked: a scripted move a game may put on any thing for so many frames — `Locomotor`-free, in the simulation and
+checksummed — from where it stands to a point, along a straight line or an arc of a given height (a leap, a
+knock-back's hop), or straight down from a height (a fall from the sky), the thing taking no orders and no blows'
+pushes meanwhile, and told when it lands (an event the story can hear). Done when a test moves a creature 60 units
+over 20 frames along an arc 15 high, it stands where it was sent on frame 20, and the landing is heard once.
+
+## E41 — A cutscene camera that turns, tilts and zooms, eased (2026-10-15, small)
+
+A story's shot flies the camera to a point in a straight line at an even speed (`GameCamera.moveTo`); turning,
+pitch, zoom and easing are not there (the story-scripting spec's "Deferred"). Act 1's shots want a low, close look
+at the landing and a slow pull back over the battle. Asked: `GameCamera.moveTo(x, y, frames, Ease)` and
+`turnTo(angle, frames)`, `pitchTo(degrees, frames)`, `zoomTo(distance, frames)`, each eased (linear, in, out,
+in-out), stepped with the world and given back at `release()` to the player's own. Done when a test moves, turns and
+zooms the camera together over 30 frames, eased in-out, and it ends exactly where asked.
+
+## E42 — A title card (2026-10-15, small)
+
+Act 1 ends on "1-qism tugadi"; Act 2 will open on its own card. Today the game says it with the run's banner (the
+`won|` line of a `WIN`), the same strip a floor's "next depth" uses. Asked: `DukeGame.titleCard(text, subtext,
+fadeIn, hold, fadeOut)` — big centred lettering over a darkened screen in the shell's font, drawn only (out of the
+checksum), the game's input taken while it shows unless the game says otherwise. Done when a test shows a card and
+the client reports it gone after its frames.
+>>>>>>> master

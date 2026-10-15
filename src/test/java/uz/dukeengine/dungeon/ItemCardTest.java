@@ -202,6 +202,13 @@ class ItemCardTest {
     }
 
     @Test
+    void theBeltsKeysAreNamedOnTheSettingsScreen() {
+        var keys = Main.controls(SETTINGS);
+        assertEquals("Belbog'dan ichish: 1", keys.wordOf('1'));
+        assertEquals("Belbog'dan ichish: 4", keys.wordOf('4'));
+    }
+
+    @Test
     void aThingOnTheFloorHasTheSameCard() {
         var played = played();
         var card = played.screen().cards();

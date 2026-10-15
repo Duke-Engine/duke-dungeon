@@ -55,7 +55,9 @@ public record Trigger(String name, String map, When when, String target, int ste
         /** A Monster that cannot be killed is beaten — see {@link Boss#beaten}. */
         BEATEN,
         /** A cutscene has played to its end, or was skipped. */
-        SEEN
+        SEEN,
+        /** A floor is laid at the depth its Target names: a campaign's descent reaching it. */
+        DEPTH
     }
 
     /** What a trigger does. */
@@ -68,7 +70,19 @@ public record Trigger(String name, String map, When when, String target, int ste
         /** The run ends won, the banner saying the Target's words (blank: no banner at all). */
         WIN,
         /** The turning: the medallion leaves the hero for the Npc named, his look darkens, he goes to the monsters. */
-        CURSE
+        CURSE,
+        /** {@code Count} of a Monster at the zone, on the heroes' side: they fight for him. */
+        ALLY,
+        /** Every hero stands at the zone's middle at once: the hero's landing. */
+        PLACE,
+        /** Every one of a Monster standing is thrown to the zone's middle at once: a knock-back. */
+        KNOCK,
+        /** Every one of a Monster standing dies, beaten or not: the commander's blow. */
+        KILL,
+        /** {@code Count} gold into the first hero's purse. */
+        GOLD,
+        /** The run written as it is now into the save slot the Target names, won or not: an act's end. */
+        SAVE
     }
 
     /**
@@ -76,8 +90,8 @@ public record Trigger(String name, String map, When when, String target, int ste
      *
      * @param target what: a conversation, quest, Monster, Npc, LootItem, flag, map, cutscene, Effect or a banner's
      *               words — by {@link #act}
-     * @param count  how many, for SPAWN
-     * @param zone   where, for SPAWN, WALK, CALL and EFFECT
+     * @param count  how many, for SPAWN and ALLY; how much, for GOLD
+     * @param zone   where, for SPAWN, ALLY, WALK, CALL, EFFECT, PLACE and KNOCK
      */
     public record Action(Act act, String target, int count, String zone) {
 

@@ -529,11 +529,17 @@ public final class Main {
         Bag.show(bag, session, settings);
         // And over it, the box a conversation is said in, which hands the bag whatever it does not take.
         var talk = new DialogueScreen(bag, bag, settings);
-        duke.canvas(talk).input(talk);
+        // And over that, the player's own screens -- the sheet, the quest log, the map -- each on its key, and the map
+        // drawn from the engine's picture of the world as he knows it, asked for every map.
+        var screens = new PlayerScreens(talk, settings);
+        duke.canvas(screens).input(screens);
+        screensOn(keys, screens, settings);
+        duke.worldPicture(settings.screens().mostTexels(), screens.map()::picture);
         // The run saves itself as each floor is entered, as the game is left by any door, and into a slot from the
         // pause menu -- see docs/plan/2026-10-08-saving.md.
         var saves = Saves.ofThePlayer();
         session.run().onCheckpoint(save -> write(saves, Saves.AUTOSAVE, save));
+        session.run().onSaveInto((slot, save) -> write(saves, slot, save)); // an act's end, for the next act
         // The front menu's own rows -- continue, a new game (with whom, how, where, who), load, the credits -- then
         // Settings and Quit. Nothing opens until one is walked. See frontRows and whoGoesIn.
         var credits = FrontMenu.credits(settings, Content.read("CREDITS.md"));
@@ -553,6 +559,7 @@ public final class Main {
             // to continue). Built here, before the menu is shown -- about 60 ms, also spent when the window closes.
             var next = chosenGame(opening, settings);
             next.run().onCheckpoint(save -> write(saves, Saves.AUTOSAVE, save));
+            next.run().onSaveInto((slot, save) -> write(saves, slot, save));
             Bag.show(bag, next, settings);
             current.set(next);
             shell.frontRows(FrontMenu.startingFresh(rows.apply(next), () -> duke.startMatch(next.game())));
@@ -560,6 +567,13 @@ public final class Main {
         // The live scene behind the front menu: the kingdom's soldiers holding a clearing against the skeletons.
         duke.backdrop(() -> MenuScene.of(settings).game());
         duke.shell(shell);
+        int joint = act1(args);
+        if (joint > 0 && !settings.campaign().joints().isEmpty()) {
+            // The owner's testing: straight into joint N of Act 1, with what the joints before it would have given.
+            heroChosen(session, settings, visuals, keys, settings.campaign().hero());
+            session.run().skipTo(joint);
+            duke.startMatch(session.game());
+        }
         duke.launch();
     }
 
@@ -903,9 +917,44 @@ public final class Main {
      */
     static uz.dukeengine.client3d.Shell.Question howToPlay(Dungeon.Session session,
             DungeonSettings settings, Visuals visuals, Hotkeys keys) {
-        return howToPlay(settings, whoToPlay(session, settings, visuals, keys),
-                () -> session.run().playing(uz.dukeengine.dungeon.run.Floors.generated(System.nanoTime(), settings)),
+        var hero = whoToPlay(session, settings, visuals, keys);
+        Runnable endless = () -> session.run().playing(
+                uz.dukeengine.dungeon.run.Floors.generated(System.nanoTime(), settings));
+        var asked = howToPlay(settings, hero, endless,
                 (listed, stage) -> session.run().playing(uz.dukeengine.dungeon.run.Floors.ofStage(stage)));
+        var campaign = settings.campaign();
+        if (campaign.word().isBlank()) {
+            return asked;
+        }
+        // The campaign first, a game alone: its own hero, from its first joint — see docs/plan/2026-10-15-act1.md.
+        // The descent and the stages stay where they were, below it.
+        var rows = new java.util.ArrayList<Shell.Option>();
+        rows.add(new Shell.Option(campaign.word(), campaign.blurb(), () -> {
+            session.run().playing(uz.dukeengine.dungeon.run.Floors.named(campaign.joints().getFirst().map(),
+                    System.nanoTime(), settings, false));
+            heroChosen(session, settings, visuals, keys, campaign.hero());
+            session.run().startWith(session.game(), campaign.hero());
+        }, null));
+        if (asked == hero) {
+            rows.add(new Shell.Option(settings.hud().endlessWord(), settings.hud().endlessBlurb(), endless, hero));
+        } else {
+            rows.addAll(asked.options());
+        }
+        return new Shell.Question(settings.hud().chooseModeWord(), settings.hud().chooseModeHint(), rows);
+    }
+
+    /** {@code --act1=N}: the campaign's joint to open straight on, for testing it; 0 for none. */
+    static int act1(String[] args) {
+        for (var arg : args) {
+            if (arg.startsWith("--act1=")) {
+                try {
+                    return Math.max(0, Integer.parseInt(arg.substring("--act1=".length()).strip()));
+                } catch (NumberFormatException e) {
+                    return 0;
+                }
+            }
+        }
+        return 0;
     }
 
     /**
@@ -990,11 +1039,30 @@ public final class Main {
      * The client keeps the press-then-click; this only says what to send once the
      * player has chosen.
      */
+    /**
+     * The screens' keys: a thing of the window, as the tracker's fold is, so each flips the window's own state and
+     * sends nothing to the simulation. Through the hotkeys, which the client answers only in play -- never on a menu,
+     * nor while chat is typed; while a screen is open it takes the keys itself.
+     */
+    static void screensOn(Hotkeys keys, PlayerScreens screens, DungeonSettings settings) {
+        var letters = settings.screens().keys();
+        for (int i = 0; i < letters.size(); i++) {
+            var which = PlayerScreens.Open.values()[i + 1];
+            keys.on(letters.get(i), game -> screens.toggle(which));
+        }
+    }
+
     static Hotkeys controls(DungeonSettings settings) {
         var keys = Hotkeys.create();
         // The file's default hero to begin with, and whoever is actually chosen
         // the moment he is -- see aimsFor, and whoToPlay, which calls it again.
         aimsFor(keys, settings, settings.run().defaultHero());
+        // The belt's keys, 1 to its size: taken on the game's own canvas (ItemCard.drinks) and only named here, for
+        // the Settings screen's list of keys (E46).
+        var rules = settings.items().rules();
+        for (int key = 1; key <= rules.beltSize(); key++) {
+            keys.describe((char) ('0' + key), rules.beltKeyWord().formatted(key));
+        }
         // Spending a level on a slot. A click on the badge rather than a letter,
         // so it comes through a door of its own -- and it is a COMMAND like every
         // other decision, settled on a frame boundary where the rules live.

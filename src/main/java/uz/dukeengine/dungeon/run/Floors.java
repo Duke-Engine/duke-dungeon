@@ -77,9 +77,31 @@ public interface Floors {
         return null;
     }
 
+    /**
+     * Whether a boss's fall opens the next floor, as the descent's does — a campaign's named descent too — rather than
+     * being one floor a story or a win ends.
+     */
+    default boolean descends() {
+        return false;
+    }
+
     /** Floors drawn from a seed, each one deeper and nastier — the endless descent. */
     static Floors generated(long seed, DungeonSettings settings) {
         return new GeneratedFloors(seed, settings);
+    }
+
+    /**
+     * What a trigger's MAP names: a campaign's descent — its floors drawn on from {@code seed} — or a map.
+     *
+     * @param standing whether the first floor is the one {@code seed} names (a save picked up), not the next
+     * @throws RuntimeException when there is no such map, or it cannot be played
+     */
+    static Floors named(String name, long seed, DungeonSettings settings, boolean standing) {
+        var descent = settings.campaign().descent(name);
+        if (descent != null) {
+            return new GeneratedFloors(seed, settings, standing, name, descent.firstDepth());
+        }
+        return ofStage(uz.dukeengine.dungeon.stage.Stages.load(name, settings));
     }
 
     /** One floor, frozen, handed back however many times it is asked for. */
@@ -98,7 +120,7 @@ public interface Floors {
             return new GeneratedFloors(save.seed(), settings, true);
         }
         try {
-            return ofStage(uz.dukeengine.dungeon.stage.Stages.load(save.stage(), settings));
+            return named(save.stage(), save.seed(), settings, true);
         } catch (RuntimeException e) {
             throw new SaveGame.Refused("the stage " + save.stage() + " cannot be played: " + e.getMessage(), e);
         }

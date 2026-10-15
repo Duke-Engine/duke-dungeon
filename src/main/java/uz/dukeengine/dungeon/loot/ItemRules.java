@@ -30,6 +30,7 @@ import java.util.List;
  * @param compareWord    over the differences to what is worn
  * @param countWord      a stack's count on its card, {@code %d}
  * @param drinkHint      under a potion's card
+ * @param beltKeyWord    what a belt key does, on the Settings screen's list of keys; {@code %d} the key
  * @param treasure       a map's placed thing of this name is a treasure: a chest-weighted roll at the floor's level
  * @param figureColour   a base figure's line; {@code affixColour} an affix's; {@code loreColour} a unique's story;
  *     {@code betterColour} and {@code worseColour} a difference to what is worn
@@ -39,7 +40,8 @@ public record ItemRules(List<String> rarities, List<Integer> colours, List<Integ
         List<Integer> rareAffixes, List<Integer> prices, int pricePerLevel, int eliteDropPercent, int potionPercent,
         int bossDrops, int bossLevel, int baseWindow, List<String> elites, List<String> firstNames,
         List<String> secondNames, List<String> beams, int beamFrames, int beltSize, int beltFrames, String levelWord,
-        String compareWord, String countWord, String drinkHint, String treasure, int figureColour, int affixColour,
+        String compareWord, String countWord, String drinkHint, String beltKeyWord, String treasure, int figureColour,
+        int affixColour,
         int loreColour, int betterColour, int worseColour) {
 
     public static final ItemRules DEFAULTS = new ItemRules(List.of("Oddiy", "Sehrli", "Noyob", "Afsonaviy"),
@@ -47,7 +49,7 @@ public record ItemRules(List<String> rarities, List<Integer> colours, List<Integ
             List.of(0, 450, 430, 120), List.of(250, 450, 260, 40), List.of(550, 380, 70, 0), List.of(1, 2),
             List.of(3, 4), List.of(100, 250, 500, 1200), 8, 40, 35, 2, 1, 6, List.of(), List.of("Qora"),
             List.of("tish"), List.of(), 45, 4, 30, "%d-daraja", "Kiyilgan bilan solishtiring", "Soni: %d",
-            "1-4: ichish", "Xazina", 0xFFFFFF, 0x7FB2FF, 0xD8B05A, 0x6CD86C, 0xE05A4A);
+            "1-4: ichish", "Belbog'dan ichish: %d", "Xazina", 0xFFFFFF, 0x7FB2FF, 0xD8B05A, 0x6CD86C, 0xE05A4A);
 
     public ItemRules {
         rarities = rarities == null ? List.of() : List.copyOf(rarities);
