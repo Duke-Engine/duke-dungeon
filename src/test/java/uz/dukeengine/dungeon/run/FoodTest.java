@@ -207,7 +207,7 @@ class FoodTest {
             game.runHeadless(1);
         }
         assertTrue(session.run().working(player), "he walked up to the tree and set to it");
-        assertEquals("Interact", hero(game).getBusyClip(), "looping his work's clip");
+        assertEquals("Chop", hero(game).getBusyClip(), "looping his work's clip");
         game.runHeadless(chop.frames() - 10);
         assertEquals(0, count(session.progress().getLoot(), "otin"), "a few seconds' work, not yet done");
         assertFalse(logic.isSceneryRemoved(tree), "and the tree still stands");
@@ -234,9 +234,10 @@ class FoodTest {
         var hero = hero(game);
         var bush = lay(game, "BerryBush", open(game, hero, 20f));
         workAt(session, bush);
-        assertEquals("Interact", hero.getBusyClip());
+        assertEquals("Gather", hero.getBusyClip());
         game.runHeadless(20);
-        hero.getBody().setHealth(hero.getBody().getHealth() - 5f); // struck
+        hero.getBody().damage(5f); // struck: a blow, which ends his clip too (E67)
+        game.runHeadless(1);
         game.runHeadless(FOOD.gather("BerryBush").frames());
         assertFalse(session.run().working(game.getLocalPlayerIndex()), "called off");
         assertEquals(null, hero.getBusyClip(), "and his clip with it");

@@ -53,13 +53,14 @@ Food
   ; The maps whose scenery trees are felled: those streamed in chunks, where a
   ; tree felled redraws its chunk (a map built whole would redraw all of it).
   SceneryMaps = [world]
-  ; The clip a hero loops at each work (E67), while he stands at it: the
-  ; Universal Animation Library's, which no chop has -- Interact for it too.
+  ; The clip a hero loops at each work (E67), while he stands at it: each hero's
+  ; own Chop (a sword's swing), Gather (Interact) and Cook (Fixing_Kneeling),
+  ; named in his AnimationSet; a hero without one stands still at it.
   Clips = [
-    "Chop Interact",
-    "Harvest Interact",
-    "Fill Interact",
-    "Cook Fixing_Kneeling",
+    "Chop Chop",
+    "Harvest Gather",
+    "Fill Gather",
+    "Cook Cook",
   ]
   ; What the buff row shows a meal as (E68): its picture and name, and the word
   ; after its health a second.
@@ -142,16 +143,13 @@ ThemeMonster
   ModelScale = 1
 End
 
-; A bush with berries (Quaternius, CC0).
+; A bush with berries (Quaternius, CC0). No shape, as a fire has none: in nobody's way,
+; so a village's bushes and pumpkins never shut its way in.
 Prop
   Name = BerryBush
   DisplayName = Rezavor buta
   KindOf = [STRUCTURE, SELECTABLE]
   VisionRange = 0
-  Geometry = Cylinder
-    Radius = 2.5
-    Height = 6
-  End
   Weight = 0
 End
 
@@ -167,10 +165,6 @@ Prop
   DisplayName = Qovoq
   KindOf = [STRUCTURE, SELECTABLE]
   VisionRange = 0
-  Geometry = Cylinder
-    Radius = 2.5
-    Height = 4
-  End
   Weight = 0
 End
 

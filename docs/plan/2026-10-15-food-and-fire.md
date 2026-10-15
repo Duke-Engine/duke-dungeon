@@ -92,8 +92,9 @@ the fires he built are not saved: a loaded game lays the map fresh.
   on maps streamed in chunks (`SceneryMaps`: the world), where a tree felled redraws its chunk; on a map built whole
   it would redraw all of the ground. The save keeps the trees felled; a load fells them again and their growing starts
   over. The game's placed trees are gone.
-- While he works he loops a clip (`Clips`): `Interact` to chop, pick and fill (the Universal Animation Library has no
-  chop), `Fixing_Kneeling` to cook. A hero whose model lacks the clip stands still.
+- While he works he loops a clip (`Clips`): his `Chop` (a sword's swing) to chop, `Gather` (Interact) to pick and
+  fill, `Cook` (Fixing_Kneeling) to cook -- the heroes' own clip names, which the anim2 branch adds. A hero whose
+  model lacks the clip stands still.
 - The book heals a meal's `HEAL` buff itself; the buff row shows it as "Taom", +N Jon/s and its seconds.
 - Every fire crackles where it burns (PagDev's "Fireplace Sound loop", CC0).
 

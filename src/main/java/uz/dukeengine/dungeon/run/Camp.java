@@ -152,8 +152,17 @@ public final class Camp {
         var at = new Coord3D(x, y, 0f);
         int cx = grid.toCellX(at);
         int cy = grid.toCellY(at);
-        if (grid.isBlocked(cx, cy) || grid.isCliff(cx, cy) || !grid.clearOfCircles(x, y, 5f)) {
-            return false;
+        if (grid.isBlocked(cx, cy) || grid.isCliff(cx, cy) || !grid.clearOfCircles(x, y, 5f)
+                || grid.hasStepCosts() && grid.stepPercent(cx, cy) < 100) {
+            return false; // nor on a road
+        }
+        // Open all round, so a thing never shuts a gap one cell wide.
+        for (int dy = -1; dy <= 1; dy++) {
+            for (int dx = -1; dx <= 1; dx++) {
+                if (grid.isBlocked(cx + dx, cy + dy)) {
+                    return false;
+                }
+            }
         }
         for (var other : laid) {
             float dx = other.x() - x;
@@ -241,7 +250,8 @@ public final class Camp {
                 return;
             }
             chore = new Chore(id, -1, gather,
-                    gather == null ? thing.getPosition() : logic.standingNextTo(hero, thing), logic.getFrame());
+                    gather == null || uz.dukeengine.core.thing.Solid.of(thing.getTemplate()).footprintRadius() <= 0f
+                            ? thing.getPosition() : logic.standingNextTo(hero, thing), logic.getFrame());
         }
         chores.put(player, chore);
         if (!near(logic, hero, chore)) {
@@ -319,7 +329,10 @@ public final class Camp {
         var here = hero.getPosition();
         float dx = here.x() - chore.standing.x();
         float dy = here.y() - chore.standing.y();
-        if (move.isMoving() || dx * dx + dy * dy > 0.25f || body.getHealth() < chore.health - 0.01f) {
+        // A blow taken ends his clip (E67), and so his work; a fall in health the same frame a fountain makes up for
+        // would not show.
+        boolean struck = food.clipOf(word(chore)) != null && hero.getBusyClip() == null && frame < chore.endsAt;
+        if (move.isMoving() || dx * dx + dy * dy > 0.25f || struck || body.getHealth() < chore.health - 0.01f) {
             stop(player, hero);
             return;
         }
