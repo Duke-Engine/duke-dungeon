@@ -50,6 +50,7 @@ import javax.imageio.ImageWriteParam;
  * <pre>
  * java art/icons/ItemIcons.java                                   # every picture the manifest lists
  * java art/icons/ItemIcons.java --sheets DIR                      # and a sheet of each group
+ * java art/icons/ItemIcons.java --only loot                      # one group alone: the loot frames
  * java art/icons/ItemIcons.java --import DOWNLOADS                # gi/, raven/128/, flare_armor.png, osare_relvad.png
  * </pre>
  *
@@ -145,10 +146,12 @@ public final class ItemIcons {
     public static void main(String[] args) throws IOException {
         Path sheets = null;
         Path downloads = null;
+        String only = null;
         for (int i = 0; i < args.length; i += 2) {
             switch (args[i]) {
                 case "--sheets" -> sheets = Path.of(args[i + 1]);
                 case "--import" -> downloads = Path.of(args[i + 1]);
+                case "--only" -> only = args[i + 1];
                 default -> throw new IllegalArgumentException("unknown argument " + args[i]);
             }
         }
@@ -161,6 +164,20 @@ public final class ItemIcons {
         var made = new LinkedHashMap<Row, BufferedImage>();
         Files.createDirectories(LIBRARY);
         for (var row : rows) {
+            if (only != null && !row.group().equals(only)) {
+                continue;
+            }
+            if (row.group().equals("loot")) {
+                // A generated thing's picture in each rarity's frame, at the bag's 64: icons/items/loot/<name>_<rarity>.
+                Files.createDirectories(WIRED.resolve("loot"));
+                for (var rarity : List.of("common", "magic", "rare", "epic")) {
+                    var framed = new Row(row.group(), row.name(), row.category(), rarity, row.source(), row.tint());
+                    var big = render(framed, glyphs);
+                    made.put(framed, big);
+                    write(half(big), WIRED.resolve("loot/" + row.name() + "_" + rarity + ".png"));
+                }
+                continue;
+            }
             var big = row.group().equals("effect") ? glyph(parse(glyphOf(row, glyphs)), row.colours())
                     : render(row, glyphs);
             made.put(row, big);
@@ -176,7 +193,9 @@ public final class ItemIcons {
                 default -> throw new IllegalArgumentException(row.name() + ": no group " + row.group());
             }
         }
-        writeIndex(rows);
+        if (only == null) {
+            writeIndex(rows);
+        }
         if (sheets != null) {
             Files.createDirectories(sheets);
             for (var group : rows.stream().map(Row::group).distinct().toList()) {

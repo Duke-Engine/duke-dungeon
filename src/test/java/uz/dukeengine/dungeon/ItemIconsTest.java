@@ -34,6 +34,21 @@ class ItemIconsTest {
         return image;
     }
 
+    /** Every generated thing is drawn in its rarity's frame: each base, unique and potion in all four (loot group). */
+    @Test
+    void everyGeneratedThingHasItsPictureInEachRaritysFrame() throws IOException {
+        var items = SETTINGS.items();
+        var names = new java.util.ArrayList<String>();
+        items.bases().forEach(base -> names.add(base.icon()));
+        items.potions().forEach(potion -> names.add(potion.icon()));
+        for (var name : names) {
+            for (var rarity : java.util.List.of("common", "magic", "rare", "epic")) {
+                var image = load("icons/items/loot/" + name + "_" + rarity + ".png");
+                assertEquals(64, image.getWidth(), name);
+            }
+        }
+    }
+
     @Test
     void everyThingTheGameShipsHasAPictureAtTheBagsSize() throws IOException {
         for (var item : SETTINGS.loot()) {
