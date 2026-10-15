@@ -81,12 +81,15 @@ TRIANGLES = 26000
 # Quaternius' clips each plays: (her clip, theirs, how much faster). A tuple of theirs is a Blend.
 CLIPS = {
     "queen": [
-        ("Idle", "Idle_Loop", 1.0),
-        ("Walk", "Walk_Formal_Loop", 1.0),
+        # Idle, Walk and Talk at these speeds are only the start: REGAL below poses them as a queen.
+        ("Idle", "Idle_Loop", 0.5),
+        ("Walk", "Walk_Formal_Loop", 0.8),
+        ("Talk", "Idle_Loop", 0.5),
+        # The boss's walk, as Quaternius made it: she chases and keeps her distance at a fighter's pace.
+        ("Walk_Fight", "Walk_Formal_Loop", 1.0),
         ("Attack", "Spell_Simple_Shoot", 1.0),
         ("Hurt", "Hit_Chest", 1.0),
         ("Death", "Death01", 1.5),
-        ("Talk", "Idle_Talking_Loop", 1.0),
         ("Cast_Idle", "Spell_Simple_Idle_Loop", 1.0),
     ],
     "ritualist": [
@@ -355,6 +358,247 @@ for name, file, theirs, speed in KAYKIT_CLIPS.get(WHO, []):
                 pb.rotation_quaternion = (1, 0, 0, 0)
                 pb.keyframe_insert("location", frame=frame, group=pb.name)
                 pb.keyframe_insert("rotation_quaternion", frame=frame, group=pb.name)
+
+# ---- a queen's bearing ----
+#
+# Quaternius' idle and formal walk are a man's. Hers are reposed on top of them, frame by frame, in her
+# armature's space (x to her left, -y ahead, z up): the pelvis, spine, neck and head set as a queen holds
+# them, keeping only the clip's small motion round its own average (her breath, the walk's bob); her arms
+# and legs reached by two-bone IK -- her hands clasped before her waist, her feet planted (idle) or set
+# nearly in line on a shorter step (walk). Talk is her idle with one gentle gesture of her right hand.
+
+X, Y, Z = Vector((1, 0, 0)), Vector((0, 1, 0)), Vector((0, 0, 1))
+SPINE = ("spine", "spine1", "spine2", "neck", "circle")
+
+
+def rot(axis, degrees):
+    return mathutils.Quaternion(axis, math.radians(degrees))
+
+
+def placed_with(mat, q, at=None):
+    """`mat` turned by `q` (armature space) about its own head, or moved to `at`."""
+    return mathutils.Matrix.LocRotScale(at if at is not None else mat.translation,
+                                        (q @ mat.to_quaternion()).normalized(), None)
+
+
+def ydir(mat):
+    return (mat.to_3x3() @ Y).normalized()
+
+
+def aim(mat, direction):
+    return placed_with(mat, ydir(mat).rotation_difference(direction))
+
+
+def two_bone(root, a, b, target, pole):
+    """Where the middle joint goes, and the end, for a limb of lengths a and b from `root` reaching `target`."""
+    u = target - root
+    d = max(abs(a - b) + 1e-3, min(u.length, (a + b) * 0.999))
+    u.normalize()
+    x = (a * a - b * b + d * d) / (2 * d)
+    v = (pole - root) - u * (pole - root).dot(u)
+    v.normalize()
+    return root + u * x + v * math.sqrt(max(0.0, a * a - x * x)), root + u * d
+
+
+def length(n, end):
+    return (her.rest[end].translation - her.rest[n].translation).length
+
+
+def mean_q(qs):
+    total = mathutils.Quaternion((0, 0, 0, 0))
+    for q in qs:
+        q = q.copy()
+        if q.dot(qs[0]) < 0:
+            q.negate()
+        total = mathutils.Quaternion([s + t for s, t in zip(total, q)])
+    return total.normalized()
+
+
+def front_of_her(z, half=0.06):
+    """How far ahead of her pelvis her body (or dress) reaches at height z, near her middle."""
+    ys = [v.co.y for v in body.data.vertices if abs(v.co.z - z) < 0.03 and abs(v.co.x) < half]
+    return min(ys)
+
+
+def rework(action, edit):
+    """`action` reposed: edit(frame, frames, base, mats, name, mat) gives each bone's armature-space matrix."""
+    ad = arm.animation_data
+    ad.action = action
+    ad.action_slot = action.slots[0]
+    frames = int(action.frame_range[1])
+    basis = []
+    for f in range(frames + 1):
+        scene.frame_set(f)
+        basis.append({pb.name: pb.matrix_basis.copy() for pb in arm.pose.bones})
+    # Every frame's pose as the clip has it, armature space.
+    base = []
+    for f in range(frames + 1):
+        mats = {}
+        for bone in her.order:
+            parent = mats[bone.parent.name] if bone.parent else mathutils.Matrix.Identity(4)
+            mats[bone.name] = parent @ her.local[bone.name] @ basis[f][bone.name]
+        base.append(mats)
+    new = bpy.data.actions.new(action.name)
+    ad.action = new
+    previous = {}
+    for f in range(frames + 1):
+        mats = {}
+        for bone in her.order:
+            n = bone.name
+            parent = mats[bone.parent.name] if bone.parent else mathutils.Matrix.Identity(4)
+            placed = parent @ her.local[n]
+            mats[n] = edit(f, frames, base, mats, n, placed @ basis[f][n]) or placed @ basis[f][n]
+            b = placed.inverted() @ mats[n]
+            pb = arm.pose.bones[n]
+            q = b.to_quaternion()
+            if n in previous:
+                q.make_compatible(previous[n])
+            previous[n] = q
+            pb.location = b.translation
+            pb.rotation_quaternion = q
+            pb.keyframe_insert("location", frame=f, group=n)
+            pb.keyframe_insert("rotation_quaternion", frame=f, group=n)
+    new.use_frame_range = True
+    new.frame_start, new.frame_end = 0, frames
+    new.use_fake_user = True
+    name = action.name
+    bpy.data.actions.remove(action)
+    new.name = name
+    return new
+
+
+def regal(mode):
+    """The edit for rework: mode is "idle", "talk" or "walk"."""
+    walking = mode == "walk"
+    waist = her.rest["spine"].translation.z
+    belly = front_of_her(waist + 0.02, 0.08)
+    hips = front_of_her(waist - 0.1, 0.12)
+    # The hands clasped: wrists a little apart ahead of her waist, the left over the right, held clear of
+    # her belly and of the dress's front below it (hands hang lower than wrists).
+    ahead = min(belly, hips) - 0.07
+    clasp = {"L.": Vector((0.045, ahead - 0.012, waist + 0.0)), "R.": Vector((-0.045, ahead, waist - 0.012))}
+    spine_rest = her.rest["spine"]
+    clasp = {s: spine_rest.inverted() @ at for s, at in clasp.items()}
+    print(f"REGAL {mode}: waist {waist:.3f}, belly front {belly:.3f}, hips front {hips:.3f}, hands at y {ahead:.3f}")
+    cache = {}
+
+    def edit(f, frames, base, mats, n, mat):
+        key = id(base)
+        if key not in cache:
+            cache.clear()
+            cache[key] = {b: mean_q([m[b].to_quaternion() for m in base]) for b in SPINE}
+            if walking:
+                feet = {s: [m[s + "foot"].translation for m in base] for s in ("L.", "R.")}
+                cache["feet"] = feet
+                cache["mid_y"] = sum(p.y for ps in feet.values() for p in ps) / (2 * len(base))
+                cache["cog_z"] = sum(m["COG"].translation.z for m in base) / len(base)
+                low = min(p.z for p in feet["L."])
+                cache["floor"] = {s: min(p.z for p in feet[s]) for s in feet}
+                # The frame she is most on her left foot: it planted, under her.
+                planted = [i for i, p in enumerate(feet["L."]) if p.z < low + 0.01]
+                cache["on_left"] = min(planted, key=lambda i: abs(feet["L."][i].y - cache["mid_y"]))
+            else:
+                cache["feet"] = {s: sum((m[s + "foot"].translation for m in base), Vector()) / len(base)
+                                 for s in ("L.", "R.")}
+        c = cache
+        p = 2 * math.pi * f / frames
+        if walking:
+            # +1 on her left foot, -1 on her right, twice a play.
+            weight = math.cos(2 * math.pi * (f - c["on_left"]) / frames)
+            sway, roll = 0.02 * weight, 4.0 * weight
+        else:
+            sway, roll = 0.024 + 0.008 * math.sin(p), 3.5 + 1.0 * math.sin(p)
+        if n == "COG":
+            at = mat.translation.copy()
+            at.x += sway
+            if walking:
+                at.z = c["cog_z"] + 0.6 * (at.z - c["cog_z"]) + 0.012
+            else:
+                at.z -= 0.012
+            # The hip over her weighted leg high.
+            return placed_with(mat, rot(Y, -roll), at)
+        if n in SPINE:
+            # Her own averaged clip pose taken out, her bearing put in: tall, chest lifted, chin up, the
+            # shoulders tilted against the hips; the clip's breath and bob kept, the walk's halved.
+            motion = base[f][n].to_quaternion() @ c[id(base)][n].inverted()
+            if walking:
+                motion = mathutils.Quaternion().slerp(motion, 0.5)
+            tilt = {"spine": 0.4, "spine1": 0.35, "spine2": 0.3, "neck": -0.2, "circle": -0.4}[n] * roll
+            pitch = {"spine": 0, "spine1": 0, "spine2": -1.5, "neck": 2, "circle": -4}[n]
+            turn = 0.0
+            if n == "circle":
+                turn = -3.0 * weight if walking else 5.0 * math.sin(p + 1.3)
+            q = rot(Z, turn) @ rot(Y, tilt) @ rot(X, pitch) @ motion
+            return placed_with(mathutils.Matrix.LocRotScale(mat.translation, her.rest[n].to_quaternion(), None), q)
+        side = n[:2]
+        part = n[2:]
+        if part == "clavicle":
+            # Shoulders back and down.
+            d = ydir(mat)
+            return aim(mat, (d + Vector((0, 0.18, -0.12))).normalized())
+        if part == "shoulder":
+            target = mats["spine"] @ clasp[side]
+            if mode == "talk" and side == "R.":
+                target = target + gesture(f, frames) * Vector((-0.08, -0.13, 0.11))
+            sign = 1 if side == "L." else -1
+            pole = mat.translation + Vector((0.35 * sign, 0.25, -0.15))
+            elbow, wrist = two_bone(mat.translation, length(n, side + "forearm"),
+                                    length(side + "forearm", side + "hand"), target, pole)
+            c[side + "wrist"] = wrist
+            return aim(mat, elbow - mat.translation)
+        if part == "forearm":
+            return aim(mat, c[side + "wrist"] - mat.translation)
+        if part == "hand":
+            sign = 1 if side == "L." else -1
+            inward = Vector((-sign, -0.35, -0.45)).normalized()
+            if mode == "talk" and side == "R.":
+                inward = inward.lerp(Vector((-0.3, -1.0, 0.25)).normalized(), gesture(f, frames)).normalized()
+            return aim(mat, inward)
+        if part == "thigh":
+            sign = 1 if side == "L." else -1
+            if walking:
+                foot = c["feet"][side][f].copy()
+                foot.y = c["mid_y"] + 0.04 + 0.75 * (foot.y - c["mid_y"])
+                foot.z = c["floor"][side] + 0.6 * (foot.z - c["floor"][side])
+                foot.x = 0.035 * sign
+            else:
+                foot = c["feet"][side].copy()
+                # Her left leg bears her; her right is eased a little ahead, its knee soft.
+                foot.x = 0.075 * sign if side == "L." else -0.06
+                foot.y = her.heads["COG"].y + (0.05 if side == "L." else 0.0)
+            pole = (mat.translation + foot) / 2 + Vector(((0.0 if walking else 0.1) * sign, -0.5, 0))
+            knee, ankle = two_bone(mat.translation, length(n, side + "leg"), length(side + "leg", side + "foot"),
+                                   foot, pole)
+            c[side + "ankle"] = ankle
+            c.setdefault("reach", []).append((foot - mat.translation).length
+                                             / (length(n, side + "leg") + length(side + "leg", side + "foot")))
+            return aim(mat, knee - mat.translation)
+        if part == "leg":
+            return aim(mat, c[side + "ankle"] - mat.translation)
+        if part == "foot":
+            # Flat on the floor as the clip sets it, whatever the leg above did.
+            return placed_with(mathutils.Matrix.LocRotScale(mat.translation, base[f][n].to_quaternion(), None),
+                               mathutils.Quaternion())
+        return None
+
+    edit.cache = cache
+    return edit
+
+
+def gesture(f, frames):
+    """0 to 1 and back once, smoothly, between a fifth and four fifths of the play."""
+    t = (f / frames - 0.2) / 0.6
+    return math.sin(math.pi * t) ** 2 if 0 < t < 1 else 0.0
+
+
+if WHO == "queen":
+    for i, a in enumerate(clips):
+        mode = {"Idle": "idle", "Talk": "talk", "Walk": "walk"}.get(a.name)
+        if mode:
+            e = regal(mode)
+            clips[i] = rework(a, e)
+            r = e.cache.get("reach", [0])
+            print(f"REGAL {clips[i].name}: legs reach {min(r):.2f}..{max(r):.2f} of their length")
 
 ad = arm.animation_data
 ad.action = None
