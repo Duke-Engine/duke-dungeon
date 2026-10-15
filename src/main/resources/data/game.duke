@@ -86,6 +86,8 @@ Game
     data/units/imp.duke,
     ; Act 1's people, soldiers, enemy commander and the dark castle's lord: see data/story/act1.duke.
     data/units/act1.duke,
+    ; Act 2's townsfolk: see data/story/act2.duke.
+    data/units/act2.duke,
 
     data/projectiles/arrow.duke,
     data/projectiles/heavy_arrow.duke,
@@ -156,5 +158,6 @@ Game
     data/story/final.duke,
     data/story/kampir.duke,
     data/story/act1.duke,
+    data/story/act2.duke,
   ]
 End

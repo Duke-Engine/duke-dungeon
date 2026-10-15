@@ -10,7 +10,7 @@
 ; Each joint is a map or a descent (the Campaign block's Descents), chained by triggers' MAP;
 ; every floor entered is the autosave's checkpoint, and a death goes back to it. Every name
 ; the owner has not chosen is a STAND-IN: the commander ("Qo'mondon"), the queen ("Malika"),
-; the hero's beloved ("Nilufar"), the townsfolk, the enemy commander and the castle's lord.
+; the hero's beloved (the Rogue's own name, Erika: she is Act 2's heroine), the townsfolk, the enemy commander and the castle's lord.
 ; The hero is the Knight (his DisplayName is the descent's).
 ; ---------------------------------------------------------------------------
 
@@ -184,7 +184,7 @@ Conversation
   Lines = [
     Line
       Speaker = Hero
-      Text = "Bu... qayer? Hozirgina Nilufar bilan mashq qilayotgan edim..."
+      Text = "Bu... qayer? Hozirgina Erika bilan mashq qilayotgan edim..."
     End,
     Line
       Speaker = Act1Commander
