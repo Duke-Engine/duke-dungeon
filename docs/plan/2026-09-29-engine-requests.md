@@ -52,19 +52,16 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E36 | scenery that blocks along its length, turned with its facing (castle walls) | landed, 5971fa0b; every castle wall is a `WxD` box, the qasr courtyard is entered only by its gate |
 | E37 | placing one piece on the grid in the editor — the plugin's, done in duke-plugin | plugin |
 | E38 | a map that starts explored: its ground seen from the first frame, its creatures only in sight | landed, 7f17f626 (with E34–E36); the open world begins seen, the descent black |
-<<<<<<< HEAD
-| E43 | a `Loot` carries affixes: several (figure, value) pairs that `LootBag.total` and `extra` add beside its own | waiting; the game carries at most three affixes an item meanwhile (docs/plan/2026-10-15-loot.md) |
-| E44 | crit chance and move speed as figures the hero reads; a worn thing that raises a skill's rank | waiting; those affixes are left out until then |
-| E45 | the bag's card in the game's colours: a colour for each line, the name's by rarity | waiting; the game paints its own coloured card over the engine's (`ItemCard`) |
-=======
 | E39 | particles that bounce, fly home and turn over (the kill's coins) | landed, 946409ed |
 | E40 | a creature moved by the story over frames (the landing, the knock-back) | waiting (small) |
 | E41 | a cutscene camera that turns, tilts and zooms, eased | waiting (small) |
 | E42 | a title card | waiting (small) |
+| E43 | a `Loot` carries affixes: several (figure, value) pairs that `LootBag.total` and `extra` add beside its own | landed, fc24cecd; the game rolls every affix as the engine's Affix: magic 1–2, rare 3–4, epic 4–6, any affix on any slot it names |
+| E44 | crit chance and move speed as figures the hero reads; a worn thing that raises a skill's rank | landed, fc24cecd; the game rolls critical chance (with how much harder), critical damage, move speed and +1 to a Q/W/E skill, and the sheet says a critical blow |
+| E45 | the bag's card in the game's colours: a colour for each line, the name's by rarity | landed, fc24cecd; the bag's card is coloured through `BagScreen.colouredBy`, the game's overlay gone; digits bind, so keys 1–4 are `Hotkeys.on` |
 | E46 | the game's keys in Settings | landed, 9ce15e4e |
 | E47 | a hero's whole figures in one place | landed, 9ce15e4e |
 | E48 | a key's code and name for a game's canvas | landed, 9ce15e4e |
->>>>>>> master
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
 game builds against the local engine. E12–E15 reached it together at 668045f0 (their pull requests merged as
@@ -1039,7 +1036,6 @@ with a thing and its particles end at the thing, and a bouncing layer's particle
 `Flip`; `World.effect(name, where, facing, toward)` and `EffectPlayed.toward`. The game reads the four in
 `Main.layerOf`, and the GoldBurst plays its CoinBurst toward the killer: the coins bounce, spin over and fly into him.
 
-<<<<<<< HEAD
 ## E43 — A thing carries several figures: affixes (2026-10-15, medium)
 
 The big plan's items (docs/plan/2026-10-15-loot.md) are Diablo's: a magic sword is +9 % damage and +6 % attack speed,
@@ -1056,6 +1052,8 @@ none is as today. Done when the rpg tests pin a worn thing with two affixes movi
 backpack moving none. The game then writes every affix there, lifts the cap to four for a rare, and lets any affix
 roll on any slot (the `Affix` blocks' `Slots`).
 
+**Landed** as fc24cecd: `rpg.item.Affix(stat, value)`, `Loot.affixes`, added by `LootBag.total`, `extra` and`attributes`; the game's generated things carry every affix there (`loot/Items.loot`).
+
 ## E44 — Crit and move speed as figures; a worn thing that raises a skill (2026-10-15, medium)
 
 Diablo's affixes the hero has no figure for:
@@ -1067,6 +1065,8 @@ Diablo's affixes the hero has no figure for:
    he learnt, never past `MaxRank` and the bonus.
 
 Done when the rpg tests pin each from a worn thing and its end when it is taken off.
+
+**Landed** as fc24cecd: `Stat.CRIT_CHANCE`, `CRIT_DAMAGE` (a `CriticalStrike` from what he wears), `MOVE_SPEED` and`SKILL_RANK:<key>`; the game rolls each as an affix and its sheet says a critical blow.
 
 ## E45 — The bag's card in the game's colours (2026-10-15, small)
 
@@ -1080,7 +1080,9 @@ Asked: the bag's `gives` may hand back coloured lines — `Function<Loot, List<B
 `Line(String text, int colour)`, beside today's strings — and the name's colour from the game; and a hook for lines
 under the hints (the comparison). Done when the client test draws a card with a blue line. The game then drops
 `ItemCard`'s overlay and keeps only its belt.
-=======
+
+**Landed** as fc24cecd: `BagScreen.colouredBy(lines, nameColour, under)` with `BagScreen.Line`; the game colours the bag's cardthrough `Bag.coloured` and keeps `ItemCard` for the belt and the trade window's card.
+
 ## E46 — The game's own keys in the Settings key list (2026-10-15, small)
 
 The player screens (`2026-10-15-player-screens.md`) open on C, L and M, the tracker folds on J, and the skills and
@@ -1154,4 +1156,3 @@ Act 1 ends on "1-qism tugadi"; Act 2 will open on its own card. Today the game s
 fadeIn, hold, fadeOut)` — big centred lettering over a darkened screen in the shell's font, drawn only (out of the
 checksum), the game's input taken while it shows unless the game says otherwise. Done when a test shows a card and
 the client reports it gone after its frames.
->>>>>>> master
