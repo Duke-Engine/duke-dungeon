@@ -90,6 +90,10 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E79 | a game's own rows on Settings (the scheme), its keys rebindable on the Keys page, and the bar showing the letter pressed, not the skill's name | landed, ba92ce64 (head f4422800): the game's "Boshqaruv" row (`Controls.ROW`, read at the next launch), Space bound as the dodge, the walking keys said in Uzbek, `HeroCard.skills(.., settings::letterOf)` on the bar |
 | E80 | a `DODGE` skill shape: a quick dash over frames with i-frames, aimed by a direction, on a non-letter key (Space) | landed, f4506485: every hero carries a `DODGE` (Key V, on Space; 16, 9 frames, 7 immune, 75, no mana), off his four and his bar |
 | E81 | traversal links in the path graph (jump, vault, climb, drop) a route can use | landed, f4422800 on `e76-80-modern-combat`: `TraversalLink`, a map's `Linked`; to adopt in the traversal phase |
+| E82 | a radial knock-back in the skill system: `SkillEffect.PUSH`, every enemy within Radius thrown Distance outward over Frames along an arc, stunned StunFrames | waiting (seamless campaign, `2026-10-15-seamless-campaign.md`); the game throws them with `ScriptedMove` and the engine's DISABLED meanwhile (`Battles.shockwave`) |
+| E83 | the menu's backdrop kept as the match: "New game" hands the running backdrop game over instead of tearing it down and loading the world again | waiting (seamless campaign); the game opens the match on the same world, battle and framing, under the load bar |
+| E84 | path regions the game shuts and opens (walls by a story flag): a route never plans through closed land | waiting (seamless campaign); the game leashes the hero to the gate's open zones each frame (`DungeonRun.gated`) |
+| E85 | a cutscene camera path: a list of points, each with its pitch, zoom and ease, flown as one move | waiting (seamless campaign, small); the intro's shots stand in, one move a shot |
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
 game builds against the local engine. E12–E15 reached it together at 668045f0 (their pull requests merged as
@@ -1689,3 +1693,56 @@ from B.
 **E81 landed** as f4422800 on `e76-80-modern-combat`: `TraversalLink(a, b, kind, frames, arcHeight, clip, bothWays,
 low)`, a map's `Linked`, `GameLogic.setTraversalLinks`. To adopt in the traversal phase
 (`2026-10-15-modern-controls.md`, section 5).
+
+## E82 — A radial knock-back, in the skill system (2026-10-15, small; seamless campaign)
+
+The hero's landing in `2026-10-15-seamless-campaign.md` throws every enemy round the impact outward and stuns them.
+The skill shapes pull in (`PULL`), carry forward (`SKEWER`) or stun along a line (`WAVE`); nothing pushes out from a
+point. The owner's rule is that stuns and knocks live in the skill system, so the game's `SHOCKWAVE` act
+(`run/Battles.shockwave`: `ScriptedMove.along` outward, short of stone, and `StatusUpdate.apply(DISABLED)` with the
+Combat block's StunLook) is a stand-in.
+
+Asked: `SkillEffect.PUSH(Aim.SELF)`: every enemy within `Radius` of the caster (or of an `AREA_AT_SPOT`-style point
+when aimed `OPEN_GROUND`) is moved -- not walked -- `Distance` straight out from the middle over `Frames` along an arc
+`ArcHeight` high (as `ScriptedMove`), stopping short of stone, a shut gate and a seal; hurt `Damage`, stunned
+`StunFrames` from the frame it lands, its `Look` played on each caught (`At = CAUGHT`). One at the very middle goes
+along the caster's facing. A `CastSkill` from the game (no key, no mana, no cooldown) is enough for the story to use
+it. Done when a test pushes three skeletons standing 10, 40 and 90 from the caster with Radius 60: the first two end
+Distance further out along their own lines, stunned, the third untouched; one against a wall stops short of it.
+
+## E83 — The backdrop kept as the match (2026-10-15, medium; seamless campaign)
+
+The menu's backdrop is now the campaign's opening battle on the open world, and "New game" should go on from it
+with no loading: the buttons fade, the camera eases to the ritualists. `Duke3D.startMatch` stops the backdrop
+(`Backdrop.stop`) and builds the match from nothing, so the world (3.4 MB, about 0.6 s) is loaded twice and what the
+player saw is torn down. The game opens the match on the same battle at the same framing, under the load bar.
+
+Asked: `Duke3D.adoptBackdrop()` (local games only): the running backdrop game becomes the match -- the front menu
+fades out over a time the game gives, input and the game's canvas go to play, the same `DukeGame`, its terrain, its
+built ground and its art kept -- and `onBackdropAdopted(Consumer<DukeGame>)` tells the game, on the simulation
+thread, so it can turn its backdrop session into the run (lay the hero, start the story). Done when a test adopts a
+running backdrop, its frame counter goes on from where it was, no `clearWorld` or map load happens, and the menu is
+gone after the fade.
+
+## E84 — Path regions the game shuts and opens (2026-10-15, medium; seamless campaign)
+
+The campaign closes the open world but for the way to the capital until the story opens more (`Gate` blocks). The
+game leashes the hero each frame to the gate's open zones, which stops him at the edge, but a route he clicks still
+plans through the shut land and walks him into the edge.
+
+Asked: `PathGrid.shut(String region, Collection<int[]> cells)` and `open(String region)`: cells a route never plans
+through and nothing walks into while their region is shut (a body standing there when it shuts may walk out), on top
+of the terrain and scenery blockers; deterministic, in the checksum as the grid is; a route to a shut cell goes as
+near as it may (E14). Done when a test shuts a band across a corridor, a `MoveTo` beyond it stops at its edge with a
+route that never entered it, and once opened the same order arrives.
+
+## E85 — A cutscene camera path (2026-10-15, small; seamless campaign)
+
+The intro's camera moves in shots: each a straight eased move with its own turn, pitch and zoom (E41). A long
+establishing move -- from the menu's framing, round the field and down onto the ritualists -- is several shots that
+stop between them.
+
+Asked: `GameCamera.along(List<Key>, int frames, Ease ease)`, a `Key` being a point, a turn, a pitch and a zoom: one
+move through them on a smooth curve (Catmull-Rom), the turn, pitch and zoom eased with it, the whole over `frames`,
+not checksummed as the camera is not. Done when a test flies a three-key path and the camera passes through the middle
+key's point at the right frame, and at no frame stands still between keys.

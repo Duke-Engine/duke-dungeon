@@ -1,17 +1,19 @@
 ; ---------------------------------------------------------------------------
-; Act 1, start to the turning, as one playable chain — see docs/plan/2026-10-15-act1.md.
+; Act 1, start to the turning — see docs/plan/2026-10-15-act1.md and, for the world it is played
+; in, docs/plan/2026-10-15-seamless-campaign.md.
 ;
-;   1. jang       the opening battle: the hero lands in a beam of light
-;   2. poytaxt    the capital: the queen, her gold and her medallion; people's small asks
-;   3. mashq      the training: the descent's floors, two of them, then back to the capital
+;   1. world      the opening battle, on the field before the capital's north gate (Darvoza_oldi)
+;   2. world      the palace: the queen, her gold and her medallion; people's small asks
+;   3. world      the training at the old graves west of the field (Eski_qabrlar), then the war council
 ;   4. urush      the war: the descent's keep floors, two of them
 ;   5. qora_qasr  the dark castle: its lord's death, the medallion drinks him whole — the turning
 ;
-; Each joint is a map or a descent (the Campaign block's Descents), chained by triggers' MAP;
-; every floor entered is the autosave's checkpoint, and a death goes back to it. Every name
-; the owner has not chosen is a STAND-IN: the commander ("Qo'mondon"), the queen ("Malika"),
-; the hero's beloved (the Rogue's own name, Erika: she is Act 2's heroine), the townsfolk, the enemy commander and the castle's lord.
-; The hero is the Knight (his DisplayName is the descent's).
+; Joints 1-3 are the one open world: no loading screen between them. The act's world story runs
+; only with the flag Act1, which every joint sets (Act 2's runs with Act2), so the open world played
+; off the stages list stays as it was. Every name the owner has not chosen is a STAND-IN: the
+; commander ("Qo'mondon"), the queen ("Malika"), the hero's beloved (the Rogue's own name, Erika: she
+; is Act 2's heroine), the townsfolk, the enemy commander and the castle's lord. The hero is the
+; Knight (his DisplayName is the descent's).
 ; ---------------------------------------------------------------------------
 
 Campaign
@@ -22,46 +24,63 @@ Campaign
   ; do, and the story's DEPTH triggers say when they end.
   Descents = [
     Descent
-      Name = mashq
-      FirstDepth = 1
-    End,
-    Descent
       Name = urush
       FirstDepth = 3
     End
   ]
   ; In order; the first is where a new game opens. What a hero skipped straight to one is given
-  ; (the --act1=N debug arg, N from 1): the flags, things and experience the joints before it give.
+  ; (the --act1=N debug arg, N from 1): the flags, things and experience the joints before it give,
+  ; the zone he is put in (At) and the quests he has going.
   Joints = [
     Joint
-      Map = jang
+      Map = world
+      Flags = [Act1]
     End,
     Joint
-      Map = poytaxt
-      Flags = [HeroLanded]
+      Map = world
+      Flags = [Act1, HeroLanded, BattleWon]
       Experience = 100
       Gold = 20
+      At = Saroy
     End,
     Joint
-      Map = mashq
-      Flags = [HeroLanded, Welcomed]
+      Map = world
+      Flags = [Act1, HeroLanded, BattleWon, Welcomed]
       Items = [Medallion]
+      Quests = [Training]
       Experience = 120
       Gold = 120
+      At = Eski_qabrlar
     End,
     Joint
       Map = urush
-      Flags = [HeroLanded, Welcomed, Trained, WarBegun]
+      Flags = [Act1, HeroLanded, BattleWon, Welcomed, Trained, WarBegun]
       Items = [Medallion]
       Experience = 400
       Gold = 200
     End,
     Joint
       Map = qora_qasr
-      Flags = [HeroLanded, Welcomed, Trained, WarBegun, LandsFreed]
+      Flags = [Act1, HeroLanded, BattleWon, Welcomed, Trained, WarBegun, LandsFreed]
       Items = [Medallion]
       Experience = 800
       Gold = 300
+    End
+  ]
+  ; The maps the act left when it folded into the world: a save on one loads on the world at the
+  ; joint that took its place (its flags added, its quests started, put in its At).
+  Retired = [
+    Retired
+      Map = jang
+      Joint = 1
+    End,
+    Retired
+      Map = poytaxt
+      Joint = 2
+    End,
+    Retired
+      Map = mashq
+      Joint = 3
     End
   ]
 End
@@ -158,8 +177,41 @@ Boss
 End
 
 ; ===========================================================================
-; 1. jang — the opening battle.
+; 1. The opening battle, on the field before the north gate (world: Darvoza_oldi) — the menu's
+;    backdrop is this battle (MenuScene lays the same Battle block), and "New game" turns it into
+;    the intro: the ritual, the pillar of light, the meteor, the landing, the battle held while he
+;    is told who he is, then the commander leads him to the palace. Beat by beat, with the frames,
+;    in docs/plan/2026-10-15-seamless-campaign.md, section 4: every number is here.
 ; ===========================================================================
+
+; The armies and the ritualists, laid as one: the menu's backdrop lays it too, so the two are the
+; same battle on the same spot.
+Battle
+  Name = Opening
+  Map = world
+  Kingdom = [Soldier, Soldier, Soldier, Soldier, Militia, Militia, Militia]
+  Enemy = [Skeleton, Skeleton, Skeleton, Skeleton, Skeleton, Skeleton, Skeleton, Runner, Runner, SkeletonMage, EnemyCommander]
+  KingdomZone = Saf
+  EnemyZone = Dushman_safi
+  Leader = Act1Commander
+  Ritualist = Ritualist
+  Ritualists = 3
+  Landing = Qonish
+  ; Units from the landing's middle: an equilateral triangle round it, the first to its north.
+  Ring = 30
+End
+
+; The landing's knock-back: every enemy within 160 thrown 50 out over an arc 18 high, stunned. The
+; landing is on the field's flank, so the wave reaches across the fight.
+Shockwave
+  Name = MeteorShock
+  Radius = 160
+  Distance = 50
+  Height = 18
+  Frames = 20
+  StunFrames = 90
+  Landed = Beaten
+End
 
 Conversation
   Name = BattleHolds
@@ -174,7 +226,7 @@ Conversation
     End,
     Line
       Speaker = Act1Commander
-      Text = "Qahramon bo'lmasa ham — biz bormiz!"
+      Text = "Qahramon bo'lmasa ham — biz bormiz! Kohinlar, chaqiring uni!"
     End
   ]
 End
@@ -188,37 +240,21 @@ Conversation
     End,
     Line
       Speaker = Act1Commander
-      Text = "Osmondan nur tushdi — demak, sen qahramonsan! Savollarni keyin ber, hozir qilichingni ol!"
-    End
-  ]
-End
-
-Conversation
-  Name = EnemyFalls
-  Lines = [
+      Text = "Osmondan olov bo'lib tushding — demak, sen qahramonsan. Kohinlar seni chaqirdi."
+    End,
     Line
       Speaker = EnemyCommander
-      Text = "Yo'q... qayerdan kelding sen?.."
+      Text = "Yo'q... yana bittasi?! Chekinish!"
     End
   ]
 End
 
 Conversation
-  Name = CommanderStrikes
+  Name = AfterLanding
   Lines = [
     Line
       Speaker = Act1Commander
-      Text = "Bu jang meniki edi."
-    End
-  ]
-End
-
-Conversation
-  Name = AfterBattle
-  Lines = [
-    Line
-      Speaker = Act1Commander
-      Text = "Ular qochmoqda! Bugun biz yutdik — sen tufayli."
+      Text = "Ular qochmoqda! Askarlar, qolganini tugating!"
     End,
     Line
       Speaker = Act1Commander
@@ -230,55 +266,73 @@ Conversation
     End,
     Line
       Speaker = Act1Commander
-      Text = "Unda malikaning huzuriga yur. Yo'lni faqat u biladi."
+      Text = "Unda malikaning huzuriga yur. Yo'lni faqat u biladi. Ortimdan yur — saroy shahar ichida."
     End
   ]
 End
 
+; The follow mission: she walks to the palace along the road, he keeps near; she waits if he strays.
 Quest
-  Name = HoldTheLine
+  Name = FollowCommander
   Kind = MAIN
-  Title = "Darvoza oldidagi jang"
+  Title = "Qo'mondon izidan"
+  Description = "Qo'mondon sizni malika saroyiga olib boradi. Uning ortidan yuring: boshi uzra oltin belgi bor. Uzoqlashsangiz, u sizni kutadi."
   Steps = [
     Step
-      Goal = KILL
-      Target = EnemyCommander
-      Where = EnemyLine
-      Text = "Dushman sarkardasini yiqiting"
-      Glow = Yes
+      Goal = FOLLOW
+      Target = Act1Commander
+      Where = Saroy
+      Text = "Qo'mondon izidan saroyga boring"
     End
   ]
 End
 
+; The menu's own framing over the field, the line held, then the camera eases to the ritualists.
 Cutscene
-  Name = BattleOpening
+  Name = Summoning
   Shots = [
     Shot
-      ; The kingdom's line before its gate...
-      Zone = Line
+      Zone = Darvoza_oldi
       Frames = 1
-      Hold = 30
+      Hold = 45
+      Turn = 0
+      Pitch = 66
+      Zoom = 230
     End,
     Shot
       Says = BattleHolds
       Hold = 10
     End,
     Shot
-      ; ...and the army coming at it.
-      Zone = EnemyLine
-      Frames = 45
-      Hold = 20
+      ; Drawn in and lower, onto the three of them round the landing.
+      Zone = Qonish
+      Frames = 75
+      Hold = 10
+      Pitch = 38
+      Zoom = 130
+      Ease = IN_OUT
     End
   ]
 End
 
+; The camera held on the landing through the ritual, the beams, the pillar and the meteor.
+Cutscene
+  Name = Ritual
+  Shots = [
+    Shot
+      Zone = Qonish
+      Frames = 1
+      Hold = 240
+    End
+  ]
+End
+
+; Low and close in the smoke as he rises; then what he is told.
 Cutscene
   Name = Landing
   Shots = [
     Shot
-      ; The beam of light, and him falling in it: the camera low and close, looking up the beam's way, settling as he
-      ; lands (play's own is 55 degrees down, 140 back).
-      Zone = Landing
+      Zone = Qonish
       Frames = 30
       Hold = 40
       Pitch = 30
@@ -288,103 +342,204 @@ Cutscene
     Shot
       Says = HeroLands
       Hold = 10
-    End
-  ]
-End
-
-Cutscene
-  Name = BattleOver
-  Shots = [
-    Shot
-      Zone = Line
-      Frames = 45
-      Hold = 15
     End,
     Shot
-      Says = AfterBattle
+      Zone = Saf
+      Frames = 45
+      Hold = 10
+      Pitch = 45
+      Zoom = 120
+      Ease = IN_OUT
+    End,
+    Shot
+      Says = AfterLanding
       Hold = 15
     End
   ]
 End
 
+; t 0: the card, the battle laid, the hero held high in the sky over the landing, the opening shown.
 Trigger
   Name = BattleStart
-  Map = jang
+  Map = world
   When = MAP_START
+  If = [
+    Condition
+      Is = FLAG_SET
+      Target = Act1
+    End,
+    Condition
+      Is = FLAG_UNSET
+      Target = HeroLanded
+    End
+  ]
   Actions = [
     Action
-      ; The chapter's name over the screen as it opens.
       Act = TITLE
       Target = ChapterBattle
     End,
     Action
-      Act = ALLY
-      Target = Soldier
-      Count = 4
-      Zone = Line
+      Act = BATTLE
+      Target = Opening
     End,
     Action
-      Act = ALLY
-      Target = Militia
-      Count = 3
-      Zone = Line
-    End,
-    Action
-      ; The army comes on at the line.
-      Act = CALL
-      Target = Skeleton
-      Zone = Line
-    End,
-    Action
-      Act = CALL
-      Target = Runner
-      Zone = Line
+      Act = SKY
+      Target = Hero
+      Zone = Qonish
+      Height = 3000
     End,
     Action
       Act = CUTSCENE
-      Target = BattleOpening
+      Target = Summoning
     End
   ]
 End
 
-; The world stops for him: a beam of light, the hero in it, the enemy commander thrown back.
+; The camera on them: arms spread wide to the sides, faces to the sky; then hands snap together forward.
 Trigger
-  Name = HeroArrives
-  Map = jang
+  Name = RitualBegins
+  Map = world
   When = SEEN
-  Target = BattleOpening
+  Target = Summoning
+  If = [
+    Condition
+      Is = FLAG_SET
+      Target = Act1
+    End
+  ]
   Actions = [
     Action
+      Act = POSE
+      Target = Ritualist
+      Clip = Ritual
+      OrElse = Ranged_Magic_Summon
+      Frames = 150
+    End,
+    Action
       Act = EFFECT
-      Target = SkyLight
-      Zone = Landing
+      Target = RitualGlow
+      Zone = Qonish
     End,
     Action
-      ; Down out of the sky in the beam, a second's fall; the ground cracks and the camera knocks as he lands.
-      Act = FALL
+      Act = CUTSCENE
+      Target = Ritual
+    End
+  ]
+End
+
+; +105: a bright beam from each one's hands to a point over the landing, three sides into one.
+Trigger
+  Name = BeamsFire
+  Map = world
+  When = AFTER
+  Target = RitualBegins
+  Delay = 105
+  Actions = [
+    Action
+      Act = BEAM
+      Target = Ritualist
+      Zone = Qonish
+      Height = 40
+      Drawn = RitualBeam
+      Frames = 100
+    End
+  ]
+End
+
+; +120: the beams feed a pillar of light that rises to the sky.
+Trigger
+  Name = PillarRises
+  Map = world
+  When = AFTER
+  Target = RitualBegins
+  Delay = 120
+  Actions = [
+    Action
+      Act = BEAM
+      Zone = Qonish
+      Height = 900
+      Drawn = SkyPillarBeam
+      Frames = 90
+    End,
+    Action
+      Act = EFFECT
+      Target = SkyPillar
+      Zone = Qonish
+    End
+  ]
+End
+
+; +150: the meteor — him, burning — streaks down at an angle out of the south-west.
+Trigger
+  Name = MeteorFalls
+  Map = world
+  When = AFTER
+  Target = RitualBegins
+  Delay = 150
+  Actions = [
+    Action
+      Act = STREAK
       Target = Hero
-      Zone = Landing
-      Height = 140
-      Frames = 30
-      Landed = HeroLandsDust
+      Zone = Qonish
+      Height = 700
+      Lean = 400
+      Bearing = 135
+      Frames = 24
+      Drawn = MeteorTrail
+      Landed = MeteorImpact
+    End
+  ]
+End
+
+; +174, the impact: the shockwave throws the enemy clear and stuns them, the battle is held, he
+; kneels in the smoke and rises, and the ritualists are gone in a flash.
+Trigger
+  Name = Impact
+  Map = world
+  When = AFTER
+  Target = MeteorFalls
+  Delay = 24
+  Actions = [
+    Action
+      Act = SHOCKWAVE
+      Target = MeteorShock
+      Zone = Qonish
     End,
     Action
-      ; The enemy commander thrown back by it: a hop through the air, dust where he lands.
-      Act = LEAP
-      Target = EnemyCommander
-      Zone = Thrown
-      Height = 22
-      Frames = 24
-      Landed = Beaten
+      Act = SOUND
+      Target = landing.impact
+      Zone = Qonish
+    End,
+    Action
+      Act = HOLD
+      Zone = Darvoza_oldi
+    End,
+    Action
+      Act = POSE
+      Target = Hero
+      Clip = HeroLanding
+      Frames = 70
+    End,
+    Action
+      Act = REMOVE
+      Target = Ritualist
+      Drawn = RitualistVanish
     End,
     Action
       Act = FLAG
       Target = HeroLanded
-    End,
-    Action
-      Act = START_QUEST
-      Target = HoldTheLine
-    End,
+    End
+  ]
+End
+
+; +249: what he is told, the battle still held.
+Trigger
+  Name = LandingTalk
+  Map = world
+  When = AFTER
+  Target = Impact
+  Delay = 75
+  Actions = [
     Action
       Act = CUTSCENE
       Target = Landing
@@ -392,67 +547,22 @@ Trigger
   ]
 End
 
-; He rises and charges again, at the one who threw him...
-Trigger
-  Name = EnemyCharges
-  Map = jang
-  When = AFTER
-  Target = HeroArrives
-  Delay = 90
-  Actions = [
-    Action
-      Act = CALL
-      Target = EnemyCommander
-      Zone = Landing
-    End
-  ]
-End
-
-; ...beaten, he kneels — and the commander cuts him down.
-Trigger
-  Name = EnemyBeaten
-  Map = jang
-  When = BEATEN
-  Target = EnemyCommander
-  Actions = [
-    Action
-      Act = SAY
-      Target = EnemyFalls
-    End,
-    Action
-      Act = WALK
-      Target = Act1Commander
-      Zone = Landing
-    End
-  ]
-End
-
-Trigger
-  Name = CommanderCuts
-  Map = jang
-  When = AFTER
-  Target = EnemyBeaten
-  Delay = 60
-  Actions = [
-    Action
-      Act = SAY
-      Target = CommanderStrikes
-    End,
-    Action
-      Act = KILL
-      Target = EnemyCommander
-    End
-  ]
-End
-
-; His army breaks: what is left of it falls, and the commander says what he is.
+; The dialogue over: the battle let go, the soldiers finish the stunned, and the commander leads on.
 Trigger
   Name = BattleWon
-  Map = jang
-  When = AFTER
-  Target = CommanderCuts
-  Delay = 30
+  Map = world
+  When = SEEN
+  Target = Landing
+  If = [
+    Condition
+      Is = FLAG_SET
+      Target = Act1
+    End
+  ]
   Actions = [
+    Action
+      Act = RELEASE
+    End,
     Action
       Act = KILL
       Target = Skeleton
@@ -466,35 +576,259 @@ Trigger
       Target = SkeletonMage
     End,
     Action
-      Act = CUTSCENE
-      Target = BattleOver
+      Act = KILL
+      Target = EnemyCommander
+    End,
+    Action
+      Act = FLAG
+      Target = BattleWon
+    End,
+    Action
+      Act = START_QUEST
+      Target = FollowCommander
+    End,
+    Action
+      Act = CHECKPOINT
+    End
+  ]
+End
+
+; ---- the world shut but for the way to the capital: section 6 ----
+
+Conversation
+  Name = GateShut
+  Lines = [
+    Line
+      Speaker = Soqchi
+      Text = "Hozir u yerga bormaymiz. Avval malikaning huzuriga."
+    End
+  ]
+End
+
+Speaker
+  Name = Soqchi
+  DisplayName = Soqchi
+  Picture =
+End
+
+; The ritualists are people, not monsters: nobody's foe, nobody's prey; they say nothing.
+Npc
+  Name = Ritualist
+  Role = Kohin
+  Radius = 0
+End
+
+Npc
+  Name = Soqchi
+  Talk = GateShut
+  Role = Soqchi
+  Radius = 26
+End
+
+Place
+  Map = world
+  Zone = "GuardNorth 116 413 1"
+End
+
+Place
+  Map = world
+  Zone = "GuardEast 129 421 1"
+End
+
+; The guards at the corridor's ends, while the act keeps the world shut.
+Trigger
+  Name = Act1Guards
+  Map = world
+  When = MAP_START
+  Repeat = Yes
+  If = [
+    Condition
+      Is = FLAG_SET
+      Target = Act1
+    End,
+    Condition
+      Is = FLAG_UNSET
+      Target = WarBegun
+    End
+  ]
+  Actions = [
+    Action
+      Act = SPAWN
+      Target = Soqchi
+      Zone = GuardNorth
+    End,
+    Action
+      Act = SPAWN
+      Target = Soqchi
+      Zone = GuardEast
+    End
+  ]
+End
+
+Gate
+  Name = Act1Battle
+  Map = world
+  If = [
+    Condition
+      Is = FLAG_SET
+      Target = Act1
+    End,
+    Condition
+      Is = FLAG_UNSET
+      Target = Welcomed
+    End
+  ]
+  Open = [Darvoza_oldi, "Yo'lak", Poytaxt]
+  Start = Darvoza_oldi
+  Word = "Hozir u yerga bormaymiz."
+End
+
+Gate
+  Name = Act1Capital
+  Map = world
+  If = [
+    Condition
+      Is = FLAG_SET
+      Target = Act1
+    End,
+    Condition
+      Is = FLAG_UNSET
+      Target = WarBegun
+    End
+  ]
+  Open = [Darvoza_oldi, "Yo'lak", Poytaxt, Eski_qabrlar]
+  Start = Saroy
+  Word = "Hozir u yerga bormaymiz."
+End
+
+Gate
+  Name = Act1War
+  Map = world
+  If = [
+    Condition
+      Is = FLAG_SET
+      Target = Act1
+    End
+  ]
+  Open = [Darvoza_oldi, "Yo'lak", Poytaxt, Eski_qabrlar]
+  Start = Saroy
+  Word = "Hozir u yerga bormaymiz."
+End
+
+; ===========================================================================
+; 2. The palace, in the capital (world: Saroy, Taxt, Bozor, Yerto'la).
+; ===========================================================================
+
+; Spots in the capital the act's people stand at (the world's file is WorldMapWriter's, so they are the
+; act's own places, as Act 2's are). In cells: name x y radius.
+Place
+  Map = world
+  Zone = "CourtSide 108 463 1"
+End
+
+Place
+  Map = world
+  Zone = "BlacksmithSpot 118 457 1"
+End
+
+Place
+  Map = world
+  Zone = "OldWomanSpot 115 465 1"
+End
+
+; The capital's people, every time the world is laid in the act (a load lays it again): the queen on
+; her throne, the merchant on the plaza, the blacksmith and the old woman by it.
+Trigger
+  Name = Act1Capital
+  Map = world
+  When = MAP_START
+  Repeat = Yes
+  If = [
+    Condition
+      Is = FLAG_SET
+      Target = Act1
+    End
+  ]
+  Actions = [
+    Action
+      Act = SPAWN
+      Target = Act1Queen
+      Zone = Taxt
+    End,
+    Action
+      Act = SPAWN
+      Target = Merchant
+      Zone = Bozor
+    End,
+    Action
+      Act = SPAWN
+      Target = Blacksmith
+      Zone = BlacksmithSpot
+    End,
+    Action
+      Act = SPAWN
+      Target = OldWoman
+      Zone = OldWomanSpot
+    End
+  ]
+End
+
+; The commander: on the field until the battle is won, then on the road ahead of him to the palace,
+; and at the palace from his welcome on.
+Trigger
+  Name = Act1CommanderField
+  Map = world
+  When = MAP_START
+  Repeat = Yes
+  If = [
+    Condition
+      Is = FLAG_SET
+      Target = Act1
+    End,
+    Condition
+      Is = FLAG_UNSET
+      Target = Welcomed
+    End
+  ]
+  Actions = [
+    Action
+      Act = SPAWN
+      Target = Act1Commander
+      Zone = Saf
     End
   ]
 End
 
 Trigger
-  Name = ToTheCapital
-  Map = jang
-  When = SEEN
-  Target = BattleOver
+  Name = Act1CommanderPalace
+  Map = world
+  When = MAP_START
+  Repeat = Yes
+  If = [
+    Condition
+      Is = FLAG_SET
+      Target = Act1
+    End,
+    Condition
+      Is = FLAG_SET
+      Target = Welcomed
+    End
+  ]
   Actions = [
     Action
-      Act = MAP
-      Target = poytaxt
+      Act = SPAWN
+      Target = Act1Commander
+      Zone = CourtSide
     End
   ]
 End
-
-; ===========================================================================
-; 2. poytaxt — the capital: the queen, the medallion, the merchant, people's asks.
-; ===========================================================================
 
 Conversation
   Name = CommanderInCapital
   Lines = [
     Line
       Speaker = Act1Commander
-      Text = "Bu — poytaxt. Malika saroyda kutmoqda. Ortimdan yur."
+      Text = "Bu — poytaxt. Malika saroyda, taxtida kutmoqda. Yur."
     End
   ]
 End
@@ -535,7 +869,7 @@ Conversation
   Lines = [
     Line
       Speaker = Act1Commander
-      Text = "Mashq maydoni — shahar ostidagi eski qabrlar. Ikki qavat tushing, so'ng qayting."
+      Text = "Mashq — shimoliy darvoza ortidagi eski qabrlarda. U yerda o'liklar tinmaydi: ularning qo'riqchisini yeng, so'ng qayt."
     End
   ]
 End
@@ -547,8 +881,8 @@ Quest
   Steps = [
     Step
       Goal = REACH
-      Target = Gate
-      Text = "Shahar darvozasidan mashq maydoniga chiqing"
+      Target = Eski_qabrlar
+      Text = "Shimoliy darvozadan chiqib, eski qabrlarga boring"
     End
   ]
 End
@@ -557,8 +891,8 @@ Cutscene
   Name = CapitalShown
   Shots = [
     Shot
-      Zone = Square
-      Frames = 1
+      Zone = Bozor
+      Frames = 30
       Hold = 20
     End,
     Shot
@@ -566,8 +900,8 @@ Cutscene
       Hold = 10
     End,
     Shot
-      ; The castle's court, where the queen sits: the camera turns to face her throne from the south and draws in.
-      Zone = Throne
+      ; The palace's court, where the queen sits: the camera turns to face her throne from the gate and draws in.
+      Zone = Taxt
       Frames = 60
       Hold = 20
       Turn = 0
@@ -578,38 +912,41 @@ Cutscene
   ]
 End
 
+; Coming into the city with the battle won, the first time: the capital shown, the commander's word.
 Trigger
   Name = CapitalArrival
-  Map = poytaxt
-  When = MAP_START
+  Map = world
+  When = ZONE
+  Target = Poytaxt
   If = [
     Condition
+      Is = FLAG_SET
+      Target = Act1
+    End,
+    Condition
+      Is = FLAG_SET
+      Target = BattleWon
+    End,
+    Condition
       Is = FLAG_UNSET
-      Target = Trained
+      Target = Welcomed
     End
   ]
   Actions = [
     Action
-      ; The chapter's name over the screen as it opens.
       Act = TITLE
       Target = ChapterCapital
     End,
     Action
       Act = CUTSCENE
       Target = CapitalShown
-    End,
-    Action
-      ; She goes ahead to the court; he follows.
-      Act = WALK
-      Target = Act1Commander
-      Zone = CourtSide
     End
   ]
 End
 
 Trigger
   Name = QueenGivesAct1
-  Map = poytaxt
+  Map = world
   When = HEARD
   Target = QueenWelcome
   Actions = [
@@ -624,23 +961,26 @@ Trigger
     Action
       Act = FLAG
       Target = Welcomed
+    End,
+    Action
+      Act = FINISH_QUEST
+      Target = FollowCommander
+    End,
+    Action
+      Act = CHECKPOINT
     End
   ]
 End
 
 Trigger
-  Name = ToTraining
-  Map = poytaxt
-  When = QUEST_DONE
+  Name = TrainingSent
+  Map = world
+  When = QUEST_STARTED
   Target = Training
   Actions = [
     Action
       Act = SAY
       Target = ToTrainingLine
-    End,
-    Action
-      Act = MAP
-      Target = mashq
     End
   ]
 End
@@ -666,14 +1006,27 @@ Conversation
 End
 
 Quest
+  Name = BackToPalace
+  Kind = MAIN
+  Title = "Saroyga qaytish"
+  Steps = [
+    Step
+      Goal = REACH
+      Target = Saroy
+      Text = "Malika saroyiga qayting"
+    End
+  ]
+End
+
+Quest
   Name = ToWar
   Kind = MAIN
   Title = "Urushga"
   Steps = [
     Step
       Goal = REACH
-      Target = Gate
-      Text = "Shahar darvozasidan urushga chiqing"
+      Target = Darvoza_oldi
+      Text = "Shimoliy darvozadan urushga chiqing"
     End
   ]
 End
@@ -682,8 +1035,8 @@ Cutscene
   Name = WarCouncilShown
   Shots = [
     Shot
-      ; The queen's hall again, closer: she and the commander over the throne.
-      Zone = Throne
+      ; The queen's court again, closer: she and the commander over the throne.
+      Zone = Taxt
       Frames = 45
       Hold = 20
       Pitch = 38
@@ -699,19 +1052,10 @@ End
 
 Trigger
   Name = CapitalReturn
-  Map = poytaxt
-  When = MAP_START
-  If = [
-    Condition
-      Is = FLAG_SET
-      Target = Trained
-    End
-  ]
+  Map = world
+  When = QUEST_DONE
+  Target = BackToPalace
   Actions = [
-    Action
-      Act = PLACE
-      Zone = CourtSide
-    End,
     Action
       Act = CUTSCENE
       Target = WarCouncilShown
@@ -723,13 +1067,44 @@ Trigger
     Action
       Act = FLAG
       Target = WarBegun
+    End,
+    Action
+      Act = CHECKPOINT
+    End
+  ]
+End
+
+; Trained and back on the world with the council not yet held (a load, an old save): he is sent to it.
+Trigger
+  Name = Act1CouncilWaits
+  Map = world
+  When = MAP_START
+  Repeat = Yes
+  If = [
+    Condition
+      Is = FLAG_SET
+      Target = Act1
+    End,
+    Condition
+      Is = FLAG_SET
+      Target = Trained
+    End,
+    Condition
+      Is = FLAG_UNSET
+      Target = WarBegun
+    End
+  ]
+  Actions = [
+    Action
+      Act = START_QUEST
+      Target = BackToPalace
     End
   ]
 End
 
 Trigger
   Name = ToTheWar
-  Map = poytaxt
+  Map = world
   When = QUEST_DONE
   Target = ToWar
   Actions = [
@@ -795,7 +1170,7 @@ Quest
       Target = Skeleton
       Count = 3
       Text = "Shaharning o'ng yuqori burchagidagi yerto'laga boring, skeletlarni qiring %d/%d"
-      Where = Cellar
+      Where = "Yerto'la"
       Glow = Yes
     End,
     Step
@@ -821,7 +1196,7 @@ Quest
       Goal = COLLECT
       Target = FamilyRing
       Text = "Shaharning o'ng yuqori burchagidagi yerto'lada uzukni toping"
-      Where = Cellar
+      Where = "Yerto'la"
       Glow = Yes
     End,
     Step
@@ -850,21 +1225,73 @@ End
 
 Trigger
   Name = CellarStirs
-  Map = poytaxt
+  Map = world
   When = QUEST_STARTED
+  If = [
+    Condition
+      Is = FLAG_SET
+      Target = Act1
+    End
+  ]
   Target = Cellar
   Actions = [
     Action
       Act = SPAWN
       Target = Skeleton
       Count = 3
-      Zone = Cellar
+      Zone = "Yerto'la"
+    End
+  ]
+End
+
+; The ring lies in the cellar while she wants it and nobody has picked it up: laid as her ask is
+; taken, and again whenever the world is laid (a load lays it fresh).
+Trigger
+  Name = RingLies
+  Map = world
+  When = QUEST_STARTED
+  If = [
+    Condition
+      Is = FLAG_SET
+      Target = Act1
+    End
+  ]
+  Target = LostRing
+  Actions = [
+    Action
+      Act = LAY
+      Target = FamilyRing
+      Zone = "Yerto'la"
+    End
+  ]
+End
+
+Trigger
+  Name = RingLiesAgain
+  Map = world
+  When = MAP_START
+  Repeat = Yes
+  If = [
+    Condition
+      Is = QUEST_ACTIVE
+      Target = LostRing
+    End,
+    Condition
+      Is = LACKS
+      Target = FamilyRing
+    End
+  ]
+  Actions = [
+    Action
+      Act = LAY
+      Target = FamilyRing
+      Zone = "Yerto'la"
     End
   ]
 End
 
 ; ===========================================================================
-; 3. mashq — the training: the descent's first floors.
+; 3. The training, at the old graves west of the field (world: Eski_qabrlar).
 ; ===========================================================================
 
 Conversation
@@ -872,7 +1299,7 @@ Conversation
   Lines = [
     Line
       Speaker = Hero
-      Text = "Yetarli. Medalyon kuchimni sezyapman. Endi poytaxtga qaytaman."
+      Text = "Yetarli. Medalyon kuchimni sezyapman. Endi saroyga qaytaman."
     End
   ]
 End
@@ -885,7 +1312,9 @@ Quest
     Step
       Goal = KILL
       Target = Reaper
-      Text = "Ikkinchi qavat qo'riqchisini yenging"
+      Where = Eski_qabrlar
+      Text = "Qabrlar qo'riqchisini yenging"
+      Glow = Yes
       OnDone = Done
         Experience = 150
       End
@@ -893,10 +1322,12 @@ Quest
   ]
 End
 
+; The graves stir as he comes: six of the dead and their keeper rise.
 Trigger
   Name = TrainingBegins
-  Map = mashq
-  When = MAP_START
+  Map = world
+  When = QUEST_DONE
+  Target = Training
   Actions = [
     Action
       ; The chapter's name over the screen as it opens.
@@ -906,16 +1337,55 @@ Trigger
     Action
       Act = START_QUEST
       Target = TrainingDeep
+    End,
+    Action
+      Act = SPAWN
+      Target = Skeleton
+      Count = 6
+      Zone = Eski_qabrlar
+    End,
+    Action
+      Act = SPAWN
+      Target = Reaper
+      Count = 1
+      Zone = Eski_qabrlar
     End
   ]
 End
 
-; Two floors down and he has learnt enough: the third is not entered — back to the capital.
+; A load in the middle of it lays the world fresh: the graves rise again.
+Trigger
+  Name = TrainingRisesAgain
+  Map = world
+  When = MAP_START
+  Repeat = Yes
+  If = [
+    Condition
+      Is = QUEST_ACTIVE
+      Target = TrainingDeep
+    End
+  ]
+  Actions = [
+    Action
+      Act = SPAWN
+      Target = Skeleton
+      Count = 6
+      Zone = Eski_qabrlar
+    End,
+    Action
+      Act = SPAWN
+      Target = Reaper
+      Count = 1
+      Zone = Eski_qabrlar
+    End
+  ]
+End
+
 Trigger
   Name = TrainingDone
-  Map = mashq
-  When = DEPTH
-  Target = 3
+  Map = world
+  When = QUEST_DONE
+  Target = TrainingDeep
   Actions = [
     Action
       Act = FLAG
@@ -926,8 +1396,11 @@ Trigger
       Target = TrainingOver
     End,
     Action
-      Act = MAP
-      Target = poytaxt
+      Act = START_QUEST
+      Target = BackToPalace
+    End,
+    Action
+      Act = CHECKPOINT
     End
   ]
 End

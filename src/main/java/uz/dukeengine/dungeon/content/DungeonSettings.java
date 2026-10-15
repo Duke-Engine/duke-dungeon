@@ -147,6 +147,10 @@ public final class DungeonSettings {
     private final List<uz.dukeengine.dungeon.story.Place> places = new java.util.ArrayList<>();
     private uz.dukeengine.dungeon.story.Credits credits = uz.dukeengine.dungeon.story.Credits.DEFAULTS;
     private final List<uz.dukeengine.dungeon.story.Title> titles = new java.util.ArrayList<>();
+    private final List<uz.dukeengine.dungeon.story.Battle> battles = new java.util.ArrayList<>();
+    private final List<uz.dukeengine.dungeon.story.Shockwave> shockwaves = new java.util.ArrayList<>();
+    private final List<uz.dukeengine.dungeon.story.Gate> gates = new java.util.ArrayList<>();
+    private final List<uz.dukeengine.core.content.Laser> lasers = new java.util.ArrayList<>();
 
     /** Every attribute, in file order — the order a hero's are held in and the panel draws them. */
     private final List<Attribute> attributes = new java.util.ArrayList<>();
@@ -386,6 +390,37 @@ public final class DungeonSettings {
                 .orElse(null);
     }
 
+    /** The Battle block of that name, or null. */
+    public uz.dukeengine.dungeon.story.Battle battle(String name) {
+        return battles.stream().filter(each -> each.name().equals(name)).findFirst().orElse(null);
+    }
+
+    /** The Shockwave block of that name, or null. */
+    public uz.dukeengine.dungeon.story.Shockwave shockwave(String name) {
+        return shockwaves.stream().filter(each -> each.name().equals(name)).findFirst().orElse(null);
+    }
+
+    /** Every Gate block, in file order: the first that holds is the one kept. */
+    public List<uz.dukeengine.dungeon.story.Gate> gates() {
+        return List.copyOf(gates);
+    }
+
+    /** How the simulation's beams are drawn (the engine's Laser looks): the ritual's, the pillar of light. */
+    public List<uz.dukeengine.core.content.Laser> lasers() {
+        return List.copyOf(lasers);
+    }
+
+    /** The joint of any act that took the place of the retired {@code map}, or null. */
+    public uz.dukeengine.dungeon.story.Campaign.Joint replacing(String map) {
+        for (var campaign : campaigns) {
+            var joint = map == null ? null : campaign.replacing(map);
+            if (joint != null) {
+                return joint;
+            }
+        }
+        return null;
+    }
+
     /** Whether {@code map} is a joint's map or a descent of any act. */
     public boolean inCampaign(String map) {
         return campaigns.stream().anyMatch(each -> each.holds(map));
@@ -622,6 +657,10 @@ public final class DungeonSettings {
                 case uz.dukeengine.dungeon.story.Place place -> places.add(place);
                 case uz.dukeengine.dungeon.story.Credits block -> credits = once(block, once);
                 case uz.dukeengine.dungeon.story.Title title -> titles.add(title);
+                case uz.dukeengine.dungeon.story.Battle battle -> battles.add(battle);
+                case uz.dukeengine.dungeon.story.Shockwave wave -> shockwaves.add(wave);
+                case uz.dukeengine.dungeon.story.Gate gate -> gates.add(gate);
+                case uz.dukeengine.core.content.Laser laser -> lasers.add(laser);
                 case uz.dukeengine.dungeon.world.SaveMenu block -> saveMenu = once(block, once);
                 case uz.dukeengine.dungeon.world.MainMenu block -> mainMenu = once(block, once);
                 case uz.dukeengine.dungeon.world.Splash block -> splash = once(block, once);
@@ -1299,6 +1338,23 @@ public final class DungeonSettings {
             } catch (IllegalArgumentException e) {
                 require(false, "Place on " + place.map() + ": " + e.getMessage());
             }
+        }
+        var kinds = monsters.stream().map(MonsterKind::name).toList();
+        for (var battle : battles) {
+            var named = "Battle " + battle.name();
+            java.util.stream.Stream.concat(battle.kingdom().stream(), battle.enemy().stream()).forEach(kind ->
+                    require(kinds.contains(kind), named + ": " + kind + " is no Monster"));
+            require(battle.ritualists() == 0 || kinds.contains(battle.ritualist()),
+                    named + ": its Ritualist " + battle.ritualist() + " is no Monster");
+            require(battle.ring() > 0f, named + ": its Ring is how far out the ritualists stand, above 0");
+        }
+        for (var wave : shockwaves) {
+            require(wave.radius() > 0f && wave.frames() >= 1 && wave.stunFrames() >= 0,
+                    "Shockwave " + wave.name() + ": a Radius above 0, Frames of 1 or more, StunFrames of 0 or more");
+        }
+        for (var gate : gates) {
+            require(!gate.open().isEmpty() && !gate.map().isBlank(),
+                    "Gate " + gate.name() + ": on a Map, with at least one Open zone");
         }
         require(dialogue.checkFrames() >= 1, "Dialogue's CheckFrames is how often people are looked for: at least 1");
         require(dialogue.glowLook().isBlank()

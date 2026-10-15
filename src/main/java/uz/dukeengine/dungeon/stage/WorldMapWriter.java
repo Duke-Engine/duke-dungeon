@@ -206,6 +206,10 @@ public final class WorldMapWriter {
     static final String TEMPLE = "Eski_ibodatxona";
     static final String STONES = "Tosh_doira";
     static final String BATTLEFIELD = "Jang_maydoni";
+    /** Act 1's places on the world: the opening battle's field, where he lands, and the old graves he trains at. */
+    static final String OPENING = "Darvoza_oldi";
+    static final String LANDING = "Qonish";
+    static final String GRAVES = "Eski_qabrlar";
 
 
     private WorldMapWriter() {
@@ -1048,6 +1052,7 @@ public final class WorldMapWriter {
             var yard = yard(taken, props, npcs);
             var places = new ArrayList<Zone>();
             var dressed = dressing(taken, props, npcs, places);
+            dressed.addAll(campaign(taken, places));
             var rng = new DeterministicRng(seed ^ 0x776F726C64L);
             var monsters = new ArrayList<Monster>();
             for (var camp : CAMPS) {
@@ -1508,6 +1513,93 @@ public final class WorldMapWriter {
             pieces.addAll(bridges());
             closeUnder(pieces, taken);
             return pieces;
+        }
+
+        /**
+         * Act 1's places, folded into the world (docs/plan/2026-10-15-seamless-campaign.md): the field before the
+         * city's north gate where the opening battle is fought -- its two lines, the landing on its flank, the corridor
+         * down the road into the gate -- the old graves west of it where he trains, and inside the city the palace's
+         * court (the royal castle's ring) with the queen's throne, the plaza and the blacksmith's cellar. Found from the
+         * city's middle and the north road, so a reseeded world still has them. Only looked at: nothing new stands in
+         * the way.
+         */
+        private List<Piece> campaign(Set<Long> taken, List<Zone> zones) {
+            var pieces = new ArrayList<Piece>();
+            var city = SITES.get(CITY);
+            int[] field = roomNear(city.x() + 3, city.y() - 34, 8, false);
+            int fx = field[0];
+            int fy = field[1];
+            zones.add(new Zone(OPENING, fx, fy, 0, 0, 13));
+            zones.add(new Zone("Saf", fx - 4, fy + 6, 9, 2, 0));
+            zones.add(new Zone("Dushman_safi", fx, fy - 8, 0, 0, 3));
+            zones.add(new Zone(LANDING, fx + 9, fy, 0, 0, 1));
+            int gate = city.y() - 12 + 3;
+            zones.add(new Zone("Yo'lak", fx - 4, fy, 9, Math.max(1, gate - fy), 0));
+            int[] graves = roomNear(fx - 16, fy + 2, 6, true);
+            zones.add(new Zone(GRAVES, graves[0], graves[1], 0, 0, 6));
+            // The palace: the royal castle's court (castles: its ring 9 a side from C + (-11, -4)), the throne by its
+            // west wall facing the gate in its east one.
+            int px = city.x() - 10;
+            int py = city.y() - 3;
+            zones.add(new Zone("Saroy", px, py, 8, 8, 0));
+            zones.add(new Zone("Taxt", px + 1, py + 5, 0, 0, 1));
+            zones.add(new Zone("Bozor", city.x(), city.y(), 0, 0, 3));
+            zones.add(new Zone("Yerto'la", city.x() + 8, city.y() - 8, 0, 0, 2));
+            // The throne: a dais of floor tiles, the seat, banners on the wall behind, a column either side.
+            pieces.add(Piece.of(KITS + "room/room_floor.gltf " + (px + 0.6f) + " " + (py + 5.5f) + " 0 0.5 0"));
+            pieces.add(new Piece(KITS + "room/room_pedestal.gltf", px + 0.6f, py + 5.5f, 90, 1.2f, 0xD8B060, 0f));
+            pieces.add(new Piece(KITS + "room/room_banners.gltf", px + 0.15f, py + 5.5f, 90, 1f, 0xFFFFFF, 0f));
+            pieces.add(new Piece(KITS + "room/room_column.gltf", px + 0.6f, py + 3.8f, 0, 0.8f, 0xFFFFFF, 0f));
+            pieces.add(new Piece(KITS + "room/room_column.gltf", px + 0.6f, py + 7.2f, 0, 0.8f, 0xFFFFFF, 0f));
+            // The cellar corner: crates, barrels and a shelf against the walls.
+            float cx = city.x() + 8.5f;
+            float cy = city.y() - 8.5f;
+            pieces.add(new Piece(KITS + "room/room_crate.gltf", cx + 1.8f, cy - 1.6f, 15, 1f, 0xFFFFFF, 0f));
+            pieces.add(new Piece(KITS + "room/room_barrel.gltf", cx - 1.7f, cy - 1.8f, 0, 1f, 0xFFFFFF, 0f));
+            pieces.add(new Piece(KITS + "room/room_shelf.gltf", cx + 2.2f, cy + 0.6f, 270, 1f, 0xFFFFFF, 0f));
+            // The field: banner posts by the line.
+            pieces.add(new Piece(KITS + "town/town_banner_post.gltf", fx - 5.5f, fy + 8.5f, 0, 1f, 0xFFFFFF, 0f));
+            pieces.add(new Piece(KITS + "town/town_banner_post.gltf", fx + 6.5f, fy + 8.5f, 0, 1f, 0xFFFFFF, 0f));
+            // The old graves: three rows of mounds, a sword leaning at each head, a dead tree, candles, stumps.
+            float gx = graves[0] + 0.5f;
+            float gy = graves[1] + 0.5f;
+            for (int row = 0; row < 3; row++) {
+                for (int col = 0; col < 3; col++) {
+                    float mx = gx - 3f + col * 3f;
+                    float my = gy - 2.5f + row * 2.5f;
+                    pieces.add(new Piece(INUCIIAN + "nature/mound.glb", mx, my, (row * 3 + col) * 23 % 30, 1f,
+                            0xFFFFFF, 0f));
+                    pieces.add(new Piece(KITS + "room/room_sword_leaning.gltf", mx, my - 0.8f, 90, 1f, 0xB0A898,
+                            0f));
+                }
+            }
+            pieces.add(yardPiece("nature/dead_tree_bent", gx + 5.2f, gy - 3.6f, 200, 0f));
+            pieces.add(yardPiece("props/candles", gx - 4.6f, gy + 0.4f, 0, 0f));
+            pieces.add(Piece.of(KITS + "room/room_column_stump.gltf " + (gx + 4.4f) + " " + (gy + 3.4f) + " 0 1 0"));
+            pieces.add(Piece.of(KITS + "room/room_column_stump.gltf " + (gx - 4.4f) + " " + (gy - 3.6f) + " 40 1 0"));
+            keep(fx, fy, 14);
+            keep(graves[0], graves[1], 7);
+            quiet.add(field);
+            quiet.add(graves);
+            closeUnder(pieces, taken);
+            return pieces;
+        }
+
+        /** The walked, gentle cell nearest (x, y) with {@code reach} of such ground round it; off the roads if asked. */
+        private int[] roomNear(int x, int y, int reach, boolean offRoad) {
+            for (int far = 0; far < 60; far++) {
+                for (int dy = -far; dy <= far; dy++) {
+                    for (int dx = -far; dx <= far; dx++) {
+                        int cx = x + dx;
+                        int cy = y + dy;
+                        if (Math.max(Math.abs(dx), Math.abs(dy)) == far && cx > 14 && cy > 14 && cx < SIZE - 14
+                                && cy < SIZE - 14 && roomAt(cx, cy, reach) && (!offRoad || !roadNear(cx, cy, reach))) {
+                            return new int[] {cx, cy};
+                        }
+                    }
+                }
+            }
+            throw new IllegalStateException("no room for the campaign near " + x + "," + y);
         }
 
         /** A village round (x, y): houses, a row of house fronts, a fence, a well and a scarecrow, its people. */
