@@ -198,8 +198,6 @@ class KnightTest {
         var wave = skillOf(KNIGHT, 'Q');
         assertEquals(55f, wave.projectileSpeed(), 0.001f, "the wave flies at other than half its first 110");
         var looks = SETTINGS.effectLayers().stream().filter(art -> art.effect().equals("SwordWave")).toList();
-        assertTrue(looks.stream().anyMatch(art -> "ARC".equals(art.fields().get("type"))),
-                "the wave is not drawn as a half-moon lying on the floor");
         assertTrue(looks.stream().noneMatch(art -> "AURA".equals(art.fields().get("type"))),
                 "the wave still carries a ball round it");
 
@@ -208,6 +206,40 @@ class KnightTest {
         assertEquals(uz.dukeengine.client3d.SkillRange.Shape.DOWN_A_LANE, ring.shape(), "the charge is not aimed as a line");
         assertEquals(charge.distance(), ring.reach(), 0.001f, "its line is not as long as his drive");
         assertEquals(2f * charge.radius(), ring.width(), 0.001f, "its line is not as wide as what it catches");
+    }
+
+    /**
+     * The owner's playtest of 1.0.39: "a plain dot flies off, not a wave". The half-moon was an ARC layer of the
+     * wave's effect, and the client carries only TRAIL, AURA and timeless LIGHT layers with a thing in flight
+     * (LayeredEffects.inFlight) -- an ARC is kept for where it lands, so only the sparks flew. The half-moon is
+     * the projectile's own model now: shipped, unlit (it glows), flat, its bulge the way it flies, and as wide
+     * as the lane the wave cuts.
+     */
+    @Test
+    void theWaveFliesAsAHalfMoonModelAsWideAsItsLane() {
+        var wave = skillOf(KNIGHT, 'Q');
+        var look = SETTINGS.projectile(wave.projectile());
+        assertTrue(look.hasModel(), "the wave has no body of its own: only its effect's in-flight layers would fly");
+        assertNotNull(getClass().getClassLoader().getResource(look.model()), look.model() + " is not on the classpath");
+        assertEquals(0f, look.facing(), 0.001f, "the half-moon's bulge (+X) is not turned the way it flies");
+
+        var model = new com.jme3.asset.DesktopAssetManager(true).loadModel(look.model());
+        var geometries = new java.util.ArrayList<com.jme3.scene.Geometry>();
+        model.depthFirstTraversal(each -> {
+            if (each instanceof com.jme3.scene.Geometry geometry) {
+                geometries.add(geometry);
+            }
+        });
+        assertFalse(geometries.isEmpty(), look.model() + " has nothing to draw");
+        for (var geometry : geometries) {
+            assertTrue(geometry.getMaterial().getMaterialDef().getAssetName().endsWith("Unshaded.j3md"),
+                    "the half-moon is lit by the floor rather than glowing (not KHR_materials_unlit)");
+        }
+        model.updateGeometricState();
+        var box = (com.jme3.bounding.BoundingBox) model.getWorldBound();
+        assertEquals(wave.hitWidth(), 2f * box.getZExtent() * look.scale(), 0.5f, "not as wide as the wave's lane");
+        assertTrue(box.getXExtent() < box.getZExtent() / 2f, "not a half-moon: as deep as it is wide");
+        assertEquals(0f, box.getYExtent(), 0.01f, "not lying flat");
     }
 
     /** And a click down that line, near or far, drives him its whole Distance that way. */

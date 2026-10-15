@@ -13,47 +13,48 @@ Projectile
   ]
 
 
-; No model: a white-steel half-moon and the sparks it sheds, both drawn by the
-; effect below.
-  Height = 6
+; Its body is a model: a flat half-moon of white steel, 14 tip to tip -- the skill's
+; HitWidth, the lane the game draws -- lying just off the floor and turned the way it
+; flies as every arrow is (its bulge is the model's +X, so Facing 0). Unlit and added
+; to the floor, so it glows. Made for this, CC0: art/effects/knight_wave.py.
+;
+; ★ Why a model and not a layer of the effect (the owner's playtest of 1.0.39: "a plain
+; dot flies off"): the client lets a projectile carry only its TRAIL, AURA and timeless
+; LIGHT layers while it flies (LayeredEffects.inFlight). An ARC is not one of them: the
+; half-moon layer it was drawn with before was kept for where it LANDS, and a wave that
+; runs out of Distance lands nowhere -- so all that flew was the sparks, a dot.
+  Model = models/effects/knight_wave.glb
+  Scale = 1
+  Facing = 0
+  Height = 1.5
   Tint = 0xDDEBFF
   Effect = SwordWave
   EffectOffset = 0
 End
 
 ; ---------------------------------------------------------------------------
-; A HALF-MOON lying on the floor and running the way it was thrown -- the owner,
-; 2026-10-10: "not a sphere, a crescent". The kit's slash (the arc Cleave cuts
-; with) laid flat as an ARC, which the client turns so its bulge points the way
-; the wave is travelling, read from how it moved since the last frame. Let out
-; continuously and short-lived, so the newest is the wave and the ones just
-; behind it fade into a faint wake. As wide as the skill's HitWidth (14).
-;
-; Not Follows: a layer that follows is drawn in the wave's own frame, and the
-; turn is read off the ground it has crossed. White-steel and gold, the colours
-; of Cleave, so it reads as the swing thrown on. No light of its own: it crosses
-; a room, and a moving light down every corridor is the costliest thing an
-; effect can do.
+; What the half-moon (the projectile's model, above) sheds as it runs: a soft white
+; wake lying where it passed, and sparks. Both are TRAILs, which the client carries
+; with a thing in flight. Each lives a moment, so the wake fades behind it, and when
+; the wave reaches the end of its Distance and is gone, the last of its light fades
+; out there. No light of its own: it crosses a room, and a moving light down every
+; corridor is the costliest thing an effect can do.
 ; ---------------------------------------------------------------------------
 Effect
   Name = SwordWave
   Layers = [
     Layer
-      Name = HalfMoon
-      Type = ARC
-      Texture = kit/effects/particles/slash_04.png
+      Name = Wake
+      Type = TRAIL
+      Texture = kit/effects/particles/circle_05.png
       Blend = Additive
-      Count = 14
-      Rate = 50
-      Life = [0.18, 0.22]
-      Size = [15, 13]
-      Colour = [0xFFFFFF, 0xCFE4FF]
-      Alpha = [1, 0]
-      FadeOut = 0.6
-      ; Just off the floor, so it never sinks into a step.
-      Height = 1.5
+      Count = 24
+      Rate = 60
+      Life = [0.3, 0.35]
+      Size = [9, 5]
+      Colour = [0xCFE4FF, 0x40506A]
+      Alpha = [0.55, 0]
       Direction = NONE
-      TurnJitter = 0
     End,
     Layer
       Name = Sparks
