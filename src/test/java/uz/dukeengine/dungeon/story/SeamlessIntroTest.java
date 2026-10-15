@@ -181,7 +181,7 @@ class SeamlessIntroTest {
             session.game().runHeadless(1);
         }
         // Those inside its reach as he struck: every one stunned, and thrown its whole Distance out where nothing stands
-        // in the way -- the engine's PUSH stops a body at the first body behind it (a crowd holds; E95 asks otherwise).
+        // in the way -- the farthest first, through each other (E95); only stone or a body that is no victim stops one.
         int inside = 0;
         int thrown = 0;
         for (var each : before.entrySet()) {
@@ -196,7 +196,7 @@ class SeamlessIntroTest {
             }
         }
         assertTrue(inside > 0, "the premise: enemies within the wave");
-        assertTrue(thrown * 3 >= inside, thrown + " of " + inside + " thrown out from the landing");
+        assertTrue(thrown * 4 >= inside * 3, thrown + " of " + inside + " thrown out from the landing");
         assertTrue(highest > 5f, "through the air: " + highest);
         var at = hero(session).getPosition();
         assertTrue(Act1Test.zone("world", "Qonish").holds(at.x(), at.y(), CELL), "he stands where he struck");
