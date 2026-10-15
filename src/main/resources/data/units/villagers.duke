@@ -1,0 +1,144 @@
+; ---------------------------------------------------------------------------
+; The open world's ordinary people (maps/world, stage/WorldMapWriter): the
+; villagers of the villages along its roads, the travellers and the pedlar who
+; walk between them, and the keepers of its watchtowers. Like the merchant and
+; the commander they stand on the engine's neutral side, have no Body and are
+; never drawn into a floor (Weight 0). Who says what is data/story/villages.duke.
+;
+; Their looks are KayKit's adventurers (CC0), tinted as working people.
+; ---------------------------------------------------------------------------
+
+; A villager, who strolls about her village.
+Monster
+  Name = Villager
+  DisplayName = "Qishloqi"
+  KindOf = [INFANTRY, SELECTABLE]
+  Geometry = Cylinder
+    Radius = 4
+    Height = 12
+  End
+  VisionRange = 0
+  Modules = [
+    MoveUpdate
+      Speed = 8
+      TurnRate = 0
+    End
+  ]
+  MinDepth = 99
+  Weight = 0
+  Colour = 0xA88C68
+  Scale = 1.0
+  Model = models/heroes/rogue.glb
+  Tint = 0xC8B090
+  ModelScale = 5.0
+  Facing = 90
+  Animations = Humanoid
+End
+
+; A farmer, who keeps near his field.
+Monster
+  Name = Farmer
+  DisplayName = "Dehqon"
+  KindOf = [INFANTRY, SELECTABLE]
+  Geometry = Cylinder
+    Radius = 4
+    Height = 12
+  End
+  VisionRange = 0
+  Modules = [
+    MoveUpdate
+      Speed = 8
+      TurnRate = 0
+    End
+  ]
+  MinDepth = 99
+  Weight = 0
+  Colour = 0x8A7A50
+  Scale = 1.0
+  Model = models/heroes/ranger.glb
+  Tint = 0xB0A070
+  ModelScale = 5.5
+  Facing = 90
+  Animations = Humanoid
+End
+
+; A traveller on the roads between the villages.
+Monster
+  Name = Traveller
+  DisplayName = "Yo'lovchi"
+  KindOf = [INFANTRY, SELECTABLE]
+  Geometry = Cylinder
+    Radius = 4
+    Height = 12
+  End
+  VisionRange = 0
+  Modules = [
+    MoveUpdate
+      Speed = 9
+      TurnRate = 0
+    End
+  ]
+  MinDepth = 99
+  Weight = 0
+  Colour = 0x707888
+  Scale = 1.0
+  Model = models/heroes/ranger.glb
+  Tint = 0x9098A8
+  ModelScale = 5.5
+  Facing = 90
+  Animations = Humanoid
+End
+
+; A pedlar who walks the roads with his wares: his stock is data/story/villages.duke.
+Monster
+  Name = Pedlar
+  DisplayName = "Chayqovchi Sobir"
+  KindOf = [INFANTRY, SELECTABLE]
+  Geometry = Cylinder
+    Radius = 4
+    Height = 12
+  End
+  VisionRange = 0
+  Modules = [
+    MoveUpdate
+      Speed = 9
+      TurnRate = 0
+    End
+  ]
+  MinDepth = 99
+  Weight = 0
+  Colour = 0xB08850
+  Scale = 1.0
+  Model = models/heroes/mage.glb
+  Tint = 0xB89058
+  ModelScale = 4.5
+  Facing = 90
+  Animations = Humanoid
+End
+
+; A watchtower's keeper: talked to, he opens the map to travel from (data/world/travel.duke).
+Monster
+  Name = TowerKeeper
+  DisplayName = "Minorabon"
+  KindOf = [INFANTRY, SELECTABLE]
+  Geometry = Cylinder
+    Radius = 4
+    Height = 12
+  End
+  VisionRange = 0
+  Modules = [
+    MoveUpdate
+      Speed = 8
+      TurnRate = 0
+    End
+  ]
+  MinDepth = 99
+  Weight = 0
+  Colour = 0x806040
+  Scale = 1.0
+  Model = models/heroes/knight.glb
+  Tint = 0xA08870
+  ModelScale = 4.72
+  Facing = 90
+  Animations = Humanoid
+End
