@@ -114,7 +114,26 @@ useScheme` and its validation; `Main.aimsFor`/`ringsFor` bind and ring each skil
 panning (`modernKeyMap`); no edge scroll in modern; the choice read at launch from the user's preferences
 (`Controls.remembered`, key `controls`) or `-Dlasthero.controls=modern`. `ModernControlsTest`. File default Klassik.
 
-**Game, phase 2 (after E74-E80)**:
+**Game, phase 2a (done, branch `wasd2`, engine E74/E75/E77 at c5f942f2)**: modern posts `MoveAlong` from
+`Hotkeys.onDirection` (`Main.walk`) and follows the hero (`CameraFollow.of(null)`, arrows look away); classic is
+unchanged. The launch screen, the player screens and a conversation or cutscene hold the keys (`holdsKeys`); a story
+that holds the hero is covered the way a click is today, on the client: the keys give `NONE` once and nothing more
+is sent. The bag is no opening window (it is on the screen all game), so it holds nothing. The file stays Klassik:
+without E78 there is no left-click attack (A, the classic attack key, is a step now) and without E79 no row to
+switch back, so modern is reachable only by `-Dlasthero.controls=modern` for playtests.
+
+**Game, phase 2b (done, branch `wasd3`, engine E76/E78/E79/E80 at f4422800)**: modern is the default
+(`Scheme = MODERN`). The mouse is `MouseScheme.MODERN`; the knight's `SwingArcDegrees = 120`; every hero carries a
+`DODGE` (Key V as its name, pressed on Space through `Hotkeys.on(' ')`, cast by `Main.roll` the way he walks or
+faces, refused while a screen holds the keys) at the numbers above -- the rogue's clip UAL Roll, the mage's KayKit
+Jump_Full_Short, the knight's own Cast_Charge until a roll is retargeted onto his rig; it is off his four and his bar
+(as his stagger), no icon of its own yet. The bar draws and presses each slot on the scheme's letter
+(`HeroCard.skills(.., letterOf)`), and modern shows no order buttons. Settings has the row "Boshqaruv (keyingi
+ochilishda)" (`Controls.ROW`): it takes hold at the next launch, since the keys, the mouse, the camera and the bar
+change together; `-Dlasthero.controls` is for tests. Not yet: the HeroBrain's own auto-fighting is unchanged in
+modern, and the item card's `+1` to a skill still names its own key. E81 (traversal links) waits for section 5.
+
+**Game, phase 2 (the rest)**:
 - `Main`: post `MoveAlong` from E75's hook; LMB/RMB through E78; Space to the dodge; the camera into follow (E77);
   the Settings row (E79), its change saved to the preferences and applied at once (rebind the hotkeys, KeyMap,
   edge scroll, camera).

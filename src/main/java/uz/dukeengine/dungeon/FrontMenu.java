@@ -29,6 +29,11 @@ final class FrontMenu {
                 .entry(Shell.Entry.QUIT, menu.quitWord())
                 .menuAt(MenuSide.valueOf(menu.side()), menu.margin())
                 .pauseRows(pauseRows);
+        // Boshqaruv: Zamonaviy (WASD) / Klassik (sichqoncha), kept by the client and read at the next launch
+        // (Controls.remembered): the keys, the mouse and the camera change together, so not half of them live.
+        var controls = settings.controls();
+        shell.settingsRow(uz.dukeengine.dungeon.world.Controls.ROW, controls.schemeWord(), controls.choices(),
+                uz.dukeengine.dungeon.world.Controls.choiceOf(controls.fileScheme()), chosen -> { });
         menu.said().forEach(shell::word);
         return shell;
     }

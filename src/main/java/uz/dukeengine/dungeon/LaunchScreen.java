@@ -144,6 +144,12 @@ final class LaunchScreen implements Painter, CanvasInput {
 
     // ---- input ----
 
+    /** While it is up no held key walks anyone (E75); after it, whatever is under it says. */
+    @Override
+    public boolean holdsKeys() {
+        return phase != Phase.DONE || underInput != null && underInput.holdsKeys();
+    }
+
     @Override
     public boolean take(Event event) {
         if (phase == Phase.DONE) {
