@@ -15,8 +15,9 @@ import uz.dukeengine.rpg.hero.GrowableBody;
 
 /**
  * The owner, 2026-10-15: while the hero flinches he must not strike -- a swing begun under a flinch was drawn as
- * nothing and the enemy lost health with no blow shown. So a heavy blow staggers him in the simulation (the skill
- * system's stun), his Hurt clip plays for exactly the stagger, and a crowd cannot hold him in one.
+ * nothing and the enemy lost health with no blow shown. So a heavy or critical blow staggers him in the simulation --
+ * his STAGGER skill (E72): the skill system's stun, his Hurt clip busy for exactly its frames -- and a crowd cannot
+ * hold him in one.
  */
 class StaggerTest {
 
@@ -55,8 +56,38 @@ class StaggerTest {
         return fight;
     }
 
+    /** His STAGGER: no slot of the four, in his book all the same. */
+    private static uz.dukeengine.rpg.skill.Skill stagger() {
+        return SETTINGS.bookFor(KNIGHT).stream()
+                .filter(skill -> skill.effect() == uz.dukeengine.rpg.skill.SkillEffect.STAGGER).findFirst()
+                .orElseThrow(() -> new AssertionError("the knight has no STAGGER"));
+    }
+
     private static float heavy() {
-        return SETTINGS.heavyAt(KNIGHT) * 4f; // well past his bar after his armour
+        return stagger().damage() * 4f; // well past his bar after his armour
+    }
+
+    @Test
+    void itIsHisFromTheStartAndNoneOfHisFour() {
+        var stagger = stagger();
+        assertEquals(SETTINGS.heroNamed(KNIGHT).hurt(), stagger.castAnim(), "his stagger plays other than his flinch");
+        assertEquals(4, SETTINGS.skillsFor(KNIGHT).size(), "the stagger took one of his four slots");
+        for (var hero : SETTINGS.heroes()) {
+            assertEquals(1, SETTINGS.bookFor(hero.name()).stream()
+                    .filter(skill -> skill.effect() == uz.dukeengine.rpg.skill.SkillEffect.STAGGER).count(),
+                    hero.name() + " has no STAGGER");
+        }
+    }
+
+    /** Any critical blow staggers, however light. */
+    @Test
+    void aCriticalBlowStaggersHimHoweverLight() {
+        var fight = fight();
+        fight.knight.getBody().damage(1f, uz.dukeengine.core.module.DamageType.NORMAL,
+                new uz.dukeengine.core.module.Death(uz.dukeengine.core.module.DeathType.NORMAL, fight.skeleton.getId(),
+                        fight.skeleton.getPlayerIndex(), true));
+        assertTrue(fight.staggered(), "a critical blow did not stagger him");
+        assertEquals(stagger().castAnim(), fight.knight.getBusyClip());
     }
 
     @Test
@@ -79,9 +110,9 @@ class StaggerTest {
             fight.run(1);
             frames++;
             assertEquals(before, fight.skeleton.getBody().getHealth(), 0f, "his sword landed while he staggered");
-            assertTrue(frames <= SETTINGS.stagger().frames(), "the stagger outlasts its " + SETTINGS.stagger().frames());
+            assertTrue(frames <= stagger().stunFrames(), "the stagger outlasts its " + stagger().stunFrames());
         }
-        assertEquals(SETTINGS.stagger().frames(), frames, "the stagger is not its Frames long");
+        assertEquals(stagger().stunFrames(), frames, "the stagger is not its Frames long");
         float after = fight.skeleton.getBody().getHealth();
         fight.run(60);
         assertTrue(fight.skeleton.getBody().getHealth() < after, "he never struck again after it");
@@ -90,7 +121,7 @@ class StaggerTest {
     @Test
     void aLightBlowDoesNotStaggerHim() {
         var fight = fight();
-        fight.knight.getBody().damage(SETTINGS.heavyAt(KNIGHT) / 4f);
+        fight.knight.getBody().damage(stagger().damage() / 4f);
         assertFalse(fight.staggered(), "a light blow staggered him");
         assertNull(fight.knight.getBusyClip(), "a light blow made him flinch");
     }
@@ -98,17 +129,17 @@ class StaggerTest {
     @Test
     void noSecondStaggerTakesHimInsideHisImmunity() {
         var fight = fight();
-        var rule = SETTINGS.stagger();
-        assertTrue(rule.frames() >= 10 && rule.frames() <= 12, "a stagger of " + rule.frames() + " frames");
-        assertTrue(rule.immuneFrames() >= 30 && rule.immuneFrames() <= 45, "immune " + rule.immuneFrames());
+        var rule = stagger();
+        assertTrue(rule.stunFrames() >= 10 && rule.stunFrames() <= 12, "a stagger of " + rule.stunFrames() + " frames");
+        assertTrue(rule.durationFrames() >= 30 && rule.durationFrames() <= 45, "immune " + rule.durationFrames());
 
         fight.knight.getBody().damage(heavy());
-        fight.run(rule.frames() + 5);
+        fight.run(rule.stunFrames() + 5);
         assertFalse(fight.staggered());
         fight.knight.getBody().damage(heavy());
         assertFalse(fight.staggered(), "staggered again inside his immunity: a crowd could hold him");
 
-        fight.run(rule.immuneFrames());
+        fight.run(rule.durationFrames());
         fight.knight.getBody().damage(heavy());
         assertTrue(fight.staggered(), "his immunity never ended");
     }
@@ -117,19 +148,18 @@ class StaggerTest {
     @Test
     void hisHurtClipIsBusyForExactlyTheStaggersFrames() {
         var fight = fight();
-        var hurt = SETTINGS.heroNamed(KNIGHT).hurt();
+        var hurt = stagger().castAnim();
         fight.knight.getBody().damage(heavy());
         int frames = 0;
         for (int i = 0; i < 40; i++) {
             boolean staggered = fight.staggered();
             assertEquals(staggered ? hurt : null, fight.knight.getBusyClip(), "frame " + i + " of it");
             frames += staggered ? 1 : 0;
-            if (i == 3) {
-                fight.knight.getBody().damage(1f); // a blow inside it breaks off the busy clip; the flinch stays
-            }
+            // ponytail: no blow inside it -- one ends the busy clip and the engine does not set it again, so the
+            // flinch stops while the stun goes on. Engine request E73.
             fight.run(1);
         }
-        assertEquals(SETTINGS.stagger().frames(), frames);
+        assertEquals(stagger().stunFrames(), frames);
     }
 
     private static String room() {

@@ -188,11 +188,6 @@ public final class Dungeon {
                     // Health coming back on its own, at the rate his block names --
                     // set by HeroProgress, as his mana is.
                     factory.register(Recovery.Data.class, (owner, data) -> new Recovery(owner));
-                    // Staggered by a heavy blow, his flinch shown for exactly as long -- see Staggering.
-                    factory.register(uz.dukeengine.dungeon.run.Staggering.Data.class,
-                            (owner, data) -> new uz.dukeengine.dungeon.run.Staggering(owner, settings.stagger(),
-                                    settings.heavyAt(owner.getTemplate().name()),
-                                    settings.heroNamed(owner.getTemplate().name()).hurt()));
                     // And the water at the way in, mending whoever stands near it -- on its own side of the keep's
                     // shut gate, as every mending is. See FountainUpdate.
                     factory.register(uz.dukeengine.rpg.hero.FountainUpdate.Data.class,
@@ -203,7 +198,7 @@ public final class Dungeon {
                     // Which skills a unit has is the Skill blocks written inside its own:
                     // the SkillBook block says only that it has some.
                     factory.register(SkillBook.Data.class, (owner, data) -> new SkillBook(owner,
-                            settings.skillsFor(owner.getTemplate().name()), settings.skillRules(), seal));
+                            settings.bookFor(owner.getTemplate().name()), settings.skillRules(), seal));
                     // An archer's shots become things in the world. The engine's
                     // weapon still aims and reloads; these two decide what
                     // happens between letting go and landing.

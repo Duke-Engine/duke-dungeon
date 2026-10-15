@@ -29,7 +29,9 @@ class SkillTipTest {
     private static java.util.List<uz.dukeengine.rpg.skill.Skill> playersSkills() {
         var heroes = SETTINGS.heroes().stream().map(uz.dukeengine.dungeon.content.HeroLook::name)
                 .collect(java.util.stream.Collectors.toSet());
+        // His slots: not his STAGGER, which is never bought nor drawn on his bar.
         return SETTINGS.skills().stream().filter(skill -> heroes.contains(skill.heroTemplate()))
+                .filter(skill -> skill.effect() != uz.dukeengine.rpg.skill.SkillEffect.STAGGER)
                 .toList();
     }
 

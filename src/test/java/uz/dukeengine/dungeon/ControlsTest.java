@@ -74,6 +74,9 @@ class ControlsTest {
         var keys = Main.controls(SHIPPED).claimedKeys();
 
         for (var skill : SHIPPED.skills()) {
+            if (skill.effect() == uz.dukeengine.rpg.skill.SkillEffect.STAGGER) {
+                continue; // never pressed, and no slot of the bar: bound to nothing on purpose
+            }
             assertTrue(keys.contains(skill.key()),
                     skill.key() + " is in the file but bound to nothing");
         }

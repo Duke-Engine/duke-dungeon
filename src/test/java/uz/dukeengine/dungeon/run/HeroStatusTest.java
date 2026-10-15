@@ -120,6 +120,12 @@ class HeroStatusTest {
             assertTrue(line.contains("|skill=" + skill.key() + ","),
                     skill.key() + " has no slot in " + line);
         }
+        // And none for his STAGGER, which his book holds beside the four: never bought, it is no slot of the bar.
+        for (var skill : settings.bookFor(settings.run().defaultHero())) {
+            if (skill.effect() == uz.dukeengine.rpg.skill.SkillEffect.STAGGER) {
+                assertFalse(line.contains("=" + skill.key() + ","), "his stagger is drawn on the bar: " + line);
+            }
+        }
     }
 
     /**

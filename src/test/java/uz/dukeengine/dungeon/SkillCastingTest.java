@@ -192,7 +192,7 @@ class SkillCastingTest {
         var arena = arena(SETTINGS);
 
         assertNotNull(arena.book(), "his creature block asks for a SkillBook");
-        assertEquals(SETTINGS.skillsFor("Rogue"), arena.book().getSkills());
+        assertEquals(SETTINGS.bookFor("Rogue"), arena.book().getSkills());
     }
 
     // ---- what each key does ----
@@ -771,8 +771,8 @@ class SkillCastingTest {
 
         assertEquals(0, livingSkeletons(arena.game()),
                 "Q was rewritten as a huge area blast; both should be gone");
-        assertEquals(4, arena.book().getSkills().size(),
-                "and naming one skill must not delete the other three");
+        assertEquals(5, arena.book().getSkills().size(),
+                "and naming one skill must not delete the other three, nor his stagger");
     }
 
     /**

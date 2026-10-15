@@ -207,7 +207,38 @@ final class HeroStatus {
         if (look != null && !look.isBlank()) {
             card.field("look", look);
         }
-        return card.toString();
+        return withoutHisStagger(card.toString(), book);
+    }
+
+    /** The fields HeroCard.skills writes for a skill, each {@code name=<key>,...}. */
+    private static final java.util.Set<String> SLOT_FIELDS =
+            java.util.Set.of("cost", "skill", "srank", "tipName", "tipAt", "tipText", "tipFoot", "tipRow");
+
+    /**
+     * The line without his STAGGER's slot: no slot of the four, never bought and always his, it would be a fifth
+     * framed picture on a bar of four that says nothing he can act on. HeroCard writes every skill of the book, so
+     * its fields are taken back out here.
+     */
+    static String withoutHisStagger(String line, SkillBook book) {
+        if (book == null) {
+            return line;
+        }
+        var keys = book.getSkills().stream()
+                .filter(skill -> skill.effect() == uz.dukeengine.rpg.skill.SkillEffect.STAGGER)
+                .map(skill -> skill.key() + ",").toList();
+        if (keys.isEmpty()) {
+            return line;
+        }
+        var kept = new java.util.ArrayList<String>();
+        for (var field : line.split("[|]", -1)) {
+            int equals = field.indexOf('=');
+            boolean his = equals > 0 && SLOT_FIELDS.contains(field.substring(0, equals))
+                    && keys.stream().anyMatch(key -> field.startsWith(key, equals + 1));
+            if (!his) {
+                kept.add(field);
+            }
+        }
+        return String.join("|", kept);
     }
 
     /**
