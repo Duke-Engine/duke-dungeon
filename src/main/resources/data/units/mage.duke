@@ -80,10 +80,6 @@ Hero
     End,
     Recovery
     End,
-    ; Staggered by a heavy blow: a short stun with his flinch, then a while he cannot be -- the Stagger
-    ; block in world/feel.duke.
-    Staggering
-    End,
     ExperienceModule
       ExperienceValue = 0
       ExperienceRequired = [0, 0, 0]
@@ -150,8 +146,8 @@ Hero
   ; leaves at the start of his release -- which is why neither of them has to fit
   ; inside ReloadFrames the way the knight's chop does.
   Attack = Ranged_Magic_Shoot
-  ; His flinch: played only as he staggers at a heavy blow, for exactly its frames (Stagger in
-  ; world/feel.duke), when he cannot strike -- so it never covers a swing he really makes.
+  ; His flinch: played only as he staggers at a heavy blow, for exactly its frames (his STAGGER,
+  ; the last of his Skills), when he cannot strike -- so it never covers a swing he really makes.
   Hurt = Hit_A
   Death = Death_A
   ; A cast on the move plays from his spine up, his legs running on.
@@ -504,6 +500,21 @@ Hero
       Blurb = Tanlangan joyga meteor chaqiradi. U bir zumda tushmaydi: yerda ogohlantiruvchi doira paydo bo'ladi, va undan chiqib ketishga ulgurgan omon qoladi.
       ManaCost = 70
       ManaCostPerLevel = 5
+    End,
+    Skill
+      ; His stagger, no slot of the four: never bought, never drawn on his bar, his from the start. A
+      ; blow of Damage or more after his armour -- his HeavyBlow's MajorAt in world/feel.duke, what
+      ; knocks the screen -- or any critical one stuns him StunFrames (0.37s: his wind-up starts over
+      ; after it, his reload waits, no skill casts), his CastAnim (his Hurt) playing for exactly those
+      ; frames; and none takes him again for DurationFrames (1.2s) after, so a crowd cannot hold him.
+      ; The owner, 2026-10-15: "while the hero flinches he must not attack".
+      Key = X
+      Effect = STAGGER
+      Damage = 35
+      StunFrames = 11
+      DurationFrames = 36
+      CastAnim = Hit_A
+      MaxRank = 1
     End
   ]
 End

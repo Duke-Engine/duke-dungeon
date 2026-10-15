@@ -399,7 +399,7 @@ class KnightTest {
         assertNotNull(him, "the knight never walked into the dungeon");
         assertTrue(him.getBody().getHealth() > 0f, "he did not survive four seconds of floor one");
         assertNotNull(him.findModule(SkillBook.class), "he arrived without his skills");
-        assertEquals(4, him.findModule(SkillBook.class).getSkills().size(),
+        assertEquals(SETTINGS.bookFor(KNIGHT), him.findModule(SkillBook.class).getSkills(),
                 "he arrived with somebody else's skills, or none");
         assertNull(find(game, ARCHER), "the archer came too");
     }

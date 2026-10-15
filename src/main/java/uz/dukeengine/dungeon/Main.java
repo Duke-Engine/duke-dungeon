@@ -1168,7 +1168,7 @@ public final class Main {
             // his skin, and the passives -- never cast -- drink from his blows or
             // lend round him.
             case EMPOWER, GUARD, LIFESTEAL, DAMAGE_AURA, MANA_AURA, LIFESTEAL_AURA, SOUL_DRINK, UNYIELDING,
-                    DRAGON_BLOOD -> uz.dukeengine.client3d.SkillRange.Shape.ON_HIMSELF;
+                    DRAGON_BLOOD, STAGGER -> uz.dukeengine.client3d.SkillRange.Shape.ON_HIMSELF;
         };
         float reach = switch (skill.effect()) {
             case STRIKE, AREA_AT_SPOT, SKILLSHOT, HEAL -> skill.range();
@@ -1177,7 +1177,7 @@ public final class Main {
             case AREA_DAMAGE, SUMMON, PULL -> skill.radius();
             case HASTE -> skill.range();
             case EMPOWER, GUARD, LIFESTEAL, DAMAGE_AURA, MANA_AURA, LIFESTEAL_AURA, SOUL_DRINK, UNYIELDING,
-                    DRAGON_BLOOD -> selfRadius;
+                    DRAGON_BLOOD, STAGGER -> selfRadius;
         };
         // What it LEAVES where it lands: a blast's radius, a lane's width. A dash
         // leaves a man, and a circle round a man-sized spot is a second ring saying
@@ -1339,7 +1339,7 @@ public final class Main {
                         .idle(hero.idle())
                         .walk(hero.walk(), hero.walkStride())
                         .attack(hero.attack())
-                        // No .hurt: his flinch is his stagger's busy clip (Staggering), never the client's own.
+                        // No .hurt: his flinch is his STAGGER's busy clip, never the client's own.
                         .die(hero.death())
                         .upperBody(hero.upperBody());
                 if (hero.texture() != null) {
