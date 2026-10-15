@@ -430,6 +430,13 @@ public final class DungeonRun {
 
     private Runnable theEnd = () -> { };
 
+    /** Told the music cue a story wants played (its credits'): the window plays it. Nothing until asked. */
+    public void onMusic(java.util.function.Consumer<String> told) {
+        this.music = told;
+    }
+
+    private java.util.function.Consumer<String> music = cue -> { };
+
     /** The map's own zones, and the places the story adds to it (Place blocks). */
     private List<uz.dukeengine.dungeon.map.StaticMap.Zone> zones() {
         var placed = settings.placesOn(floors.stageName());
@@ -1442,6 +1449,23 @@ public final class DungeonRun {
                 }
             }
             case MENU -> theEnd.run();
+            case CREDITS -> {
+                // Drawn only (E49): the window rolls them, Esc or a click skips, and once they are gone it goes to the
+                // front menu on its own thread.
+                var credits = settings.credits();
+                if (!credits.music().isBlank()) {
+                    music.accept(credits.music());
+                }
+                game.creditsRoll(credits.rolled(), credits.seconds(), theEnd);
+            }
+            case REMOVE -> {
+                for (var thing : List.copyOf(logic.getObjects())) {
+                    if (thing.getTemplate().name().equals(what)) {
+                        people.removeIf(who -> who.id().equals(thing.getId()));
+                        logic.destroyObject(thing);
+                    }
+                }
+            }
             case KILL -> {
                 for (var thing : List.copyOf(logic.getObjects())) {
                     var body = thing.getBody();

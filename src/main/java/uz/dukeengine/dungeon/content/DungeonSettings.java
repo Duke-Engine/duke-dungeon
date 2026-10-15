@@ -132,6 +132,7 @@ public final class DungeonSettings {
     private uz.dukeengine.dungeon.story.Medallion medallion = uz.dukeengine.dungeon.story.Medallion.DEFAULTS;
     private final List<uz.dukeengine.dungeon.story.Campaign> campaigns = new java.util.ArrayList<>();
     private final List<uz.dukeengine.dungeon.story.Place> places = new java.util.ArrayList<>();
+    private uz.dukeengine.dungeon.story.Credits credits = uz.dukeengine.dungeon.story.Credits.DEFAULTS;
     private final List<uz.dukeengine.dungeon.story.Title> titles = new java.util.ArrayList<>();
 
     /** Every attribute, in file order — the order a hero's are held in and the panel draws them. */
@@ -266,6 +267,11 @@ public final class DungeonSettings {
     /** The queen's medallion and its passive: see {@code docs/plan/2026-10-09-medallion.md}. */
     public uz.dukeengine.dungeon.story.Medallion medallion() {
         return medallion;
+    }
+
+    /** The credits a story's CREDITS rolls. */
+    public uz.dukeengine.dungeon.story.Credits credits() {
+        return credits;
     }
 
     /** The title card of that name, or null. */
@@ -519,6 +525,7 @@ public final class DungeonSettings {
                 case uz.dukeengine.dungeon.story.Medallion block -> medallion = once(block, once);
                 case uz.dukeengine.dungeon.story.Campaign block -> campaigns.add(block);
                 case uz.dukeengine.dungeon.story.Place place -> places.add(place);
+                case uz.dukeengine.dungeon.story.Credits block -> credits = once(block, once);
                 case uz.dukeengine.dungeon.story.Title title -> titles.add(title);
                 case uz.dukeengine.dungeon.world.SaveMenu block -> saveMenu = once(block, once);
                 case uz.dukeengine.dungeon.world.MainMenu block -> mainMenu = once(block, once);

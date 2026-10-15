@@ -163,5 +163,6 @@ Game
     data/story/act1.duke,
     data/story/villages.duke,
     data/story/act2.duke,
+    data/story/credits.duke,
   ]
 End

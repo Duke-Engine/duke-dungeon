@@ -421,6 +421,9 @@ def main():
     lo, hi = world_box([bpy.data.objects["cage"]])
     animated_piece(os.path.join(people, "damsel_caged.glb"), cage, PEOPLE, turn=half,
                    foot=((lo.x + hi.x) / 2, (lo.y + hi.y) / 2))
+    # The same cage, still swinging, with nobody in it: what stays once she is let out (Act 2).
+    animated_piece(os.path.join(props, "cage_empty.glb"), cage[1:], PEOPLE, turn=half,
+                   foot=((lo.x + hi.x) / 2, (lo.y + hi.y) / 2))
 
     # The hut, one model: its door faces +Y in the scene, turned to glTF's +Z; its foot the legs' middle.
     parts = hut_parts()

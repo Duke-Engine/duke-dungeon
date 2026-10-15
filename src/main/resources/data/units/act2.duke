@@ -82,3 +82,48 @@ Monster
   Animations = Humanoid
 End
 
+; The caged girl let out of her cage (Act 2): Inuciian's Damsel out of it (CC BY 4.0), walking on
+; legs of her own. Her model has no rig, so she glides: a walking clip for her is the owner's.
+Monster
+  Name = FreedDamsel
+  DisplayName = Qiz
+  KindOf = [INFANTRY, SELECTABLE]
+  Geometry = Cylinder
+    Radius = 4
+    Height = 12
+  End
+  VisionRange = 0
+  Modules = [
+    MoveUpdate
+      Speed = 14
+      TurnRate = 0
+    End
+  ]
+  MinDepth = 99
+  Weight = 0
+  Colour = 0xD8C070
+  Scale = 1.0
+  Model = models/inuciian/people/damsel.glb
+  ModelScale = 1
+  Facing = 90
+End
+
+; Her cage once she is out of it: on its gibbet, still swinging, empty (cut by art/inuciian/export_models.py).
+Monster
+  Name = EmptyCage
+  DisplayName = Qafas
+  KindOf = [INFANTRY]
+  Geometry = Cylinder
+    Radius = 4
+    Height = 12
+  End
+  VisionRange = 0
+  MinDepth = 99
+  Weight = 0
+  Colour = 0x806040
+  Scale = 1.0
+  Model = models/inuciian/props/cage_empty.glb
+  ModelScale = 1
+  Facing = 90
+  Idle = Idle
+End

@@ -543,6 +543,7 @@ public final class Main {
         session.run().onCheckpoint(save -> write(saves, Saves.AUTOSAVE, save));
         session.run().onSaveInto((slot, save) -> write(saves, slot, save)); // an act's end, for the next act
         session.run().onTheEnd(duke::frontEnd); // the story's last MENU: the credits rolled, back to the front menu
+        session.run().onMusic(duke::music);
         // The front menu's own rows -- continue, a new game (with whom, how, where, who), load, the credits -- then
         // Settings and Quit. Nothing opens until one is walked. See frontRows and whoGoesIn.
         var credits = FrontMenu.credits(settings, Content.read("CREDITS.md"));
@@ -564,6 +565,7 @@ public final class Main {
             next.run().onCheckpoint(save -> write(saves, Saves.AUTOSAVE, save));
             next.run().onSaveInto((slot, save) -> write(saves, slot, save));
             next.run().onTheEnd(duke::frontEnd);
+            next.run().onMusic(duke::music);
             Bag.show(bag, next, settings);
             current.set(next);
             shell.frontRows(FrontMenu.startingFresh(rows.apply(next), () -> duke.startMatch(next.game())));

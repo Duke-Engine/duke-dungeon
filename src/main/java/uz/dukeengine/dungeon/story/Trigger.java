@@ -101,7 +101,11 @@ public record Trigger(String name, String map, When when, String target, int ste
          * {@code <Follows>Level=N} flag), or to {@code Count} without one: the cursed hero is the player's own. */
         GROW,
         /** The game ends here: back to the front menu, once the credits have rolled. */
-        MENU
+        MENU,
+        /** The Credits block rolled over the screen with its music; the front menu once it has rolled or is skipped. */
+        CREDITS,
+        /** Every one of a Monster or a person standing taken away, unheard: the caged girl's cage, once she is out. */
+        REMOVE
     }
 
     /** The Target of a MOVE, LEAP or FALL that is the heroes rather than a Monster. */

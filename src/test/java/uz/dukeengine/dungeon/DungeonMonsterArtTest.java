@@ -107,10 +107,13 @@ class DungeonMonsterArtTest {
         return SETTINGS.monsters().stream().filter(kind -> SETTINGS.lookOf(kind).animations() != null).toList();
     }
 
-    /** A person who moves by clips of their own carries them: the one they name for standing is in their file. */
+    /**
+     * A person who moves by clips of their own carries them: the one they name for standing is in their file. One who
+     * names none stands still as a statue does (the freed girl: Inuciian's Damsel out of her cage has no rig).
+     */
     @Test
     void everyoneWithClipsOfTheirOwnCarriesThem() {
-        var own = looks().stream().filter(look -> look.animations() == null).toList();
+        var own = looks().stream().filter(look -> look.animations() == null && look.idle() != null).toList();
         assertFalse(own.isEmpty(), "nobody moves by clips of their own any more: drop this test");
         for (var look : own) {
             var composer = control(assets().loadModel(look.model()), AnimComposer.class);
