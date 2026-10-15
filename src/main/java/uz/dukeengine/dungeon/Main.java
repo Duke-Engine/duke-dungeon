@@ -1208,7 +1208,7 @@ public final class Main {
             // his skin, and the passives -- never cast -- drink from his blows or
             // lend round him.
             case EMPOWER, GUARD, LIFESTEAL, DAMAGE_AURA, MANA_AURA, LIFESTEAL_AURA, SOUL_DRINK, UNYIELDING,
-                    DRAGON_BLOOD, STAGGER -> uz.dukeengine.client3d.SkillRange.Shape.ON_HIMSELF;
+                    DRAGON_BLOOD, STAGGER, DODGE -> uz.dukeengine.client3d.SkillRange.Shape.ON_HIMSELF;
         };
         float reach = switch (skill.effect()) {
             case STRIKE, AREA_AT_SPOT, SKILLSHOT, HEAL -> skill.range();
@@ -1217,7 +1217,7 @@ public final class Main {
             case AREA_DAMAGE, SUMMON, PULL -> skill.radius();
             case HASTE -> skill.range();
             case EMPOWER, GUARD, LIFESTEAL, DAMAGE_AURA, MANA_AURA, LIFESTEAL_AURA, SOUL_DRINK, UNYIELDING,
-                    DRAGON_BLOOD, STAGGER -> selfRadius;
+                    DRAGON_BLOOD, STAGGER, DODGE -> selfRadius;
         };
         // What it LEAVES where it lands: a blast's radius, a lane's width. A dash
         // leaves a man, and a circle round a man-sized spot is a second ring saying
@@ -1350,7 +1350,7 @@ public final class Main {
                         .scale(look.modelScale())
                         .facing(look.facing())
                         .idle(look.idle())
-                        // Paced to its speed where its look says how far a play carries it (a licensed look).
+                        // Paced to its speed by how far a play carries it (MonsterClipFitTest measures it).
                         .walk(look.walk(), look.walkStride())
                         .attack(look.attack())
                         .hurt(look.hurt())
@@ -1396,6 +1396,11 @@ public final class Main {
                 // disagree.
                 for (var skill : settings.skillsFor(hero.name())) {
                     unit.alsoAnimation(skill.castAnim());
+                }
+                // And his work's clips (Chop, Gather, Cook): a clip nobody names is never copied off a
+                // library, and a hero drawn from one (the Huntress, the mage) stood still at a tree.
+                for (var word : uz.dukeengine.dungeon.food.Food.WORDS) {
+                    unit.alsoAnimation(settings.food().clipOf(word));
                 }
                 for (var library : hero.animations()) {
                     unit.animationsFrom(library);
