@@ -162,7 +162,9 @@ public final class Dungeon {
                     // A brain is a module named by its class, like every other: the block word is the
                     // class, so the editor completes it, opens it and flags a typo. Which creature a
                     // MonsterBrain is the brain of is the block it was put on -- see MonsterBrain.onStart.
-                    ScriptModule.registerScript(factory, HeroBrain.Data.class, () -> new HeroBrain(settings, orders, seal));
+                    // His brain as a module that may also hold his weapon's fire: the modern way (HeroBrain.Module).
+                    factory.register(HeroBrain.Data.class, (owner, ignored) ->
+                            new HeroBrain.Module(owner, new HeroBrain(settings, orders, seal)));
                     ScriptModule.registerScript(factory, MonsterBrain.Data.class,
                             () -> new MonsterBrain(settings, seal));
                     // Hero and monsters alike need a body that can grow: levels
@@ -453,6 +455,17 @@ public final class Dungeon {
                 // "Stand and pick no fights", which none of the engine's three
                 // orders can say. See HoldGround. Like every order after one, it
                 // calls off an errand for something on the floor.
+                // The modern way: his hero picks no fight of his own (HeroBrain).
+                case uz.dukeengine.dungeon.ai.FightOnlyWhenTold told -> {
+                    arena.orders().fightOnlyWhenTold(told.playerIndex(), told.on());
+                    // And whatever he picked by himself before it arrived is let go.
+                    var hero = Skills.heroOf(game.getLogic(), told.playerIndex());
+                    var weapon = hero == null ? null
+                            : hero.findModule(uz.dukeengine.combat.module.WeaponUpdate.class);
+                    if (told.on() && weapon != null) {
+                        weapon.holdFire();
+                    }
+                }
                 case uz.dukeengine.dungeon.ai.HoldGround hold -> {
                     giveUpErrands(game, hold.playerIndex());
                     arena.orders().hold(hold.playerIndex(), hold.stand());

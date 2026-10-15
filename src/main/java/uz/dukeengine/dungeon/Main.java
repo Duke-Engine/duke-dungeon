@@ -943,6 +943,11 @@ public final class Main {
         // chair is a skill that does nothing at all.
         aimsFor(keys, settings, him);
         ringsFor(visuals, settings, him);
+        // The modern way, said to every machine: his hero fights only when the left button tells him.
+        if (settings.scheme() == uz.dukeengine.dungeon.world.Controls.Scheme.MODERN) {
+            session.game().postCommand(PartyOrders.of(new uz.dukeengine.dungeon.ai.FightOnlyWhenTold(
+                    session.game().getLocalPlayerIndex(), true)));
+        }
         attackRingFor(visuals, session.game(), him);
     }
 

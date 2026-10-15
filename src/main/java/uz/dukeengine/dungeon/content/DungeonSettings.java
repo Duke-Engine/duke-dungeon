@@ -1769,7 +1769,7 @@ public final class DungeonSettings {
                     new uz.dukeengine.dungeon.loot.Items.Words(hud.attackWord(), hud.armourWord(), hud.healthWord(),
                             hud.manaWord(), lootDrops.healthRegenWord(), lootDrops.manaRegenWord(),
                             lootDrops.attackSpeedWord(), hud.lifestealWord(), named),
-                    loot);
+                    loot, this::letterOf);
             items = made;
         }
         return made;
