@@ -984,14 +984,10 @@ public final class Main {
         for (var campaign : settings.campaigns()) {
             rows.add(new Shell.Option(campaign.word(), campaign.blurb(), () -> {
                 heroChosen(session, settings, visuals, keys, campaign.hero());
-                if (campaign.follows().isBlank()) {
-                    session.run().playing(uz.dukeengine.dungeon.run.Floors.named(campaign.joints().getFirst().map(),
-                            System.nanoTime(), settings, false));
-                    session.run().startWith(session.game(), campaign.hero());
-                } else {
-                    // An act that follows one carries on from its end save, or from the act's defaults with none.
-                    session.run().skipTo(campaign, 1, Saves.ofThePlayer().read(campaign.follows()));
-                }
+                // From its first joint, with that joint's flags (Act1: the act's world story on). An act that follows
+                // one carries on from its end save, or from the act's defaults with none.
+                session.run().skipTo(campaign, 1,
+                        campaign.follows().isBlank() ? null : Saves.ofThePlayer().read(campaign.follows()));
             }, null));
         }
         if (asked == hero) {
@@ -1399,6 +1395,8 @@ public final class Main {
      */
     static Visuals looks(DungeonSettings settings) {
         var visuals = Visuals.create();
+        // The simulation's beams (World.beam), as the data draws them: the ritual's, the pillar of light.
+        visuals.lasers(settings.lasers());
         for (var kind : settings.monsters()) {
             var look = settings.lookOf(kind);
             visuals.unit(kind.name(), unit -> {
