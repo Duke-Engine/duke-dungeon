@@ -122,6 +122,10 @@ panning (`modernKeyMap`); no edge scroll in modern; the choice read at launch fr
 - Hero files: a `DODGE` skill each (Key V, the numbers above, the roll clip); `skillsFor` leaves it out as STAGGER.
 - HUD: the bar's letters and the order buttons follow the scheme (classic shows F A S D buttons; modern shows none,
   or LMB/RMB/Space hints in the key-hints row); the item card's `+1 to the W skill` names the letter pressed.
+- Input owners: the `LaunchScreen` (splash and loading) swallows all input while it is up, as the dialogue and the
+  player screens take their keys; WASD, LMB/RMB and Space must give `MoveAlong(NONE)` / nothing while any of them
+  holds the input (E75's "a game screen that takes the keys"), and a key held as the splash ends starts no walk until
+  it is pressed again.
 - `controls.duke`: `Scheme = MODERN`.
 - Tests: an `AttackToward` swing strikes the one enemy in the arc and none behind him; a `MoveAlong` hero walks,
   slides along a wall, and stops on `NONE`, the same on two peers (checksum); a dodge passes through a skeleton
