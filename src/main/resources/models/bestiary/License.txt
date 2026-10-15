@@ -1,0 +1,12 @@
+The bestiary's creatures, by Quaternius (https://quaternius.com), each downloaded from its page on poly.pizza
+(https://poly.pizza/u/Quaternius) and converted by art/monsters/export_bestiary.py.
+
+CC0 1.0 (public domain, https://creativecommons.org/publicdomain/zero/1.0/): every file here but the five below.
+
+CC BY 3.0 (https://creativecommons.org/licenses/by/3.0/) -- credit: Quaternius. Modified (clips cut and renamed,
+feet put on the ground, colours baked to one picture, converted to glTF binary):
+  zombie_ghoul.glb    "Zombie" (Animated Zombie pack)  https://poly.pizza/m/22K0aSZkHV
+  zombie_brute.glb    "Big arm"                        https://poly.pizza/m/KaVJET0WHx
+  zombie_crawler.glb  "Zombie half"                    https://poly.pizza/m/Htcsn9OrXJ
+  witch.glb           "Witch"                          https://poly.pizza/m/QBEOV9ZUT8
+  cult_mage.glb       "Animated Wizard"                https://poly.pizza/m/kttbFvCl2C

@@ -172,7 +172,28 @@ public final class WorldMapWriter {
         HIGHLANDS(0.38, 0.28, Biome.HIGHLANDS, "GiantKing",
                 "Goleling", "Goleling", "Goleling", "Ogre", "Ogre", "Shaman", "Shaman", "StoneGoleling"),
         MARSH(BASIN[0] + 0.08, BASIN[1] - 0.04, null, "BogHorror",
-                "Slime", "Slime", "Slime", "Frog", "Frog", "Wisp", "Wisp", "VenomFrog");
+                "Slime", "Slime", "Slime", "Frog", "Frog", "Wisp", "Wisp", "VenomFrog"),
+        // The bestiary's (data/units/bestiary_*.duke), after the four so their places are as they were.
+        ROADS(0.32, 0.76, Biome.MEADOW, "BanditChief",
+                "Bandit", "Bandit", "Bandit", "Brigand", "Brigand", "BanditArcher", "BanditArcher", "BanditVeteran"),
+        GROVE(0.07, 0.42, Biome.FOREST, "MushroomKing",
+                "Armabee", "Armabee", "Armabee", "Stag", "Stag", "Wasp", "Wasp", "ArmabeeGuard", "GiantArmabee"),
+        ORCS(0.50, 0.24, Biome.HIGHLANDS, "Troll",
+                "OrcGrunt", "OrcGrunt", "OrcGrunt", "OrcWarrior", "OrcWarrior", "OrcHunter", "OrcHunter",
+                "OrcWarlord"),
+        CRYPT(0.36, 0.53, Biome.MEADOW, "FallenKing",
+                "Zombie", "Zombie", "Zombie", "ZombieGhoul", "ZombieGhoul", "GhostSkull", "GhostSkull", "ZombieBrute",
+                "ZombieGiant"),
+        COAST(BASIN[0] - 0.07, BASIN[1] + 0.06, null, "Kraken",
+                "Crab", "Crab", "Crab", "Sharkman", "Sharkman", "PirateAnne", "PirateAnne", "BloodShark"),
+        PEAKS(0.86, 0.28, Biome.SNOW, "Wyvern",
+                "YetiCub", "YetiCub", "YetiCub", "Yeti", "Yeti", "Hywirl", "Hywirl", "IceGolem", "FrostYeti"),
+        DEMONS(0.74, 0.12, Biome.SNOW, "DemonBrute",
+                "Shayton", "Shayton", "Shayton", "BlueDemon", "BlueDemon", "CultMage", "CultMage", "FireGolem",
+                "HellDemon"),
+        RUINS(0.62, 0.62, Biome.STEPPE, "Minotaur",
+                "RuinRat", "RuinRat", "RuinRat", "EarthGolem", "EarthGolem", "CrownedGolem", "CrownedGolem",
+                "LightGolem", "ShadowGolem");
 
         final double u;
         final double v;
@@ -193,6 +214,28 @@ public final class WorldMapWriter {
             return kinds[kinds.length - 1];
         }
     }
+
+    /**
+     * The bestiary's small groups, walking the land beside its camps: where to look, as a share of the map, how many
+     * groups, and the kinds in each. Placed after every camp, so nothing placed before moves.
+     */
+    static final Object[][] BEASTS = {
+            {0.32, 0.62, 3, new String[] {"GreyWolf", "GreyWolf", "GreyWolf"}},
+            {0.46, 0.80, 2, new String[] {"Bull"}},
+            {0.12, 0.30, 3, new String[] {"Fox", "Fox"}},
+            {0.16, 0.45, 2, new String[] {"Stag"}},
+            {0.36, 0.53, 3, new String[] {"ZombieCrawler", "SkullCrawler", "Bat", "Bat"}},
+            {0.36, 0.53, 2, new String[] {"Witch", "Rat", "Rat"}},
+            {0.36, 0.53, 1, new String[] {"CaveSpider", "CaveSpider", "BroodMother"}},
+            {0.16, 0.56, 2, new String[] {"PirateMako", "PirateMako", "SkeletonPirate"}},
+            {0.16, 0.56, 1, new String[] {"PirateCaptain", "PirateMako"}},
+            {0.56, 0.30, 2, new String[] {"OrcGrunt", "OrcGrunt", "OrcHunter"}},
+            {0.80, 0.15, 2, new String[] {"YetiCub", "YetiCub"}},
+            {0.62, 0.62, 2, new String[] {"RuinRat", "RuinRat", "CrownedGolem"}},
+            {0.72, 0.24, 1, new String[] {"Shayton", "Shayton", "CultMage"}},
+    };
+    /** How far the bestiary's groups keep from the city -- its gate, the opening field and the corridor -- in cells. */
+    static final int BEASTS_KEEP_FROM_CITY = 70;
 
     /** How far a wild camp keeps from a village, a tower, a landmark or a site's edge, in cells. */
     static final int WILD_QUIET = 30;
@@ -1091,6 +1134,22 @@ public final class WorldMapWriter {
                     monsters.add(new Monster(wild.kinds[i], free(taken,
                             heart[0] + (int) Math.round(reach * Math.cos(angle)),
                             heart[1] + (int) Math.round(reach * Math.sin(angle)))));
+                }
+            }
+            // The bestiary's groups: off the city's ground and the campaign's, and clear of every quiet place.
+            for (var beasts : BEASTS) {
+                for (int g = 0; g < (int) beasts[2]; g++) {
+                    int x = (int) Math.round((double) beasts[0] * SIZE) + rng.nextInt(-30, 30);
+                    int y = (int) Math.round((double) beasts[1] * SIZE) + rng.nextInt(-30, 30);
+                    int gx = x;
+                    int gy = y;
+                    if (Math.hypot(x - city.x(), y - city.y()) < BEASTS_KEEP_FROM_CITY
+                            || quiet.stream().anyMatch(q -> Math.hypot(q[0] - gx, q[1] - gy) < 20)) {
+                        continue;
+                    }
+                    for (var kind : (String[]) beasts[3]) {
+                        monsters.add(new Monster(kind, free(taken, x, y)));
+                    }
                 }
             }
             for (int[] corner : new int[][] {{-6, -6}, {6, -6}, {-6, 6}, {6, 6}}) {

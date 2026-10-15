@@ -452,6 +452,8 @@ Monster
   ModelScale = 6.3
   Tint = 0xE0D8F0
   Idle = Ranged_Magic_Spellcasting_Long
+  ; The stand-in's walk, measured as every creature's is (MonsterClipFitTest).
+  WalkStride = 4.69
   Licensed = MonsterLook
     Model = models/licensed/ritualist.glb
     ModelScale = 7.9

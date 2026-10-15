@@ -1,0 +1,519 @@
+; ---------------------------------------------------------------------------
+; The steppe's old ruins: the golems, the crowned shade and the minotaur.
+; The bestiary (docs/plan/2026-10-15-bestiary.md): WorldMapWriter's Wild camps and roamers place them by name.
+; Models: Quaternius (CC0; the zombie ghoul, brute and crawler, the witch and the cult mage CC-BY 3.0 -- see
+; CREDITS.md), converted by art/monsters/export_bestiary.py. A Licensed look is a CGTrader Royalty Free model in the
+; git-ignored licensed-assets/ (art/monsters/export_licensed_monsters.py), drawn where it is shipped.
+; Levels are the walk's from the city, as every monster's in the world: these figures are level 1's.
+; ---------------------------------------------------------------------------
+
+; common: the ruins' big pale rats, in packs.
+Monster
+  Name = RuinRat
+  DisplayName = "Xaroba kalamushi"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 3
+    Height = 7
+  End
+  VisionRange = 70
+  Modules = [
+    GrowableBody
+      MaxHealth = 40
+    End,
+    MoveUpdate
+      Speed = 20
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 6
+      AttackRange = 8
+      ReloadFrames = 10
+      ; The swing up to the blow (MonsterClipFitTest), taken off ReloadFrames.
+      PreAttackFrames = 10
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 7
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 45
+  ChaseRadius = 95
+  CloseDistance = 4
+  AlertRadius = 70
+  RepathFrames = 10
+  SwingFrames = 14
+  ; Never on a floor of the descent: the open world places it by name.
+  MinDepth = 99
+  Weight = 0
+  Colour = 0xB09070
+  Scale = 0.57
+  Model = models/bestiary/rat.glb
+  ModelScale = 2.97
+  Tint = 0xB09070
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest).
+  WalkStride = 5.92
+End
+
+; stronger: stone that walks, its body turning blows aside.
+Monster
+  Name = EarthGolem
+  DisplayName = "Tosh golem"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 7
+    Height = 16
+  End
+  VisionRange = 70
+  Modules = [
+    GrowableBody
+      MaxHealth = 240
+    End,
+    MoveUpdate
+      Speed = 9
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 22
+      AttackRange = 13
+      ReloadFrames = 33
+      ; The swing up to the blow (MonsterClipFitTest), taken off ReloadFrames.
+      PreAttackFrames = 7
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 32
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 45
+  ChaseRadius = 95
+  CloseDistance = 4
+  AlertRadius = 70
+  RepathFrames = 10
+  SwingFrames = 14
+  ; Never on a floor of the descent: the open world places it by name.
+  MinDepth = 99
+  Weight = 0
+  Colour = 0xA08060
+  Scale = 1.33
+  Model = models/wilds/goleling.glb
+  ModelScale = 10.31
+  Tint = 0xA08060
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest).
+  WalkStride = 0
+  ; The licensed look (CGTrader Royalty Free, licensed-assets/ only; see CREDITS.md) where it is
+  ; shipped, the look above where it is not.
+  Licensed = MonsterLook
+    Model = models/licensed/golem.glb
+    ModelScale = 6.54
+    Texture = models/licensed/golem_earth.png
+    Tint = 0xFFFFFF
+    Idle = Idle
+    Walk = Walk
+    Attack = Attack
+    Death = Death
+    WalkStride = 12.2
+  End
+
+  Skills = [
+    Skill
+      Key = R
+      ; Its hide turns aside a share of every blow.
+      Effect = DRAGON_BLOOD
+      BoostPercent = 30
+      Heal = 0
+      MaxRank = 1
+      Name = Tosh teri
+    End
+  ]
+End
+
+; ranged: a crowned shade of the old kingdom.
+Monster
+  Name = CrownedGolem
+  DisplayName = "Tojdor arvoh"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 4
+    Height = 12
+  End
+  VisionRange = 64
+  Modules = [
+    GrowableBody
+      MaxHealth = 50
+    End,
+    MoveUpdate
+      Speed = 13
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 8
+      AttackRange = 58
+      ReloadFrames = 54
+      AttackOnTheMove = No
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    Bow
+      Projectile = ShadowSpark
+      Speed = 190
+      MuzzleOffset = 8
+    End,
+    EyesOnly
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 19
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 64
+  ChaseRadius = 120
+  CloseDistance = 6
+  AlertRadius = 70
+  RepathFrames = 10
+  SwingFrames = 14
+  ; Never on a floor of the descent: the open world places it by name.
+  MinDepth = 99
+  Weight = 0
+  KeepDistance = [30, 50]
+  Colour = 0xC8B890
+  Scale = 1
+  Model = models/bestiary/crowned_golem.glb
+  ModelScale = 4.67
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest).
+  WalkStride = 0
+End
+
+; an elite golem of light, stone-skinned.
+Monster
+  Name = LightGolem
+  DisplayName = "Nur golemi"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 7
+    Height = 17
+  End
+  VisionRange = 70
+  Modules = [
+    GrowableBody
+      MaxHealth = 260
+    End,
+    MoveUpdate
+      Speed = 9
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 23
+      AttackRange = 13
+      ReloadFrames = 33
+      ; The swing up to the blow (MonsterClipFitTest), taken off ReloadFrames.
+      PreAttackFrames = 7
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 55
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 45
+  ChaseRadius = 95
+  CloseDistance = 4
+  AlertRadius = 70
+  RepathFrames = 8
+  SwingFrames = 14
+  ; Never on a floor of the descent: the open world places it by name.
+  MinDepth = 99
+  Weight = 0
+  SkillDistance = [0, 50]
+  Colour = 0xF0E8A0
+  Scale = 1.42
+  Model = models/wilds/goleling.glb
+  ModelScale = 10.95
+  Tint = 0xF0E8A0
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest).
+  WalkStride = 0
+  ; The licensed look (CGTrader Royalty Free, licensed-assets/ only; see CREDITS.md) where it is
+  ; shipped, the look above where it is not.
+  Licensed = MonsterLook
+    Model = models/licensed/golem.glb
+    ModelScale = 6.92
+    Texture = models/licensed/golem_light.png
+    Tint = 0xFFFFFF
+    Idle = Idle
+    Walk = Walk
+    Attack = Attack
+    Death = Death
+    WalkStride = 12.9
+  End
+
+  Skills = [
+    Skill
+      Key = R
+      ; Its hide turns aside a share of every blow.
+      Effect = DRAGON_BLOOD
+      BoostPercent = 30
+      Heal = 0
+      MaxRank = 1
+      Name = Tosh teri
+    End,
+    Skill
+      Key = E
+      ; Everyone of its own round it drinks a share of its blows.
+      Effect = LIFESTEAL_AURA
+      BoostPercent = 15
+      Radius = 50
+      Look = BloodAura
+      TickFrames = 30
+      MaxRank = 1
+      Icon = icons/stats/stat_lifesteal.png
+      Blurb = Atrofidagi o'zinikilar har zarbasidan jon qaytarib oladi.
+      Name = Nur
+    End
+  ]
+End
+
+; ELITE of the golems: bigger, shadow-dark, two affixes.
+Monster
+  Name = ShadowGolem
+  DisplayName = "Soya golemi"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 8
+    Height = 19
+  End
+  VisionRange = 70
+  Modules = [
+    GrowableBody
+      MaxHealth = 280
+    End,
+    MoveUpdate
+      Speed = 10
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 26
+      AttackRange = 14
+      ReloadFrames = 29
+      ; The swing up to the blow (MonsterClipFitTest), taken off ReloadFrames.
+      PreAttackFrames = 7
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 60
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 45
+  ChaseRadius = 95
+  CloseDistance = 4
+  AlertRadius = 70
+  RepathFrames = 8
+  SwingFrames = 14
+  ; Never on a floor of the descent: the open world places it by name.
+  MinDepth = 99
+  Weight = 0
+  SkillDistance = [0, 50]
+  Colour = 0x504868
+  Scale = 1.58
+  Model = models/wilds/goleling.glb
+  ModelScale = 12.24
+  Tint = 0x504868
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest).
+  WalkStride = 0
+  ; The licensed look (CGTrader Royalty Free, licensed-assets/ only; see CREDITS.md) where it is
+  ; shipped, the look above where it is not.
+  Licensed = MonsterLook
+    Model = models/licensed/golem.glb
+    ModelScale = 7.69
+    Texture = models/licensed/golem_shadow.png
+    Tint = 0xD8D0E8
+    Idle = Idle
+    Walk = Walk
+    Attack = Attack
+    Death = Death
+    WalkStride = 14.3
+  End
+
+  Skills = [
+    Skill
+      Key = R
+      ; Its hide turns aside a share of every blow.
+      Effect = DRAGON_BLOOD
+      BoostPercent = 30
+      Heal = 0
+      MaxRank = 1
+      Name = Tosh teri
+    End,
+    Skill
+      Key = Q
+      ; Drinks a share of every blow it lands.
+      Effect = LIFESTEAL
+      BoostPercent = 25
+      MaxRank = 1
+      Name = "Qon so'rish"
+    End
+  ]
+End
+
+; CAMP BOSS of the ruins: charges with his horns and stamps the ground.
+Monster
+  Name = Minotaur
+  DisplayName = "Minotavr"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 9
+    Height = 20
+  End
+  VisionRange = 130
+  Modules = [
+    GrowableBody
+      MaxHealth = 600
+    End,
+    MoveUpdate
+      Speed = 14
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 28
+      AttackRange = 15
+      ReloadFrames = 22
+      ; The swing up to the blow (MonsterClipFitTest), taken off ReloadFrames.
+      PreAttackFrames = 14
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 180
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 55
+  ChaseRadius = 150
+  CloseDistance = 4
+  AlertRadius = 110
+  RepathFrames = 8
+  SwingFrames = 14
+  ; Never on a floor of the descent: the open world places it by name.
+  MinDepth = 99
+  Weight = 0
+  SkillDistance = [10, 50]
+  Colour = 0x7A5040
+  Scale = 1.67
+  Model = models/bestiary/bull.glb
+  ModelScale = 4.36
+  Tint = 0x7A5040
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest).
+  WalkStride = 13.9
+  ; The licensed look (CGTrader Royalty Free, licensed-assets/ only; see CREDITS.md) where it is
+  ; shipped, the look above where it is not.
+  Licensed = MonsterLook
+    Model = models/licensed/minotaur.glb
+    ModelScale = 8.69
+    Idle = Idle
+    Walk = Walk
+    Attack = Attack
+    Death = Death
+    WalkStride = 12.8
+  End
+
+  Skills = [
+    Skill
+      Key = Q
+      ; A charge that carries whoever stands in its way and drops them stunned.
+      Effect = SKEWER
+      Distance = 50
+      Range = 50
+      ProjectileSpeed = 36
+      Radius = 8
+      Damage = 40
+      StunFrames = 30
+      CooldownFrames = 330
+      MaxRank = 1
+      Look = Charge
+      Name = Shox hujumi
+    End,
+    Skill
+      Key = W
+      ; A blow on the ground round it.
+      Effect = AREA_DAMAGE
+      Damage = 35
+      Radius = 30
+      CooldownFrames = 300
+      MaxRank = 1
+      Look = Volley
+      Name = Yer titrashi
+    End
+  ]
+End

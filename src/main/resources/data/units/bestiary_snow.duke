@@ -1,0 +1,460 @@
+; ---------------------------------------------------------------------------
+; The snowy mountains: yetis, the storm spirit, the ice golem and the wyvern.
+; The bestiary (docs/plan/2026-10-15-bestiary.md): WorldMapWriter's Wild camps and roamers place them by name.
+; Models: Quaternius (CC0; the zombie ghoul, brute and crawler, the witch and the cult mage CC-BY 3.0 -- see
+; CREDITS.md), converted by art/monsters/export_bestiary.py. A Licensed look is a CGTrader Royalty Free model in the
+; git-ignored licensed-assets/ (art/monsters/export_licensed_monsters.py), drawn where it is shipped.
+; Levels are the walk's from the city, as every monster's in the world: these figures are level 1's.
+; ---------------------------------------------------------------------------
+
+; common: a round white cub.
+Monster
+  Name = YetiCub
+  DisplayName = "Yeti bolasi"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 3
+    Height = 9
+  End
+  VisionRange = 70
+  Modules = [
+    GrowableBody
+      MaxHealth = 60
+    End,
+    MoveUpdate
+      Speed = 17
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 7
+      AttackRange = 9
+      ReloadFrames = 18
+      ; The swing up to the blow (MonsterClipFitTest), taken off ReloadFrames.
+      PreAttackFrames = 4
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 11
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 45
+  ChaseRadius = 95
+  CloseDistance = 4
+  AlertRadius = 70
+  RepathFrames = 10
+  SwingFrames = 14
+  ; Never on a floor of the descent: the open world places it by name.
+  MinDepth = 99
+  Weight = 0
+  Colour = 0xC8B890
+  Scale = 0.75
+  Model = models/bestiary/yeti_cub.glb
+  ModelScale = 3.69
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest).
+  WalkStride = 0
+End
+
+; stronger: the mountain's ape.
+Monster
+  Name = Yeti
+  DisplayName = "Qor odami"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 7
+    Height = 17
+  End
+  VisionRange = 70
+  Modules = [
+    GrowableBody
+      MaxHealth = 200
+    End,
+    MoveUpdate
+      Speed = 11
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 22
+      AttackRange = 13
+      ReloadFrames = 26
+      ; The swing up to the blow (MonsterClipFitTest), taken off ReloadFrames.
+      PreAttackFrames = 10
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 30
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 45
+  ChaseRadius = 95
+  CloseDistance = 4
+  AlertRadius = 70
+  RepathFrames = 10
+  SwingFrames = 14
+  ; Never on a floor of the descent: the open world places it by name.
+  MinDepth = 99
+  Weight = 0
+  Colour = 0xC8B890
+  Scale = 1.42
+  Model = models/bestiary/yeti.glb
+  ModelScale = 6.01
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest).
+  WalkStride = 15.8
+End
+
+; ranged: a storm spirit throwing frost.
+Monster
+  Name = Hywirl
+  DisplayName = "Bo'ron ruhi"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 3
+    Height = 10
+  End
+  VisionRange = 64
+  Modules = [
+    GrowableBody
+      MaxHealth = 50
+    End,
+    MoveUpdate
+      Speed = 14
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 8
+      AttackRange = 58
+      ReloadFrames = 54
+      AttackOnTheMove = No
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    Bow
+      Projectile = MageBolt
+      Speed = 190
+      MuzzleOffset = 8
+    End,
+    EyesOnly
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 19
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 64
+  ChaseRadius = 120
+  CloseDistance = 6
+  AlertRadius = 70
+  RepathFrames = 10
+  SwingFrames = 14
+  ; Never on a floor of the descent: the open world places it by name.
+  MinDepth = 99
+  Weight = 0
+  KeepDistance = [30, 50]
+  Colour = 0xC8B890
+  Scale = 0.83
+  Model = models/bestiary/hywirl.glb
+  ModelScale = 3.64
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest).
+  WalkStride = 0
+End
+
+; stronger: ice that walks, its body turning blows aside.
+Monster
+  Name = IceGolem
+  DisplayName = "Muz golemi"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 7
+    Height = 16
+  End
+  VisionRange = 70
+  Modules = [
+    GrowableBody
+      MaxHealth = 240
+    End,
+    MoveUpdate
+      Speed = 9
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 22
+      AttackRange = 13
+      ReloadFrames = 33
+      ; The swing up to the blow (MonsterClipFitTest), taken off ReloadFrames.
+      PreAttackFrames = 7
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 34
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 45
+  ChaseRadius = 95
+  CloseDistance = 4
+  AlertRadius = 70
+  RepathFrames = 10
+  SwingFrames = 14
+  ; Never on a floor of the descent: the open world places it by name.
+  MinDepth = 99
+  Weight = 0
+  Colour = 0xA8D0F0
+  Scale = 1.33
+  Model = models/wilds/goleling.glb
+  ModelScale = 10.31
+  Tint = 0xA8D0F0
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest).
+  WalkStride = 0
+  ; The licensed look (CGTrader Royalty Free, licensed-assets/ only; see CREDITS.md) where it is
+  ; shipped, the look above where it is not.
+  Licensed = MonsterLook
+    Model = models/licensed/golem.glb
+    ModelScale = 6.54
+    Texture = models/licensed/golem_ice.png
+    Tint = 0xFFFFFF
+    Idle = Idle
+    Walk = Walk
+    Attack = Attack
+    Death = Death
+    WalkStride = 12.2
+  End
+
+  Skills = [
+    Skill
+      Key = R
+      ; Its hide turns aside a share of every blow.
+      Effect = DRAGON_BLOOD
+      BoostPercent = 30
+      Heal = 0
+      MaxRank = 1
+      Name = Tosh teri
+    End
+  ]
+End
+
+; ELITE of the yetis: bigger, frost-white, two affixes.
+Monster
+  Name = FrostYeti
+  DisplayName = "Oq yeti"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 8
+    Height = 20
+  End
+  VisionRange = 70
+  Modules = [
+    GrowableBody
+      MaxHealth = 240
+    End,
+    MoveUpdate
+      Speed = 12
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 25
+      AttackRange = 14
+      ReloadFrames = 22
+      ; The swing up to the blow (MonsterClipFitTest), taken off ReloadFrames.
+      PreAttackFrames = 10
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 55
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 45
+  ChaseRadius = 95
+  CloseDistance = 4
+  AlertRadius = 70
+  RepathFrames = 8
+  SwingFrames = 14
+  ; Never on a floor of the descent: the open world places it by name.
+  MinDepth = 99
+  Weight = 0
+  SkillDistance = [0, 50]
+  Colour = 0xC8E0FF
+  Scale = 1.67
+  Model = models/bestiary/yeti.glb
+  ModelScale = 7.07
+  Tint = 0xC8E0FF
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest).
+  WalkStride = 18.5
+
+  Skills = [
+    Skill
+      Key = Q
+      ; Drinks a share of every blow it lands.
+      Effect = LIFESTEAL
+      BoostPercent = 25
+      MaxRank = 1
+      Name = "Qon so'rish"
+    End,
+    Skill
+      Key = E
+      ; Everyone of its own round it hits harder.
+      Effect = DAMAGE_AURA
+      BoostPercent = 25
+      Radius = 50
+      Look = MightAura
+      TickFrames = 30
+      MaxRank = 1
+      Icon = icons/stats/stat_attack.png
+      Blurb = Atrofidagi o'zinikilar qattiqroq uradi.
+      Name = "G'azab"
+    End
+  ]
+End
+
+; CAMP BOSS: a wyvern of the peaks, breathing frost that freezes.
+Monster
+  Name = Wyvern
+  DisplayName = "Qor ajdari"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 8
+    Height = 20
+  End
+  VisionRange = 130
+  Modules = [
+    GrowableBody
+      MaxHealth = 560
+    End,
+    MoveUpdate
+      Speed = 15
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 24
+      AttackRange = 16
+      ReloadFrames = 17
+      ; The swing up to the blow (MonsterClipFitTest), taken off ReloadFrames.
+      PreAttackFrames = 17
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 160
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+  SenseRadius = 60
+  ChaseRadius = 150
+  CloseDistance = 4
+  AlertRadius = 110
+  RepathFrames = 8
+  SwingFrames = 14
+  ; Never on a floor of the descent: the open world places it by name.
+  MinDepth = 99
+  Weight = 0
+  SkillDistance = [10, 60]
+  Colour = 0xC8B890
+  Scale = 1.67
+  Model = models/bestiary/wyvern.glb
+  ModelScale = 5.19
+  Idle = Idle
+  Walk = Walk
+  Attack = Attack
+  Death = Death
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest).
+  WalkStride = 0
+
+  Skills = [
+    Skill
+      Key = W
+      ; Thrown down a line, bursting where it stops: it can be stepped out of.
+      Effect = SKILLSHOT
+      Damage = 40
+      Range = 70
+      Radius = 16
+      HitWidth = 6
+      ProjectileSpeed = 120
+      Projectile = SkullFireball
+      StunFrames = 30
+      CooldownFrames = 210
+      MaxRank = 1
+      Name = Muz nafasi
+    End,
+    Skill
+      Key = Q
+      ; Strikes faster for five seconds -- itself, or the sturdiest of its own near it.
+      Effect = HASTE
+      BoostPercent = 40
+      DurationFrames = 150
+      Range = 50
+      CooldownFrames = 300
+      Look = Hasted
+      MaxRank = 1
+      Icon = icons/stats/stat_speed.png
+      Blurb = Bir necha soniya ancha tezroq uradi.
+      Name = Shiddat
+    End
+  ]
+End

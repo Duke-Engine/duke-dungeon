@@ -29,7 +29,7 @@ class WildsTest {
     /** Every land's family is written, never comes up on a floor of the descent, and moves by clips of its own. */
     @Test
     void everyLandHasItsFamily() {
-        assertEquals(4, WorldMapWriter.Wild.values().length);
+        assertEquals(12, WorldMapWriter.Wild.values().length);
         for (var wild : WorldMapWriter.Wild.values()) {
             var names = new HashSet<>(List.of(wild.kinds));
             names.add(wild.boss);
