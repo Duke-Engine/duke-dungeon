@@ -95,6 +95,8 @@ Hud
   ; bosses' own lifesteal goes by. BuffIcon is at least a pixel.
   BuffIcon = 20
   LifestealWord = Qon so'rish
+  ; What a passive skill's card says in place of its key: it holds on its own, never pressed.
+  PassiveWord = Passiv
   ; ★ AND THESE ARE PAINTED, which is the one thing the panel has to be told
   ; about a picture. It tints what it draws -- that is how ONE white drawing
   ; served a slot that is ready, one reloading and one locked, three colours of

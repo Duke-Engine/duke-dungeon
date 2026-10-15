@@ -525,9 +525,8 @@ class HeroStatusTest {
 
         var line = session.game().getSnapshot().status();
         assertTrue(line.contains("|who=Rogue,Erika"), line);
-        assertFalse(line.contains("|who=Runner"),
-                "Runner is printed Runner; sending that is sending nothing: " + line);
-        assertTrue(line.contains("|who=SkeletonMage,Skeleton Mage"),
+        assertTrue(line.contains("|who=Runner,Chopqir"), "named in Uzbek, not by the template: " + line);
+        assertTrue(line.contains("|who=SkeletonMage,Skelet sehrgar"),
                 "a monster whose name is two words says so: " + line);
         var settings = DungeonSettings.load();
         var templates = session.game().getLogic().getThingFactory();
@@ -540,6 +539,27 @@ class HeroStatusTest {
                 .count();
         assertEquals(renaming, line.split("\\|who=", -1).length - 1,
                 "one entry per kind that renames itself, and none for one that does not");
+    }
+
+    /**
+     * The playtest of 1.0.41: "Skeleton", "Runner" over the monsters. Every creature the file describes is named in
+     * the game's own words, so no bar falls back to an English template name.
+     */
+    @Test
+    void everyCreatureHasANameOfItsOwn() {
+        var session = Dungeon.newSession(4321L);
+        session.game().runHeadless(2);
+        var settings = DungeonSettings.load();
+        var templates = session.game().getLogic().getThingFactory();
+        var unnamed = java.util.stream.Stream.concat(
+                        settings.heroes().stream().map(uz.dukeengine.dungeon.content.HeroLook::name),
+                        settings.monsters().stream().map(uz.dukeengine.dungeon.content.MonsterKind::name))
+                .map(templates::findTemplate)
+                .filter(template -> template != null
+                        && uz.dukeengine.core.thing.Titled.of(template).equals(template.name()))
+                .map(uz.dukeengine.core.thing.ThingTemplate::name)
+                .toList();
+        assertTrue(unnamed.isEmpty(), "named only by their templates: " + unnamed);
     }
 
     /** Somebody else's creature, picked out the way a click does. */

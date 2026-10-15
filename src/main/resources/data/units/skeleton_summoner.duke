@@ -5,7 +5,7 @@
 ; SkeletonSummoner below.
 Monster
   Name = SkeletonSummoner
-  DisplayName = Skeleton Summoner
+  DisplayName = Skelet chaqiruvchi
   KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
   Geometry = Cylinder
     Radius = 4

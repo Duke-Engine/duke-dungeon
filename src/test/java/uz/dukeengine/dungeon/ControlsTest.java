@@ -306,6 +306,37 @@ class ControlsTest {
 
 
     /**
+     * The owner, 2026-10-15: a passive (the knight's E, Dragon Blood) is not a button. Its key asks for nothing and
+     * sends nothing -- for every hero, chosen through the menu -- and its card says "Passiv" where a key would be.
+     */
+    @Test
+    void aPassivesKeyDoesNothingAndItsCardSaysPassive() {
+        int passives = 0;
+        for (int row = 0; row < SHIPPED.heroes().size(); row++) {
+            var him = SHIPPED.heroes().get(row).name();
+            var session = Dungeon.newSession(21L, SHIPPED);
+            var controls = Main.controls(SHIPPED);
+            Main.whoToPlay(session, SHIPPED, uz.dukeengine.client3d.Visuals.create(), controls)
+                    .options().get(row).taken().run();
+            session.game().runHeadless(2);
+            var line = session.game().getSnapshot().status();
+            for (var skill : SHIPPED.skillsFor(him)) {
+                if (!skill.effect().isPassive()) {
+                    continue;
+                }
+                passives++;
+                // A key that sent anything would need the game; this one is handed none.
+                assertTrue(controls.pressNow(null, skill.key()), him + "'s " + skill.key() + " is left to a stale key");
+                var at = line.substring(line.lastIndexOf("|tipAt=" + skill.key() + ","));
+                at = at.substring(0, at.indexOf('|', 1) < 0 ? at.length() : at.indexOf('|', 1));
+                assertTrue(at.endsWith(SHIPPED.hud().passiveWord()), him + "'s card says " + at);
+            }
+        }
+        assertTrue(passives > 0, "no hero has a passive to show");
+        assertEquals("Passiv", SHIPPED.hud().passiveWord());
+    }
+
+    /**
      * With a monster picked out, S still stops his hero and holds him there: the order goes to his own hero, never
      * to what he is looking at. (Whether the window lets the key through is the card's {@code cmds}, pinned in
      * WatchingTest.)

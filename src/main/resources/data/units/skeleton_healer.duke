@@ -5,7 +5,7 @@
 ; below.
 Monster
   Name = SkeletonHealer
-  DisplayName = Skeleton Healer
+  DisplayName = Skelet tabib
   KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
   Geometry = Cylinder
     Radius = 4
