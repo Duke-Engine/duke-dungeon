@@ -524,6 +524,8 @@ public final class Dungeon {
                 // Trading with a merchant he is near. See DungeonRun.buy and sell.
                 case uz.dukeengine.dungeon.run.Buy buy -> run.buy(game, buy.playerIndex(), buy.merchant(), buy.ware());
                 case uz.dukeengine.dungeon.run.Sell sell -> run.sell(game, sell.playerIndex(), sell.merchant(), sell.slot());
+                // A draught from the belt, keys 1-4. See Belt.
+                case uz.dukeengine.dungeon.run.Drink drink -> run.drink(game, drink.playerIndex(), drink.belt());
                 case uz.dukeengine.dungeon.run.TalkTo talk ->
                         run.talkTo(game, talk.playerIndex(), talk.person());
                 default -> {
