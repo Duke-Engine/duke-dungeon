@@ -109,6 +109,7 @@ public final class DungeonSettings {
     /** The scheme played: the file's until the launch says the player's own (see useScheme). */
     private uz.dukeengine.dungeon.world.Controls.Scheme scheme;
     private uz.dukeengine.dungeon.world.Travel travel = uz.dukeengine.dungeon.world.Travel.DEFAULTS;
+    private uz.dukeengine.dungeon.world.DayNight dayNight = uz.dukeengine.dungeon.world.DayNight.DEFAULTS;
     private UnitBar unitBar = UnitBar.DEFAULTS;
     private StatBlock statBlock = StatBlock.DEFAULTS;
     private SkillRing skillRing = SkillRing.DEFAULTS;
@@ -206,6 +207,11 @@ public final class DungeonSettings {
     /** Fast travel between a map's watchtowers: see {@link uz.dukeengine.dungeon.world.Travel}. */
     public uz.dukeengine.dungeon.world.Travel travel() {
         return travel;
+    }
+
+    /** The open world's day, night and weather: see {@link uz.dukeengine.dungeon.world.DayNight}. */
+    public uz.dukeengine.dungeon.world.DayNight dayNight() {
+        return dayNight;
     }
 
     public uz.dukeengine.dungeon.world.Screens screens() {
@@ -660,6 +666,7 @@ public final class DungeonSettings {
                 case uz.dukeengine.dungeon.world.Screens block -> screens = once(block, once);
                 case uz.dukeengine.dungeon.world.Controls block -> controls = once(block, once);
                 case uz.dukeengine.dungeon.world.Travel block -> travel = once(block, once);
+                case uz.dukeengine.dungeon.world.DayNight block -> dayNight = once(block, once);
                 case UnitBar block -> unitBar = once(block, once);
                 case StatBlock block -> statBlock = once(block, once);
                 case SkillRing block -> skillRing = once(block, once);
@@ -967,6 +974,36 @@ public final class DungeonSettings {
     }
 
     /** Food and fire: every thing it names is one, every word a cursor's. See docs/plan/2026-10-15-food-and-fire.md. */
+    /** The day: a day of some length, hours on a clock, every roamer a monster and every weather a look. */
+    private void validateDayNight() {
+        var day = dayNight;
+        require(day.cycleFrames() > 0, "DayNight: CycleFrames is a day's length, more than none");
+        for (float hour : new float[] {day.startHour(), day.nightFrom(), day.nightTo()}) {
+            require(hour >= 0f && hour < 24f, "DayNight: an hour is 0 to 24, not " + hour);
+        }
+        float last = -1f;
+        for (var key : day.light()) {
+            require(key.hour() > last && key.hour() < 24f, "DayNight: the Light keys go up the clock, 0 to 24");
+            require(key.percent() >= 0 && key.percent() <= 100, "DayNight: a Light key's strength is a percent");
+            last = key.hour();
+        }
+        for (var roamer : day.nightRoamers()) {
+            require(monster(roamer) != null, "DayNight: NightRoamers names " + roamer + ", and no Monster is called so");
+        }
+        require(day.weatherFrames() >= 0, "DayNight: WeatherFrames cannot be negative");
+        for (var table : day.weathers()) {
+            for (var chance : table.chances()) {
+                require(chance.weight() >= 0, "DayNight: a chance cannot be negative");
+                require(chance.weather().equals("Clear") || day.look(chance.weather()) != null,
+                        "DayNight: no Weather is called " + chance.weather());
+            }
+        }
+        for (var look : day.looks()) {
+            require(look.flakes() <= 4096, "DayNight: " + look.name() + " drops " + look.flakes()
+                    + " flakes; widen FallSpacing or shrink FallBox to keep it under 4096");
+        }
+    }
+
     private void validateFood() {
         var named = new java.util.HashSet<String>();
         potions.forEach(potion -> named.add(potion.name()));
@@ -1160,6 +1197,7 @@ public final class DungeonSettings {
         validateScreens();
         validateControls();
         require(travel.cost() >= 0, "Travel: Cost cannot be negative");
+        validateDayNight();
         require(travel.card().isBlank() || titles.stream().anyMatch(t -> t.name().equals(travel.card())),
                 "Travel: Card names no Title: " + travel.card());
         require(travel.keeper().isBlank() || npcs.stream().anyMatch(n -> n.name().equals(travel.keeper())),

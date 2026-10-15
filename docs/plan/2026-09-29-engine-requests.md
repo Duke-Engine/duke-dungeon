@@ -94,7 +94,8 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E83 | the menu's backdrop kept as the match: "New game" hands the running backdrop game over instead of tearing it down and loading the world again | waiting (seamless campaign); the game opens the match on the same world, battle and framing, under the load bar |
 | E84 | path regions the game shuts and opens (walls by a story flag): a route never plans through closed land | waiting (seamless campaign); the game leashes the hero to the gate's open zones each frame (`DungeonRun.gated`) |
 | E85 | a cutscene camera path: a list of points, each with its pitch, zoom and ease, flown as one move | waiting (seamless campaign, small); the intro's shots stand in, one move a shot |
-| E86 | a weapon that acquires nothing by itself, per unit (`WeaponUpdate.acquiresNothing`), for a hero who fights only when told | waiting (modern controls; the game holds fire through its brain meanwhile) |
+| E87 | a weapon that acquires nothing by itself, per unit (`WeaponUpdate.acquiresNothing`), for a hero who fights only when told | waiting (modern controls; the game holds fire through its brain meanwhile) |
+| E86 | the open world's hour while it is drawn: a sun and ambient changed at runtime, the haze's colour, lights stronger at night, a tint under the GUI, rain with a colour and a streak | waiting (day and night; the game washes its canvas meanwhile) |
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
 game builds against the local engine. E12–E15 reached it together at 668045f0 (their pull requests merged as
@@ -1747,7 +1748,7 @@ Asked: `GameCamera.along(List<Key>, int frames, Ease ease)`, a `Key` being a poi
 move through them on a smooth curve (Catmull-Rom), the turn, pitch and zoom eased with it, the whole over `frames`,
 not checksummed as the camera is not. Done when a test flies a three-key path and the camera passes through the middle
 key's point at the right frame, and at no frame stands still between keys.
-## E86 — A weapon that picks no target by itself, per unit (2026-10-15, small; modern controls)
+## E87 — A weapon that picks no target by itself, per unit (2026-10-15, small; modern controls)
 
 In the modern scheme the hero fights only when the left button tells him (a lock-on, a swing): never what walks into
 his reach. His brain is the game's, but an idle `WeaponUpdate` looks for the nearest enemy every `targetScanFrames`
@@ -1763,3 +1764,37 @@ aim it work as ever, and when one ends the weapon stays idle. Done when a test s
 reach, runs 60 frames and the weapon has no target, then gives `AttackObject` on that enemy, which dies, and a second
 enemy in reach is untouched for 60 more frames. Then the game sets it from its `FightOnlyWhenTold` order and its
 `HeroBrain.Module` goes.
+## E86 — The open world's hour while it is drawn (2026-10-15, medium; day and night)
+
+The game now keeps a day: the run's clock (frames of play, saved) read round a 20-minute day, and the ground's weather
+drawn from the seed every three minutes (`data/world/daynight.duke`, `world/DayNight`, `Atmosphere`). Only the
+open world (a wide map) is drawn by it. What the client lets a game change while a world is drawn is not enough to
+draw it, so today the hour is a colour the game's canvas lays over the world above the bottom panel, the fires' halos
+are pictures added over the dark at `Canvas.screenOf`, and the rain is the client's own `Duke3D.weather(WeatherLook)`, already there (the reference's snow and rain).
+`Sunlight` is adopted only as a world is built (`DukeRtsApp.adoptTheSun`), the haze fades to the fog map's tint, and a
+LIGHT layer's power is fixed. Asked, each drawing only, nothing in the simulation:
+
+1. **A sun changed while the world is drawn.** `Duke3D.sunlight(Sunlight light, float seconds)`: the scene's
+   DirectionalLight and AmbientLight, the shadows' direction, and every lit material that reads the sun (the painted
+   ground, the tiles, the units) eased to it over `seconds` -- a `MatParamOverride` on the root node for the ground's
+   sun parameters would do it in one place. The game calls it a few times a second with the hour's sun (low and
+   orange at dawn and dusk, a cold low "moon" at night).
+2. **The haze and the void in a colour the game says.** `Duke3D.hazeColour(int rgb, float seconds)`: the colour the
+   wide world's edge fades into and the viewport's background behind it, today the Fog block's `Tint` -- dawn's pink,
+   noon's pale blue, night's dark blue. (`followTheLookUnderTheCamera` already recolours the fog map and the
+   background; this is the same call with the game's colour.)
+3. **Lights stronger at night.** `Duke3D.lightScale(float times)`: a multiplier on every LIGHT layer's power and
+   radius (the campfires, the fountain, the keep's lights), so a fire lights more of the ground in the dark; within the
+   E39 `effectBudget`.
+4. **A world-only tint.** `Duke3D.worldTint(int argb)`: a full-window colour laid over the 3D scene *before* the GUI
+   (a filter on the main viewport), so the panel, the minimap, the bars and the hit numbers are not washed with it.
+   Today the game's canvas is over everything, so it lays the tint above the panel only and the unit bars dim with
+   the world. With (1) and (2) this is only for fog banks and the storm's flash.
+5. **Rain that reads as rain.** `WeatherLook` with a `colour` (ARGB the flake's picture is multiplied by) and a
+   `stretch` (a streak's length along its fall, in its widths) so rain is a pale blue line and not a white square;
+   and optionally a ground `wetness` share that darkens the painted ground and raises its specular while it rains.
+
+Done when a test sets a sun at runtime and the DirectionalLight, AmbientLight and the ground material's sun parameter
+reach it over its seconds; `hazeColour` changes the viewport background; `lightScale(2)` doubles a lit layer's
+power; `worldTint` draws under the GUI node; and a weather with a colour hands it to the flakes' material. The game
+then replaces its canvas wash with (1), (2) and (3) and keeps `Atmosphere`'s weather and clock.

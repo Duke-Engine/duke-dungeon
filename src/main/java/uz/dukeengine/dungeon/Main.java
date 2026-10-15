@@ -539,7 +539,8 @@ public final class Main {
         var bag = Bag.on(settings, duke);
         Bag.show(bag, session, settings);
         // And over it, the box a conversation is said in, which hands the bag whatever it does not take.
-        var talk = new DialogueScreen(bag, bag, settings);
+        // Under it all, the open world's hour and weather laid over the world -- see Atmosphere.
+        var talk = new DialogueScreen(new Atmosphere(bag, duke, settings, wordArg(args, "weather")), bag, settings);
         // And over that, the player's own screens -- the sheet, the quest log, the map -- each on its key, and the map
         // drawn from the engine's picture of the world as he knows it, asked for every map.
         var screens = new PlayerScreens(talk, settings);
@@ -604,6 +605,12 @@ public final class Main {
                 duke.startMatch(session.game());
                 break;
             }
+        }
+        // The owner's testing: --hour=H (1 to 24) opens the open world at that hour -- after an --actN=, whose joint
+        // begins in the morning, or on the map --map= opens. A game begun from the menu begins in the morning.
+        int hour = actArg(args, "hour");
+        if (hour > 0) {
+            session.run().startAtHour(hour);
         }
         // The floor's key and every quest's target on the minimap too, held to its edge when off it (E61).
         duke.minimapMarks(() -> MissionScreen.minimapMarks(current.get(), settings));
@@ -1000,6 +1007,16 @@ public final class Main {
             rows.addAll(asked.options());
         }
         return new Shell.Question(settings.hud().chooseModeWord(), settings.hud().chooseModeHint(), rows);
+    }
+
+    /** {@code --<name>=word}: the word, for testing -- {@code --weather=Rain} -- or null where none is given. */
+    static String wordArg(String[] args, String name) {
+        for (var arg : args) {
+            if (arg.startsWith("--" + name + "=")) {
+                return arg.substring(name.length() + 3).strip();
+            }
+        }
+        return null;
     }
 
     /** {@code --<act>=N}: that act's joint to open straight on, for testing it; 0 for none. */
