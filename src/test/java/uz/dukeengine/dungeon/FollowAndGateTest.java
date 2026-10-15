@@ -117,29 +117,46 @@ class FollowAndGateTest {
                 "she stands in the palace's court");
     }
 
+    /**
+     * The world shut on the path grid but for the way to the capital (E84): a walk to the old graves stops short of them
+     * and he is told why; welcomed by the queen, the shut land moves out past the graves and the same walk arrives.
+     */
     @Test
     void theWorldIsShutButForTheWayToTheCapitalUntilTheStoryOpensIt() {
         var session = led();
+        play(session, SETTINGS.story().dialogue().checkFrames() + 1);
         assertEquals("Act1Battle", session.run().gateName());
-        // The old graves are shut while he is led to the palace: put there, he is put back.
+        assertTrue(session.run().gateShut(), "its land shut on the grid");
         var graves = zone("Eski_qabrlar");
-        put(hero(session), graves.middleX(CELL), graves.middleY(CELL));
-        play(session, 2);
-        var at = hero(session).getPosition();
-        assertFalse(graves.holds(at.x(), at.y(), CELL) && !zone("Darvoza_oldi").holds(at.x(), at.y(), CELL),
-                "put back inside the open land");
-        // Far out in the world: the same.
-        put(hero(session), 300 * CELL, 300 * CELL);
-        play(session, 2);
-        assertTrue(hero(session).getPosition().x() < 200 * CELL, "the far world is shut");
+        var field = zone("Darvoza_oldi");
+        var into = new Coord3D(graves.middleX(CELL), graves.middleY(CELL), 0f);
+        put(hero(session), field.middleX(CELL), field.middleY(CELL));
+        hero(session).getLocomotor().moveTo(into);
+        String told = null;
+        for (int i = 0; i < 600; i++) {
+            play(session, 1);
+            var note = session.run().progressOf(hero(session).getPlayerIndex()).getLoot()
+                    .noteAt(session.game().getLogic().getFrame());
+            if (note != null && !note.isBlank()) {
+                told = note;
+            }
+            var at = hero(session).getPosition();
+            assertFalse(graves.holds(at.x(), at.y(), CELL) && !field.holds(at.x(), at.y(), CELL),
+                    "he never walks into the shut graves");
+        }
+        assertEquals("Hozir u yerga bormaymiz.", told, "and is told so at the edge");
         // Welcomed by the queen, the graves open.
         session.run().getScript().flag("Welcomed");
-        play(session, 2);
+        play(session, SETTINGS.story().dialogue().checkFrames() + 1);
         assertEquals("Act1Capital", session.run().gateName());
-        put(hero(session), graves.middleX(CELL), graves.middleY(CELL));
-        play(session, 2);
-        at = hero(session).getPosition();
-        assertTrue(graves.holds(at.x(), at.y(), CELL), "the graves are open now");
+        hero(session).getLocomotor().moveTo(into);
+        boolean arrived = false;
+        for (int i = 0; i < 900 && !arrived; i++) {
+            play(session, 1);
+            var at = hero(session).getPosition();
+            arrived = graves.holds(at.x(), at.y(), CELL) && !field.holds(at.x(), at.y(), CELL);
+        }
+        assertTrue(arrived, "the graves are open now");
     }
 
     @Test

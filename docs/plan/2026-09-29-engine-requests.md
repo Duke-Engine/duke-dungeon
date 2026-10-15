@@ -90,12 +90,13 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E79 | a game's own rows on Settings (the scheme), its keys rebindable on the Keys page, and the bar showing the letter pressed, not the skill's name | landed, ba92ce64 (head f4422800): the game's "Boshqaruv" row (`Controls.ROW`, read at the next launch), Space bound as the dodge, the walking keys said in Uzbek, `HeroCard.skills(.., settings::letterOf)` on the bar |
 | E80 | a `DODGE` skill shape: a quick dash over frames with i-frames, aimed by a direction, on a non-letter key (Space) | landed, f4506485: every hero carries a `DODGE` (Key V, on Space; 16, 9 frames, 7 immune, 75, no mana), off his four and his bar |
 | E81 | traversal links in the path graph (jump, vault, climb, drop) a route can use | landed, f4422800 on `e76-80-modern-combat`: `TraversalLink`, a map's `Linked`; to adopt in the traversal phase |
-| E82 | a radial knock-back in the skill system: `SkillEffect.PUSH`, every enemy within Radius thrown Distance outward over Frames along an arc, stunned StunFrames | waiting (seamless campaign, `2026-10-15-seamless-campaign.md`); the game throws them with `ScriptedMove` and the engine's DISABLED meanwhile (`Battles.shockwave`) |
-| E83 | the menu's backdrop kept as the match: "New game" hands the running backdrop game over instead of tearing it down and loading the world again | waiting (seamless campaign); the game opens the match on the same world, battle and framing, under the load bar |
-| E84 | path regions the game shuts and opens (walls by a story flag): a route never plans through closed land | waiting (seamless campaign); the game leashes the hero to the gate's open zones each frame (`DungeonRun.gated`) |
-| E85 | a cutscene camera path: a list of points, each with its pitch, zoom and ease, flown as one move | waiting (seamless campaign, small); the intro's shots stand in, one move a shot |
+| E82 | a radial knock-back in the skill system: `SkillEffect.PUSH`, every enemy within Radius thrown Distance outward over Frames along an arc, stunned StunFrames | landed, 2e12257e on `e82-85-seamless`: `SkillEffect.PUSH` (Radius, Distance, DurationFrames, HitWidth the arc, Damage, StunFrames, Look); every hero carries one (`Qo'nish zarbasi`, off his bar) and the story casts it as he lands (`CAST PUSH`); the game's `SHOCKWAVE` and `Battles.shockwave` are gone |
+| E83 | the menu's backdrop kept as the match: "New game" hands the running backdrop game over instead of tearing it down and loading the world again | landed, 2e12257e on `e82-85-seamless`: `Duke3D.adoptBackdrop`, `onBackdropAdopted`, `DukeGame.takeSeat`; "New game" of Act 1 adopts the running world backdrop (`MenuScene.adoptAsMatch`, `DungeonRun.adopt`): no load, the same frames going on |
+| E84 | path regions the game shuts and opens (walls by a story flag): a route never plans through closed land | landed, 2e12257e on `e82-85-seamless`: `PathGrid.shut`/`open`/`isShut`; each `Gate` shuts a band round its Open zones (`DungeonRun.gated`), the per-frame leash is gone, the hero is told at the edge |
+| E85 | a cutscene camera path: a list of points, each with its pitch, zoom and ease, flown as one move | landed, 2e12257e on `e82-85-seamless`: `GameCamera.along`; a cutscene shot's `Path` of `Key`s, the opening's camera one move from the menu's framing to the landing |
 | E87 | a weapon that acquires nothing by itself, per unit (`WeaponUpdate.acquiresNothing`), for a hero who fights only when told | waiting (modern controls; the game holds fire through its brain meanwhile) |
 | E86 | the open world's hour while it is drawn: a sun and ambient changed at runtime, the haze's colour, lights stronger at night, a tint under the GUI, rain with a colour and a streak | waiting (day and night; the game washes its canvas meanwhile) |
+| E88 | a PUSH that throws a crowd: the farthest moved first, and a body in the way pushed on with it rather than stopping the one behind | waiting (seamless campaign, small); the landing throws those with a clear way, and stuns all |
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
 game builds against the local engine. E12–E15 reached it together at 668045f0 (their pull requests merged as
@@ -1798,3 +1799,22 @@ Done when a test sets a sun at runtime and the DirectionalLight, AmbientLight an
 reach it over its seconds; `hazeColour` changes the viewport background; `lightScale(2)` doubles a lit layer's
 power; `worldTint` draws under the GUI node; and a weather with a colour hands it to the flakes' material. The game
 then replaces its canvas wash with (1), (2) and (3) and keeps `Atmosphere`'s weather and clock.
+
+## E88 — A PUSH that throws a crowd (2026-10-15, small; seamless campaign)
+
+E82 landed as asked, and the hero's landing casts it. In the opening battle the enemy stands packed against the
+kingdom's line, and `pushEnd` stops a victim at the first body behind it (`findBlocker`), so of the eleven within the
+wave five fly the whole Distance and six do not move at all (all are stunned): the knock-back reads weakest where the
+fight is thickest. The victims are taken in the world's order, so one deeper in the crowd is stopped by one nearer
+the edge that has not moved yet.
+
+Asked: in `PUSH`, the victims moved farthest first (so the outer ones have cleared the way before the inner ones are
+walked out), and a creature of the push's own victims in the way is not a blocker (they fly together); stone, a shut
+gate, a seal and a body that is no victim still stop it. Done when a test pushes a column of five skeletons standing
+one behind the other along a line from the caster, Radius taking them all: all five end Distance further out, in the
+same order, none inside another.
+
+The cutscene's camera shake needed nothing: `SkillEffects.knock` applies an Effect's ShakeSeconds and ShakePower whole,
+scaled only by the player's own setting (ListShow's MaxShakeIntensity caps EffectList shakes, not these). What held
+the intro's impact to 0.8 s and 2.0 was the game's own SkillLookTest; it now lets a look only a story's STREAK lands
+with (a cutscene's) go to 1.5 s and 5.0, and the impact knocks 1.0 s at 4.0.

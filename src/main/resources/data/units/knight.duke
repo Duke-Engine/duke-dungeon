@@ -437,6 +437,22 @@ Hero
       CastAnim = Cast_Charge
       MaxRank = 1
       Name = Chetlanish
+    End,
+    Skill
+      ; The landing's shockwave (docs/plan/2026-10-15-seamless-campaign.md, section 4.3): no key of his, cast by the
+      ; story as he comes down in the meteor (CAST PUSH at the landing) -- every enemy within Radius thrown Distance
+      ; out over DurationFrames along an arc HitWidth high, stunned StunFrames as it lands (E82). Off his bar, as his
+      ; stagger and his dodge are.
+      Key = Y
+      Effect = PUSH
+      Radius = 160
+      Distance = 50
+      DurationFrames = 20
+      HitWidth = 18
+      StunFrames = 90
+      Look = Thrown
+      MaxRank = 1
+      Name = "Qo'nish zarbasi"
     End
   ]
 End

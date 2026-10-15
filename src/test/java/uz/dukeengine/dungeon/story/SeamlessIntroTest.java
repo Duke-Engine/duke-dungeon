@@ -156,35 +156,47 @@ class SeamlessIntroTest {
             skyHigh = Math.max(skyHigh, hero(session).getPosition().z());
         }
         assertTrue(skyHigh > 1000f, "held out of sight in the sky until the meteor: " + skyHigh);
+        while (!script.flagged("HeroLanded")) {
+            frame(session, true);
+        }
+        // Where each stood as he struck (the cast is this frame's; the throw moves them from the next).
         for (var foe : session.game().getLogic().getObjects()) {
             if (foe.getBody() != null && !foe.isEffectivelyDead() && isEnemy(session, foe)) {
                 before.put(foe, (float) Math.hypot(foe.getPosition().x() - middle[0],
                         foe.getPosition().y() - middle[1]));
             }
         }
-        while (!script.flagged("HeroLanded")) {
-            frame(session, true);
-        }
-        var wave = SETTINGS.shockwave("MeteorShock");
+        // The knock-back is his PUSH, cast through his skill book as he strikes (E82): not the story's own hands.
+        var wave = SETTINGS.bookFor(CAMPAIGN.hero()).stream()
+                .filter(skill -> skill.effect() == uz.dukeengine.rpg.skill.SkillEffect.PUSH).findFirst().orElseThrow();
+        var book = hero(session).findModule(uz.dukeengine.rpg.skill.SkillBook.class);
+        assertTrue(session.game().getLogic().getFrame() - book.getLastCastFrame() <= 2,
+                "he cast it as he struck: last cast at " + book.getLastCastFrame());
         float highest = 0f;
-        for (int i = 0; i < wave.frames() + 2; i++) {
+        for (int i = 0; i < wave.durationFrames() + 2; i++) {
             for (var foe : before.keySet()) {
                 highest = Math.max(highest, foe.getPosition().z()
                         - session.game().getLogic().groundHeight(foe.getPosition()));
             }
             session.game().runHeadless(1);
         }
+        // Those inside its reach as he struck: every one stunned, and thrown its whole Distance out where nothing stands
+        // in the way -- the engine's PUSH stops a body at the first body behind it (a crowd holds; E88 asks otherwise).
+        int inside = 0;
         int thrown = 0;
         for (var each : before.entrySet()) {
             var foe = each.getKey();
-            if (each.getValue() <= wave.radius() && !foe.isEffectivelyDead()) {
+            if (each.getValue() <= wave.radius() - 10f && !foe.isEffectivelyDead()) {
+                inside++;
                 float now = (float) Math.hypot(foe.getPosition().x() - middle[0], foe.getPosition().y() - middle[1]);
-                assertTrue(now > each.getValue(), "thrown out from the landing");
-                assertTrue(foe.hasStatus(ObjectStatus.DISABLED), "and stunned");
-                thrown++;
+                assertTrue(foe.hasStatus(ObjectStatus.DISABLED), "stunned");
+                if (now > each.getValue() + wave.distance() / 2f) {
+                    thrown++;
+                }
             }
         }
-        assertTrue(thrown > 0, "the premise: enemies within the wave");
+        assertTrue(inside > 0, "the premise: enemies within the wave");
+        assertTrue(thrown * 3 >= inside, thrown + " of " + inside + " thrown out from the landing");
         assertTrue(highest > 5f, "through the air: " + highest);
         var at = hero(session).getPosition();
         assertTrue(Act1Test.zone("world", "Qonish").holds(at.x(), at.y(), CELL), "he stands where he struck");
@@ -225,6 +237,48 @@ class SeamlessIntroTest {
         assertFalse(session.run().holdsTheBattle(), "let go when the talk is over");
         session.game().runHeadless(3);
         assertFalse(hero(session).hasStatus(ObjectStatus.DISABLED), "free to move");
+    }
+
+    /**
+     * The opening's camera is one smooth path (E85): from where it stands, over the field, past the kingdom's line and
+     * down onto the landing -- through the line's middle on the way, never standing still until it arrives.
+     */
+    @Test
+    void theOpeningsCameraFliesOnePath() {
+        var session = newGame();
+        var camera = session.game().camera();
+        for (int i = 0; i < 300 && !"Summoning".equals(session.run().cutsceneName()); i++) {
+            frame(session, false);
+        }
+        assertEquals("Summoning", session.run().cutsceneName());
+        frame(session, false);
+        var line = Act1Test.zone("world", "Saf");
+        var middle = landing();
+        double nearest = Double.MAX_VALUE;
+        int stood = 0;
+        var was = camera.current();
+        // Its line said, then the path's 150 frames.
+        for (int i = 0; i < 15; i++) {
+            frame(session, false);
+            was = camera.current();
+        }
+        for (int i = 0; i < 148; i++) {
+            frame(session, false);
+            var now = camera.current();
+            nearest = Math.min(nearest, Math.hypot(now.x() - line.middleX(CELL), now.y() - line.middleY(CELL)));
+            if (i > 10 && i < 138 && Math.hypot(now.x() - was.x(), now.y() - was.y()) < 1e-3) {
+                stood++;
+            }
+            was = now;
+        }
+        frame(session, false);
+        frame(session, false);
+        var end = camera.current();
+        assertTrue(nearest < 20, "past the kingdom's line: " + nearest);
+        assertEquals(0, stood, "it stood still " + stood + " frames between its ends (the eases' first and last)");
+        assertEquals(middle[0], end.x(), 1f, "onto the landing");
+        assertEquals(middle[1], end.y(), 1f);
+        assertEquals(Math.toRadians(38), end.pitch(), 0.02, "drawn in and lower");
     }
 
     private static boolean isEnemy(Dungeon.Session session, GameObject thing) {

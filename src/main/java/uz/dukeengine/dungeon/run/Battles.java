@@ -12,12 +12,11 @@ import uz.dukeengine.core.thing.ObjectStatus;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.dungeon.map.StaticMap;
 import uz.dukeengine.dungeon.story.Battle;
-import uz.dukeengine.dungeon.story.Shockwave;
 
 /**
  * The opening battle as one thing, laid by the story's {@code BATTLE} act and by the menu's backdrop alike -- the same
- * armies on the same spot (docs/plan/2026-10-15-seamless-campaign.md) -- and the hero's landing's knock-back. In the
- * simulation: deterministic, the world's own dice untouched.
+ * armies on the same spot (docs/plan/2026-10-15-seamless-campaign.md). In the simulation: deterministic, the world's
+ * own dice untouched. The landing's knock-back is the heroes' PUSH skill (E82), cast by the story.
  */
 public final class Battles {
 
@@ -123,56 +122,6 @@ public final class Battles {
         if (timers != null) {
             timers.apply(ObjectStatus.DISABLED, frames);
         }
-    }
-
-    /**
-     * The landing's knock-back from {@code middle}: every creature of {@code dungeonSide} alive within the wave's
-     * Radius thrown Distance straight out (short of stone) along an arc Height high over Frames, stunned StunFrames and
-     * wearing {@code stunLook}. Game-side until the skill system has an outward push (E82). Returns how many it threw.
-     */
-    static int shockwave(GameLogic logic, Shockwave wave, Coord3D middle, int dungeonSide, String stunLook) {
-        int thrown = 0;
-        var grid = logic.getPathGrid();
-        for (var thing : List.copyOf(logic.getObjects())) {
-            if (thing.getBody() == null || thing.isEffectivelyDead() || thing.getPlayerIndex() != dungeonSide) {
-                continue;
-            }
-            var at = thing.getPosition();
-            float dx = at.x() - middle.x();
-            float dy = at.y() - middle.y();
-            float far = (float) Math.sqrt(dx * dx + dy * dy);
-            if (far > wave.radius()) {
-                continue;
-            }
-            if (far < 0.01f) {
-                dx = 1f;
-                dy = 0f;
-                far = 1f;
-            }
-            Coord3D to = at;
-            for (float reach = wave.distance(); reach > 0f; reach -= PathGrid.DEFAULT_CELL_SIZE / 2) {
-                float x = at.x() + dx / far * reach;
-                float y = at.y() + dy / far * reach;
-                int cx = (int) Math.floor(x / PathGrid.DEFAULT_CELL_SIZE);
-                int cy = (int) Math.floor(y / PathGrid.DEFAULT_CELL_SIZE);
-                if (grid == null || !grid.isBlocked(cx, cy)) {
-                    var flat = new Coord3D(x, y, 0f);
-                    to = new Coord3D(x, y, logic.groundHeight(flat));
-                    break;
-                }
-            }
-            uz.dukeengine.combat.module.Errand.giveUpAll(thing);
-            var move = uz.dukeengine.core.module.ScriptedMove.along(thing, to, wave.frames(), wave.height());
-            if (!wave.landed().isBlank()) {
-                move.onLanded(() -> logic.effect(wave.landed(), thing));
-            }
-            daze(thing, wave.frames() + wave.stunFrames());
-            if (stunLook != null && !stunLook.isBlank()) {
-                logic.effect(stunLook, thing);
-            }
-            thrown++;
-        }
-        return thrown;
     }
 
     /**

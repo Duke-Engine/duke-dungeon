@@ -201,18 +201,6 @@ Battle
   Ring = 30
 End
 
-; The landing's knock-back: every enemy within 160 thrown 50 out over an arc 18 high, stunned. The
-; landing is on the field's flank, so the wave reaches across the fight.
-Shockwave
-  Name = MeteorShock
-  Radius = 160
-  Distance = 50
-  Height = 18
-  Frames = 20
-  StunFrames = 90
-  Landed = Beaten
-End
-
 Conversation
   Name = BattleHolds
   Lines = [
@@ -292,25 +280,36 @@ Cutscene
   Name = Summoning
   Shots = [
     Shot
-      Zone = Darvoza_oldi
-      Frames = 1
-      Hold = 45
-      Turn = 0
-      Pitch = 66
-      Zoom = 230
-    End,
-    Shot
+      ; The line held, seen from where the camera stands: the menu's own framing, when the backdrop became the game.
       Says = BattleHolds
       Hold = 10
     End,
     Shot
-      ; Drawn in and lower, onto the three of them round the landing.
-      Zone = Qonish
-      Frames = 75
+      ; Then one smooth move (E85): over the field as the menu frames it, down past the kingdom's line, onto the three
+      ; of them round the landing -- drawn in and lower.
+      Frames = 150
       Hold = 10
-      Pitch = 38
-      Zoom = 130
       Ease = IN_OUT
+      Path = [
+        Key
+        End,
+        Key
+          Zone = Darvoza_oldi
+          Turn = 0
+          Pitch = 66
+          Zoom = 230
+        End,
+        Key
+          Zone = Saf
+          Pitch = 52
+          Zoom = 170
+        End,
+        Key
+          Zone = Qonish
+          Pitch = 38
+          Zoom = 130
+        End
+      ]
     End
   ]
 End
@@ -332,24 +331,38 @@ Cutscene
   Name = Landing
   Shots = [
     Shot
-      Zone = Qonish
+      ; Down low and close into the smoke as he rises...
       Frames = 30
       Hold = 40
-      Pitch = 30
-      Zoom = 85
       Ease = OUT
+      Path = [
+        Key
+        End,
+        Key
+          Zone = Qonish
+          Pitch = 30
+          Zoom = 85
+        End
+      ]
     End,
     Shot
       Says = HeroLands
       Hold = 10
     End,
     Shot
-      Zone = Saf
+      ; ...then back up over the kingdom's line, the stunned army round it.
       Frames = 45
       Hold = 10
-      Pitch = 45
-      Zoom = 120
       Ease = IN_OUT
+      Path = [
+        Key
+        End,
+        Key
+          Zone = Saf
+          Pitch = 45
+          Zoom = 120
+        End
+      ]
     End,
     Shot
       Says = AfterLanding
@@ -501,8 +514,10 @@ Trigger
   Delay = 24
   Actions = [
     Action
-      Act = SHOCKWAVE
-      Target = MeteorShock
+      ; The knock-back is his: every hero's PUSH (Qo'nish zarbasi, data/units), cast where he struck -- every enemy
+      ; within 160 thrown 50 out over an arc and stunned, in the skill system (E82).
+      Act = CAST
+      Target = PUSH
       Zone = Qonish
     End,
     Action

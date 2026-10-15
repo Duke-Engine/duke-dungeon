@@ -60,10 +60,15 @@ story lays (`data/story/act1.duke`): the kingdom's soldiers at `Saf`, the enemy 
 commander behind it, and the three ritualists round `Qonish` — the same spot, the same armies. The fallen come back at
 their line after a while, so it never ends. The camera stands where play's intro first frame stands.
 
-The launch screen loads the world once for the backdrop. **"New game"** starts the match, which is built on the same
-world and opens on the same framing with the same armies, so what the player sees goes on. The match still loads under
-the bar (about 0.6 s for the world from warm): the engine tears the backdrop down when a match starts, and keeping it
-as the match is **E83**.
+The launch screen loads the world once for the backdrop. **"New game"** of Act 1 makes that backdrop the played match
+(E83, `Duke3D.adoptBackdrop`): nothing loads and its frames go on. The client puts its menu away, and on the
+simulation's thread (`onBackdropAdopted`) the scene hands over (`MenuScene.adoptAsMatch`: no more respawns or drifting
+camera, the leader's stand-in gone, the ritualists and the armies as they stand), this machine takes the seat
+(`DukeGame.takeSeat`), and the run begins the act on the world as it is (`DungeonRun.adopt`: joint 1's flags, the
+map's start heard again, so the battle is found laid and the hero is held in the sky). Then the hero's keys, eyes and
+the modern scheme's "fight when told" are set (`heroChosen`); the day-and-night wash, the camera follow and the bag
+follow the adopted match because it is the one shown (`Bag.show`). Continue and Load still load as before, and so
+does Act 2.
 
 ## 4. The intro, beat by beat
 
@@ -77,7 +82,7 @@ Frames at 30 a second. Every number is the data's (`data/story/act1.duke`: the t
 | +105 | `BEAM`: a bright beam from each ritualist's hands to a point 40 above `Qonish` (laser `RitualBeam`, 100 frames): three beams from three sides meeting in the middle. |
 | +120 | the pillar of light: `SkyPillar` (a PILLAR of light, motes, a light) and the laser `SkyPillarBeam` from the ground at `Qonish` up 900 (90 frames): the beams feed it. |
 | +150 | `STREAK Hero`: the meteor. He is carried from 700 above and 400 off to the south-west down onto `Qonish` in 24 frames, burning (`MeteorTrail` on him every frame of it). |
-| +174 | **Impact** (`MeteorImpact`): a white flash, a shockwave ring, dust, a scorched crater lying 20 s, a light, the biggest knock of the camera any look may have (0.8 s, 2.0: `SkillLookTest`), a low boom (`landing.impact`). `SHOCKWAVE`: every enemy within 160 thrown 50 outward in an arc 18 high over 20 frames and stunned (the Combat StunLook over them). `HOLD Darvoza_oldi`: every fighter on the field held — the battle stops. The hero kneels in the smoke (`HeroLanding`, his kneel-and-rise clip, 70). The ritualists vanish in a flash (`RitualistVanish`, then `REMOVE`). Flag `HeroLanded`. |
+| +174 | **Impact** (`MeteorImpact`): a white flash, a shockwave ring, dust, a scorched crater lying 20 s, a light, a cutscene's big knock of the camera (1.0 s, 4.0), a low boom (`landing.impact`). `CAST PUSH`: his landing skill (E82) throws every enemy within 160 50 outward in an arc 18 high over 20 frames and stunned (the Combat StunLook over them). `HOLD Darvoza_oldi`: every fighter on the field held — the battle stops. The hero kneels in the smoke (`HeroLanding`, his kneel-and-rise clip, 70). The ritualists vanish in a flash (`RitualistVanish`, then `REMOVE`). Flag `HeroLanded`. |
 | +249 | Cutscene `Landing`: low and close; *HeroLands* (he was training with Erika a moment ago; the commander: the light chose you), then *AfterLanding* (they are beaten; you are the last hero summoned; the queen knows the way home; follow me). |
 | seen | `RELEASE`; the soldiers finish the stunned (`KILL` each enemy kind); the quest *Qo'mondon izidan* (section 5); flag `BattleWon`; `CHECKPOINT`. |
 
@@ -106,15 +111,18 @@ ground, the head bowed — held, then rising to the idle stance. Posed from each
 kneel and its Idle as the stand, blended (`art/anim/hero_landing.py`, run over the shipped `.glb`s). Played as his busy
 clip (E67) for its 70 frames.
 
-### 4.3 The knock-back and the hold (game-side, E82 asked)
+### 4.3 The knock-back and the hold
 
-`SHOCKWAVE` reads a `Shockwave` block (Radius, Distance, Height, Frames, StunFrames). Each enemy (the dungeon's side,
-alive, with a body) within Radius is carried by the engine's `ScriptedMove` (E40) along an arc outward from the middle,
-stopping short of stone, and stunned by the engine's own stun (`StatusUpdate` DISABLED, as `SkillBook.daze`), wearing
-the Combat block's StunLook. The skill system has no outward push (`PULL` draws in): **E82** asks `SkillEffect.PUSH`;
-when it lands, the story casts it as a skill of the hero's and this act goes.
+The knock-back is the hero's own skill: every hero carries a `PUSH` (`Qo'nish zarbasi`: Radius 160, Distance 50 over
+20 frames along an arc 18 high, stunned 90 frames, the stun look on each), off his bar as his stagger and dodge are,
+and the story's `CAST PUSH` at the landing casts it through his skill book (E82). A body standing behind one in a crowd
+stops it short (E88 asks for a push that throws a crowd); every one within the wave is stunned.
 
 `HOLD` (a zone) keeps every fighter standing in it DISABLED, renewed each frame, until `RELEASE`: no blows, no steps.
+
+The opening's camera: the `Summoning` cutscene's second shot is a `Path` of keys flown as one move (E85,
+`GameCamera.along`): from where the camera stands (the menu's framing when the backdrop was adopted), over the field,
+past the kingdom's line, down onto the landing. The landing's shots are paths too.
 
 ## 5. The follow mission: *Qo'mondon izidan*
 
@@ -136,9 +144,11 @@ is ready, and *Saroyga qayting* brings him back to the war council (`WarCouncil`
 
 ## 6. The world gated by the story
 
-A `Gate` block: on its map, while its `If` holds (the trigger's conditions), a hero must stand in one of its `Open`
-zones. Each frame a hero found outside them is put back where he last stood inside, his walk given up, and he says the
-gate's `Word` (*Hozir u yerga bormaymiz*) at most once every three seconds. A loaded save (or a death's checkpoint)
+A `Gate` block: on its map, while its `If` holds (the trigger's conditions), the land outside its `Open` zones is shut
+on the path grid (E84, `PathGrid.shut`): a band two cells wide round the open land, which no route plans through and
+nothing walks into. When the flags move on to another gate the band is opened and the new one shut. A hero who walks
+into the edge (his walk stopped short, or pressing on and getting nowhere) says the gate's `Word` (*Hozir u yerga
+bormaymiz*), at most once every three seconds. A loaded save (or a death's checkpoint)
 under a gate starts at its `Start` zone. The first gate of the file that holds is the one kept. Visible barriers: the
 kingdom's guards (`Soqchi`) stand at the corridor's ends and say the same word when talked to; the fog stays.
 
@@ -149,9 +159,7 @@ kingdom's guards (`Soqchi`) stand at the corridor's ends and say the same word w
 | `Act1War` | Act1, `WarBegun` | the same (the war leaves by the field) |
 
 Act 2 has no gate: its world is open, as it was. A later act opens the world step by step by adding gates with wider
-`Open` lists under its own flags. The barrier is the game's leash, not the path: a route the player clicks still plans
-through the closed land and stops at its edge. **E84** asks for regions of the path grid shut by the game (walls by
-flag), so a route never plans through one.
+`Open` lists under its own flags.
 
 ## 7. Old saves
 
@@ -167,16 +175,11 @@ Its hero, experience, ranks, bag, gold, souls, quests and flags are kept; the jo
 added; the joint's quests started unless going or finished. The save's next autosave is on the world. A save on
 `urush` or `qora_qasr` loads as before.
 
-## 8. Engine asks (2026-09-29-engine-requests.md)
+## 8. Engine asks
 
-- **E82** — `SkillEffect.PUSH`: a radial knock-back with a stun, in the skill system.
-- **E83** — the backdrop kept as the match ("New game" with no load: the client hands the running backdrop game over).
-- **E84** — path regions shut and opened by the game (story gating that routes respect).
-- **E85** — a scripted camera path (a list of points with eases) for the intro's single long move; the cutscene's shots
-  stand in.
-
-The follow marker needs no ask: the engine's riding effects (`World.effect(name, thing, bone, offset)`) can carry one;
-the game plays its Effect on the person as the quest glow is played, which reads the same.
+E82 (`PUSH`), E83 (the backdrop adopted), E84 (shut path regions) and E85 (the camera path) landed on the engine's
+`e82-85-seamless` and are used as above. E88 asks for a push that throws a crowd. The cutscene shake needed no engine
+change (see E88's note): the game's own look test now lets a cutscene's look knock harder.
 
 ## 9. Frame cost
 
