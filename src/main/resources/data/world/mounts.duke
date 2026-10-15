@@ -311,7 +311,7 @@ Npc
   Talk = OtboqarGreets
   Role = Otboqar
   Radius = 30
-  Wander = 6
+  Wander = 0
 End
 
 Merchant
