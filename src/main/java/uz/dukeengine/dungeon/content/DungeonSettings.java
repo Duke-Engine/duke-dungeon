@@ -732,16 +732,23 @@ public final class DungeonSettings {
             base.attributes().forEach(attribute -> require(rules.indexOf(attribute) >= 0,
                     named + " gives " + attribute + ", and no Attribute is called that"));
         }
-        var stats = new java.util.HashSet<>(figures);
-        stats.addAll(EXTRAS);
-        stats.add(uz.dukeengine.dungeon.loot.Items.LIFESTEAL);
+        // Any figure the hero reads (E43, E44), an attribute by its name, or a skill's rank on a key.
+        java.util.function.Predicate<String> isStat = stat -> uz.dukeengine.dungeon.loot.Items.STATS.contains(stat)
+                || rules.indexOf(stat) >= 0 || stat.matches(Stat.SKILL_RANK + ":[A-Z]");
         for (var affix : affixes) {
             var named = "Affix " + affix.name();
-            require(stats.contains(affix.stat()), named + " has Stat = " + affix.stat() + ", and no figure is called that");
+            require(isStat.test(affix.stat()), named + " has Stat = " + affix.stat() + ", and no figure is called that");
             require(affix.low().size() == 2 && affix.high().size() == 2, named + ": Low and High are [level 1, level 15]");
             affix.slots().forEach(slot -> require(slots.isEmpty() || slots.contains(slot),
                     named + " rolls on " + slot + ", and LootDrops wears no slot called that"));
             require(sayable(affix.prefix()), named + ": its Prefix may not contain ',' or '|'");
+            require(!affix.stat().equals(Stat.SKILL_RANK) || !affix.keys().isEmpty(),
+                    named + " raises a skill: say whose in Keys");
+            for (var also : affix.also()) {
+                var words = also.strip().split(" +");
+                require(words.length == 2 && words[1].matches("-?[0-9]+") && isStat.test(words[0]),
+                        named + " brings '" + also + "': a Stat and a number");
+            }
         }
         for (var unique : uniques) {
             var named = "Unique " + unique.name();
@@ -749,16 +756,12 @@ public final class DungeonSettings {
             require(base != null, named + " is made on " + unique.base() + ", and no ItemBase is called that");
             require(!unique.name().contains("-") && sayable(unique.displayName()) && sayable(unique.lore()),
                     named + ": a name with no '-', and words without ',' or '|'");
-            int extras = 0;
+            require(unique.gives().size() >= 4 && unique.gives().size() <= 6, named + " gives 4 to 6 affixes");
             for (var said : unique.gives()) {
-                var words = said.strip().split("\\s+");
-                require(words.length == 2 && words[1].matches("-?\\d+"), named + " gives '" + said + "': a Stat and a number");
-                require(stats.contains(words[0]), named + " gives " + words[0] + ", and no figure is called that");
-                require(!figures.contains(words[0]) || words[0].equals(base.kind()),
-                        named + " gives " + words[0] + ", and its base's figure is " + base.kind() + " (E43)");
-                extras += EXTRAS.contains(words[0]) ? 1 : 0;
+                var words = said.strip().split(" +");
+                require(words.length == 2 && words[1].matches("-?[0-9]+"), named + " gives '" + said + "': a Stat and a number");
+                require(isStat.test(words[0]), named + " gives " + words[0] + ", and no figure is called that");
             }
-            require(extras <= 1, named + " gives two extras, and a thing carries one (E43)");
             unique.skills().forEach(skill -> require(skill.effect() != null && skill.effect().isPassive(),
                     named + " lends a " + skill.effect() + ": a worn thing lends passives only"));
         }

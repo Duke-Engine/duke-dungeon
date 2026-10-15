@@ -23,9 +23,8 @@ import uz.dukeengine.rpg.skill.SkillEffect;
  * a pure function of those, so a save keeps the id alone, every machine of a party rolls the same thing off the same
  * seed, and no two things share an id (so the engine's three-alike join never takes them).
  *
- * <p>What the engine's {@code Loot} carries decides how an affix reaches the hero (E43 asks for more): one of the base's
- * own figure is added to its {@code Value}, one of the extra figures is its {@code Extra}, and lifesteal is a passive
- * {@code LIFESTEAL} it lends — so a thing has at most one affix of each of the three kinds.
+ * <p>Its affixes are the engine's {@code Affix}es (E43), each a figure and how much, added up by the bag for what he
+ * wears; lifesteal alone is a passive {@code LIFESTEAL} skill it lends, as every lifesteal is.
  */
 public final class Items {
 
@@ -40,11 +39,14 @@ public final class Items {
 
     /** The base's own figures: an affix of one is added to the thing's {@code Value}. */
     static final Set<String> FIGURES = Set.of(Stat.ATTACK, Stat.ARMOUR, Stat.HEALTH, Stat.MANA, Stat.ATTRIBUTE);
-    /** The extras: one of them is the thing's {@code Extra}. */
-    static final Set<String> EXTRAS = Set.of(Stat.HEALTH_REGEN, Stat.MANA_REGEN, Stat.ATTACK_SPEED);
+    /** Every figure an affix may move (an attribute's by its name, a skill's rank as {@code SKILL_RANK:Q}). */
+    public static final Set<String> STATS = Set.of(Stat.ATTACK, Stat.ARMOUR, Stat.HEALTH, Stat.MANA, Stat.ATTRIBUTE,
+            Stat.HEALTH_REGEN, Stat.MANA_REGEN, Stat.ATTACK_SPEED, Stat.CRIT_CHANCE, Stat.CRIT_DAMAGE, Stat.MOVE_SPEED,
+            Stat.SKILL_RANK, LIFESTEAL);
     /** The order a card and a comparison say figures in. */
     private static final List<String> ORDER = List.of(Stat.ATTACK, Stat.ARMOUR, Stat.HEALTH, Stat.MANA,
-            Stat.ATTRIBUTE, Stat.ATTACK_SPEED, Stat.HEALTH_REGEN, Stat.MANA_REGEN, LIFESTEAL);
+            Stat.ATTRIBUTE, Stat.ATTACK_SPEED, Stat.CRIT_CHANCE, Stat.CRIT_DAMAGE, Stat.HEALTH_REGEN, Stat.MANA_REGEN,
+            LIFESTEAL, Stat.MOVE_SPEED, Stat.SKILL_RANK);
     private static final String LETTERS = "CMRE";
     private static final List<String> FRAMES = List.of("common", "magic", "rare", "epic");
     /** The highest item level an affix's range is written for; above it, it rolls as at it. */
@@ -213,16 +215,19 @@ public final class Items {
             default -> 0;
         };
         var rolled = new ArrayList<Rolled>();
-        var used = new HashSet<Integer>();
+        var taken = new HashSet<String>();
         for (int i = 0; i < count; i++) {
-            var open = affixes.stream().filter(affix -> fits(affix, base) && !used.contains(carrier(affix.stat())))
-                    .toList();
+            var open = affixes.stream().filter(affix -> fits(affix, base) && !taken.contains(affix.name())).toList();
             if (open.isEmpty()) {
-                break; // ponytail: one affix a kind until E43 lets a thing carry more
+                break;
             }
             var affix = pick(rng, open, Affix::weight);
-            used.add(carrier(affix.stat()));
-            rolled.add(new Rolled(affix.stat(), roll(rng, affix, level), affix.prefix()));
+            taken.add(affix.name());
+            rolled.add(new Rolled(statOf(rng, affix, attribute), roll(rng, affix, level), affix.prefix()));
+            for (var also : affix.also()) {
+                var words = also.strip().split("\s+");
+                rolled.add(new Rolled(words[0], Integer.parseInt(words[1]), ""));
+            }
         }
         var name = switch (rarity) {
             case MAGIC -> magicName(base, rolled);
@@ -234,6 +239,21 @@ public final class Items {
                 seed, attribute, figure, List.copyOf(rolled), name);
     }
 
+    /**
+     * The figure an affix moves on this thing: an attribute affix the thing's own attribute, or one drawn among them
+     * all; a skill's rank, on one of its keys drawn; any other its own word.
+     */
+    private String statOf(DeterministicRng rng, Affix affix, String attribute) {
+        if (Stat.ATTRIBUTE.equals(affix.stat())) {
+            var all = List.copyOf(words.attributes().keySet());
+            return !attribute.isBlank() || all.isEmpty() ? attribute : all.get(rng.nextInt(all.size()));
+        }
+        if (Stat.SKILL_RANK.equals(affix.stat()) && !affix.keys().isEmpty()) {
+            return Stat.SKILL_RANK + ":" + affix.keys().get(rng.nextInt(affix.keys().size()));
+        }
+        return affix.stat();
+    }
+
     /** The epic {@code unique}, found at {@code level}: its figures are its own, whatever the seed. */
     public Made unique(Unique unique, int level, long seed) {
         var base = base(unique.base());
@@ -241,8 +261,9 @@ public final class Items {
                 : base.attributes().isEmpty() ? "" : base.attributes().getFirst();
         var rolled = new ArrayList<Rolled>();
         for (var said : unique.gives()) {
-            var words = said.strip().split("\\s+");
-            rolled.add(new Rolled(words[0], Integer.parseInt(words[1]), ""));
+            var words = said.strip().split("\s+");
+            var stat = Stat.ATTRIBUTE.equals(words[0]) ? attribute : words[0];
+            rolled.add(new Rolled(stat, Integer.parseInt(words[1]), ""));
         }
         return new Made(idOf(unique.name(), 'E', level, seed), base, unique, null, EPIC, level, seed, attribute,
                 base.value().getLast(), List.copyOf(rolled), unique.displayName());
@@ -250,18 +271,15 @@ public final class Items {
 
     /** Whether {@code affix} may roll on a thing made on {@code base}. */
     static boolean fits(Affix affix, ItemBase base) {
-        return affix.slots().contains(base.slot()) && (!FIGURES.contains(affix.stat()) || affix.stat().equals(base.kind()));
-    }
-
-    /** Which of the three things a {@code Loot} carries an affix of {@code stat} rides: its figure, extra, a skill. */
-    static int carrier(String stat) {
-        return FIGURES.contains(stat) ? 0 : EXTRAS.contains(stat) ? 1 : 2;
+        return affix.slots().contains(base.slot());
     }
 
     private static String magicName(ItemBase base, List<Rolled> rolled) {
         var name = new StringBuilder();
         for (var affix : rolled) {
-            name.append(name.isEmpty() ? affix.prefix() : lowerFirst(affix.prefix())).append(' ');
+            if (!affix.prefix().isEmpty()) {
+                name.append(name.isEmpty() ? affix.prefix() : lowerFirst(affix.prefix())).append(' ');
+            }
         }
         return name.isEmpty() ? base.displayName() : name + lowerFirst(base.displayName());
     }
@@ -293,26 +311,21 @@ public final class Items {
             return potion(made.potion(), 1, made.seed());
         }
         var base = made.base();
-        int value = made.figure();
-        var extra = "";
-        int extraValue = 0;
         var skills = new ArrayList<Skill>();
+        var affixes = new ArrayList<uz.dukeengine.rpg.item.Affix>();
         for (var affix : made.affixes()) {
-            if (FIGURES.contains(affix.stat())) {
-                value += affix.value();
-            } else if (EXTRAS.contains(affix.stat())) {
-                extra = affix.stat();
-                extraValue += affix.value();
-            } else if (LIFESTEAL.equals(affix.stat())) {
+            if (LIFESTEAL.equals(affix.stat())) {
                 skills.add(lifesteal(made.id(), affix.value(), words.lifesteal()));
+            } else {
+                affixes.add(new uz.dukeengine.rpg.item.Affix(affix.stat(), affix.value()));
             }
         }
         if (made.unique() != null) {
             made.unique().skills().forEach(skill -> skills.add(skill.ownedBy(made.id())));
         }
-        return new Loot(made.id(), made.name(), icon(base.icon(), made.rarity()), base.kind(), value, 0, 1,
-                Stat.ATTRIBUTE.equals(base.kind()) ? made.attribute() : "", extra, extraValue, 0, 1, ItemUse.NONE, "",
-                base.slot(), skills);
+        return new Loot(made.id(), made.name(), icon(base.icon(), made.rarity()), base.kind(), made.figure(), 0, 1,
+                Stat.ATTRIBUTE.equals(base.kind()) ? made.attribute() : "", "", 0, 0, 1, ItemUse.NONE, "",
+                base.slot(), skills, affixes);
     }
 
     /** A passive that drinks {@code percent} of every blow, lent by the thing {@code owner}. */
@@ -501,7 +514,8 @@ public final class Items {
                 }
             }
             if (!made.unique().lore().isBlank()) {
-                out.add(new Line(made.unique().lore(), rules.loreColour()));
+                wrap(made.unique().lore(), Math.max(10, rules.wrap())).forEach(line -> out.add(new Line(line,
+                        rules.loreColour())));
             }
         }
         return out;
@@ -530,10 +544,11 @@ public final class Items {
     }
 
     /**
-     * Every figure a thing moves while worn, by figure (an attribute's as {@code ATTRIBUTE:Strength}): its own, its
-     * extra and the lifesteal it lends — read off the engine's thing, so it holds for the data's own as well.
+     * Every figure a thing moves while worn, by figure (an attribute's as {@code ATTRIBUTE:Strength}, a skill's rank as
+     * {@code SKILL_RANK:Q}): its own, its extra, its affixes and the lifesteal it lends — read off the engine's thing, so
+     * it holds for the data's own as well.
      */
-    public static Map<String, Integer> figures(Loot item) {
+    public Map<String, Integer> figures(Loot item) {
         var out = new LinkedHashMap<String, Integer>();
         if (item == null || POTION.equals(item.kind())) {
             return out;
@@ -545,6 +560,10 @@ public final class Items {
         if (!item.extra().isBlank() && item.extraValue() != 0) {
             out.merge(item.extra(), item.extraValue(), Integer::sum);
         }
+        for (var affix : item.affixes()) {
+            var key = words.attributes().containsKey(affix.stat()) ? Stat.ATTRIBUTE + ":" + affix.stat() : affix.stat();
+            out.merge(key, affix.value(), Integer::sum);
+        }
         for (var skill : item.skills()) {
             if (skill.effect() == SkillEffect.LIFESTEAL) {
                 out.merge(LIFESTEAL, skill.boostPercent(), Integer::sum);
@@ -553,10 +572,19 @@ public final class Items {
         return out;
     }
 
-    /** One figure as a card says it: {@code +12% Zarba}, {@code -20 Jon}, {@code +3 Epchillik}. */
+    /**
+     * One figure as a card says it: {@code +12% Zarba}, {@code -20 Jon}, {@code +3 Epchillik}, {@code +1 Q mahorati}.
+     * {@code stat} may be an attribute's name, or {@code SKILL_RANK:Q}.
+     */
     public String say(String stat, String attribute, int value) {
         var sign = value < 0 ? "-" : "+";
         int size = Math.abs(value);
+        if (words.attributes().containsKey(stat)) {
+            return sign + size + " " + words.attributes().get(stat);
+        }
+        if (stat.startsWith(Stat.SKILL_RANK + ":")) {
+            return sign + size + " " + rules.skillRankWord().formatted(stat.substring(Stat.SKILL_RANK.length() + 1));
+        }
         return switch (stat) {
             case Stat.ATTACK -> sign + size + "% " + words.attack();
             case Stat.ARMOUR -> sign + size + "% " + words.armour();
@@ -566,9 +594,29 @@ public final class Items {
             case Stat.HEALTH_REGEN -> sign + size + " " + words.healthRegen();
             case Stat.MANA_REGEN -> sign + size + " " + words.manaRegen();
             case Stat.ATTACK_SPEED -> sign + size + "% " + words.attackSpeed();
+            case Stat.CRIT_CHANCE -> sign + size + "% " + rules.critChanceWord();
+            case Stat.CRIT_DAMAGE -> sign + size + "% " + rules.critDamageWord();
+            case Stat.MOVE_SPEED -> sign + size + "% " + rules.moveSpeedWord();
             case LIFESTEAL -> sign + size + "% " + words.lifesteal();
             default -> sign + size + " " + stat;
         };
+    }
+
+    /** {@code text} broken into lines of at most {@code width} letters, at spaces: a unique's story on its card. */
+    static List<String> wrap(String text, int width) {
+        var out = new ArrayList<String>();
+        var line = new StringBuilder();
+        for (var word : text.split(" ")) {
+            if (!line.isEmpty() && line.length() + 1 + word.length() > width) {
+                out.add(line.toString());
+                line.setLength(0);
+            }
+            line.append(line.isEmpty() ? "" : " ").append(word);
+        }
+        if (!line.isEmpty()) {
+            out.add(line.toString());
+        }
+        return out;
     }
 
     // ---- chance ----

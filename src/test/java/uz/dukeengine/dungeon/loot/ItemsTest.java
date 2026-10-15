@@ -24,7 +24,7 @@ class ItemsTest {
     void theShippedGameRollsThings() {
         assertTrue(ITEMS.active());
         assertEquals(35, ITEMS.bases().size());
-        assertEquals(9, ITEMS.affixes().size());
+        assertEquals(13, ITEMS.affixes().size());
         assertEquals(6, ITEMS.uniques().size());
         assertEquals(4, ITEMS.potions().size());
     }
@@ -81,20 +81,29 @@ class ItemsTest {
     }
 
     @Test
-    void aRareIsNamedFromTwoListsAndCarriesOneOfEachKind() {
+    void aRareIsNamedFromTwoListsAndCarriesThreeOrFourAffixes() {
         var rules = ITEMS.rules();
+        int fours = 0;
         for (long seed = 1; seed < 100; seed++) {
             var made = ITEMS.make(ITEMS.base("keng_qilich"), Items.RARE, 7, seed);
             var words = made.name().split(" ", 2);
             assertTrue(rules.firstNames().contains(words[0]) && rules.secondNames().contains(words[1]), made.name());
-            assertEquals(3, made.affixes().size(), "a figure, an extra and lifesteal");
-            assertEquals(3, made.affixes().stream().map(affix -> Items.carrier(affix.stat())).distinct().count());
+            long rolled = made.affixes().stream().filter(affix -> !affix.prefix().isEmpty()).count();
+            assertTrue(rolled >= 3 && rolled <= 4, made.name() + ": " + made.affixes());
+            assertEquals(rolled, made.affixes().stream().filter(affix -> !affix.prefix().isEmpty())
+                    .map(Items.Rolled::prefix).distinct().count(), "never one affix twice");
+            fours += rolled == 4 ? 1 : 0;
             var loot = ITEMS.loot(made);
             assertEquals(made.name(), loot.name());
-            assertTrue(loot.skills().stream().anyMatch(skill -> skill.effect() == SkillEffect.LIFESTEAL));
-            assertTrue(loot.value() > made.figure(), "its damage affix is added to the sword's own");
+            assertEquals(made.figure(), loot.value(), "the sword's own figure");
+            long lifesteal = made.affixes().stream().filter(affix -> affix.stat().equals(Items.LIFESTEAL)).count();
+            assertEquals(made.affixes().size() - lifesteal, loot.affixes().size(), "each affix the engine's, "
+                    + "but lifesteal, which is a lent skill");
+            assertEquals(lifesteal, loot.skills().stream().filter(skill -> skill.effect() == SkillEffect.LIFESTEAL)
+                    .count());
             assertTrue(loot.icon().endsWith("sword_broad_rare.png"));
         }
+        assertTrue(fours > 10, "four affixes now and then: " + fours);
         var magic = ITEMS.make(ITEMS.base("qisqa_qilich"), Items.MAGIC, 3, 5);
         assertTrue(magic.name().endsWith("qisqa qilich"), magic.name());
         assertEquals("Qisqa qilich", ITEMS.make(ITEMS.base("qisqa_qilich"), Items.COMMON, 3, 5).name());
@@ -130,11 +139,13 @@ class ItemsTest {
         assertEquals("Qonli ahd", loot.name());
         assertEquals(Stat.ATTRIBUTE, loot.kind());
         assertEquals("Strength", loot.attribute());
-        assertEquals(2 + 5, loot.value(), "the ring's best and its five");
+        assertEquals(2, loot.value(), "the ring's best");
+        assertTrue(loot.affixes().contains(new uz.dukeengine.rpg.item.Affix("Strength", 5)), "and five more, an affix");
         assertTrue(loot.skills().stream().anyMatch(skill -> skill.effect() == SkillEffect.DAMAGE_AURA));
         var lines = ITEMS.lines(loot).stream().map(Items.Line::text).toList();
         assertTrue(lines.contains("+8% Qon so'rish"), lines.toString());
-        assertTrue(lines.getLast().startsWith("Har zarbadan"), "its story last");
+        var story = ITEMS.lines(loot).stream().filter(line -> line.colour() == ITEMS.rules().loreColour()).toList();
+        assertTrue(story.getFirst().text().startsWith("Har zarbadan"), "its story last, broken to the card");
         assertEquals(ITEMS.rules().loreColour(), ITEMS.lines(loot).getLast().colour());
     }
 
