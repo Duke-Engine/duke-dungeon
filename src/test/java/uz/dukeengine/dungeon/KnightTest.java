@@ -197,6 +197,9 @@ class KnightTest {
     void theWaveIsAHalfMoonAndTheChargeIsAimedAsALine() {
         var wave = skillOf(KNIGHT, 'Q');
         assertEquals(55f, wave.projectileSpeed(), 0.001f, "the wave flies at other than half its first 110");
+        // 1.0.43: it leaves at the cast and his slash comes down a quarter of the way into its gesture, so a long
+        // gesture sends it half across the room before the blade is seen to throw it.
+        assertTrue(wave.castSeconds() <= 0.6f, "the slash is so slow the wave is far ahead when the blade falls");
         var looks = SETTINGS.effectLayers().stream().filter(art -> art.effect().equals("SwordWave")).toList();
         assertTrue(looks.stream().noneMatch(art -> "AURA".equals(art.fields().get("type"))),
                 "the wave still carries a ball round it");
@@ -237,8 +240,16 @@ class KnightTest {
         }
         model.updateGeometricState();
         var box = (com.jme3.bounding.BoundingBox) model.getWorldBound();
-        assertEquals(wave.hitWidth(), 2f * box.getZExtent() * look.scale(), 0.5f, "not as wide as the wave's lane");
+        // The owner's playtest of 1.0.43: "bigger and thicker -- in front of the hero it looks very small". As wide
+        // as the lane at least, its faded tips no more than a third past it; and a fat band, not a thread.
+        float wide = 2f * box.getZExtent() * look.scale();
+        assertTrue(wide >= wave.hitWidth() && wide <= 1.35f * wave.hitWidth(),
+                "drawn " + wide + " wide for a lane of " + wave.hitWidth());
+        assertTrue(wide >= 22f, "the half-moon is no bigger than the thin one of 1.0.43 (14)");
+        assertTrue(2f * box.getXExtent() * look.scale() >= 7f, "the band is thin: barely deeper than 1.0.43's 4.5");
         assertTrue(box.getXExtent() < box.getZExtent() / 2f, "not a half-moon: as deep as it is wide");
+        // Its leading edge is where the wave is, so it trails behind that point and leaves from his sword.
+        assertEquals(0f, (box.getCenter().x + box.getXExtent()) * look.scale(), 0.3f, "its leading edge is not the wave");
         assertEquals(0f, box.getYExtent(), 0.01f, "not lying flat");
     }
 
