@@ -228,7 +228,8 @@ final class HeroStatus {
         var keys = book.getSkills().stream()
                 .filter(skill -> skill.effect() == uz.dukeengine.rpg.skill.SkillEffect.STAGGER
                         || skill.effect() == uz.dukeengine.rpg.skill.SkillEffect.DODGE // no slot either: Space
-                        || skill.effect() == uz.dukeengine.rpg.skill.SkillEffect.MOUNT) // nor his horse: T
+                        || skill.effect() == uz.dukeengine.rpg.skill.SkillEffect.MOUNT // nor his horse: T
+                        || skill.effect() == uz.dukeengine.rpg.skill.SkillEffect.PUSH) // nor the story's landing
                 .map(skill -> skill.key() + ",").toList();
         if (keys.isEmpty()) {
             return line;

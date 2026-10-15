@@ -1,6 +1,7 @@
 package uz.dukeengine.dungeon;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
@@ -126,5 +127,52 @@ class MenuSceneTest {
         float fight = scene.fightX();
         assertTrue(seen.x() < fight, "it looks at " + seen.x() + ", not left of the fight at " + fight);
         assertEquals(0f, seen.angle(), 1e-6f);
+    }
+
+    /**
+     * "New game" of the first act makes the backdrop the played match (E83): the same world, its frames going on, the
+     * seat taken by this machine, the armies as they stand (not laid again), and the act's intro played on it to the
+     * commander's lead -- nothing loaded.
+     */
+    @Test
+    void aNewGameAdoptsTheBackdropAndLoadsNothing() {
+        var scene = MenuScene.of(SETTINGS);
+        var game = scene.game();
+        game.runHeadless(300);
+        var logic = game.getLogic();
+        int frame = logic.getFrame();
+        var battle = SETTINGS.battle(SETTINGS.mainMenu().sceneBattle());
+        var soldiers = logic.getObjects().stream().filter(o -> o.getTemplate().name().equals("Soldier")).toList();
+        var run = scene.session().run();
+        assertFalse(run.inIntro(), "the backdrop alone: no intro");
+        run.awaitAdoption();
+        assertTrue(run.inIntro(), "asked for: the hour's light and the mouse wait");
+        scene.adoptAsMatch(game, SETTINGS.campaign());
+        assertEquals(run.heroPlayer().getIndex(), game.getLocalPlayerIndex(), "the seat taken");
+        assertTrue(run.getScript().flagged("Act1"), "the act begun");
+        for (int i = 0; i < 2400 && !run.getScript().flagged("BattleWon"); i++) {
+            run.read(game.getLocalPlayerIndex(), 10_000);
+            if (run.inCutscene()) {
+                run.skipCutscene(game);
+            }
+            game.runHeadless(1);
+            if (!run.getScript().flagged("BattleWon")) {
+                assertTrue(run.inIntro(), "the intro holds the screen until the commander leads: frame " + i);
+            }
+            long laid = logic.getObjects().stream().filter(o -> o.getTemplate().name().equals("Soldier")).count();
+            assertTrue(laid <= battle.kingdom().stream().filter("Soldier"::equals).count(), "the battle laid once");
+            if (i == 5) {
+                assertEquals(3, scene.ritualists().size(), "the backdrop's ritualists are the intro's");
+            }
+        }
+        assertTrue(run.getScript().flagged("HeroLanded") && run.getScript().flagged("BattleWon"),
+                "the intro played on the adopted world");
+        assertTrue(game.getLogic() == logic, "the same world: nothing laid again, nothing loaded");
+        assertTrue(logic.getFrame() > frame + 200, "its frames went on from " + frame + ": " + logic.getFrame());
+        assertTrue(soldiers.stream().anyMatch(o -> logic.findObject(o.getId()) != null),
+                "the backdrop's own soldiers fight on in it");
+        assertEquals(SETTINGS.campaign().hero(), run.getHeroTemplate(), "the act's hero came down");
+        game.runHeadless(2);
+        assertFalse(run.inIntro(), "over: the hour's light and the captured mouse are his");
     }
 }

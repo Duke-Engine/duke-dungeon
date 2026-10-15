@@ -362,8 +362,15 @@ public record Story(Dialogue dialogue, List<Speaker> speakers, List<Conversation
                     wrong.add(named + " removes " + what + ", and no Monster is called that");
                 }
             }
-            case CHECKPOINT, MENU, CREDITS, RELEASE, BATTLE, SHOCKWAVE -> {
-                // A Battle and a Shockwave are the settings' blocks, checked there.
+            case CHECKPOINT, MENU, CREDITS, RELEASE, BATTLE -> {
+                // A Battle is the settings' block, checked there.
+            }
+            case CAST -> {
+                if (action.zone().isBlank()
+                        || java.util.Arrays.stream(uz.dukeengine.rpg.skill.SkillEffect.values())
+                                .noneMatch(effect -> effect.name().equals(what))) {
+                    wrong.add(named + " casts " + what + ", which is no skill's Effect, or at no Zone");
+                }
             }
             case POSE -> {
                 if (!monsters.contains(what) && !Trigger.HEROES.equals(what) || action.clip().isBlank()

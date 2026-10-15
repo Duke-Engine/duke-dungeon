@@ -64,6 +64,9 @@ final class MenuScene {
         zones.addAll(settings.placesOn(battle.map()));
         var session = Dungeon.newStageSession(stage, settings);
         session.game().randomSeed(SEED);
+        // The act's own hero, out of sight over the landing: when "New game" makes this the played match (E83) he is
+        // the one who comes down in the meteor.
+        session.run().startWith(session.game(), settings.campaign().hero());
         var scene = new MenuScene(session, settings, battle, zones, menu.sceneShift());
         var game = session.game();
         game.onStart(started -> {
@@ -132,7 +135,7 @@ final class MenuScene {
         var hero = hero();
         int heroSide = hero == null ? 1 : hero.getPlayerIndex();
         int dungeonSide = session.run().dungeonSide();
-        var laid = Battles.lay(logic, battle, this::zone, heroSide, dungeonSide, settings, session.run().getDepth());
+        var laid = session.run().layBattle(logic, battle.name());
         for (int i = 0; i < laid.kingdom().size(); i++) {
             slots.add(new Slot(true, battle.kingdom().get(i), i, heroSide, laid.kingdom().get(i)));
         }
@@ -142,12 +145,54 @@ final class MenuScene {
         var line = zone(battle.kingdomZone());
         var leader = battle.leader().isBlank() ? null : logic.getThingFactory().findTemplate(battle.leader());
         if (line != null && leader != null) {
-            logic.spawn(leader, Battles.middleOf(logic, line), uz.dukeengine.core.player.PlayerList.NEUTRAL_INDEX);
+            standIn = logic.spawn(leader, Battles.middleOf(logic, line), uz.dukeengine.core.player.PlayerList.NEUTRAL_INDEX);
         }
         keepHeroAway();
     }
 
+    /** The leader at the line, a backdrop's figure only: the story places its own person once the game is played. */
+    private GameObject standIn;
+    /** Whether the backdrop has been made the played match (E83): the scene's own rules stop, the story's begin. */
+    private volatile boolean handedOver;
+
+    /** The session the scene runs: the match "New game" adopts (E83). */
+    Dungeon.Session session() {
+        return session;
+    }
+
+    /** Whether it has started: there is a world to adopt. */
+    boolean running() {
+        return game.getLogic() != null && !handedOver;
+    }
+
+    /**
+     * Made the played match (E83), on the simulation's thread: the armies fight on as they stand and the ritualists stay
+     * where they are, warded as ever (nobody's foe, no body); the fallen come back no more, the camera drifts no more,
+     * the hero is the story's to hold, and the leader's stand-in goes -- the story places the commander herself.
+     */
+    void handOver() {
+        handedOver = true;
+        if (standIn != null && game.getLogic() != null) {
+            game.getLogic().destroyObject(standIn);
+            standIn = null;
+        }
+    }
+
+    /**
+     * The backdrop made {@code campaign}'s played match, on the simulation's thread (the engine's onBackdropAdopted,
+     * E83): the scene handed over, the first seat taken by this machine, and the act begun on the world as it stands --
+     * the same frames going on, nothing laid again.
+     */
+    void adoptAsMatch(DukeGame running, uz.dukeengine.dungeon.story.Campaign campaign) {
+        handOver();
+        running.takeSeat(session.run().heroPlayer());
+        session.run().adopt(running, campaign);
+    }
+
     private void tick(DukeGame running) {
+        if (handedOver) {
+            return;
+        }
         keepHeroAway();
         var logic = running.getLogic();
         int frame = logic.getFrame();
