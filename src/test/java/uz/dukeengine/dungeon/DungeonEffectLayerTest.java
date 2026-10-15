@@ -57,7 +57,9 @@ class DungeonEffectLayerTest {
         }
         var bare = new ArrayList<String>();
         for (var skill : SETTINGS.skills()) {
-            if (skill.hasLook() && !layered.contains(skill.look())) {
+            // A MOUNT's Look is the riding look he is drawn as, no effect.
+            if (skill.hasLook() && skill.effect() != uz.dukeengine.rpg.skill.SkillEffect.MOUNT
+                    && !layered.contains(skill.look())) {
                 bare.add(skill.look());
             }
             var thrown = skill.hasProjectile() ? carries.get(skill.projectile()) : null;

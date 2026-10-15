@@ -85,7 +85,7 @@ class DungeonMonsterArtTest {
 
     private static List<uz.dukeengine.dungeon.content.MonsterLook> looks() {
         var all = new ArrayList<uz.dukeengine.dungeon.content.MonsterLook>();
-        for (var kind : SETTINGS.monsters()) {
+        for (var kind : SETTINGS.monsters().stream().filter(k -> !SETTINGS.isMount(k.name()) || k.name().equals(SETTINGS.mount().horse())).toList()) {
             var look = SETTINGS.lookOf(kind);
             if (look.hasModel()) {
                 all.add(look);
@@ -104,7 +104,7 @@ class DungeonMonsterArtTest {
 
     /** The kinds that move by the Humanoid set, as {@link #setLooks}. */
     private static List<uz.dukeengine.dungeon.content.MonsterKind> setKinds() {
-        return SETTINGS.monsters().stream().filter(kind -> SETTINGS.lookOf(kind).animations() != null).toList();
+        return SETTINGS.monsters().stream().filter(k -> !SETTINGS.isMount(k.name()) || k.name().equals(SETTINGS.mount().horse())).toList().stream().filter(kind -> SETTINGS.lookOf(kind).animations() != null).toList();
     }
 
     /**
@@ -128,7 +128,7 @@ class DungeonMonsterArtTest {
      */
     @Test
     void everyoneWhoFightsByClipsOfTheirOwnCarriesThemAll() {
-        var own = SETTINGS.monsters().stream().filter(kind -> !SETTINGS.mount().isMount(kind.name()))
+        var own = SETTINGS.monsters().stream().filter(kind -> !SETTINGS.isMount(kind.name()))
                 .map(SETTINGS::lookOf).filter(look -> look.hasModel() && look.animations() == null
                         && look.walk() != null).toList();
         assertFalse(own.isEmpty(), "nobody walks by clips of their own");
@@ -145,7 +145,7 @@ class DungeonMonsterArtTest {
     /** Every kind the file describes has been given something to be drawn as. */
     @Test
     void everyMonsterHasAModel() {
-        assertEquals(SETTINGS.monsters().size(), looks().size(),
+        assertEquals(SETTINGS.monsters().size() - 3, looks().size(), // but the three riding looks, which looks() leaves out
                 "a kind with no model falls back to a coloured capsule among modelled ones");
     }
 
@@ -382,7 +382,7 @@ class DungeonMonsterArtTest {
      */
     @Test
     void nothingFlinchesYet() {
-        for (var kind : SETTINGS.monsters()) {
+        for (var kind : SETTINGS.monsters().stream().filter(k -> !SETTINGS.isMount(k.name()) || k.name().equals(SETTINGS.mount().horse())).toList()) {
             assertNull(SETTINGS.lookOf(kind).hurt(),
                     kind.name() + " has a flinch again — see the note in data/animations/humanoid.duke");
         }
@@ -1003,7 +1003,7 @@ class DungeonMonsterArtTest {
     @Test
     void aWeaponLaidOutAcrossTheKitsGrainIsTurned() {
         var carried = new ArrayList<uz.dukeengine.client3d.Held>();
-        for (var kind : SETTINGS.monsters()) {
+        for (var kind : SETTINGS.monsters().stream().filter(k -> !SETTINGS.isMount(k.name()) || k.name().equals(SETTINGS.mount().horse())).toList()) {
             carried.add(SETTINGS.lookOf(kind).held());
         }
         // Every hero's, not just the archer's. A weapon hung the wrong way round

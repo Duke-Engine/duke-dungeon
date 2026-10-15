@@ -63,7 +63,7 @@ ItemRules
   LevelWord = "%d-daraja"
   CompareWord = Kiyilgan bilan solishtiring
   CountWord = "Soni: %d"
-  DrinkHint = "1-4: yeyish, ichish"
+  DrinkHint = "%s: yeyish, ichish"
   ; What each belt key does, on the Settings screen's list of keys; %d the key.
   BeltKeyWord = "Belbog'dan yeyish: %d"
   ; A map's placed thing called this is a treasure: a roll at the floor's level.

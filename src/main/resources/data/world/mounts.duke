@@ -1,45 +1,46 @@
 ; ---------------------------------------------------------------------------
 ; A horse on the open world (docs/plan/2026-10-15-mounts.md). Owning one is
 ; carrying its whistle (the Potion "ot" below), sold by the capital's stable
-; keeper or given by the story. T calls it -- it neighs and runs in -- and gets
-; him up onto it and off it again; a right-click on it gets him up too. Riding,
-; he goes twice his walk and does nothing else: a blow, an attack or a skill
-; gets him off, and so does a town or any map that is not out of doors.
+; keeper or given by the story. T calls it -- it neighs and runs in -- and casts
+; his MOUNT skill on it (each hero's, Key = T, in data/units): up onto it, and
+; off it again. A right-click on it (or action's E) gets him up too. Riding, he
+; goes twice his walk and does nothing else: a blow, an attack or a skill gets
+; him off, and so does a town or any map that is not out of doors -- the skill's
+; NotIn, against the zones the game names (Ichkari on every map not in Maps).
 ;
-; While he rides, the horse is no thing of the world: he is drawn as his riding
-; look below, the horse's rig and clips with him seated on its back (made by
-; art/mounts/export_riders.py), until the engine can sit one unit on another
-; (engine request E88).
+; While he rides the horse carries him on its Saddle bone (engine E88): he is
+; drawn as his riding look below, his own model playing his riding clips, and
+; the horse gallops under him.
 ; ---------------------------------------------------------------------------
 
 Mount
   Whistle = ot
   Horse = Horse
-  Looks = [
-    "Knight = KnightRiding",
-    "Rogue = RogueRiding",
-    "Mage = MageRiding",
-  ]
-  ; Twice his walk: the knight's 21 is 42, the rogue's 27 is 54.
-  SpeedPercent = 100
   Key = T
   KeyWord = Ot
-  ; Up onto it in 0.6s (30 frames a second), his reach for a thing played meanwhile.
-  MountFrames = 18
-  MountClip = Gather
   ; How near the horse's middle he gets up onto it; how far off it starts its run in.
   Reach = 14
   CallDistance = 70
-  ; Out of doors: the open world only. Not in the city or the villages.
+  ; Out of doors: the open world only. Every other map is Ichkari to a MOUNT's NotIn.
   Maps = [world]
-  NoRideZones = [Poytaxt, Olmazor, "Bog'iston", Qoratepa, Tolzor, Yangiobod]
-  ; A stride's hooves while he rides and moves: the gallop's 0.58s.
-  GallopFrames = 17
+  ; Where a rider sits: the horse's bone (art/mounts/export_riders.py), and how far from it, in the horse's units.
+  Bone = Saddle
+  Seat = "0 0 0"
   NoHorseWord = Otingiz yo'q
   IndoorsWord = Bu yerda otga minib bo'lmaydi
   Call = mount.call
-  Gallop = mount.gallop
   Puff = MountDust
+  ; Quicker legs on the buff row while he rides (MOVE_SPEED, named by Items' MoveSpeedWord).
+  Skills = [
+    Skill
+      Key = T
+      Effect = MOVE_SPEED
+      Name = Ot
+      Icon = icons/items/loot/horse_common.png
+      Blurb = Otda: ikki barobar tez.
+      MaxRank = 1
+    End
+  ]
 End
 
 ; Owning a horse: its whistle. Never eaten, one to a place, sold by the stable
@@ -75,7 +76,7 @@ Monster
   MinDepth = 99
   Weight = 0
   Colour = 0x8A5A30
-  ; Its withers stand 10 under this ModelScale, as under each riding look's.
+  ; Its withers stand 10 under this ModelScale; its Saddle bone carries a rider.
   Model = models/mounts/horse.glb
   ModelScale = 4.0
   Facing = 90
@@ -86,8 +87,12 @@ Monster
   Death = Death
 End
 
-; Each hero riding: drawn as one of these while he is on his horse (drawAs). The
-; same ModelScale as his own look, which is what each file was sized for.
+; Each hero riding: drawn as one of these while he is on his horse (his MOUNT
+; skill's Look). His own model and things in hand, playing his riding clips
+; (Ride_Idle, Ride_Gallop: animations/characters/riding_*.glb), hung on the
+; horse's Saddle bone -- so drawn in the horse's frame: no turn of his own
+; (Facing 0), his own ModelScale over the horse's 4. Heard by his look: his
+; footsteps are the horse's hooves (walking.<Look> below).
 Monster
   Name = KnightRiding
   DisplayName = Garen
@@ -100,12 +105,13 @@ Monster
   MinDepth = 99
   Weight = 0
   Colour = 0x8A5A30
-  Model = models/mounts/knight_riding.glb
-  ModelScale = 6.82
-  Facing = 90
-  Idle = Idle
-  Walk = Gallop
-  ; A gallop's stride, in world units, as MonsterClipFitTest measures it: the clip paced to its speed.
+  Model = models/heroes/lange/lange.glb
+  ModelScale = 1.705
+  Facing = 0
+  Animations = Lange
+  Idle = Ride_Idle
+  ; As long as the horse's gallop and paced as it is, so the two keep step.
+  Walk = Ride_Gallop
   WalkStride = 22
   Death = Death
 End
@@ -122,14 +128,22 @@ Monster
   MinDepth = 99
   Weight = 0
   Colour = 0x8A5A30
-  Model = models/mounts/rogue_riding.glb
-  ModelScale = 5.50
-  Facing = 90
-  Idle = Idle
-  Walk = Gallop
-  ; A gallop's stride, in world units, as MonsterClipFitTest measures it: the clip paced to its speed.
+  Model = models/heroes/huntress.glb
+  ModelScale = 1.375
+  Facing = 0
+  Animations = Huntress
+  Idle = Ride_Idle
+  ; As long as the horse's gallop and paced as it is, so the two keep step.
+  Walk = Ride_Gallop
   WalkStride = 22
-  Death = Death
+  Death = Death_A
+  ; The one thing in his hand a look may hold: his bow, his staff.
+  Held = Held
+    Model = models/weapons/elven/bow.glb
+    Bone = handslot.l
+    Scale = 0.8
+    Roll = 180
+  End
 End
 
 Monster
@@ -144,14 +158,21 @@ Monster
   MinDepth = 99
   Weight = 0
   Colour = 0x8A5A30
-  Model = models/mounts/mage_riding.glb
-  ModelScale = 4.52
-  Facing = 90
-  Idle = Idle
-  Walk = Gallop
-  ; A gallop's stride, in world units, as MonsterClipFitTest measures it: the clip paced to its speed.
+  Model = models/heroes/mage.glb
+  ModelScale = 1.130
+  Facing = 0
+  Animations = Humanoid
+  Idle = Ride_Idle
+  ; As long as the horse's gallop and paced as it is, so the two keep step.
+  Walk = Ride_Gallop
   WalkStride = 22
-  Death = Death
+  Death = Death_A
+  ; The one thing in his hand a look may hold: his bow, his staff.
+  Held = Held
+    Model = models/heroes/staff.gltf
+    Bone = handslot.r
+    Scale = 1
+  End
 End
 
 ; The pointer over his horse: a right-click gets him up onto it.
@@ -196,16 +217,6 @@ Sound
   Files = [audio/sfx/horse/whinny.ogg]
 End
 
-; A stride's hooves while he rides (congusbongus's "Horse gallop on different
-; surfaces", its CC0 strides).
-Sound
-  Name = mount.gallop
-  Channel = Effects
-  Positional = Yes
-  Gain = 0.45
-  Files = [audio/sfx/horse/gallop_grass.ogg, audio/sfx/horse/gallop_ground.ogg]
-End
-
 ; The horse's own hooves as it runs in, by the ground under it.
 Sound
   Name = walking.Horse
@@ -248,6 +259,142 @@ Sound
   Channel = Effects
   Positional = Yes
   Gain = 0.4
+  GapSeconds = 0.55
+  Files = [audio/sfx/horse/gallop_muffled.ogg]
+End
+
+; And under each hero riding, by the ground: his footsteps are its hooves (E88).
+Sound
+  Name = walking.KnightRiding
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.45
+  GapSeconds = 0.55
+  Files = [audio/sfx/horse/gallop_ground.ogg]
+End
+
+Sound
+  Name = walking.KnightRiding.grass
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.45
+  GapSeconds = 0.55
+  Files = [audio/sfx/horse/gallop_grass.ogg]
+End
+
+Sound
+  Name = walking.KnightRiding.forest
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.45
+  GapSeconds = 0.55
+  Files = [audio/sfx/horse/gallop_muffled.ogg]
+End
+
+Sound
+  Name = walking.KnightRiding.mud
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.45
+  GapSeconds = 0.55
+  Files = [audio/sfx/horse/gallop_muffled.ogg]
+End
+
+Sound
+  Name = walking.KnightRiding.sand
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.45
+  GapSeconds = 0.55
+  Files = [audio/sfx/horse/gallop_muffled.ogg]
+End
+
+Sound
+  Name = walking.RogueRiding
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.45
+  GapSeconds = 0.55
+  Files = [audio/sfx/horse/gallop_ground.ogg]
+End
+
+Sound
+  Name = walking.RogueRiding.grass
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.45
+  GapSeconds = 0.55
+  Files = [audio/sfx/horse/gallop_grass.ogg]
+End
+
+Sound
+  Name = walking.RogueRiding.forest
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.45
+  GapSeconds = 0.55
+  Files = [audio/sfx/horse/gallop_muffled.ogg]
+End
+
+Sound
+  Name = walking.RogueRiding.mud
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.45
+  GapSeconds = 0.55
+  Files = [audio/sfx/horse/gallop_muffled.ogg]
+End
+
+Sound
+  Name = walking.RogueRiding.sand
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.45
+  GapSeconds = 0.55
+  Files = [audio/sfx/horse/gallop_muffled.ogg]
+End
+
+Sound
+  Name = walking.MageRiding
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.45
+  GapSeconds = 0.55
+  Files = [audio/sfx/horse/gallop_ground.ogg]
+End
+
+Sound
+  Name = walking.MageRiding.grass
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.45
+  GapSeconds = 0.55
+  Files = [audio/sfx/horse/gallop_grass.ogg]
+End
+
+Sound
+  Name = walking.MageRiding.forest
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.45
+  GapSeconds = 0.55
+  Files = [audio/sfx/horse/gallop_muffled.ogg]
+End
+
+Sound
+  Name = walking.MageRiding.mud
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.45
+  GapSeconds = 0.55
+  Files = [audio/sfx/horse/gallop_muffled.ogg]
+End
+
+Sound
+  Name = walking.MageRiding.sand
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.45
   GapSeconds = 0.55
   Files = [audio/sfx/horse/gallop_muffled.ogg]
 End

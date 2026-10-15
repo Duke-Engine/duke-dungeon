@@ -70,6 +70,12 @@ final class Bag {
             out.add(rarity);
         }
         out.addAll(lines);
+        int belt = items.rules().beltSize();
+        if (items.potionOf(item) != null && belt > 0 && !items.rules().drinkHint().isBlank()) {
+            // Eaten from the belt on the scheme's keys: 1-4, or action's 5-8.
+            out.add(new uz.dukeengine.dungeon.loot.Items.Line(items.rules().drinkHint().formatted(
+                    settings.beltKey(0) + "-" + settings.beltKey(belt - 1)), settings.menu().boneColour()));
+        }
         return out;
     }
 
@@ -110,12 +116,14 @@ final class Bag {
         var hud = settings.hud();
         var drops = settings.lootDrops();
         // A meal's HEAL buff is pictured by the Food block's own skill, put before the game's (E68).
+        // And his quicker legs on horseback, pictured by the Mount block's MOVE_SPEED skill (E89).
         var skills = new java.util.ArrayList<>(settings.food().skills());
+        skills.addAll(settings.mount().skills());
         skills.addAll(settings.skills());
         return new BuffScreen(skills, settings.effects(), settings.menu(), settings.panelLook(),
                 hud.buffIcon(), new BuffScreen.Words(hud.attackWord(), drops.manaRegenWord(), hud.lifestealWord(),
                         drops.attackSpeedWord(), hud.secondsWord(), settings.medallion().soulsWord(),
-                        settings.food().healthRegenWord()));
+                        settings.food().healthRegenWord(), settings.items().rules().moveSpeedWord()));
     }
 
     /** The bag's words: its heading, its hints, and the order words a click on the floor is answered as. */

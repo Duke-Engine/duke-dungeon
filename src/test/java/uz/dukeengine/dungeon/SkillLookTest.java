@@ -38,7 +38,8 @@ class SkillLookTest {
         return SETTINGS.skills().stream().filter(skill -> heroes.contains(skill.heroTemplate()))
                 // Nor his dodge: what it looks like is the roll his body plays (its busy clip), no Look.
                 .filter(skill -> !skill.effect().isPassive()
-                        && skill.effect() != uz.dukeengine.rpg.skill.SkillEffect.DODGE)
+                        && skill.effect() != uz.dukeengine.rpg.skill.SkillEffect.DODGE
+                        && skill.effect() != uz.dukeengine.rpg.skill.SkillEffect.MOUNT)
                 .toList();
     }
 

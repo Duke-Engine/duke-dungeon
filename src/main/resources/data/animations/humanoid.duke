@@ -43,6 +43,8 @@ AnimationSet
     animations/characters/melee.glb,
     ; And the ranged ones, now that two of them shoot rather than swing.
     animations/characters/ranged.glb,
+    ; The seat on the horse (Ride_Idle, Ride_Gallop), made on the mage: art/mounts/export_riders.py.
+    animations/characters/riding_mage.glb,
     ; And the spells, for whoever casts them.
     animations/characters/magic.glb,
     ; And work, for a hero on this rig at a tree, a bush or a fire (data/world/food.duke): Chop, Gather and Cook,

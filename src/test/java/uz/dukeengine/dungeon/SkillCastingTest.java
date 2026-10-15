@@ -771,8 +771,8 @@ class SkillCastingTest {
 
         assertEquals(0, livingSkeletons(arena.game()),
                 "Q was rewritten as a huge area blast; both should be gone");
-        assertEquals(6, arena.book().getSkills().size(),
-                "and naming one skill must not delete the other three, nor his stagger, nor his dodge");
+        assertEquals(7, arena.book().getSkills().size(),
+                "and naming one skill must not delete the other three, nor his stagger, his dodge or his horse");
     }
 
     /**

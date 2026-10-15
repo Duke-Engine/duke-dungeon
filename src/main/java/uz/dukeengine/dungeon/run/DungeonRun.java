@@ -693,6 +693,8 @@ public final class DungeonRun {
         // Whoever rode as the last map ended rides on, where he may; a loaded save's rider is back on his horse.
         stable.lay(floors.stageName(), zones(), !loading ? stable.riding()
                 : ridingOnLoad ? List.of(seats.getFirst().player.getIndex()) : List.of());
+        // The zones a skill is refused and ended in (a MOUNT's NotIn): the towns, and every map not out of doors.
+        game.getLogic().setZones(stable::zonesAt);
         sky = null;
         holding = null;
         trails.clear();
