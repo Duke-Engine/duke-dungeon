@@ -20,8 +20,9 @@ tasks.withType<Test>().configureEach {
     useJUnitPlatform()
     // jME decodes every picture a test loads into direct memory, which by default is capped at the heap's
     // 512 MB, and the test classes keep their loaders (and so their pictures) for the whole run. Two heroes
-    // with pictures of their own -- Lange and the Huntress -- took the suite past it halfway through.
-    jvmArgs("-XX:MaxDirectMemorySize=1g")
+    // with pictures of their own -- Lange and the Huntress -- took the suite past it halfway through; the bestiary's
+    // licensed monsters (golem and spider skins, troll, minotaur) took it past 1 GB.
+    jvmArgs("-XX:MaxDirectMemorySize=2g")
 }
 
 // The credits the front menu rolls are CREDITS.md's own rows, shipped beside the game's data.
