@@ -352,7 +352,8 @@ public final class DungeonRun {
         // And its quests, before the floor is laid: the map's starting quests are then going or finished already,
         // and are not started again. A save from before quests were saved starts them, as a new run does.
         visited.clear();
-        visitedNow = List.of();
+        visited.addAll(save.places()); // the places found, as the save left them
+        visitedNow = List.copyOf(visited);
         if (save.quests() == null) {
             quests.reset();
         } else {
@@ -385,7 +386,7 @@ public final class DungeonRun {
         }
         return SaveGame.of(floors.seed(), floors.stageName(), depth, seat.hero, seat.progress.getExperience(),
                 seat.learnt, seat.progress.getLoot(), quests.state(), script.state(), seat.gold)
-                .withMedallion(seat.souls, givenTo);
+                .withMedallion(seat.souls, givenTo).withPlaces(visited);
     }
 
     /** Whoever the first player plays — the file's answer until somebody chooses. */
@@ -758,8 +759,7 @@ public final class DungeonRun {
 
     /**
      * Every zone a hero has stood in this run, in the order they were first come to: the map's places he has found.
-     * The simulation's own list, and a copy of it for the window. ponytail: not saved -- a loaded run finds them
-     * again by walking in; a Places line in the save once the items work on SaveGame has landed.
+     * The simulation's own list, saved with the run ({@code SaveGame.places}), and a copy of it for the window.
      */
     private final List<String> visited = new ArrayList<>();
     private volatile List<String> visitedNow = List.of();
