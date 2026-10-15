@@ -38,7 +38,10 @@ Monster
     WeaponUpdate
       Damage = 16
       AttackRange = 13
-      ReloadFrames = 36
+      ReloadFrames = 19
+      ; The swing up to the blow (MonsterClipFitTest): the client starts its attack as it winds up,
+      ; and the blow lands as the clip strikes. Taken off ReloadFrames, so it hits as often as before.
+      PreAttackFrames = 17
     End,
     ; Tells the brain the frame a blow landed, so it stands and finishes the swing
     ; instead of walking off mid-blow. It launches nothing -- see Swing.
@@ -97,6 +100,9 @@ Monster
   ; The plain skeleton, grown until it is nothing like one. GeometryHeight is 18.
   Model = models/monsters/skeleton_minion.glb
   Animations = Humanoid
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
+  WalkStride = 6.18
+  UpperBody = spine
   ; What is looking at you out of the dark.
   Effect = EmberEyes
   ModelScale = 8.3

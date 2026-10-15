@@ -29,7 +29,10 @@ Monster
     WeaponUpdate
       Damage = 7
       AttackRange = 10
-      ReloadFrames = 28
+      ReloadFrames = 21
+      ; The swing up to the blow (MonsterClipFitTest): the client starts its attack as it winds up,
+      ; and the blow lands as the clip strikes. Taken off ReloadFrames, so it hits as often as before.
+      PreAttackFrames = 7
     End,
     Swing
     End,
@@ -63,6 +66,7 @@ Monster
   Walk = Walk
   Attack = Attack
   Death = Death
+  UpperBody = Torso
 End
 
 ; stronger: slow, the heaviest blow of the four lands.
@@ -86,7 +90,10 @@ Monster
     WeaponUpdate
       Damage = 22
       AttackRange = 13
-      ReloadFrames = 48
+      ReloadFrames = 43
+      ; The swing up to the blow (MonsterClipFitTest): the client starts its attack as it winds up,
+      ; and the blow lands as the clip strikes. Taken off ReloadFrames, so it hits as often as before.
+      PreAttackFrames = 5
     End,
     Swing
     End,
@@ -120,6 +127,9 @@ Monster
   Walk = Walk
   Attack = Attack
   Death = Death
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
+  WalkStride = 26.86
+  UpperBody = Body
 End
 
 ; ranged: arcane bolts.
@@ -186,6 +196,7 @@ Monster
   Walk = Walk
   Attack = Attack
   Death = Death
+  UpperBody = Torso
 End
 
 ; ELITE of the imps: bigger, stone grey, two affixes.
@@ -209,7 +220,10 @@ Monster
     WeaponUpdate
       Damage = 12
       AttackRange = 12
-      ReloadFrames = 26
+      ReloadFrames = 19
+      ; The swing up to the blow (MonsterClipFitTest): the client starts its attack as it winds up,
+      ; and the blow lands as the clip strikes. Taken off ReloadFrames, so it hits as often as before.
+      PreAttackFrames = 7
     End,
     Swing
     End,
@@ -245,6 +259,7 @@ Monster
   Walk = Walk
   Attack = Attack
   Death = Death
+  UpperBody = Torso
 
   Skills = [
     Skill
@@ -294,7 +309,10 @@ Monster
     WeaponUpdate
       Damage = 28
       AttackRange = 15
-      ReloadFrames = 46
+      ReloadFrames = 41
+      ; The swing up to the blow (MonsterClipFitTest): the client starts its attack as it winds up,
+      ; and the blow lands as the clip strikes. Taken off ReloadFrames, so it hits as often as before.
+      PreAttackFrames = 5
     End,
     Swing
     End,
@@ -329,6 +347,9 @@ Monster
   Walk = Walk
   Attack = Attack
   Death = Death
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
+  WalkStride = 38.57
+  UpperBody = Body
 
   Skills = [
     Skill

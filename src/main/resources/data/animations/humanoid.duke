@@ -45,6 +45,9 @@ AnimationSet
     animations/characters/ranged.glb,
     ; And the spells, for whoever casts them.
     animations/characters/magic.glb,
+    ; And work, for a hero on this rig at a tree, a bush or a fire (data/world/food.duke): Chop, Gather and Cook,
+    ; written by art/anim/work_clips.py.
+    animations/characters/work.glb,
   ]
   Idle = Idle_A
   Walk = Walking_A

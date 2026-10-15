@@ -253,12 +253,13 @@ class HasteTest {
     }
 
     /**
-     * A hastened Skeleton waits 17 frames between blows for its 30 -- 30 / 1.75, cut to whole frames -- through the
+     * A hastened Skeleton strikes every 24 frames for its 30 -- its 17-frame wind-up (PreAttackFrames) and its 13
+     * of reload / 1.75, cut to whole frames: the haste quickens the wait, not the swing -- through the
      * haste's 150 frames, and 30 again after: a Rogue who cannot answer at its reach, and a summoner noticing nobody
      * that hastens it by hand once it is striking.
      */
     @Test
-    void aHastenedSkeletonWaitsSeventeenFramesForItsThirtyThroughTheHaste() {
+    void aHastenedSkeletonStrikesEveryTwentyFourFramesForItsThirtyThroughTheHaste() {
         var arena = Dungeon.world(room(NO_WALL), unseeingSummoner(), unarmedRogue());
         var game = arena.game();
         game.spawn("Rogue", arena.hero(), 150f, 150f);
@@ -285,12 +286,12 @@ class HasteTest {
         int plain = 0;
         for (int i = 0; i + 1 < blows.size(); i++) {
             boolean hasted = blows.get(i) <= lasts;
-            assertEquals(hasted ? 17 : 30, blows.get(i + 1) - blows.get(i),
+            assertEquals(hasted ? 24 : 30, blows.get(i + 1) - blows.get(i),
                     "the wait after its blow " + blows.get(i) + " frames in: " + blows);
             quick += hasted ? 1 : 0;
             plain += hasted ? 0 : 1;
         }
-        assertTrue(quick >= 7 && plain >= 2, "the premise: blows through the haste and after it: " + blows);
+        assertTrue(quick >= 5 && plain >= 2, "the premise: blows through the haste and after it: " + blows);
     }
 
     /**

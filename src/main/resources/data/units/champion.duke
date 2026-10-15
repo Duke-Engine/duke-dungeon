@@ -21,7 +21,10 @@ Monster
     WeaponUpdate
       Damage = 24
       AttackRange = 14
-      ReloadFrames = 34
+      ReloadFrames = 17
+      ; The swing up to the blow (MonsterClipFitTest): the client starts its attack as it winds up,
+      ; and the blow lands as the clip strikes. Taken off ReloadFrames, so it hits as often as before.
+      PreAttackFrames = 17
     End,
     Swing
     End,
@@ -58,6 +61,9 @@ Monster
   ; GeometryHeight is 24.
   Model = models/monsters/skeleton_warrior.glb
   Animations = Humanoid
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
+  WalkStride = 8.27
+  UpperBody = spine
   ; What is looking at you out of the dark.
   Effect = EmberEyes
   ModelScale = 11.1

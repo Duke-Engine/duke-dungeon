@@ -90,6 +90,11 @@ Monster
   ; look like the ones that only swing. GeometryHeight is 13.
   Model = models/monsters/skeleton_mage.glb
   Animations = Humanoid
+  ; Moves at a jog, not a walk: Running_A at about its own pace rather than Walking_A several times over.
+  Walk = Running_A
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
+  WalkStride = 16.18
+  UpperBody = spine
   ; What is looking at you out of the dark.
   Effect = EmberEyes
   ModelScale = 6.0
