@@ -89,6 +89,8 @@ Game
     data/units/act1.duke,
     ; The open world's villagers, travellers and tower keepers: see data/story/villages.duke.
     data/units/villagers.duke,
+    ; Act 2's townsfolk: see data/story/act2.duke.
+    data/units/act2.duke,
 
     data/projectiles/arrow.duke,
     data/projectiles/heavy_arrow.duke,
@@ -160,5 +162,6 @@ Game
     data/story/kampir.duke,
     data/story/act1.duke,
     data/story/villages.duke,
+    data/story/act2.duke,
   ]
 End

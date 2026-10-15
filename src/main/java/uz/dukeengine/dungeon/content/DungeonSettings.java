@@ -130,7 +130,8 @@ public final class DungeonSettings {
     private uz.dukeengine.dungeon.story.Trade trade = uz.dukeengine.dungeon.story.Trade.DEFAULTS;
     private uz.dukeengine.dungeon.story.GoldBurst goldBurst = uz.dukeengine.dungeon.story.GoldBurst.DEFAULTS;
     private uz.dukeengine.dungeon.story.Medallion medallion = uz.dukeengine.dungeon.story.Medallion.DEFAULTS;
-    private uz.dukeengine.dungeon.story.Campaign campaign = uz.dukeengine.dungeon.story.Campaign.DEFAULTS;
+    private final List<uz.dukeengine.dungeon.story.Campaign> campaigns = new java.util.ArrayList<>();
+    private final List<uz.dukeengine.dungeon.story.Place> places = new java.util.ArrayList<>();
     private final List<uz.dukeengine.dungeon.story.Title> titles = new java.util.ArrayList<>();
 
     /** Every attribute, in file order — the order a hero's are held in and the panel draws them. */
@@ -272,9 +273,36 @@ public final class DungeonSettings {
         return titles.stream().filter(each -> each.name().equals(name)).findFirst().orElse(null);
     }
 
-    /** The campaign a new game opens: see {@code docs/plan/2026-10-15-act1.md}. */
+    /** The campaign's first act, which a new game opens on — see {@code docs/plan/2026-10-15-act1.md}. */
     public uz.dukeengine.dungeon.story.Campaign campaign() {
-        return campaign;
+        return campaigns.isEmpty() ? uz.dukeengine.dungeon.story.Campaign.DEFAULTS : campaigns.getFirst();
+    }
+
+    /** Every act of the campaign, in file order. */
+    public List<uz.dukeengine.dungeon.story.Campaign> campaigns() {
+        return List.copyOf(campaigns);
+    }
+
+    /** The act of that name ({@code act2}), or null. */
+    public uz.dukeengine.dungeon.story.Campaign campaign(String name) {
+        return campaigns.stream().filter(each -> each.name().equals(name)).findFirst().orElse(null);
+    }
+
+    /** A campaign descent of that name, of any act, or null for a map. */
+    public uz.dukeengine.dungeon.story.Campaign.Descent descent(String name) {
+        return campaigns.stream().map(each -> each.descent(name)).filter(java.util.Objects::nonNull).findFirst()
+                .orElse(null);
+    }
+
+    /** Whether {@code map} is a joint's map or a descent of any act. */
+    public boolean inCampaign(String map) {
+        return campaigns.stream().anyMatch(each -> each.holds(map));
+    }
+
+    /** The places the story adds to {@code map}, as its zones. */
+    public List<uz.dukeengine.dungeon.map.StaticMap.Zone> placesOn(String map) {
+        return places.stream().filter(each -> each.map().equals(map))
+                .map(each -> uz.dukeengine.dungeon.map.StaticMap.Zone.of(each.zone())).toList();
     }
 
     /** Every moment the files give a look, in the order they give them. */
@@ -489,7 +517,8 @@ public final class DungeonSettings {
                 case uz.dukeengine.dungeon.story.Trade block -> trade = once(block, once);
                 case uz.dukeengine.dungeon.story.GoldBurst block -> goldBurst = once(block, once);
                 case uz.dukeengine.dungeon.story.Medallion block -> medallion = once(block, once);
-                case uz.dukeengine.dungeon.story.Campaign block -> campaign = once(block, once);
+                case uz.dukeengine.dungeon.story.Campaign block -> campaigns.add(block);
+                case uz.dukeengine.dungeon.story.Place place -> places.add(place);
                 case uz.dukeengine.dungeon.story.Title title -> titles.add(title);
                 case uz.dukeengine.dungeon.world.SaveMenu block -> saveMenu = once(block, once);
                 case uz.dukeengine.dungeon.world.MainMenu block -> mainMenu = once(block, once);
@@ -1045,16 +1074,27 @@ public final class DungeonSettings {
             require(!medallion.cursedWord().isBlank() && sayable(medallion.cursedWord()),
                     named + ": CursedWord is a word, without ',' or '|'");
         }
-        if (!campaign.word().isBlank()) {
+        for (var campaign : campaigns) {
             // Its maps are checked as they are laid, as a MAP's are; its hero, things and descents here.
+            var named = "Campaign " + campaign.name();
+            require(campaign.name().matches("[a-z0-9]+") && campaigns.stream()
+                    .filter(each -> each.name().equals(campaign.name())).count() == 1,
+                    named + ": a Name of small letters and digits, and no other act's");
             require(heroes.stream().anyMatch(hero -> hero.name().equals(campaign.hero())),
-                    "Campaign: its Hero " + campaign.hero() + " is no Hero block");
-            require(!campaign.joints().isEmpty(), "Campaign: it has no Joints, so a new game has nowhere to open");
-            campaign.descents().forEach(named -> require(named.firstDepth() >= 1 && !named.name().isBlank(),
-                    "Campaign: a Descent has a Name and a FirstDepth of 1 or more"));
+                    named + ": its Hero " + campaign.hero() + " is no Hero block");
+            require(!campaign.joints().isEmpty(), named + ": it has no Joints, so a new game has nowhere to open");
+            campaign.descents().forEach(each -> require(each.firstDepth() >= 1 && !each.name().isBlank(),
+                    named + ": a Descent has a Name and a FirstDepth of 1 or more"));
             campaign.joints().forEach(joint -> joint.items().forEach(item -> require(
                     loot.stream().anyMatch(each -> each.id().equals(item)),
-                    "Campaign: the joint at " + joint.map() + " gives " + item + ", and no LootItem is called that")));
+                    named + ": the joint at " + joint.map() + " gives " + item + ", and no LootItem is called that")));
+        }
+        for (var place : places) {
+            try {
+                uz.dukeengine.dungeon.map.StaticMap.Zone.of(place.zone());
+            } catch (IllegalArgumentException e) {
+                require(false, "Place on " + place.map() + ": " + e.getMessage());
+            }
         }
         require(dialogue.checkFrames() >= 1, "Dialogue's CheckFrames is how often people are looked for: at least 1");
         require(dialogue.glowLook().isBlank()

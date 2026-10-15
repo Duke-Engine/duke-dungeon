@@ -57,7 +57,9 @@ public record Trigger(String name, String map, When when, String target, int ste
         /** A cutscene has played to its end, or was skipped. */
         SEEN,
         /** A floor is laid at the depth its Target names: a campaign's descent reaching it. */
-        DEPTH
+        DEPTH,
+        /** The zone named holds no creature of the dungeon's standing any more, heard as one of them dies: a camp cleared. */
+        CLEARED
     }
 
     /** What a trigger does. */
@@ -90,7 +92,16 @@ public record Trigger(String name, String map, When when, String target, int ste
         /** The same dropped straight down onto the zone from Height above it: a fall from the sky. */
         FALL,
         /** A Title block's card over the screen: a chapter's name, an act's end (E42). */
-        TITLE
+        TITLE,
+        /** Every creature of the dungeon's side standing in the zone taken away, unheard: a camp freed already, laid again. */
+        CLEAR,
+        /** The run written now as the checkpoint a death goes back to, and the autosave: progress on one great map. */
+        CHECKPOINT,
+        /** Every one of a Monster standing grown to the level the run carries of the act before (its campaign's
+         * {@code <Follows>Level=N} flag), or to {@code Count} without one: the cursed hero is the player's own. */
+        GROW,
+        /** The game ends here: back to the front menu, once the credits have rolled. */
+        MENU
     }
 
     /** The Target of a MOVE, LEAP or FALL that is the heroes rather than a Monster. */

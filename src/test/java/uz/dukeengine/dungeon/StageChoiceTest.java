@@ -78,16 +78,17 @@ class StageChoiceTest {
         var how = path();
 
         assertEquals(SETTINGS.hud().chooseModeWord(), how.title());
-        assertEquals(3, how.options().size(), "the campaign, then two games: three rows");
+        assertEquals(4, how.options().size(), "the campaign's two acts, then two games: four rows");
+        assertEquals(SETTINGS.campaign("act2").word(), how.options().get(1).label());
         assertEquals(SETTINGS.campaign().word(), how.options().get(0).label());
-        assertEquals(SETTINGS.hud().endlessWord(), how.options().get(1).label());
-        assertEquals(SETTINGS.hud().stagesWord(), how.options().get(2).label());
+        assertEquals(SETTINGS.hud().endlessWord(), how.options().get(2).label());
+        assertEquals(SETTINGS.hud().stagesWord(), how.options().get(3).label());
     }
 
     /** The endless descent asks nothing more than who is walking into it. */
     @Test
     void theEndlessDescentGoesStraightToTheHero() {
-        var endless = path().options().get(1);
+        var endless = path().options().get(2);
 
         assertNotNull(endless.next(), "it should still ask who is playing");
         assertEquals(SETTINGS.hud().chooseHeroWord(), endless.next().title());
@@ -96,7 +97,7 @@ class StageChoiceTest {
     /** The stage branch asks which one first, and only then who. */
     @Test
     void theStageBranchAsksWhichOneFirst() {
-        var stages = path().options().get(2).next();
+        var stages = path().options().get(3).next();
 
         assertNotNull(stages, "the stage row led nowhere");
         assertEquals(SETTINGS.hud().chooseStageWord(), stages.title());
@@ -110,7 +111,7 @@ class StageChoiceTest {
     /** Every stage in the folder is a row, and each says what it is. */
     @Test
     void everyStageFoundIsARowOfItsOwn() {
-        var rows = path().options().get(2).next().options();
+        var rows = path().options().get(3).next().options();
         var found = Stages.all();
 
         assertEquals(found.size(), rows.size());
@@ -124,8 +125,8 @@ class StageChoiceTest {
     @Test
     void bothRoadsEndAtTheHero() {
         var how = path();
-        var fromEndless = how.options().get(1).next();
-        var fromStage = how.options().get(2).next().options().getFirst().next();
+        var fromEndless = how.options().get(2).next();
+        var fromStage = how.options().get(3).next().options().getFirst().next();
 
         assertEquals(fromEndless.title(), fromStage.title());
         for (var hero : fromEndless.options()) {
@@ -154,7 +155,7 @@ class StageChoiceTest {
         var session = Dungeon.newSession(7L, SETTINGS);
         var how = Main.howToPlay(session, SETTINGS, Visuals.create(),
                 Main.controls(SETTINGS));
-        var stageRow = how.options().get(2).next().options().getFirst();
+        var stageRow = how.options().get(3).next().options().getFirst();
         var stage = Stages.load(Stages.all().getFirst().map(), SETTINGS);
 
         stageRow.taken().run();
@@ -212,7 +213,7 @@ class StageChoiceTest {
         var session = Dungeon.newSession(7L, SETTINGS);
         var how = Main.howToPlay(session, SETTINGS, Visuals.create(),
                 Main.controls(SETTINGS));
-        var endless = how.options().get(1);
+        var endless = how.options().get(2);
 
         endless.taken().run();
         endless.next().options().getFirst().taken().run();
@@ -230,7 +231,7 @@ class StageChoiceTest {
             var session = Dungeon.newSession(7L, SETTINGS);
             var how = Main.howToPlay(session, SETTINGS, Visuals.create(),
                 Main.controls(SETTINGS));
-            var stageRow = how.options().get(2).next().options().getFirst();
+            var stageRow = how.options().get(3).next().options().getFirst();
             stageRow.taken().run();
 
             var heroRow = stageRow.next().options().stream()

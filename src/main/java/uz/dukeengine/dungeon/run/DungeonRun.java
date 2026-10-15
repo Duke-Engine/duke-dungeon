@@ -387,7 +387,16 @@ public final class DungeonRun {
      * it would have given. Recorded as {@link #resume} is: the floor is laid when the game starts.
      */
     public void skipTo(int n) {
-        var campaign = settings.campaign();
+        skipTo(settings.campaign(), n, null);
+    }
+
+    /**
+     * An act of the campaign from its joint {@code n}, 1 its first: a new game's act (n 1), or the {@code --actN=}
+     * debug arg's joint. An act that follows another carries on from {@code carried}, that act's end save — its
+     * flags, and its hero's level as the flag {@code <Follows>Level=N} — or, with none, from its DefaultLevel: its own
+     * hero is new (see {@code docs/plan/2026-10-15-act2.md}).
+     */
+    public void skipTo(uz.dukeengine.dungeon.story.Campaign campaign, int n, SaveGame carried) {
         var joint = campaign.joints().get(Math.clamp(n, 1, campaign.joints().size()) - 1);
         var chosen = Floors.named(joint.map(), floors.seed(), settings, false);
         var items = new ArrayList<SaveGame.Item>();
@@ -395,9 +404,41 @@ public final class DungeonRun {
             settings.loot().stream().filter(item -> item.id().equals(id)).findFirst()
                     .ifPresent(item -> items.add(new SaveGame.Item(-1, item.id(), 1, item.value(), 0)));
         }
+        var flags = new ArrayList<String>();
+        if (!campaign.follows().isBlank()) {
+            if (carried != null && carried.script() != null) {
+                flags.addAll(carried.script().flags());
+            }
+            flags.add(campaign.levelFlag(carried == null ? campaign.defaultLevel()
+                    : settings.levelling().levelFor(carried.experience())));
+        }
+        joint.flags().stream().filter(flag -> !flags.contains(flag)).forEach(flags::add);
         resume(new SaveGame(chosen.seed(), joint.map(), chosen.firstDepth(), campaign.hero(), joint.experience(),
-                List.of(), items, null, new uz.dukeengine.dungeon.story.Script.State(List.of(), joint.flags(),
+                List.of(), items, null, new uz.dukeengine.dungeon.story.Script.State(List.of(), flags,
                         List.of(), List.of()), joint.gold()), chosen);
+        joint.quests().forEach(quests::start); // the quests that joint has going
+        skippedTo = joint.at();
+    }
+
+    /** The zone a skipped-to joint puts the heroes in once its floor is laid; blank for none. */
+    private String skippedTo = "";
+
+    /** Told when the story ends the game (MENU): the window goes back to the front menu. Nothing until asked. */
+    public void onTheEnd(Runnable told) {
+        this.theEnd = told;
+    }
+
+    private Runnable theEnd = () -> { };
+
+    /** The map's own zones, and the places the story adds to it (Place blocks). */
+    private List<uz.dukeengine.dungeon.map.StaticMap.Zone> zones() {
+        var placed = settings.placesOn(floors.stageName());
+        if (placed.isEmpty()) {
+            return floors.story().zones();
+        }
+        var all = new ArrayList<>(floors.story().zones());
+        all.addAll(placed);
+        return all;
     }
 
     /**
@@ -557,6 +598,17 @@ public final class DungeonRun {
             monster.addModule(new Bounty(monster, uz.dukeengine.rpg.hero.LevelBonus.levelOf(monster), this::pay));
         }
         peopleOn(game);
+        if (!skippedTo.isBlank()) {
+            // A joint skipped to on a great map: he starts where that joint's story is, not at the map's way in.
+            act(game, new uz.dukeengine.dungeon.story.Trigger.Action(uz.dukeengine.dungeon.story.Trigger.Act.PLACE,
+                    "", 1, skippedTo, 1, 0f, ""));
+            var there = zoneNamed(skippedTo);
+            if (there != null) {
+                float cell = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
+                game.moveView(there.middleX(cell), there.middleY(cell));
+            }
+            skippedTo = "";
+        }
         finished.clear();
         said = null;
         track(game);
@@ -855,7 +907,7 @@ public final class DungeonRun {
         if (game.getLogic().getFrame() - endedFrame < settings.run().respawnDelayFrames()) {
             return;
         }
-        if (lastCheckpoint != null && seats.size() == 1 && settings.campaign().holds(floors.stageName())) {
+        if (lastCheckpoint != null && seats.size() == 1 && settings.inCampaign(floors.stageName())) {
             // ★ A campaign is not a roguelike: a death goes back to the last floor entered, as he entered it — the
             // checkpoint the autosave holds — not to the opening battle with nothing. See docs/plan/2026-10-15-act1.md.
             var back = lastCheckpoint;
@@ -1148,6 +1200,19 @@ public final class DungeonRun {
         quests.died(death.templateName(), bags());
         drunk(death);
         script.heard(uz.dukeengine.dungeon.story.Trigger.When.DIED, death.templateName(), 0);
+        // A camp cleared: every zone with none of the dungeon's creatures standing in it any more is heard CLEARED
+        // (a once-only trigger hears it once). See docs/plan/2026-10-15-act2.md.
+        if (lastLogic != null) {
+            float cell = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
+            for (var zone : zones()) {
+                boolean held = lastLogic.getObjects().stream().anyMatch(thing -> thing.getBody() != null
+                        && !thing.isEffectivelyDead() && thing.getPlayerIndex() == dungeonPlayer.getIndex()
+                        && zone.holds(thing.getPosition().x(), thing.getPosition().y(), cell));
+                if (!held) {
+                    script.heard(uz.dukeengine.dungeon.story.Trigger.When.CLEARED, zone.name(), 0);
+                }
+            }
+        }
     }
 
     // ---- triggers and cutscenes: see docs/plan/2026-10-08-story-scripting.md ----
@@ -1326,6 +1391,44 @@ public final class DungeonRun {
                     game.titleCard(card.text(), card.subtext(), card.fadeIn(), card.hold(), card.fadeOut());
                 }
             }
+            case CLEAR -> {
+                // Taken away, not killed: no death is heard, nothing pays and nothing is drunk.
+                var zone = zoneNamed(action.zone());
+                float cell = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
+                for (var thing : List.copyOf(logic.getObjects())) {
+                    if (zone != null && thing.getBody() != null && thing.getPlayerIndex() == dungeonPlayer.getIndex()
+                            && zone.holds(thing.getPosition().x(), thing.getPosition().y(), cell)) {
+                        logic.destroyObject(thing);
+                    }
+                }
+            }
+            case CHECKPOINT -> {
+                var save = save();
+                if (save != null) {
+                    lastCheckpoint = save;
+                    checkpoint.accept(save);
+                }
+            }
+            case GROW -> {
+                int level = action.count();
+                for (var flag : script.state().flags()) {
+                    if (flag.matches("[a-z0-9]+Level=[0-9]+")) {
+                        level = Integer.parseInt(flag.substring(flag.indexOf('=') + 1));
+                    }
+                }
+                for (var thing : List.copyOf(logic.getObjects())) {
+                    if (thing.getTemplate().name().equals(what) && !thing.isEffectivelyDead()) {
+                        // ponytail: the floor's own level bonus is swapped out, but its body's growth stays and this
+                        // one's is added to it; grow from the template's health if the cursed hero ends up too stout.
+                        var had = thing.findModule(uz.dukeengine.rpg.hero.LevelBonus.class);
+                        if (had != null) {
+                            thing.removeModule(had);
+                        }
+                        Spawner.scale(thing, level, settings);
+                    }
+                }
+            }
+            case MENU -> theEnd.run();
             case KILL -> {
                 for (var thing : List.copyOf(logic.getObjects())) {
                     var body = thing.getBody();
@@ -1423,7 +1526,7 @@ public final class DungeonRun {
     }
 
     private uz.dukeengine.dungeon.map.StaticMap.Zone zoneNamed(String name) {
-        return floors.story().zones().stream().filter(zone -> zone.name().equals(name)).findFirst().orElse(null);
+        return zones().stream().filter(zone -> zone.name().equals(name)).findFirst().orElse(null);
     }
 
     /** A cutscene asked for, and how many conversations had been said when it was: it waits until they are read. */
@@ -1724,7 +1827,7 @@ public final class DungeonRun {
             if (hero == null || hero.isEffectivelyDead()) {
                 continue;
             }
-            for (var zone : floors.story().zones()) {
+            for (var zone : zones()) {
                 if (zone.holds(hero.getPosition().x(), hero.getPosition().y(), cell)) {
                     quests.reached(zone.name(), seat.progress.getLoot());
                     if (!standing.contains(zone.name())) {
