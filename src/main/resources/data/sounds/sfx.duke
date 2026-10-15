@@ -1,20 +1,241 @@
+; ---- what the fighting sounds like ----------------------------------------
+;
+; Every name here is a moment the client raises, named after the creature or the
+; shot it happened to, and falling back a word at a time where nothing is named:
+; died.Warden.normal finds died.Warden, then died. So a creature added later is
+; never silent, and one given its own line is heard as itself.
+;
+;   fired.<Template>      a blow or a shot of its weapon (Dungeon.namedFor names
+;                         every weapon after its holder); fired for a shot of a
+;                         skill, which has no weapon
+;   cast.<Hero>.<Key>     a skill of his went off (Dungeon, on the CastSkill order)
+;   hurt.<Template>       its health went down: the blow landing, and its pain
+;   spawned.<Template>    it came into sight: a growl, a roar, a battle cry
+;   died.<Template>       it died
+;   struck.<Projectile>   a shot vanished on somebody: it landed
+;   step.<surface>        his foot on the picture painted under him (Soundscape);
+;                         step for the descent's stone and anything unnamed
+;
+; Who recorded what is in CREDITS.md: rubberduck's three CC0 packs, Vehicle's
+; weapons and apparel, artisticdude's RPG pack, HaelDB's grunts and yells,
+; Fantozzi's footsteps and Kenney's, all CC0. Each was trimmed, levelled to the
+; same peak and made mono, since OpenAL will not place a stereo sound.
+
+; ---- blows and shots ------------------------------------------------------
+
+; A shot of a skill, which no weapon fired: the wave, the volley, the nova.
 Sound
-  Name = arrow_fired
+  Name = fired
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.45
+  Files = [audio/sfx/weapon/swing_1.ogg, audio/sfx/weapon/swing_2.ogg, audio/sfx/weapon/swing_3.ogg]
+End
+
+; A sword: a swing and a blade's ring, by turns.
+Sound
+  Name = fired.Knight
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.6
+  Files = [
+    audio/sfx/weapon/swing_1.ogg,
+    audio/sfx/weapon/blade_1.ogg,
+    audio/sfx/weapon/swing_2.ogg,
+    audio/sfx/weapon/blade_2.ogg,
+    audio/sfx/weapon/swing_3.ogg,
+    audio/sfx/weapon/blade_3.ogg,
+  ]
+End
+
+Sound
+  Name = fired.CursedHero
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.65
+  Files = [audio/sfx/weapon/blade_1.ogg, audio/sfx/weapon/blade_2.ogg, audio/sfx/weapon/blade_3.ogg]
+End
+
+Sound
+  Name = fired.Soldier
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.45
+  Files = [audio/sfx/weapon/swing_1.ogg, audio/sfx/weapon/blade_2.ogg, audio/sfx/weapon/swing_3.ogg]
+End
+
+Sound
+  Name = fired.Militia
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.45
+  Files = [audio/sfx/weapon/swing_2.ogg, audio/sfx/weapon/blade_1.ogg, audio/sfx/weapon/swing_1.ogg]
+End
+
+Sound
+  Name = fired.Commander
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.55
+  Files = [audio/sfx/weapon/blade_1.ogg, audio/sfx/weapon/blade_2.ogg, audio/sfx/weapon/blade_3.ogg]
+End
+
+Sound
+  Name = fired.Act1Commander
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.55
+  Files = [audio/sfx/weapon/blade_1.ogg, audio/sfx/weapon/blade_2.ogg, audio/sfx/weapon/blade_3.ogg]
+End
+
+Sound
+  Name = fired.EnemyCommander
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.6
+  Files = [audio/sfx/weapon/blade_1.ogg, audio/sfx/weapon/blade_2.ogg, audio/sfx/weapon/blade_3.ogg]
+End
+
+Sound
+  Name = fired.DarkLord
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.75
+  Files = [audio/sfx/weapon/heavy_swing_1.ogg, audio/sfx/weapon/heavy_swing_2.ogg,
+    audio/sfx/weapon/heavy_swing_3.ogg]
+End
+
+; An axe: the same swings, played lower and heavier.
+Sound
+  Name = fired.Brute
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.75
+  Files = [audio/sfx/weapon/heavy_swing_1.ogg, audio/sfx/weapon/heavy_swing_2.ogg,
+    audio/sfx/weapon/heavy_swing_3.ogg]
+End
+
+Sound
+  Name = fired.Champion
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.8
+  Files = [audio/sfx/weapon/heavy_swing_1.ogg, audio/sfx/weapon/heavy_swing_2.ogg,
+    audio/sfx/weapon/heavy_swing_3.ogg]
+End
+
+Sound
+  Name = fired.Warden
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.75
+  Files = [audio/sfx/weapon/heavy_swing_1.ogg, audio/sfx/weapon/heavy_swing_2.ogg,
+    audio/sfx/weapon/heavy_swing_3.ogg]
+End
+
+; A skeleton's blade, and the reaper's.
+Sound
+  Name = fired.Skeleton
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.5
+  Files = [audio/sfx/weapon/swing_1.ogg, audio/sfx/weapon/swing_2.ogg, audio/sfx/weapon/swing_3.ogg]
+End
+
+Sound
+  Name = fired.Reaper
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.6
+  Files = [audio/sfx/weapon/blade_1.ogg, audio/sfx/weapon/blade_2.ogg, audio/sfx/weapon/blade_3.ogg]
+End
+
+; A dagger: quicker, higher.
+Sound
+  Name = fired.Runner
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.5
+  Files = [audio/sfx/weapon/quick_swing_1.ogg, audio/sfx/weapon/quick_swing_2.ogg,
+    audio/sfx/weapon/quick_swing_3.ogg]
+End
+
+; The huntress's bow -- heard more than anything else in her run, so three.
+Sound
+  Name = fired.Rogue
   Channel = Effects
   Positional = Yes
   Gain = 0.55
   Files = [audio/sfx/bow_shot_1.ogg, audio/sfx/bow_shot_2.ogg, audio/sfx/bow_shot_3.ogg]
 End
 
-; The drawn shot Q looses -- one sound, because it happens once in a while and
-; wants to be recognised rather than varied.
+; A crossbow's spring.
 Sound
-  Name = spawned.HeavyArrow
+  Name = fired.Stalker
   Channel = Effects
   Positional = Yes
-  Gain = 0.8
-  Files = [audio/sfx/bow_shot_heavy.ogg]
+  Gain = 0.6
+  Files = [audio/sfx/weapon/crossbow_1.ogg, audio/sfx/weapon/crossbow_2.ogg]
 End
+
+; A bolt off a staff: the mage's, and every skeleton caster's, softer.
+Sound
+  Name = fired.Mage
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.45
+  Files = [audio/sfx/magic/bolt_1.ogg, audio/sfx/magic/bolt_2.ogg]
+End
+
+Sound
+  Name = fired.SkeletonMage
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.35
+  Files = [audio/sfx/magic/bolt_1.ogg, audio/sfx/magic/bolt_2.ogg]
+End
+
+Sound
+  Name = fired.SkeletonHealer
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.3
+  Files = [audio/sfx/magic/bolt_2.ogg]
+End
+
+Sound
+  Name = fired.SkeletonSummoner
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.3
+  Files = [audio/sfx/magic/bolt_1.ogg]
+End
+
+Sound
+  Name = fired.Necromancer
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.45
+  Files = [audio/sfx/magic/fire_1.ogg, audio/sfx/magic/fire_2.ogg]
+End
+
+Sound
+  Name = fired.Revenant
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.4
+  Files = [audio/sfx/magic/fire_1.ogg, audio/sfx/magic/fire_2.ogg]
+End
+
+Sound
+  Name = fired.QueenBoss
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.5
+  Files = [audio/sfx/magic/bolt_1.ogg, audio/sfx/magic/bolt_2.ogg]
+End
+
+; ---- what lands -----------------------------------------------------------
 
 Sound
   Name = struck.Arrow
@@ -24,67 +245,105 @@ Sound
   Files = [audio/sfx/arrow_hit_1.ogg, audio/sfx/arrow_hit_2.ogg, audio/sfx/arrow_hit_3.ogg]
 End
 
-; ---- being hit, and dying -------------------------------------------------
+Sound
+  Name = struck.Bolt
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.7
+  Files = [audio/sfx/arrow_hit_1.ogg, audio/sfx/arrow_hit_2.ogg, audio/sfx/arrow_hit_3.ogg]
+End
+
+; The drawn shot Q looses -- one sound, because it happens once in a while and
+; wants to be recognised rather than varied -- and it lands harder than an
+; ordinary one, and is worth hearing land.
+Sound
+  Name = spawned.HeavyArrow
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.8
+  Files = [audio/sfx/bow_shot_heavy.ogg]
+End
 
 Sound
-  Name = hurt.Hero
+  Name = struck.HeavyArrow
   Channel = Effects
   Positional = Yes
   Gain = 0.9
-  ; Half a second apart at most: three arrows landing at once should sound like
-  ; trouble, not like a rattle.
-  GapSeconds = 0.35
-  Files = [audio/sfx/hero_hurt_1.ogg, audio/sfx/hero_hurt_2.ogg]
+  Files = [audio/sfx/melee_hit_1.ogg, audio/sfx/melee_hit_2.ogg]
 End
 
-; Death, by what died. The client asks for died.<Template> and falls through to
-; died, so a creature nobody wrote a line for still makes a noise.
+; The knight's wave, cutting through what it passes.
 Sound
-  Name = died
+  Name = struck.SwordWave
   Channel = Effects
   Positional = Yes
-  Gain = 0.7
-  Files = [audio/sfx/death_generic.ogg]
+  Gain = 0.6
+  Files = [audio/sfx/weapon/metal_hit_1.ogg, audio/sfx/weapon/metal_hit_2.ogg, audio/sfx/weapon/metal_hit_3.ogg]
 End
 
 Sound
-  Name = died.Skeleton
+  Name = struck.MageBolt
   Channel = Effects
   Positional = Yes
-  Gain = 0.7
-  Files = [audio/sfx/death_skeleton_1.ogg, audio/sfx/death_skeleton_2.ogg]
+  Gain = 0.45
+  Files = [audio/sfx/magic/fire_7.ogg]
 End
 
 Sound
-  Name = died.Runner
+  Name = struck.MageFireball
   Channel = Effects
   Positional = Yes
-  Gain = 0.7
-  Files = [audio/sfx/death_runner.ogg]
+  Gain = 0.8
+  Files = [audio/sfx/magic/fire_5.ogg, audio/sfx/magic/fire_6.ogg]
 End
 
 Sound
-  Name = died.Brute
+  Name = struck.Fireball
   Channel = Effects
   Positional = Yes
-  Gain = 0.85
-  Files = [audio/sfx/death_brute.ogg]
+  Gain = 0.6
+  Files = [audio/sfx/magic/fire_4.ogg, audio/sfx/magic/fire_7.ogg]
 End
 
 Sound
-  Name = died.Boss
+  Name = struck.GreaterFireball
   Channel = Effects
   Positional = Yes
-  Gain = 1.0
-  Files = [audio/sfx/death_boss.ogg]
+  Gain = 0.8
+  Files = [audio/sfx/magic/fire_3.ogg]
 End
 
 Sound
-  Name = spawned.Boss
+  Name = struck.HolySpark
   Channel = Effects
   Positional = Yes
-  Gain = 1.0
-  Files = [audio/sfx/boss_appears.ogg]
+  Gain = 0.4
+  Files = [audio/sfx/magic/bolt_2.ogg]
+End
+
+Sound
+  Name = struck.ShadowSpark
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.4
+  Files = [audio/sfx/magic/fire_7.ogg]
+End
+
+; The Skeleton Mage's fireball leaving its staff, and bursting on him.
+Sound
+  Name = spawned.SkullFireball
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.6
+  Files = [audio/sfx/magic/fire_1.ogg]
+End
+
+Sound
+  Name = struck.SkullFireball
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.8
+  Files = [audio/sfx/magic/fire_5.ogg, audio/sfx/magic/fire_4.ogg]
 End
 
 ; A Skeleton Healer calling its light down: the empower chime, softer, because it is
@@ -107,57 +366,758 @@ Sound
   Files = [audio/sfx/descend.ogg]
 End
 
-; A Skeleton Mage calling its meteor down: the Mage's own call (skill.R), softer,
-; because it is the same thing happening to the other side -- heard as its mark
-; lands on the floor, a second and a half before the rock does.
+; A Skeleton Mage calling its meteor down, heard as its mark lands on the floor,
+; a second and a half before the rock does.
 Sound
   Name = spawned.SkullMeteorMark
   Channel = Effects
   Positional = Yes
   Gain = 0.6
-  Files = [audio/sfx/skill_empower.ogg]
+  Files = [audio/sfx/magic/fire_3.ogg]
 End
 
-; ---- the skills, by the key that casts them -------------------------------
+; ---- the skills, by whose and which key ------------------------------------
 
+; The knight: his wave, his shield charge with a shout, the dragon's blood, the pull.
 Sound
-  Name = skill.Q
-  Channel = Effects
-  Positional = Yes
-  Files = [audio/sfx/skill_aim.ogg]
-End
-
-Sound
-  Name = skill.W
+  Name = cast.Knight.Q
   Channel = Effects
   Positional = Yes
   Gain = 0.8
-  Files = [audio/sfx/skill_burst.ogg]
+  Files = [audio/sfx/skill/sword_ring.ogg]
 End
 
 Sound
-  Name = skill.E
+  Name = cast.Knight.W
   Channel = Effects
   Positional = Yes
-  Files = [audio/sfx/skill_dash.ogg]
+  Gain = 0.8
+  Files = [audio/sfx/voice/1_yell_13.ogg]
 End
 
 Sound
-  Name = skill.R
+  Name = cast.Knight.E
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.6
+  Files = [audio/sfx/skill/dragon_roar.ogg]
+End
+
+Sound
+  Name = cast.Knight.R
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.75
+  Files = [audio/sfx/skill/chain_1.ogg, audio/sfx/skill/chain_2.ogg, audio/sfx/skill/chain_3.ogg]
+End
+
+; The huntress: an arrow drawn from the quiver, a volley, a dash, her focus.
+Sound
+  Name = cast.Rogue.Q
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.7
+  Files = [audio/sfx/skill/bow_draw_1.ogg, audio/sfx/skill/bow_draw_2.ogg]
+End
+
+Sound
+  Name = cast.Rogue.W
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.75
+  Files = [audio/sfx/skill/volley_1.ogg, audio/sfx/skill/volley_2.ogg]
+End
+
+Sound
+  Name = cast.Rogue.E
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.7
+  Files = [audio/sfx/skill/leap_1.ogg, audio/sfx/skill/leap_2.ogg]
+End
+
+Sound
+  Name = cast.Rogue.R
   Channel = Effects
   Positional = Yes
   Files = [audio/sfx/skill_empower.ogg]
 End
 
-; ---- moving about ---------------------------------------------------------
-
+; The mage: fire, frost, the blink, the meteor called down.
 Sound
-  Name = walking.Hero
+  Name = cast.Mage.Q
   Channel = Effects
   Positional = Yes
+  Gain = 0.7
+  Files = [audio/sfx/magic/fire_1.ogg, audio/sfx/magic/fire_2.ogg]
+End
+
+Sound
+  Name = cast.Mage.W
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.7
+  Files = [audio/sfx/magic/frost.ogg]
+End
+
+Sound
+  Name = cast.Mage.E
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.7
+  Files = [audio/sfx/magic/blink.ogg]
+End
+
+Sound
+  Name = cast.Mage.R
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.8
+  Files = [audio/sfx/magic/fire_3.ogg]
+End
+
+; ---- being hit ------------------------------------------------------------
+;
+; Half a second apart at most for the heroes: three arrows landing at once should
+; sound like trouble, not like a rattle.
+
+; The knight and the mage: two of HaelDB's voices. The huntress has no CC0 voice
+; to be found, so she is the blow landing and no more.
+Sound
+  Name = hurt.Knight
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.8
+  GapSeconds = 0.5
+  Files = [
+    audio/sfx/voice/1_yell_1.ogg,
+    audio/sfx/voice/1_yell_2.ogg,
+    audio/sfx/voice/1_yell_6.ogg,
+    audio/sfx/voice/1_yell_8.ogg,
+    audio/sfx/voice/1_yell_9.ogg,
+  ]
+End
+
+Sound
+  Name = hurt.Mage
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.8
+  GapSeconds = 0.5
+  Files = [audio/sfx/voice/2_yell_1.ogg, audio/sfx/voice/2_yell_10.ogg, audio/sfx/voice/2_yell_2.ogg]
+End
+
+Sound
+  Name = hurt.Rogue
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.9
+  GapSeconds = 0.35
+  Files = [audio/sfx/hero_hurt_1.ogg, audio/sfx/hero_hurt_2.ogg]
+End
+
+; The dead: bone knocked on.
+Sound
+  Name = hurt.Skeleton
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.55
+  GapSeconds = 0.1
+  Files = [audio/sfx/creature/bone_hit_1.ogg, audio/sfx/creature/bone_hit_2.ogg, audio/sfx/creature/bone_hit_3.ogg]
+End
+
+Sound
+  Name = hurt.Runner
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.5
+  GapSeconds = 0.1
+  Files = [audio/sfx/creature/bone_hit_1.ogg, audio/sfx/creature/bone_hit_2.ogg, audio/sfx/creature/bone_hit_3.ogg]
+End
+
+Sound
+  Name = hurt.Reaper
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.55
+  GapSeconds = 0.1
+  Files = [audio/sfx/creature/bone_hit_1.ogg, audio/sfx/creature/bone_hit_2.ogg, audio/sfx/creature/bone_hit_3.ogg]
+End
+
+Sound
+  Name = hurt.Stalker
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.55
+  GapSeconds = 0.1
+  Files = [audio/sfx/creature/bone_hit_1.ogg, audio/sfx/creature/bone_hit_2.ogg, audio/sfx/creature/bone_hit_3.ogg]
+End
+
+Sound
+  Name = hurt.Warden
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.65
+  GapSeconds = 0.1
+  Files = [audio/sfx/creature/bone_hit_1.ogg, audio/sfx/creature/bone_hit_2.ogg, audio/sfx/creature/bone_hit_3.ogg]
+End
+
+Sound
+  Name = hurt.Brute
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.7
+  GapSeconds = 0.1
+  Files = [audio/sfx/creature/bone_hit_1.ogg, audio/sfx/creature/bone_hit_2.ogg, audio/sfx/creature/bone_hit_3.ogg]
+End
+
+Sound
+  Name = hurt.Champion
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.7
+  GapSeconds = 0.1
+  Files = [audio/sfx/creature/bone_hit_1.ogg, audio/sfx/creature/bone_hit_2.ogg, audio/sfx/creature/bone_hit_3.ogg]
+End
+
+Sound
+  Name = hurt.SkeletonMage
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.5
+  GapSeconds = 0.1
+  Files = [audio/sfx/creature/bone_hit_1.ogg, audio/sfx/creature/bone_hit_2.ogg, audio/sfx/creature/bone_hit_3.ogg]
+End
+
+Sound
+  Name = hurt.SkeletonHealer
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.5
+  GapSeconds = 0.1
+  Files = [audio/sfx/creature/bone_hit_1.ogg, audio/sfx/creature/bone_hit_2.ogg, audio/sfx/creature/bone_hit_3.ogg]
+End
+
+Sound
+  Name = hurt.SkeletonSummoner
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.5
+  GapSeconds = 0.1
+  Files = [audio/sfx/creature/bone_hit_1.ogg, audio/sfx/creature/bone_hit_2.ogg, audio/sfx/creature/bone_hit_3.ogg]
+End
+
+Sound
+  Name = hurt.Necromancer
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.6
+  GapSeconds = 0.1
+  Files = [audio/sfx/creature/bone_hit_1.ogg, audio/sfx/creature/bone_hit_2.ogg, audio/sfx/creature/bone_hit_3.ogg]
+End
+
+Sound
+  Name = hurt.Revenant
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.6
+  GapSeconds = 0.1
+  Files = [audio/sfx/creature/bone_hit_1.ogg, audio/sfx/creature/bone_hit_2.ogg, audio/sfx/creature/bone_hit_3.ogg]
+End
+
+; The living: a third of HaelDB's voices, grunting.
+Sound
+  Name = hurt.Soldier
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.6
+  GapSeconds = 0.4
+  Files = [audio/sfx/voice/3_grunt_1.ogg, audio/sfx/voice/3_grunt_3.ogg, audio/sfx/voice/3_grunt_4.ogg,
+    audio/sfx/voice/3_grunt_5.ogg]
+End
+
+Sound
+  Name = hurt.Militia
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.6
+  GapSeconds = 0.4
+  Files = [audio/sfx/voice/3_grunt_1.ogg, audio/sfx/voice/3_grunt_3.ogg, audio/sfx/voice/3_grunt_4.ogg,
+    audio/sfx/voice/3_grunt_5.ogg]
+End
+
+Sound
+  Name = hurt.Commander
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.65
+  GapSeconds = 0.4
+  Files = [audio/sfx/voice/3_yell_3.ogg, audio/sfx/voice/3_yell_4.ogg]
+End
+
+Sound
+  Name = hurt.Act1Commander
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.65
+  GapSeconds = 0.4
+  Files = [audio/sfx/voice/3_yell_3.ogg, audio/sfx/voice/3_yell_4.ogg]
+End
+
+Sound
+  Name = hurt.EnemyCommander
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.7
+  GapSeconds = 0.5
+  Files = [audio/sfx/voice/yell_12.ogg, audio/sfx/voice/3_yell_3.ogg]
+End
+
+Sound
+  Name = hurt.CursedHero
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.7
+  GapSeconds = 0.5
+  Files = [audio/sfx/voice/yell_12.ogg, audio/sfx/voice/3_grunt_1.ogg]
+End
+
+Sound
+  Name = hurt.DarkLord
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.7
+  GapSeconds = 0.5
+  Files = [audio/sfx/creature/beast_1.ogg, audio/sfx/creature/beast_2.ogg]
+End
+
+Sound
+  Name = hurt.Imp
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.6
+  GapSeconds = 0.3
+  Files = [audio/sfx/creature/imp_hurt_1.ogg, audio/sfx/creature/imp_hurt_2.ogg, audio/sfx/creature/imp_hurt_3.ogg]
+End
+
+; The queen gone over: no woman's voice is CC0 in the packs, so a shade's.
+Sound
+  Name = hurt.QueenBoss
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.6
+  GapSeconds = 0.6
+  Files = [audio/sfx/creature/shade_1.ogg, audio/sfx/creature/shade_2.ogg, audio/sfx/creature/shade_3.ogg]
+End
+
+; ---- coming into sight ----------------------------------------------------
+;
+; Heard as each of these first comes into sight, and three seconds apart at most:
+; a room of brutes is one roar, not five.
+
+Sound
+  Name = spawned.Boss
+  Channel = Effects
+  Positional = Yes
+  Gain = 1.0
+  Files = [audio/sfx/boss_appears.ogg]
+End
+
+Sound
+  Name = spawned.Brute
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.6
+  GapSeconds = 3.0
+  Files = [audio/sfx/creature/ogre_1.ogg, audio/sfx/creature/ogre_2.ogg, audio/sfx/creature/ogre_3.ogg]
+End
+
+Sound
+  Name = spawned.Champion
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.7
+  GapSeconds = 3.0
+  Files = [audio/sfx/creature/giant_1.ogg, audio/sfx/creature/giant_2.ogg, audio/sfx/creature/giant_3.ogg]
+End
+
+Sound
+  Name = spawned.Warden
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.6
+  GapSeconds = 3.0
+  Files = [audio/sfx/creature/beast_1.ogg, audio/sfx/creature/beast_2.ogg, audio/sfx/creature/beast_3.ogg]
+End
+
+Sound
+  Name = spawned.Reaper
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.55
+  GapSeconds = 3.0
+  Files = [audio/sfx/creature/shade_4.ogg, audio/sfx/creature/shade_5.ogg]
+End
+
+Sound
+  Name = spawned.Necromancer
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.6
+  GapSeconds = 3.0
+  Files = [audio/sfx/creature/undead_1.ogg, audio/sfx/creature/undead_3.ogg]
+End
+
+Sound
+  Name = spawned.Revenant
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.55
+  GapSeconds = 3.0
+  Files = [audio/sfx/creature/undead_2.ogg, audio/sfx/creature/undead_3.ogg]
+End
+
+Sound
+  Name = spawned.Imp
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.5
+  GapSeconds = 3.0
+  Files = [audio/sfx/creature/imp_call_1.ogg, audio/sfx/creature/imp_call_2.ogg, audio/sfx/creature/imp_call_3.ogg]
+End
+
+Sound
+  Name = spawned.DarkLord
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.8
+  GapSeconds = 10.0
+  Files = [audio/sfx/creature/roar_1.ogg]
+End
+
+Sound
+  Name = spawned.EnemyCommander
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.75
+  GapSeconds = 10.0
+  Files = [audio/sfx/voice/yell_2.ogg]
+End
+
+Sound
+  Name = spawned.CursedHero
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.75
+  GapSeconds = 10.0
+  Files = [audio/sfx/voice/yell_4.ogg]
+End
+
+Sound
+  Name = spawned.QueenBoss
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.7
+  GapSeconds = 10.0
+  Files = [audio/sfx/creature/shade_4.ogg]
+End
+
+; ---- dying ----------------------------------------------------------------
+
+Sound
+  Name = died
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.7
+  Files = [audio/sfx/death_generic.ogg]
+End
+
+Sound
+  Name = died.Knight
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.9
+  Files = [audio/sfx/voice/1_yell_3.ogg, audio/sfx/voice/1_yell_11.ogg]
+End
+
+Sound
+  Name = died.Mage
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.9
+  Files = [audio/sfx/voice/2_yell_4.ogg, audio/sfx/voice/2_yell_6.ogg]
+End
+
+; The huntress: the interface's own fall, as every hero had before there were voices.
+Sound
+  Name = died.Rogue
+  Channel = Ui
+  Positional = No
+  Files = [audio/ui/hero_death.ogg]
+End
+
+Sound
+  Name = died.Skeleton
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.7
+  Files = [audio/sfx/death_skeleton_1.ogg, audio/sfx/death_skeleton_2.ogg, audio/sfx/creature/bones_fall_1.ogg]
+End
+
+Sound
+  Name = died.Runner
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.7
+  Files = [audio/sfx/death_runner.ogg, audio/sfx/creature/bones_fall_2.ogg]
+End
+
+Sound
+  Name = died.Reaper
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.7
+  Files = [audio/sfx/creature/shade_5.ogg]
+End
+
+Sound
+  Name = died.Stalker
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.7
+  Files = [audio/sfx/creature/bones_fall_1.ogg, audio/sfx/creature/bones_fall_3.ogg]
+End
+
+Sound
+  Name = died.Warden
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.75
+  Files = [audio/sfx/creature/beast_4.ogg, audio/sfx/creature/beast_5.ogg]
+End
+
+Sound
+  Name = died.Brute
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.85
+  Files = [audio/sfx/death_brute.ogg, audio/sfx/creature/ogre_4.ogg]
+End
+
+Sound
+  Name = died.Champion
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.85
+  Files = [audio/sfx/creature/giant_4.ogg, audio/sfx/creature/giant_5.ogg]
+End
+
+Sound
+  Name = died.SkeletonMage
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.7
+  Files = [audio/sfx/creature/bones_fall_2.ogg, audio/sfx/creature/bones_fall_3.ogg]
+End
+
+Sound
+  Name = died.SkeletonHealer
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.7
+  Files = [audio/sfx/creature/bones_fall_1.ogg, audio/sfx/creature/bones_fall_2.ogg]
+End
+
+Sound
+  Name = died.SkeletonSummoner
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.7
+  Files = [audio/sfx/creature/bones_fall_1.ogg, audio/sfx/creature/bones_fall_3.ogg]
+End
+
+Sound
+  Name = died.Necromancer
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.8
+  Files = [audio/sfx/creature/undead_3.ogg]
+End
+
+Sound
+  Name = died.Revenant
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.8
+  Files = [audio/sfx/creature/undead_3.ogg]
+End
+
+Sound
+  Name = died.Imp
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.7
+  Files = [audio/sfx/creature/imp_die.ogg]
+End
+
+Sound
+  Name = died.Soldier
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.7
+  Files = [audio/sfx/voice/3_yell_12.ogg, audio/sfx/voice/3_yell_15.ogg]
+End
+
+Sound
+  Name = died.Militia
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.7
+  Files = [audio/sfx/voice/3_yell_12.ogg, audio/sfx/voice/3_yell_15.ogg]
+End
+
+Sound
+  Name = died.Commander
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.8
+  Files = [audio/sfx/voice/3_yell_1.ogg]
+End
+
+Sound
+  Name = died.Act1Commander
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.8
+  Files = [audio/sfx/voice/3_yell_1.ogg]
+End
+
+Sound
+  Name = died.EnemyCommander
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.85
+  Files = [audio/sfx/voice/yell_10.ogg]
+End
+
+Sound
+  Name = died.CursedHero
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.85
+  Files = [audio/sfx/voice/yell_1.ogg]
+End
+
+Sound
+  Name = died.DarkLord
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.9
+  Files = [audio/sfx/creature/roar_2.ogg]
+End
+
+Sound
+  Name = died.QueenBoss
+  Channel = Effects
+  Positional = Yes
+  Gain = 1.0
+  Files = [audio/sfx/death_boss.ogg]
+End
+
+Sound
+  Name = died.Boss
+  Channel = Effects
+  Positional = Yes
+  Gain = 1.0
+  Files = [audio/sfx/death_boss.ogg]
+End
+
+; ---- his feet -------------------------------------------------------------
+;
+; His stride, once a GapSeconds: without it the client would play one a frame and
+; a walk would be a buzz. Flat, since it is his own and the camera is on him.
+
+Sound
+  Name = step
+  Channel = Effects
+  Positional = No
+  Gain = 0.3
+  GapSeconds = 0.34
+  Files = [
+    audio/sfx/step/stone_l1.ogg,
+    audio/sfx/step/stone_r1.ogg,
+    audio/sfx/step/stone_l2.ogg,
+    audio/sfx/step/stone_r2.ogg,
+    audio/sfx/step/stone_l3.ogg,
+    audio/sfx/step/stone_r3.ogg,
+  ]
+End
+
+Sound
+  Name = step.grass
+  Channel = Effects
+  Positional = No
+  Gain = 0.3
+  GapSeconds = 0.34
+  Files = [
+    audio/sfx/step/soft_l1.ogg,
+    audio/sfx/step/soft_r1.ogg,
+    audio/sfx/step/soft_l2.ogg,
+    audio/sfx/step/soft_r2.ogg,
+    audio/sfx/step/soft_l3.ogg,
+    audio/sfx/step/soft_r3.ogg,
+  ]
+End
+
+Sound
+  Name = step.forest
+  Channel = Effects
+  Positional = No
+  Gain = 0.3
+  GapSeconds = 0.34
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg]
+End
+
+Sound
+  Name = step.mud
+  Channel = Effects
+  Positional = No
+  Gain = 0.3
+  GapSeconds = 0.34
+  Files = [audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_r3.ogg]
+End
+
+Sound
+  Name = step.sand
+  Channel = Effects
+  Positional = No
+  Gain = 0.3
+  GapSeconds = 0.34
+  Files = [
+    audio/sfx/step/soft_l1.ogg,
+    audio/sfx/step/soft_r1.ogg,
+    audio/sfx/step/soft_l2.ogg,
+    audio/sfx/step/soft_r2.ogg,
+    audio/sfx/step/soft_l3.ogg,
+    audio/sfx/step/soft_r3.ogg,
+  ]
+End
+
+Sound
+  Name = step.snow
+  Channel = Effects
+  Positional = No
+  Gain = 0.3
+  GapSeconds = 0.34
+  Files = [audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r3.ogg]
+End
+
+; Packed earth: Kenney's footsteps, which were the only ones before.
+Sound
+  Name = step.dirt
+  Channel = Effects
+  Positional = No
   Gain = 0.35
-  ; His stride. Without this the client would play one per frame and a walk
-  ; would be a buzz rather than a walk.
   GapSeconds = 0.34
   Files = [
     audio/sfx/footstep_1.ogg,
@@ -168,6 +1128,84 @@ Sound
   ]
 End
 
+; ---- things in the world --------------------------------------------------
+
+; A thing on the floor -- a chest, as the game draws a dropped item -- taken up.
+Sound
+  Name = struck.Chest
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.5
+  Files = [audio/sfx/world/chest_open_1.ogg, audio/sfx/world/chest_open_2.ogg]
+End
+
+Sound
+  Name = gone.Chest
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.5
+  Files = [audio/sfx/world/chest_open_1.ogg, audio/sfx/world/chest_open_2.ogg]
+End
+
+Sound
+  Name = struck.Key
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.7
+  Files = [audio/sfx/world/keys_1.ogg, audio/sfx/world/keys_2.ogg]
+End
+
+Sound
+  Name = gone.Key
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.7
+  Files = [audio/sfx/world/keys_1.ogg, audio/sfx/world/keys_2.ogg]
+End
+
+; The keep's gate: its lock turned as it goes, and the open gate swinging into its place.
+Sound
+  Name = struck.Gate
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.8
+  Files = [audio/sfx/world/lock_open.ogg]
+End
+
+Sound
+  Name = gone.Gate
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.8
+  Files = [audio/sfx/world/lock_open.ogg]
+End
+
+Sound
+  Name = spawned.OpenGate
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.8
+  GapSeconds = 5.0
+  Files = [audio/sfx/world/gate_open.ogg]
+End
+
+; Something put on or taken off, and a potion drunk (Dungeon and DungeonRun).
+Sound
+  Name = equip
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.6
+  Files = [audio/ui/equip_1.ogg, audio/ui/equip_2.ogg, audio/ui/equip_3.ogg]
+End
+
+Sound
+  Name = drink
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.7
+  Files = [audio/ui/drink_1.ogg, audio/ui/drink_2.ogg]
+End
+
 Sound
   Name = loot
   Channel = Effects
@@ -176,29 +1214,13 @@ Sound
   Files = [audio/sfx/loot_1.ogg, audio/sfx/loot_2.ogg]
 End
 
-; The drawn shot Q looses lands harder than an ordinary one, and is worth
-; hearing land -- so it gets its own rather than sharing the plain arrow's.
-Sound
-  Name = struck.HeavyArrow
-  Channel = Effects
-  Positional = Yes
-  Gain = 0.9
-  Files = [audio/sfx/melee_hit_1.ogg, audio/sfx/melee_hit_2.ogg]
-End
+; ---- the loop under a place (the Audio block's Ambience) --------------------
 
-; The Skeleton Mage's fireball leaving its staff, and bursting on him.
+; JaggedStone's loopable dungeon ambience, made mono to ride him.
 Sound
-  Name = spawned.SkullFireball
-  Channel = Effects
-  Positional = Yes
-  Gain = 0.7
-  Files = [audio/sfx/skill_dash.ogg]
-End
-
-Sound
-  Name = struck.SkullFireball
+  Name = ambience.dungeon
   Channel = Effects
   Positional = Yes
   Gain = 0.8
-  Files = [audio/sfx/skill_burst.ogg]
+  Files = [audio/ambience/dungeon.ogg]
 End

@@ -60,9 +60,9 @@ Sound
   Name = level_up
   Channel = Ui
   Positional = No
-  ; A climb of notes, as the light he levels in climbs. Loud and held for most of
-  ; a second, so it is turned well down to sit with the rest of the interface.
-  Gain = 0.3
+  ; A climb of plucked strings, as the light he levels in climbs: Kenney's Music
+  ; Jingles (CC0), levelled with the rest, so it needs only a little turning down.
+  Gain = 0.5
   Files = [audio/ui/level_up.ogg]
 End
 
@@ -73,9 +73,48 @@ Sound
   Files = [audio/ui/power_taken.ogg]
 End
 
+; ---- his own screens (Soundscape) -----------------------------------------
+
+; A page turned as the sheet, the quest log or the map opens, and the book shut.
 Sound
-  Name = died.Hero
+  Name = screen_open
   Channel = Ui
   Positional = No
-  Files = [audio/ui/hero_death.ogg]
+  Gain = 0.5
+  Files = [audio/ui/page_1.ogg, audio/ui/page_2.ogg]
+End
+
+Sound
+  Name = screen_close
+  Channel = Ui
+  Positional = No
+  Gain = 0.35
+  Files = [audio/ui/book_shut.ogg]
+End
+
+; A quest taken, and one done: two of Kenney's jingles, the short and the long.
+Sound
+  Name = quest_taken
+  Channel = Ui
+  Positional = No
+  Gain = 0.45
+  Files = [audio/ui/quest_taken.ogg]
+End
+
+Sound
+  Name = quest_done
+  Channel = Ui
+  Positional = No
+  Gain = 0.5
+  Files = [audio/ui/quest_done.ogg]
+End
+
+; Gold paid to him or by him. A burst of a dozen coins is one sound, not twelve.
+Sound
+  Name = coins
+  Channel = Ui
+  Positional = No
+  Gain = 0.55
+  GapSeconds = 0.25
+  Files = [audio/ui/coins_1.ogg, audio/ui/coins_2.ogg, audio/ui/coins_3.ogg, audio/ui/coins_4.ogg]
 End

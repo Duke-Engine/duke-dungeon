@@ -1,33 +1,100 @@
 ; ---- and what it sounds like underneath -----------------------------------
 ;
-; Three of them, and which one plays is the player's to say from the settings
-; screen -- the one channel where the choice is taste rather than a moment. Add
-; a fourth by writing a fourth block; the screen lists whatever is here, in the
-; order it is written, and Label is what it calls them.
+; Which of these plays is the place's and the moment's: the Audio block's Music
+; list (data/world/scene.duke) names one for the menu, the capital, the open
+; world, the descent, a fight, a boss, the turning and the end, and the client
+; cross-fades between them as he goes (Soundscape). Each loops while it plays.
+;
+; All ten are CC0, from OpenGameArt's "CC0 - Cinematic Music" collection; who
+; made each is in CREDITS.md. Levelled to about -18 LUFS, so Gain is the knob
+; that is left for taste. The first is the one the settings screen starts on.
 
 Sound
-  Name = music.industrial
-  Channel = Music
-  Positional = No
-  Gain = 0.5
-  Label = Industrial
-  Files = [audio/music/dungeon_loop.ogg]
-End
-
-Sound
-  Name = music.uncertainty
+  Name = music.explore
   Channel = Music
   Positional = No
   Gain = 0.6
-  Label = Uncertainty
-  Files = [audio/music/uncertainty.ogg]
+  Label = The Hope
+  Files = [audio/music/explore.ogg]
 End
 
 Sound
-  Name = music.sentinel
+  Name = music.menu
   Channel = Music
   Positional = No
   Gain = 0.6
-  Label = The Sentinel
-  Files = [audio/music/sentinel.ogg]
+  Label = A Legend Will Rise
+  Files = [audio/music/menu.ogg]
+End
+
+Sound
+  Name = music.town
+  Channel = Music
+  Positional = No
+  Gain = 0.55
+  Label = Market Day
+  Files = [audio/music/town.ogg]
+End
+
+Sound
+  Name = music.wilds
+  Channel = Music
+  Positional = No
+  Gain = 0.55
+  Label = Once Upon a Time
+  Files = [audio/music/wilds.ogg]
+End
+
+Sound
+  Name = music.dungeon
+  Channel = Music
+  Positional = No
+  Gain = 0.55
+  Label = Unexplored
+  Files = [audio/music/dungeon.ogg]
+End
+
+Sound
+  Name = music.castle
+  Channel = Music
+  Positional = No
+  Gain = 0.55
+  Label = Sinister
+  Files = [audio/music/castle.ogg]
+End
+
+Sound
+  Name = music.battle
+  Channel = Music
+  Positional = No
+  Gain = 0.6
+  Label = Battle Theme A
+  Files = [audio/music/battle.ogg]
+End
+
+Sound
+  Name = music.boss
+  Channel = Music
+  Positional = No
+  Gain = 0.6
+  Label = Boss Battle
+  Files = [audio/music/boss.ogg]
+End
+
+Sound
+  Name = music.lament
+  Channel = Music
+  Positional = No
+  Gain = 0.6
+  Label = Laments of the War
+  Files = [audio/music/lament.ogg]
+End
+
+Sound
+  Name = music.victory
+  Channel = Music
+  Positional = No
+  Gain = 0.6
+  Label = Victory
+  Files = [audio/music/victory.ogg]
 End
