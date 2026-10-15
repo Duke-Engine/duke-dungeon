@@ -541,6 +541,13 @@ HitNumbers
   TakenColour = 0xC22A22
   HealColour = 0x4FBF4F
   Brightness = 1
+  ; A blow he deals of BigAt or more is drawn BigScale bigger in BigColour; a critical one in CritColour
+  ; (yellow) and CritScale bigger. 0 for BigAt turns the big ones off. Blows taken and heals stay as they are.
+  BigAt = 40
+  BigScale = 1.3
+  BigColour = 0xFFFFFF
+  CritColour = 0xFFD21E
+  CritScale = 1.6
 End
 
 ; ---------------------------------------------------------------------------
