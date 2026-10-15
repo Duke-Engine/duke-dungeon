@@ -109,6 +109,16 @@ Sound
   Files = [audio/ui/quest_done.ogg]
 End
 
+; The floor's key dropping (Run KeyDroppedSound): the quest jingle, a little
+; louder -- it is the floor's one door.
+Sound
+  Name = key_dropped
+  Channel = Ui
+  Positional = No
+  Gain = 0.6
+  Files = [audio/ui/quest_taken.ogg]
+End
+
 ; Gold paid to him or by him. A burst of a dozen coins is one sound, not twelve.
 Sound
   Name = coins

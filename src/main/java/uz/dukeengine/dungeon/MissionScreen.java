@@ -55,6 +55,7 @@ final class MissionScreen {
         var snapshot = match.game().getSnapshot();
         tracker(canvas, match.run().getTracker(), snapshot.frame(), folded, settings);
         marks(canvas, match, snapshot, settings);
+        pointers(canvas, match, snapshot, settings);
         var heroes = settings.heroes().stream().map(hero -> hero.name()).collect(Collectors.toUnmodifiableSet());
         for (var unit : snapshot.units()) {
             var progress = heroes.contains(unit.templateName()) ? match.run().progressOf(unit.playerIndex()) : null;
@@ -93,6 +94,83 @@ final class MissionScreen {
                         over.y(), 0xFF000000 | dialogue.markColour(), Canvas.Blend.ALPHA);
             }
         }
+    }
+
+    /**
+     * Where the hero is wanted, shown from where he stands: every quest going whose step is on this map (in the
+     * Dialogue block's mark colour), and the floor's key lying, with its {@code KeyDroppedWord} floating up over it as
+     * it drops. Off the screen, an arrow on a ring round him points the way; on it, the target's glow or pillar of light
+     * says where. Nothing while the tracker lists nothing (the banner has the screen).
+     */
+    static void pointers(Canvas canvas, Dungeon.Session match, uz.dukeengine.core.view.WorldSnapshot snapshot,
+            DungeonSettings settings) {
+        if (match.run().getTracker().entries().isEmpty()) {
+            return;
+        }
+        var hero = WorldMapScreen.heroOf(match, settings);
+        if (hero == null) {
+            return;
+        }
+        int questColour = 0xFF000000 | settings.story().dialogue().markColour();
+        for (var going : match.run().questsNow().active()) {
+            var target = QuestLogScreen.whereIs(going.quest(), match, settings);
+            if (target != null) {
+                point(canvas, hero, target[0], target[1], hero.z(), questColour);
+            }
+        }
+        var key = match.run().keyLying();
+        if (key == null) {
+            return;
+        }
+        int gold = 0xFF000000 | settings.menu().torchColour();
+        point(canvas, hero, key.x(), key.y(), key.z(), gold);
+        var burst = settings.goldBurst();
+        float life = 2f * burst.floatSeconds() * uz.dukeengine.core.GameConstants.LOGICFRAMES_PER_SECOND;
+        float age = (snapshot.frame() - key.frame()) / life;
+        var over = age < 0f || age >= 1f ? null : canvas.screenOf(key.x(), key.y(), key.z() + burst.floatHeight());
+        if (over != null) {
+            var words = settings.run().keyDroppedWord();
+            var font = Canvas.Font.of("Georgia", Math.max(12, Math.round(canvas.height() * burst.textSize() * 1.3f)));
+            var size = canvas.measure(font, words);
+            int alpha = Math.round((age <= 0.5f ? 1f : 2f - 2f * age) * 255f) << 24;
+            float x = over.x() - size.width() / 2f;
+            float y = over.y() - size.lineHeight() - age * burst.floatRise() * canvas.height();
+            canvas.drawText(font, words, x + 1.5f, y + 1.5f, alpha);
+            canvas.drawText(font, words, x, y, alpha | gold & 0xFFFFFF);
+        }
+    }
+
+    /** An arrow on the ring round {@code hero} pointing at the world point {@code (x, y, z)}, while it is off screen. */
+    static void point(Canvas canvas, uz.dukeengine.core.view.UnitView hero, float x, float y, float z, int argb) {
+        var there = canvas.screenOf(x, y, z);
+        if (there != null && there.x() >= 0f && there.x() <= canvas.width() && there.y() >= 0f
+                && there.y() <= canvas.height()) {
+            return; // on the screen: its light says where
+        }
+        float dx = x - hero.x();
+        float dy = y - hero.y();
+        float far = (float) Math.hypot(dx, dy);
+        var here = canvas.screenOf(hero.x(), hero.y(), hero.z());
+        var toward = far < 1f ? null : canvas.screenOf(hero.x() + dx / far * 20f, hero.y() + dy / far * 20f, hero.z());
+        var arrow = here == null || toward == null ? null : arrowAt(here, toward, canvas.height() * 0.16f);
+        if (arrow != null) {
+            WorldMapScreen.arrow(canvas, arrow[0], arrow[1], arrow[2], Math.clamp(canvas.height() * 0.03f, 14f, 30f),
+                    argb);
+        }
+    }
+
+    /**
+     * Where the arrow stands and the way it points, {x, y, radians}: on a ring {@code ring} pixels round {@code here},
+     * the way the screen carries a step from {@code here} toward the target ({@code toward}); null for no way.
+     */
+    static float[] arrowAt(Canvas.Point here, Canvas.Point toward, float ring) {
+        float dx = toward.x() - here.x();
+        float dy = toward.y() - here.y();
+        float length = (float) Math.hypot(dx, dy);
+        if (length < 1e-3f) {
+            return null;
+        }
+        return new float[] {here.x() + dx / length * ring, here.y() + dy / length * ring, (float) Math.atan2(dy, dx)};
     }
 
     /**

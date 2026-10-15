@@ -410,6 +410,7 @@ Quest
     Step
       Goal = KILL
       Target = Necromancer
+      Where = Kampir_kulbasi
       Text = "O'rmondagi o'likchini o'ldiring"
       Glow = Yes
     End,
@@ -497,6 +498,7 @@ Quest
     Step
       Goal = COLLECT
       Target = CageKey
+      Where = Kampir_kulbasi
       Text = "Qafas kalitini o'likchidan oling"
     End,
     Step

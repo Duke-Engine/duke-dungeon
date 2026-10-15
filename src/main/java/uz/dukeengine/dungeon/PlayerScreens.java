@@ -159,8 +159,7 @@ final class PlayerScreens implements Painter, CanvasInput {
             var hit = quests.click(button.x(), button.y());
             var match = DialogueScreen.match();
             if (hit != null && hit.map() && match != null && last != null) {
-                var target = QuestLogScreen.whereIs(hit.quest(), match.run().questsNow(), settings.story(),
-                        match.run().storyNow());
+                var target = QuestLogScreen.whereIs(hit.quest(), match, settings);
                 if (target != null) {
                     toggle(Open.MAP);
                     map.centreOn(last, match, target);

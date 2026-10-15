@@ -90,9 +90,21 @@ Run
   ; tracker says only the last.
   MissionTitle = Boss qal'asi
   ClearWord = Monstrlarni qir %d/%d
-  TakeKeyWord = Kalitni top
+  TakeKeyWord = "Kalitni oling: oltin nur ustunida, o'q yo'lni ko'rsatadi"
   GiveKeyWord = Kalitni darvozaga ber
   KillBossWord = Bossni o'ldir
+
+  ; The key drops early (the owner, 2026-10-15: one skeleton left in a corner
+  ; kept the gate shut): at the kill that leaves KeyEarlyPercent of them
+  ; standing, or KeyEarlyCount, whichever leaves more. 0 and 0 for the last.
+  KeyEarlyPercent = 15
+  KeyEarlyCount = 3
+  ; And it cannot be missed: it stands in a tall gold pillar (an Effect, played
+  ; again every ItemRules BeamFrames), floats KeyDroppedWord as it drops, with
+  ; KeyDroppedSound, and an arrow round the hero points to it off the screen.
+  KeyBeam = KeyBeam
+  KeyDroppedWord = "Kalit tushdi!"
+  KeyDroppedSound = key_dropped
 
   ; The tracker folds and unfolds on FoldKey; folded it is only MissionsTab. A
   ; step just passed stays listed, ticked off and dimmed, for DoneFrames (30 = one

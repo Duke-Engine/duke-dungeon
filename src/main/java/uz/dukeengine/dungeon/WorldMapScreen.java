@@ -250,15 +250,22 @@ final class WorldMapScreen {
         float mark = text * 1.6f;
         var state = run.questsNow();
         for (var going : state.active()) {
-            var target = QuestLogScreen.whereIs(going.quest(), state, settings.story(), story);
+            var target = QuestLogScreen.whereIs(going.quest(), match, settings);
             if (target != null) {
                 var at = view.toScreen(target[0], target[1]);
                 canvas.drawImage(Canvas.Image.of(dialogue.giveMark()), at.x() - mark / 2f, at.y() - mark,
                         at.x() + mark / 2f, at.y(), 0xFF000000 | dialogue.markColour(), Canvas.Blend.ALPHA);
             }
         }
+        // The floor's key lying, in gold: the same mark.
+        var key = run.keyLying();
+        if (key != null) {
+            var at = view.toScreen(key.x(), key.y());
+            canvas.drawImage(Canvas.Image.of(dialogue.giveMark()), at.x() - mark / 2f, at.y() - mark,
+                    at.x() + mark / 2f, at.y(), gold, Canvas.Blend.ALPHA);
+        }
         // And him: an arrow the way he faces, over everything.
-        var hero = heroOf(match);
+        var hero = heroOf(match, settings);
         if (hero != null) {
             var at = view.toScreen(hero.x(), hero.y());
             arrow(canvas, at.x(), at.y(), hero.orientation(), text * 0.9f, gold);
@@ -283,7 +290,7 @@ final class WorldMapScreen {
     }
 
     /** This machine's hero as the snapshot last saw him, or null. */
-    private uz.dukeengine.core.view.UnitView heroOf(Dungeon.Session match) {
+    static uz.dukeengine.core.view.UnitView heroOf(Dungeon.Session match, DungeonSettings settings) {
         var snapshot = match.game().getSnapshot();
         for (var unit : snapshot.units()) {
             if (unit.playerIndex() == match.game().getLocalPlayerIndex()

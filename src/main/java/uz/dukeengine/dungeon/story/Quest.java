@@ -39,10 +39,18 @@ public record Quest(String name, Tracker.Kind kind, String title, List<Step> ste
      * @param onDone what finishing it does, or null for nothing
      * @param glow   whether its target — the thing lying, the creature, the person — wears the Dialogue block's
      *               GlowLook while the step wants it
+     * @param where  the zone of the map where it is done, for its marks (the world map, the arrow round the hero, a
+     *               pillar of light): blank for the target itself -- a REACH's zone, a person, a thing lying, the
+     *               nearest of what is to be killed in sight
      */
-    public record Step(Goal goal, String target, int count, String item, String text, Done onDone, boolean glow) {
+    public record Step(Goal goal, String target, int count, String item, String text, Done onDone, boolean glow,
+            String where) {
 
-        public static final Step DEFAULTS = new Step(null, "", 1, "", "", null, false);
+        public static final Step DEFAULTS = new Step(null, "", 1, "", "", null, false, "");
+
+        public Step {
+            where = where == null ? "" : where;
+        }
 
         /** The tracker's line at {@code so far}. */
         public String said(int soFar) {

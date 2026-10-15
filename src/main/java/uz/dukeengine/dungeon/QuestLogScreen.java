@@ -77,26 +77,66 @@ final class QuestLogScreen {
         return entries;
     }
 
+    /** {@link #whereIs} in {@code match} as this machine sees it now: its quests, its map, what its hero has in sight. */
+    static float[] whereIs(String quest, Dungeon.Session match, DungeonSettings settings) {
+        var run = match.run();
+        var hero = WorldMapScreen.heroOf(match, settings);
+        return whereIs(quest, run.questsNow(), settings.story(), run.storyNow(), match.game().getSnapshot().units(),
+                hero == null ? 0f : hero.x(), hero == null ? 0f : hero.y());
+    }
+
+    /** {@link #whereIs} with nothing in sight: a KILL is only its step's Where. */
+    static float[] whereIs(String quest, QuestLog.State state, Story story, MapStory where) {
+        return whereIs(quest, state, story, where, List.of(), 0f, 0f);
+    }
+
     /**
      * Where the step {@code quest} is on wants him, in world units on the map {@code story} lays: a REACH's zone, a
-     * TALK's or GIVE's person, a COLLECT's thing lying -- or null for a step with nowhere (a KILL, a thing not on this
-     * map, a quest finished).
+     * TALK's or GIVE's person, a COLLECT's thing lying, the nearest to {@code (fromX, fromY)} of what a KILL asks for
+     * among {@code seen} -- else the zone its step names as Where -- or null for a step with nowhere (a thing not on
+     * this map, a quest finished).
      */
-    static float[] whereIs(String quest, QuestLog.State state, Story story, MapStory where) {
+    static float[] whereIs(String quest, QuestLog.State state, Story story, MapStory where,
+            List<uz.dukeengine.core.view.UnitView> seen, float fromX, float fromY) {
         var going = state.active().stream().filter(each -> each.quest().equals(quest)).findFirst().orElse(null);
         var known = story.quest(quest);
         if (going == null || known == null || going.step() >= known.steps().size()) {
             return null;
         }
         var step = known.steps().get(going.step());
+        var found = targetOf(step, where, seen, fromX, fromY);
+        return found != null || step.where().isBlank() ? found : zoneMiddle(where, step.where());
+    }
+
+    /** The middle of the zone {@code name} of {@code where}, or null for none of that name. */
+    private static float[] zoneMiddle(MapStory where, String name) {
+        float cell = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
+        for (var zone : where.zones()) {
+            if (zone.name().equals(name)) {
+                return new float[] {zone.middleX(cell), zone.middleY(cell)};
+            }
+        }
+        return null;
+    }
+
+    private static float[] targetOf(uz.dukeengine.dungeon.story.Quest.Step step, MapStory where,
+            List<uz.dukeengine.core.view.UnitView> seen, float fromX, float fromY) {
         float cell = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
         switch (step.goal()) {
             case REACH -> {
-                for (var zone : where.zones()) {
-                    if (zone.name().equals(step.target())) {
-                        return new float[] {zone.middleX(cell), zone.middleY(cell)};
+                return zoneMiddle(where, step.target());
+            }
+            case KILL -> {
+                float[] nearest = null;
+                double best = Double.MAX_VALUE;
+                for (var unit : seen) {
+                    double far = Math.hypot(unit.x() - fromX, unit.y() - fromY);
+                    if (unit.templateName().equals(step.target()) && unit.health() > 0f && far < best) {
+                        best = far;
+                        nearest = new float[] {unit.x(), unit.y()};
                     }
                 }
+                return nearest;
             }
             case TALK, GIVE, COLLECT -> {
                 for (var placed : step.goal() == uz.dukeengine.dungeon.story.Quest.Goal.COLLECT ? where.items()
@@ -217,7 +257,7 @@ final class QuestLogScreen {
             canvas.drawText(small, row, rx, y, dim);
             y += line * 0.85f;
         }
-        if (!chosen.finished() && whereIs(chosen.quest(), state, story, match.run().storyNow()) != null) {
+        if (!chosen.finished() && whereIs(chosen.quest(), match, settings) != null) {
             var button = screens.showOnMapWord();
             var size = canvas.measure(font, button);
             float bw = size.width() + pad * 1.5f;

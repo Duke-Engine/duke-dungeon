@@ -901,3 +901,62 @@ Effect
     End
   ]
 End
+
+; The floor's key lying (Run KeyBeam): the tallest light on any floor, gold and
+; twice an epic's height, so it is seen from across the floor over the walls.
+Effect
+  Name = KeyBeam
+
+  Layers = [
+    Layer
+      Name = Beam
+      Type = PILLAR
+      Texture = kit/effects/particles/pillar_core.png
+      Blend = Additive
+      Count = 1
+      Life = [2.2, 2.2]
+      Size = [6, 6]
+      Height = 110
+      Direction = UP
+      Colour = [0xFFE9A0, 0xFFC23A]
+      Alpha = [0.85, 0.85]
+      FadeIn = 0.4
+      FadeOut = 0.6
+      At = CASTER
+      Follows = Yes
+    End,
+
+    Layer
+      Name = Halo
+      Type = PILLAR
+      Texture = kit/effects/particles/pillar_halo.png
+      Blend = Additive
+      Count = 1
+      Life = [2.2, 2.2]
+      Size = [16, 16]
+      Height = 90
+      Direction = UP
+      Colour = [0xFFD27A, 0xE8A020]
+      Alpha = [0.4, 0.4]
+      FadeIn = 0.4
+      FadeOut = 0.6
+      At = CASTER
+      Follows = Yes
+    End,
+
+    Layer
+      Name = Foot
+      Type = AURA
+      Texture = kit/effects/particles/light_02.png
+      Blend = Additive
+      Cover = 0.1
+      Count = 1
+      Size = [16, 16]
+      Colour = [0xFFF0B0, 0xFFC23A]
+      Alpha = [0.7, 0.7]
+      FadeIn = 0.3
+      FadeOut = 0.5
+      Height = 2
+    End
+  ]
+End

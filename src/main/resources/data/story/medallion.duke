@@ -30,6 +30,9 @@ Medallion
   GivenLook = SoulWisp
   GivenLookFrames = 90
   TurnedWord = "Qahramon la'natlandi"
+  ; In the campaign it cannot be taken off, dropped, sold or swapped out: a click
+  ; that tries says this, over his head.
+  LockedWord = "Medalyonni yechib bo'lmaydi: u menga bog'lanib qolgan"
 End
 
 ; The medallion itself: worn, never dropped (Weight 0), never sold (a QUEST thing).

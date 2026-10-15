@@ -166,6 +166,15 @@ public final class DungeonRun {
     /** The step said last frame, and the frame it began at; null before the floor says its first. */
     private Mission.Step said;
     private int saidSince;
+    /**
+     * Where the floor's key lies and the frame it dropped, while the step is to take it; null otherwise. Written on the
+     * simulation's thread as it drops, read by the window for its arrow and its "Kalit tushdi!".
+     */
+    private volatile KeyLying keyLying;
+
+    /** The floor's key lying at {@code (x, y, z)}, dropped at {@code frame}. */
+    public record KeyLying(float x, float y, float z, int frame) {
+    }
 
     /** The keep's shut gate, as everything that hurts or mends asks it: told of each floor as it is laid. */
     private final Seal seal;
@@ -652,6 +661,7 @@ public final class DungeonRun {
             if (said != null && step.ordinal() > said.ordinal() && mission != null) {
                 finished.add(new Tracker.Step(doneWords(mission, run, said), true, frame));
             }
+            keyLying = step == Mission.Step.TAKE ? keyDropped(game, said != null) : null;
             said = step;
             saidSince = frame;
         }
@@ -664,6 +674,31 @@ public final class DungeonRun {
                         : quests.entries());
         questsNow = quests.state();
         storyNow = floors.story();
+    }
+
+    /**
+     * The floor's key, just come to lie on the floor — dropped early by the floor's own, by a hero who fell with it, or
+     * laid at the way in on a floor with nobody outside — or null where none lies. A drop ({@code heard}) is heard: the
+     * run's KeyDroppedSound, an event out of the checksum; the key laid with the floor is not news.
+     */
+    private KeyLying keyDropped(DukeGame game, boolean heard) {
+        var logic = game.getLogic();
+        for (var thing : logic.getObjects()) {
+            var lying = thing.findModule(uz.dukeengine.rpg.item.GroundItem.class);
+            if (lying != null && lying.getHolding() != null && lying.getHolding().use() == ItemUse.UNLOCK) {
+                if (heard && !settings.run().keyDroppedSound().isBlank()) {
+                    logic.sound(settings.run().keyDroppedSound(), thing, 0);
+                }
+                var at = thing.getPosition();
+                return new KeyLying(at.x(), at.y(), at.z(), heard ? logic.getFrame() : Integer.MIN_VALUE / 2);
+            }
+        }
+        return null;
+    }
+
+    /** Where the floor's key lies while the step is to take it, or null: for the window's arrow, from any thread. */
+    public KeyLying keyLying() {
+        return keyLying;
     }
 
     /**
@@ -699,8 +734,16 @@ public final class DungeonRun {
                 outside.add(monster);
             }
         }
-        return Mission.begin(world, key, settings.lootDrops().template(), floorOwner, placed.gate(), outside,
+        var mission = Mission.begin(world, key, settings.lootDrops().template(), floorOwner, placed.gate(), outside,
                 wayIn(floor, placed));
+        int leeway = settings.run().keyLeeway(outside.size());
+        if (leeway > 0) {
+            var early = new EarlyKey.Tally(mission, List.copyOf(outside), leeway);
+            for (var monster : outside) {
+                monster.addModule(new EarlyKey(monster, early));
+            }
+        }
+        return mission;
     }
 
     /** Where the heroes came in: where the first of them stands, or the floor's own way in. */
@@ -1725,6 +1768,8 @@ public final class DungeonRun {
     /**
      * Every BeamFrames, every magic, rare and epic thing lying on the floor stands in a column of its rarity's light
      * (ItemRules' Beams): an event the client plays riding the thing, as a quest's glow is; nothing in the world reads it.
+     * The floor's key stands in the run's KeyBeam, the tallest, and so does the place every quest going sends him to on
+     * this map: a REACH's zone, or the zone a step names as its Where.
      */
     private void beams(DukeGame game) {
         var items = settings.items();
@@ -1732,13 +1777,40 @@ public final class DungeonRun {
         if (items.rules().beams().isEmpty() || logic.getFrame() % items.rules().beamFrames() != 0) {
             return;
         }
+        var keyBeam = settings.run().keyBeam();
         for (var thing : logic.getObjects()) {
             var lying = thing.findModule(uz.dukeengine.rpg.item.GroundItem.class);
-            var beam = lying == null || lying.getHolding() == null ? "" : items.beamOf(lying.getHolding());
+            var holding = lying == null ? null : lying.getHolding();
+            var beam = holding == null ? "" : holding.use() == ItemUse.UNLOCK ? keyBeam : items.beamOf(holding);
             if (!beam.isBlank()) {
                 logic.effect(beam, thing);
             }
         }
+        if (keyBeam.isBlank()) {
+            return;
+        }
+        float cell = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
+        for (var each : quests.active()) {
+            var place = zoneNamed(placeOf(settings.story(), each.quest(), each.step()));
+            if (place != null) {
+                logic.effect(keyBeam, new uz.dukeengine.core.math.Coord3D(place.middleX(cell), place.middleY(cell),
+                        0f), 0f);
+            }
+        }
+    }
+
+    /**
+     * The zone the step {@code at} of {@code quest} sends him to, for its pillar of light: its Where, or a REACH's own
+     * zone; blank for a step with none (a person, a thing, a creature: they glow where they stand).
+     */
+    public static String placeOf(uz.dukeengine.dungeon.story.Story story, String quest, int at) {
+        var known = story.quest(quest);
+        if (known == null || at >= known.steps().size()) {
+            return "";
+        }
+        var step = known.steps().get(at);
+        return !step.where().isBlank() ? step.where()
+                : step.goal() == uz.dukeengine.dungeon.story.Quest.Goal.REACH ? step.target() : "";
     }
 
     /** Every hero's potion stacks joined, as things come into his bag. See {@link Belt#stack}. */
@@ -2293,6 +2365,36 @@ public final class DungeonRun {
             shop.left()[ware]--;
             published();
         }
+    }
+
+    /**
+     * Whether the medallion keeps this player from what he asked of his bag's {@code place}: in the campaign it cannot
+     * leave him (the owner, 2026-10-15) -- not dropped from anywhere ({@code shifting} false), not taken off, and not
+     * swapped out by putting another thing on in its slot ({@code shifting} true). When it does, he says why (the
+     * Medallion block's LockedWord) and the order is not obeyed. Outside the campaign, never.
+     */
+    public boolean keepsMedallion(DukeGame game, int playerIndex, int place, boolean shifting) {
+        var named = settings.medallion().item();
+        var seat = seatOf(playerIndex);
+        if (named.isBlank() || seat == null || !settings.inCampaign(floors.stageName())) {
+            return false;
+        }
+        var bag = seat.progress.getLoot();
+        var item = place >= 0 && place < bag.slots().size() ? bag.at(place) : null;
+        if (item == null) {
+            return false;
+        }
+        boolean worn = place >= bag.backpackSize();
+        boolean kept = item.id().equals(named) && (!shifting || worn);
+        if (!kept && shifting && !worn) {
+            int slot = bag.wornPlace(item.slot());
+            var wearing = slot < 0 ? null : bag.at(slot);
+            kept = wearing != null && wearing.id().equals(named); // putting this on would take it off
+        }
+        if (kept) {
+            bag.say(settings.medallion().lockedWord(), game.getLogic().getFrame(), settings.lootDrops().noteFrames());
+        }
+        return kept;
     }
 
     /**
