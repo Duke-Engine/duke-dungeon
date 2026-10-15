@@ -388,8 +388,8 @@ class DungeonMonsterArtTest {
 
     /**
      * A hero flinches, but never over his own blows: the owner's playtest of 1.0.43, "the enemy's health goes down
-     * but the hero is stuck trembling". The client holds a flinch off while he swings, casts, works or has a target
-     * (E71); the files add at most once a second, and only at a heavy blow.
+     * but the hero is stuck trembling". Each names a Hurt clip, which his stagger plays (StaggerTest); the client's
+     * own flinch (E71) is held to a heavy blow at most once a second, for whatever else names one.
      */
     @Test
     void aHeroFlinchesOnlyAtAHeavyBlowAndNotEveryBlow() {

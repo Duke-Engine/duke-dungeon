@@ -1,5 +1,6 @@
 ; ---------------------------------------------------------------------------
-; How a fight FEELS. Drawing only: nothing here is read by the simulation.
+; How a fight FEELS. Drawing only, but for the Stagger block (and the hero thresholds it reads):
+; that one the simulation keeps.
 ;
 ; Three things carry it, each in its own place:
 ;   * the number and the flash on every hit -- HitNumbers (hud.duke), HitFeel (scene.duke);
@@ -199,9 +200,20 @@ Flinch
   ; When a creature that is hurt plays its Hurt clip. The client never plays it over a swing, a cast, its work or
   ; while it has a target (E71); this says at most once in Seconds, and with HeavyOnly only at a heavy blow -- a
   ; critical one or HitNumbers' BigAt and over. The owner's playtest of 1.0.43: a hero in a crowd "stuck
-  ; trembling from the incoming blows". Only the heroes name a Hurt clip; the monsters stay without one.
+  ; trembling from the incoming blows". No creature has one the client plays: the monsters name no Hurt,
+  ; and a hero's flinch is his stagger, below.
   Seconds = 1.0
   HeavyOnly = true
+End
+
+; A hero struck hard staggers -- the simulation's, not only the window's: a blow on him of his HeavyBlow's
+; MajorAt or more (after his armour; above) stuns him for Frames (the skill system's stun: his weapon's wind-up
+; starts over after it, its reload waits, no skill casts, his walk stops and an order given in it waits for its
+; end), his Hurt clip playing for exactly those frames; and none takes him again for ImmuneFrames after it ends,
+; so a crowd cannot hold him. 30 frames a second: 11 is 0.37s, 36 is 1.2s. Light blows never stagger.
+Stagger
+  Frames = 11
+  ImmuneFrames = 36
 End
 
 HitStop

@@ -80,6 +80,10 @@ Hero
     End,
     Recovery
     End,
+    ; Staggered by a heavy blow: a short stun with his flinch, then a while he cannot be -- the Stagger
+    ; block in world/feel.duke.
+    Staggering
+    End,
     ExperienceModule
       ExperienceValue = 0
       ExperienceRequired = [0, 0, 0]
@@ -146,8 +150,8 @@ Hero
   ; leaves at the start of his release -- which is why neither of them has to fit
   ; inside ReloadFrames the way the knight's chop does.
   Attack = Ranged_Magic_Shoot
-  ; His flinch, played only while he does nothing else, at most once a second and only at a heavy
-  ; blow (Flinch in world/feel.duke): in a crowd it never cuts his swing or a cast short.
+  ; His flinch: played only as he staggers at a heavy blow, for exactly its frames (Stagger in
+  ; world/feel.duke), when he cannot strike -- so it never covers a swing he really makes.
   Hurt = Hit_A
   Death = Death_A
   ; A cast on the move plays from his spine up, his legs running on.

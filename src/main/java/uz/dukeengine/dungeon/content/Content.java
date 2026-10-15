@@ -97,7 +97,8 @@ public final class Content {
                     ArrowUpdate.Data.class, FallingUpdate.Data.class, MendingUpdate.Data.class,
                     SummoningUpdate.Data.class, Swing.Data.class, GroundItem.Data.class,
                     uz.dukeengine.rpg.hero.FountainUpdate.Data.class,
-                    uz.dukeengine.rpg.mission.GateUpdate.Data.class))
+                    uz.dukeengine.rpg.mission.GateUpdate.Data.class,
+                    uz.dukeengine.dungeon.run.Staggering.Data.class))
             .flatMap(List::stream).toList();
 
     /** The record each block of a data file is, by the word it opens with: its own name, but for Object. */
@@ -121,7 +122,7 @@ public final class Content {
             named(uz.dukeengine.dungeon.story.Trigger.class), named(uz.dukeengine.dungeon.story.Cutscene.class),
             named(uz.dukeengine.dungeon.story.Merchant.class), named(uz.dukeengine.dungeon.story.Trade.class),
             named(uz.dukeengine.dungeon.story.GoldBurst.class),
-            named(HeavyBlow.class), named(CritBlow.class), named(uz.dukeengine.client3d.HitStop.class), named(uz.dukeengine.client3d.Flinch.class), named(BigDeath.class), named(uz.dukeengine.core.content.EffectList.class),
+            named(HeavyBlow.class), named(CritBlow.class), named(uz.dukeengine.client3d.HitStop.class), named(uz.dukeengine.client3d.Flinch.class), named(Stagger.class), named(BigDeath.class), named(uz.dukeengine.core.content.EffectList.class),
             named(uz.dukeengine.dungeon.story.Boss.class), named(uz.dukeengine.dungeon.story.Medallion.class),
             named(uz.dukeengine.dungeon.food.Food.class),
             named(uz.dukeengine.dungeon.loot.ItemBase.class), named(uz.dukeengine.dungeon.loot.Affix.class),
