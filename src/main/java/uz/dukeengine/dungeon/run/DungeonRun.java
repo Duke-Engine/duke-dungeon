@@ -127,6 +127,8 @@ public final class DungeonRun {
     private final DungeonSettings settings;
     /** Food and fire: the world's trees, bushes, wells and fires, and each hero's work at them. See {@link Camp}. */
     private final Camp camp;
+    /** The map's scenery a loaded save says was felled, taken away again as its floor is laid. */
+    private List<Integer> felled = List.of();
     private final LootTable drops;
 
     /** The players' seats, the first player's first: a game alone has that one. */
@@ -379,6 +381,7 @@ public final class DungeonRun {
         // and are not started again. A save from before quests were saved starts them, as a new run does.
         visited.clear();
         visited.addAll(save.places()); // the places found, as the save left them
+        felled = save.felled(); // and the trees felled, taken away again as the floor is laid
         visitedNow = List.copyOf(visited);
         if (save.quests() == null) {
             quests.reset();
@@ -479,7 +482,8 @@ public final class DungeonRun {
         }
         return SaveGame.of(floors.seed(), floors.stageName(), depth, seat.hero, seat.progress.getExperience(),
                 seat.learnt, seat.progress.getLoot(), quests.state(), script.state(), seat.gold)
-                .withMedallion(seat.souls, givenTo).withPlaces(visited);
+                .withMedallion(seat.souls, givenTo).withPlaces(visited)
+                .withFelled(lastLogic == null ? List.of() : lastLogic.getRemovedScenery());
     }
 
     /** Whoever the first player plays — the file's answer until somebody chooses. */
@@ -625,7 +629,10 @@ public final class DungeonRun {
             monster.addModule(new Bounty(monster, uz.dukeengine.rpg.hero.LevelBonus.levelOf(monster), this::pay));
         }
         peopleOn(game);
-        camp.lay(game.getLogic(), floors.stageName(), floors.seed(), zones(), dungeonPlayer.getIndex(), heroLevel());
+        var paint = floors.paint();
+        camp.lay(game.getLogic(), floors.stageName(), floors.seed(), zones(), dungeonPlayer.getIndex(), heroLevel(),
+                paint == null ? List.of() : paint.scenery().stream().map(piece -> piece.model()).toList(),
+                loading ? felled : List.of());
         if (loading && skippedTo.isBlank() && lastTowerFound() != null) {
             skippedTo = lastTowerFound(); // back from a save or a death: at the last tower he found, not the way in
         }
@@ -1767,20 +1774,25 @@ public final class DungeonRun {
      * The player right-clicked a thing to work -- a tree, a bush, a well, a fire -- and his hero goes to work it; or,
      * with no thing, pressed the build key: a fire at his feet from his wood. See {@link Camp}.
      */
-    public void work(DukeGame game, int playerIndex, ObjectId thing) {
+    public void work(DukeGame game, int playerIndex, ObjectId thing, uz.dukeengine.core.math.Coord3D place) {
         var seat = seatOf(playerIndex);
         var hero = seat == null || seat.heroId == null ? null : game.getLogic().findObject(seat.heroId);
         if (hero == null || hero.isEffectivelyDead()) {
             return;
         }
-        if (thing == null) {
+        if (thing == null && place == null) {
             camp.build(game.getLogic(), playerIndex, hero, seat.progress.getLoot());
             return;
         }
         seat.talkingTo = null;
         orders.attackMove(playerIndex, null);
         uz.dukeengine.combat.module.Errand.giveUpAll(hero);
-        camp.order(game.getLogic(), playerIndex, hero, thing);
+        camp.order(game.getLogic(), playerIndex, hero, thing, place);
+    }
+
+    /** What a click on the ground at {@code place} gives: the chop's word over a tree that may be felled (E66). */
+    public String groundWord(DukeGame game, uz.dukeengine.core.math.Coord3D place) {
+        return game.getLogic() == null ? null : camp.wordAt(game.getLogic(), place);
     }
 
     /** Whether this player's hero is at work: chopping, picking, filling or cooking. */
@@ -1956,7 +1968,6 @@ public final class DungeonRun {
         var heroes = new ArrayList<GameObject>();
         for (var seat : seats) {
             var hero = seat.heroId == null ? null : game.getLogic().findObject(seat.heroId);
-            Belt.digest(hero);
             camp.tick(game.getLogic(), seat.player.getIndex(), hero, seat.progress.getLoot());
             heroes.add(hero);
         }

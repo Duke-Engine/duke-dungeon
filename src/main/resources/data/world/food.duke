@@ -31,15 +31,51 @@ Food
     "qovurilgan_gosht = xom_gosht",
     "choy = suv",
   ]
-  ; A thing, what it gives and how many, the frames it takes, the frames it
+  ; A thing -- a template, or the model of a piece of the map's scenery, felled
+  ; (E66) -- what it gives and how many, the frames it takes, the frames it
   ; takes to grow back (0: never used up), the word a click on it gives (its
   ; cursor's name), and what stands in its place meanwhile (- for nothing).
   Gathers = [
-    "ChoppableTree otin 3 90 18000 Chop Stump",
+    "models/tiles/forest/tree.gltf otin 3 90 18000 Chop Stump",
+    "models/tiles/forest/tree_round.gltf otin 3 90 18000 Chop Stump",
+    "models/tiles/forest/tree_twisted.gltf otin 3 90 18000 Chop Stump",
+    "models/tiles/forest/tree_stunted.gltf otin 3 90 18000 Chop Stump",
+    "models/tiles/forest/pine.gltf otin 3 90 18000 Chop Stump",
+    "models/tiles/forest/pine_tall.gltf otin 3 90 18000 Chop Stump",
+    "models/inuciian/nature/pine_dark.glb otin 3 90 18000 Chop Stump",
+    "models/inuciian/nature/dead_tree.glb otin 2 90 18000 Chop Stump",
+    "models/inuciian/nature/dead_tree_bent.glb otin 2 90 18000 Chop Stump",
+    "models/inuciian/nature/dead_tree_tall.glb otin 2 90 18000 Chop Stump",
     "BerryBush rezavor 2 45 5400 Harvest -",
     "PumpkinPatch qovoq 1 45 7200 Harvest -",
     "Well suv 1 45 0 Fill -",
   ]
+  ; The maps whose scenery trees are felled: those streamed in chunks, where a
+  ; tree felled redraws its chunk (a map built whole would redraw all of it).
+  SceneryMaps = [world]
+  ; The clip a hero loops at each work (E67), while he stands at it: the
+  ; Universal Animation Library's, which no chop has -- Interact for it too.
+  Clips = [
+    "Chop Interact",
+    "Harvest Interact",
+    "Fill Interact",
+    "Cook Fixing_Kneeling",
+  ]
+  ; What the buff row shows a meal as (E68): its picture and name, and the word
+  ; after its health a second.
+  Skills = [
+    Skill
+      Key = Z
+      Effect = HEAL
+      Name = Taom
+      Icon = icons/items/loot/meat_roast_common.png
+      Blurb = Bir necha soniya jon tiklanadi.
+      MaxRank = 1
+    End
+  ]
+  HealthRegenWord = Jon/s
+  ; The placed loop every fire crackles with.
+  Crackle = fire.crackle
   ; What an animal leaves where it falls: the Potion, how many.
   Hunts = [
     "Deer xom_gosht 2",
@@ -64,15 +100,6 @@ Food
     "world Campfire Yashil_dala 1 4 10",
     "world Campfire Qumli_dasht 1 4 10",
     "world Campfire Toshli_adir 1 4 10",
-    "world ChoppableTree Qorong'i_o'rmon 30 4 40",
-    "world ChoppableTree Olmazor 4 8 14",
-    "world ChoppableTree Bog'iston 4 8 14",
-    "world ChoppableTree Qoratepa 4 8 14",
-    "world ChoppableTree Tolzor 4 8 14",
-    "world ChoppableTree Yangiobod 4 8 14",
-    "world ChoppableTree Yashil_dala 6 18 30",
-    "world ChoppableTree Eski_ibodatxona 4 6 12",
-    "world ChoppableTree Tosh_doira 3 6 12",
     "world BerryBush Olmazor 3 5 11",
     "world BerryBush Bog'iston 3 5 11",
     "world BerryBush Qoratepa 3 5 11",
@@ -100,26 +127,7 @@ End
 ; (Weight 0). Each has one look, written outside any theme.
 ; ---------------------------------------------------------------------------
 
-; A tree to chop: the forest's own tree as the scenery stands it, but a thing.
-Prop
-  Name = ChoppableTree
-  DisplayName = Daraxt
-  KindOf = [STRUCTURE, SELECTABLE]
-  VisionRange = 0
-  Geometry = Cylinder
-    Radius = 2
-    Height = 20
-  End
-  Weight = 0
-End
-
-ThemeMonster
-  Name = ChoppableTree
-  Model = models/tiles/forest/tree.gltf
-  ModelScale = 3.4
-End
-
-; What is left of it until it grows back: in nobody's way, nothing to work.
+; What is left of a tree felled until it grows back: in nobody's way, nothing to work.
 Prop
   Name = Stump
   DisplayName = "To'nka"
@@ -376,6 +384,16 @@ End
 ; ---------------------------------------------------------------------------
 ; What work sounds like, each BeatFrames: the game's own clips (CC0).
 ; ---------------------------------------------------------------------------
+
+; A fire's crackle, placed where it burns and looped (PagDev's "Fireplace Sound
+; loop", CC0, made mono).
+Sound
+  Name = fire.crackle
+  Channel = Ambience
+  Positional = Yes
+  Gain = 0.7
+  Files = [audio/ambience/campfire_loop.ogg]
+End
 
 Sound
   Name = work.chop

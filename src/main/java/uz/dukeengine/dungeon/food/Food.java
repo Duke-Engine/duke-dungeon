@@ -20,17 +20,27 @@ import java.util.List;
  * @param noWoodWord   said when he has too little wood; {@code %d} what a fire costs
  * @param nothingWord  said at a fire when he has nothing a recipe takes
  * @param recipes      best first: a click on a fire cooks the first he has everything for
- * @param gathers      what is worked: a thing, what it gives, how long, when it grows back
+ * @param gathers      what is worked: a thing -- a template, or a scenery model -- what it gives, how long, when it
+ *                     grows back
+ * @param sceneryMaps  the maps whose scenery is worked (felled): those streamed in chunks, so a tree felled redraws
+ *                     its chunk and not the whole ground
+ * @param clips        the clip a hero loops while he works, by the work's word: {@code Chop Interact}
+ * @param skills       what the buff row shows a meal as: a {@code HEAL} skill's name and picture
+ * @param healthRegenWord the buff row's word after a meal's health a second
+ * @param crackle      the placed loop every fire crackles with; blank for none
  * @param hunts        what an animal's death leaves
  * @param forage       where the world's things stand
  */
 public record Food(int fireRadius, int buildWood, String wood, String campfire, int fireFrames, int cookFrames,
         int beatFrames, int reach, String buildKey, String buildWord, String noWoodWord, String nothingWord,
-        List<Recipe> recipes, List<Gather> gathers, List<Hunt> hunts, List<Forage> forage) {
+        List<Recipe> recipes, List<Gather> gathers, List<Hunt> hunts, List<Forage> forage, List<String> sceneryMaps,
+        List<String> clips, List<uz.dukeengine.rpg.skill.Skill> skills, String healthRegenWord, String crackle) {
 
     public static final Food DEFAULTS = new Food(30, 4, "", "", 5400, 105, 30, 10, "G", "", "", "", List.of(),
-            List.of(), List.of(), List.of());
+            List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), "", "");
 
+    /** The word a click on a tree of the map's scenery gives. */
+    public static final String CHOP = "Chop";
     /** The word a click on a fire gives: the cook's. */
     public static final String COOK = "Cook";
     /** Every word a click on a thing to work may give, each the name of its cursor. */
@@ -41,6 +51,22 @@ public record Food(int fireRadius, int buildWood, String wood, String campfire, 
         gathers = gathers == null ? List.of() : List.copyOf(gathers);
         hunts = hunts == null ? List.of() : List.copyOf(hunts);
         forage = forage == null ? List.of() : List.copyOf(forage);
+        sceneryMaps = sceneryMaps == null ? List.of() : List.copyOf(sceneryMaps);
+        clips = clips == null ? List.of() : List.copyOf(clips);
+        skills = skills == null ? List.of() : List.copyOf(skills);
+        healthRegenWord = healthRegenWord == null ? "" : healthRegenWord;
+        crackle = crackle == null ? "" : crackle;
+    }
+
+    /** The clip a hero loops at the work of {@code word}, or null for none named. */
+    public String clipOf(String word) {
+        for (var line : clips) {
+            var w = line.strip().split("\\s+");
+            if (w.length == 2 && w[0].equals(word)) {
+                return w[1];
+            }
+        }
+        return null;
     }
 
     /** What working {@code template} is, or null for a thing nobody works. */
@@ -72,7 +98,7 @@ public record Food(int fireRadius, int buildWood, String wood, String campfire, 
     }
 
     /**
-     * A thing worked -- written {@code ChoppableTree otin 3 90 18000 Chop Stump}: its template, the Potion it gives and
+     * A thing worked -- written {@code BerryBush rezavor 2 45 5400 Harvest -}: its template (or a scenery model), the Potion it gives and
      * how many, the frames it takes, the frames it takes to grow back (0: it is never used up), the word a click on it
      * gives, and what stands in its place meanwhile ({@code -} for nothing).
      */

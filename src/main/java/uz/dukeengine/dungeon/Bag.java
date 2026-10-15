@@ -109,9 +109,13 @@ final class Bag {
     static BuffScreen buffs(DungeonSettings settings) {
         var hud = settings.hud();
         var drops = settings.lootDrops();
-        return new BuffScreen(settings.skills(), settings.effects(), settings.menu(), settings.panelLook(),
+        // A meal's HEAL buff is pictured by the Food block's own skill, put before the game's (E68).
+        var skills = new java.util.ArrayList<>(settings.food().skills());
+        skills.addAll(settings.skills());
+        return new BuffScreen(skills, settings.effects(), settings.menu(), settings.panelLook(),
                 hud.buffIcon(), new BuffScreen.Words(hud.attackWord(), drops.manaRegenWord(), hud.lifestealWord(),
-                        drops.attackSpeedWord(), hud.secondsWord(), settings.medallion().soulsWord()));
+                        drops.attackSpeedWord(), hud.secondsWord(), settings.medallion().soulsWord(),
+                        settings.food().healthRegenWord()));
     }
 
     /** The bag's words: its heading, its hints, and the order words a click on the floor is answered as. */
@@ -146,6 +150,8 @@ final class Bag {
         // And a tree, a bush, a well or a fire is worked: its word, and the pointer of that name (food-and-fire.md).
         var food = settings.food();
         match.game().addContextOrder((selection, target) -> food.wordOn(target.getTemplate().name()));
+        // And a tree of the map's own scenery is felled: a click on the ground under it (E66).
+        match.game().groundOrder((selection, place) -> match.run().groundWord(match.game(), place));
         DialogueScreen.show(match);
     }
 
