@@ -17,25 +17,27 @@ import java.util.Map;
  * @param modernWord      the modern scheme's word
  * @param classicWord     the classic scheme's
  * @param modernSkillKeys each {@code "Slot = Letter"}: the skill on Key Slot is pressed on Letter in the modern scheme
+ * @param dodgeWord       what Space does in the modern scheme, on the keys page
  */
 public record Controls(String scheme, String schemeWord, String modernWord, String classicWord,
-        List<String> modernSkillKeys) {
+        List<String> modernSkillKeys, String dodgeWord) {
 
     /** The two schemes. */
     public enum Scheme {
         MODERN, CLASSIC
     }
 
-    /** What a block leaves out: classic, the four on Q E R F, and English. */
+    /** What a block leaves out: classic (a world with no Controls block, a test's), the four on Q E R F, English. */
     public static final Controls DEFAULTS = new Controls("CLASSIC", "Controls", "Modern (WASD)", "Classic (mouse)",
-            List.of("Q = Q", "W = E", "E = R", "R = F"));
+            List.of("Q = Q", "W = E", "E = R", "R = F"), "Dodge");
 
-    /** Where the player's own choice is kept, beside the hero he last asked an address for (PartyFront). */
-    static final String REMEMBERED = "controls";
+    /** The Settings row's key in the player's settings file (E79): 0 modern, 1 classic, as the row lists them. */
+    public static final String ROW = "game.controls";
 
     public Controls {
         scheme = scheme == null || scheme.isBlank() ? "CLASSIC" : scheme.strip().toUpperCase(java.util.Locale.ROOT);
         modernSkillKeys = modernSkillKeys == null ? List.of() : List.copyOf(modernSkillKeys);
+        dodgeWord = dodgeWord == null ? "" : dodgeWord;
     }
 
     /** The file's scheme. */
@@ -62,19 +64,34 @@ public record Controls(String scheme, String schemeWord, String modernWord, Stri
         return played == Scheme.MODERN ? modernKeys().getOrDefault(Character.toUpperCase(slot), slot) : slot;
     }
 
+    /** The Settings row's choices, in its order: modern, then classic. */
+    public List<String> choices() {
+        return List.of(modernWord, classicWord);
+    }
+
+    /** A row's index as the scheme. */
+    public static Scheme ofChoice(int choice) {
+        return choice == 1 ? Scheme.CLASSIC : Scheme.MODERN;
+    }
+
+    /** And the scheme as the row's index. */
+    public static int choiceOf(Scheme scheme) {
+        return scheme == Scheme.CLASSIC ? 1 : 0;
+    }
+
     /**
-     * The player's own choice, once he has made one, else the file's. Kept in the user's preferences until the
-     * engine's Settings screen can hold a game's row (E79); {@code -Dlasthero.controls=modern} beats both.
+     * The player's own choice on Settings (E79's row, read at launch), else the file's. {@code -Dlasthero.controls}
+     * beats it, for tests and playtests only.
      */
     public Scheme remembered() {
         var asked = System.getProperty("lasthero.controls");
-        if (asked == null) {
-            asked = java.util.prefs.Preferences.userNodeForPackage(Controls.class).get(REMEMBERED, scheme);
+        if (asked != null) {
+            try {
+                return Scheme.valueOf(asked.strip().toUpperCase(java.util.Locale.ROOT));
+            } catch (IllegalArgumentException unknown) {
+                return fileScheme();
+            }
         }
-        try {
-            return Scheme.valueOf(asked.strip().toUpperCase(java.util.Locale.ROOT));
-        } catch (IllegalArgumentException unknown) {
-            return fileScheme();
-        }
+        return ofChoice(uz.dukeengine.client3d.Shell.setting(ROW, choiceOf(fileScheme())));
     }
 }
