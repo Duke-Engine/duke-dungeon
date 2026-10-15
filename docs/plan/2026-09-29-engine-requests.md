@@ -1162,3 +1162,12 @@ checksum), the game's input taken while it shows unless the game says otherwise.
 the client reports it gone after its frames.
 
 **Landed** as fa3e72a0: `DukeGame.titleCard(text, subtext, fadeIn, hold, fadeOut[, takesInput])`, `titleCardShowing()`, `titleCardGone(card)`. The story's `TITLE` act shows a `Title` block: each Act 1 chapter's name as it opens, and "1-qism tugadi" at its end.
+
+## E49 — A credits roll (2026-10-15, small)
+
+Act 2 ends the game (`docs/plan/2026-10-15-act2.md`): after "Oxiri" the credits. Today they are five title cards in a
+row (E42), timed by the story's `AFTER` triggers, each replacing the last. Asked: `DukeGame.creditsRoll(lines,
+seconds)` — the lines (a heading, then names) scrolling up over a darkened screen in the shell's font, drawn only,
+skippable with Esc or a click, and a `creditsGone()` the game can ask for (or a callback) so it goes back to the front
+menu when the roll ends rather than after a fixed time. Done when a test rolls ten lines over two seconds and the
+client reports it gone.
