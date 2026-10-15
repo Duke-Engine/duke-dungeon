@@ -1105,6 +1105,12 @@ public final class Main {
             keys.on((char) ('0' + key), rules.beltKeyWord().formatted(key), game -> game.postCommand(
                     PartyOrders.of(new uz.dukeengine.dungeon.run.Drink(game.getLocalPlayerIndex(), belt))));
         }
+        // A fire built at his feet from his wood, as this game's order (docs/plan/2026-10-15-food-and-fire.md).
+        var food = settings.food();
+        if (!food.buildKey().isBlank()) {
+            keys.on(food.buildKey().charAt(0), food.buildWord(), game -> game.postCommand(
+                    PartyOrders.of(new uz.dukeengine.dungeon.run.Work(game.getLocalPlayerIndex(), null))));
+        }
         // Spending a level on a slot. A click on the badge rather than a letter,
         // so it comes through a door of its own -- and it is a COMMAND like every
         // other decision, settled on a frame boundary where the rules live.

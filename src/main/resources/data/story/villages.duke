@@ -123,8 +123,8 @@ End
 Merchant
   Name = Pedlar
   Stock = [
-    hayot_shishasi 22 6,
-    mana_shishasi 22 6,
+    non 14 6,
+    suv 6 6,
     Ring 55 1,
   ]
 End

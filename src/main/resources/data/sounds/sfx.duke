@@ -2944,6 +2944,15 @@ Sound
   Files = [audio/ui/drink_1.ogg, audio/ui/drink_2.ogg]
 End
 
+; A meal eaten from the belt (data/world/food.duke): the draught's gulp, softer.
+Sound
+  Name = eat
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.5
+  Files = [audio/ui/drink_2.ogg, audio/ui/drink_1.ogg]
+End
+
 Sound
   Name = loot
   Channel = Effects

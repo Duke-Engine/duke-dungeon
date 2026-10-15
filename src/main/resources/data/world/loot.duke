@@ -4,8 +4,8 @@
 ; A thing a monster drops, a map's treasure holds or the merchant sells is made
 ; here: a base (what it is: a sword, mail, a ring), a rarity (common, magic, rare,
 ; epic), and for magic and rare things affixes rolled by its item level. An epic
-; thing is a Unique, written by hand. A potion is a stack in the backpack, drunk
-; from the belt with keys 1-4.
+; thing is a Unique, written by hand. Food and drink are stacks in the backpack,
+; eaten from the belt with keys 1-4.
 ;
 ; Every figure is the engine's: a base moves its slot's figure (ATTACK and ARMOUR
 ; in percent, HEALTH and MANA flat, ATTRIBUTE whole points), and every affix is
@@ -39,7 +39,7 @@ ItemRules
   ; Who guards a camp of the open world: each drops as a boss does -- always, BossDrops things,
   ; BossLevel above its own -- wherever it stands.
   CampBosses = [GoblinChief, Dragon, GiantKing, BogHorror]
-  ; Of an ordinary or elite drop, how many in a hundred are a potion.
+  ; Of an ordinary or elite drop, how many in a hundred are food or drink.
   PotionPercent = 35
   ; A boss drops two things, a level above its own.
   BossDrops = 2
@@ -60,9 +60,9 @@ ItemRules
   LevelWord = "%d-daraja"
   CompareWord = Kiyilgan bilan solishtiring
   CountWord = "Soni: %d"
-  DrinkHint = "1-4: ichish"
+  DrinkHint = "1-4: yeyish, ichish"
   ; What each belt key does, on the Settings screen's list of keys; %d the key.
-  BeltKeyWord = "Belbog'dan ichish: %d"
+  BeltKeyWord = "Belbog'dan yeyish: %d"
   ; A map's placed thing called this is a treasure: a roll at the floor's level.
   Treasure = Xazina
   ; A card's colours: the base figure, an affix, a unique's story, and a difference
@@ -713,8 +713,137 @@ Unique
 End
 
 ; ---------------------------------------------------------------------------
-; Potions: Heal and Mana are percent of the most he holds. Stack is how many make
-; one stack in the backpack; Level the item level it drops from.
+; Food and drink (docs/plan/2026-10-15-food-and-fire.md): eaten from the belt,
+; keys 1-4. Heal and Mana are percent of the most he holds, given back over
+; Frames (30 a second) as a buff on his skill book. Stack is how many make one
+; stack in the backpack; Level the item level it drops from; Weight how often a
+; monster's drop is it (0: never). What neither heals nor fills -- wood -- stacks
+; in the bag and is never on the belt.
+; ---------------------------------------------------------------------------
+
+Potion
+  Name = xom_gosht
+  DisplayName = "Xom go'sht"
+  Icon = meat_raw
+  Heal = 8
+  Frames = 150
+  Level = 1
+  Price = 4
+  Weight = 0
+  Stack = 10
+End
+
+Potion
+  Name = rezavor
+  DisplayName = Yovvoyi rezavor
+  Icon = berries
+  Heal = 10
+  Frames = 150
+  Level = 1
+  Price = 5
+  Weight = 0
+  Stack = 10
+End
+
+Potion
+  Name = qovoq
+  DisplayName = Qovoq
+  Icon = pumpkin
+  Heal = 10
+  Frames = 150
+  Level = 1
+  Price = 5
+  Weight = 0
+  Stack = 10
+End
+
+Potion
+  Name = non
+  DisplayName = Non
+  Icon = bread
+  Heal = 20
+  Frames = 150
+  Level = 1
+  Price = 12
+  Weight = 30
+  Stack = 10
+End
+
+Potion
+  Name = qovurilgan_gosht
+  DisplayName = "Qovurilgan go'sht"
+  Icon = meat_roast
+  Heal = 35
+  Frames = 120
+  Level = 1
+  Price = 20
+  Weight = 25
+  Stack = 10
+End
+
+Potion
+  Name = shorva
+  DisplayName = "Sho'rva"
+  Icon = stew
+  Heal = 60
+  Frames = 90
+  Level = 5
+  Price = 40
+  Weight = 8
+  Stack = 5
+End
+
+Potion
+  Name = suv
+  DisplayName = Suv
+  Icon = water
+  Mana = 25
+  Frames = 150
+  Level = 1
+  Price = 5
+  Weight = 30
+  Stack = 10
+End
+
+Potion
+  Name = choy
+  DisplayName = Choy
+  Icon = tea
+  Mana = 45
+  Frames = 120
+  Level = 1
+  Price = 15
+  Weight = 12
+  Stack = 10
+End
+
+Potion
+  Name = kompot
+  DisplayName = Kompot
+  Icon = kompot
+  Heal = 15
+  Mana = 40
+  Frames = 90
+  Level = 3
+  Price = 25
+  Weight = 5
+  Stack = 5
+End
+
+Potion
+  Name = otin
+  DisplayName = "O'tin"
+  Icon = wood
+  Level = 1
+  Price = 2
+  Weight = 0
+  Stack = 20
+End
+
+; ---------------------------------------------------------------------------
+; The old potions, retired by food and drink (docs/plan/2026-10-15-food-and-fire.md):
+; Weight 0, so nothing drops them and no merchant sells them, but a save holding
+; them loads and they still work from the belt, all at once (no Frames).
 ; ---------------------------------------------------------------------------
 
 Potion
@@ -724,7 +853,7 @@ Potion
   Heal = 35
   Level = 1
   Price = 20
-  Weight = 40
+  Weight = 0
   Stack = 10
 End
 
@@ -735,7 +864,7 @@ Potion
   Mana = 40
   Level = 1
   Price = 20
-  Weight = 30
+  Weight = 0
   Stack = 10
 End
 
@@ -747,7 +876,7 @@ Potion
   Mana = 40
   Level = 5
   Price = 60
-  Weight = 10
+  Weight = 0
   Stack = 5
 End
 
@@ -758,7 +887,7 @@ Potion
   Heal = 65
   Level = 7
   Price = 45
-  Weight = 20
+  Weight = 0
   Stack = 10
 End
 

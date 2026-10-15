@@ -1,0 +1,8 @@
+Food and fire models of the open world, converted by art/food/export_food.py (Blender 5.2). All CC0 1.0
+(https://creativecommons.org/publicdomain/zero/1.0/), downloaded from each model's poly.pizza page:
+
+deer.glb          Deer, Quaternius               https://poly.pizza/m/T6Cs7tmMHJ
+boar.glb          Pig, Quaternius (a boar's stand-in, tinted by the game)  https://poly.pizza/m/u35l6uP5vj
+campfire.glb      Campfire, Kenney               https://poly.pizza/m/i6UFAevfcu
+berry_bush.glb    Bush with Berries, Quaternius  https://poly.pizza/m/TSbIxkDtxF
+pumpkin_patch.glb Pumpkin, Quaternius            https://poly.pizza/m/bvLvqnU1jX

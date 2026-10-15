@@ -135,6 +135,7 @@ public final class DungeonSettings {
     private uz.dukeengine.client3d.HitStop hitStop = new uz.dukeengine.client3d.HitStop(0f, 1f, true, false);
     private final List<uz.dukeengine.core.content.EffectList> effectLists = new java.util.ArrayList<>();
     private uz.dukeengine.dungeon.story.Medallion medallion = uz.dukeengine.dungeon.story.Medallion.DEFAULTS;
+    private uz.dukeengine.dungeon.food.Food food = uz.dukeengine.dungeon.food.Food.DEFAULTS;
     private final List<uz.dukeengine.dungeon.story.Campaign> campaigns = new java.util.ArrayList<>();
     private final List<uz.dukeengine.dungeon.story.Place> places = new java.util.ArrayList<>();
     private uz.dukeengine.dungeon.story.Credits credits = uz.dukeengine.dungeon.story.Credits.DEFAULTS;
@@ -301,6 +302,11 @@ public final class DungeonSettings {
     /** What a kill that pays looks like: the coins out of the corpse and the gold taken floating over it. */
     public uz.dukeengine.dungeon.story.GoldBurst goldBurst() {
         return goldBurst;
+    }
+
+    /** Food and fire: see {@code docs/plan/2026-10-15-food-and-fire.md}. */
+    public uz.dukeengine.dungeon.food.Food food() {
+        return food;
     }
 
     /** The queen's medallion and its passive: see {@code docs/plan/2026-10-09-medallion.md}. */
@@ -568,6 +574,7 @@ public final class DungeonSettings {
                 case uz.dukeengine.client3d.HitStop block -> hitStop = once(block, once);
                 case uz.dukeengine.core.content.EffectList list -> effectLists.add(list);
                 case uz.dukeengine.dungeon.story.Medallion block -> medallion = once(block, once);
+                case uz.dukeengine.dungeon.food.Food block -> food = once(block, once);
                 case uz.dukeengine.dungeon.story.Campaign block -> campaigns.add(block);
                 case uz.dukeengine.dungeon.story.Place place -> places.add(place);
                 case uz.dukeengine.dungeon.story.Credits block -> credits = once(block, once);
@@ -864,6 +871,7 @@ public final class DungeonSettings {
             require(!potion.name().contains("-") && sayable(potion.displayName()) && potion.stack() >= 1,
                     "Potion " + potion.name() + ": a name with no '-', and a Stack of one at least");
         }
+        validateFood();
         var item = itemRules;
         for (var list : java.util.List.of(item.rarities(), item.colours(), item.normal(), item.elite(), item.boss(),
                 item.chest(), item.shop(), item.prices())) {
@@ -878,6 +886,42 @@ public final class DungeonSettings {
         }
         for (var guard : item.campBosses()) {
             require(monster(guard) != null, "ItemRules' CampBosses name " + guard + ", and no Monster block describes it");
+        }
+    }
+
+    /** Food and fire: every thing it names is one, every word a cursor's. See docs/plan/2026-10-15-food-and-fire.md. */
+    private void validateFood() {
+        var named = new java.util.HashSet<String>();
+        potions.forEach(potion -> named.add(potion.name()));
+        var things = new java.util.HashSet<String>();
+        props.forEach(prop -> things.add(prop.name()));
+        monsters.forEach(monster -> things.add(monster.name()));
+        java.util.function.Predicate<String> thing = things::contains;
+        if (!food.wood().isBlank()) {
+            require(named.contains(food.wood()), "Food: Wood " + food.wood() + " is no Potion");
+            require(thing.test(food.campfire()), "Food: Campfire " + food.campfire() + " is no Prop");
+            require(food.buildKey().length() == 1 && food.fireRadius() > 0 && food.buildWood() >= 0
+                    && food.cookFrames() >= 1 && food.beatFrames() >= 1,
+                    "Food: BuildKey one letter, a FireRadius, and CookFrames and BeatFrames of one at least");
+        }
+        for (var recipe : food.recipes()) {
+            require(named.contains(recipe.makes()) && named.containsAll(recipe.from()),
+                    "Food: the recipe for " + recipe.makes() + " names a Potion there is not");
+        }
+        for (var gather : food.gathers()) {
+            require(thing.test(gather.thing()) && named.contains(gather.item()) && gather.count() >= 1
+                    && gather.frames() >= 1 && (gather.leaves().isEmpty() || thing.test(gather.leaves())),
+                    "Food: working " + gather.thing() + " needs a Prop, a Potion, a count and frames");
+            require(uz.dukeengine.dungeon.food.Food.WORDS.contains(gather.word()),
+                    "Food: " + gather.word() + " is not a word of work " + uz.dukeengine.dungeon.food.Food.WORDS);
+        }
+        for (var hunt : food.hunts()) {
+            require(monster(hunt.animal()) != null && named.contains(hunt.item()) && hunt.count() >= 1,
+                    "Food: hunting " + hunt.animal() + " needs a Monster and a Potion");
+        }
+        for (var place : food.forage()) {
+            require(thing.test(place.thing()) && place.count() >= 0 && place.to() >= place.from(),
+                    "Food: Forage places " + place.thing() + ", and nothing is called that");
         }
     }
 
