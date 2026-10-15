@@ -119,7 +119,7 @@ class KampirHutTest {
             assertNotNull(story.npc(who), "no Npc block for " + who);
         }
         assertEquals(3, story.conversation(story.npc("BabaYaga").talk()).lines().size());
-        assertEquals(1, story.conversation(story.npc("Damsel").talk()).lines().size());
+        assertEquals(2, story.conversation(story.npc("Damsel").talk()).lines().size(), "her ask, and where the key is (Act 2)");
         assertEquals("Yalmog'iz kampir", story.speaker("BabaYaga").displayName());
 
         var models = stage.paint().scenery().stream().map(piece -> piece.model()).distinct().toList();

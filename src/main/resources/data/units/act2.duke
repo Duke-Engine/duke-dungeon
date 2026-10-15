@@ -1,0 +1,84 @@
+; ---------------------------------------------------------------------------
+; Act 2's people of the capital — see docs/plan/2026-10-15-act2.md and data/story/act2.duke.
+; Three townsfolk who tell the heroine what the city says of the queen. STAND-IN names and
+; looks: the KayKit adventurers (CC0) tinted apart from Act 1's people. Never drawn into a floor.
+; ---------------------------------------------------------------------------
+
+Monster
+  Name = Baker
+  DisplayName = "Novvoy Karim"
+  KindOf = [INFANTRY, SELECTABLE]
+  Geometry = Cylinder
+    Radius = 4
+    Height = 12
+  End
+  VisionRange = 0
+  Modules = [
+    MoveUpdate
+      Speed = 10
+      TurnRate = 0
+    End
+  ]
+  MinDepth = 99
+  Weight = 0
+  Colour = 0xD8B890
+  Scale = 1.0
+  Model = models/heroes/knight.glb
+  Tint = 0xD8B890
+  ModelScale = 4.72
+  Facing = 90
+  Animations = Humanoid
+End
+
+Monster
+  Name = Guard
+  DisplayName = "Qorovul Jasur"
+  KindOf = [INFANTRY, SELECTABLE]
+  Geometry = Cylinder
+    Radius = 4
+    Height = 12
+  End
+  VisionRange = 0
+  Modules = [
+    MoveUpdate
+      Speed = 10
+      TurnRate = 0
+    End
+  ]
+  MinDepth = 99
+  Weight = 0
+  Colour = 0x6878A0
+  Scale = 1.0
+  Model = models/heroes/knight.glb
+  Tint = 0x6878A0
+  ModelScale = 4.72
+  Facing = 90
+  Animations = Humanoid
+End
+
+Monster
+  Name = Elder
+  DisplayName = "Oqsoqol Hamid"
+  KindOf = [INFANTRY, SELECTABLE]
+  Geometry = Cylinder
+    Radius = 4
+    Height = 12
+  End
+  VisionRange = 0
+  Modules = [
+    MoveUpdate
+      Speed = 10
+      TurnRate = 0
+    End
+  ]
+  MinDepth = 99
+  Weight = 0
+  Colour = 0xB8B0A8
+  Scale = 1.0
+  Model = models/heroes/mage.glb
+  Tint = 0xB8B0A8
+  ModelScale = 4.6
+  Facing = 90
+  Animations = Humanoid
+End
+
