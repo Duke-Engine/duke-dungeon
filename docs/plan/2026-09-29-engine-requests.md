@@ -52,6 +52,13 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E36 | scenery that blocks along its length, turned with its facing (castle walls) | landed, 5971fa0b; every castle wall is a `WxD` box, the qasr courtyard is entered only by its gate |
 | E37 | placing one piece on the grid in the editor — the plugin's, done in duke-plugin | plugin |
 | E38 | a map that starts explored: its ground seen from the first frame, its creatures only in sight | landed, 7f17f626 (with E34–E36); the open world begins seen, the descent black |
+| E39 | particles that bounce, fly home and turn over (the kill's coins) | landed, 946409ed |
+| E40 | a creature moved by the story over frames (the landing, the knock-back) | waiting (small) |
+| E41 | a cutscene camera that turns, tilts and zooms, eased | waiting (small) |
+| E42 | a title card | waiting (small) |
+| E46 | the game's keys in Settings | landed, 9ce15e4e |
+| E47 | a hero's whole figures in one place | landed, 9ce15e4e |
+| E48 | a key's code and name for a game's canvas | landed, 9ce15e4e |
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
 game builds against the local engine. E12–E15 reached it together at 668045f0 (their pull requests merged as
