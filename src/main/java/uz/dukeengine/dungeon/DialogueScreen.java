@@ -24,10 +24,7 @@ import uz.dukeengine.dungeon.story.Speaker;
  */
 final class DialogueScreen implements Painter, CanvasInput {
 
-    /** The keys it answers, by the keyboard's scan code ({@code com.jme3.input.KeyInput}'s). */
-    static final int ESCAPE = 1;
-    static final int ENTER = 28;
-    static final int SPACE = 57;
+    /** The one key it answers the engine names none for: Enter on the number pad, by its scan code. */
     static final int NUMPAD_ENTER = 156;
 
     /** The match now being played, told by {@link Bag#show}: this one, or a party's that replaces it. */

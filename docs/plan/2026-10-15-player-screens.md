@@ -22,13 +22,16 @@ in a block that already owned it. Item tooltips that compare with the worn one a
 - **Key hints** (**decided**): a small row at the left over the panel — a key cap and a word each: `C Qahramon`,
   `L Topshiriqlar`, `M Xarita`, `J Missiyalar` (the tracker's `FoldKey` with the `TrackerWord`). Drawn whenever no
   screen is open in play.
-- **No Settings key list.** The game owns none (the engine's Settings screen lists no keys); the hints are the
-  list for now. Asked as E46.
+- **The Settings key list** (E46): the engine's Settings has a read-only *Tugmalar* list. The game says its letters
+  there in its own words — C, L, M by the screens' titles, J by `TrackerWord`, F A S D by the Hud's order words,
+  each skill by its name — and `data/world/menu.duke` gives Uzbek for the heading and every client control
+  (*Pauza*, *Hammasini tanlash*, *Kamera yuqoriga* ...).
 
 ## The character sheet (C)
 
 Read from `DungeonRun.getSheet()` — a `run.Sheet` worked out on the simulation's thread each frame from the same
-sums his panel and his body use (`HeroProgress.figuresOf`, `HeroStatus.armourOf`), as the target frame is.
+sums his panel and his body use (`HeroProgress.figuresOf`, `HeroStatus.armourOf`, and E47's
+`HeroProgress.sheetOf` for his blows, health and mana a second and his lifesteal), as the target frame is.
 
 - **Left:** his live portrait (`Canvas.drawPortrait`, E26's), over the first letter of his name; his name, his title,
   his level (`7-daraja`), an experience bar (`Tajriba 120 / 300`), his gold (`Oltin`), and his souls (`Jonlar`) only
@@ -68,9 +71,8 @@ Read from `DungeonRun.questsNow()` — the `QuestLog.State` as the last frame le
   him; and his arrow, the way he faces.
 - **Moving it:** the wheel zooms about the pointer, from the whole map to 16 times closer; a left drag pans; the map
   never leaves the screen. Opened by its key it fits the window; from the log, on the target.
-- **Places found are not saved** (ponytail): `DungeonRun.visited` starts empty on a load, and the hero finds them
-  again by walking in. A `Places` line in the save is the upgrade, left until the items work on `SaveGame` lands so
-  the two do not collide.
+- **Places found are saved** with the run: a `Places = ["Poytaxt", ...]` line in the save (`SaveGame.places`,
+  quoted, since a zone name may hold an apostrophe); an older save has none.
 
 ## Code
 
@@ -85,6 +87,5 @@ Read from `DungeonRun.questsNow()` — the `QuestLog.State` as the last frame le
 
 ## Left for later
 
-- A key list in the engine's Settings (E46).
 - Crit, when the engine has it; then one row.
 - Fast travel from the map between discovered towers (big plan, Phase 2 item 6): the map's places are where it hangs.

@@ -73,23 +73,11 @@ final class PlayerScreens implements Painter, CanvasInput {
     static Open forKey(int code, DungeonSettings settings) {
         var keys = settings.screens().keys();
         for (int i = 0; i < keys.size(); i++) {
-            if (codeOf(keys.get(i)) == code) {
+            if (uz.dukeengine.client3d.Hotkeys.codeOf(keys.get(i)) == code) {
                 return Open.values()[i + 1];
             }
         }
         return Open.NONE;
-    }
-
-    /** The scan code of a letter ({@code com.jme3.input.KeyInput}'s, the keyboard's), or -1. */
-    static int codeOf(char letter) {
-        char upper = Character.toUpperCase(letter);
-        for (var row : new String[] {"QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM"}) {
-            int at = row.indexOf(upper);
-            if (at >= 0) {
-                return (row.charAt(0) == 'Q' ? 16 : row.charAt(0) == 'A' ? 30 : 44) + at;
-            }
-        }
-        return -1;
     }
 
     @Override
@@ -129,10 +117,10 @@ final class PlayerScreens implements Painter, CanvasInput {
                     return under.take(event); // a key let go is the game's: it may be holding it
                 }
                 if (key.repeat()) {
-                    return forKey(key.code(), settings) != Open.NONE || key.code() == DialogueScreen.ESCAPE
+                    return forKey(key.code(), settings) != Open.NONE || key.code() == CanvasInput.ESCAPE
                             || under.take(event);
                 }
-                if (key.code() == DialogueScreen.ESCAPE) {
+                if (key.code() == CanvasInput.ESCAPE) {
                     close();
                     return true;
                 }
