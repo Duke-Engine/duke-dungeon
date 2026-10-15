@@ -62,7 +62,7 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E46 | the game's keys in Settings | landed, 9ce15e4e |
 | E47 | a hero's whole figures in one place | landed, 9ce15e4e |
 | E48 | a key's code and name for a game's canvas | landed, 9ce15e4e |
-| E52 | a route that prefers the roads: a cost per cell a walker's path weighs (travellers keep to the roads) | waiting (small) |
+| E52 | a route that prefers the roads: a cost per cell a walker's path weighs (travellers keep to the roads) | landed, eedd090b on the engine's branch `e52-road-costs`: `PathGrid.setStepCosts`; the game lays its painted roads (`Roads`) |
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
 game builds against the local engine. E12–E15 reached it together at 668045f0 (their pull requests merged as
@@ -1184,6 +1184,8 @@ Asked: the path grid takes a cost per cell -- or a set of preferred cells and ho
 pathfinder (and the sector router on a wide map) weighs, from the map (its painted roads, `d` in the world's paint,
 or a game-handed mask); every map that hands none routes as today. Done when a test routes between two points joined
 by a road with a shortcut over open ground and the path keeps to the road where the cost says it should.
+
+**Landed** as eedd090b on the engine's branch `e52-road-costs`: `PathGrid.setStepCosts(int[])` (a share in percent for each walked cell, `cy * width + cx`; null clears), `hasStepCosts()` and `stepPercent(cx, cy)`. The game builds the array from a painted map's `d` road (`Roads`: road 100, anything else 250) wherever `DungeonRun` lays a map's terrain, and passes nothing for a map with no road.
 
 
 ## E55 — Music the game chooses, and a weapon that keeps its name (2026-10-15, small)
