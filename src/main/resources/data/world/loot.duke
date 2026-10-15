@@ -960,3 +960,44 @@ Effect
     End
   ]
 End
+
+; The place a quest going sends him to (Run QuestBeam): as tall as the key's, in
+; a cold blue, so it is never taken for the key.
+Effect
+  Name = QuestBeam
+
+  Layers = [
+    Layer
+      Name = Beam
+      Type = PILLAR
+      Texture = kit/effects/particles/pillar_core.png
+      Blend = Additive
+      Count = 1
+      Life = [2.2, 2.2]
+      Size = [6, 6]
+      Height = 100
+      Direction = UP
+      Colour = [0xCFF2FF, 0x6FD3FF]
+      Alpha = [0.75, 0.75]
+      FadeIn = 0.4
+      FadeOut = 0.6
+      At = CASTER
+      Follows = Yes
+    End,
+
+    Layer
+      Name = Foot
+      Type = AURA
+      Texture = kit/effects/particles/light_02.png
+      Blend = Additive
+      Cover = 0.1
+      Count = 1
+      Size = [16, 16]
+      Colour = [0xCFF2FF, 0x3FA8E0]
+      Alpha = [0.6, 0.6]
+      FadeIn = 0.3
+      FadeOut = 0.5
+      Height = 2
+    End
+  ]
+End

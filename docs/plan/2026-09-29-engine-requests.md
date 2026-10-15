@@ -69,7 +69,7 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E58 | feel: a number that is bigger and another colour for a heavy or critical blow, a short hit-stop, and a camera knock from an effect list that obeys `ShakeScale` | landed, 62e569ef on the engine's branch `e58-feel`; the numbers, `HitStop` and the effect-list shakes are in `hud.duke` and `feel.duke` |
 | E59 | settings: an Ambience channel with its own volume, a Camera shake row (`ShakeScale` for the player), a Language row if there is more than one | landed (engine 01eb7029; game 2026-10-15) |
 | E60 | closest-thing questions with no candidate list or sort; a weapon that does not copy its owner's module list every frame | landed (engine 01eb7029; game 2026-10-15) |
-| E61 | where the hero is wanted: a `Mission` that drops its key with a few still standing, and the game's own marks on the minimap | asked 2026-10-15; the game stands in for (1) with `run/EarlyKey` and has no minimap mark yet |
+| E61 | where the hero is wanted: a `Mission` that drops its key with a few still standing, and the game's own marks on the minimap | landed, 6e789f32 on the engine's branch `e61-key-minimap`; the game passes `Run.keyLeeway` to `Mission.begin` (`run/EarlyKey` gone) and marks the key (gold, blinking) and each quest's target (QuestColour) on the minimap |
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
 game builds against the local engine. E12–E15 reached it together at 668045f0 (their pull requests merged as
@@ -1286,3 +1286,5 @@ floor's key and each quest's target show there as they do on the game's world ma
 inside and one outside the minimap's span and sees the first at its projected place and the second on the edge. The
 game today draws its key and quest targets on its own world map, and an arrow round the hero on the screen
 (`MissionScreen.pointers`, from `Canvas.screenOf`) — no engine hook is missing for that.
+
+**Landed** as 6e789f32 on the engine's branch `e61-key-minimap`: `Mission.begin(..., int leeway)` (clamped to 0..outside-1, one key, `killed()` capped at `outside()`) and `Duke3D.minimapMarks(Supplier<List<MinimapMark>>)`. The game: `DungeonRun.missionOf` passes `Run.keyLeeway`, and `run/EarlyKey` is deleted; `MissionScreen.minimapMarks` feeds the floor's key (the menu's gold, blinking) and every quest going's target (Run `QuestColour`, a still diamond), and quest places now stand in their own blue `QuestBeam`, not the key's gold. Tests: `MissionTest` (the early drop and the 0/0 last-of-them rule through the engine), `QuestMarkerTest.theCellarIsMarkedOnTheMinimap`, `theKeyIsMarkedOnTheMinimapAndBlinks`, `aQuestsPlaceLooksUnlikeTheKey`.

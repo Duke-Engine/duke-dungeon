@@ -229,9 +229,12 @@ public final class Main {
                 visuals.effectSeconds(beam, 2 * itemRules.beamFrames() / perSecond);
             }
         }
-        // And the key's, which a quest's place stands in too. See DungeonRun.beams and DungeonRun.glow.
+        // And the key's and a quest's place's. See DungeonRun.beams.
         if (!settings.run().keyBeam().isBlank()) {
             visuals.effectSeconds(settings.run().keyBeam(), 2 * itemRules.beamFrames() / perSecond);
+        }
+        if (!settings.run().questBeam().isBlank()) {
+            visuals.effectSeconds(settings.run().questBeam(), 2 * itemRules.beamFrames() / perSecond);
         }
         // The medallion appearing in the hand it is given to glows this long.
         var medallion = settings.medallion();
@@ -588,6 +591,8 @@ public final class Main {
                 break;
             }
         }
+        // The floor's key and every quest's target on the minimap too, held to its edge when off it (E61).
+        duke.minimapMarks(() -> MissionScreen.minimapMarks(current.get(), settings));
         duke.launch();
     }
 
