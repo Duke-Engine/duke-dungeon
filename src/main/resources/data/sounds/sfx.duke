@@ -2971,3 +2971,41 @@ Sound
   Gain = 0.8
   Files = [audio/ambience/dungeon.ogg]
 End
+
+; ---- the open world's night and weather (data/world/daynight.duke) ---------
+
+; Wolfgang_'s crickets, under the open world at night.
+Sound
+  Name = ambience.night
+  Channel = Ambience
+  Positional = No
+  Gain = 0.5
+  Files = [audio/ambience/night_crickets.ogg]
+End
+
+; Kresiek's rain loop, under rain and storm.
+Sound
+  Name = weather.rain
+  Channel = Ambience
+  Positional = No
+  Gain = 0.7
+  Files = [audio/ambience/rain_loop.ogg]
+End
+
+; Bashar3A's wind, under the highlands' snow.
+Sound
+  Name = weather.wind
+  Channel = Ambience
+  Positional = No
+  Gain = 0.6
+  Files = [audio/ambience/wind_loop.ogg]
+End
+
+; rubberduck's thunder, with a storm's flash.
+Sound
+  Name = weather.thunder
+  Channel = Ambience
+  Positional = No
+  Gain = 0.9
+  Files = [audio/ambience/thunder.ogg]
+End

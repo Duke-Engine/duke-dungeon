@@ -24,7 +24,7 @@ import uz.dukeengine.rpg.item.LootBag;
  * <p>The simulation's, on its thread: frames, never a clock. While he rides the horse is no thing of the world: he is
  * drawn as his riding look ({@code drawAs}, which the checksum and the save leave out, so it is set again every
  * frame), and his legs are set to his riding speed every frame, since a level or a thing put on gives him new legs at
- * his walking speed. Engine requests E82 and E83 would make the look a rider on a mount and the speed a skill.
+ * his walking speed. Engine requests E88 and E89 would make the look a rider on a mount and the speed a skill.
  */
 public final class Stable {
 

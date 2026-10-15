@@ -70,6 +70,8 @@ public final class PartyOrders {
     static final String BUILD = "build";
     /** A journey to a found watchtower: the order's number is which of the map's towers. */
     static final String TRAVEL = "travel";
+    /** His player plays the modern way: his hero fights only when told. */
+    static final String TOLD = "only-when-told";
 
     private PartyOrders() {
     }
@@ -82,6 +84,8 @@ public final class PartyOrders {
             case UpgradeSkill raise -> new GameOrder(raise.playerIndex(), RAISE, List.of(), null, null, raise.key());
             case HoldGround hold -> new GameOrder(hold.playerIndex(), HOLD, List.of(), null, null,
                     hold.stand() ? 1 : 0);
+            case uz.dukeengine.dungeon.ai.FightOnlyWhenTold told -> new GameOrder(told.playerIndex(), TOLD, List.of(),
+                    null, null, told.on() ? 1 : 0);
             case AttackMove march -> new GameOrder(march.playerIndex(), MARCH, List.of(), march.spot(), null, 0);
             case Watching watching -> new GameOrder(watching.playerIndex(), WATCH, List.of(), null,
                     watching.unit(), 0);
@@ -135,6 +139,7 @@ public final class PartyOrders {
             case CAST -> new CastSkill(order.playerIndex(), (char) order.number(), order.target(), order.place());
             case RAISE -> new UpgradeSkill(order.playerIndex(), (char) order.number());
             case HOLD -> new HoldGround(order.playerIndex(), order.number() != 0);
+            case TOLD -> new uz.dukeengine.dungeon.ai.FightOnlyWhenTold(order.playerIndex(), order.number() != 0);
             case MARCH -> order.place() == null ? null : new AttackMove(order.playerIndex(), order.place());
             case WATCH -> new Watching(order.playerIndex(), order.target());
             case PICK_UP -> order.target() == null ? null : new PickUp(order.playerIndex(), order.target());

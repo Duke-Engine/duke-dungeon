@@ -9,7 +9,7 @@
 ; While he rides, the horse is no thing of the world: he is drawn as his riding
 ; look below, the horse's rig and clips with him seated on its back (made by
 ; art/mounts/export_riders.py), until the engine can sit one unit on another
-; (engine request E82).
+; (engine request E88).
 ; ---------------------------------------------------------------------------
 
 Mount
