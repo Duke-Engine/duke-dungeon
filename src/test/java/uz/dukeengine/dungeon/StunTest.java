@@ -187,9 +187,12 @@ class StunTest {
     /** The same fireball with no StunFrames hurts him, and leaves him free. */
     @Test
     void aSkillWithoutStunFramesLeavesItsVictimFree() {
-        var data = Content.data().replace("      StunFrames = 30\n", "");
+        var data = Content.data().replace("      StunFrames = 30\n", "")
+                // And no stagger: a fireball is a heavy blow, and a heavy blow staggers a hero (StaggerTest).
+                .replace("Stagger\n  Frames = 11\n", "Stagger\n  Frames = 0\n");
         assertNotEquals(Content.data(), data, "the premise: the fireball's StunFrames was taken out");
         var settings = DungeonSettings.parse(data);
+        assertEquals(0, settings.stagger().frames(), "the premise: no stagger");
         var fight = fireMage(settings, 200f, 150f, 250f, 150f);
         var hero = fight.heroes().getFirst();
         var fireball = fireballOf(settings).projectile();

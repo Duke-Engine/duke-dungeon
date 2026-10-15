@@ -97,6 +97,10 @@ Hero
     ; Health coming back on its own, at the rate his Hero block names.
     Recovery
     End,
+    ; Staggered by a heavy blow: a short stun with his flinch, then a while he cannot be -- the Stagger
+    ; block in world/feel.duke.
+    Staggering
+    End,
     ; Counts what he kills. He is worth nothing himself, and the engine's own four
     ; ranks are switched off (0 0 0), leaving a plain experience total for the game
     ; to spend on levels of its own devising.
@@ -169,10 +173,9 @@ Hero
   ; shot if that reads better -- one word here, and one name in CLIPS in her
   ; exporter, which is the list of what is retargeted onto her.
   Attack = Ranged_Bow_Release
-  ; ★ NO FLINCH (Hurt), on purpose: the client plays a flinch over whatever he was doing, his
-  ; swing and his casts included, so in a crowd he stood trembling while their health fell (the
-  ; owner's playtest of 1.0.43). Engine request E71 asks for a flinch that waits for the blow;
-  ; until then his clip stays in his file and no line names it -- DungeonMonsterArtTest.
+  ; His flinch: played only as he staggers at a heavy blow, for exactly its frames (Stagger in
+  ; world/feel.duke), when he cannot strike -- so it never covers a swing he really makes.
+  Hurt = Hit_Chest
   ; Death_A falls in 0.8s; Death_B takes 2.6s, which is longer than the floor
   ; stays open after he dies.
   Death = Death_A

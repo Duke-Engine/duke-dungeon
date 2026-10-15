@@ -42,5 +42,6 @@ public final class Feel {
         for (var death : settings.bigDeaths()) {
             visuals.moment(death.moment(), death.plays(), 1f);
         }
+        visuals.flinch(settings.flinch());
     }
 }

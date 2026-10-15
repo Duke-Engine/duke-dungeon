@@ -387,16 +387,21 @@ class DungeonMonsterArtTest {
     }
 
     /**
-     * Nor does a hero. The client plays a flinch over whatever he is doing -- his swing and his casts too -- so
-     * in a crowd every blow taken cut his own short: the owner's playtest of 1.0.43, "the enemy's health goes
-     * down but the hero is stuck trembling". Until the client can hold a flinch for a blow (engine request E71),
-     * no hero names one, in his block or in the set he moves by.
+     * A hero flinches, but never over his own blows: the owner's playtest of 1.0.43, "the enemy's health goes down
+     * but the hero is stuck trembling". Each names a Hurt clip, which his stagger plays (StaggerTest); the client's
+     * own flinch (E71) is held to a heavy blow at most once a second, for whatever else names one.
      */
     @Test
-    void noHeroFlinchesOverHisOwnBlows() {
+    void aHeroFlinchesOnlyAtAHeavyBlowAndNotEveryBlow() {
         for (var hero : SETTINGS.heroes()) {
-            assertNull(hero.hurt(), hero.name() + " flinches over his own swing again -- see units/knight.duke");
+            assertNotNull(hero.hurt(), hero.name() + " has no flinch at all");
         }
+        var flinch = SETTINGS.flinch();
+        assertTrue(flinch.heavyOnly(), "every scratch makes him flinch");
+        assertTrue(flinch.seconds() >= 1f, "he may flinch more than once a second: " + flinch.seconds());
+        var visuals = uz.dukeengine.client3d.Visuals.create();
+        uz.dukeengine.dungeon.content.Feel.apply(visuals, SETTINGS);
+        assertEquals(flinch, visuals.getFlinch(), "the files' flinch is not the one the client is handed");
     }
 
     /**
@@ -1098,8 +1103,8 @@ class DungeonMonsterArtTest {
     @Test
     void everyClipTheHeroAsksForIsInOneOfHisLibraries() {
         var hero = hero();
-        assertEquals(4, hero.clips().size(), // no hurt: see noHeroFlinchesOverHisOwnBlows
-                "idle, walk, attack and death — he was left short of " + hero.clips());
+        assertEquals(5, hero.clips().size(),
+                "idle, walk, attack, hurt and death — he was left short of " + hero.clips());
         for (var clip : hero.clips()) {
             assertTrue(inOneOfHisLibraries(clip),
                     clip + " is asked for but is in none of " + hero.animations());

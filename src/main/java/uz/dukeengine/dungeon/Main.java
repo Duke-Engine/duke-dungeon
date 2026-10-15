@@ -1337,7 +1337,7 @@ public final class Main {
                         .idle(hero.idle())
                         .walk(hero.walk(), hero.walkStride())
                         .attack(hero.attack())
-                        .hurt(hero.hurt())
+                        // No .hurt: his flinch is his stagger's busy clip (Staggering), never the client's own.
                         .die(hero.death())
                         .upperBody(hero.upperBody());
                 if (hero.texture() != null) {

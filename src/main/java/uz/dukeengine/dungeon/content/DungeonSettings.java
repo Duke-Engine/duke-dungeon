@@ -133,6 +133,8 @@ public final class DungeonSettings {
     private final List<BigDeath> bigDeaths = new java.util.ArrayList<>();
     private final List<CritBlow> critBlows = new java.util.ArrayList<>();
     private uz.dukeengine.client3d.HitStop hitStop = new uz.dukeengine.client3d.HitStop(0f, 1f, true, false);
+    private uz.dukeengine.client3d.Flinch flinch = uz.dukeengine.client3d.Flinch.DEFAULTS;
+    private Stagger stagger = Stagger.DEFAULTS;
     private final List<uz.dukeengine.core.content.EffectList> effectLists = new java.util.ArrayList<>();
     private uz.dukeengine.dungeon.story.Medallion medallion = uz.dukeengine.dungeon.story.Medallion.DEFAULTS;
     private uz.dukeengine.dungeon.food.Food food = uz.dukeengine.dungeon.food.Food.DEFAULTS;
@@ -282,6 +284,33 @@ public final class DungeonSettings {
     /** The catch in the motion of a heavy blow; none (0 seconds) unless the files say. */
     public uz.dukeengine.client3d.HitStop hitStop() {
         return hitStop;
+    }
+
+    /** When a hurt creature flinches; at every blow it is free for unless the files say. */
+    public uz.dukeengine.client3d.Flinch flinch() {
+        return flinch;
+    }
+
+    /** A hero's stagger at a heavy blow; none unless the files say. */
+    public Stagger stagger() {
+        return stagger;
+    }
+
+    /**
+     * The least blow, after armour, that is a heavy one on {@code template}: its own HeavyBlow's MajorAt, else the one
+     * for every creature's, else none (infinite).
+     */
+    public float heavyAt(String template) {
+        float all = Float.POSITIVE_INFINITY;
+        for (var blow : heavyBlows) {
+            if (blow.template().equals(template)) {
+                return blow.majorAt();
+            }
+            if (blow.template().isBlank()) {
+                all = blow.majorAt();
+            }
+        }
+        return all;
     }
 
     /** What a critical blow adds, see {@link CritBlow}. */
@@ -572,6 +601,8 @@ public final class DungeonSettings {
                 case BigDeath death -> bigDeaths.add(death);
                 case CritBlow crit -> critBlows.add(crit);
                 case uz.dukeengine.client3d.HitStop block -> hitStop = once(block, once);
+                case uz.dukeengine.client3d.Flinch block -> flinch = once(block, once);
+                case Stagger block -> stagger = once(block, once);
                 case uz.dukeengine.core.content.EffectList list -> effectLists.add(list);
                 case uz.dukeengine.dungeon.story.Medallion block -> medallion = once(block, once);
                 case uz.dukeengine.dungeon.food.Food block -> food = once(block, once);
