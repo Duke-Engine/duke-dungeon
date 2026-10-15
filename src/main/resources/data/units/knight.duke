@@ -65,7 +65,12 @@ Hero
       ; inside every monster's own reach rather than far outside it, so he is being
       ; hit for the whole of the time he is hitting.
       AttackRange = 11
-      ReloadFrames = 34
+      ; ★ 34 FRAMES BETWEEN BLOWS, as ever: the wait after one (ReloadFrames) and the
+      ; swing up to the next (PreAttackFrames). The client starts his slash as he winds up
+      ; and the blow lands as the blade comes down -- 9 frames, 0.3s, where his clip's
+      ; sword is fastest (HeroClipFitTest measures it). Change the clip, re-measure this.
+      ReloadFrames = 25
+      PreAttackFrames = 9
       ; He swings as he closes, unlike a drawn bow — a swordsman who had to stop
       ; before every blow would never land one on anything that was backing away.
       AttackOnTheMove = Yes
@@ -160,14 +165,15 @@ Hero
   ; covers this at his speed, so his feet stay where they land however fast he is made to
   ; go. Measured off the clip by HeroClipFitTest: re-export, re-measure.
   WalkStride = 20.6
-  ; ★ THE BLOW LANDS ON ITS FIRST FRAME. The client starts this on the frame the blow
-  ; lands, and it has to finish inside ReloadFrames (34, 1.133s). So his slash (Quaternius'
-  ; Sword_Attack, left-handed) is cut in at the top of its wind-up: the blade is fastest a
-  ; tenth of a second after the blow, where the whole swing had it three tenths before.
-  ; 1.0s long. HeroClipFitTest measures both.
+  ; ★ WIND-UP AND ALL. The client starts this as his weapon winds up, PreAttackFrames
+  ; before the blow, so the whole of his slash (Quaternius' Sword_Attack, left-handed) is
+  ; seen and the blow lands as the blade comes down. 1.083s, inside the 1.133s between
+  ; blows. HeroClipFitTest measures both.
   Attack = Attack
   Hurt = Hurt
   Death = Death
+  ; Struck on the move, a blow (or a flinch) plays from his spine up, his legs running on.
+  UpperBody = spine
 
   ; No Held: his sword and his shield are in his own file -- see the top of this block.
   ; ★ WHAT HE IS MADE OF -- see Attributes in the World block. STRENGTH is his primary: every

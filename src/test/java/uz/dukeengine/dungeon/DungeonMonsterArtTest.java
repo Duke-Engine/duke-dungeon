@@ -551,7 +551,7 @@ class DungeonMonsterArtTest {
         var found = templates().findTemplate(template);
         for (var module : found.modules()) {
             if (module instanceof uz.dukeengine.combat.module.WeaponUpdate.Data weapon) {
-                return weapon.reloadFrames();
+                return weapon.reloadFrames() + weapon.preAttackFrames(); // blows come a reload and a wind-up apart
             }
         }
         return fail(template + " carries no weapon at all");

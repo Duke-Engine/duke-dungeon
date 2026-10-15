@@ -77,8 +77,8 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E66 | scenery a hero can work: a scenery piece the game can point at, take away (a tree felled) and lay again (grown back) | waiting; the game stands in with trees it places as things (`ChoppableTree`, `data/world/food.duke`) |
 | E67 | a busy state with its own clip: a creature plays a named clip on a loop for N frames, cut short by an order or a blow | waiting; the game stands in with a puff and a sound each second (`run/Camp`) |
 | E68 | health over time as a buff the skill book reads (as `MANA_AURA` is for mana), with its picture on the HUD | waiting; the game pays a `HEAL` buff out each frame (`Belt.digest`) |
-| E69 | a melee blow struck at its swing's impact: the attack clip started a lead before the blow lands (an inline `PreAttackFrames`, the clip played from the wind-up) | waiting; the game cuts the knight's slash in at the top of its wind-up so the blade is fastest 0.12s after the blow (`HeroClipFitTest`) |
-| E70 | a blow struck on the move drawn on the upper body only, the legs keeping the paced walk | waiting; the knight (`AttackOnTheMove = Yes`) holds his slash's stance on his legs for 1.0s and slides that second |
+| E69 | a melee blow struck at its swing's impact: the attack clip started a lead before the blow lands (an inline `PreAttackFrames`, the clip played from the wind-up) | landed, 7fda6418 on the engine's branch `e69-70-attack-clips`; the knight's whole slash is back, `PreAttackFrames = 9` (its blade's fastest frame, 0.3s) with `ReloadFrames` 34 -> 25 so blows stay 34 frames apart (`HeroClipFitTest`) |
+| E70 | a blow struck on the move drawn on the upper body only, the legs keeping the paced walk | landed, 7fda6418 on `e69-70-attack-clips`; `UpperBody` on the three heroes (`spine`, `QuickRigCharacter_Spine_012`, `spine`); monsters not yet |
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
 game builds against the local engine. E12–E15 reached it together at 668045f0 (their pull requests merged as
@@ -1413,3 +1413,5 @@ second `AnimComposer` layer masked (`ArmatureMask`) to that joint and below, the
 standing, as now. Done when a test plays an attack on a moving unit and its leg joints follow the walk while its arm
 joints follow the attack. The game then names `UpperBody = spine` for the knight (Lange's rig) and the Huntress's
 `QuickRigCharacter_Spine1_013`; nothing until then.
+
+**E69 and E70 landed** as 7fda6418 on the engine's branch `e69-70-attack-clips`. E69: `WeaponUpdate.Data.preAttackFrames` inline, `WeaponWoundUp` starts the attack clip; the knight's Attack is Sword_Attack whole at 1.45x (1.083s), his `PreAttackFrames = 9` and `ReloadFrames = 25` (34 between blows as before); the Huntress and the mage loose on their clips' first frames and wind up 0. E70: `Drawn.upperBody`; the knight, the Huntress and the mage name their spine joint (`UpperBody`), checked by `HeroClipFitTest.everyHerosUpperBodyIsAJointOfHis`.

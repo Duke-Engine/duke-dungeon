@@ -175,6 +175,8 @@ Hero
   ; Death_A falls in 0.8s; Death_B takes 2.6s, which is longer than the floor
   ; stays open after he dies.
   Death = Death_A
+  ; A flinch taken on the move plays from her spine up, her legs running on.
+  UpperBody = QuickRigCharacter_Spine_012
 
   Held = [
     ; nodgerty's elven bow ("Elven Assassin Weapon Set", CC BY 4.0 -- see CREDITS.md),

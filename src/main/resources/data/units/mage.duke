@@ -148,6 +148,8 @@ Hero
   Attack = Ranged_Magic_Shoot
   Hurt = Hit_A
   Death = Death_A
+  ; A flinch taken on the move plays from his spine up, his legs running on.
+  UpperBody = spine
 
   Held = [
     ; The ADVENTURERS' staff, which is his own kit's and not the one the skeleton
