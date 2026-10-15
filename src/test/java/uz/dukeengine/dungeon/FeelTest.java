@@ -26,6 +26,7 @@ class FeelTest {
         var visuals = Visuals.create();
         visuals.effectLists(SETTINGS.effectLists());
         Feel.apply(visuals, SETTINGS);
+        visuals.hitStop(SETTINGS.hitStop());
         return visuals;
     }
 
@@ -95,5 +96,17 @@ class FeelTest {
         }
         assertTrue(pops.isEmpty(), "these pop when they die: " + pops);
         SETTINGS.heroes().forEach(hero -> assertNotNull(hero.death(), hero.name() + " pops when he dies"));
+    }
+
+    @Test
+    void aCriticalNumberIsYellowAndBiggerAndAMajorBlowCatchesTheMotion() {
+        var numbers = SETTINGS.hitNumbers();
+        assertEquals(0xFFD21E, numbers.critColour());
+        assertTrue(numbers.critScale() > numbers.bigScale() && numbers.bigScale() > 1f);
+        assertTrue(numbers.bigAt() > 0f);
+        var stop = SETTINGS.hitStop();
+        assertTrue(stop.seconds() >= 0.04f && stop.seconds() <= 0.07f, "a catch, not a freeze: " + stop.seconds());
+        assertTrue(stop.slow() < 0.5f && stop.majorOnly());
+        assertEquals(stop, wired().getHitStop());
     }
 }

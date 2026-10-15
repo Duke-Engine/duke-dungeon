@@ -125,7 +125,8 @@ class DungeonSettingsTest {
         assertEquals(0xFFFFFF, shipped.hurtColour());
         assertEquals(new uz.dukeengine.client3d.HitNumbers(d.seconds(), d.popScale(), d.textScale(), d.spread(),
                 d.fanDegrees(), d.height(), d.leastWorth(), 0xFFFFFF, d.takenColour(), d.healColour(),
-                d.brightness(), d.shown()), shipped);
+                d.brightness(), d.shown(), shipped.bigAt(), shipped.bigScale(), shipped.bigColour(),
+                shipped.critColour(), shipped.critScale()), shipped);
         var quick = DungeonSettings.parse("""
                 HitNumbers
                   Seconds = 0.25

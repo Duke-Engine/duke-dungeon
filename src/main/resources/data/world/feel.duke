@@ -191,3 +191,13 @@ BigDeath
   Template = Ogre
   Plays = Thud
 End
+
+; The catch in the motion: a MAJOR blow (critical, or HitNumbers' BigAt and over) slows the one struck and the one
+; striking to Slow of their speed for Seconds -- the window's animation only, the simulation runs on. A second blow
+; inside it does not lengthen it. Particles are not dipped. CritOnly would keep it for crits alone.
+HitStop
+  Seconds = 0.05
+  Slow = 0.1
+  MajorOnly = true
+  CritOnly = false
+End
