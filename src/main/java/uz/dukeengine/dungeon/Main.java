@@ -540,6 +540,7 @@ public final class Main {
         var saves = Saves.ofThePlayer();
         session.run().onCheckpoint(save -> write(saves, Saves.AUTOSAVE, save));
         session.run().onSaveInto((slot, save) -> write(saves, slot, save)); // an act's end, for the next act
+        session.run().onTheEnd(duke::frontEnd); // the story's last MENU: the credits rolled, back to the front menu
         // The front menu's own rows -- continue, a new game (with whom, how, where, who), load, the credits -- then
         // Settings and Quit. Nothing opens until one is walked. See frontRows and whoGoesIn.
         var credits = FrontMenu.credits(settings, Content.read("CREDITS.md"));
@@ -560,6 +561,7 @@ public final class Main {
             var next = chosenGame(opening, settings);
             next.run().onCheckpoint(save -> write(saves, Saves.AUTOSAVE, save));
             next.run().onSaveInto((slot, save) -> write(saves, slot, save));
+            next.run().onTheEnd(duke::frontEnd);
             Bag.show(bag, next, settings);
             current.set(next);
             shell.frontRows(FrontMenu.startingFresh(rows.apply(next), () -> duke.startMatch(next.game())));
@@ -567,12 +569,16 @@ public final class Main {
         // The live scene behind the front menu: the kingdom's soldiers holding a clearing against the skeletons.
         duke.backdrop(() -> MenuScene.of(settings).game());
         duke.shell(shell);
-        int joint = act1(args);
-        if (joint > 0 && !settings.campaign().joints().isEmpty()) {
-            // The owner's testing: straight into joint N of Act 1, with what the joints before it would have given.
-            heroChosen(session, settings, visuals, keys, settings.campaign().hero());
-            session.run().skipTo(joint);
-            duke.startMatch(session.game());
+        for (var act : settings.campaigns()) {
+            int joint = actArg(args, act.name());
+            if (joint > 0) {
+                // The owner's testing: straight into joint N of an act, with what the joints before it would have
+                // given (an act that follows another, from that act's defaults: --act2=N does not read act1.duke).
+                heroChosen(session, settings, visuals, keys, act.hero());
+                session.run().skipTo(act, joint, null);
+                duke.startMatch(session.game());
+                break;
+            }
         }
         duke.launch();
     }
@@ -923,19 +929,25 @@ public final class Main {
                 uz.dukeengine.dungeon.run.Floors.generated(System.nanoTime(), settings));
         var asked = howToPlay(settings, hero, endless,
                 (listed, stage) -> session.run().playing(uz.dukeengine.dungeon.run.Floors.ofStage(stage)));
-        var campaign = settings.campaign();
-        if (campaign.word().isBlank()) {
+        if (settings.campaigns().isEmpty()) {
             return asked;
         }
-        // The campaign first, a game alone: its own hero, from its first joint — see docs/plan/2026-10-15-act1.md.
-        // The descent and the stages stay where they were, below it.
+        // The campaign's acts first, a game alone: each its own hero, from its first joint — see
+        // docs/plan/2026-10-15-act1.md and -act2.md. The descent and the stages stay where they were, below them.
         var rows = new java.util.ArrayList<Shell.Option>();
-        rows.add(new Shell.Option(campaign.word(), campaign.blurb(), () -> {
-            session.run().playing(uz.dukeengine.dungeon.run.Floors.named(campaign.joints().getFirst().map(),
-                    System.nanoTime(), settings, false));
-            heroChosen(session, settings, visuals, keys, campaign.hero());
-            session.run().startWith(session.game(), campaign.hero());
-        }, null));
+        for (var campaign : settings.campaigns()) {
+            rows.add(new Shell.Option(campaign.word(), campaign.blurb(), () -> {
+                heroChosen(session, settings, visuals, keys, campaign.hero());
+                if (campaign.follows().isBlank()) {
+                    session.run().playing(uz.dukeengine.dungeon.run.Floors.named(campaign.joints().getFirst().map(),
+                            System.nanoTime(), settings, false));
+                    session.run().startWith(session.game(), campaign.hero());
+                } else {
+                    // An act that follows one carries on from its end save, or from the act's defaults with none.
+                    session.run().skipTo(campaign, 1, Saves.ofThePlayer().read(campaign.follows()));
+                }
+            }, null));
+        }
         if (asked == hero) {
             rows.add(new Shell.Option(settings.hud().endlessWord(), settings.hud().endlessBlurb(), endless, hero));
         } else {
@@ -944,12 +956,13 @@ public final class Main {
         return new Shell.Question(settings.hud().chooseModeWord(), settings.hud().chooseModeHint(), rows);
     }
 
-    /** {@code --act1=N}: the campaign's joint to open straight on, for testing it; 0 for none. */
-    static int act1(String[] args) {
+    /** {@code --<act>=N}: that act's joint to open straight on, for testing it; 0 for none. */
+    static int actArg(String[] args, String act) {
+        var asked = "--" + act + "=";
         for (var arg : args) {
-            if (arg.startsWith("--act1=")) {
+            if (arg.startsWith(asked)) {
                 try {
-                    return Math.max(0, Integer.parseInt(arg.substring("--act1=".length()).strip()));
+                    return Math.max(0, Integer.parseInt(arg.substring(asked.length()).strip()));
                 } catch (NumberFormatException e) {
                     return 0;
                 }

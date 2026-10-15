@@ -97,7 +97,7 @@ public interface Floors {
      * @throws RuntimeException when there is no such map, or it cannot be played
      */
     static Floors named(String name, long seed, DungeonSettings settings, boolean standing) {
-        var descent = settings.campaign().descent(name);
+        var descent = settings.descent(name);
         if (descent != null) {
             return new GeneratedFloors(seed, settings, standing, name, descent.firstDepth());
         }
