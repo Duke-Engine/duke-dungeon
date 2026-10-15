@@ -1,0 +1,60 @@
+; ---------------------------------------------------------------------------
+; The player's three screens: the character sheet, the quest log and the world
+; map -- see docs/plan/2026-10-15-player-screens.md. Each opens on its key and
+; shuts on it again or on Esc; one is open at a time, and played alone the
+; world waits while one is. The HUD shows the three keys, and the tracker's J,
+; in a small row over the panel.
+;
+; The figures on the sheet are called what the panel and the bag already call
+; them (Hud, LootDrops), the gold what the purse calls it (Trade), the souls what
+; the medallion calls them; only the words no other block has are here.
+; ---------------------------------------------------------------------------
+Screens
+  ; Letters, and none of them a skill's (Q W E R), an order's (A S D F), the
+  ; client's halt or pause (H P) or the tracker's (J): the file is refused if so.
+  SheetKey = C
+  QuestsKey = L
+  MapKey = M
+
+  SheetTitle = Qahramon
+  QuestsTitle = Topshiriqlar
+  MapTitle = Xarita
+  ; And the tracker's word beside its key (the Run block's FoldKey) on the HUD.
+  TrackerWord = Missiyalar
+
+  ; The character sheet.
+  ExperienceWord = Tajriba
+  AttributesWord = Atributlar
+  FiguresWord = Ko'rsatkichlar
+  WornWord = Kiyimlar
+  EmptyWord = bo'sh
+  PerSecondWord = /s
+
+  ; The quest log.
+  ActiveWord = Faol
+  FinishedWord = Bajarilgan
+  NoQuestsWord = "Hozircha topshiriq yo'q"
+  ShowOnMapWord = "Xaritada ko'rsatish"
+
+  CloseHint = "Esc — yopish"
+  MapHint = "G'ildirak — yaqinlashtirish   Sudrash — surish   Esc — yopish"
+
+  ; The map's named places: a zone of a map by its name, then what the map
+  ; writes over it. A zone not named here (a trigger's corridor, an ambush) is no
+  ; place on the map. Bright once the hero has stood in it, dim before.
+  Places = [
+    "Poytaxt = Poytaxt",
+    "Yashil_dala = Yashil dala",
+    "Qumli_dasht = Qumli dasht",
+    "Toshli_adir = Toshli adir",
+    "Kampir_kulbasi = Kampir kulbasi",
+    "Malika_qasri = Malika qasri",
+    "Qorong'i_o'rmon = Qorong'i o'rmon",
+    "Throne = Taxt",
+    "Altar = Mehrob",
+  ]
+
+  ; How many texels a side the world's picture is at most: the open world's 512
+  ; cells, walked at two a cell, are a texel for every two.
+  MostTexels = 512
+End

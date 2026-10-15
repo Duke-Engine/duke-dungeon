@@ -58,6 +58,16 @@ final class DialogueScreen implements Painter, CanvasInput {
         return trade;
     }
 
+    /** The match now being played, or null: for the screens drawn over this. */
+    static Dungeon.Session match() {
+        return match;
+    }
+
+    /** Whether a conversation or a cutscene has the screen: nothing else may open over it. */
+    boolean busy() {
+        return inCutscene() || showing() != null;
+    }
+
     static void show(Dungeon.Session now) {
         match = now;
     }
