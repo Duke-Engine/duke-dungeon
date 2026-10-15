@@ -169,10 +169,9 @@ Hero
   ; shot if that reads better -- one word here, and one name in CLIPS in her
   ; exporter, which is the list of what is retargeted onto her.
   Attack = Ranged_Bow_Release
-  ; ★ NO FLINCH (Hurt), on purpose: the client plays a flinch over whatever he was doing, his
-  ; swing and his casts included, so in a crowd he stood trembling while their health fell (the
-  ; owner's playtest of 1.0.43). Engine request E71 asks for a flinch that waits for the blow;
-  ; until then his clip stays in his file and no line names it -- DungeonMonsterArtTest.
+  ; His flinch, played only while he does nothing else, at most once a second and only at a heavy
+  ; blow (Flinch in world/feel.duke): in a crowd it never cuts his swing or a cast short.
+  Hurt = Hit_Chest
   ; Death_A falls in 0.8s; Death_B takes 2.6s, which is longer than the floor
   ; stays open after he dies.
   Death = Death_A

@@ -79,7 +79,7 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E68 | health over time as a buff the skill book reads (as `MANA_AURA` is for mana), with its picture on the HUD | landed, 7b8e8069 on `e66-68-food-fire`; `Belt.digest` is gone, the buff row shows a meal by the Food block's `Taom` skill and `Jon/s`; fires crackle by the placed loop `Duke3D.loopAt` |
 | E69 | a melee blow struck at its swing's impact: the attack clip started a lead before the blow lands (an inline `PreAttackFrames`, the clip played from the wind-up) | landed, 7fda6418 on the engine's branch `e69-70-attack-clips`; the knight's whole slash is back, `PreAttackFrames = 9` (its blade's fastest frame, 0.3s) with `ReloadFrames` 34 -> 25 so blows stay 34 frames apart (`HeroClipFitTest`) |
 | E70 | a blow struck on the move drawn on the upper body only, the legs keeping the paced walk | landed, 7fda6418 on `e69-70-attack-clips`; `UpperBody` on the three heroes (`spine`, `QuickRigCharacter_Spine_012`, `spine`); monsters not yet |
-| E71 | a flinch that never cuts short a blow or a cast: the hurt clip played only when the unit is not mid-attack, mid-gesture or moving, at most once per a look-set interval, optionally only on a major/critical blow | asked 2026-10-15; until then the heroes name no `Hurt` (`DungeonMonsterArtTest.noHeroFlinchesOverHisOwnBlows`) |
+| E71 | a flinch that never cuts short a blow or a cast: the hurt clip played only when the unit is not mid-attack, mid-gesture or moving, at most once per a look-set interval, optionally only on a major/critical blow | landed, 8c9b234d on `e71-flinches`; the heroes name `Hurt` again, `Flinch` in world/feel.duke (1.0s, `HeavyOnly`), `DungeonMonsterArtTest.aHeroFlinchesOnlyAtAHeavyBlowAndNotEveryBlow`; monsters still name none |
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
 game builds against the local engine. E12–E15 reached it together at 668045f0 (their pull requests merged as
@@ -1431,3 +1431,11 @@ that is critical or at least the look's hit-feel `majorAt`). Defaults as today. 
 mid-swing and its attack clip runs to its end, and hurts a standing one twice in 0.5s and it flinches once.
 Then the game names `Hurt` again for the knight (`Hurt`), the Huntress (`Hit_Chest`) and the mage (`Hit_A`) with
 `FlinchWhen = IDLE`, `FlinchEvery = 1.5`, `FlinchOn = MAJOR`, and drops `noHeroFlinchesOverHisOwnBlows`.
+
+**E71 landed** as 8c9b234d on the engine's branch `e71-flinches`: `DukeRtsApp.flinch` plays the hurt clip only on an
+idle unit (not over an attack or flinch clip, a gesture, busy work, or while it has a target), and
+`Visuals.flinch(new Flinch(seconds, heavyOnly))` sets the least time between two flinches and whether only a crit or
+a drop of `HitNumbers.bigAt` and over flinches. The game reads a `Flinch` block (world/feel.duke: `Seconds = 1.0`,
+`HeavyOnly = true`) through `Feel.apply`, and the knight (`Hurt`), the Huntress (`Hit_Chest`) and the mage (`Hit_A`)
+name their flinch again. The monsters stay without one: in a fight they always have a target, so it would show only
+on one struck from out of sight.

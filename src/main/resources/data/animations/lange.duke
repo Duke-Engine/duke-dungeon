@@ -24,7 +24,7 @@ AnimationSet
   Walk = Walk
   ; 1.083s -- it has to fit between his blows, 1.133s apart.
   Attack = Attack
-  ; No Hurt: his flinch is in his file, but a hero plays none -- see units/knight.duke.
+  Hurt = Hurt
   ; Onto his back, in 1.2s.
   Death = Death
 End

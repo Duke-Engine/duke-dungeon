@@ -195,6 +195,15 @@ End
 ; The catch in the motion: a MAJOR blow (critical, or HitNumbers' BigAt and over) slows the one struck and the one
 ; striking to Slow of their speed for Seconds -- the window's animation only, the simulation runs on. A second blow
 ; inside it does not lengthen it. Particles are not dipped. CritOnly would keep it for crits alone.
+Flinch
+  ; When a creature that is hurt plays its Hurt clip. The client never plays it over a swing, a cast, its work or
+  ; while it has a target (E71); this says at most once in Seconds, and with HeavyOnly only at a heavy blow -- a
+  ; critical one or HitNumbers' BigAt and over. The owner's playtest of 1.0.43: a hero in a crowd "stuck
+  ; trembling from the incoming blows". Only the heroes name a Hurt clip; the monsters stay without one.
+  Seconds = 1.0
+  HeavyOnly = true
+End
+
 HitStop
   Seconds = 0.05
   Slow = 0.1

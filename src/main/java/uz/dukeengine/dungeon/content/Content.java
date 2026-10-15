@@ -121,7 +121,7 @@ public final class Content {
             named(uz.dukeengine.dungeon.story.Trigger.class), named(uz.dukeengine.dungeon.story.Cutscene.class),
             named(uz.dukeengine.dungeon.story.Merchant.class), named(uz.dukeengine.dungeon.story.Trade.class),
             named(uz.dukeengine.dungeon.story.GoldBurst.class),
-            named(HeavyBlow.class), named(CritBlow.class), named(uz.dukeengine.client3d.HitStop.class), named(BigDeath.class), named(uz.dukeengine.core.content.EffectList.class),
+            named(HeavyBlow.class), named(CritBlow.class), named(uz.dukeengine.client3d.HitStop.class), named(uz.dukeengine.client3d.Flinch.class), named(BigDeath.class), named(uz.dukeengine.core.content.EffectList.class),
             named(uz.dukeengine.dungeon.story.Boss.class), named(uz.dukeengine.dungeon.story.Medallion.class),
             named(uz.dukeengine.dungeon.food.Food.class),
             named(uz.dukeengine.dungeon.loot.ItemBase.class), named(uz.dukeengine.dungeon.loot.Affix.class),
