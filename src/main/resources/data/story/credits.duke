@@ -7,8 +7,8 @@
 Credits
   ; Seconds for the whole roll to scroll by; Esc or a click skips it.
   Seconds = 60
-  ; No ending track yet: the quietest of the three (music.duke). The audio branch may name its own.
-  Music = music.uncertainty
+  ; The curse lifted, the souls free: the victory theme (data/sounds/music.duke).
+  Music = music.victory
   Lines = [
     "# Last Hero",
     "",
@@ -53,12 +53,21 @@ Credits
     "OSARE weapon icons — Blarumyrran",
     "",
     "# Tovushlar",
-    "RPG Audio, Impact Sounds, Interface Sounds, Voiceover Pack — Kenney, CC0",
+    "RPG Audio, Impact Sounds, Interface Sounds, Music Jingles, Voiceover Pack — Kenney, CC0",
+    "80 CC0 RPG, Creature, Metal and Wood SFX — rubberduck, CC0",
+    "Fantasy Weapons and Apparel SFX — Vehicle (Jan Schupke), CC0",
+    "RPG Sound Pack — artisticdude, CC0",
+    "Male Grunt/Yelling sounds — HaelDB, CC0",
+    "Footsteps — Fantozzi, CC0",
+    "Loopable Dungeon Ambience — JaggedStone, CC0",
     "",
     "# Musiqa",
-    "Industrial — looplicator (freesound.org)",
-    "Uncertainty — destructo20 (freesound.org)",
-    "The Sentinel — logicmoon (freesound.org)",
+    "A Legend Will Rise — CodeManu, CC0",
+    "Medieval: Market Day — RandomMind, CC0",
+    "The Hope, Once Upon a Time, Unexplored — TAD, CC0",
+    "Sinister Boss Appears, Battle Theme A, Victory Theme for RPG — cynicmusic, CC0",
+    "Boss Battle Music — Juhani Junkala, CC0",
+    "Laments of the War — Cethiel, CC0",
     "",
     "# Shrift va bezaklar",
     "Cinzel — Natanael Gama, SIL OFL 1.1",
