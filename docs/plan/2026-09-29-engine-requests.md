@@ -72,6 +72,7 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E61 | where the hero is wanted: a `Mission` that drops its key with a few still standing, and the game's own marks on the minimap | landed, 6e789f32 on the engine's branch `e61-key-minimap`; the game passes `Run.keyLeeway` to `Mission.begin` (`run/EarlyKey` gone) and marks the key (gold, blinking) and each quest's target (QuestColour) on the minimap |
 | E62 | settings kept as the player leaves them (Esc, closing the window), not only on the Save button | asked 2026-10-15 (playtest of 1.0.41) |
 | E63 | no bars, medallions or names over the front menu's backdrop (as on `Screen.FRONT`) | asked 2026-10-15 (playtest of 1.0.41) |
+| E64 | `dressModel` takes a glTF piece's base colour by name, not the first texture jME lists (a normal map) | asked 2026-10-15 (playtest of 1.0.41) |
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
 game builds against the local engine. E12–E15 reached it together at 668045f0 (their pull requests merged as
@@ -1316,3 +1317,16 @@ laid over it") but not on `Screen.MENU` with a backdrop shown, which is the engi
 Asked: the same `unitBars.clear()` there (and the marks a bar carries with it). Done when a test shows a backdrop under
 the menu and finds no bar placed. The game, meanwhile, names each backdrop kind in Uzbek on its status line (`|who=`),
 so what is drawn is at least the game's words; the medallion's "0" stays until this lands.
+
+## E64 — A model dressed in its base colour, not in whichever picture comes first (2026-10-15, small)
+
+The playtest of 1.0.41: Lange (the knight hero, `models/heroes/lange/lange.glb`, its pictures inside the file) and his
+portrait were drawn pale lavender. `DukeRtsApp.dressModel` takes `skinOf(loaded)` — the **first** `Texture` among
+`Material.getParams()` — and jME 3.7 does not hand them in the file's order: a glTF piece with a normal map lists
+`NormalMap` before `BaseColorMap` (and `EmissiveMap` before both), so the piece was lit over its normal map, and his
+sword over its near-black emissive map. The animatedheaven gate (`models/props/gate/gate.glb`, normal maps) had the
+same. **Repro:** `new DesktopAssetManager(true).loadModel(".../lange.glb")` at 1.0.41's game commit and print each
+geometry's params: `NormalMap` comes first. Asked: `skinOf` asks by name — `BaseColorMap`, `DiffuseMap`, `ColorMap` —
+and only then any texture (`ListShow`'s colour lookup already orders its names). Done when a test dresses a glTF with a
+normal map and finds its base colour on the dressed material. The game, meanwhile, ships both files with their base
+colour only (`art/models/base_colour_only.js`, guarded by `ModelPicturesTest`); with this landed the maps can return.
