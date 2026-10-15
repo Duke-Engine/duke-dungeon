@@ -1171,3 +1171,8 @@ seconds)` — the lines (a heading, then names) scrolling up over a darkened scr
 skippable with Esc or a click, and a `creditsGone()` the game can ask for (or a callback) so it goes back to the front
 menu when the roll ends rather than after a fixed time. Done when a test rolls ten lines over two seconds and the
 client reports it gone.
+
+**Landed** as e81d3d9c (branch e49-credits): `DukeGame.creditsRoll(lines, seconds, ended)` with `CreditsRoll.Line.heading`
+/ `name`, skipped by Esc or a click, `ended` told on the window's thread; `creditsShowing()`, `creditsGone(roll)`. The
+game's `CREDITS` act rolls `data/story/credits.duke` (the makers from `CREDITS.md`, grouped by kind) with its music
+cue, and its `ended` goes back to the front menu.

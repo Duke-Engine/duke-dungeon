@@ -137,6 +137,16 @@ class Act2Test {
         walkUpTo(session, "Damsel");
         play(session, 30);
         assertTrue(run.getQuests().finished().contains("CagedGirl"), "the girl is free");
+        assertTrue(all(game, "Damsel").isEmpty(), "out of her cage");
+        assertEquals(1, all(game, "EmptyCage").size(), "which stays, empty");
+        var girl = all(game, "FreedDamsel").getFirst();
+        var home = zone(session, "GirlHome");
+        float before = (float) Math.hypot(girl.getPosition().x() - home.middleX(CELL),
+                girl.getPosition().y() - home.middleY(CELL));
+        play(session, 60);
+        float after = (float) Math.hypot(girl.getPosition().x() - home.middleX(CELL),
+                girl.getPosition().y() - home.middleY(CELL));
+        assertTrue(after < before, "she walks off to the capital: " + before + " -> " + after);
 
         // The lands: each camp cleared, each changing something; all three open the castle.
         int gold = run.goldOf(heroine(session).getPlayerIndex());
@@ -171,12 +181,19 @@ class Act2Test {
         strike(session, all(game, "QueenBoss").getFirst());
         var ended = new boolean[1];
         run.onTheEnd(() -> ended[0] = true);
-        for (int i = 0; i < 2000 && !ended[0]; i++) {
+        for (int i = 0; i < 2000 && game.creditsShowing() == null; i++) {
             play(session, 1);
         }
         assertTrue(script.state().fired().contains("TheEnd"), "the ending played");
         assertTrue(script.state().fired().contains("EndCard"), "Oxiri");
-        assertTrue(ended[0], "the credits rolled, and back to the front menu");
+        var credits = game.creditsShowing();
+        assertNotNull(credits, "the credits roll");
+        assertEquals(SETTINGS.credits().lines().size(), credits.lines().size());
+        assertTrue(credits.lines().stream().anyMatch(line -> line.heading() && line.text().equals("Musiqa")),
+                "grouped by kind");
+        assertFalse(ended[0], "and the menu waits for them");
+        credits.ended().run(); // the window, once they have rolled out or been skipped
+        assertTrue(ended[0], "back to the front menu");
         assertEquals(DungeonRun.State.WON, run.getState());
     }
 
@@ -237,5 +254,23 @@ class Act2Test {
                 && !o.isEffectivelyDead() && o.getPlayerIndex() != her
                 && o.getPlayerIndex() != uz.dukeengine.core.player.PlayerList.NEUTRAL_INDEX
                 && at.holds(o.getPosition().x(), o.getPosition().y(), CELL)), "its camp stays empty");
+    }
+
+    @Test
+    void theFreedGirlStaysFreeWhenTheWorldIsLaidAgain() {
+        var session = act2(2, null);
+        var game = session.game();
+        strike(session, all(game, "Necromancer").getFirst());
+        play(session, 5);
+        walkUpTo(session, "Damsel");
+        play(session, 30);
+        assertTrue(session.run().getScript().flagged("GirlFreed"));
+        heroine(session).getBody().damage(1e8f);
+        play(session, SETTINGS.run().respawnDelayFrames() + 10);
+        assertTrue(all(game, "Damsel").isEmpty(), "her cage stays open");
+        assertEquals(1, all(game, "EmptyCage").size());
+        var girl = all(game, "FreedDamsel").getFirst();
+        assertTrue(zone(session, "GirlHome").holds(girl.getPosition().x(), girl.getPosition().y(), CELL),
+                "and she is home");
     }
 }

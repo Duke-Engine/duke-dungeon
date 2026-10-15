@@ -342,7 +342,12 @@ public record Story(Dialogue dialogue, List<Speaker> speakers, List<Conversation
                     wrong.add(named + " grows " + what + ", and no Monster is called that");
                 }
             }
-            case CHECKPOINT, MENU -> {
+            case REMOVE -> {
+                if (!monsters.contains(what)) {
+                    wrong.add(named + " removes " + what + ", and no Monster is called that");
+                }
+            }
+            case CHECKPOINT, MENU, CREDITS -> {
             }
             case TITLE -> {
                 if (what.isBlank()) {

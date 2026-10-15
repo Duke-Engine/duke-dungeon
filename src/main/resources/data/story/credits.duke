@@ -1,0 +1,71 @@
+; ---------------------------------------------------------------------------
+; The credits the game ends on (Act 2's last trigger, CREDITS: the engine's credits roll,
+; E49) — see docs/plan/2026-10-15-act2.md. The makers of what Last Hero is made of, from
+; CREDITS.md, grouped by kind: keep the two in step when an asset comes or goes. A line that
+; starts "# " is a heading.
+; ---------------------------------------------------------------------------
+Credits
+  ; Seconds for the whole roll to scroll by; Esc or a click skips it.
+  Seconds = 60
+  ; No ending track yet: the quietest of the three (music.duke). The audio branch may name its own.
+  Music = music.uncertainty
+  Lines = [
+    "# Last Hero",
+    "",
+    "# Kod, dizayn va hikoya",
+    "Abdurasul",
+    "",
+    "# Dvigatel",
+    "duke-engine — Abdurasul",
+    "jMonkeyEngine",
+    "",
+    "# Qahramonlar",
+    "Huntress — Wilson (neilhancart), CC BY 4.0",
+    "Lange — phucpham1076, CC BY 4.0",
+    "Adventurers — KayKit, Kay Lousberg, CC0",
+    "",
+    "# Maxluqlar va harakatlar",
+    "Skeletons, Character Animations — KayKit, CC0",
+    "Universal Animation Library — Quaternius, CC0",
+    "Standing 2H Magic Area Attack — Mixamo",
+    "",
+    "# Dunyo",
+    "Dungeon, Forest Nature, Resource Bits — KayKit, CC0",
+    "Baba Yaga's hut — Inuciian, CC BY 4.0",
+    "Fountain — Poly by Google, CC BY 3.0",
+    "Old Driveway Gate — animatedheaven",
+    "",
+    "# Qasrlar",
+    "Medieval Fortress Kit — Aya Rady, CC BY 4.0",
+    "modular fortress — FelikinRuslan, CC BY 4.0",
+    "Medieval city wall assets — BUKKBEEK, CC BY 4.0",
+    "Medieval castle modular kits — Pedram Ashoori, CC BY 4.0",
+    "Desert Fortress Walls — Nicolai Kilstrup, CC BY 4.0",
+    "",
+    "# Qurollar",
+    "Elven Assassin Weapon Set — nodgerty, CC BY 4.0",
+    "Low poly medieval weapons — panarth, CC BY 4.0",
+    "",
+    "# Belgilar",
+    "game-icons.net — Lorc, Delapouite, Skoll, CC BY 3.0",
+    "Fantasy Icon Pack — Ravenmore",
+    "Armor Icons by Equipment Slot — Clint Bellanger, Blarumyrran",
+    "OSARE weapon icons — Blarumyrran",
+    "",
+    "# Tovushlar",
+    "RPG Audio, Impact Sounds, Interface Sounds, Voiceover Pack — Kenney, CC0",
+    "",
+    "# Musiqa",
+    "Industrial — looplicator (freesound.org)",
+    "Uncertainty — destructo20 (freesound.org)",
+    "The Sentinel — logicmoon (freesound.org)",
+    "",
+    "# Shrift va bezaklar",
+    "Cinzel — Natanael Gama, SIL OFL 1.1",
+    "Particle Pack, Fantasy UI Borders, Cursor Pack — Kenney, CC0",
+    "",
+    "",
+    "# Rahmat!",
+    "To'liq ro'yxat: CREDITS.md",
+  ]
+End

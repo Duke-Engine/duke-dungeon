@@ -810,7 +810,7 @@ Trigger
 End
 
 ; ---------------------------------------------------------------------------
-; Title cards: the act's chapters, the end, and the credits (names from CREDITS.md).
+; Title cards: the act's chapters and the end. The credits are data/story/credits.duke.
 ; ---------------------------------------------------------------------------
 
 Title
@@ -834,53 +834,8 @@ Title
   FadeOut = 1.5
 End
 
-Title
-  Name = CreditsMade
-  Text = Mualliflar
-  Subtext = "O'yin va hikoya: Abdurasul"
-  FadeIn = 0.6
-  Hold = 3
-  FadeOut = 0.6
-End
-
-Title
-  Name = CreditsArt
-  Text = "Qahramonlar va maxluqlar"
-  Subtext = "KayKit — Kay Lousberg (CC0) · Huntress — Wilson · Lange — phucpham1076 · Quaternius (CC0)"
-  FadeIn = 0.6
-  Hold = 3
-  FadeOut = 0.6
-End
-
-Title
-  Name = CreditsCastles
-  Text = "Qasrlar va o'rmon"
-  Subtext = "FelikinRuslan · Aya Rady · BUKKBEEK · Pedram Ashoori · Nicolai Kilstrup · Inuciian (CC BY 4.0)"
-  FadeIn = 0.6
-  Hold = 3
-  FadeOut = 0.6
-End
-
-Title
-  Name = CreditsIcons
-  Text = "Belgilar va tovushlar"
-  Subtext = "game-icons.net — Lorc, Delapouite (CC BY 3.0) · Ravenmore · Kenney (CC0)"
-  FadeIn = 0.6
-  Hold = 3
-  FadeOut = 0.6
-End
-
-Title
-  Name = CreditsThanks
-  Text = "Rahmat!"
-  Subtext = "To'liq ro'yxat: CREDITS.md"
-  FadeIn = 0.6
-  Hold = 3
-  FadeOut = 0.6
-End
-
 ; ---------------------------------------------------------------------------
-; Each land's triggers, the AND of the three, and the credits' roll.
+; Each land's triggers, and the AND of the three.
 ; ---------------------------------------------------------------------------
 
 Trigger
@@ -1117,86 +1072,126 @@ Trigger
   ]
 End
 
+; ===========================================================================
+; The credits, after "Oxiri": rolled with their music (E49), and the front menu once they have
+; rolled or are skipped.
+; ===========================================================================
+
 Trigger
-  Name = Roll1
+  Name = RollCredits
   Map = hall
   When = AFTER
   Target = EndCard
-  Delay = 240
+  Delay = 210
   Actions = [
     Action
-      Act = TITLE
-      Target = CreditsMade
+      Act = CREDITS
     End
   ]
+End
+
+; ===========================================================================
+; The caged girl let out: the cage opens, she steps out and goes to the capital, where the
+; commander is; the empty cage stays swinging on its gibbet.
+; ===========================================================================
+
+Place
+  Map = world
+  ; The cell under her cage (the map's Npcs: Damsel 39 89).
+  Zone = "CageSpot 39 89 1"
+End
+
+Place
+  Map = world
+  ; By the commander on the capital's square.
+  Zone = "GirlHome 123 463 1"
+End
+
+Conversation
+  Name = GirlAtHome
+  Lines = [
+    Line
+      Speaker = Damsel
+      Text = "Siz bo'lmaganingizda, hali ham o'sha qafasda bo'lardim. Qo'mondon menga boshpana berdi."
+    End
+  ]
+End
+
+; Out of her cage: the same girl, walking (STAND-IN name, Qiz).
+Npc
+  Name = FreedDamsel
+  Talk = GirlAtHome
+  Role = Ozod
+  Radius = 25
+End
+
+; The empty cage: a thing that stands, says nothing and is nobody's.
+Npc
+  Name = EmptyCage
+  Radius = 1
 End
 
 Trigger
-  Name = Roll2
-  Map = hall
-  When = AFTER
-  Target = Roll1
-  Delay = 150
+  Name = CageOpens
+  Map = world
+  When = QUEST_DONE
+  Target = CagedGirl
   Actions = [
     Action
-      Act = TITLE
-      Target = CreditsArt
+      Act = REMOVE
+      Target = Damsel
+    End,
+    Action
+      Act = SPAWN
+      Target = EmptyCage
+      Zone = CageSpot
+    End,
+    Action
+      Act = SPAWN
+      Target = FreedDamsel
+      Zone = CageSpot
+    End,
+    Action
+      Act = WALK
+      Target = FreedDamsel
+      Zone = GirlHome
+    End,
+    Action
+      Act = FLAG
+      Target = GirlFreed
+    End,
+    Action
+      Act = CHECKPOINT
     End
   ]
 End
 
+; Laid again (a load, a death), she is home and the cage is empty.
 Trigger
-  Name = Roll3
-  Map = hall
-  When = AFTER
-  Target = Roll2
-  Delay = 150
+  Name = GirlStaysFree
+  Map = world
+  When = MAP_START
+  Repeat = Yes
+  If = [
+    Condition
+      Is = FLAG_SET
+      Target = GirlFreed
+    End
+  ]
   Actions = [
     Action
-      Act = TITLE
-      Target = CreditsCastles
+      Act = REMOVE
+      Target = Damsel
+    End,
+    Action
+      Act = SPAWN
+      Target = EmptyCage
+      Zone = CageSpot
+    End,
+    Action
+      Act = SPAWN
+      Target = FreedDamsel
+      Zone = GirlHome
     End
   ]
 End
-
-Trigger
-  Name = Roll4
-  Map = hall
-  When = AFTER
-  Target = Roll3
-  Delay = 150
-  Actions = [
-    Action
-      Act = TITLE
-      Target = CreditsIcons
-    End
-  ]
-End
-
-Trigger
-  Name = Roll5
-  Map = hall
-  When = AFTER
-  Target = Roll4
-  Delay = 150
-  Actions = [
-    Action
-      Act = TITLE
-      Target = CreditsThanks
-    End
-  ]
-End
-
-Trigger
-  Name = BackToTheMenu
-  Map = hall
-  When = AFTER
-  Target = Roll5
-  Delay = 150
-  Actions = [
-    Action
-      Act = MENU
-    End
-  ]
-End
-

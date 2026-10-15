@@ -125,7 +125,7 @@ public final class Content {
             named(uz.dukeengine.dungeon.loot.Unique.class), named(uz.dukeengine.dungeon.loot.Potion.class),
             named(uz.dukeengine.dungeon.loot.ItemRules.class),
             named(uz.dukeengine.dungeon.story.Campaign.class), named(uz.dukeengine.dungeon.story.Title.class),
-            named(uz.dukeengine.dungeon.story.Place.class));
+            named(uz.dukeengine.dungeon.story.Place.class), named(uz.dukeengine.dungeon.story.Credits.class));
 
     /** The blocks a world builds things from. */
     private static final Set<String> TEMPLATES = Set.of("object", "monster", "hero", "projectile", "prop");
