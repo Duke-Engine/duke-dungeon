@@ -248,12 +248,16 @@ class LifestealTest {
         }
     }
 
-    /** And nothing else down here drinks: every shipped unit with a LIFESTEAL is a boss, and every boss has one. */
+    /**
+     * And nothing else down here drinks: every shipped unit with a LIFESTEAL is a boss, and every boss has one. The
+     * open world's own -- the wilds' elites and camp bosses, never down here (MinDepth 99) -- drink too.
+     */
     @Test
     void nothingButTheBossesDrinks() {
         var drinkers = new TreeSet<String>();
         for (var skill : SETTINGS.skills()) {
-            if (skill.effect() == SkillEffect.LIFESTEAL) {
+            var kind = SETTINGS.monster(skill.heroTemplate());
+            if (skill.effect() == SkillEffect.LIFESTEAL && (kind == null || kind.minDepth() < 99)) {
                 drinkers.add(skill.heroTemplate());
             }
         }

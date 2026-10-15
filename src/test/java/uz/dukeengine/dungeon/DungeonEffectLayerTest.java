@@ -616,7 +616,10 @@ class DungeonEffectLayerTest {
     @Test
     void eachAurasPictureIsPaintedWhiteOnClearAndNotBlank() throws java.io.IOException {
         var pictures = new java.util.HashSet<String>();
-        for (var aura : SETTINGS.skills().stream().filter(skill -> skill.effect().isAura()).toList()) {
+        // One of each kind: the wilds' elites and bosses wear the auras the skeletons do.
+        var seen = new java.util.HashSet<String>();
+        for (var aura : SETTINGS.skills().stream().filter(skill -> skill.effect().isAura())
+                .filter(skill -> seen.add(skill.look())).toList()) {
             var texture = SETTINGS.effectLayers().stream().filter(art -> art.effect().equals(aura.look()))
                     .map(DungeonEffectLayerTest::drawn).findFirst().orElseThrow().texture();
             var url = DungeonEffectLayerTest.class.getClassLoader().getResource(texture);

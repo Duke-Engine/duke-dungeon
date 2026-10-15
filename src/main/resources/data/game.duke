@@ -92,6 +92,10 @@ Game
     data/units/villagers.duke,
     ; Act 2's townsfolk: see data/story/act2.duke.
     data/units/act2.duke,
+    data/units/wilds_forest.duke,
+    data/units/wilds_desert.duke,
+    data/units/wilds_highlands.duke,
+    data/units/wilds_marsh.duke,
 
     data/projectiles/arrow.duke,
     data/projectiles/heavy_arrow.duke,
@@ -149,6 +153,7 @@ Game
     data/props/castle.duke,
 
     data/sounds/sfx.duke,
+    data/sounds/wilds.duke,
     data/sounds/ui.duke,
     data/sounds/voice.duke,
     data/sounds/music.duke,

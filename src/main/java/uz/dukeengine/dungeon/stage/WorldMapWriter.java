@@ -150,11 +150,52 @@ public final class WorldMapWriter {
             {5, new String[] {"Revenant", "SkeletonMage", "SkeletonHealer", "Revenant", "Reaper", "Champion"}},
     };
 
-    /** Small groups about each region, beside the camps: the kinds, by region. */
+    /**
+     * Small groups about each region, beside the camps: the kinds, by region. The steppe, the forest and the
+     * highlands are walked by their own families' (see {@link Wild}).
+     */
     private static final String[][] ROAMERS = {
-            {"Skeleton", "Runner"}, {"Runner", "Stalker"}, {"Stalker", "Skeleton"},
-            {"SkeletonMage", "Skeleton"}, {"Revenant", "Skeleton"},
+            {"Skeleton", "Runner"}, {"Cactoro", "Jinn"}, {"Wolf", "Sporeling"},
+            {"Goleling", "Shaman"}, {"Revenant", "Skeleton"},
     };
+
+    /**
+     * The wilds' camps, one a land (data/units/wilds_*.duke): where to look for its ground, as a share of the map,
+     * the region it has to stand in ({@code null}: anywhere round the lake), its boss in the middle, and the family
+     * round him -- the common ones, the stronger, the ones that shoot, and an elite.
+     */
+    enum Wild {
+        FOREST(0.17, 0.36, Biome.FOREST, "GoblinChief",
+                "Wolf", "Wolf", "Wolf", "Spider", "Spider", "Sporeling", "Sporeling", "BloodWolf"),
+        DESERT(0.88, 0.64, Biome.STEPPE, "Dragon",
+                "Cactoro", "Cactoro", "Cactoro", "Lizard", "Lizard", "Jinn", "Jinn", "FireLizard"),
+        HIGHLANDS(0.38, 0.28, Biome.HIGHLANDS, "GiantKing",
+                "Goleling", "Goleling", "Goleling", "Ogre", "Ogre", "Shaman", "Shaman", "StoneGoleling"),
+        MARSH(BASIN[0] + 0.08, BASIN[1] - 0.04, null, "BogHorror",
+                "Slime", "Slime", "Slime", "Frog", "Frog", "Wisp", "Wisp", "VenomFrog");
+
+        final double u;
+        final double v;
+        final Biome region;
+        final String boss;
+        final String[] kinds;
+
+        Wild(double u, double v, Biome region, String boss, String... kinds) {
+            this.u = u;
+            this.v = v;
+            this.region = region;
+            this.boss = boss;
+            this.kinds = kinds;
+        }
+
+        /** The one that is the family's elite: the last. */
+        String elite() {
+            return kinds[kinds.length - 1];
+        }
+    }
+
+    /** How far a wild camp keeps from a village, a tower, a landmark or a site's edge, in cells. */
+    static final int WILD_QUIET = 30;
     private static final int ROAMING_GROUPS = 4;
 
     /** The villages, one by each road but the forest's, in the order of those roads. */
@@ -1035,6 +1076,18 @@ public final class WorldMapWriter {
                     }
                 }
             }
+            for (var wild : Wild.values()) {
+                var heart = wildCamp(wild);
+                monsters.add(new Monster(wild.boss, free(taken, heart[0], heart[1])));
+                // The rest in a ring round him, each a few cells out, met as one fight.
+                for (int i = 0; i < wild.kinds.length; i++) {
+                    double angle = 2 * Math.PI * i / wild.kinds.length;
+                    int reach = 4 + i % 3;
+                    monsters.add(new Monster(wild.kinds[i], free(taken,
+                            heart[0] + (int) Math.round(reach * Math.cos(angle)),
+                            heart[1] + (int) Math.round(reach * Math.sin(angle)))));
+                }
+            }
             for (int[] corner : new int[][] {{-6, -6}, {6, -6}, {-6, 6}, {6, 6}}) {
                 props.add(new Prop("Pillar", free(taken, castle.x() + corner[0] / 2, castle.y() + corner[1] / 2)));
                 props.add(new Prop("Pillar", free(taken, city.x() + corner[0] + (corner[0] > 0 ? 1 : -1),
@@ -1840,6 +1893,46 @@ public final class WorldMapWriter {
         }
 
         /** The nearest cell to ({@code x}, {@code y}) that can be stood on and is not yet taken. */
+        /**
+         * The middle of a wild camp: the nearest cell to where it is looked for, in rings outward, that a hero walks
+         * to from the city, dry and level, in its region -- or, for the marsh, by the lake -- and at least
+         * {@link #WILD_QUIET} cells from every village, tower and landmark and past every site's own ground.
+         */
+        private int[] wildCamp(Wild wild) {
+            int x0 = (int) Math.round(wild.u * SIZE);
+            int y0 = (int) Math.round(wild.v * SIZE);
+            for (int reach = 0; reach < 160; reach++) {
+                for (int dy = -reach; dy <= reach; dy++) {
+                    for (int dx = -reach; dx <= reach; dx++) {
+                        int x = x0 + dx;
+                        int y = y0 + dy;
+                        if (Math.max(Math.abs(dx), Math.abs(dy)) == reach && wildGround(wild, x, y)) {
+                            return new int[] {x, y};
+                        }
+                    }
+                }
+            }
+            throw new IllegalStateException("no ground for the " + wild + " camp");
+        }
+
+        private boolean wildGround(Wild wild, int x, int y) {
+            if (x < 20 || y < 20 || x >= SIZE - 20 || y >= SIZE - 20) {
+                return false;
+            }
+            int at = y * SIZE + x;
+            if (!walked[at] || wet[at] || lean(x, y) >= 10) {
+                return false;
+            }
+            if (wild.region != null ? region[at] != wild.region
+                    : Math.hypot(x - BASIN[0] * SIZE, y - BASIN[1] * SIZE) > BASIN_REACH + 24) {
+                return false;
+            }
+            if (quiet.stream().anyMatch(q -> Math.hypot(q[0] - x, q[1] - y) < WILD_QUIET)) {
+                return false;
+            }
+            return SITES.stream().noneMatch(site -> Math.hypot(site.x() - x, site.y() - y) < site.radius() + WILD_QUIET);
+        }
+
         private Placement free(Set<Long> taken, int x, int y) {
             for (int reach = 0; reach < SIZE; reach++) {
                 for (int dy = -reach; dy <= reach; dy++) {

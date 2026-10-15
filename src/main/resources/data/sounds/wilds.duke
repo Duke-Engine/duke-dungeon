@@ -1,0 +1,1275 @@
+; ---------------------------------------------------------------------------
+; The wilds' monsters (data/units/wilds_*.duke), heard: their blows, their pain, their deaths, a cry when
+; the big ones come into sight, and their feet -- walking.<Template>.<surface> as every walker's, see
+; data/sounds/sfx.duke. Flyers and floaters have no feet to hear. Every clip is one the game already ships
+; (CREDITS.md); nothing new was recorded.
+; ---------------------------------------------------------------------------
+
+Sound
+  Name = fired.Wolf
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.5
+  Files = [audio/sfx/weapon/quick_swing_1.ogg, audio/sfx/weapon/quick_swing_2.ogg]
+End
+Sound
+  Name = hurt.Wolf
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.5
+  GapSeconds = 0.1
+  Files = [audio/sfx/creature/beast_1.ogg, audio/sfx/creature/beast_2.ogg]
+End
+Sound
+  Name = died.Wolf
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.75
+  Files = [audio/sfx/creature/beast_3.ogg]
+End
+Sound
+  Name = spawned.Wolf
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.6
+  GapSeconds = 3
+  Files = [audio/sfx/creature/beast_2.ogg]
+End
+Sound
+  Name = walking.Wolf
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/step/stone_l1.ogg, audio/sfx/step/stone_r1.ogg, audio/sfx/step/stone_l2.ogg, audio/sfx/step/stone_r2.ogg, audio/sfx/step/stone_l3.ogg, audio/sfx/step/stone_r3.ogg]
+End
+Sound
+  Name = walking.Wolf.grass
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.Wolf.forest
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.Wolf.mud
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.Wolf.sand
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.Wolf.snow
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.Wolf.dirt
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/footstep_1.ogg, audio/sfx/footstep_2.ogg, audio/sfx/footstep_3.ogg, audio/sfx/footstep_4.ogg, audio/sfx/footstep_5.ogg]
+End
+
+Sound
+  Name = fired.Spider
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.5
+  Files = [audio/sfx/weapon/quick_swing_2.ogg, audio/sfx/weapon/quick_swing_3.ogg]
+End
+Sound
+  Name = hurt.Spider
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.5
+  GapSeconds = 0.1
+  Files = [audio/sfx/creature/bone_hit_1.ogg, audio/sfx/creature/bone_hit_2.ogg]
+End
+Sound
+  Name = died.Spider
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.75
+  Files = [audio/sfx/creature/bones_fall_2.ogg]
+End
+Sound
+  Name = walking.Spider
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/step/stone_l1.ogg, audio/sfx/step/stone_r1.ogg, audio/sfx/step/stone_l2.ogg, audio/sfx/step/stone_r2.ogg, audio/sfx/step/stone_l3.ogg, audio/sfx/step/stone_r3.ogg]
+End
+Sound
+  Name = walking.Spider.grass
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.Spider.forest
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.Spider.mud
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.Spider.sand
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.Spider.snow
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.Spider.dirt
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/footstep_1.ogg, audio/sfx/footstep_2.ogg, audio/sfx/footstep_3.ogg, audio/sfx/footstep_4.ogg, audio/sfx/footstep_5.ogg]
+End
+
+Sound
+  Name = fired.Sporeling
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.5
+  Files = [audio/sfx/magic/bolt_2.ogg]
+End
+Sound
+  Name = hurt.Sporeling
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.5
+  GapSeconds = 0.1
+  Files = [audio/sfx/creature/imp_hurt_1.ogg, audio/sfx/creature/imp_hurt_2.ogg]
+End
+Sound
+  Name = died.Sporeling
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.75
+  Files = [audio/sfx/creature/imp_die.ogg]
+End
+Sound
+  Name = walking.Sporeling
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/step/stone_l1.ogg, audio/sfx/step/stone_r1.ogg, audio/sfx/step/stone_l2.ogg, audio/sfx/step/stone_r2.ogg, audio/sfx/step/stone_l3.ogg, audio/sfx/step/stone_r3.ogg]
+End
+Sound
+  Name = walking.Sporeling.grass
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.Sporeling.forest
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.Sporeling.mud
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.Sporeling.sand
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.Sporeling.snow
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.Sporeling.dirt
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/footstep_1.ogg, audio/sfx/footstep_2.ogg, audio/sfx/footstep_3.ogg, audio/sfx/footstep_4.ogg, audio/sfx/footstep_5.ogg]
+End
+
+Sound
+  Name = fired.BloodWolf
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.5
+  Files = [audio/sfx/weapon/quick_swing_1.ogg, audio/sfx/weapon/quick_swing_3.ogg]
+End
+Sound
+  Name = hurt.BloodWolf
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.5
+  GapSeconds = 0.1
+  Files = [audio/sfx/creature/beast_1.ogg, audio/sfx/creature/beast_2.ogg]
+End
+Sound
+  Name = died.BloodWolf
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.75
+  Files = [audio/sfx/creature/beast_4.ogg]
+End
+Sound
+  Name = spawned.BloodWolf
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.6
+  GapSeconds = 3
+  Files = [audio/sfx/creature/roar_2.ogg]
+End
+Sound
+  Name = walking.BloodWolf
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/step/stone_l1.ogg, audio/sfx/step/stone_r1.ogg, audio/sfx/step/stone_l2.ogg, audio/sfx/step/stone_r2.ogg, audio/sfx/step/stone_l3.ogg, audio/sfx/step/stone_r3.ogg]
+End
+Sound
+  Name = walking.BloodWolf.grass
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.BloodWolf.forest
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.BloodWolf.mud
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.BloodWolf.sand
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.BloodWolf.snow
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.BloodWolf.dirt
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/footstep_1.ogg, audio/sfx/footstep_2.ogg, audio/sfx/footstep_3.ogg, audio/sfx/footstep_4.ogg, audio/sfx/footstep_5.ogg]
+End
+
+Sound
+  Name = fired.GoblinChief
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.5
+  Files = [audio/sfx/weapon/heavy_swing_1.ogg, audio/sfx/weapon/heavy_swing_2.ogg]
+End
+Sound
+  Name = hurt.GoblinChief
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.5
+  GapSeconds = 0.1
+  Files = [audio/sfx/creature/giant_1.ogg, audio/sfx/creature/giant_2.ogg]
+End
+Sound
+  Name = died.GoblinChief
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.75
+  Files = [audio/sfx/death_brute.ogg, audio/sfx/creature/giant_5.ogg]
+End
+Sound
+  Name = spawned.GoblinChief
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.6
+  GapSeconds = 3
+  Files = [audio/sfx/creature/roar_1.ogg]
+End
+Sound
+  Name = walking.GoblinChief
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.25
+  GapSeconds = 0.6
+  Files = [audio/sfx/step/stone_l1.ogg, audio/sfx/step/stone_r1.ogg, audio/sfx/step/stone_l2.ogg, audio/sfx/step/stone_r2.ogg, audio/sfx/step/stone_l3.ogg, audio/sfx/step/stone_r3.ogg]
+End
+Sound
+  Name = walking.GoblinChief.grass
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.25
+  GapSeconds = 0.6
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.GoblinChief.forest
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.25
+  GapSeconds = 0.6
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.GoblinChief.mud
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.25
+  GapSeconds = 0.6
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.GoblinChief.sand
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.25
+  GapSeconds = 0.6
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.GoblinChief.snow
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.25
+  GapSeconds = 0.6
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.GoblinChief.dirt
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.25
+  GapSeconds = 0.6
+  Files = [audio/sfx/footstep_1.ogg, audio/sfx/footstep_2.ogg, audio/sfx/footstep_3.ogg, audio/sfx/footstep_4.ogg, audio/sfx/footstep_5.ogg]
+End
+
+Sound
+  Name = fired.Cactoro
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.5
+  Files = [audio/sfx/weapon/swing_1.ogg, audio/sfx/weapon/swing_2.ogg]
+End
+Sound
+  Name = hurt.Cactoro
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.5
+  GapSeconds = 0.1
+  Files = [audio/sfx/creature/imp_hurt_2.ogg, audio/sfx/creature/imp_hurt_3.ogg]
+End
+Sound
+  Name = died.Cactoro
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.75
+  Files = [audio/sfx/death_generic.ogg]
+End
+Sound
+  Name = walking.Cactoro
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/step/stone_l1.ogg, audio/sfx/step/stone_r1.ogg, audio/sfx/step/stone_l2.ogg, audio/sfx/step/stone_r2.ogg, audio/sfx/step/stone_l3.ogg, audio/sfx/step/stone_r3.ogg]
+End
+Sound
+  Name = walking.Cactoro.grass
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.Cactoro.forest
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.Cactoro.mud
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.Cactoro.sand
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.Cactoro.snow
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.Cactoro.dirt
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/footstep_1.ogg, audio/sfx/footstep_2.ogg, audio/sfx/footstep_3.ogg, audio/sfx/footstep_4.ogg, audio/sfx/footstep_5.ogg]
+End
+
+Sound
+  Name = fired.Lizard
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.5
+  Files = [audio/sfx/weapon/heavy_swing_2.ogg, audio/sfx/weapon/heavy_swing_3.ogg]
+End
+Sound
+  Name = hurt.Lizard
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.5
+  GapSeconds = 0.1
+  Files = [audio/sfx/creature/beast_3.ogg, audio/sfx/creature/beast_4.ogg]
+End
+Sound
+  Name = died.Lizard
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.75
+  Files = [audio/sfx/creature/beast_5.ogg]
+End
+Sound
+  Name = walking.Lizard
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.25
+  GapSeconds = 0.6
+  Files = [audio/sfx/step/stone_l1.ogg, audio/sfx/step/stone_r1.ogg, audio/sfx/step/stone_l2.ogg, audio/sfx/step/stone_r2.ogg, audio/sfx/step/stone_l3.ogg, audio/sfx/step/stone_r3.ogg]
+End
+Sound
+  Name = walking.Lizard.grass
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.25
+  GapSeconds = 0.6
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.Lizard.forest
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.25
+  GapSeconds = 0.6
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.Lizard.mud
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.25
+  GapSeconds = 0.6
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.Lizard.sand
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.25
+  GapSeconds = 0.6
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.Lizard.snow
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.25
+  GapSeconds = 0.6
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.Lizard.dirt
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.25
+  GapSeconds = 0.6
+  Files = [audio/sfx/footstep_1.ogg, audio/sfx/footstep_2.ogg, audio/sfx/footstep_3.ogg, audio/sfx/footstep_4.ogg, audio/sfx/footstep_5.ogg]
+End
+
+Sound
+  Name = fired.Jinn
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.5
+  Files = [audio/sfx/magic/fire_1.ogg, audio/sfx/magic/fire_2.ogg]
+End
+Sound
+  Name = hurt.Jinn
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.5
+  GapSeconds = 0.1
+  Files = [audio/sfx/creature/shade_1.ogg, audio/sfx/creature/shade_2.ogg]
+End
+Sound
+  Name = died.Jinn
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.75
+  Files = [audio/sfx/creature/shade_5.ogg]
+End
+
+Sound
+  Name = fired.FireLizard
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.5
+  Files = [audio/sfx/weapon/heavy_swing_1.ogg, audio/sfx/weapon/heavy_swing_3.ogg]
+End
+Sound
+  Name = hurt.FireLizard
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.5
+  GapSeconds = 0.1
+  Files = [audio/sfx/creature/beast_3.ogg, audio/sfx/creature/beast_4.ogg]
+End
+Sound
+  Name = died.FireLizard
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.75
+  Files = [audio/sfx/creature/beast_5.ogg]
+End
+Sound
+  Name = spawned.FireLizard
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.6
+  GapSeconds = 3
+  Files = [audio/sfx/creature/roar_2.ogg]
+End
+Sound
+  Name = walking.FireLizard
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.25
+  GapSeconds = 0.6
+  Files = [audio/sfx/step/stone_l1.ogg, audio/sfx/step/stone_r1.ogg, audio/sfx/step/stone_l2.ogg, audio/sfx/step/stone_r2.ogg, audio/sfx/step/stone_l3.ogg, audio/sfx/step/stone_r3.ogg]
+End
+Sound
+  Name = walking.FireLizard.grass
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.25
+  GapSeconds = 0.6
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.FireLizard.forest
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.25
+  GapSeconds = 0.6
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.FireLizard.mud
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.25
+  GapSeconds = 0.6
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.FireLizard.sand
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.25
+  GapSeconds = 0.6
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.FireLizard.snow
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.25
+  GapSeconds = 0.6
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.FireLizard.dirt
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.25
+  GapSeconds = 0.6
+  Files = [audio/sfx/footstep_1.ogg, audio/sfx/footstep_2.ogg, audio/sfx/footstep_3.ogg, audio/sfx/footstep_4.ogg, audio/sfx/footstep_5.ogg]
+End
+
+Sound
+  Name = fired.Dragon
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.5
+  Files = [audio/sfx/weapon/heavy_swing_1.ogg, audio/sfx/weapon/heavy_swing_2.ogg]
+End
+Sound
+  Name = hurt.Dragon
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.5
+  GapSeconds = 0.1
+  Files = [audio/sfx/creature/giant_3.ogg, audio/sfx/creature/giant_4.ogg]
+End
+Sound
+  Name = died.Dragon
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.75
+  Files = [audio/sfx/death_boss.ogg]
+End
+Sound
+  Name = spawned.Dragon
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.6
+  GapSeconds = 3
+  Files = [audio/sfx/skill/dragon_roar.ogg]
+End
+
+Sound
+  Name = fired.Goleling
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.5
+  Files = [audio/sfx/weapon/quick_swing_1.ogg, audio/sfx/weapon/quick_swing_2.ogg]
+End
+Sound
+  Name = hurt.Goleling
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.5
+  GapSeconds = 0.1
+  Files = [audio/sfx/creature/imp_hurt_1.ogg, audio/sfx/creature/imp_hurt_3.ogg]
+End
+Sound
+  Name = died.Goleling
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.75
+  Files = [audio/sfx/creature/imp_die.ogg]
+End
+
+Sound
+  Name = fired.Ogre
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.5
+  Files = [audio/sfx/weapon/heavy_swing_1.ogg, audio/sfx/weapon/heavy_swing_2.ogg, audio/sfx/weapon/heavy_swing_3.ogg]
+End
+Sound
+  Name = hurt.Ogre
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.5
+  GapSeconds = 0.1
+  Files = [audio/sfx/creature/ogre_1.ogg, audio/sfx/creature/ogre_2.ogg]
+End
+Sound
+  Name = died.Ogre
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.75
+  Files = [audio/sfx/death_brute.ogg, audio/sfx/creature/ogre_4.ogg]
+End
+Sound
+  Name = spawned.Ogre
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.6
+  GapSeconds = 3
+  Files = [audio/sfx/creature/ogre_3.ogg]
+End
+Sound
+  Name = walking.Ogre
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.25
+  GapSeconds = 0.6
+  Files = [audio/sfx/step/stone_l1.ogg, audio/sfx/step/stone_r1.ogg, audio/sfx/step/stone_l2.ogg, audio/sfx/step/stone_r2.ogg, audio/sfx/step/stone_l3.ogg, audio/sfx/step/stone_r3.ogg]
+End
+Sound
+  Name = walking.Ogre.grass
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.25
+  GapSeconds = 0.6
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.Ogre.forest
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.25
+  GapSeconds = 0.6
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.Ogre.mud
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.25
+  GapSeconds = 0.6
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.Ogre.sand
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.25
+  GapSeconds = 0.6
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.Ogre.snow
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.25
+  GapSeconds = 0.6
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.Ogre.dirt
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.25
+  GapSeconds = 0.6
+  Files = [audio/sfx/footstep_1.ogg, audio/sfx/footstep_2.ogg, audio/sfx/footstep_3.ogg, audio/sfx/footstep_4.ogg, audio/sfx/footstep_5.ogg]
+End
+
+Sound
+  Name = fired.Shaman
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.5
+  Files = [audio/sfx/magic/bolt_1.ogg]
+End
+Sound
+  Name = hurt.Shaman
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.5
+  GapSeconds = 0.1
+  Files = [audio/sfx/creature/undead_1.ogg, audio/sfx/creature/undead_2.ogg]
+End
+Sound
+  Name = died.Shaman
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.75
+  Files = [audio/sfx/creature/undead_3.ogg]
+End
+
+Sound
+  Name = fired.StoneGoleling
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.5
+  Files = [audio/sfx/weapon/swing_1.ogg, audio/sfx/weapon/swing_3.ogg]
+End
+Sound
+  Name = hurt.StoneGoleling
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.5
+  GapSeconds = 0.1
+  Files = [audio/sfx/creature/bone_hit_2.ogg, audio/sfx/creature/bone_hit_3.ogg]
+End
+Sound
+  Name = died.StoneGoleling
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.75
+  Files = [audio/sfx/creature/bones_fall_1.ogg]
+End
+Sound
+  Name = spawned.StoneGoleling
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.6
+  GapSeconds = 3
+  Files = [audio/sfx/creature/imp_call_1.ogg]
+End
+
+Sound
+  Name = fired.GiantKing
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.5
+  Files = [audio/sfx/weapon/heavy_swing_1.ogg, audio/sfx/weapon/heavy_swing_2.ogg, audio/sfx/weapon/heavy_swing_3.ogg]
+End
+Sound
+  Name = hurt.GiantKing
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.5
+  GapSeconds = 0.1
+  Files = [audio/sfx/creature/giant_1.ogg, audio/sfx/creature/giant_2.ogg]
+End
+Sound
+  Name = died.GiantKing
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.75
+  Files = [audio/sfx/death_boss.ogg]
+End
+Sound
+  Name = spawned.GiantKing
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.6
+  GapSeconds = 3
+  Files = [audio/sfx/creature/roar_1.ogg]
+End
+Sound
+  Name = walking.GiantKing
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.25
+  GapSeconds = 0.6
+  Files = [audio/sfx/step/stone_l1.ogg, audio/sfx/step/stone_r1.ogg, audio/sfx/step/stone_l2.ogg, audio/sfx/step/stone_r2.ogg, audio/sfx/step/stone_l3.ogg, audio/sfx/step/stone_r3.ogg]
+End
+Sound
+  Name = walking.GiantKing.grass
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.25
+  GapSeconds = 0.6
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.GiantKing.forest
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.25
+  GapSeconds = 0.6
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.GiantKing.mud
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.25
+  GapSeconds = 0.6
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.GiantKing.sand
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.25
+  GapSeconds = 0.6
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.GiantKing.snow
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.25
+  GapSeconds = 0.6
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.GiantKing.dirt
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.25
+  GapSeconds = 0.6
+  Files = [audio/sfx/footstep_1.ogg, audio/sfx/footstep_2.ogg, audio/sfx/footstep_3.ogg, audio/sfx/footstep_4.ogg, audio/sfx/footstep_5.ogg]
+End
+
+Sound
+  Name = fired.Slime
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.5
+  Files = [audio/sfx/weapon/quick_swing_3.ogg]
+End
+Sound
+  Name = hurt.Slime
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.5
+  GapSeconds = 0.1
+  Files = [audio/sfx/creature/imp_hurt_2.ogg]
+End
+Sound
+  Name = died.Slime
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.75
+  Files = [audio/sfx/creature/imp_die.ogg]
+End
+Sound
+  Name = walking.Slime
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.5
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.Slime.grass
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.5
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.Slime.forest
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.5
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.Slime.mud
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.5
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.Slime.sand
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.5
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.Slime.snow
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.5
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.Slime.dirt
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.5
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+
+Sound
+  Name = fired.Frog
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.5
+  Files = [audio/sfx/weapon/swing_2.ogg, audio/sfx/weapon/swing_3.ogg]
+End
+Sound
+  Name = hurt.Frog
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.5
+  GapSeconds = 0.1
+  Files = [audio/sfx/creature/beast_1.ogg, audio/sfx/creature/beast_5.ogg]
+End
+Sound
+  Name = died.Frog
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.75
+  Files = [audio/sfx/creature/beast_3.ogg]
+End
+Sound
+  Name = walking.Frog
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/step/stone_l1.ogg, audio/sfx/step/stone_r1.ogg, audio/sfx/step/stone_l2.ogg, audio/sfx/step/stone_r2.ogg, audio/sfx/step/stone_l3.ogg, audio/sfx/step/stone_r3.ogg]
+End
+Sound
+  Name = walking.Frog.grass
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.Frog.forest
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.Frog.mud
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.Frog.sand
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.Frog.snow
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.Frog.dirt
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/footstep_1.ogg, audio/sfx/footstep_2.ogg, audio/sfx/footstep_3.ogg, audio/sfx/footstep_4.ogg, audio/sfx/footstep_5.ogg]
+End
+
+Sound
+  Name = fired.Wisp
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.5
+  Files = [audio/sfx/magic/bolt_2.ogg]
+End
+Sound
+  Name = hurt.Wisp
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.5
+  GapSeconds = 0.1
+  Files = [audio/sfx/creature/shade_2.ogg, audio/sfx/creature/shade_3.ogg]
+End
+Sound
+  Name = died.Wisp
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.75
+  Files = [audio/sfx/creature/shade_4.ogg]
+End
+
+Sound
+  Name = fired.VenomFrog
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.5
+  Files = [audio/sfx/weapon/swing_1.ogg, audio/sfx/weapon/swing_2.ogg]
+End
+Sound
+  Name = hurt.VenomFrog
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.5
+  GapSeconds = 0.1
+  Files = [audio/sfx/creature/beast_1.ogg, audio/sfx/creature/beast_5.ogg]
+End
+Sound
+  Name = died.VenomFrog
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.75
+  Files = [audio/sfx/creature/beast_4.ogg]
+End
+Sound
+  Name = spawned.VenomFrog
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.6
+  GapSeconds = 3
+  Files = [audio/sfx/creature/beast_2.ogg]
+End
+Sound
+  Name = walking.VenomFrog
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/step/stone_l1.ogg, audio/sfx/step/stone_r1.ogg, audio/sfx/step/stone_l2.ogg, audio/sfx/step/stone_r2.ogg, audio/sfx/step/stone_l3.ogg, audio/sfx/step/stone_r3.ogg]
+End
+Sound
+  Name = walking.VenomFrog.grass
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.VenomFrog.forest
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.VenomFrog.mud
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.VenomFrog.sand
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.VenomFrog.snow
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+Sound
+  Name = walking.VenomFrog.dirt
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.15
+  GapSeconds = 0.3
+  Files = [audio/sfx/footstep_1.ogg, audio/sfx/footstep_2.ogg, audio/sfx/footstep_3.ogg, audio/sfx/footstep_4.ogg, audio/sfx/footstep_5.ogg]
+End
+
+Sound
+  Name = fired.BogHorror
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.5
+  Files = [audio/sfx/weapon/heavy_swing_2.ogg, audio/sfx/weapon/heavy_swing_3.ogg]
+End
+Sound
+  Name = hurt.BogHorror
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.5
+  GapSeconds = 0.1
+  Files = [audio/sfx/creature/giant_2.ogg, audio/sfx/creature/giant_3.ogg]
+End
+Sound
+  Name = died.BogHorror
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.75
+  Files = [audio/sfx/death_boss.ogg]
+End
+Sound
+  Name = spawned.BogHorror
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.6
+  GapSeconds = 3
+  Files = [audio/sfx/creature/roar_2.ogg]
+End
+
