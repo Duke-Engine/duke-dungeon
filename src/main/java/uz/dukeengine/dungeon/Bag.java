@@ -25,17 +25,69 @@ final class Bag {
 
     private Bag() {
     }
-
     /** The bag, with the buffs under it, its things taken in hand armed by {@code duke}. */
     static BagScreen on(DungeonSettings settings, Duke3D duke) {
-        return BagScreen.on(duke, settings.menu(), words(settings), item -> gives(item, settings), shown(settings));
+        return coloured(BagScreen.on(duke, settings.menu(), words(settings), item -> gives(item, settings),
+                shown(settings)), settings);
     }
 
     /** The same, arming what is taken in hand by {@code arm}, on {@code clock}: for a test, with no window. */
     static BagScreen of(DungeonSettings settings,
             BiConsumer<CommandButton, Consumer<AimOutcome>> arm, LongSupplier clock) {
-        return new BagScreen(settings.menu(), words(settings), item -> gives(item, settings), shown(settings), arm,
-                clock);
+        return coloured(new BagScreen(settings.menu(), words(settings), item -> gives(item, settings),
+                shown(settings), arm, clock), settings);
+    }
+
+    /**
+     * A thing's card in the game's colours (E45): a generated thing's name in its rarity's colour, its rarity and item
+     * level, figure, affixes and story — and under its hints what it would change against what is worn in its slot,
+     * green and red. The data's own things keep the bag's own lines. See docs/plan/2026-10-15-loot.md.
+     */
+    private static BagScreen coloured(BagScreen bag, DungeonSettings settings) {
+        var items = settings.items();
+        return bag.colouredBy(item -> {
+            var lines = cardLines(item, settings);
+            return lines == null ? null : lines.stream().map(line -> new BagScreen.Line(line.text(), line.colour()))
+                    .toList();
+        }, item -> items.colourOf(item, settings.menu().torchColour()), (item, worn) -> compared(item, worn, settings)
+                .stream().map(line -> new BagScreen.Line(line.text(), line.colour())).toList());
+    }
+
+    /** What a generated thing or a potion says under its name, its rarity first; null for the data's own. */
+    static List<uz.dukeengine.dungeon.loot.Items.Line> cardLines(Loot item, DungeonSettings settings) {
+        var items = settings.items();
+        var lines = items.lines(item);
+        if (lines == null) {
+            return null;
+        }
+        var out = new ArrayList<uz.dukeengine.dungeon.loot.Items.Line>();
+        var rarity = items.rarityLine(item);
+        if (rarity != null) {
+            out.add(rarity);
+        }
+        out.addAll(lines);
+        return out;
+    }
+
+    /**
+     * What {@code item} would change against what {@code bag} wears in its slot, under a heading: nothing for a thing
+     * worn in no slot, for an empty slot, or for the worn thing itself.
+     */
+    static List<uz.dukeengine.dungeon.loot.Items.Line> compared(Loot item, LootBag bag, DungeonSettings settings) {
+        var items = settings.items();
+        int place = bag == null ? -1 : bag.wornPlace(item.slot());
+        var worn = place < 0 ? null : bag.at(place);
+        if (worn == null || worn == item) {
+            return List.of();
+        }
+        var change = items.compare(item, worn);
+        if (change.isEmpty()) {
+            return List.of();
+        }
+        var out = new ArrayList<uz.dukeengine.dungeon.loot.Items.Line>();
+        out.add(new uz.dukeengine.dungeon.loot.Items.Line(items.rules().compareWord(), settings.menu().hintColour()));
+        out.addAll(change);
+        return out;
     }
 
     /**
@@ -88,7 +140,6 @@ final class Bag {
                 target.getPlayerIndex() == uz.dukeengine.core.player.PlayerList.NEUTRAL_INDEX
                         && story.npc(target.getTemplate().name()) != null ? PartyOrders.TALK : null);
         DialogueScreen.show(match);
-        ItemCard.watch(match.game());
     }
 
     /** The target frame over {@code match}: the run's pick, with what the buffs say is on it. */
@@ -117,7 +168,7 @@ final class Bag {
 
     /** What a thing gives, a line each: its figure, and its extra past the first level; nothing said for nothing. */
     static List<String> gives(Loot item, DungeonSettings settings) {
-        // A generated thing or a potion says its figure, affixes and story (ItemCard paints them in colour over it).
+        // A generated thing or a potion says its figure, affixes and story (in colour through Bag.coloured, E45).
         var made = settings.items().lines(item);
         if (made != null) {
             return made.stream().map(uz.dukeengine.dungeon.loot.Items.Line::text).toList();

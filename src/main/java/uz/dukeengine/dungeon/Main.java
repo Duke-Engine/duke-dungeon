@@ -1062,11 +1062,13 @@ public final class Main {
         // The file's default hero to begin with, and whoever is actually chosen
         // the moment he is -- see aimsFor, and whoToPlay, which calls it again.
         aimsFor(keys, settings, settings.run().defaultHero());
-        // The belt's keys, 1 to its size: taken on the game's own canvas (ItemCard.drinks) and only named here, for
-        // the Settings screen's list of keys (E46).
+        // The belt's keys, 1 to its size: a draught from that stack, as this game's order, named on the Settings
+        // screen's list of keys (E46; digits bind since E45's fix).
         var rules = settings.items().rules();
         for (int key = 1; key <= rules.beltSize(); key++) {
-            keys.describe((char) ('0' + key), rules.beltKeyWord().formatted(key));
+            int belt = key - 1;
+            keys.on((char) ('0' + key), rules.beltKeyWord().formatted(key), game -> game.postCommand(
+                    PartyOrders.of(new uz.dukeengine.dungeon.run.Drink(game.getLocalPlayerIndex(), belt))));
         }
         // Spending a level on a slot. A click on the badge rather than a letter,
         // so it comes through a door of its own -- and it is a COMMAND like every

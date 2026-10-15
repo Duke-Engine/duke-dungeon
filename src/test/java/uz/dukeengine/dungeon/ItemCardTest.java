@@ -112,19 +112,28 @@ class ItemCardTest {
         return new Played(session, new DialogueScreen(bag, bag, SETTINGS));
     }
 
+    /** The pointer on the backpack's {@code place}, as the bag lays itself out on a 1600 by 900 window, and painted. */
     private static Drawn pointAt(Played played, int place) {
         var bag = played.session().progress().getLoot();
-        var probe = new Drawn();
-        var layout = ItemCard.Layout.of(probe, bag);
-        played.screen().take(new CanvasInput.Pointer(Math.round(layout.slotX(place)) + 5,
-                Math.round(layout.slotY(place)) + 5));
+        float slot = Math.clamp(Math.round(900 * 0.05f), 34, 72);
+        float gap = Math.max(3f, slot / 10f);
+        float pad = Math.max(6f, slot / 6f);
+        float heading = Math.round(slot * 0.27f) * 1.4f;
+        int rows = Math.max((bag.backpackSize() + 1) / 2, bag.wornSlots().size());
+        float wide = pad * 2f + 2 * slot + gap + slot + gap * 3f;
+        float high = pad * 2f + heading + gap + rows * slot + (rows - 1) * gap;
+        float left = 1600 - wide - 16f;
+        float top = (900 - high) / 2f - 900 * 0.06f;
+        float x = left + pad + slot + gap * 3f + (place % 2) * (slot + gap);
+        float y = top + pad + heading + gap + (place / 2) * (slot + gap);
+        played.screen().take(new CanvasInput.Pointer(Math.round(x) + 5, Math.round(y) + 5));
         var canvas = new Drawn();
         played.screen().paint(canvas);
         return canvas;
     }
 
     @Test
-    void theCardIsInItsRaritysColourAndComparesWithWhatIsWorn() {
+    void theBagsCardIsInTheRaritysColourAndComparesWithWhatIsWorn() {
         var played = played();
         var bag = played.session().progress().getLoot();
         var worn = ITEMS.loot(ITEMS.make(ITEMS.base("qisqa_qilich"), Items.COMMON, 1, 3));
@@ -134,51 +143,23 @@ class ItemCardTest {
         played.session().game().runHeadless(1);
 
         var drawn = pointAt(played, 0);
-        assertEquals(ITEMS.rules().colours().get(Items.RARE), drawn.colourOf(rare.name(), rare.name()), "the name, in gold");
-        assertEquals(ITEMS.rules().colours().get(Items.RARE), drawn.colourOf(rare.name(), ITEMS.rarityLine(rare).text()));
-        for (var line : ITEMS.lines(rare)) {
+        assertEquals(ITEMS.rules().colours().get(Items.RARE), drawn.colourOf(rare.name(), rare.name()),
+                "the name, in gold");
+        for (var line : Bag.cardLines(rare, SETTINGS)) {
             assertEquals(line.colour(), drawn.colourOf(rare.name(), line.text()), line.text());
         }
-        assertTrue(drawn.text.stream().anyMatch(t -> t.text().equals(ITEMS.rules().compareWord())));
-        int better = rare.value() - worn.value();
-        assertTrue(better > 0);
-        var compared = drawn.text.subList(drawn.text.indexOf(new Drawn.Text(ITEMS.rules().compareWord(),
-                0xFF000000 | SETTINGS.menu().hintColour())), drawn.text.size());
-        assertTrue(compared.contains(new Drawn.Text("+" + better + "% Zarba", 0xFF000000 | ITEMS.rules().betterColour())),
+        int better = ITEMS.figures(rare).get("ATTACK") - ITEMS.figures(worn).get("ATTACK");
+        var compared = Bag.compared(rare, bag, SETTINGS);
+        assertEquals(ITEMS.rules().compareWord(), compared.getFirst().text());
+        assertTrue(compared.contains(new Items.Line("+" + better + "% Zarba", ITEMS.rules().betterColour())),
                 "more damage, green: " + compared);
+        assertTrue(drawn.text.stream().anyMatch(t -> t.text().equals(ITEMS.rules().compareWord())),
+                "under its hints on the bag's card");
+        assertTrue(Bag.compared(worn, bag, SETTINGS).isEmpty(), "what is worn compares with nothing");
     }
 
     @Test
-    void theGamesCardCoversTheBagsWhole() {
-        var played = played();
-        var bag = played.session().progress().getLoot();
-        bag.take(ITEMS.loot(ITEMS.make(ITEMS.base("qisqa_qilich"), Items.MAGIC, 1, 3)), 0, 0);
-        bag.take(ITEMS.loot(ITEMS.make(ITEMS.base("gurzi"), Items.RARE, 9, 8)), 0, 0);
-        played.session().game().runHeadless(1);
-        var drawn = pointAt(played, 0);
-        int stone = SETTINGS.menu().stoneDeepColour();
-        int theirs = -1;
-        for (int i = 0; i < drawn.rects.size(); i++) {
-            if (drawn.fills.get(i) == (0xF0000000 | stone)) {
-                theirs = i;
-            }
-        }
-        assertTrue(theirs >= 0, "the bag drew its own card");
-        var card = drawn.rects.get(theirs);
-        float[] ours = null;
-        for (int i = theirs + 1; i < drawn.rects.size(); i++) {
-            var rect = drawn.rects.get(i);
-            if (drawn.fills.get(i) == (0xFF000000 | stone) && rect[2] >= card[2] && rect[3] >= card[3]) {
-                ours = rect;
-            }
-        }
-        assertNotNull(ours, "and the game's over it");
-        assertTrue(ours[0] <= card[0] && ours[1] <= card[1] && ours[0] + ours[2] >= card[0] + card[2]
-                && ours[1] + ours[3] >= card[1] + card[3], "every corner of it");
-    }
-
-    @Test
-    void theBeltShowsItsStacksAndAKeyDrinks() {
+    void theBeltShowsItsStacksAndItsKeysDrink() {
         var played = played();
         var session = played.session();
         var bag = session.progress().getLoot();
@@ -189,15 +170,12 @@ class ItemCardTest {
         played.screen().paint(drawn);
         assertTrue(drawn.pictures.contains(stack.icon()), "the stack on the belt");
         assertTrue(drawn.text.stream().anyMatch(t -> t.text().equals("4")), "with its count");
-        for (int key = 1; key <= ITEMS.rules().beltSize(); key++) {
-            int each = key;
-            assertTrue(drawn.text.stream().anyMatch(t -> t.text().equals(Integer.toString(each))), "key " + key);
-        }
 
-        assertTrue(played.screen().take(new CanvasInput.Key(ItemCard.KEY_1, true, false)), "1 is the belt's");
+        var keys = Main.controls(SETTINGS);
+        assertTrue(keys.pressNow(session.game(), '1'), "1 is the belt's");
         session.game().runHeadless(2);
         assertEquals(3, bag.at(0).value(), "and drinks from its first stack");
-        assertFalse(played.screen().take(new CanvasInput.Key(ItemCard.KEY_1 + ITEMS.rules().beltSize(), true, false)),
+        assertFalse(keys.pressNow(session.game(), (char) ('1' + ITEMS.rules().beltSize())),
                 "a key past the belt is not its");
     }
 
@@ -209,13 +187,27 @@ class ItemCardTest {
     }
 
     @Test
-    void aThingOnTheFloorHasTheSameCard() {
+    void theCharacterSheetSaysACriticalBlow() {
+        var session = played().session();
+        var bag = session.progress().getLoot();
+        bag.take(new Loot("crit_ring", "Uzuk", "", "ATTRIBUTE", 1, 0, 1, "Strength", "", 0, 0, 1,
+                uz.dukeengine.rpg.item.ItemUse.NONE, "", "Uzuk", List.of(), List.of(
+                        new uz.dukeengine.rpg.item.Affix("CRIT_CHANCE", 12),
+                        new uz.dukeengine.rpg.item.Affix("CRIT_DAMAGE", 40))), 0, 0);
+        session.game().runHeadless(3);
+        var rows = CharacterSheet.figures(session.run().getSheet(), SETTINGS);
+        assertTrue(rows.contains(new CharacterSheet.Row(ITEMS.rules().critChanceWord(), "12% (+40%)")), rows.toString());
+    }
+
+    @Test
+    void anEpicsStoryIsBrokenToTheCardsWidth() {
         var played = played();
-        var card = played.screen().cards();
         var bag = played.session().progress().getLoot();
         Loot epic = ITEMS.gear(1, 10, Items.EPIC);
-        var said = card.said(epic, bag, -1).stream().map(Items.Line::text).toList();
+        var said = played.screen().cards().said(epic, bag).stream().map(Items.Line::text).toList();
         assertEquals(epic.name(), said.getFirst());
-        assertTrue(said.contains(ITEMS.lines(epic).getLast().text()), "its story");
+        var lore = ITEMS.lines(epic).stream().filter(line -> line.colour() == ITEMS.rules().loreColour()).toList();
+        assertTrue(lore.size() >= 2, "a long story is more than one line");
+        assertTrue(lore.stream().allMatch(line -> line.text().length() <= ITEMS.rules().wrap()), lore.toString());
     }
 }
