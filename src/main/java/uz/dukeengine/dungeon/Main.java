@@ -1310,10 +1310,12 @@ public final class Main {
                         .scale(look.modelScale())
                         .facing(look.facing())
                         .idle(look.idle())
-                        .walk(look.walk())
+                        // Paced to its speed where its look says how far a play carries it (a licensed look).
+                        .walk(look.walk(), look.walkStride())
                         .attack(look.attack())
                         .hurt(look.hurt())
-                        .effect(look.effect());
+                        .effect(look.effect())
+                        .upperBody(look.upperBody());
                 carry(unit, look.held());
                 unit.die(look.death());
                 for (var library : look.libraries()) {

@@ -247,10 +247,26 @@ public final class MonsterBrain extends UnitScript {
             boolean cast = skill.effect() == SkillEffect.HEAL ? mend(book, skill, rank)
                     : throwAt(book, skill, rank, hero);
             if (cast) {
+                gesture(skill);
                 holdTheWeapon();
                 return;
             }
         }
+    }
+
+    /**
+     * The gesture its skill names ({@code CastAnim}), looped as the engine's busy clip for the skill's
+     * {@code CastSeconds} -- or as long as it stands after a cast (SwingFrames) -- so the window shows the summoner
+     * calling them up. Presentation alone: the busy clip is out of the checksum, and a step ends it on screen.
+     */
+    private void gesture(Skill skill) {
+        if (skill.castAnim() == null || skill.castAnim().isBlank()) {
+            return;
+        }
+        int frames = skill.castSeconds() > 0f
+                ? Math.round(skill.castSeconds() * uz.dukeengine.core.GameConstants.LOGICFRAMES_PER_SECOND)
+                : kind.swingFrames();
+        unit().busy(skill.castAnim(), frames);
     }
 
     /** At him, if he stands inside the distance it casts across and in plain sight: whether it went. */

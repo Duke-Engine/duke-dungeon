@@ -37,6 +37,9 @@ import uz.dukeengine.rpg.skill.Skill;
  * @param maxMana       the pool its skills are paid from, in whole points, as a hero's {@code MaxMana} -- grown by
  *                      its level where it is placed, and full then. None, and it casts free
  * @param manaRegen     how fast the pool comes back, in tenths of a point a second, as a hero's {@code ManaRegen}
+ * @param licensed      a look on a licensed model, drawn instead of the block's own where that model is shipped
+ *                      ({@code Licensed = MonsterLook ... End}; see {@link MonsterLook#licensedOr}). Its clips, size
+ *                      and facing are its own: nothing of the stand-in's carries over
  */
 public record Monster(@Group("Identity") String name, String displayName, Set<Kind> kindOf,
         @Group("Body") float visionRange, Geometry geometry,
@@ -47,7 +50,8 @@ public record Monster(@Group("Identity") String name, String displayName, Set<Ki
         @Group("Look") String model, String texture, float modelScale, int tint, float facing,
         @Group("Animation") @Link(AnimationSet.class) String animations, @Clip String idle, @Clip String walk,
         @Clip String attack, @Clip String hurt, @Clip String death, @Group("Look") @Link(Effect.class) String effect,
-        Held held, @Group("Skills") PortraitArt portrait, List<Skill> skills, int maxMana, int manaRegen)
+        Held held, @Group("Skills") PortraitArt portrait, List<Skill> skills, int maxMana, int manaRegen,
+        @Group("Look") MonsterLook licensed)
         implements Solid, Sighted, Classified, Titled, Drawn {
 
     /** Two distances, the nearer first: {@code [20, 60]}. */
@@ -61,7 +65,7 @@ public record Monster(@Group("Identity") String name, String displayName, Set<Ki
             Band.NONE, Band.NONE, 0,
             null, null, 1f, 0xFFFFFF, 90f, null,
             null, null, null, null, null, null, Held.NOTHING,
-            null, List.of(), 0, 0);
+            null, List.of(), 0, 0, null);
 
     public Monster {
         displayName = displayName == null ? "" : displayName;
@@ -84,7 +88,7 @@ public record Monster(@Group("Identity") String name, String displayName, Set<Ki
 
     /** What it is drawn as, which nothing in the simulation may read. */
     public MonsterLook look() {
-        return new MonsterLook(model, texture, modelScale, tint, facing, animations, List.of(), idle, walk, attack,
-                hurt, death, held, effect);
+        return MonsterLook.licensedOr(licensed, new MonsterLook(model, texture, modelScale, tint, facing, animations,
+                List.of(), idle, walk, attack, hurt, death, held, effect, 0f, null));
     }
 }

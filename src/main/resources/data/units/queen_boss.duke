@@ -5,8 +5,8 @@
 ; no blow taking anything from her, while the cursed hero fights for her; then, once
 ; he is beaten, herself, every skill hers. Her death breaks the medallion.
 ;
-; Her look is a stand-in until the owner picks a free model: the KayKit mage, as the
-; merchant is, tinted toward a queen's violet.
+; Her look is the "Dark Elf Shadow Enchantress" where that licensed model is shipped (Licensed,
+; below); without it, the stand-in: the KayKit mage, as the merchant is, tinted toward a queen's violet.
 ; ---------------------------------------------------------------------------
 Monster
   Name = QueenBoss
@@ -77,6 +77,23 @@ Monster
   Held = Held
     Model = models/heroes/staff.gltf
     Bone = handslot.r
+  End
+  ; Empty-handed: her own file has no staff and no bone to hang one on.
+  ; ★ LICENSED LOOK. Drawn as the "Dark Elf Shadow Enchantress" (CGTrader, Royalty Free -- see CREDITS.md) where
+  ; models/licensed/queen.glb is shipped: it lives in the git-ignored licensed-assets/ folder,
+  ; never in this repository, so a clone without it (and CI) draws the stand-in above. Her clips
+  ; are in her own file (art/licensed/export_licensed.py), her size 13 units over her 1.7, and
+  ; WalkStride is how far one play of her Walk carries her at that size, so her feet stay put.
+  Licensed = MonsterLook
+    Model = models/licensed/queen.glb
+    ModelScale = 7.65
+    Facing = 90
+    Idle = Cast_Idle
+    Walk = Walk
+    Attack = Attack
+    Death = Death
+    WalkStride = 10.3
+    UpperBody = spine
   End
 
   ; Which of these she casts is her phase's (Skills = [...] in her Boss block).

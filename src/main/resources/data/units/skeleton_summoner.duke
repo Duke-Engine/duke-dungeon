@@ -84,6 +84,22 @@ Monster
   End
   Attack = Ranged_Magic_Shoot
   Idle = Ranged_Magic_Spellcasting_Long
+  ; ★ LICENSED LOOK. Drawn as the "Dark Fantasy Female Ritualist" (CGTrader, Royalty Free -- see CREDITS.md) where
+  ; models/licensed/ritualist.glb is shipped: it lives in the git-ignored licensed-assets/ folder,
+  ; never in this repository, so a clone without it (and CI) draws the stand-in above. Her clips
+  ; are in her own file (art/licensed/export_licensed.py), her size 13 units over her 1.7, and
+  ; WalkStride is how far one play of her Walk carries her at that size, so her feet stay put.
+  Licensed = MonsterLook
+    Model = models/licensed/ritualist.glb
+    ModelScale = 7.65
+    Facing = 90
+    Idle = Idle
+    Walk = Walk
+    Attack = Attack
+    Death = Death
+    WalkStride = 10.4
+    UpperBody = spine
+  End
 
   ; What it opens its rifts and hastens out of, in the hero's words and units, as the
   ; Skeleton Mage's: enough to call up its four at its cooldown through a fight of a
@@ -115,6 +131,10 @@ Monster
       ; How long a rift lies open before one climbs out: long enough to be seen.
       WindUpFrames = 20
       Projectile = SummoningRift
+      ; Seen calling them up: the summoning gesture, looped as she stands for it (MonsterBrain.gesture).
+      ; KayKit's name, so the stand-in's library plays it too; the Ritualist's own file carries hers.
+      CastAnim = Ranged_Magic_Summon
+      CastSeconds = 1.7
       ; Twelve seconds between castings.
       CooldownFrames = 360
       ManaCost = 40
