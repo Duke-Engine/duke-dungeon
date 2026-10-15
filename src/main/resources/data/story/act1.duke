@@ -1174,7 +1174,7 @@ Effect
       Texture = kit/effects/particles/light_02.png
       Blend = Additive
       Count = 1
-      Life = [1.4, 1.4]
+      Life = [0.8, 0.8]
       Size = [14, 70]
       Colour = [0xFFF8E0, 0xFFD070]
       Alpha = [1, 0]
@@ -1186,7 +1186,7 @@ Effect
       Texture = kit/effects/particles/star_01.png
       Blend = Additive
       Count = 30
-      Life = [0.8, 1.6]
+      Life = [0.4, 0.8]
       Size = [2.2, 0.4]
       Colour = [0xFFFFFF, 0xFFC040]
       Alpha = [1, 0]

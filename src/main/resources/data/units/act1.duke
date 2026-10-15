@@ -30,6 +30,8 @@ Monster
   Colour = 0xE8C15A
   Scale = 1.0
   Model = models/heroes/ranger.glb
+  ; A little warmer than the talk demo's commander, so the two kinds are not drawn alike.
+  Tint = 0xF0D8C0
   ModelScale = 5.5
   Facing = 90
   Animations = Humanoid
@@ -61,7 +63,7 @@ Monster
   Colour = 0x9A5AC8
   Scale = 1.0
   Model = models/heroes/mage.glb
-  Tint = 0xB08AD8
+  Tint = 0xC498E8
   ModelScale = 4.8
   Facing = 90
   Animations = Humanoid
@@ -366,14 +368,4 @@ Monster
     Bone = handslot.r
     Scale = 1.3
   End
-  Skills = [
-    Skill
-      Key = Q
-      ; A quarter of every blow back, never cast, as every boss has.
-      Effect = LIFESTEAL
-      BoostPercent = 25
-      MaxRank = 1
-      Name = "Qon so'rish"
-    End
-  ]
 End
