@@ -49,6 +49,21 @@ class SaveGameTest {
     }
 
     @Test
+    void numbersNoGameWritesAreRefused() {
+        // Found by SaveFuzzTest: a level drawn as that many marks ran the heap out, a worth past an int's hundredths
+        // overflowed the hero's figures as the floor was laid.
+        var boots = new SaveGame(11L, null, 2, "Rogue", 0, List.of(), List.of(new SaveGame.Item(2, "Boots", 1, 3, 0)));
+        var good = boots.text();
+        for (var broken : List.of(good.replace("Level = 1", "Level = 2147483647"),
+                good.replace("Value = 3", "Value = 2147483647"), good.replace("Extra = 0", "Extra = -2147483648"),
+                good.replace("Depth = 2", "Depth = 0"), good.replace("Experience = 0", "Experience = -5"),
+                good.replace("Slot = 2", "Slot = -3"))) {
+            assertThrows(SaveGame.Refused.class, () -> SaveGame.read(broken, "slot2.duke"), broken);
+        }
+        assertEquals(boots, SaveGame.read(good, "slot2.duke"));
+    }
+
+    @Test
     void aBagAndASkillBookComeBackAsTheyWere() {
         var bag = SHIPPED.lootDrops().bag();
         var gauntlet = item("Gauntlet");
