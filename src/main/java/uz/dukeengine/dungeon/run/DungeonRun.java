@@ -132,6 +132,10 @@ public final class DungeonRun {
     private final Camp camp;
     /** The map's scenery a loaded save says was felled, taken away again as its floor is laid. */
     private List<Integer> felled = List.of();
+    /** Each hero's horse, and whether he rides it. See {@link Stable}. */
+    private final Stable stable;
+    /** Whether a loaded save's hero rode: he is put back on his horse as its map is laid. */
+    private boolean ridingOnLoad;
     private final LootTable drops;
 
     /** The players' seats, the first player's first: a game alone has that one. */
@@ -212,6 +216,7 @@ public final class DungeonRun {
         this.look = lookOf(null);
         this.depth = floors.firstDepth();
         this.camp = new Camp(settings);
+        this.stable = new Stable(settings);
         seats.add(new Seat(heroPlayer, progress, learnt, settings.run().defaultHero()));
     }
 
@@ -389,6 +394,7 @@ public final class DungeonRun {
         visited.clear();
         visited.addAll(save.places()); // the places found, as the save left them
         felled = save.felled(); // and the trees felled, taken away again as the floor is laid
+        ridingOnLoad = save.mounted(); // and on his horse, if he rode
         visitedNow = List.copyOf(visited);
         if (save.quests() == null) {
             quests.reset();
@@ -506,7 +512,8 @@ public final class DungeonRun {
         return SaveGame.of(floors.seed(), floors.stageName(), depth, seat.hero, seat.progress.getExperience(),
                 seat.learnt, seat.progress.getLoot(), quests.state(), script.state(), seat.gold)
                 .withMedallion(seat.souls, givenTo).withPlaces(visited)
-                .withFelled(lastLogic == null ? List.of() : lastLogic.getRemovedScenery()).withClock(clock.get());
+                .withFelled(lastLogic == null ? List.of() : lastLogic.getRemovedScenery()).withClock(clock.get())
+                .withMounted(stable.mounted(seat.player.getIndex()));
     }
 
     /** Frames of play since the run began: the hour of the open world's day, read on any thread. */
@@ -683,6 +690,9 @@ public final class DungeonRun {
         camp.lay(game.getLogic(), floors.stageName(), floors.seed(), zones(), dungeonPlayer.getIndex(), heroLevel(),
                 paint == null ? List.of() : paint.scenery().stream().map(piece -> piece.model()).toList(),
                 loading ? felled : List.of());
+        // Whoever rode as the last map ended rides on, where he may; a loaded save's rider is back on his horse.
+        stable.lay(floors.stageName(), zones(), !loading ? stable.riding()
+                : ridingOnLoad ? List.of(seats.getFirst().player.getIndex()) : List.of());
         sky = null;
         holding = null;
         trails.clear();
@@ -2319,7 +2329,29 @@ public final class DungeonRun {
         seat.talkingTo = null;
         orders.attackMove(playerIndex, null);
         uz.dukeengine.combat.module.Errand.giveUpAll(hero);
+        stable.dismount(game.getLogic(), playerIndex, hero, seat.progress); // work is done on foot
         camp.order(game.getLogic(), playerIndex, hero, thing, place);
+    }
+
+    /** His mount key, or a right-click on his horse: called, got onto, or got off. See {@link Stable#press}. */
+    public void ride(DukeGame game, int playerIndex, ObjectId horse) {
+        var seat = seatOf(playerIndex);
+        var hero = seat == null || seat.heroId == null ? null : game.getLogic().findObject(seat.heroId);
+        if (hero != null) {
+            stable.press(game.getLogic(), playerIndex, hero, seat.progress, horse);
+        }
+    }
+
+    /** Whether this player's hero is on his horse. */
+    public boolean mounted(int playerIndex) {
+        return stable.mounted(playerIndex);
+    }
+
+    /** This player's hero off his horse, at once: a skill pressed on horseback. See {@link Stable#dismount}. */
+    public void dismount(DukeGame game, int playerIndex) {
+        var seat = seatOf(playerIndex);
+        var hero = seat == null || seat.heroId == null ? null : game.getLogic().findObject(seat.heroId);
+        stable.dismount(game.getLogic(), playerIndex, hero, seat == null ? null : seat.progress);
     }
 
     /** What a click on the ground at {@code place} gives: the chop's word over a tree that may be felled (E66). */
@@ -2387,10 +2419,78 @@ public final class DungeonRun {
         for (var seat : seats) {
             var bag = seat.progress.getLoot();
             if (bag.version() != seat.stackedAt) {
+                learn(seat, bag);
                 Belt.stack(bag, items);
                 seat.stackedAt = bag.version();
             }
         }
+    }
+
+    // ---- crafting: docs/plan/2026-10-15-crafting.md ----
+
+    /** Whether this player's hero knows the recipe: known from the start or learnt, and his hero's or anybody's. */
+    public boolean knows(int playerIndex, uz.dukeengine.dungeon.craft.Crafting.Recipe recipe) {
+        var seat = seatOf(playerIndex);
+        return seat != null && (recipe.hero().isBlank() || recipe.hero().equals(seat.hero))
+                && (recipe.known() || script.flagged(uz.dukeengine.dungeon.craft.Crafting.FLAG + recipe.name()));
+    }
+
+    /** Each recipe scroll in his backpack teaches the first recipe of the file he does not know, and is used up. */
+    private void learn(Seat seat, uz.dukeengine.rpg.item.LootBag bag) {
+        var crafting = settings.crafting();
+        var items = settings.items();
+        for (int place = 0; place < bag.backpackSize() && !crafting.scroll().isBlank(); place++) {
+            var kind = items.potionOf(bag.at(place));
+            if (kind == null || !kind.name().equals(crafting.scroll())) {
+                continue;
+            }
+            for (int read = bag.at(place).value(); read > 0; read--) {
+                var next = crafting.recipes().stream().filter(recipe -> !knows(seat.player.getIndex(), recipe)
+                        && (recipe.hero().isBlank() || recipe.hero().equals(seat.hero))).findFirst().orElse(null);
+                if (next == null) {
+                    return; // nothing left to learn: the scrolls stay, to sell
+                }
+                script.flag(uz.dukeengine.dungeon.craft.Crafting.FLAG + next.name());
+                var stack = bag.remove(place);
+                if (stack.value() > 1) {
+                    bag.put(place, stack.worth(stack.value() - 1));
+                }
+                var made = items.resolve(next.makes());
+                bag.say(crafting.learnWord().formatted(made == null ? next.makes()
+                        : uz.dukeengine.rpg.item.LootBag.nameOf(made)),
+                        lastLogic == null ? 0 : lastLogic.getFrame(), settings.lootDrops().noteFrames());
+            }
+        }
+    }
+
+    /**
+     * The player asked his hero to craft the {@code recipe}th recipe of the file where he stands: refused, said why,
+     * if he does not know it or his purse is short; else set to it -- whatever he was doing called off. See
+     * {@link Camp#craft}.
+     */
+    public void craft(DukeGame game, int playerIndex, int recipe) {
+        var seat = seatOf(playerIndex);
+        var hero = seat == null || seat.heroId == null ? null : game.getLogic().findObject(seat.heroId);
+        var recipes = settings.crafting().recipes();
+        if (hero == null || hero.isEffectivelyDead()) {
+            return;
+        }
+        var bag = seat.progress.getLoot();
+        int frame = game.getLogic().getFrame();
+        int notes = settings.lootDrops().noteFrames();
+        if (recipe < 0 || recipe >= recipes.size() || !knows(playerIndex, recipes.get(recipe))) {
+            bag.say(settings.crafting().unknownWord(), frame, notes);
+            return;
+        }
+        if (seat.gold < recipes.get(recipe).gold()) {
+            bag.say(settings.story().trade().noGoldWord(), frame, notes);
+            return;
+        }
+        seat.talkingTo = null;
+        orders.attackMove(playerIndex, null);
+        uz.dukeengine.combat.module.Errand.giveUpAll(hero);
+        camp.craft(game.getLogic(), playerIndex, hero, bag, recipes.get(recipe),
+                Math.max(1, seat.progress.getLevel()));
     }
 
     /**
@@ -2504,7 +2604,9 @@ public final class DungeonRun {
         var heroes = new ArrayList<GameObject>();
         for (var seat : seats) {
             var hero = seat.heroId == null ? null : game.getLogic().findObject(seat.heroId);
-            camp.tick(game.getLogic(), seat.player.getIndex(), hero, seat.progress.getLoot());
+            seat.gold -= camp.tick(game.getLogic(), seat.player.getIndex(), hero, seat.progress.getLoot(),
+                    seat.gold);
+            stable.tick(game.getLogic(), seat.player.getIndex(), hero, seat.progress);
             heroes.add(hero);
         }
         camp.grow(game.getLogic(), heroes);

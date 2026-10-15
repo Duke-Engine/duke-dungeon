@@ -1130,3 +1130,96 @@ Effect
     End
   ]
 End
+
+; ---------------------------------------------------------------------------
+; Crafting (docs/plan/2026-10-15-crafting.md): what recipes are made of. Neither
+; healing nor filling, they stack in the backpack and are never on the belt.
+; Hide is an animal's, ore an ore rock's, herbs a herb patch's (data/world/
+; food.duke); the ember stone and the recipe scroll are bought or dropped.
+; ---------------------------------------------------------------------------
+
+Potion
+  Name = teri
+  DisplayName = Teri
+  Icon = hide
+  Level = 1
+  Price = 4
+  Weight = 0
+  Stack = 20
+End
+
+Potion
+  Name = ruda
+  DisplayName = Temir ruda
+  Icon = ore_iron
+  Level = 1
+  Price = 5
+  Weight = 0
+  Stack = 20
+End
+
+Potion
+  Name = giyoh
+  DisplayName = Dorivor giyoh
+  Icon = herbs
+  Level = 1
+  Price = 4
+  Weight = 0
+  Stack = 20
+End
+
+Potion
+  Name = olov_toshi
+  DisplayName = Olov toshi
+  Icon = fire_gem
+  Level = 3
+  Price = 60
+  Weight = 6
+  Stack = 20
+End
+
+; Taken into the bag, it teaches the first recipe of data/world/crafting.duke he
+; does not know yet, and is used up.
+Potion
+  Name = chizma
+  DisplayName = Hunar chizmasi
+  Icon = scroll_quill
+  Level = 2
+  Price = 80
+  Weight = 4
+  Stack = 20
+End
+
+; Uniques that are only made (Weight 0: never dropped), by a recipe of
+; data/world/crafting.duke.
+Unique
+  Name = olovli_tigh
+  DisplayName = "Olovli tig'"
+  Base = keng_qilich
+  Level = 5
+  Weight = 0
+  Gives = ["ATTACK 12", "ATTACK_SPEED 8", "CRIT_CHANCE 6", "CRIT_DAMAGE 30"]
+  Lore = "Olov toshi tig'ga singib ketgan; qinidan chiqsa tutun taraladi."
+End
+
+Unique
+  Name = ritsar_qasami
+  DisplayName = Ritsar qasami
+  Base = zanjirli_sovut
+  Level = 5
+  Weight = 0
+  Attribute = Strength
+  Gives = ["ARMOUR 5", "HEALTH 70", "HEALTH_REGEN 4", "ATTRIBUTE 4"]
+  Lore = "Lange uni otasining qilichi ustida ichgan qasami bilan toblagan."
+End
+
+Unique
+  Name = ovchi_kamoni
+  DisplayName = Ovchi kamoni
+  Base = kamon
+  Level = 4
+  Weight = 0
+  Attribute = Agility
+  Gives = ["ATTACK 12", "ATTACK_SPEED 14", "CRIT_CHANCE 7", "CRIT_DAMAGE 35", "ATTRIBUTE 4"]
+  Lore = "Yashil daladagi yolg'iz terakdan yo'nilgan; o'qi shamolni quvadi."
+End

@@ -79,7 +79,8 @@ class DungeonUnitBarTest {
 
         // Every monster at every level one can stand at, up to the cap -- the bosses among them, on the one rule:
         // the fourth floor's boss at 35, and the deep stage's at 50, the widest bar the game makes.
-        for (var kind : SETTINGS.monsters().stream().filter(k -> SETTINGS.story().npc(k.name()) == null).toList()) {
+        for (var kind : SETTINGS.monsters().stream().filter(k -> SETTINGS.story().npc(k.name()) == null
+                && !SETTINGS.mount().isMount(k.name())).toList()) {
             float base = baseHealth(factory.findTemplate(kind.name()));
             assertTrue(base > 0f, kind.name() + " has no body in the shipped files");
             for (int level = 1; level <= SETTINGS.maxMonsterLevel(); level++) {

@@ -44,7 +44,9 @@ public record Food(int fireRadius, int buildWood, String wood, String campfire, 
     /** The word a click on a fire gives: the cook's. */
     public static final String COOK = "Cook";
     /** Every word a click on a thing to work may give, each the name of its cursor. */
-    public static final List<String> WORDS = List.of("Chop", "Harvest", "Fill", COOK);
+    public static final List<String> WORDS = List.of("Chop", "Harvest", "Fill", "Mine", COOK);
+    /** The word of crafting's work (docs/plan/2026-10-15-crafting.md): its clip and sound, never a click's. */
+    public static final String CRAFT = "Craft";
 
     public Food {
         recipes = recipes == null ? List.of() : List.copyOf(recipes);
