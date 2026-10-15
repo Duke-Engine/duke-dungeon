@@ -60,7 +60,7 @@ class TradeTest {
     @Test
     void theMerchantIsReadAndAStockOfNothingIsRefused() {
         var story = SETTINGS.story();
-        assertEquals(11, story.merchant("Merchant").stock().size());
+        assertEquals(15, story.merchant("Merchant").stock().size());
         assertEquals(6, story.merchant("Merchant").gear(), "and six things rolled at his level");
         assertEquals(new Merchant.Ware("Gauntlet", 80, 2), story.merchant("Merchant").stock().getFirst());
         assertEquals(40, story.trade().sellPercent());

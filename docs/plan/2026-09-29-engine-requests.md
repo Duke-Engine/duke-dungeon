@@ -96,6 +96,9 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E85 | a cutscene camera path: a list of points, each with its pitch, zoom and ease, flown as one move | waiting (seamless campaign, small); the intro's shots stand in, one move a shot |
 | E87 | a weapon that acquires nothing by itself, per unit (`WeaponUpdate.acquiresNothing`), for a hero who fights only when told | waiting (modern controls; the game holds fire through its brain meanwhile) |
 | E86 | the open world's hour while it is drawn: a sun and ambient changed at runtime, the haze's colour, lights stronger at night, a tint under the GUI, rain with a colour and a streak | waiting (day and night; the game washes its canvas meanwhile) |
+| E88 | a rider on a mount: one unit drawn on another's bone, both animating, picked and barred as the rider; and a unit's sounds keyed by the template it is drawn as | waiting (mounts, `2026-10-15-mounts.md`); the game draws one combined model a hero through `drawAs` (`<Hero>Riding`) and plays the gallop as an event (`mount.gallop`) |
+| E89 | mounting in the skill system: a `MOUNT` shape (or at least a `MOVE_SPEED` buff the book holds and `HeroProgress` multiplies into his legs), cast over the mount clip, ended by a blow, a cast or an attack; zones of a map a skill is refused and ended in | waiting (mounts); `run/Stable` sets his legs every frame he rides and watches his health, his weapon and the zones itself |
+
 | E90 | a captured mouse: the pointer hidden and held in the window, relative motion events, released while a screen, a menu, Alt or a lost focus asks | waiting (action controls, `2026-10-15-action-controls.md`); the action scheme plays as modern, with its pointer, meanwhile |
 | E91 | the follow camera turned round the hero by the mouse: yaw from relative x, sensitivity, invert, a pitch band | waiting (action controls); the arrows' look-away meanwhile |
 | E92 | a skill aimed by relative motion: a key arms it, its indicator from the hero along the camera's forward, mouse y the distance, confirm (LMB, the key again, or release) and cancel (RMB, Esc) | waiting (action controls); modern's quick-cast at the pointer meanwhile |
@@ -1803,6 +1806,51 @@ Done when a test sets a sun at runtime and the DirectionalLight, AmbientLight an
 reach it over its seconds; `hazeColour` changes the viewport background; `lightScale(2)` doubles a lit layer's
 power; `worldTint` draws under the GUI node; and a weather with a colour hands it to the flakes' material. The game
 then replaces its canvas wash with (1), (2) and (3) and keeps `Atmosphere`'s weather and clock.
+
+## E88 — A rider on a mount (2026-10-15, medium; mounts)
+
+The game puts a hero on a horse on the open world (`docs/plan/2026-10-15-mounts.md`). The client cannot draw one unit
+on another's bone, so each hero riding is ONE model (art/mounts/export_riders.py): the horse's rig and clips, the
+hero's mesh baked still in a seat and skinned whole to the horse's back bone. It is drawn through `GameObject.drawAs`
+(the disguise), which swaps the body as `looksAs` changes. Three things it cannot do:
+
+1. **The rider's own clips.** He holds still on the horse: no rein, no look round, no blow drawn (a blow gets him off,
+   so none is struck mounted today, but a mounted charge would want one). Asked: `GameObject.rideOn(ObjectId mount,
+   String bone, Vec3 offset)` -- drawing only, out of the checksum: the rider's node a child of the mount's bone
+   attachment node (as `Held` is), the mount's walk clip paced by the rider's speed (the rider is what moves), the
+   rider playing his own named clips (`Ride_Idle`, `Ride_Gallop`, and his upper-body blows over them as E70 does);
+   picking, bars and selection on the rider; the mount's own picking off while ridden. `null` gets him off.
+2. **Sounds by the look drawn.** `GameSounds` plays `walking.<templateName>.<surface>`, `hurt.` and `died.` by the
+   unit's own template, so a hero riding is heard on foot. Asked: those keyed by `looksAs()` first, the own template
+   when the look has none (`walking.KnightRiding.grass`, else `walking.Knight.grass`). Then the game's gallop event
+   goes and the riding looks carry hooves by surface.
+3. **One file per hero and mount** follows from 1: with it the horse is one file and each hero his own.
+
+Done when a test rides a skeleton-rigged unit on a quadruped's bone: the rider's node is under the mount's bone and
+both play their clips, a click on the pair picks the rider, and a riding look's `walking.<look>` is played over the
+unit's own.
+
+## E89 — Mounting in the skill system (2026-10-15, small; mounts)
+
+The owner's rule: speed, buffs and states live in the skill system. Riding is played by the game's `run/Stable`: it
+sets his legs to walk × (100 + SpeedPercent)/100 every frame he rides (a level or a thing put on gives him new legs
+at his walk, so once is not enough), drops a target his weapon picks for itself, and unseats him at a fall in his
+health, an ordered attack, a cast, or a town zone.
+
+Asked, the least first:
+1. **A `MOVE_SPEED` buff** the skill book holds (as `HASTE` is for the weapon): `book.give(MOVE_SPEED, lender, percent,
+   until)`, multiplied into his speed by `HeroProgress` (`HeroFigures` with `found.movePercent` plus the buff), shown
+   on the buff row by the skill named for it. Then `Stable` gives it while he rides and his legs are the engine's.
+2. **A `MOUNT` skill shape** (Aim.SELF, no slot like STAGGER): `CastFrames` the mount clip (a step or a blow calls it
+   off, nothing spent), then the buff above for as long as he rides, `drawAs` its `Look`, his weapon holding fire and
+   every other cast refused (or ending it, `EndsOnCast`), ended by a blow that takes health (`EndsOnHurt`), by an
+   ordered attack, or by a second press.
+3. **Zones a skill is refused in and ended in**: `Skill.NotIn = [zone, ...]` against the map's zones (towns), as a seal
+   refuses DASH. Then `Stable`'s zone check goes.
+
+Done when a test gives a hero the MOUNT skill, casts it, he walks twice as far in 30 frames, a blow of 1 ends it, a
+cast while mounted is refused or ends it as data says, and casting it inside a `NotIn` zone is refused with nothing
+spent.
 
 ## E90 — A captured mouse (2026-10-15, small; action controls)
 

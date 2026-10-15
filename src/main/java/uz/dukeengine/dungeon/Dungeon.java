@@ -433,6 +433,8 @@ public final class Dungeon {
                 // slots that were all as strong as the hero are now four that
                 // compete for his levels -- see SkillRanks. Whose ranks is whose
                 // hero is casting; a player with no hero casts nothing.
+                case CastSkill cast when run.mounted(cast.playerIndex()) ->
+                        run.dismount(game, cast.playerIndex()); // a skill pressed on horseback gets him off it
                 case CastSkill cast -> {
                     var learnt = run.learntOf(cast.playerIndex());
                     // A skill of his book outside his four -- his dodge -- is never bought: his at its first rank.
@@ -563,6 +565,10 @@ public final class Dungeon {
                         run.talkTo(game, talk.playerIndex(), talk.person());
                 // Sent to chop, pick, fill or cook, or to build a fire at his feet. See DungeonRun.work.
                 case uz.dukeengine.dungeon.run.Work work -> run.work(game, work.playerIndex(), work.thing(), work.place());
+                // A recipe crafted where he stands. See DungeonRun.craft.
+                case uz.dukeengine.dungeon.run.Craft craft -> run.craft(game, craft.playerIndex(), craft.recipe());
+                // His horse: called, got onto or got off. See DungeonRun.ride.
+                case uz.dukeengine.dungeon.run.Ride ride -> run.ride(game, ride.playerIndex(), ride.horse());
                 default -> {
                     // Not one of ours; rts has already said so.
                 }

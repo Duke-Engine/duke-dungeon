@@ -371,6 +371,34 @@ class PlayerScreensTest {
         assertEquals(found.places(), uz.dukeengine.dungeon.run.SaveGame.read(found.text(), "test").places());
     }
 
+    @Test
+    void theHunarScreenListsWhatHeKnowsLightsWhatHeCanMakeAndAClickCraftsIt() {
+        var session = Dungeon.newSession(21L);
+        var game = session.game();
+        game.runHeadless(2);
+        var items = SETTINGS.items();
+        var bag = session.progress().getLoot();
+        bag.take(items.potion(items.potion("otin"), 1, 1), 0, 0);
+        bag.take(items.potion(items.potion("ruda"), 2, 2), 0, 0);
+        assertEquals(PlayerScreens.Open.CRAFT, PlayerScreens.forKey(key('K').code(), SETTINGS), "K opens it");
+
+        var screen = new CraftScreen(SETTINGS);
+        var drawn = new Drawn();
+        screen.paint(drawn, session);
+        assertTrue(drawn.text.contains(SETTINGS.crafting().title()), "" + drawn.text);
+        assertTrue(drawn.text.contains("Xanjar") && drawn.text.contains("Choriq"), "the basics he knows");
+        assertFalse(drawn.text.contains("Keng qilich"), "not what he has not learnt");
+        var ready = screen.rows().stream().filter(CraftScreen.Row::ready).toList();
+        assertEquals(1, ready.size(), "only the dagger: one wood, two ore");
+        var row = ready.getFirst();
+        assertTrue(screen.take(new CanvasInput.Button((int) row.x() + 5, (int) row.y() + 5, CanvasInput.Mouse.LEFT,
+                true, false), session), "a click on it crafts and shuts the screen");
+        for (int waited = 0; waited < 5 && !session.run().working(game.getLocalPlayerIndex()); waited++) {
+            game.runHeadless(1);
+        }
+        assertTrue(session.run().working(game.getLocalPlayerIndex()), "he is at it");
+    }
+
     private static CanvasInput.Key key(char letter) {
         return new CanvasInput.Key(uz.dukeengine.client3d.Hotkeys.codeOf(letter), true, false);
     }

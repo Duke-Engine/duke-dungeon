@@ -11,6 +11,7 @@ import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.core.thing.ObjectId;
 import uz.dukeengine.core.thing.World;
 import uz.dukeengine.dungeon.content.DungeonSettings;
+import uz.dukeengine.dungeon.craft.Crafting;
 import uz.dukeengine.dungeon.food.Food;
 import uz.dukeengine.dungeon.gen.DeterministicRng;
 import uz.dukeengine.dungeon.map.StaticMap;
@@ -34,6 +35,9 @@ public final class Camp {
 
     private final DungeonSettings settings;
     private final Food food;
+    private final Crafting crafting;
+    /** The map's seed: what a crafted thing's roll is drawn from, with the frame and the player. */
+    private long seed;
     /** Each player's work, by his index: walked to (not started) or under way. */
     private final TreeMap<Integer, Chore> chores = new TreeMap<>();
     /** What was taken and grows back, in the order it was taken. */
@@ -50,6 +54,9 @@ public final class Camp {
         final ObjectId thing; // null for a piece of scenery
         final int piece; // the scenery's index, or -1
         final Food.Gather gather; // null for a meal at a fire
+        /** What is crafted, where he stands: no thing, no walk (docs/plan/2026-10-15-crafting.md); else null. */
+        Crafting.Recipe recipe;
+        int level;
         Coord3D goal;
         final int orderedAt;
         int startedAt = -1;
@@ -76,6 +83,7 @@ public final class Camp {
     public Camp(DungeonSettings settings) {
         this.settings = settings;
         this.food = settings.food();
+        this.crafting = settings.crafting();
     }
 
     /**
@@ -92,6 +100,7 @@ public final class Camp {
         burning.clear();
         animals.clear();
         this.map = map;
+        this.seed = seed;
         this.scenery = models == null ? List.of() : List.copyOf(models);
         var grid = logic.getPathGrid();
         if (grid == null) {
@@ -264,7 +273,28 @@ public final class Camp {
         }
     }
 
+    /**
+     * A player's hero set to craft {@code recipe} where he stands, at item level {@code level}: started now -- his
+     * clip looping, the hammer ringing -- or, his backpack short of a part, refused with a word. Whatever he was
+     * doing is the caller's to call off; whether he knows it and has the gold is the caller's to judge.
+     */
+    public void craft(GameLogic logic, int player, GameObject hero, LootBag bag, Crafting.Recipe recipe, int level) {
+        stop(player, hero);
+        var move = hero == null ? null : hero.findModule(MoveUpdate.class);
+        if (hero == null || hero.isEffectivelyDead() || move == null) {
+            return;
+        }
+        var chore = new Chore(null, -1, null, hero.getPosition(), logic.getFrame());
+        chore.recipe = recipe;
+        chore.level = level;
+        chores.put(player, chore);
+        start(logic, player, hero, bag, chore, move, logic.getFrame());
+    }
+
     private boolean near(GameLogic logic, GameObject hero, Chore chore) {
+        if (chore.recipe != null) {
+            return true;
+        }
         var here = hero.getPosition();
         if (chore.piece >= 0) {
             var footprint = logic.sceneryPiece(chore.piece);
@@ -298,22 +328,24 @@ public final class Camp {
 
     /** Whether the work's thing is still there: the thing standing, or the tree not yet felled. */
     private static boolean there(GameLogic logic, Chore chore) {
-        return chore.piece >= 0 ? !logic.isSceneryRemoved(chore.piece) : logic.findObject(chore.thing) != null;
+        return chore.recipe != null || (chore.piece >= 0 ? !logic.isSceneryRemoved(chore.piece)
+                : logic.findObject(chore.thing) != null);
     }
 
     /**
      * A frame of this player's work: walking up, starting, busy, done -- or called off, nothing spent, by an order
-     * that sends him elsewhere, a step, or a blow taken (the owner: moving or being hit cancels it).
+     * that sends him elsewhere, a step, or a blow taken (the owner: moving or being hit cancels it). {@code gold} is
+     * what his purse holds; what a craft finished this frame cost of it is returned, else 0.
      */
-    public void tick(GameLogic logic, int player, GameObject hero, LootBag bag) {
+    public int tick(GameLogic logic, int player, GameObject hero, LootBag bag, int gold) {
         var chore = chores.get(player);
         if (chore == null) {
-            return;
+            return 0;
         }
         var move = hero == null ? null : hero.findModule(MoveUpdate.class);
         if (!there(logic, chore) || hero == null || hero.isEffectivelyDead() || move == null) {
             stop(player, hero);
-            return;
+            return 0;
         }
         int frame = logic.getFrame();
         var body = hero.getBody();
@@ -324,7 +356,7 @@ public final class Camp {
                     || move.getGoal() != null && chore.goal != null && !move.getGoal().equals(chore.goal)) {
                 chores.remove(player); // sent elsewhere, or got no nearer
             }
-            return;
+            return 0;
         }
         var here = hero.getPosition();
         float dx = here.x() - chore.standing.x();
@@ -334,7 +366,7 @@ public final class Camp {
         boolean struck = food.clipOf(word(chore)) != null && hero.getBusyClip() == null && frame < chore.endsAt;
         if (move.isMoving() || dx * dx + dy * dy > 0.25f || struck || body.getHealth() < chore.health - 0.01f) {
             stop(player, hero);
-            return;
+            return 0;
         }
         chore.health = body.getHealth();
         var word = word(chore);
@@ -345,22 +377,33 @@ public final class Camp {
         }
         if (frame >= chore.endsAt) {
             stop(player, hero);
-            if (chore.gather == null) {
+            if (chore.recipe != null) {
+                return crafted(logic, hero, bag, chore, frame, player, gold);
+            } else if (chore.gather == null) {
                 cook(bag, frame, player);
             } else {
                 gathered(logic, bag, chore, frame, player);
             }
         }
+        return 0;
     }
 
     private static String word(Chore chore) {
-        return chore.gather == null ? Food.COOK : chore.gather.word();
+        return chore.recipe != null ? Food.CRAFT : chore.gather == null ? Food.COOK : chore.gather.word();
+    }
+
+    private int framesOf(Chore chore) {
+        if (chore.recipe != null) {
+            return chore.recipe.frames() > 0 ? chore.recipe.frames() : crafting.frames();
+        }
+        return chore.gather == null ? food.cookFrames() : chore.gather.frames();
     }
 
     private void start(GameLogic logic, int player, GameObject hero, LootBag bag, Chore chore, MoveUpdate move,
             int frame) {
-        if (chore.gather == null && recipe(bag) == null) {
-            say(bag, food.nothingWord(), frame);
+        if (chore.recipe != null ? !crafting.match(chore.recipe, bag, settings.items()).all()
+                : chore.gather == null && recipe(bag) == null) {
+            say(bag, chore.recipe != null ? crafting.missingWord() : food.nothingWord(), frame);
             chores.remove(player);
             return;
         }
@@ -371,11 +414,11 @@ public final class Camp {
             var footprint = logic.sceneryPiece(chore.piece);
             hero.setOrientation((float) Math.atan2(footprint.y() - hero.getPosition().y(),
                     footprint.x() - hero.getPosition().x()));
-        } else {
+        } else if (chore.thing != null) { // crafting: where he stands, the way he faces
             uz.dukeengine.rpg.Facing.turnToward(hero, logic.findObject(chore.thing));
         }
         chore.startedAt = frame;
-        int frames = chore.gather == null ? food.cookFrames() : chore.gather.frames();
+        int frames = framesOf(chore);
         chore.endsAt = frame + frames;
         chore.standing = hero.getPosition();
         chore.health = hero.getBody().getHealth();
@@ -419,6 +462,36 @@ public final class Camp {
         }
         recipe.from().forEach(part -> spend(bag, part));
         give(bag, recipe.makes(), 1, frame, player);
+    }
+
+    /**
+     * A craft done: its parts spent from the backpack and its gold from the purse, if they are all still there, and
+     * the thing made in the bag -- or at his feet, the bag full. Returns the gold it cost, 0 when nothing was made.
+     */
+    private int crafted(GameLogic logic, GameObject hero, LootBag bag, Chore chore, int frame, int player, int gold) {
+        var recipe = chore.recipe;
+        var items = settings.items();
+        var match = crafting.match(recipe, bag, items);
+        if (!match.all() || gold < recipe.gold()) {
+            say(bag, crafting.missingWord(), frame); // dropped or sold while he worked
+            return 0;
+        }
+        // The things first, the last place first, so a stack spent empty never moves a place still to be taken.
+        match.things().stream().sorted(java.util.Comparator.reverseOrder()).forEach(place -> bag.remove(place));
+        for (var part : recipe.parts()) {
+            if (items.potion(part.what()) != null) {
+                for (int i = 0; i < part.count(); i++) {
+                    spend(bag, part.what());
+                }
+            }
+        }
+        var made = items.craft(recipe.makes(), recipe.count(), recipe.rarity(), Math.max(chore.level, recipe.level()),
+                seed * 1_000_003L + frame * 31L + player);
+        if (!bag.take(made, frame, settings.lootDrops().noteFrames())) {
+            GroundItem.lay(logic, made.liesAs(settings.lootDrops().template()), made, hero.getPosition(), player);
+        }
+        logic.sound("craft.done", hero, 0);
+        return recipe.gold();
     }
 
     private void gathered(GameLogic logic, LootBag bag, Chore chore, int frame, int player) {

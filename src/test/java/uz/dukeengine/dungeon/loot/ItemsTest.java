@@ -25,8 +25,9 @@ class ItemsTest {
         assertTrue(ITEMS.active());
         assertEquals(35, ITEMS.bases().size());
         assertEquals(13, ITEMS.affixes().size());
-        assertEquals(6, ITEMS.uniques().size());
-        assertEquals(14, ITEMS.potions().size(), "four old potions kept for old saves, nine meals and drinks, and wood");
+        assertEquals(9, ITEMS.uniques().size(), "six found, three only crafted");
+        assertEquals(20, ITEMS.potions().size(), "four old potions kept for old saves, nine meals and drinks, wood,"
+                + " the horse's whistle, and crafting's four and its scroll");
     }
 
     @Test

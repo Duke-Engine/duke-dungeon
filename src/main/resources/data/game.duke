@@ -35,6 +35,7 @@ Game
     data/world/saves.duke,
     data/world/menu.duke,
     data/world/screens.duke,
+    data/world/crafting.duke,
     data/world/controls.duke,
     data/world/travel.duke,
     ; The open world's day, night and weather. See docs/plan/2026-10-15-day-and-night.md.
@@ -168,6 +169,8 @@ Game
     data/world/loot.duke,
     ; Food and fire: cooked, chopped, picked, filled, hunted. See docs/plan/2026-10-15-food-and-fire.md.
     data/world/food.duke,
+    ; A horse on the open world. See docs/plan/2026-10-15-mounts.md.
+    data/world/mounts.duke,
     data/story/medallion.duke,
     data/story/final.duke,
     data/story/kampir.duke,

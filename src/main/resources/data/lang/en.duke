@@ -487,7 +487,18 @@
 "Yovvoyi to'ng'iz" => "Wild Boar"
 "Taom" => "Meal"
 "Jon/s" => "Health/s"
+"Temir ruda" => "Iron Ore"
+"Dorivor giyoh" => "Healing Herbs"
 
+
+; ---- world/mounts.duke ----
+"Ot" => "Horse"
+"Otingiz yo'q" => "You have no horse"
+"Bu yerda otga minib bo'lmaydi" => "You cannot ride here"
+"Ot hushtagi" => "Horse whistle"
+"Otboqar Rustam" => "Rustam the Stablemaster"
+"Otboqar" => "Stablemaster"
+"Yaxshi ot - yarim yo'l! Hushtagini oling, shahar tashqarisida T ni bosing, oting chopib keladi." => "A good horse is half the road! Take the whistle, press T outside the city, and your horse comes running."
 ; ---- world/hud.duke ----
 "CHUQURLIK" => "DEPTH"
 "MAHORAT" => "SKILLS"
@@ -654,6 +665,24 @@
 "qasos" => "Vengeance"
 "sado" => "Echo"
 "alanga" => "Flame"
+"Teri" => "Hide"
+"Olov toshi" => "Ember Stone"
+"Hunar chizmasi" => "Recipe Scroll"
+"Olovli tig'" => "Flame Blade"
+"Olov toshi tig'ga singib ketgan; qinidan chiqsa tutun taraladi." => "An ember stone melted into the blade; it smokes when drawn."
+"Ritsar qasami" => "Knight's Oath"
+"Lange uni otasining qilichi ustida ichgan qasami bilan toblagan." => "Lange tempered it with the oath he swore on his father's sword."
+"Ovchi kamoni" => "Huntress' Bow"
+"Yashil daladagi yolg'iz terakdan yo'nilgan; o'qi shamolni quvadi." => "Cut from the lone poplar of the green field; its arrows outrun the wind."
+
+; ---- world/crafting.duke ----
+"Hunar" => "Crafting"
+"Yangi hunar: %s" => "New recipe: %s"
+"Nimadir yetishmayapti" => "Something is missing"
+"Bu hunarni bilmaysiz" => "You do not know this recipe"
+"oltin" => "gold"
+"Yana %d hunar o'rganish mumkin: chizmalar savdogarlarda" => "%d more recipes to learn: merchants sell the scrolls"
+"Hozircha hunar yo'q" => "No recipes yet"
 
 ; ---- world/menu.duke ----
 "Last Hero" => "Last Hero"
