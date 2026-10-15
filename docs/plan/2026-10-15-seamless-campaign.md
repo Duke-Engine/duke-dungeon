@@ -180,8 +180,11 @@ the game plays its Effect on the person as the quest glow is played, which reads
 
 ## 9. Frame cost
 
-The world was 0.088 ms a frame idle (perf report, E60 era). Added each frame: the gate's check (a few zones, one hero),
-the hold's renew (only while held), the follow (every CheckFrames). Measured in section 10's report.
+Headless, warm (second round), engine e73, 2026-10-15: the world laid off the stages list 393 ms and 0.19 ms a frame
+idle; the act's world laid 104 ms more on a built session; the intro (18 fighters, the ritual, beams, the wave, the
+hold) 0.86 ms a frame; led to the palace with the gate and the follow on, the battle's soldiers still standing, 0.46
+ms a frame. The menu's backdrop on the world: 0.41 ms a frame (`MenuSceneTest`). All far under a frame's 33 ms. The
+gate's check is a few zones for one hero; the hold's renew runs only while held.
 
 ## 10. Tests
 
