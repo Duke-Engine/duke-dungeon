@@ -223,3 +223,13 @@ loot,potion_health,potion,all,gi:delapouite/health-potion,red
 loot,potion_mana,potion,all,gi:lorc/round-bottom-flask,blue
 loot,potion_elixir,potion,all,gi:caro-asercion/round-potion,purple
 loot,potion_red,potion,all,raven:potionRed,
+loot,meat_raw,food,all,gi:lorc/meat,meat
+loot,meat_roast,food,all,gi:lorc/meat,bronze
+loot,stew,food,all,gi:delapouite/honey-jar,orange
+loot,berries,food,all,gi:lorc/shiny-apple,purple
+loot,pumpkin,food,all,gi:lorc/shiny-apple,orange
+loot,bread,food,all,gi:delapouite/bread,bread
+loot,water,potion,all,gi:delapouite/holy-water,blue
+loot,tea,potion,all,gi:lorc/fizzing-flask,green
+loot,kompot,potion,all,gi:lorc/standing-potion,red
+loot,wood,material,all,gi:delapouite/log,wood

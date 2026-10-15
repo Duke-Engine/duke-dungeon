@@ -1833,9 +1833,12 @@ public final class DungeonRun {
         var items = settings.items();
         Belt.stack(bag, items);
         var hero = game.getLogic().findObject(seat.heroId);
-        if (Belt.drink(hero, bag, items, belt)) {
+        var eaten = Belt.drink(hero, bag, items, belt);
+        if (eaten != null) {
             seat.beltReady = frame + items.rules().beltFrames();
-            game.getLogic().sound("drink", hero, 0); // heard, not decided: an event, out of the checksum
+            // heard, not decided: an event, out of the checksum. A meal is eaten, a draught or a drink drunk.
+            game.getLogic().sound(eaten.heal() > 0 && eaten.mana() <= 0 && eaten.frames() > 0 ? "eat" : "drink",
+                    hero, 0);
         }
     }
 
@@ -1920,6 +1923,9 @@ public final class DungeonRun {
         glow(game);
         beams(game);
         stackPotions();
+        for (var seat : seats) {
+            Belt.digest(seat.heroId == null ? null : game.getLogic().findObject(seat.heroId));
+        }
         var logic = game.getLogic();
         quests.frame(logic.getFrame());
         int paid = quests.takeExperience();
