@@ -76,6 +76,21 @@ class ModernFightingTest {
         assertTrue(session.orders().fightsOnlyWhenTold(game.getLocalPlayerIndex()));
     }
 
+    /** The client says it as his hero is chosen -- on the menu, before the match runs -- and only in modern. */
+    @Test
+    void choosingHisHeroSaysItInModernOnly() {
+        for (var scheme : uz.dukeengine.dungeon.world.Controls.Scheme.values()) {
+            var settings = DungeonSettings.load();
+            settings.useScheme(scheme);
+            var session = Dungeon.newSession(7L, settings);
+            Main.heroChosen(session, settings, Main.looks(settings), Main.controls(settings),
+                    settings.run().defaultHero());
+            session.game().runHeadless(4);
+            assertEquals(scheme == uz.dukeengine.dungeon.world.Controls.Scheme.MODERN,
+                    session.orders().fightsOnlyWhenTold(session.game().getLocalPlayerIndex()), scheme.name());
+        }
+    }
+
     @Test
     void theClassicHeroShootsWhatComesIntoHisReach() {
         var field = field(false, 190f);
