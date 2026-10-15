@@ -1090,6 +1090,8 @@ knock-back's hop), or straight down from a height (a fall from the sky), the thi
 pushes meanwhile, and told when it lands (an event the story can hear). Done when a test moves a creature 60 units
 over 20 frames along an arc 15 high, it stands where it was sent on frame 20, and the landing is heard once.
 
+**Landed** as fa3e72a0: `ScriptedMove.along(thing, to, frames, arcHeight)` / `fall(thing, to, height, frames)`, `onLanded`, the event `ThingLanded`. The game's story acts `MOVE`, `LEAP` and `FALL` (data: Target, Zone, Frames, Height, Landed) use it: the hero falls out of the sky onto the landing and the enemy commander is thrown back in an arc (`docs/plan/2026-10-15-act1.md`).
+
 ## E41 — A cutscene camera that turns, tilts and zooms, eased (2026-10-15, small)
 
 A story's shot flies the camera to a point in a straight line at an even speed (`GameCamera.moveTo`); turning,
@@ -1099,6 +1101,8 @@ at the landing and a slow pull back over the battle. Asked: `GameCamera.moveTo(x
 in-out), stepped with the world and given back at `release()` to the player's own. Done when a test moves, turns and
 zooms the camera together over 30 frames, eased in-out, and it ends exactly where asked.
 
+**Landed** as fa3e72a0: `GameCamera.moveTo/turnTo/pitchTo/zoomTo` with frames and an `Ease`, `isMoving()`, `DukeGame.setCameraSeen`. A story Shot says `Turn`, `Pitch` (degrees), `Zoom` and `Ease`; Act 1's landing, the queen's hall and the turning use them.
+
 ## E42 — A title card (2026-10-15, small)
 
 Act 1 ends on "1-qism tugadi"; Act 2 will open on its own card. Today the game says it with the run's banner (the
@@ -1106,3 +1110,5 @@ Act 1 ends on "1-qism tugadi"; Act 2 will open on its own card. Today the game s
 fadeIn, hold, fadeOut)` — big centred lettering over a darkened screen in the shell's font, drawn only (out of the
 checksum), the game's input taken while it shows unless the game says otherwise. Done when a test shows a card and
 the client reports it gone after its frames.
+
+**Landed** as fa3e72a0: `DukeGame.titleCard(text, subtext, fadeIn, hold, fadeOut[, takesInput])`, `titleCardShowing()`, `titleCardGone(card)`. The story's `TITLE` act shows a `Title` block: each Act 1 chapter's name as it opens, and "1-qism tugadi" at its end.
