@@ -275,10 +275,14 @@ Cutscene
   Name = Landing
   Shots = [
     Shot
-      ; The beam of light, and him in it.
+      ; The beam of light, and him falling in it: the camera low and close, looking up the beam's way, settling as he
+      ; lands (play's own is 55 degrees down, 140 back).
       Zone = Landing
       Frames = 30
       Hold = 40
+      Pitch = 30
+      Zoom = 85
+      Ease = OUT
     End,
     Shot
       Says = HeroLands
@@ -307,6 +311,11 @@ Trigger
   Map = jang
   When = MAP_START
   Actions = [
+    Action
+      ; The chapter's name over the screen as it opens.
+      Act = TITLE
+      Target = ChapterBattle
+    End,
     Action
       Act = ALLY
       Target = Soldier
@@ -350,18 +359,22 @@ Trigger
       Zone = Landing
     End,
     Action
-      Act = PLACE
+      ; Down out of the sky in the beam, a second's fall; the ground cracks and the camera knocks as he lands.
+      Act = FALL
+      Target = Hero
       Zone = Landing
+      Height = 140
+      Frames = 30
+      Landed = HeroLandsDust
     End,
     Action
-      Act = KNOCK
+      ; The enemy commander thrown back by it: a hop through the air, dust where he lands.
+      Act = LEAP
       Target = EnemyCommander
       Zone = Thrown
-    End,
-    Action
-      Act = EFFECT
-      Target = Beaten
-      Zone = Thrown
+      Height = 22
+      Frames = 24
+      Landed = Beaten
     End,
     Action
       Act = FLAG
@@ -552,10 +565,14 @@ Cutscene
       Hold = 10
     End,
     Shot
-      ; The castle's court, where the queen sits.
+      ; The castle's court, where the queen sits: the camera turns to face her throne from the south and draws in.
       Zone = Throne
       Frames = 60
       Hold = 20
+      Turn = 0
+      Pitch = 40
+      Zoom = 95
+      Ease = IN_OUT
     End
   ]
 End
@@ -571,6 +588,11 @@ Trigger
     End
   ]
   Actions = [
+    Action
+      ; The chapter's name over the screen as it opens.
+      Act = TITLE
+      Target = ChapterCapital
+    End,
     Action
       Act = CUTSCENE
       Target = CapitalShown
@@ -659,9 +681,13 @@ Cutscene
   Name = WarCouncilShown
   Shots = [
     Shot
+      ; The queen's hall again, closer: she and the commander over the throne.
       Zone = Throne
-      Frames = 1
+      Frames = 45
       Hold = 20
+      Pitch = 38
+      Zoom = 90
+      Ease = IN_OUT
     End,
     Shot
       Says = WarCouncil
@@ -868,6 +894,11 @@ Trigger
   When = MAP_START
   Actions = [
     Action
+      ; The chapter's name over the screen as it opens.
+      Act = TITLE
+      Target = ChapterTraining
+    End,
+    Action
       Act = START_QUEST
       Target = TrainingDeep
     End
@@ -959,6 +990,11 @@ Trigger
   Map = urush
   When = MAP_START
   Actions = [
+    Action
+      ; The chapter's name over the screen as it opens.
+      Act = TITLE
+      Target = ChapterWar
+    End,
     Action
       Act = START_QUEST
       Target = War
@@ -1081,26 +1117,35 @@ Cutscene
   Name = TurningAct1
   Shots = [
     Shot
-      ; On him, where the lord fell, as the dark comes over him...
+      ; On him, where the lord fell, looking down close as the dark comes over him...
       Zone = Throne
-      Frames = 1
-      Hold = 60
+      Frames = 40
+      Hold = 30
+      Pitch = 70
+      Zoom = 60
+      Ease = IN_OUT
     End,
     Shot
-      ; ...then to her, come in a vision, the medallion in her hand...
+      ; ...then to her, come in a vision, the medallion in her hand, seen level...
       Zone = Vision
       Frames = 45
       Hold = 20
+      Pitch = 25
+      Zoom = 80
+      Ease = IN_OUT
     End,
     Shot
       Says = QueenLaughs
       Hold = 20
     End,
     Shot
-      ; ...and back to him, bound to the castle.
+      ; ...and back to him, drawn slowly up and away: bound to the castle.
       Zone = Throne
-      Frames = 45
+      Frames = 90
       Hold = 30
+      Pitch = 65
+      Zoom = 230
+      Ease = IN
     End
   ]
 End
@@ -1110,6 +1155,11 @@ Trigger
   Map = qora_qasr
   When = MAP_START
   Actions = [
+    Action
+      ; The chapter's name over the screen as it opens.
+      Act = TITLE
+      Target = ChapterCastle
+    End,
     Action
       Act = CUTSCENE
       Target = CastleShown
@@ -1153,8 +1203,96 @@ Trigger
   Target = TurningAct1
   Actions = [
     Action
+      ; The act's end as a card, the turning's banner cleared for it (a WIN that says nothing, after the win).
       Act = WIN
-      Target = "1-qism tugadi"
+    End,
+    Action
+      Act = TITLE
+      Target = ActOneEnd
+    End
+  ]
+End
+
+; ---------------------------------------------------------------------------
+; Title cards: each chapter's name as it opens, and the act's end (the engine's titleCard, E42).
+; Seconds: faded in, held, faded out.
+; ---------------------------------------------------------------------------
+
+Title
+  Name = ChapterBattle
+  Text = "Darvoza oldidagi jang"
+  Subtext = "1-qism"
+End
+
+Title
+  Name = ChapterCapital
+  Text = Poytaxt
+  Subtext = "1-qism"
+End
+
+Title
+  Name = ChapterTraining
+  Text = "Mashq: eski qabrlar"
+  Subtext = "1-qism"
+End
+
+Title
+  Name = ChapterWar
+  Text = "Bosib olingan yerlar"
+  Subtext = "1-qism"
+End
+
+Title
+  Name = ChapterCastle
+  Text = "Qora qasr"
+  Subtext = "1-qism"
+End
+
+Title
+  Name = ActOneEnd
+  Text = "1-qism tugadi"
+  Subtext = "Davomi bor..."
+  FadeIn = 1.5
+  Hold = 5
+  FadeOut = 1.5
+End
+
+; The ground cracking under him as he lands out of the sky: dust thrown out, a ring of light along the ground,
+; and a knock of the camera.
+Effect
+  Name = HeroLandsDust
+  ShakeSeconds = 0.4
+  ShakePower = 2.0
+  Layers = [
+    Layer
+      Name = Dust
+      Type = BURST
+      Texture = kit/effects/particles/smoke_01.png
+      Blend = Alpha
+      Cover = 0.6
+      Count = 22
+      Life = [0.9, 1.5]
+      Size = [4, 10]
+      Colour = [0xB0A890, 0x706858]
+      Alpha = [0.7, 0]
+      Speed = [10, 20]
+      Direction = OUT
+      Spread = 15
+      Radius = 3
+      Height = 1
+      TurnJitter = 360
+    End,
+    Layer
+      Name = Ring
+      Type = RING
+      Texture = kit/effects/particles/circle_05.png
+      Blend = Additive
+      Count = 1
+      Life = [0.6, 0.6]
+      Size = [6, 36]
+      Colour = [0xFFF0C0, 0xC09040]
+      Alpha = [0.8, 0]
+      Height = 0.2
     End
   ]
 End

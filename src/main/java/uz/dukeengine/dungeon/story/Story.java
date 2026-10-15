@@ -320,6 +320,18 @@ public record Story(Dialogue dialogue, List<Speaker> speakers, List<Conversation
                     wrong.add(named + " saves into " + what + ": a slot is a name of small letters and digits");
                 }
             }
+            case MOVE, LEAP, FALL -> {
+                if (!Trigger.HEROES.equals(what) && !monsters.contains(what) || action.zone().isBlank()
+                        || action.frames() < 1 || action.height() < 0f) {
+                    wrong.add(named + " " + action.act() + "s " + what + ", who is no Monster nor Hero, or to no"
+                            + " Zone, or over fewer than one frame or from below the ground");
+                }
+            }
+            case TITLE -> {
+                if (what.isBlank()) {
+                    wrong.add(named + " shows a TITLE that names none");
+                }
+            }
         }
     }
 

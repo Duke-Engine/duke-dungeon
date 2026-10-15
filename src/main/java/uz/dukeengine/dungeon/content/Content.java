@@ -121,7 +121,7 @@ public final class Content {
             named(uz.dukeengine.dungeon.story.Merchant.class), named(uz.dukeengine.dungeon.story.Trade.class),
             named(uz.dukeengine.dungeon.story.GoldBurst.class),
             named(uz.dukeengine.dungeon.story.Boss.class), named(uz.dukeengine.dungeon.story.Medallion.class),
-            named(uz.dukeengine.dungeon.story.Campaign.class));
+            named(uz.dukeengine.dungeon.story.Campaign.class), named(uz.dukeengine.dungeon.story.Title.class));
 
     /** The blocks a world builds things from. */
     private static final Set<String> TEMPLATES = Set.of("object", "monster", "hero", "projectile", "prop");

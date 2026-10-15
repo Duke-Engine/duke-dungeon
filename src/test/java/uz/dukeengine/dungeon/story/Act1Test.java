@@ -184,6 +184,67 @@ class Act1Test {
         play(session, 100);
         assertTrue(script.state().fired().contains("ActOneEnds"), "1-qism tugadi");
         assertEquals(DungeonRun.State.WON, run.getState());
+        assertEquals("1-qism tugadi", game.titleCardShowing().text(), "the act ends on its title card");
+    }
+
+    /**
+     * The landing played as the player sees it, nothing skipped: the chapter's card, then the hero falls out of the
+     * sky onto the landing (E40) while the camera draws in low and close (E41), and the enemy commander is thrown
+     * back through the air, coming down at the zone he was thrown to.
+     */
+    @Test
+    void heFallsOutOfTheSkyAndTheEnemyCommanderIsThrownBack() {
+        var session = newGame();
+        var game = session.game();
+        assertEquals("Darvoza oldidagi jang", game.titleCardShowing().text(), "the chapter's name as it opens");
+        var zones = Stages.load("jang", SETTINGS).story().zones();
+        var landing = zones.stream().filter(z -> z.name().equals("Landing")).findFirst().orElseThrow();
+        var thrown = zones.stream().filter(z -> z.name().equals("Thrown")).findFirst().orElseThrow();
+        var foe = all(game, "EnemyCommander").getFirst();
+
+        float highest = 0f;
+        float foeHighest = 0f;
+        for (int i = 0; i < 900 && !session.run().getScript().flagged("HeroLanded"); i++) {
+            session.run().read(game.getLocalPlayerIndex(), 10_000);
+            game.runHeadless(1);
+        }
+        assertTrue(session.run().getScript().flagged("HeroLanded"), "the opening seen");
+        for (int i = 0; i < 40; i++) {
+            float ground = game.getLogic().groundHeight(hero(session).getPosition());
+            highest = Math.max(highest, hero(session).getPosition().z() - ground);
+            foeHighest = Math.max(foeHighest, foe.getPosition().z() - game.getLogic().groundHeight(foe.getPosition()));
+            game.runHeadless(1);
+        }
+        assertTrue(highest > 50f, "he came down from high in the beam: " + highest);
+        var at = hero(session).getPosition();
+        assertTrue(landing.holds(at.x(), at.y(), CELL), "and stands in the light");
+        assertEquals(game.getLogic().groundHeight(at), at.z(), 0.01f, "on the ground");
+        assertTrue(foeHighest > 5f, "the enemy commander went through the air: " + foeHighest);
+        assertTrue(thrown.holds(foe.getPosition().x(), foe.getPosition().y(), CELL), "and came down where he was thrown");
+
+        // The landing's first shot draws the camera in, low: 30 degrees down, 85 back.
+        var view = game.camera().current();
+        assertEquals(Math.toRadians(30), view.pitch(), 0.01, "tilted");
+        assertEquals(85f, view.zoom(), 0.5f, "drawn in");
+    }
+
+    /** A shot's camera framing and a title are read and checked with the files. */
+    @Test
+    void theStoryRefusesATitleItDoesNotHave() {
+        var wrong = org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
+                () -> DungeonSettings.parse(uz.dukeengine.dungeon.content.Content.data() + "\n" + """
+                        Trigger
+                          Name = NoSuchCard
+                          When = MAP_START
+                          Actions = [
+                            Action
+                              Act = TITLE
+                              Target = Nowhere
+                            End
+                          ]
+                        End
+                        """));
+        assertTrue(wrong.getMessage().contains("Nowhere"), wrong.getMessage());
     }
 
     @Test
