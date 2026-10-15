@@ -120,6 +120,10 @@ public interface Floors {
             return new GeneratedFloors(save.seed(), settings, true);
         }
         try {
+            var moved = settings.replacing(save.stage());
+            if (moved != null) {
+                return named(moved.map(), save.seed(), settings, false); // a map the act left: the world now
+            }
             return named(save.stage(), save.seed(), settings, true);
         } catch (RuntimeException e) {
             throw new SaveGame.Refused("the stage " + save.stage() + " cannot be played: " + e.getMessage(), e);

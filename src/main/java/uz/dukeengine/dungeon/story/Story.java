@@ -246,7 +246,7 @@ public record Story(Dialogue dialogue, List<Speaker> speakers, List<Conversation
             var what = condition.target();
             boolean known = condition.is() != null && switch (condition.is()) {
                 case FLAG_SET, FLAG_UNSET -> !what.isBlank();
-                case HOLDS, WEARS -> items.contains(what);
+                case HOLDS, WEARS, LACKS -> items.contains(what);
                 case QUEST_ACTIVE, QUEST_DONE -> quest(what) != null;
                 case ALIVE, DEAD -> monsters.contains(what);
             };
@@ -291,6 +291,11 @@ public record Story(Dialogue dialogue, List<Speaker> speakers, List<Conversation
             case WALK -> {
                 if (npc(what) == null || action.zone().isBlank()) {
                     wrong.add(named + " walks " + what + ", who is no Npc, or to no Zone");
+                }
+            }
+            case LAY -> {
+                if (!items.contains(what) || action.zone().isBlank()) {
+                    wrong.add(named + " lays " + what + ", which is no LootItem, or at no Zone");
                 }
             }
             case GIVE, TAKE -> {
@@ -357,7 +362,33 @@ public record Story(Dialogue dialogue, List<Speaker> speakers, List<Conversation
                     wrong.add(named + " removes " + what + ", and no Monster is called that");
                 }
             }
-            case CHECKPOINT, MENU, CREDITS -> {
+            case CHECKPOINT, MENU, CREDITS, RELEASE, BATTLE, SHOCKWAVE -> {
+                // A Battle and a Shockwave are the settings' blocks, checked there.
+            }
+            case POSE -> {
+                if (!monsters.contains(what) && !Trigger.HEROES.equals(what) || action.clip().isBlank()
+                        || action.frames() < 1) {
+                    wrong.add(named + " poses " + what + ", who is no Monster nor Hero, or with no Clip, or for no"
+                            + " frames");
+                }
+            }
+            case BEAM -> {
+                if (!what.isBlank() && !monsters.contains(what) || action.zone().isBlank()
+                        || action.drawn().isBlank() || action.frames() < 1) {
+                    wrong.add(named + " beams from " + what + ", who is no Monster, or to no Zone, or of no Drawn laser");
+                }
+            }
+            case SKY, STREAK -> {
+                if (!Trigger.HEROES.equals(what) || action.zone().isBlank() || action.height() <= 0f
+                        || action.act() == Trigger.Act.STREAK && action.frames() < 1) {
+                    wrong.add(named + " " + action.act() + "s " + what + ": only the heroes, over a Zone, from a Height"
+                            + " above it");
+                }
+            }
+            case HOLD, SOUND -> {
+                if (action.zone().isBlank() || action.act() == Trigger.Act.SOUND && what.isBlank()) {
+                    wrong.add(named + " " + action.act() + "s at no Zone, or names nothing");
+                }
             }
             case TITLE -> {
                 if (what.isBlank()) {
@@ -370,7 +401,7 @@ public record Story(Dialogue dialogue, List<Speaker> speakers, List<Conversation
     private void step(Quest.Step step, String named, Collection<String> monsters, Collection<String> items,
             List<String> wrong) {
         if (step.goal() == null) {
-            wrong.add(named + " has no Goal: one of REACH, KILL, COLLECT, TALK, GIVE");
+            wrong.add(named + " has no Goal: one of REACH, KILL, COLLECT, TALK, GIVE, FOLLOW");
             return;
         }
         if (step.count() < 1) {
@@ -392,9 +423,12 @@ public record Story(Dialogue dialogue, List<Speaker> speakers, List<Conversation
                     wrong.add(named + " is a COLLECT of " + step.target() + ", and no LootItem is called that");
                 }
             }
-            case TALK, GIVE -> {
+            case TALK, GIVE, FOLLOW -> {
                 if (npc(step.target()) == null) {
                     wrong.add(named + " is a " + step.goal() + " to " + step.target() + ", and no Npc is called that");
+                }
+                if (step.goal() == Quest.Goal.FOLLOW && step.where().isBlank()) {
+                    wrong.add(named + " is a FOLLOW with no Where: the zone they lead him to");
                 }
                 if (step.goal() == Quest.Goal.GIVE && !items.contains(step.item())) {
                     wrong.add(named + " gives " + step.item() + ", and no LootItem is called that");

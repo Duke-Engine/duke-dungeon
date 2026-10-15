@@ -138,6 +138,16 @@ public final class QuestLog {
         }
     }
 
+    /** The Npc {@code npc} has led a hero where a FOLLOW step wanted: every FOLLOW after them is done. */
+    public void followed(String npc, LootBag bag) {
+        for (var each : List.copyOf(active)) {
+            var step = stepOf(each);
+            if (step.goal() == Quest.Goal.FOLLOW && step.target().equals(npc)) {
+                finish(each, bag);
+            }
+        }
+    }
+
     /** The heroes' bags, looked at: every COLLECT counts what they hold between them. */
     public void holding(List<LootBag> bags) {
         for (var each : List.copyOf(active)) {
