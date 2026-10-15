@@ -1085,7 +1085,7 @@ public final class Main {
         var letters = settings.screens().keys();
         // Each said in the game's words on the Settings screen's list of keys (E46).
         var words = List.of(settings.screens().sheetTitle(), settings.screens().questsTitle(),
-                settings.screens().mapTitle());
+                settings.screens().mapTitle(), settings.crafting().title());
         for (int i = 0; i < letters.size(); i++) {
             var which = PlayerScreens.Open.values()[i + 1];
             keys.on(letters.get(i), words.get(i), game -> screens.toggle(which));

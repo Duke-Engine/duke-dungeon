@@ -156,6 +156,27 @@ public final class Items {
         return loot(make(base, rarity, at, seed));
     }
 
+    /**
+     * What a recipe makes (docs/plan/2026-10-15-crafting.md): a unique as written, at its level at least; a stack of
+     * {@code count} of a Potion; or a thing on a base, its rarity drawn by {@code rarity} (out of 1000; none: common,
+     * an epic a rare), at {@code level}, rolled from {@code seed}. Null for a name nothing has.
+     */
+    public Loot craft(String makes, int count, List<Integer> rarity, int level, long seed) {
+        int at = Math.max(1, level);
+        for (var unique : uniques) {
+            if (unique.name().equals(makes) && base(unique.base()) != null) {
+                return loot(unique(unique, Math.max(at, unique.level()), seed));
+            }
+        }
+        var potion = potion(makes);
+        if (potion != null) {
+            return potion(potion, count, seed);
+        }
+        var base = base(makes);
+        return base == null ? null
+                : loot(make(base, Math.min(RARE, pickIndex(rng(seed, "craft"), rarity)), at, seed));
+    }
+
     /** {@code count} things for a merchant to sell at {@code level}, each its own seed drawn from {@code seed}. */
     public List<Loot> stock(long seed, int level, int count) {
         var rng = rng(seed, "shop");

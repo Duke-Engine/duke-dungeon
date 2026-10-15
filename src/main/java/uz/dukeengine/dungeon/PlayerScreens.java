@@ -6,8 +6,9 @@ import uz.dukeengine.client3d.Painter;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 
 /**
- * The player's three screens -- the character sheet, the quest log, the world map -- over everything else the game
- * draws, and the small row of their keys over the panel: see {@code docs/plan/2026-10-15-player-screens.md}.
+ * The player's four screens -- the character sheet, the quest log, the world map, the Hunar (crafting) list -- over
+ * everything else the game draws, and the small row of their keys over the panel: see
+ * {@code docs/plan/2026-10-15-player-screens.md}.
  *
  * <p>One is open at a time: its key opens it, and shuts it again; another's key changes to that one; Esc shuts it. The
  * keys open them through the game's hotkeys ({@code Main}), which the client answers only in play -- never on a menu
@@ -20,12 +21,13 @@ import uz.dukeengine.dungeon.content.DungeonSettings;
  */
 final class PlayerScreens implements Painter, CanvasInput {
 
-    enum Open { NONE, SHEET, QUESTS, MAP }
+    enum Open { NONE, SHEET, QUESTS, MAP, CRAFT }
 
     private final DialogueScreen under;
     private final DungeonSettings settings;
     private final QuestLogScreen quests;
     private final WorldMapScreen map;
+    private final CraftScreen craft;
     /** Which is open: flipped by the hotkeys and by this, both on the window's thread. */
     private volatile Open open = Open.NONE;
     /** Whether the world was paused here, so it is this that lets it go. */
@@ -38,6 +40,7 @@ final class PlayerScreens implements Painter, CanvasInput {
         this.settings = settings;
         this.quests = new QuestLogScreen(settings);
         this.map = new WorldMapScreen(settings);
+        this.craft = new CraftScreen(settings);
         this.map.onTravel(this::close);
     }
 
@@ -106,6 +109,7 @@ final class PlayerScreens implements Painter, CanvasInput {
             case SHEET -> CharacterSheet.paint(canvas, match.run().getSheet(), settings);
             case QUESTS -> quests.paint(canvas, match);
             case MAP -> map.paint(canvas, match);
+            case CRAFT -> craft.paint(canvas, match);
             case NONE -> hints(canvas, settings);
         }
     }
@@ -153,6 +157,12 @@ final class PlayerScreens implements Painter, CanvasInput {
                 return switch (open) {
                     case MAP -> map.take(event);
                     case QUESTS -> questsTake(event);
+                    case CRAFT -> {
+                        if (craft.take(event, DialogueScreen.match())) {
+                            close(); // he is seen at work
+                        }
+                        yield true;
+                    }
                     default -> true; // a click on a screen is not an order to the world
                 };
             }
@@ -253,11 +263,12 @@ final class PlayerScreens implements Painter, CanvasInput {
     record Hint(String key, String word) {
     }
 
-    /** The HUD's key hints, left to right: the three screens', then the tracker's fold. */
+    /** The HUD's key hints, left to right: the four screens', then the tracker's fold. */
     static java.util.List<Hint> hints(DungeonSettings settings) {
         var screens = settings.screens();
         return java.util.List.of(new Hint(screens.sheetKey(), screens.sheetTitle()),
                 new Hint(screens.questsKey(), screens.questsTitle()), new Hint(screens.mapKey(), screens.mapTitle()),
+                new Hint(screens.craftKey(), settings.crafting().title()),
                 new Hint(settings.run().foldKey(), screens.trackerWord()));
     }
 

@@ -68,6 +68,8 @@ public final class PartyOrders {
     static final String DRINK = "drink";
     /** A fire built at his feet; a thing worked is sent as its click's word, one of Food.WORDS. */
     static final String BUILD = "build";
+    /** A recipe crafted where he stands: the order's number is which of the Crafting block's. */
+    static final String CRAFT = "craft";
     /** A journey to a found watchtower: the order's number is which of the map's towers. */
     static final String TRAVEL = "travel";
 
@@ -101,6 +103,8 @@ public final class PartyOrders {
                     drink.belt());
             case uz.dukeengine.dungeon.run.SkipCutscene skip -> new GameOrder(skip.playerIndex(), SKIP, List.of(), null,
                     null, 0);
+            case uz.dukeengine.dungeon.run.Craft craft -> new GameOrder(craft.playerIndex(), CRAFT, List.of(), null, null,
+                    craft.recipe());
             case uz.dukeengine.dungeon.run.TravelTo travel -> new GameOrder(travel.playerIndex(), TRAVEL, List.of(),
                     null, null, travel.tower());
             case uz.dukeengine.dungeon.run.TalkTo talk -> new GameOrder(talk.playerIndex(), TALK, List.of(), null,
@@ -145,6 +149,7 @@ public final class PartyOrders {
             case SKIP -> new uz.dukeengine.dungeon.run.SkipCutscene(order.playerIndex());
             case DRINK -> new uz.dukeengine.dungeon.run.Drink(order.playerIndex(), (int) order.number());
             case TRAVEL -> new uz.dukeengine.dungeon.run.TravelTo(order.playerIndex(), (int) order.number());
+            case CRAFT -> new uz.dukeengine.dungeon.run.Craft(order.playerIndex(), (int) order.number());
             case READ -> new uz.dukeengine.dungeon.run.Read(order.playerIndex(), (int) order.number());
             case BUY -> order.target() == null ? null
                     : new uz.dukeengine.dungeon.run.Buy(order.playerIndex(), order.target(), (int) order.number());
