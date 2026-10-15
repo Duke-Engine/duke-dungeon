@@ -491,6 +491,9 @@ Monster
   ModelScale = 4.72
   Facing = 90
   Animations = Humanoid
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
+  WalkStride = 3.52
+  UpperBody = spine
   Held = Held
     Model = models/weapons/medieval/sword.glb
     Bone = handslot.r
