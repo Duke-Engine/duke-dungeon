@@ -1298,7 +1298,7 @@ public final class Main {
             case METEOR -> uz.dukeengine.client3d.SkillRange.Shape.AT_A_SPOT;
             // A summoning calls them up round him, as far out as its Radius; a haste finds one of
             // his own round him, as far out as its Range; a pull gathers whoever is within its Radius.
-            case AREA_DAMAGE, SUMMON, HASTE, PULL -> uz.dukeengine.client3d.SkillRange.Shape.AROUND_HIM;
+            case AREA_DAMAGE, SUMMON, HASTE, PULL, PUSH -> uz.dukeengine.client3d.SkillRange.Shape.AROUND_HIM;
             // None of these is aimed past him: one sharpens his sword, one thickens
             // his skin, and the passives -- never cast -- drink from his blows or
             // lend round him.
@@ -1309,7 +1309,7 @@ public final class Main {
             case STRIKE, AREA_AT_SPOT, SKILLSHOT, HEAL -> skill.range();
             case DASH, BLINK, SKEWER, WAVE -> skill.distance();
             case METEOR -> skill.range();
-            case AREA_DAMAGE, SUMMON, PULL -> skill.radius();
+            case AREA_DAMAGE, SUMMON, PULL, PUSH -> skill.radius();
             case HASTE -> skill.range();
             case EMPOWER, GUARD, LIFESTEAL, DAMAGE_AURA, MANA_AURA, LIFESTEAL_AURA, SOUL_DRINK, UNYIELDING,
                     DRAGON_BLOOD, STAGGER, DODGE -> selfRadius;
