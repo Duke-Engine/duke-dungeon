@@ -38,6 +38,7 @@ final class PlayerScreens implements Painter, CanvasInput {
         this.settings = settings;
         this.quests = new QuestLogScreen(settings);
         this.map = new WorldMapScreen(settings);
+        this.map.onTravel(this::close);
     }
 
     Open open() {
@@ -88,6 +89,14 @@ final class PlayerScreens implements Painter, CanvasInput {
         boolean playing = match != null && match.game().getLogic() != null;
         if (!playing || under.busy()) {
             open = Open.NONE;
+        }
+        // A tower's keeper talked to: the map, to travel from, once what he says has been read.
+        wantMap |= playing && keeperAsked(match);
+        if (wantMap && playing && !under.busy()) {
+            wantMap = false;
+            if (open != Open.MAP) {
+                toggle(Open.MAP);
+            }
         }
         pause(playing && open != Open.NONE, match);
         if (!playing || under.busy()) {
@@ -159,6 +168,26 @@ final class PlayerScreens implements Painter, CanvasInput {
             }
         }
         return true;
+    }
+
+    /** The match the keepers' asks were last counted in, and how many of them have been seen. */
+    private Dungeon.Session counted;
+    private int seenAsks;
+    /** A keeper asked, and the map not yet opened for it. */
+    private boolean wantMap;
+
+    /** Whether a tower's keeper has been asked, since last looked, to send this machine's hero on. */
+    private boolean keeperAsked(Dungeon.Session match) {
+        if (match != counted) {
+            counted = match;
+            seenAsks = 0;
+        }
+        var asks = match.run().getTravelAsks();
+        boolean asked = false;
+        for (; seenAsks < asks.size(); seenAsks++) {
+            asked |= asks.get(seenAsks).player() == match.game().getLocalPlayerIndex();
+        }
+        return asked;
     }
 
     /** The world paused while a screen is open, played alone; let go once none is, where it was taken here. */

@@ -1768,6 +1768,11 @@ public final class DungeonRun {
         if (said || asked) {
             face(there, hero);
         }
+        if (asked && !settings.travel().keeper().isBlank() && settings.travel().keeper().equals(who.npc())) {
+            var more = new ArrayList<>(travelAsks); // a tower's keeper: the world map opened to travel from
+            more.add(new Opened(seat.player.getIndex(), who.id().value()));
+            travelAsks = List.copyOf(more);
+        }
         if (asked && settings.story().merchant(who.npc()) != null) {
             var more = new ArrayList<>(trades);
             more.add(new Opened(seat.player.getIndex(), who.id().value()));
@@ -1796,7 +1801,7 @@ public final class DungeonRun {
             var npc = settings.story().npc(who.npc());
             var there = logic.findObject(who.id());
             var legs = there == null ? null : there.getLocomotor();
-            if (npc == null || legs == null || npc.wander() <= 0f) {
+            if (npc == null || legs == null || npc.wander() <= 0f && npc.route().isEmpty()) {
                 continue;
             }
             boolean heroNear = false;
@@ -1814,6 +1819,14 @@ public final class DungeonRun {
             if ((logic.getFrame() + id * 37) % every != 0) {
                 continue;
             }
+            if (!npc.route().isEmpty()) {
+                // A traveller: on to the next place of his round once he has come to a stop.
+                var next = legs.isMoving() ? null : nextOnRoute(npc.route(), there);
+                if (next != null) {
+                    legs.moveTo(next);
+                }
+                continue;
+            }
             long hash = (logic.getFrame() * 0x9E3779B97F4A7C15L) ^ (id * 0xC2B2AE3D27D4EB4FL);
             hash ^= hash >>> 29;
             double angle = (hash & 0xFFFF) / 65536.0 * 2 * StrictMath.PI;
@@ -1821,6 +1834,39 @@ public final class DungeonRun {
             legs.moveTo(new uz.dukeengine.core.math.Coord3D(who.homeX() + (float) StrictMath.cos(angle) * reach,
                     who.homeY() + (float) StrictMath.sin(angle) * reach, 0f));
         }
+    }
+
+    /**
+     * Where a traveller on {@code route} walks next: the middle of the place after the one he stands in -- or after the
+     * nearest, if he is in none -- round and round; null where the map has none of its places.
+     */
+    private uz.dukeengine.core.math.Coord3D nextOnRoute(List<String> route, GameObject traveller) {
+        float cell = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
+        float x = traveller.getPosition().x();
+        float y = traveller.getPosition().y();
+        int nearest = -1;
+        double best = Double.MAX_VALUE;
+        for (int i = 0; i < route.size(); i++) {
+            var zone = zoneNamed(route.get(i));
+            if (zone == null) {
+                continue;
+            }
+            double far = zone.holds(x, y, cell) ? -1 : Math.hypot(zone.middleX(cell) - x, zone.middleY(cell) - y);
+            if (far < best) {
+                best = far;
+                nearest = i;
+            }
+        }
+        if (nearest < 0) {
+            return null;
+        }
+        for (int step = 1; step <= route.size(); step++) {
+            var zone = zoneNamed(route.get((nearest + (best < 0 ? step : 0)) % route.size()));
+            if (zone != null) {
+                return new uz.dukeengine.core.math.Coord3D(zone.middleX(cell), zone.middleY(cell), 0f);
+            }
+        }
+        return null;
     }
 
     /** A trade window asked for: whose player, and the merchant, by the id of the thing. */
@@ -1832,6 +1878,66 @@ public final class DungeonRun {
 
     public List<Opened> getTrades() {
         return trades;
+    }
+
+    // ---- fast travel between the watchtowers: see uz.dukeengine.dungeon.world.Travel ----
+
+    /** Every time a tower's keeper was asked to send a hero on: the world map opens to travel from, on his machine. */
+    private volatile List<Opened> travelAsks = List.of();
+
+    public List<Opened> getTravelAsks() {
+        return travelAsks;
+    }
+
+    /** The towers of {@code story}: its zones named as the Travel block's towers are, in the map's order. */
+    public static List<uz.dukeengine.dungeon.map.StaticMap.Zone> towers(uz.dukeengine.dungeon.story.MapStory story,
+            uz.dukeengine.dungeon.world.Travel travel) {
+        if (travel.towers().isBlank()) {
+            return List.of();
+        }
+        return story.zones().stream().filter(zone -> zone.name().startsWith(travel.towers())).toList();
+    }
+
+    /**
+     * A player's hero goes to the map's {@code tower}th tower: one he has found (stood in, as every place is found, and
+     * saved with them), for the Travel block's gold, shown under its title card; set down in the middle of the tower's
+     * zone, which the map keeps clear for him. Refused -- said in the bag -- for a tower not found or too little gold.
+     */
+    public void travel(DukeGame game, int playerIndex, int tower) {
+        var seat = seatOf(playerIndex);
+        var logic = game.getLogic();
+        var hero = seat == null || seat.heroId == null ? null : logic.findObject(seat.heroId);
+        var towers = towers(floors.story(), settings.travel());
+        if (hero == null || hero.isEffectivelyDead() || tower < 0 || tower >= towers.size()) {
+            return;
+        }
+        var travel = settings.travel();
+        var bag = seat.progress.getLoot();
+        int frame = logic.getFrame();
+        int notes = settings.lootDrops().noteFrames();
+        var zone = towers.get(tower);
+        if (!visited.contains(zone.name())) {
+            bag.say(travel.unknownWord(), frame, notes);
+            return;
+        }
+        if (seat.gold < travel.cost()) {
+            bag.say(travel.noGoldWord(), frame, notes);
+            return;
+        }
+        seat.gold -= travel.cost();
+        float cell = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
+        var flat = new uz.dukeengine.core.math.Coord3D(zone.middleX(cell), zone.middleY(cell), 0f);
+        uz.dukeengine.combat.module.Errand.giveUpAll(hero);
+        var legs = hero.getLocomotor();
+        if (legs != null && legs.isMoving()) {
+            legs.stop();
+        }
+        hero.setPosition(new uz.dukeengine.core.math.Coord3D(flat.x(), flat.y(), logic.groundHeight(flat)));
+        var card = travel.card().isBlank() ? null : settings.title(travel.card());
+        if (card != null) {
+            game.titleCard(card.text(), card.subtext(), card.fadeIn(), card.hold(), card.fadeOut());
+        }
+        published();
     }
 
     /** A merchant's stock on this floor: the person, and how many of each of his wares are left. */
