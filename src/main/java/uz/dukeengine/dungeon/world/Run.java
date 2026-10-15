@@ -34,17 +34,20 @@ package uz.dukeengine.dungeon.world;
  *     for none
  * @param keyDroppedWord     what floats over the key as it drops
  * @param keyDroppedSound    and the Sound it drops with; blank for none
+ * @param questBeam          the Effect the place a quest going sends him to stands in -- a colour of its own, so it is
+ *     never taken for the key; blank for none
+ * @param questColour        and the colour its arrow round the hero and its minimap mark are drawn in, packed RGB
  */
 public record Run(int respawnDelayFrames, int descendDelayFrames, int victoryFrames, String defaultHero,
         String diedWord, String nextDepthWord, String wayIn, String clearWord, String takeKeyWord,
         String giveKeyWord, String killBossWord, String missionTitle, String missionsTab, String foldKey,
         int doneFrames, int glowFrames, int keyEarlyPercent, int keyEarlyCount, String keyBeam,
-        String keyDroppedWord, String keyDroppedSound) {
+        String keyDroppedWord, String keyDroppedSound, String questBeam, int questColour) {
 
     /** What a block leaves out. */
     public static final Run DEFAULTS = new Run(60, 75, 150, "Rogue", "You died", "Depth %d", "",
             "Kill everything outside the keep %d/%d", "Take the key", "Give the key to the gate", "Kill the boss",
-            "Boss keep", "Missions (J)", "J", 90, 20, 15, 3, "", "The key dropped!", "");
+            "Boss keep", "Missions (J)", "J", 90, 20, 15, 3, "", "The key dropped!", "", "", 0x6FD3FF);
 
     /**
      * How many of {@code outside} may still stand when the key drops: KeyEarlyPercent of them rounded down, or

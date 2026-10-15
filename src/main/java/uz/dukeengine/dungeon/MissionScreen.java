@@ -97,8 +97,37 @@ final class MissionScreen {
     }
 
     /**
+     * The minimap's marks for {@code match} (E61): every quest going whose target is on this map, a diamond in the run's
+     * QuestColour, and the floor's key lying, a gold diamond that blinks. None while the tracker lists
+     * nothing, or before there is a match.
+     */
+    static List<uz.dukeengine.client3d.MinimapMark> minimapMarks(Dungeon.Session match, DungeonSettings settings) {
+        try {
+            if (match == null || match.game().getLogic() == null || match.run().getTracker().entries().isEmpty()) {
+                return List.of();
+            }
+            var marks = new ArrayList<uz.dukeengine.client3d.MinimapMark>();
+            for (var going : match.run().questsNow().active()) {
+                var target = QuestLogScreen.whereIs(going.quest(), match, settings);
+                if (target != null) {
+                    marks.add(new uz.dukeengine.client3d.MinimapMark(target[0], target[1],
+                            settings.run().questColour()));
+                }
+            }
+            var key = match.run().keyLying();
+            if (key != null) {
+                marks.add(new uz.dukeengine.client3d.MinimapMark(key.x(), key.y(), settings.menu().torchColour(), null,
+                        true));
+            }
+            return marks;
+        } catch (IllegalStateException notNumberedYet) {
+            return List.of(); // the match is being built: its players are not numbered yet
+        }
+    }
+
+    /**
      * Where the hero is wanted, shown from where he stands: every quest going whose step is on this map (in the
-     * Dialogue block's mark colour), and the floor's key lying, with its {@code KeyDroppedWord} floating up over it as
+     * run's QuestColour), and the floor's key lying, with its {@code KeyDroppedWord} floating up over it as
      * it drops. Off the screen, an arrow on a ring round him points the way; on it, the target's glow or pillar of light
      * says where. Nothing while the tracker lists nothing (the banner has the screen).
      */
@@ -111,7 +140,7 @@ final class MissionScreen {
         if (hero == null) {
             return;
         }
-        int questColour = 0xFF000000 | settings.story().dialogue().markColour();
+        int questColour = 0xFF000000 | settings.run().questColour();
         for (var going : match.run().questsNow().active()) {
             var target = QuestLogScreen.whereIs(going.quest(), match, settings);
             if (target != null) {

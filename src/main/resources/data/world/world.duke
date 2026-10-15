@@ -105,6 +105,10 @@ Run
   KeyBeam = KeyBeam
   KeyDroppedWord = "Kalit tushdi!"
   KeyDroppedSound = key_dropped
+  ; The place a quest going sends him to stands in its own pillar, a cold blue,
+  ; never taken for the key's gold; its arrow and minimap mark are QuestColour.
+  QuestBeam = QuestBeam
+  QuestColour = 0x6FD3FF
 
   ; The tracker folds and unfolds on FoldKey; folded it is only MissionsTab. A
   ; step just passed stays listed, ticked off and dimmed, for DoneFrames (30 = one

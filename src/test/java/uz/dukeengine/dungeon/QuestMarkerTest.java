@@ -87,11 +87,53 @@ class QuestMarkerTest {
         for (int frame = 0; frame <= SETTINGS.items().rules().beamFrames() && !lit; frame++) {
             game.runHeadless(1);
             for (var event : game.getSnapshot().events()) {
-                lit |= event instanceof EffectPlayed played && played.name().equals(SETTINGS.run().keyBeam())
+                lit |= event instanceof EffectPlayed played && played.name().equals(SETTINGS.run().questBeam())
                         && Math.abs(played.where().x() - cellar.middleX(CELL)) < 0.5f
                         && Math.abs(played.where().y() - cellar.middleY(CELL)) < 0.5f;
             }
         }
         assertTrue(lit, "no pillar on the cellar in a whole BeamFrames");
+    }
+
+    /** A quest's place is never taken for the key: its pillar and its colour are its own. */
+    @Test
+    void aQuestsPlaceLooksUnlikeTheKey() {
+        var run = SETTINGS.run();
+        assertFalse(run.questBeam().isBlank());
+        assertTrue(!run.questBeam().equals(run.keyBeam()), "the same pillar as the key");
+        assertTrue(run.questColour() != SETTINGS.menu().torchColour(), "the key's gold");
+    }
+
+    /** On the minimap (E61): the cellar quest's target, a still diamond in the quest colour. */
+    @Test
+    void theCellarIsMarkedOnTheMinimap() {
+        var session = Dungeon.newStageSession(Stages.load("poytaxt", SETTINGS), SETTINGS);
+        session.game().runHeadless(1);
+        session.run().getQuests().start("Cellar");
+        session.game().runHeadless(2);
+        var cellar = Stages.load("poytaxt", SETTINGS).story().zones().stream()
+                .filter(z -> z.name().equals("Cellar")).findFirst().orElseThrow();
+
+        var marks = MissionScreen.minimapMarks(session, SETTINGS);
+        assertTrue(marks.contains(new uz.dukeengine.client3d.MinimapMark(cellar.middleX(CELL), cellar.middleY(CELL),
+                SETTINGS.run().questColour())), "" + marks);
+        assertTrue(MissionScreen.minimapMarks(null, SETTINGS).isEmpty(), "no match, no marks");
+    }
+
+    /** On the minimap (E61): the floor's key lying, a gold diamond that blinks, where it lies. */
+    @Test
+    void theKeyIsMarkedOnTheMinimapAndBlinks() {
+        var session = Dungeon.newSession(21L, SETTINGS);
+        var game = session.game();
+        game.runHeadless(2);
+        game.getLogic().getObjects().stream()
+                .filter(o -> o.findModule(uz.dukeengine.rpg.mission.Mission.Counted.class) != null).toList()
+                .forEach(o -> game.getLogic().destroyObject(o));
+        game.runHeadless(1);
+        var key = session.run().keyLying();
+        assertNotNull(key, "the premise: the key dropped");
+
+        assertTrue(MissionScreen.minimapMarks(session, SETTINGS).contains(new uz.dukeengine.client3d.MinimapMark(
+                key.x(), key.y(), SETTINGS.menu().torchColour(), null, true)));
     }
 }

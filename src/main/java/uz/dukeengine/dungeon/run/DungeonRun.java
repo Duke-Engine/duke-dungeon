@@ -734,16 +734,9 @@ public final class DungeonRun {
                 outside.add(monster);
             }
         }
-        var mission = Mission.begin(world, key, settings.lootDrops().template(), floorOwner, placed.gate(), outside,
-                wayIn(floor, placed));
-        int leeway = settings.run().keyLeeway(outside.size());
-        if (leeway > 0) {
-            var early = new EarlyKey.Tally(mission, List.copyOf(outside), leeway);
-            for (var monster : outside) {
-                monster.addModule(new EarlyKey(monster, early));
-            }
-        }
-        return mission;
+        // The key drops with a few still standing (the owner, 2026-10-15): the run's leeway, the engine's count (E61).
+        return Mission.begin(world, key, settings.lootDrops().template(), floorOwner, placed.gate(), outside,
+                wayIn(floor, placed), settings.run().keyLeeway(outside.size()));
     }
 
     /** Where the heroes came in: where the first of them stands, or the floor's own way in. */
@@ -1768,8 +1761,8 @@ public final class DungeonRun {
     /**
      * Every BeamFrames, every magic, rare and epic thing lying on the floor stands in a column of its rarity's light
      * (ItemRules' Beams): an event the client plays riding the thing, as a quest's glow is; nothing in the world reads it.
-     * The floor's key stands in the run's KeyBeam, the tallest, and so does the place every quest going sends him to on
-     * this map: a REACH's zone, or the zone a step names as its Where.
+     * The floor's key stands in the run's KeyBeam, the tallest, and the place every quest going sends him to on
+     * this map -- a REACH's zone, or the zone a step names as its Where -- in its QuestBeam, a colour of its own.
      */
     private void beams(DukeGame game) {
         var items = settings.items();
@@ -1786,14 +1779,15 @@ public final class DungeonRun {
                 logic.effect(beam, thing);
             }
         }
-        if (keyBeam.isBlank()) {
+        var questBeam = settings.run().questBeam();
+        if (questBeam.isBlank()) {
             return;
         }
         float cell = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
         for (var each : quests.active()) {
             var place = zoneNamed(placeOf(settings.story(), each.quest(), each.step()));
             if (place != null) {
-                logic.effect(keyBeam, new uz.dukeengine.core.math.Coord3D(place.middleX(cell), place.middleY(cell),
+                logic.effect(questBeam, new uz.dukeengine.core.math.Coord3D(place.middleX(cell), place.middleY(cell),
                         0f), 0f);
             }
         }
