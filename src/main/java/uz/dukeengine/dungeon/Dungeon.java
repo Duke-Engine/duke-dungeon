@@ -436,7 +436,7 @@ public final class Dungeon {
                         run.dismount(game, cast.playerIndex()); // a skill pressed on horseback gets him off it
                 case CastSkill cast -> {
                     var learnt = run.learntOf(cast.playerIndex());
-                    // A skill of his book outside his four -- his dodge -- is never bought: his at its first rank.
+                    // A skill of his book outside his four is never bought: his at its first rank.
                     int rank = learnt == null ? 0 : learnt.getSkills().stream().anyMatch(s -> s.key() == cast.key())
                             ? learnt.rankOf(cast.key()) : 1;
                     if (learnt != null && Skills.cast(game.getLogic(),
@@ -459,7 +459,7 @@ public final class Dungeon {
                 // "Stand and pick no fights", which none of the engine's three
                 // orders can say. See HoldGround. Like every order after one, it
                 // calls off an errand for something on the floor.
-                // The modern way: his hero picks no fight of his own (HeroBrain).
+                // His hero picks no fight of his own (HeroBrain).
                 case uz.dukeengine.dungeon.ai.FightOnlyWhenTold told -> {
                     arena.orders().fightOnlyWhenTold(told.playerIndex(), told.on());
                     // And whatever he picked by himself before it arrived is let go.
@@ -683,7 +683,7 @@ public final class Dungeon {
                 data.reloadFrames(), data.damageType(), data.splashRadius(), data.attackOnTheMove(), data.targets(),
                 data.reloadFramesMax(), data.clipSize(), data.clipReloadFrames(), data.autoReload(),
                 owner.getTemplate().name(), data.weaponSets(), data.deathType(), data.targetScanFrames(),
-                data.preAttackFrames(), data.swingArcDegrees()); // the wind-up too: the blow lands with the swing
+                data.preAttackFrames()); // the wind-up too: the blow lands with the swing
     }
 
     /** A sound the simulation plays riding {@code thing} — see {@code World.sound}: an event, out of the checksum. */

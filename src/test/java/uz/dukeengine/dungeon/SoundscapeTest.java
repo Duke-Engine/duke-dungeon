@@ -185,9 +185,8 @@ class SoundscapeTest {
         assertEquals(10f, Dungeon.namedFor(skeleton, plain).attackRange(), 0.001f, "and nothing else changed");
         var windsUp = new uz.dukeengine.combat.module.WeaponUpdate.Data(5f, 10f, 20,
                 uz.dukeengine.core.module.DamageType.NORMAL, 0f, true, List.of(), 0, 0, 0, true, null, List.of(),
-                uz.dukeengine.core.module.DeathType.NORMAL, 0, 17, 90f);
+                uz.dukeengine.core.module.DeathType.NORMAL, 0, 17);
         assertEquals(17, Dungeon.namedFor(skeleton, windsUp).preAttackFrames(), "its wind-up is kept");
-        assertEquals(90f, Dungeon.namedFor(skeleton, windsUp).swingArcDegrees(), 0.001f, "and its arc");
         var named = new uz.dukeengine.combat.module.WeaponUpdate.Data(5f, 10f, 20,
                 uz.dukeengine.core.module.DamageType.NORMAL, 0f, true, List.of(), 0, 0, 0, true, "Bow", List.of());
         assertEquals("Bow", Dungeon.namedFor(skeleton, named).name(), "a name its block wrote stays");

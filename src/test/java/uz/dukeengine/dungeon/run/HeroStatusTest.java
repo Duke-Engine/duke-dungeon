@@ -389,9 +389,8 @@ class HeroStatusTest {
      */
     @Test
     void theLineCarriesEveryPartOfTheDesign() {
-        // The classic scheme's, whose four orders have their buttons (the modern one has none: ModernControlsTest).
+        // The shipped settings, whose four orders have their buttons.
         var classic = uz.dukeengine.dungeon.content.DungeonSettings.load();
-        classic.useScheme(uz.dukeengine.dungeon.world.Controls.Scheme.CLASSIC);
         var session = Dungeon.newSession(7L, classic);
         var game = session.game();
         game.runHeadless(2);

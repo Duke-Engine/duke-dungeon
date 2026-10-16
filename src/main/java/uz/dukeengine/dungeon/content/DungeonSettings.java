@@ -105,9 +105,6 @@ public final class DungeonSettings {
     private uz.dukeengine.dungeon.world.MainMenu mainMenu = uz.dukeengine.dungeon.world.MainMenu.DEFAULTS;
     private uz.dukeengine.dungeon.world.Splash splash = uz.dukeengine.dungeon.world.Splash.DEFAULTS;
     private uz.dukeengine.dungeon.world.Screens screens = uz.dukeengine.dungeon.world.Screens.DEFAULTS;
-    private uz.dukeengine.dungeon.world.Controls controls = uz.dukeengine.dungeon.world.Controls.DEFAULTS;
-    /** The scheme played: the file's until the launch says the player's own (see useScheme). */
-    private uz.dukeengine.dungeon.world.Controls.Scheme scheme;
     private uz.dukeengine.dungeon.world.Travel travel = uz.dukeengine.dungeon.world.Travel.DEFAULTS;
     private uz.dukeengine.dungeon.world.DayNight dayNight = uz.dukeengine.dungeon.world.DayNight.DEFAULTS;
     private UnitBar unitBar = UnitBar.DEFAULTS;
@@ -217,30 +214,6 @@ public final class DungeonSettings {
 
     public uz.dukeengine.dungeon.world.Screens screens() {
         return screens;
-    }
-
-    public uz.dukeengine.dungeon.world.Controls controls() {
-        return controls;
-    }
-
-    /** The scheme the hero is played by: the player's own once {@link #useScheme} says it, else the file's. */
-    public uz.dukeengine.dungeon.world.Controls.Scheme scheme() {
-        return scheme != null ? scheme : controls.fileScheme();
-    }
-
-    /** Play by {@code chosen} -- the launch's, from the player's own choice (Controls.remembered). */
-    public void useScheme(uz.dukeengine.dungeon.world.Controls.Scheme chosen) {
-        this.scheme = chosen;
-    }
-
-    /** The letter on the keyboard that presses the skill on {@code slot}, in the scheme played. */
-    public char letterOf(char slot) {
-        return controls.letterOf(scheme(), slot);
-    }
-
-    /** The key that eats from belt stack {@code belt} (0 first), in the scheme played: 1-4, or action's 5-8. */
-    public char beltKey(int belt) {
-        return controls.beltKey(scheme(), belt);
     }
 
     public Hud hud() {
@@ -676,7 +649,6 @@ public final class DungeonSettings {
                 case uz.dukeengine.dungeon.world.MainMenu block -> mainMenu = once(block, once);
                 case uz.dukeengine.dungeon.world.Splash block -> splash = once(block, once);
                 case uz.dukeengine.dungeon.world.Screens block -> screens = once(block, once);
-                case uz.dukeengine.dungeon.world.Controls block -> controls = once(block, once);
                 case uz.dukeengine.dungeon.world.Travel block -> travel = once(block, once);
                 case uz.dukeengine.dungeon.world.DayNight block -> dayNight = once(block, once);
                 case UnitBar block -> unitBar = once(block, once);
@@ -1275,7 +1247,6 @@ public final class DungeonSettings {
         require(progression.armourPercentPerLevel() >= 0, "a level cannot take armour away");
         validateAttributes();
         validateScreens();
-        validateControls();
         require(travel.cost() >= 0, "Travel: Cost cannot be negative");
         validateDayNight();
         require(travel.card().isBlank() || titles.stream().anyMatch(t -> t.name().equals(travel.card())),
@@ -1508,11 +1479,6 @@ public final class DungeonSettings {
                                 + " it plays (CastAnim)");
                 case PUSH -> require(skill.radius() > 0f && skill.distance() > 0f && skill.durationFrames() > 0,
                         skill.heroTemplate() + "'s PUSH needs a Radius, a Distance and its DurationFrames");
-                case DODGE -> require(skill.distance() > 0f && skill.durationFrames() > 0 && skill.tickFrames() >= 0
-                                && skill.tickFrames() <= skill.durationFrames() && skill.castAnim() != null
-                                && !skill.castAnim().isBlank(),
-                        skill.heroTemplate() + "'s DODGE needs a Distance, its DurationFrames, its TickFrames out of"
-                                + " harm's way (no more than the roll) and the roll it plays (CastAnim)");
                 case HEAL -> {
                     var name = skill.heroTemplate() + "'s Skill " + skill.key();
                     require(skill.heal() > 0f && skill.range() > 0f, name + " mends nobody: it needs a Heal and a Range");
@@ -1699,67 +1665,6 @@ public final class DungeonSettings {
         require(keys.stream().noneMatch(taken::contains), "Screens: a screen's key is already another's: " + keys);
         screens.placeNames(); // every place is "Zone = said"
         require(screens.mostTexels() >= 16, "Screens: MostTexels is at least 16");
-    }
-
-    /**
-     * The modern letters: one for every slot a hero presses, each a letter of its own, and none on walking (W A S D),
-     * a screen, the tracker, the fire, or the client's halt and pause; a slot with none keeps its own key.
-     */
-    private void validateControls() {
-        controls.fileScheme(); // MODERN or CLASSIC
-        var modern = controls.modernKeys();
-        require(modern.values().stream().allMatch(key -> key >= 'A' && key <= 'Z')
-                && modern.values().stream().distinct().count() == modern.size(),
-                "Controls: ModernSkillKeys presses each slot on a letter of its own: " + modern);
-        var taken = new java.util.HashSet<Character>(List.of('W', 'A', 'S', 'D', 'H', 'P',
-                Character.toUpperCase(run.foldKey().charAt(0))));
-        screens.keys().forEach(key -> taken.add(Character.toUpperCase(key)));
-        if (!food.buildKey().isBlank()) {
-            taken.add(Character.toUpperCase(food.buildKey().charAt(0)));
-        }
-        if (mount.on()) {
-            taken.add(Character.toUpperCase(mount.key().charAt(0)));
-        }
-        require(modern.values().stream().noneMatch(taken::contains),
-                "Controls: a modern skill letter is walking's or another key's: " + modern);
-        // A hero's slot on a step's own key is fine in classic (a data-only hero on A), so it is refused only where
-        // modern is the file's scheme.
-        for (var hero : controls.fileScheme() == uz.dukeengine.dungeon.world.Controls.Scheme.MODERN ? heroes
-                : List.<uz.dukeengine.dungeon.content.Hero>of()) {
-            for (var skill : skillsFor(hero.name())) {
-                // A slot with no modern letter is pressed on its own key, which must not be a step.
-                require(skill.effect().isPassive() || modern.containsKey(Character.toUpperCase(skill.key()))
-                        || "WASD".indexOf(Character.toUpperCase(skill.key())) < 0,
-                        "Controls: ModernSkillKeys says no letter for " + hero.name() + "'s " + skill.key());
-            }
-        }
-        validateAction(taken);
-    }
-
-    /**
-     * The action scheme's keys (docs/plan/2026-10-15-action-controls.md): every slot a digit of its own, the belt on
-     * as many other digits as it has stacks, and the interact key a letter nothing else of the scheme presses -- not a
-     * step, a screen, the tracker, the fire, H or P ({@code taken}). Q R F are free there: the skills are on digits.
-     */
-    private void validateAction(java.util.Set<Character> taken) {
-        var action = controls.actionKeys();
-        var belt = controls.actionBeltKeys();
-        var digits = new java.util.ArrayList<Character>(action.values());
-        belt.chars().forEach(key -> digits.add((char) key));
-        require(action.keySet().containsAll(List.of('Q', 'W', 'E', 'R'))
-                && digits.stream().allMatch(key -> key >= '1' && key <= '9')
-                && digits.stream().distinct().count() == digits.size(),
-                "Controls: ActionSkillKeys and ActionBeltKeys press each slot and stack on a digit of its own: "
-                        + action + " " + belt);
-        require(belt.length() >= itemRules.beltSize(),
-                "Controls: ActionBeltKeys needs a digit for each of the belt's " + itemRules.beltSize() + " stacks");
-        var interact = controls.interactKey();
-        require(interact.length() == 1 && interact.charAt(0) >= 'A' && interact.charAt(0) <= 'Z'
-                && !taken.contains(interact.charAt(0)),
-                "Controls: InteractKey is one letter of its own, not a step's or another key's: " + interact);
-        require(controls.interactOrders().size() == controls.interactWords().size()
-                && controls.interactWords().stream().allMatch(DungeonSettings::sayable),
-                "Controls: InteractOrders and InteractWords go in pairs, each word sayable");
     }
 
     /** Ground the generator can carve: every percentage a percentage, and no slope steep enough to be a cliff. */
@@ -1971,7 +1876,7 @@ public final class DungeonSettings {
                     new uz.dukeengine.dungeon.loot.Items.Words(hud.attackWord(), hud.armourWord(), hud.healthWord(),
                             hud.manaWord(), lootDrops.healthRegenWord(), lootDrops.manaRegenWord(),
                             lootDrops.attackSpeedWord(), hud.lifestealWord(), named),
-                    loot, this::letterOf);
+                    loot);
             items = made;
         }
         return made;
@@ -2166,8 +2071,8 @@ public final class DungeonSettings {
     public java.util.List<Skill> skillsFor(String heroTemplate) {
         var his = new java.util.ArrayList<Skill>();
         for (var skill : bookFor(heroTemplate)) {
-            // His stagger, his dodge (Space), his horse (T) and his landing's PUSH (the story's) are no slot of the four.
-            if (skill.effect() != SkillEffect.STAGGER && skill.effect() != SkillEffect.DODGE
+            // His stagger, his horse (T) and his landing's PUSH (the story's) are no slot of the four.
+            if (skill.effect() != SkillEffect.STAGGER
                     && skill.effect() != SkillEffect.MOUNT && skill.effect() != SkillEffect.PUSH) {
                 his.add(skill);
             }
@@ -2176,8 +2081,7 @@ public final class DungeonSettings {
     }
 
     /**
-     * Everything his SkillBook holds: {@link #skillsFor}, his DODGE (pressed on Space, no slot either) and his STAGGER,
-     * which is no slot of the four -- never bought
+     * Everything his SkillBook holds: {@link #skillsFor} and his STAGGER, which is no slot of the four -- never bought
      * with a point, never drawn on his bar (HeroStatus hides it), held at its first rank from the start.
      */
     /** Whether {@code template} is riding's own -- the horse, or a hero's riding look -- and no creature that fights. */

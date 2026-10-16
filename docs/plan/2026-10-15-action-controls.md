@@ -1,5 +1,7 @@
 # Action controls: the mouse turns the camera (2026-10-15)
 
+> **Dropped 2026-10-16 by the owner; the engine parts move to a separate module for a third-person experiment.**
+
 The owner, 2026-10-15: a **third** control scheme beside Zamonaviy and Klassik
 (`2026-10-15-modern-controls.md`), the third-person action game's: no pointer in play, the mouse turns the camera
 round the hero, the left button strikes ahead of him, the skills on the digits, E works what is in front of him.

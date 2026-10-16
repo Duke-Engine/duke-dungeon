@@ -348,7 +348,7 @@ class PlayerScreensTest {
 
     @Test
     void theKeysAreSaidInTheGamesWordsOnTheSettingsList() {
-        var keys = Main.controls(ModernControlsTest.classic()); // the classic orders' words too
+        var keys = Main.controls(uz.dukeengine.dungeon.content.DungeonSettings.load()); // the orders' words too
         Main.screensOn(keys, new PlayerScreens(new DialogueScreen(null, null, SETTINGS), SETTINGS), SETTINGS);
         assertEquals(SETTINGS.screens().sheetTitle(), keys.wordOf('C'));
         assertEquals(SETTINGS.screens().questsTitle(), keys.wordOf('L'));

@@ -72,9 +72,9 @@ final class Bag {
         out.addAll(lines);
         int belt = items.rules().beltSize();
         if (items.potionOf(item) != null && belt > 0 && !items.rules().drinkHint().isBlank()) {
-            // Eaten from the belt on the scheme's keys: 1-4, or action's 5-8.
+            // Eaten from the belt on its keys, 1 to its size.
             out.add(new uz.dukeengine.dungeon.loot.Items.Line(items.rules().drinkHint().formatted(
-                    settings.beltKey(0) + "-" + settings.beltKey(belt - 1)), settings.menu().boneColour()));
+                    "1-" + belt), settings.menu().boneColour()));
         }
         return out;
     }

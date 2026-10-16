@@ -36,9 +36,8 @@ class SkillLookTest {
                 .collect(java.util.stream.Collectors.toSet());
         // A passive is never cast and draws nothing -- the knight's dragon blood -- so it names no Look.
         return SETTINGS.skills().stream().filter(skill -> heroes.contains(skill.heroTemplate()))
-                // Nor his dodge: what it looks like is the roll his body plays (its busy clip), no Look.
+                // Nor his horse: what it looks like is his riding, no Look.
                 .filter(skill -> !skill.effect().isPassive()
-                        && skill.effect() != uz.dukeengine.rpg.skill.SkillEffect.DODGE
                         && skill.effect() != uz.dukeengine.rpg.skill.SkillEffect.MOUNT)
                 .toList();
     }
