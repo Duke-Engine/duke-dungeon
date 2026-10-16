@@ -96,6 +96,27 @@ class MainMenuTest {
     }
 
     @Test
+    void theFirstActsRowBeginsTheGameItselfAndIsNoLastAnswer() {
+        // MSI 1.0.50: as a last answer the client started its own match at once -- the backdrop put away before the
+        // adoption queued for the next frame -- and begin was never called on the first launch at all.
+        var session = Dungeon.newSession(5L, SETTINGS);
+        var begun = new ArrayList<Dungeon.Session>();
+        var was = Main.begin;
+        Main.begin = begun::add;
+        try {
+            var acts = Main.howToPlay(session, SETTINGS, Main.looks(SETTINGS), Main.controls(SETTINGS)).options();
+            var first = acts.getFirst();
+            first.taken().run();
+            assertEquals(List.of(session), begun);
+            assertNotNull(first.next(), "a last answer: the client starts a match of its own over the backdrop");
+            assertTrue(first.next().options().isEmpty());
+            assertEquals(null, acts.get(1).next(), "the second act is still a match of its own, loaded");
+        } finally {
+            Main.begin = was;
+        }
+    }
+
+    @Test
     void aSecondGameIsAFreshMatchNotTheOneThatWasPlayed() {
         var played = Dungeon.newSession(3L, SETTINGS);
         played.game().runHeadless(1);

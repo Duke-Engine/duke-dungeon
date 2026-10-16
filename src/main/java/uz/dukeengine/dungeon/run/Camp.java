@@ -99,7 +99,7 @@ public final class Camp {
         growing.clear();
         burning.clear();
         animals.clear();
-        this.map = map;
+        this.map = map == null ? "" : map; // a generated floor has no stage name
         this.seed = seed;
         this.scenery = models == null ? List.of() : List.copyOf(models);
         var grid = logic.getPathGrid();
