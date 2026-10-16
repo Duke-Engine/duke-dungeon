@@ -1,5 +1,7 @@
 # Modern controls: WASD, the mouse aims (2026-10-15)
 
+> **Dropped 2026-10-16 by the owner; the engine parts move to a separate module for a third-person experiment.**
+
 The owner, 2026-10-15: the single-hero game moves from Dota/WC3 click controls to modern action-RPG controls (Diablo IV,
 Lost Ark, Last Epoch with WASD). The old scheme stays as a settings option.
 

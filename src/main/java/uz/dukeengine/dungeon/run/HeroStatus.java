@@ -184,9 +184,7 @@ final class HeroStatus {
                     hud.lockedWord(), new HeroCard.TipWords(hud.damageWord(), hud.cooldownWord(),
                             hud.radiusWord(), hud.rangeWord(), hud.boostWord(), hud.raiseWord(),
                             hud.raiseKeyWord(), hud.maxedWord(), hud.noPointsWord(), hud.rankSuffix(),
-                            hud.secondsWord(), hud.manaWord())),
-                    // Each slot drawn and pressed on the letter of the scheme played: W's skill on E, modern (E79).
-                    settings::letterOf);
+                            hud.secondsWord(), hud.manaWord())));
             passives(card, book, learnt, hud);
             // How many levels he has not spent yet, and the word for them. Beside
             // the heading rather than on a slot, because it belongs to none of
@@ -214,7 +212,7 @@ final class HeroStatus {
 
     /** The fields HeroCard.skills writes for a skill, each {@code name=<key>,...}. */
     private static final java.util.Set<String> SLOT_FIELDS =
-            java.util.Set.of("cost", "skill", "srank", "tipName", "tipAt", "tipText", "tipFoot", "tipRow", "letter");
+            java.util.Set.of("cost", "skill", "srank", "tipName", "tipAt", "tipText", "tipFoot", "tipRow");
 
     /**
      * The line without his STAGGER's slot: no slot of the four, never bought and always his, it would be a fifth
@@ -227,7 +225,6 @@ final class HeroStatus {
         }
         var keys = book.getSkills().stream()
                 .filter(skill -> skill.effect() == uz.dukeengine.rpg.skill.SkillEffect.STAGGER
-                        || skill.effect() == uz.dukeengine.rpg.skill.SkillEffect.DODGE // no slot either: Space
                         || skill.effect() == uz.dukeengine.rpg.skill.SkillEffect.MOUNT // nor his horse: T
                         || skill.effect() == uz.dukeengine.rpg.skill.SkillEffect.PUSH) // nor the story's landing
                 .map(skill -> skill.key() + ",").toList();
@@ -301,9 +298,6 @@ final class HeroStatus {
         // modules. It comes out of the file now, beside the word.
         char[] keys = {'F', 'A', 'S', 'D'};
         card.ordersAreHis(his);
-        if (uz.dukeengine.dungeon.world.Controls.walksOnKeys(settings.scheme())) {
-            return; // no order buttons: A S D are his feet, F a skill, the mouse fights and works
-        }
         for (int i = 0; i < keys.length; i++) {
             String word = i < words.size() ? words.get(i) : "";
             if (word.isBlank()) {

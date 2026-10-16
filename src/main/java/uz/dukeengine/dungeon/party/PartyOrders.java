@@ -72,7 +72,7 @@ public final class PartyOrders {
     static final String CRAFT = "craft";
     /** A journey to a found watchtower: the order's number is which of the map's towers. */
     static final String TRAVEL = "travel";
-    /** His player plays the modern way: his hero fights only when told. */
+    /** His hero fights only when told. */
     static final String TOLD = "only-when-told";
 
     private PartyOrders() {

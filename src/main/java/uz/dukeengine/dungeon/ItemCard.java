@@ -129,9 +129,7 @@ final class ItemCard {
             if (waiting > 0f) {
                 canvas.fillRect(x, top, slot, slot * waiting, 0xA0000000);
             }
-            // The key that eats it, as the scheme plays: 1-4, or action's 5-8.
-            canvas.drawText(small, String.valueOf(settings.beltKey(i)), x + 3f, top + 1f,
-                    0xFF000000 | look.torchColour());
+            canvas.drawText(small, Integer.toString(i + 1), x + 3f, top + 1f, 0xFF000000 | look.torchColour());
         }
     }
 

@@ -463,22 +463,6 @@
 "Zaharli qurbaqa" => "Poison Frog"
 "Alvasti" => "Bog Horror"
 
-; ---- world/controls.duke ----
-"Boshqaruv" => "Controls"
-"Zamonaviy (WASD)" => "Modern (WASD)"
-"Klassik (sichqoncha)" => "Classic (mouse)"
-"Boshqaruv (keyingi ochilishda)" => "Controls (after a restart)"
-"Chetlanish" => "Dodge"
-"Jangovar" => "Action"
-"Gaplashish" => "Talk"
-"Kesish" => "Chop"
-"Terish" => "Gather"
-"Suv olish" => "Fill"
-"Pishirish" => "Cook"
-"Olish" => "Pick up"
-"Darvozaga" => "To the gate"
-"Qazish" => "Mine"
-"Minish" => "Ride"
 
 ; ---- world/food.duke ----
 "Gulxan yoqish" => "Light a campfire"
@@ -859,10 +843,6 @@
 "UP DOWN choose    LEFT RIGHT change    ESC back = YUQORI PAST tanlang    CHAP O'NG o'zgartiring    ESC chiqish" => "UP DOWN choose    LEFT RIGHT change    ESC back = UP DOWN choose    LEFT RIGHT change    ESC back"
 "UP DOWN choose    ENTER take = YUQORI PAST tanlang    ENTER tanlash" => "UP DOWN choose    ENTER take = UP DOWN choose    ENTER take"
 "Keys = Tugmalar" => "Keys = Keys"
-"Walk up = Oldinga yurish" => "Walk up = Walk up"
-"Walk left = Chapga yurish" => "Walk left = Walk left"
-"Walk down = Orqaga yurish" => "Walk down = Walk down"
-"Walk right = O'ngga yurish" => "Walk right = Walk right"
 "Pan up = Kamera yuqoriga" => "Pan up = Pan up"
 "Pan left = Kamera chapga" => "Pan left = Pan left"
 "Pan down = Kamera pastga" => "Pan down = Pan down"

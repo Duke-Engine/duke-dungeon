@@ -557,23 +557,6 @@ Hero
       MaxRank = 1
     End,
     Skill
-      ; His dodge, no slot of the four: pressed on Space in the modern scheme (Main.Dodge), never bought, never
-      ; on his bar (HeroStatus leaves it off, as his stagger), his from the start. A roll of Distance toward the
-      ; way he walks (or faces) over DurationFrames (0.3s), out of harm's way its first TickFrames (0.23s: no
-      ; blow takes health or staggers him), through creatures, short of stone, refused over a seal or while held.
-      ; Every 2.5 seconds, no mana (docs/plan/2026-10-15-modern-controls.md, E80).
-      ; Quaternius' UAL Roll, retargeted onto her rig with her other clips.
-      Key = V
-      Effect = DODGE
-      Distance = 16
-      DurationFrames = 9
-      TickFrames = 7
-      CooldownFrames = 75
-      CastAnim = Roll
-      MaxRank = 1
-      Name = Chetlanish
-    End,
-    Skill
       ; His horse, no slot of the four: pressed on T (data/world/mounts.duke), never bought, his from the
       ; start, once he owns a horse (its whistle). Up onto it over WindUpFrames (0.6s), his reach played; a
       ; step or a blow calls it off. Then he rides, BoostPercent quicker, drawn as RogueRiding on the horse's
@@ -598,7 +581,7 @@ Hero
       ; The landing's shockwave (docs/plan/2026-10-15-seamless-campaign.md, section 4.3): no key of his, cast by the
       ; story as he comes down in the meteor (CAST PUSH at the landing) -- every enemy within Radius thrown Distance
       ; out over DurationFrames along an arc HitWidth high, stunned StunFrames as it lands (E82). Off his bar, as his
-      ; stagger and his dodge are.
+      ; stagger is.
       Key = Y
       Effect = PUSH
       Radius = 160

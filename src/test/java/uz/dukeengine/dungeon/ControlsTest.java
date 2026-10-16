@@ -28,8 +28,8 @@ import uz.dukeengine.dungeon.content.DungeonSettings;
  */
 class ControlsTest {
 
-    /** The classic keys: the orders on F A S D and the skills on their own letters (the modern ones: ModernControlsTest). */
-    private static final DungeonSettings SHIPPED = ModernControlsTest.classic();
+    /** The keys: the orders on F A S D and the skills on their own letters. */
+    private static final DungeonSettings SHIPPED = DungeonSettings.load();
 
     /**
      * ★ The four orders, and what each of them asks to be pointed at.
@@ -76,9 +76,8 @@ class ControlsTest {
 
         for (var skill : SHIPPED.skills()) {
             if (skill.effect() == uz.dukeengine.rpg.skill.SkillEffect.STAGGER
-                    || skill.effect() == uz.dukeengine.rpg.skill.SkillEffect.DODGE
                     || skill.effect() == uz.dukeengine.rpg.skill.SkillEffect.PUSH) {
-                continue; // never pressed (the dodge: on Space; the push: the story's), no slot: no letter on purpose
+                continue; // never pressed (the push: the story's), no slot: no letter on purpose
             }
             assertTrue(keys.contains(skill.key()),
                     skill.key() + " is in the file but bound to nothing");

@@ -137,7 +137,7 @@ public final class HeroBrain extends UnitScript {
         if (weapon == null || move == null) {
             return;
         }
-        // The modern way, at his weapon (E87): it picks nothing by itself, and what it picked before he was told so --
+        // Fighting only when told, at his weapon (E87): it picks nothing by itself, and what it picked before he was told so --
         // a hero new on a floor, his weapon's first look before this -- is let go.
         boolean told = orders.fightsOnlyWhenTold(unit().getPlayerIndex());
         if (weapon.isAcquiringNothing() != told) {
@@ -595,7 +595,7 @@ public final class HeroBrain extends UnitScript {
             return;
         }
         if (orders.fightsOnlyWhenTold(unit().getPlayerIndex())) {
-            return; // the modern way: he fights what the left button gives him, and nothing he finds
+            return; // he fights what he is told to, and nothing he finds
         }
         var seen = closestHeCanShoot();
         if (seen != null) {

@@ -525,8 +525,6 @@ public final class Main {
         var wanted = Stages.chosen(args);
         var opening = wanted == null ? null : Stages.found(wanted);
         var settings = DungeonSettings.of(opening);
-        // Modern (WASD) or classic (the mouse): the player's own choice, else the file's -- see Controls.
-        settings.useScheme(settings.controls().remembered());
         // The match the window opens with, and after Quit to the main menu a fresh one: a match is played once.
         var current = new java.util.concurrent.atomic.AtomicReference<>(chosenGame(opening, settings));
         var session = current.get();
@@ -565,14 +563,6 @@ public final class Main {
         var launch = new LaunchScreen(new Soundscape(screens, duke, settings), screens, settings.splash(),
                 settings.mainMenu(), () -> duke.holdBackdrop(false), duke::sound);
         duke.canvas(launch).input(launch).onLoading(launch::loaded).onBackdropLoading(launch::loaded);
-        // What the dodge asks before it rolls him: whether a screen over the world holds the keys.
-        over = launch;
-        // The mouse of the scheme: modern's left button fights, its right one works (E78).
-        duke.mouseScheme(mouseOf(settings));
-        // Action: no pointer in play -- the mouse turns the camera and aims (E90); a screen, a menu or Alt lets it go.
-        if (settings.scheme() == uz.dukeengine.dungeon.world.Controls.Scheme.ACTION) {
-            duke.captureMouse(true);
-        }
         duke.holdBackdrop(true);
         screensOn(keys, screens, settings);
         duke.worldPicture(settings.screens().mostTexels(), screens.map()::picture);
@@ -596,7 +586,7 @@ public final class Main {
                 return;
             }
             var played = scene.session();
-            played.run().awaitAdoption(); // no hour's light, no captured mouse until the seat is taken and the intro ends
+            played.run().awaitAdoption(); // no hour's light until the seat is taken and the intro ends
             played.run().onCheckpoint(save -> write(saves, Saves.AUTOSAVE, save));
             played.run().onSaveInto((slot, save) -> write(saves, slot, save));
             played.run().onTheEnd(duke::frontEnd);
@@ -819,9 +809,8 @@ public final class Main {
      */
     static void aimsFor(Hotkeys keys, DungeonSettings settings, String hero) {
         for (var skill : settings.skillsFor(hero)) {
-            // The skill's own key names it in the cast; the letter pressed is the scheme's (modern: W's on E).
             char key = skill.key();
-            char letter = settings.letterOf(key);
+            char letter = key;
             keys.describe(letter, skill.name()); // its name on the Settings screen's list of keys (E46)
             if (skill.effect().isPassive()) {
                 // Never cast: its key does nothing -- no aim, no order, no refusal (the panel takes no click on its
@@ -862,10 +851,7 @@ public final class Main {
      */
     static void ringsFor(Visuals visuals, DungeonSettings settings, String hero) {
         for (var skill : settings.skillsFor(hero)) {
-            // Keyed by the letter pressed, which arms it: the scheme's, not always the skill's own.
-            var ring = rangeOf(skill, settings.skillRing().selfRadius());
-            visuals.skillRange(new uz.dukeengine.client3d.SkillRange(settings.letterOf(skill.key()), ring.shape(),
-                    ring.reach(), ring.area(), ring.width()));
+            visuals.skillRange(rangeOf(skill, settings.skillRing().selfRadius()));
         }
     }
 
@@ -1006,16 +992,15 @@ public final class Main {
         // chair is a skill that does nothing at all.
         aimsFor(keys, settings, him);
         ringsFor(visuals, settings, him);
-        // The modern way, said to every machine: his hero fights only when the left button tells him.
-        if (uz.dukeengine.dungeon.world.Controls.walksOnKeys(settings.scheme())) {
-            java.util.function.Consumer<uz.dukeengine.game.DukeGame> tell = game -> game.postCommand(PartyOrders.of(
-                    new uz.dukeengine.dungeon.ai.FightOnlyWhenTold(game.getLocalPlayerIndex(), true)));
-            // Chosen on the menu, before the match runs: said as it starts; chosen in a running one: now.
-            if (session.game().getLogic() == null) {
-                session.game().onStart(tell);
-            } else {
-                tell.accept(session.game());
-            }
+        // Said to every machine: his hero fights only when told -- an attack order, an attack-move -- and picks no
+        // fight of his own (the owner's choice; his weapon acquires nothing, E87).
+        java.util.function.Consumer<uz.dukeengine.game.DukeGame> tell = game -> game.postCommand(PartyOrders.of(
+                new uz.dukeengine.dungeon.ai.FightOnlyWhenTold(game.getLocalPlayerIndex(), true)));
+        // Chosen on the menu, before the match runs: said as it starts; chosen in a running one: now.
+        if (session.game().getLogic() == null) {
+            session.game().onStart(tell);
+        } else {
+            tell.accept(session.game());
         }
         attackRingFor(visuals, session.game(), him);
     }
@@ -1209,12 +1194,12 @@ public final class Main {
         // The file's default hero to begin with, and whoever is actually chosen
         // the moment he is -- see aimsFor, and whoToPlay, which calls it again.
         aimsFor(keys, settings, settings.run().defaultHero());
-        // The belt's keys, 1 to its size (action: 5 to 8, after the skills' digits): a draught from that stack, as this game's order, named on the Settings
+        // The belt's keys, 1 to its size: a draught from that stack, as this game's order, named on the Settings
         // screen's list of keys (E46; digits bind since E45's fix).
         var rules = settings.items().rules();
         for (int key = 1; key <= rules.beltSize(); key++) {
             int belt = key - 1;
-            keys.on(settings.beltKey(belt), rules.beltKeyWord().formatted(key), game -> game.postCommand(
+            keys.on((char) ('0' + key), rules.beltKeyWord().formatted(key), game -> game.postCommand(
                     PartyOrders.of(new uz.dukeengine.dungeon.run.Drink(game.getLocalPlayerIndex(), belt))));
         }
         // A fire built at his feet from his wood, as this game's order (docs/plan/2026-10-15-food-and-fire.md).
@@ -1237,114 +1222,17 @@ public final class Main {
         // The mission list folds to its tab and unfolds again: a thing of the window, so it flips the window's own
         // flag and sends nothing to the simulation.
         keys.on(settings.run().foldKey().charAt(0), settings.screens().trackerWord(), game -> MissionScreen.fold());
-        if (settings.scheme() == uz.dukeengine.dungeon.world.Controls.Scheme.CLASSIC) {
-            orders(keys);
-            // The four orders said as the panel's buttons say them: walk, attack, stop, guard (see HeroStatus.orders).
-            var orderWords = settings.hud().orderWords();
-            for (int i = 0; i < orderWords.size(); i++) {
-                keys.describe("FASD".charAt(i), orderWords.get(i));
-            }
-        } else {
-            // Modern: W A S D are his feet, not the camera's (the arrows still pan), and F is a skill's. The orders'
-            // letters go: the left button attacks, letting go of WASD stops (docs/plan/2026-10-15-modern-controls.md).
-            keys.controls(modernKeyMap());
-            // His feet: the held W A S D as a direction the camera's way, sent as an order on the lock-step stream
-            // only when it changes (E74, E75) -- the simulation never reads a key.
-            keys.onDirection(uz.dukeengine.client3d.DirectionKeys.WASD, Main::walk);
-            // Space rolls him (E80): a key of the game's since E79, rebindable on the keys page like his letters. The
-            // client's Space (the camera home) is off in this scheme (modernKeyMap); Enter still does it.
-            keys.on(' ', settings.controls().dodgeWord(), game -> dodge(game, settings));
-            if (settings.scheme() == uz.dukeengine.dungeon.world.Controls.Scheme.ACTION) {
-                action(keys, settings.controls());
-            }
+        orders(keys);
+        // The four orders said as the panel's buttons say them: walk, attack, stop, guard (see HeroStatus.orders).
+        var orderWords = settings.hud().orderWords();
+        for (int i = 0; i < orderWords.size(); i++) {
+            keys.describe("FASD".charAt(i), orderWords.get(i));
         }
         // Which single creature he has picked out. The target frame describes it, and
         // only the simulation can say what it is worth -- see Watching.
         keys.onWatch((game, id) -> game.postCommand(PartyOrders.of(new uz.dukeengine.dungeon.run.Watching(
                 game.getLocalPlayerIndex(), id < 0 ? null : new ObjectId(id)))));
         return keys;
-    }
-
-    /** Action, on top of modern's keys: skills aimed ahead of him (E92), E on the nearest thing in front (E94). */
-    static void action(Hotkeys keys, uz.dukeengine.dungeon.world.Controls controls) {
-        keys.aimBy(Hotkeys.AimBy.FORWARD, false);
-        // Its prompt in the game's words, "[E] Gaplashish"; a word the file names none for is not offered.
-        keys.onInteract(controls.interactKey().charAt(0), INTERACT_REACH, INTERACT_CONE, controls::promptOf);
-    }
-
-    /** How near, and how far round his facing, the interact key looks (docs/plan/2026-10-15-action-controls.md). */
-    static final float INTERACT_REACH = 14f;
-    static final float INTERACT_CONE = 100f;
-
-    /** His hero walked along {@code angle} (256ths of a turn, or MoveAlong.NONE to stop): the held keys' order. */
-    static void walk(uz.dukeengine.game.DukeGame game, int angle) {
-        walking = angle;
-        game.postCommand(new uz.dukeengine.combat.message.CombatOrder.MoveAlong(game.getLocalPlayerIndex(),
-                selected(game), angle));
-    }
-
-    /**
-     * The mouse of the scheme played (E78): modern -- the left button locks on an enemy within 60 or swings at the
-     * ground, held to go on; the right one works (talk, chop, open); a skill's letter casts at the pointer -- or classic.
-     */
-    static uz.dukeengine.client3d.MouseScheme mouseOf(DungeonSettings settings) {
-        return settings.scheme() == uz.dukeengine.dungeon.world.Controls.Scheme.ACTION
-                ? uz.dukeengine.client3d.MouseScheme.ACTION
-                : uz.dukeengine.dungeon.world.Controls.walksOnKeys(settings.scheme())
-                ? uz.dukeengine.client3d.MouseScheme.MODERN : uz.dukeengine.client3d.MouseScheme.CLASSIC;
-    }
-
-    /** The way the held keys last said, for the dodge: MoveAlong.NONE while none is held. */
-    private static volatile int walking = uz.dukeengine.client3d.DirectionKeys.NONE;
-
-    /** The screens over the world, top first (the launch screen's chain): the dodge rolls only while none holds keys. */
-    static volatile uz.dukeengine.client3d.CanvasInput over;
-
-    /** Space, in the modern scheme: his dodge (E80) the way he walks, or faces when no key is held. */
-    static void dodge(uz.dukeengine.game.DukeGame game, DungeonSettings settings) {
-        var screens = over;
-        if (screens == null || !screens.holdsKeys()) {
-            roll(game, walking, settings);
-        }
-    }
-
-    /**
-     * His dodge cast along {@code angle} (256ths of a turn), or the way he faces for NONE: a point its Distance off,
-     * though the roll goes its Distance toward any point. Nothing if his hero has none.
-     */
-    static void roll(uz.dukeengine.game.DukeGame game, int angle, DungeonSettings settings) {
-        for (var unit : game.getSnapshot().units()) {
-            if (unit.playerIndex() != game.getLocalPlayerIndex()) {
-                continue;
-            }
-            for (var skill : settings.bookFor(unit.templateName())) {
-                if (skill.effect() == uz.dukeengine.rpg.skill.SkillEffect.DODGE) {
-                    double way = angle < 0 ? unit.orientation() : angle * 2.0 * Math.PI / 256.0;
-                    var point = new uz.dukeengine.core.math.Coord3D(unit.x() + 16f * (float) Math.cos(way),
-                            unit.y() + 16f * (float) Math.sin(way), 0f);
-                    game.postCommand(PartyOrders.of(new CastSkill(game.getLocalPlayerIndex(), skill.key(), null,
-                            point)));
-                    return;
-                }
-            }
-        }
-    }
-
-    /** The client's own keys in the modern scheme: its standard ones with W A S D taken off panning. */
-    static uz.dukeengine.client3d.KeyMap modernKeyMap() {
-        var map = uz.dukeengine.client3d.KeyMap.standard();
-        var feet = java.util.Set.of(Hotkeys.codeOf('W'), Hotkeys.codeOf('A'), Hotkeys.codeOf('S'), Hotkeys.codeOf('D'));
-        for (var pan : List.of(uz.dukeengine.client3d.KeyMap.Control.PAN_UP, uz.dukeengine.client3d.KeyMap.Control.PAN_LEFT,
-                uz.dukeengine.client3d.KeyMap.Control.PAN_DOWN, uz.dukeengine.client3d.KeyMap.Control.PAN_RIGHT)) {
-            map.bind(pan, map.keysOf(pan).stream().filter(key -> !feet.contains(key.code()))
-                    .toArray(uz.dukeengine.client3d.KeyMap.Key[]::new));
-        }
-        // Space is the dodge's here (Dodge); the camera comes home on Enter.
-        map.bind(uz.dukeengine.client3d.KeyMap.Control.CENTRE_ON_BASE, map.keysOf(
-                uz.dukeengine.client3d.KeyMap.Control.CENTRE_ON_BASE).stream()
-                .filter(key -> key.code() != uz.dukeengine.client3d.CanvasInput.SPACE)
-                .toArray(uz.dukeengine.client3d.KeyMap.Key[]::new));
-        return map;
     }
 
     /**
@@ -1383,8 +1271,10 @@ public final class Main {
             // his skin, and the passives -- never cast -- drink from his blows or
             // lend round him.
             case EMPOWER, GUARD, LIFESTEAL, DAMAGE_AURA, MANA_AURA, LIFESTEAL_AURA, SOUL_DRINK, UNYIELDING,
-                    DRAGON_BLOOD, STAGGER, DODGE, MOVE_SPEED, MOUNT
+                    DRAGON_BLOOD, STAGGER, MOVE_SPEED, MOUNT
                     -> uz.dukeengine.client3d.SkillRange.Shape.ON_HIMSELF;
+            // An effect of the engine's no hero here has: nothing past him either.
+            default -> uz.dukeengine.client3d.SkillRange.Shape.ON_HIMSELF;
         };
         float reach = switch (skill.effect()) {
             case STRIKE, AREA_AT_SPOT, SKILLSHOT, HEAL -> skill.range();
@@ -1393,7 +1283,8 @@ public final class Main {
             case AREA_DAMAGE, SUMMON, PULL, PUSH -> skill.radius();
             case HASTE -> skill.range();
             case EMPOWER, GUARD, LIFESTEAL, DAMAGE_AURA, MANA_AURA, LIFESTEAL_AURA, SOUL_DRINK, UNYIELDING,
-                    DRAGON_BLOOD, STAGGER, DODGE, MOVE_SPEED, MOUNT -> selfRadius;
+                    DRAGON_BLOOD, STAGGER, MOVE_SPEED, MOUNT -> selfRadius;
+            default -> selfRadius;
         };
         // What it LEAVES where it lands: a blast's radius, a lane's width. A dash
         // leaves a man, and a circle round a man-sized spot is a second ring saying
@@ -1684,16 +1575,8 @@ public final class Main {
         // all of it in the file — see Fog in data/world/scene.duke.
         // Shoving the camera with the cursor, on top of the keys — see
         // Camera in data/world/world.duke.
-        // Modern: the camera follows his hero, the arrows look away and it eases back (E77); classic: the free camera.
-        // Action: the held mouse turns it round him, a quarter of a degree a pixel, its pitch fixed (E91).
-        var follow = uz.dukeengine.client3d.CameraFollow.of(null);
-        visuals.cameraFollow(settings.scheme() == uz.dukeengine.dungeon.world.Controls.Scheme.ACTION
-                ? follow.orbiting(uz.dukeengine.client3d.CameraFollow.ORBIT_SENSITIVITY, false, 0f)
-                : uz.dukeengine.dungeon.world.Controls.walksOnKeys(settings.scheme()) ? follow
-                : uz.dukeengine.client3d.CameraFollow.NONE);
-        // Not in the modern scheme, whose camera follows him.
-        visuals.edgeScroll(uz.dukeengine.dungeon.world.Controls.walksOnKeys(settings.scheme()) ? EdgeScroll.NONE
-                : new EdgeScroll(settings.camera().edgeMargin(), settings.camera().edgeSpeedPercent()));
+        visuals.edgeScroll(new EdgeScroll(settings.camera().edgeMargin(),
+                settings.camera().edgeSpeedPercent()));
 
         visuals.fog(new Fog(settings.fog().lineOfSight(),
                 settings.fog().unseenPercent() / 100f, settings.fog().rememberedPercent() / 100f,
