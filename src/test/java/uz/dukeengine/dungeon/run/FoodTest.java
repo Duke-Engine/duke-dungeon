@@ -190,6 +190,16 @@ class FoodTest {
     }
 
     @Test
+    void theGroundUnderThePointerOfAGeneratedFloorIsNoChopAndKillsNoSimulation() {
+        // MSI 1.0.50: a floor with no stage name (the descent, a save of one) asked the ground's word under the
+        // pointer on the simulation's thread and died of List.contains(null) -- the world frozen, the camera turning.
+        var session = Dungeon.newSession(1L, SHIPPED);
+        var game = session.game();
+        game.runHeadless(2);
+        assertNull(session.run().groundWord(game, new Coord3D(100f, 100f, 0f)));
+    }
+
+    @Test
     void choppingATreeOfTheWorldGivesWoodFellsItAndTheSaveKeepsItFelled() {
         var session = Dungeon.newStageSession(WORLD, SHIPPED);
         var game = session.game();
