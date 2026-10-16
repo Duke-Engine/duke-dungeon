@@ -513,6 +513,8 @@ public final class Main {
             new java.util.concurrent.atomic.AtomicReference<>();
     private static final java.util.concurrent.atomic.AtomicReference<uz.dukeengine.dungeon.story.Campaign> adopted =
             new java.util.concurrent.atomic.AtomicReference<>();
+    /** How a game picked on the menu begins -- set in main; see begin there. A test's menu begins nothing. */
+    static volatile java.util.function.Consumer<Dungeon.Session> begin = match -> { };
 
     public static void main(String[] args) {
         // The language comes first: every data file is read in it. Uzbek unless the player kept English (or --lang=en).
@@ -586,7 +588,7 @@ public final class Main {
         var credits = FrontMenu.credits(settings, Content.read("CREDITS.md"));
         // How a game picked on the menu begins: a new first act on the backdrop running behind it (no load: E83), or
         // any other a match of its own, loaded as ever.
-        java.util.function.Consumer<Dungeon.Session> begin = match -> {
+        begin = match -> {
             var scene = backdrop.get();
             var campaign = newAct.getAndSet(null);
             if (campaign == null || scene == null || !scene.running()) {
@@ -1047,21 +1049,28 @@ public final class Main {
         // docs/plan/2026-10-15-act1.md and -act2.md. The descent and the stages stay where they were, below them.
         var rows = new java.util.ArrayList<Shell.Option>();
         for (var campaign : settings.campaigns()) {
+            boolean first = campaign.follows().isBlank();
             rows.add(new Shell.Option(campaign.word(), campaign.blurb(), () -> {
                 // The first act begins on the backdrop already running behind the menu, if one does: nothing loads
                 // (the seamless campaign, E83) -- see begin in main. Otherwise, a match of its own, as before.
                 var scene = backdrop.get();
-                if (campaign.follows().isBlank() && scene != null && scene.running()) {
+                if (first && scene != null && scene.running()) {
                     newAct.set(campaign);
-                    return;
+                } else {
+                    newAct.set(null);
+                    heroChosen(session, settings, visuals, keys, campaign.hero());
+                    // From its first joint, with that joint's flags (Act1: the act's world story on). An act that
+                    // follows one carries on from its end save, or from the act's defaults with none.
+                    session.run().skipTo(campaign, 1,
+                            first ? null : Saves.ofThePlayer().read(campaign.follows()));
                 }
-                newAct.set(null);
-                heroChosen(session, settings, visuals, keys, campaign.hero());
-                // From its first joint, with that joint's flags (Act1: the act's world story on). An act that follows
-                // one carries on from its end save, or from the act's defaults with none.
-                session.run().skipTo(campaign, 1,
-                        campaign.follows().isBlank() ? null : Saves.ofThePlayer().read(campaign.follows()));
-            }, null));
+                if (first) {
+                    begin.accept(session);
+                }
+                // The first act's row is no last answer: the client would start its own match at once, the backdrop
+                // put away before begin's adoption (queued for the next frame) could take it. Its empty question is
+                // up for that one frame; the adoption, or the match begin starts, puts the menu away.
+            }, first ? new Shell.Question(campaign.word(), "", List.of()) : null));
         }
         if (asked == hero) {
             rows.add(new Shell.Option(settings.hud().endlessWord(), settings.hud().endlessBlurb(), endless, hero));

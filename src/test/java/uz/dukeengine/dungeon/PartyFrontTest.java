@@ -50,7 +50,7 @@ class PartyFrontTest {
     void aloneIsThePathItAlwaysWas() {
         var alone = whoGoesIn(SETTINGS).options().getFirst().next();
         assertEquals(SETTINGS.hud().chooseModeWord(), alone.title());
-        assertNull(endOf(alone).options().getFirst().next(), "and taking a hero starts the game");
+        assertTrue(endOf(alone).options().isEmpty(), "and the first act asks nothing more: begin starts it");
     }
 
     @Test

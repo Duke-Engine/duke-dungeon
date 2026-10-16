@@ -198,7 +198,7 @@ class StageChoiceTest {
     void theCampaignRowOpensActOneWithItsHero() {
         var session = Dungeon.newSession(7L, SETTINGS);
         var campaign = Main.howToPlay(session, SETTINGS, Visuals.create(), Main.controls(SETTINGS)).options().get(0);
-        assertNull(campaign.next(), "taking it starts the game");
+        assertTrue(campaign.next().options().isEmpty(), "nothing more to ask: taking it begins the game");
 
         campaign.taken().run();
         session.game().runHeadless(1);
