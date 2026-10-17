@@ -53,6 +53,7 @@ final class Atmosphere implements Painter {
     private long lastThunder = -1;
     private long lastNanos;
     private char biome = '*';
+    private uz.dukeengine.client3d.GroundCover coverShown;
     /** The {@code --weather=Name} test arg's weather, drawn whatever the sky says; null for the sky's. */
     private final DayNight.Weather forced;
 
@@ -66,6 +67,12 @@ final class Atmosphere implements Painter {
 
     @Override
     public void paint(Canvas canvas) {
+        // The ground cover of the stage laid last, handed to the window once each time a new one is laid (E98).
+        var cover = uz.dukeengine.dungeon.run.DungeonRun.coverLaid();
+        if (cover != coverShown) {
+            coverShown = cover;
+            duke.groundCover(cover == null ? uz.dukeengine.client3d.GroundCover.NONE : cover);
+        }
         var match = DialogueScreen.match();
         // Not while an intro has the screen: the backdrop made the match shows the hour once the seat is taken and the
         // act's opening is over (the seamless campaign).

@@ -594,12 +594,13 @@ public final class DungeonRun {
 
     private uz.dukeengine.core.map.MapTemplate looksOf(GeneratedDungeon floor) {
         if (floors.paint() != null) {
-            // Walked finer than drawn, as a floor that mixes biomes is: a tree is in the way as far as its trunk. And
-            // its ground grown over, for the look: the same cover from the same seed, laid after its own scenery.
+            // Walked finer than drawn, as a floor that mixes biomes is: a tree is in the way as far as its trunk. Its
+            // ground cover is the client's to grow round the camera (E98), never scenery.
             if (covered == null || coveredFrom != floors.paint()) {
                 coveredFrom = floors.paint();
-                covered = coveredFrom.withMore(uz.dukeengine.dungeon.stage.GroundCover.lay(coveredFrom, floor, zones(),
-                        settings.paintedGround(), floors.seed())).walkedAt(settings.world().navigationCellsPerCell());
+                covered = coveredFrom.walkedAt(settings.world().navigationCellsPerCell());
+                coverLaid = uz.dukeengine.dungeon.stage.GroundCover.forClient(coveredFrom, floor, zones(),
+                        settings.paintedGround(), floors.seed());
             }
             return covered;
         }
@@ -646,7 +647,25 @@ public final class DungeonRun {
     private static void roadsOf(DukeGame game, Object map) {
         if (game.getLogic() != null && game.getLogic().getPathGrid() != null) {
             uz.dukeengine.dungeon.stage.Roads.lay(game.getLogic().getPathGrid(), map);
+            if (map instanceof uz.dukeengine.dungeon.stage.StagePaint) {
+                // The hero's width laid while the map loads, not on his first order (E97).
+                // ponytail: the heroes' body radius (Radius = 5 in their files); read it from data if a hero grows.
+                game.getLogic().layRoutesFor(HERO_RADIUS);
+            }
         }
+    }
+
+    private static final float HERO_RADIUS = 5f;
+
+    /**
+     * The ground cover of the painted stage laid last, for the client to grow round its camera (E98); null before any.
+     * Read by the client each frame (Atmosphere), which hands a new one to the window.
+     */
+    private static volatile uz.dukeengine.client3d.GroundCover coverLaid;
+
+    /** See {@link #coverLaid}. */
+    public static uz.dukeengine.client3d.GroundCover coverLaid() {
+        return coverLaid;
     }
 
     /** The floor the world was built around, with everyone on it. */

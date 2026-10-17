@@ -2,19 +2,15 @@ package uz.dukeengine.dungeon.stage;
 
 import java.util.ArrayList;
 import java.util.List;
-import uz.dukeengine.dungeon.gen.DeterministicRng;
 import uz.dukeengine.dungeon.gen.GeneratedDungeon;
-import uz.dukeengine.dungeon.gen.GeneratedDungeon.Piece;
 import uz.dukeengine.dungeon.map.StaticMap.Zone;
 import uz.dukeengine.dungeon.world.PaintedGround;
 
 /**
- * What grows on a painted stage's ground: grass, flowers, ferns, reeds, dry tufts -- many small pieces of scenery, for
- * the look alone. None has a footprint, so the simulation never reads one (it reads scenery for its footprints and
- * nothing else); they are laid after the map's own scenery, so a felled tree keeps its number; and every machine grows
- * the same ones from the map's seed. What grows on which surface, and how thickly, is the scene's {@link
- * PaintedGround#cover()}: nothing on a road, in water or stone, on a cliff, under a wall or a rock, or in a zone it
- * keeps off.
+ * What grows on a painted stage's ground: grass, flowers, ferns, reeds, dry tufts -- for the look alone, grown by the
+ * client round its camera and drawn instanced (E98), never scenery and never in the simulation. What grows on which
+ * surface, and how thickly, is the scene's {@link PaintedGround#cover()}: nothing on a road, in water or stone, on a
+ * cliff, under a wall or a rock, or in a zone it keeps off.
  */
 public final class GroundCover {
 
@@ -44,61 +40,38 @@ public final class GroundCover {
         return kinds;
     }
 
-    /** The cover {@code paint} grows over {@code floor}, from {@code seed}; none where the scene names none. */
-    public static List<Piece> lay(StagePaint paint, GeneratedDungeon floor, List<Zone> zones, PaintedGround ground,
-            long seed) {
+    /**
+     * How far round the camera the client grows cover, in map cells.
+     * ponytail: one number for every map; move it into PaintedGround if a map's haze sits nearer.
+     */
+    static final float REACH = 32f;
+
+    /**
+     * The same cover as the client grows it round its camera (E98): each surface's kinds and share, the cells nothing
+     * grows in, the map's seed. Null where the scene names no cover.
+     */
+    public static uz.dukeengine.client3d.GroundCover forClient(StagePaint paint, GeneratedDungeon floor,
+            List<Zone> zones, PaintedGround ground, long seed) {
         if (ground.cover().isEmpty() || paint.rows().isEmpty()) {
-            return List.of();
+            return null;
         }
-        var rows = paint.rows();
-        int height = rows.size();
-        int width = rows.getFirst().length();
-        // Each paint character's kinds, their total weight and how many a cell.
-        var kinds = new List<?>[128];
-        var total = new int[128];
-        var perCell = new float[128];
-        for (var entry : paint.palette().entrySet()) {
-            var written = ground.cover().get(entry.getValue());
-            char c = entry.getKey().charAt(0);
-            if (written == null || c >= 128) {
+        var kinds = new java.util.HashMap<String, List<uz.dukeengine.client3d.GroundCover.Kind>>();
+        var perCell = new java.util.HashMap<String, Float>();
+        for (var picture : paint.palette().values()) {
+            var written = ground.cover().get(picture);
+            if (written == null || kinds.containsKey(picture)) {
                 continue;
             }
-            var these = kinds(written);
-            kinds[c] = these;
-            total[c] = these.stream().mapToInt(Kind::weight).sum();
-            perCell[c] = ground.coverPerCell().getOrDefault(entry.getValue(), 0f);
+            kinds.put(picture, kinds(written).stream()
+                    .map(k -> new uz.dukeengine.client3d.GroundCover.Kind(k.model(), k.weight(), k.scale(), k.tint()))
+                    .toList());
+            perCell.put(picture, ground.coverPerCell().getOrDefault(picture, 0f));
         }
+        int width = paint.rows().getFirst().length();
+        int height = paint.rows().size();
         var bare = bare(paint, floor, zones, ground, width, height);
-        var rng = new DeterministicRng(seed ^ 0x636F766572L);
-        var pieces = new ArrayList<Piece>();
-        for (int y = 0; y < height; y++) {
-            var row = rows.get(y);
-            for (int x = 0; x < width; x++) {
-                char c = row.charAt(x);
-                if (c >= 128 || kinds[c] == null || bare[y * width + x]) {
-                    continue;
-                }
-                float share = perCell[c];
-                int count = (int) share + (rng.nextInt(1000) < (share - (int) share) * 1000 ? 1 : 0);
-                for (int i = 0; i < count; i++) {
-                    int pick = rng.nextInt(total[c]);
-                    Kind kind = null;
-                    for (var each : kinds[c]) {
-                        kind = (Kind) each;
-                        pick -= kind.weight();
-                        if (pick < 0) {
-                            break;
-                        }
-                    }
-                    float across = x + (5 + rng.nextInt(91)) / 100f;
-                    float down = y + (5 + rng.nextInt(91)) / 100f;
-                    float size = kind.scale() * (80 + rng.nextInt(41)) / 100f;
-                    pieces.add(new Piece(kind.model(), across, down, rng.nextInt(360), Math.round(size * 100) / 100f,
-                            kind.tint(), 0f));
-                }
-            }
-        }
-        return pieces;
+        return new uz.dukeengine.client3d.GroundCover(kinds, perCell, seed,
+                (cx, cy) -> cx < 0 || cy < 0 || cx >= width || cy >= height || bare[cy * width + cx], REACH, 1f);
     }
 
     /** The cells nothing grows in: stone and water, cliffs, under the map's walls and rocks, and the zones kept off. */
