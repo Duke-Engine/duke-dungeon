@@ -1960,14 +1960,14 @@ public final class WorldMapWriter {
          * measured, at the scale given.
          */
         private static final Scatter[] FOREST_TREES = {
-                new Scatter("nature/pine_dark", 900, 1f, 0.09f), new Scatter("pine_tall", 700, 1.67f, 0.05f),
-                new Scatter("pine", 600, 1.67f, 0.05f), new Scatter(ULT + "pine_tree_1", 350, 6f, 0.14f),
-                new Scatter(ULT + "pine_tree_2", 350, 6f, 0.14f), new Scatter(ULT + "pine_tree_3", 250, 6f, 0.14f),
+                new Scatter("nature/pine_dark", 1300, 1f, 0.09f), new Scatter("pine_tall", 700, 1.67f, 0.05f),
+                new Scatter("pine", 900, 1.67f, 0.05f), new Scatter(ULT + "pine_tree_1", 150, 6f, 0.14f),
+                new Scatter(ULT + "pine_tree_2", 150, 6f, 0.14f), new Scatter(ULT + "pine_tree_3", 100, 6f, 0.14f),
                 new Scatter("tree", 400, 3.1f, TRUNK), new Scatter("tree_round", 300, 3.1f, TRUNK),
                 new Scatter("nature/dead_tree", 200, 1f, 0.25f), new Scatter("nature/dead_tree_bent", 150, 1f, 0.22f),
                 new Scatter("tree_twisted", 250, 3.1f, 0.17f), new Scatter("nature/dead_tree_tall", 120, 1f, 0.1f),
-                new Scatter(ULT + "birch_tree_2", 120, 6f, 0.07f), new Scatter(MEGA + "common_tree_5", 60, 6f, 0.13f),
-                new Scatter(MEGA + "common_tree_1", 40, 6f, 0.13f),
+                new Scatter(ULT + "birch_tree_2", 120, 6f, 0.07f), new Scatter(MEGA + "common_tree_5", 25, 6f, 0.13f),
+                new Scatter(MEGA + "common_tree_1", 15, 6f, 0.13f),
                 new Scatter("nature/bush_large_dark", 300, 1f, 0f), new Scatter("nature/bush_bare", 200, 1f, 0f),
                 new Scatter(ULT + "bush_berries_1", 120, 6f, 0f), new Scatter("nature/grass_tall_dark", 150, 1f, 0f),
                 new Scatter("nature/mushroom_red", 60, 1f, 0f), new Scatter("nature/mushroom_brown", 60, 1f, 0f),
@@ -1977,7 +1977,7 @@ public final class WorldMapWriter {
         private static final Scatter[] GROVE = {
                 new Scatter("tree", 1200, 3.1f, TRUNK), new Scatter("tree_round", 1200, 3.1f, TRUNK),
                 new Scatter(ULT + "birch_tree_1", 250, 6f, 0.07f), new Scatter(ULT + "birch_tree_3", 200, 6f, 0.07f),
-                new Scatter(MEGA + "common_tree_1", 120, 6f, 0.13f), new Scatter(MEGA + "common_tree_2", 120, 6f, 0.13f),
+                new Scatter(MEGA + "common_tree_1", 50, 6f, 0.13f), new Scatter(MEGA + "common_tree_2", 50, 6f, 0.13f),
                 new Scatter("bush_small", 300, 3f, 0f), new Scatter(ULT + "bush_1", 150, 6f, 0f)};
         /** The open meadow: its grass is the ground's cover; bushes, and a lone tree. */
         private static final Scatter[] MEADOW = {

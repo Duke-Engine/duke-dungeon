@@ -235,20 +235,20 @@ PaintedGround
   ; Nothing grows on a road, in water or stone, on a cliff, under a wall or a rock,
   ; or in CoverKeepsOff's zones. Each piece is drawn into its chunk's merged
   ; geometry, so what it costs is triangles, not draw calls: a meadow cell is
-  ; about 300 more of them (engine ask E98 for a ground-cover layer of its own).
+  ; about 200 more of them (engine ask E98 for a ground-cover layer of its own).
   Cover = [
-    ground/world/grass.png = "models/nature/kenney/grass.glb 5 11, models/nature/kenney/grass_large.glb 4 11, models/nature/ultimate/grass.glb 3 11, models/nature/megakit/grass_common_short.glb 3 10, models/nature/megakit/grass_common_tall.glb 1 9, models/nature/kenney/flower_yellow_a.glb 1 9, models/nature/kenney/flower_red_a.glb 1 9, models/nature/kenney/flower_purple_a.glb 1 9, models/nature/megakit/clover_1.glb 1 9",
-    ground/world/forest.png = "models/nature/megakit/fern_1.glb 4 9, models/nature/kenney/grass_leafs.glb 3 11, models/nature/megakit/plant_1.glb 2 9, models/nature/ultimate/plant_3.glb 1 9, models/nature/kenney/mushroom_tan_group.glb 1 8, models/nature/megakit/clover_1.glb 1 9",
+    ground/world/grass.png = "models/nature/kenney/grass.glb 5 11, models/nature/kenney/grass_large.glb 4 11, models/nature/ultimate/grass.glb 3 11, models/nature/megakit/grass_common_short.glb 3 10, models/nature/kenney/flower_yellow_a.glb 1 9, models/nature/kenney/flower_red_a.glb 1 9, models/nature/kenney/flower_purple_a.glb 1 9",
+    ground/world/forest.png = "models/nature/megakit/fern_1.glb 4 9, models/nature/kenney/grass_leafs.glb 3 11, models/nature/megakit/plant_1.glb 2 9, models/nature/kenney/mushroom_tan_group.glb 1 8, models/nature/megakit/clover_1.glb 1 9",
     ground/world/steppe.png = "models/nature/ultimate/grass_short.glb 4 12, models/nature/megakit/grass_wispy_short.glb 3 10, models/nature/ultimate/wheat.glb 2 10, models/nature/megakit/grass_wispy_tall.glb 1 9",
     ground/world/sand.png = "models/nature/ultimate/plant_2.glb 3 8, models/nature/megakit/grass_wispy_short.glb 2 9, models/nature/kenney/rock_small_a.glb 2 6",
     ground/world/snow.png = "models/nature/ultimate/plant_2.glb 2 7, models/nature/kenney/rock_small_d.glb 1 6",
     ground/world/rock.png = "models/nature/kenney/rock_small_a.glb 2 6, models/nature/kenney/rock_small_d.glb 2 6, models/nature/megakit/grass_wispy_short.glb 2 9",
-    ground/world/mud.png = "models/inuciian/nature/cattails.glb 3 0.9, models/nature/kenney/grass_large.glb 3 11, models/nature/megakit/grass_common_tall.glb 2 10, models/nature/kenney/grass_leafs.glb 1 11",
+    ground/world/mud.png = "models/inuciian/nature/cattails.glb 1 0.9, models/nature/kenney/grass_large.glb 4 11, models/nature/megakit/grass_common_tall.glb 2 10, models/nature/kenney/grass_leafs.glb 1 11",
   ]
   CoverPerCell = [
-    ground/world/grass.png = 1.6,
-    ground/world/forest.png = 1.0,
-    ground/world/steppe.png = 0.9,
+    ground/world/grass.png = 1.2,
+    ground/world/forest.png = 0.8,
+    ground/world/steppe.png = 0.8,
     ground/world/sand.png = 0.2,
     ground/world/snow.png = 0.15,
     ground/world/rock.png = 0.25,
