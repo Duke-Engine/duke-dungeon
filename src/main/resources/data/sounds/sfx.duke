@@ -1035,7 +1035,7 @@ End
 ; ---- feet -----------------------------------------------------------------
 ;
 ; The client plays walking.<Template>.<surface> for anything that walks on a painted map -- the surface is the
-; palette picture's file name (ground/grass.png -> grass) -- and walking.<Template> where the ground has no sound of
+; palette picture's file name (ground/grass.png -> grass) -- steppe the open world's withered grass, heard as grass -- and walking.<Template> where the ground has no sound of
 ; its own or is not painted (the descent's stone). Once a GapSeconds: the stride. Placed, so a distant walker is
 ; faint; a creature is quieter than a hero.
 
@@ -1050,6 +1050,15 @@ End
 
 Sound
   Name = walking.Knight.grass
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.3
+  GapSeconds = 0.34
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+
+Sound
+  Name = walking.Knight.steppe
   Channel = Effects
   Positional = Yes
   Gain = 0.3
@@ -1121,6 +1130,15 @@ Sound
 End
 
 Sound
+  Name = walking.Mage.steppe
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.3
+  GapSeconds = 0.34
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+
+Sound
   Name = walking.Mage.forest
   Channel = Effects
   Positional = Yes
@@ -1176,6 +1194,15 @@ End
 
 Sound
   Name = walking.Rogue.grass
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.3
+  GapSeconds = 0.34
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+
+Sound
+  Name = walking.Rogue.steppe
   Channel = Effects
   Positional = Yes
   Gain = 0.3
@@ -1247,6 +1274,15 @@ Sound
 End
 
 Sound
+  Name = walking.Soldier.steppe
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.14
+  GapSeconds = 0.5
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+
+Sound
   Name = walking.Soldier.forest
   Channel = Effects
   Positional = Yes
@@ -1310,6 +1346,15 @@ Sound
 End
 
 Sound
+  Name = walking.Militia.steppe
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.14
+  GapSeconds = 0.5
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+
+Sound
   Name = walking.Militia.forest
   Channel = Effects
   Positional = Yes
@@ -1365,6 +1410,15 @@ End
 
 Sound
   Name = walking.Commander.grass
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.14
+  GapSeconds = 0.5
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+
+Sound
+  Name = walking.Commander.steppe
   Channel = Effects
   Positional = Yes
   Gain = 0.14
@@ -1499,6 +1553,15 @@ Sound
 End
 
 Sound
+  Name = walking.EnemyCommander.steppe
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.14
+  GapSeconds = 0.5
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+
+Sound
   Name = walking.EnemyCommander.forest
   Channel = Effects
   Positional = Yes
@@ -1554,6 +1617,15 @@ End
 
 Sound
   Name = walking.CursedHero.grass
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.14
+  GapSeconds = 0.5
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+
+Sound
+  Name = walking.CursedHero.steppe
   Channel = Effects
   Positional = Yes
   Gain = 0.14
@@ -1625,6 +1697,15 @@ Sound
 End
 
 Sound
+  Name = walking.Guard.steppe
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.14
+  GapSeconds = 0.5
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+
+Sound
   Name = walking.Guard.forest
   Channel = Effects
   Positional = Yes
@@ -1680,6 +1761,15 @@ End
 
 Sound
   Name = walking.Traveller.grass
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.14
+  GapSeconds = 0.5
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+
+Sound
+  Name = walking.Traveller.steppe
   Channel = Effects
   Positional = Yes
   Gain = 0.14
@@ -1751,6 +1841,15 @@ Sound
 End
 
 Sound
+  Name = walking.Pedlar.steppe
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.14
+  GapSeconds = 0.5
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+
+Sound
   Name = walking.Pedlar.forest
   Channel = Effects
   Positional = Yes
@@ -1806,6 +1905,15 @@ End
 
 Sound
   Name = walking.Villager.grass
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.14
+  GapSeconds = 0.5
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+
+Sound
+  Name = walking.Villager.steppe
   Channel = Effects
   Positional = Yes
   Gain = 0.14
@@ -1877,6 +1985,15 @@ Sound
 End
 
 Sound
+  Name = walking.Farmer.steppe
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.14
+  GapSeconds = 0.5
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+
+Sound
   Name = walking.Farmer.forest
   Channel = Effects
   Positional = Yes
@@ -1932,6 +2049,15 @@ End
 
 Sound
   Name = walking.Stalker.grass
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.14
+  GapSeconds = 0.5
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+
+Sound
+  Name = walking.Stalker.steppe
   Channel = Effects
   Positional = Yes
   Gain = 0.14
@@ -2003,6 +2129,15 @@ Sound
 End
 
 Sound
+  Name = walking.Imp.steppe
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.14
+  GapSeconds = 0.5
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+
+Sound
   Name = walking.Imp.forest
   Channel = Effects
   Positional = Yes
@@ -2058,6 +2193,15 @@ End
 
 Sound
   Name = walking.Runner.grass
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.14
+  GapSeconds = 0.3
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+
+Sound
+  Name = walking.Runner.steppe
   Channel = Effects
   Positional = Yes
   Gain = 0.14
@@ -2129,6 +2273,15 @@ Sound
 End
 
 Sound
+  Name = walking.Skeleton.steppe
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.12
+  GapSeconds = 0.5
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+
+Sound
   Name = walking.Skeleton.forest
   Channel = Effects
   Positional = Yes
@@ -2184,6 +2337,15 @@ End
 
 Sound
   Name = walking.SkeletonHealer.grass
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.12
+  GapSeconds = 0.5
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+
+Sound
+  Name = walking.SkeletonHealer.steppe
   Channel = Effects
   Positional = Yes
   Gain = 0.12
@@ -2255,6 +2417,15 @@ Sound
 End
 
 Sound
+  Name = walking.SkeletonMage.steppe
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.12
+  GapSeconds = 0.5
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+
+Sound
   Name = walking.SkeletonMage.forest
   Channel = Effects
   Positional = Yes
@@ -2310,6 +2481,15 @@ End
 
 Sound
   Name = walking.SkeletonSummoner.grass
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.12
+  GapSeconds = 0.5
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+
+Sound
+  Name = walking.SkeletonSummoner.steppe
   Channel = Effects
   Positional = Yes
   Gain = 0.12
@@ -2381,6 +2561,15 @@ Sound
 End
 
 Sound
+  Name = walking.Necromancer.steppe
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.12
+  GapSeconds = 0.5
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+
+Sound
   Name = walking.Necromancer.forest
   Channel = Effects
   Positional = Yes
@@ -2436,6 +2625,15 @@ End
 
 Sound
   Name = walking.Revenant.grass
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.12
+  GapSeconds = 0.5
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+
+Sound
+  Name = walking.Revenant.steppe
   Channel = Effects
   Positional = Yes
   Gain = 0.12
@@ -2507,6 +2705,15 @@ Sound
 End
 
 Sound
+  Name = walking.Reaper.steppe
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.12
+  GapSeconds = 0.5
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+
+Sound
   Name = walking.Reaper.forest
   Channel = Effects
   Positional = Yes
@@ -2562,6 +2769,15 @@ End
 
 Sound
   Name = walking.Brute.grass
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.25
+  GapSeconds = 0.6
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+
+Sound
+  Name = walking.Brute.steppe
   Channel = Effects
   Positional = Yes
   Gain = 0.25
@@ -2633,6 +2849,15 @@ Sound
 End
 
 Sound
+  Name = walking.Champion.steppe
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.25
+  GapSeconds = 0.6
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+
+Sound
   Name = walking.Champion.forest
   Channel = Effects
   Positional = Yes
@@ -2688,6 +2913,15 @@ End
 
 Sound
   Name = walking.Warden.grass
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.25
+  GapSeconds = 0.6
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+
+Sound
+  Name = walking.Warden.steppe
   Channel = Effects
   Positional = Yes
   Gain = 0.25
@@ -2759,6 +2993,15 @@ Sound
 End
 
 Sound
+  Name = walking.DarkLord.steppe
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.25
+  GapSeconds = 0.6
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+
+Sound
   Name = walking.DarkLord.forest
   Channel = Effects
   Positional = Yes
@@ -2814,6 +3057,15 @@ End
 
 Sound
   Name = walking.QueenBoss.grass
+  Channel = Effects
+  Positional = Yes
+  Gain = 0.25
+  GapSeconds = 0.6
+  Files = [audio/sfx/step/soft_l1.ogg, audio/sfx/step/soft_r1.ogg, audio/sfx/step/soft_l2.ogg, audio/sfx/step/soft_r2.ogg, audio/sfx/step/soft_l3.ogg, audio/sfx/step/soft_r3.ogg]
+End
+
+Sound
+  Name = walking.QueenBoss.steppe
   Channel = Effects
   Positional = Yes
   Gain = 0.25

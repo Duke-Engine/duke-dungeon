@@ -171,6 +171,14 @@ PaintedGround
     ground/sand.png = 0xFFF8EC,
     ground/forest.png = 0xFFFFFF,
     ground/mud.png = 0xFFFFFF,
+    ground/world/grass.png = 0xFFFFFF,
+    ground/world/dirt.png = 0xFFFFFF,
+    ground/world/steppe.png = 0xFFFFFF,
+    ground/world/sand.png = 0xFFFFFF,
+    ground/world/snow.png = 0xFFFFFF,
+    ground/world/rock.png = 0xFFFFFF,
+    ground/world/forest.png = 0xFFFFFF,
+    ground/world/mud.png = 0xFFFFFF,
   ]
   Variations = [
     ground/grass.png = 0.6,
@@ -180,11 +188,20 @@ PaintedGround
     ground/sand.png = 0.45,
     ground/forest.png = 0.5,
     ground/mud.png = 0.3,
+    ; the open world's photographed ground carries its own light and dark: moved less
+    ground/world/grass.png = 0.35,
+    ground/world/dirt.png = 0.25,
+    ground/world/steppe.png = 0.35,
+    ground/world/sand.png = 0.3,
+    ground/world/snow.png = 0.15,
+    ground/world/rock.png = 0.25,
+    ground/world/forest.png = 0.3,
+    ground/world/mud.png = 0.2,
   ]
   ; Ground leaning past CliffSlope degrees is drawn as rock, laid on the face
   ; rather than down from above, a copy every CliffCoverage cells. A cell leaning
   ; 45 degrees is too steep to walk; 38 shows the rock a little before that.
-  Cliffs = ground/rock.png
+  Cliffs = ground/world/cliff.png
   CliffSlope = 38
   CliffCoverage = 4
   ; Each cell cut two by two: smoother hills, a truer blend.

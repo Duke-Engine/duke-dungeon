@@ -128,18 +128,21 @@ public final class WorldMapWriter {
     private static final String FOREST_ZONE = "Qorong'i_o'rmon";
 
     static final Map<String, String> PALETTE = palette();
-    static final Map<String, Float> COVERAGE = Map.of("g", 6f, "d", 4f, "s", 6f, "n", 6f, "r", 4f, "f", 6f,
-            "m", 5f);
+    // Photographed ground (Poly Haven, OpenGameArt; CC0): a copy every few cells, about what one picture shows.
+    static final Map<String, Float> COVERAGE = Map.of("g", 4f, "d", 3f, "s", 4f, "a", 5f, "n", 5f, "r", 4f, "f", 4f,
+            "m", 4f);
 
     private static Map<String, String> palette() {
         var palette = new LinkedHashMap<String, String>();
-        palette.put("g", "ground/grass.png");
-        palette.put("d", "ground/dirt.png");
-        palette.put("s", "ground/sand.png");
-        palette.put("n", "ground/snow.png");
-        palette.put("r", "ground/rock.png");
-        palette.put("f", "ground/forest.png");
-        palette.put("m", "ground/mud.png");
+        // Eight, the most the ground's shader blends. Each file is named for the sound a foot makes on it.
+        palette.put("g", "ground/world/grass.png");   // meadow, and the grass between highland rocks
+        palette.put("d", "ground/world/dirt.png");    // the roads (E52 costs read this letter), bare patches
+        palette.put("s", "ground/world/steppe.png");  // the steppe's withered grass
+        palette.put("a", "ground/world/sand.png");    // the sandy steppe round Qumli dasht
+        palette.put("n", "ground/world/snow.png");
+        palette.put("r", "ground/world/rock.png");    // highland rock, steep ground
+        palette.put("f", "ground/world/forest.png");  // the dark wood's fallen leaves
+        palette.put("m", "ground/world/mud.png");     // the marsh, the lake bed, the river's banks
         return palette;
     }
 
@@ -1908,11 +1911,17 @@ public final class WorldMapWriter {
             }
             return switch (region[y * SIZE + x]) {
                 case MEADOW -> GroundPictures.fbm(u, v, 40, 2, seed + 13) > 0.74 ? 'd' : 'g';
-                case STEPPE -> patch > 0.7 ? 'd' : patch < 0.28 ? 'g' : 's';
+                case STEPPE -> patch > 0.7 ? 'd' : patch < 0.28 ? 'g' : sandy(x, y, patch) ? 'a' : 's';
                 case FOREST -> patch > 0.7 || away < BASIN_REACH + 16 && patch > 0.55 ? 'm' : 'f';
                 case HIGHLANDS -> lean >= 10 || patch > 0.56 ? 'r' : 'g';
                 case SNOW -> lean >= 10 ? 'r' : 'n';
             };
+        }
+
+        /** The steppe round Qumli dasht gone to sand: most of it near the desert fort, thinning out to patches. */
+        private boolean sandy(int x, int y, double patch) {
+            var desert = SITES.get(2);
+            return Math.hypot(x - desert.x(), y - desert.y()) < 40 + 50 * (0.6 - patch);
         }
 
         private boolean nearRoad(int x, int y, int reach) {
