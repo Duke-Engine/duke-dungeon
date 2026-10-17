@@ -19,7 +19,7 @@ city's middle `C` and the north road, so a reseeded world still has them. At the
 | `Darvoza_oldi` | the field before the city's north gate, the road through it: the opening battle | circle, `F` ≈ C + (3, −34), r 13 |
 | `Saf` | the kingdom's line, between the field and the gate | rect 9 × 2 at F + (−4, +6) |
 | `Dushman_safi` | the enemy's line, the far side of the field | circle F + (0, −8), r 3 |
-| `Qonish` | where he lands: the field's east flank, clear of both lines | circle F + (9, 0), r 1 |
+| `Qonish` | where he lands: the middle of the field, over the battle — the three ritualists ringed round it | circle F, r 1 |
 | `Yo'lak` | the corridor from the field down the road into the north gate | rect 9 wide, F.y to the gate |
 | `Eski_qabrlar` | the old graves west of the field: the training | circle, flat ground nearest F + (−16, +2), r 6 |
 | `Saroy` | the palace: the royal castle's walled court inside the city (its own fort ring, its gate onto the plaza) | rect 8 × 8 inside the ring |
@@ -77,28 +77,29 @@ Frames at 30 a second. Every number is the data's (`data/story/act1.duke`: the t
 
 | t (frames) | Beat |
 |---|---|
-| 0 | `MAP_START` (Act1, not landed): the card *Darvoza oldidagi jang*; `BATTLE Opening` lays both armies, the commander, the three ritualists (neutral: section 4.1); the hero is held high in the sky over `Qonish`, out of sight. Cutscene `Summoning`: the menu's framing over the field (45), the line *BattleHolds*, then the camera eases (75, IN_OUT) to the ritualists, drawn in and lower. |
+| 0 | `MAP_START` (Act1, not landed): the card *Darvoza oldidagi jang*; `BATTLE Opening` lays both armies, the commander, the three ritualists (neutral: section 4.1); the hero is held high in the sky over `Qonish`, out of sight. Cutscene `Summoning`: the menu's framing over the field (45), the line *BattleHolds*, then the camera eases (75, IN_OUT) over the field and past the kingdom's line, then back over the middle of it, wide enough to hold the whole ring of ritualists. |
 | seen +0 | `POSE Ritualist Ritual` (150): arms spread wide to the sides, faces up to the sky (0–100), then hands snap together forward (100–115) and held out (115–150). Their motes rise (`RitualGlow`). A cutscene holds the camera on `Qonish` through to the landing. |
 | +105 | `BEAM`: a bright beam from each ritualist's hands to a point 40 above `Qonish` (laser `RitualBeam`, 100 frames): three beams from three sides meeting in the middle. |
 | +120 | the pillar of light: `SkyPillar` (a PILLAR of light, motes, a light) and the laser `SkyPillarBeam` from the ground at `Qonish` up 900 (90 frames): the beams feed it. |
 | +150 | `STREAK Hero`: the meteor. He is carried from 700 above and 400 off to the south-west down onto `Qonish` in 24 frames, burning (`MeteorTrail` on him every frame of it). |
-| +174 | **Impact** (`MeteorImpact`): a white flash, a shockwave ring, dust, a scorched crater lying 20 s, a light, a cutscene's big knock of the camera (1.0 s, 4.0), a low boom (`landing.impact`). `CAST PUSH`: his landing skill (E82) throws every enemy within 160 50 outward in an arc 18 high over 20 frames and stunned (the Combat StunLook over them). `HOLD Darvoza_oldi`: every fighter on the field held — the battle stops. The hero kneels in the smoke (`HeroLanding`, his kneel-and-rise clip, 70). The ritualists vanish in a flash (`RitualistVanish`, then `REMOVE`). Flag `HeroLanded`. |
+| +174 | **Impact** (`MeteorImpact`): a white flash, a shockwave ring, dust, a scorched crater lying 20 s, a light, a cutscene's big knock of the camera (1.0 s, 4.0), a low boom (`landing.impact`). `CAST PUSH`: his landing skill (E82) throws every enemy within 160 50 outward in an arc 18 high over 20 frames and stunned (the Combat StunLook over them) — where nothing stands in the way: he lands in the battle's middle, so the enemies pressed against the kingdom's own line are stunned but stopped by it (a body that is no victim, E95). `HOLD Darvoza_oldi`: every fighter on the field held — the battle stops. The hero kneels in the smoke (`HeroLanding`, his kneel-and-rise clip, 70). The ritualists vanish in a flash (`RitualistVanish`, then `REMOVE`). Flag `HeroLanded`. |
 | +249 | Cutscene `Landing`: low and close; *HeroLands* (he was training with Erika a moment ago; the commander: the light chose you), then *AfterLanding* (they are beaten; you are the last hero summoned; the queen knows the way home; follow me). |
 | seen | `RELEASE`; the soldiers finish the stunned (`KILL` each enemy kind); the quest *Qo'mondon izidan* (section 5); flag `BattleWon`; `CHECKPOINT`. |
 
 **The hero does not fight before the dialogue ends**: from the impact to `RELEASE` he is held as every fighter on the
-field is, and the enemies are stunned and thrown clear of him. Played headless with every line read at once, the order
-is the same (`SeamlessIntroTest`).
+field is, and the enemies are stunned, and thrown clear of him where the ground is open (the ones against the kingdom's
+line are stopped by it). Played headless with every line read at once, the order is the same (`SeamlessIntroTest`).
 
 ### 4.1 The ritualists
 
-Three, round `Qonish` on an equilateral triangle: 30 out (data: `Battle.Ring`), 120° apart from the north, each facing
-the middle, so the three beams come from three sides. They are a `Ritualist` Monster drawn as the licensed Ritualist
+Three, round `Qonish` on an equilateral triangle: 120 out (data: `Battle.Ring`), 120° apart from the north, each facing
+the middle, so the three beams come from three sides. The landing is the middle of the field (section 1), so the ring
+stands round the whole battle: the first point just behind the enemy's line, the other two off the ends of the
+kingdom's, both armies fighting inside it. They are a `Ritualist` Monster drawn as the licensed Ritualist
 (`SkeletonSummoner`'s look: the stand-in skeleton mage where licensed-assets/ is not shipped), with no weapon and no
 skills, and stand on the **neutral side** (player 0), which nobody is the enemy of: nothing targets or hurts them, an
-area blow does not take them in, and they attack nobody. The armies' lines are 8 or more cells from the triangle. After
-the landing they **vanish in a flash**: nobody on the field saw where they went (the queen's hidden hand; the turning
-says the rest).
+area blow does not take them in, and they attack nobody. After the landing they **vanish in a flash**: nobody on the
+field saw where they went (the queen's hidden hand; the turning says the rest).
 
 Their clip: `Ritual`, made on the licensed rig by `art/licensed/export_licensed.py` (posed, not borrowed). The stand-in
 has no rig of ours to pose cheaply, so it plays its summoning gesture (`Ranged_Magic_Summon`): `POSE` names both

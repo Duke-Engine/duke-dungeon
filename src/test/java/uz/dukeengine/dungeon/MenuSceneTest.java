@@ -63,8 +63,9 @@ class MenuSceneTest {
     }
 
     /**
-     * The owner's rules for the three ritualists: round the landing 120 degrees apart, 25 to 35 out, facing it, and
-     * nobody hits them -- through a minute of the backdrop's fight none of them is hurt or gone.
+     * The owner's rules for the three ritualists: round the landing 120 degrees apart, 115 to 125 out, facing it, and
+     * nobody hits them -- through a minute of the backdrop's fight none of them is hurt or gone. The landing is the
+     * field's middle, so the ring stands round the whole battle (docs/plan/2026-10-15-seamless-campaign.md, section 4.1).
      */
     @Test
     void theRitualistsStandRoundTheLandingAndNobodyHurtsThem() {
@@ -73,13 +74,16 @@ class MenuSceneTest {
         var three = scene.ritualists();
         assertEquals(3, three.size());
         var landing = scene.zone("Qonish");
+        var field = scene.zone("Darvoza_oldi");
         float cell = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
+        assertEquals(field.middleX(cell), landing.middleX(cell), 0.01f, "the summoning is over the battle's middle");
+        assertEquals(field.middleY(cell), landing.middleY(cell), 0.01f, "the summoning is over the battle's middle");
         var angles = new java.util.ArrayList<Double>();
         for (var one : three) {
             double dx = one.getPosition().x() - landing.middleX(cell);
             double dy = one.getPosition().y() - landing.middleY(cell);
             double far = Math.hypot(dx, dy);
-            assertTrue(far >= 25 && far <= 35, "out " + far);
+            assertTrue(far >= 115 && far <= 125, "out " + far);
             angles.add(Math.toDegrees(Math.atan2(dy, dx)));
         }
         angles.sort(Double::compare);

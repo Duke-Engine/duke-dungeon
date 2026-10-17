@@ -1585,7 +1585,7 @@ public final class WorldMapWriter {
 
         /**
          * Act 1's places, folded into the world (docs/plan/2026-10-15-seamless-campaign.md): the field before the
-         * city's north gate where the opening battle is fought -- its two lines, the landing on its flank, the corridor
+         * city's north gate where the opening battle is fought -- its two lines, the landing in its middle, the corridor
          * down the road into the gate -- the old graves west of it where he trains, and inside the city the palace's
          * court (the royal castle's ring) with the queen's throne, the plaza and the blacksmith's cellar. Found from the
          * city's middle and the north road, so a reseeded world still has them. Only looked at: nothing new stands in
@@ -1600,7 +1600,9 @@ public final class WorldMapWriter {
             zones.add(new Zone(OPENING, fx, fy, 0, 0, 13));
             zones.add(new Zone("Saf", fx - 4, fy + 6, 9, 2, 0));
             zones.add(new Zone("Dushman_safi", fx, fy - 8, 0, 0, 3));
-            zones.add(new Zone(LANDING, fx + 9, fy, 0, 0, 1));
+            // The landing is the middle of the field, not beside it: the summoning is over the battle itself, the three
+            // ritualists ringed round both lines (Battle.Ring), so the beams sweep in over the armies and meet here.
+            zones.add(new Zone(LANDING, fx, fy, 0, 0, 1));
             int gate = city.y() - 12 + 3;
             zones.add(new Zone("Yo'lak", fx - 4, fy, 9, Math.max(1, gate - fy), 0));
             int[] graves = roomNear(fx - 16, fy + 2, 6, true);

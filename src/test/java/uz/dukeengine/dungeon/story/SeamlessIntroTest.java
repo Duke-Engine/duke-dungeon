@@ -108,19 +108,29 @@ class SeamlessIntroTest {
         assertTrue(logic.getBeams().isEmpty(), "every beam out");
     }
 
-    /** The owner's rule: three ritualists 120 degrees apart round the landing, 25-35 out, facing it, untouchable. */
+    /**
+     * The owner's rule: three ritualists 120 degrees apart round the landing, 115-125 out, facing it, untouchable --
+     * and the landing the field's middle, so the ring stands round the whole battle rather than on a flank of it.
+     */
     @Test
     void theThreeStandRoundTheLandingAndNobodyTouchesThem() {
         var session = newGame();
         var three = all(session.game(), "Ritualist");
         assertEquals(3, three.size());
         var middle = landing();
+        var field = Act1Test.zone("world", "Darvoza_oldi");
+        assertEquals(field.middleX(CELL), middle[0], 0.01f, "the summoning is over the battle's middle");
+        assertEquals(field.middleY(CELL), middle[1], 0.01f, "the summoning is over the battle's middle");
         var angles = new ArrayList<Double>();
         for (var one : three) {
             float dx = one.getPosition().x() - middle[0];
             float dy = one.getPosition().y() - middle[1];
             double far = Math.hypot(dx, dy);
-            assertTrue(far >= 25 && far <= 35, "out " + far);
+            assertTrue(far >= 115 && far <= 125, "out " + far);
+            assertFalse(Act1Test.zone("world", "Saf").holds(one.getPosition().x(), one.getPosition().y(), CELL),
+                    "none stands on the kingdom's line");
+            assertFalse(Act1Test.zone("world", "Dushman_safi").holds(one.getPosition().x(), one.getPosition().y(), CELL),
+                    "none stands on the enemy's line");
             angles.add(Math.toDegrees(Math.atan2(dy, dx)));
             double facing = Math.toDegrees(one.getOrientation());
             double toward = Math.toDegrees(Math.atan2(-dy, -dx));
@@ -182,6 +192,10 @@ class SeamlessIntroTest {
         }
         // Those inside its reach as he struck: every one stunned, and thrown its whole Distance out where nothing stands
         // in the way -- the farthest first, through each other (E95); only stone or a body that is no victim stops one.
+        // He lands in the battle's middle now, so the enemies pressed against the kingdom's own line have it behind
+        // them: the wave stuns them where they stand, and the line (a body that is no victim) stops the throw.
+        var line = Act1Test.zone("world", "Saf");
+        double landingToLine = Math.hypot(middle[0] - line.middleX(CELL), middle[1] - line.middleY(CELL));
         int inside = 0;
         int thrown = 0;
         for (var each : before.entrySet()) {
@@ -192,11 +206,19 @@ class SeamlessIntroTest {
                 assertTrue(foe.hasStatus(ObjectStatus.DISABLED), "stunned");
                 if (now > each.getValue() + wave.distance() / 2f) {
                     thrown++;
+                } else {
+                    // Only the kingdom's line stops one: it stands pressed on it, nearer than the landing itself.
+                    double toLine = Math.hypot(foe.getPosition().x() - line.middleX(CELL),
+                            foe.getPosition().y() - line.middleY(CELL));
+                    assertTrue(toLine < landingToLine,
+                            "stopped only by the kingdom's line: " + toLine + " against the landing's "
+                                    + landingToLine);
                 }
             }
         }
         assertTrue(inside > 0, "the premise: enemies within the wave");
-        assertTrue(thrown * 4 >= inside * 3, thrown + " of " + inside + " thrown out from the landing");
+        assertTrue(thrown * 3 >= inside * 2, thrown + " of " + inside + " thrown out from the landing");
+        assertTrue(thrown > 0, "the wave throws the rest clear");
         assertTrue(highest > 5f, "through the air: " + highest);
         var at = hero(session).getPosition();
         assertTrue(Act1Test.zone("world", "Qonish").holds(at.x(), at.y(), CELL), "he stands where he struck");
@@ -241,7 +263,8 @@ class SeamlessIntroTest {
 
     /**
      * The opening's camera is one smooth path (E85): from where it stands, over the field, past the kingdom's line and
-     * down onto the landing -- through the line's middle on the way, never standing still until it arrives.
+     * then back to the middle of it, wide enough to hold the whole ring of ritualists -- through the line's middle on
+     * the way, never standing still until it arrives.
      */
     @Test
     void theOpeningsCameraFliesOnePath() {
@@ -278,7 +301,7 @@ class SeamlessIntroTest {
         assertEquals(0, stood, "it stood still " + stood + " frames between its ends (the eases' first and last)");
         assertEquals(middle[0], end.x(), 1f, "onto the landing");
         assertEquals(middle[1], end.y(), 1f);
-        assertEquals(Math.toRadians(38), end.pitch(), 0.02, "drawn in and lower");
+        assertEquals(Math.toRadians(38), end.pitch(), 0.02, "low, taking in the whole ring");
     }
 
     private static boolean isEnemy(Dungeon.Session session, GameObject thing) {

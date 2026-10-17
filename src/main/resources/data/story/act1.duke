@@ -197,8 +197,10 @@ Battle
   Ritualist = Ritualist
   Ritualists = 3
   Landing = Qonish
-  ; Units from the landing's middle: an equilateral triangle round it, the first to its north.
-  Ring = 30
+  ; Units from the landing's middle: an equilateral triangle round it, the first to its north. The landing is the
+  ; middle of the field (WorldMapWriter), so this ring stands round the whole battle -- the first point just behind
+  ; the enemy's line, the other two off the ends of the kingdom's, with the armies fighting inside it.
+  Ring = 120
 End
 
 Conversation
@@ -285,8 +287,8 @@ Cutscene
       Hold = 10
     End,
     Shot
-      ; Then one smooth move (E85): over the field as the menu frames it, down past the kingdom's line, onto the three
-      ; of them round the landing -- drawn in and lower.
+      ; Then one smooth move (E85): over the field as the menu frames it, down past the kingdom's line, then up and
+      ; back to the middle of it -- the three of them ringed round the landing, the whole battle inside their ring.
       Frames = 150
       Hold = 10
       Ease = IN_OUT
@@ -307,7 +309,7 @@ Cutscene
         Key
           Zone = Qonish
           Pitch = 38
-          Zoom = 130
+          Zoom = 250
         End
       ]
     End
