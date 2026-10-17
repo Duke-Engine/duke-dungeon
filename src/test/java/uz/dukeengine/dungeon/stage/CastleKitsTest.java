@@ -201,25 +201,34 @@ class CastleKitsTest {
         float cell = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
         // The north wall from (9, 8) east, the west wall from (8, 9) south, the south wall west of the gate.
         for (int[] shut : new int[][] {{10, 7}, {10, 8}, {7, 10}, {8, 10}, {10, 17}, {10, 18}, {18, 15}}) {
-            assertTrue(grid.isBlocked(shut[0], shut[1]), "the wall leaves " + shut[0] + "," + shut[1] + " open");
+            assertTrue(MapCells.shut(grid, shut[0], shut[1]), "the wall leaves " + shut[0] + "," + shut[1] + " open");
         }
         for (int[] open : new int[][] {{15, 17}, {15, 18}, {12, 12}}) {
-            assertTrue(!grid.isBlocked(open[0], open[1]), open[0] + "," + open[1] + " is shut");
+            assertTrue(!MapCells.shut(grid, open[0], open[1]), open[0] + "," + open[1] + " is shut");
         }
         var path = logic.findPath(new uz.dukeengine.core.math.Coord3D(15.5f * cell, 22.5f * cell, 0f),
                 new uz.dukeengine.core.math.Coord3D(13.5f * cell, 12.5f * cell, 0f));
         assertTrue(!path.isEmpty(), "no way into the court");
+        // Waypoints may be sparse: the way is walked along its straight legs, so it is the legs that cross the wall's
+        // row, and they cross it in the gateway.
         boolean byTheGate = false;
-        for (var waypoint : path.getWaypoints()) {
-            int cx = grid.toCellX(waypoint);
-            int cy = grid.toCellY(waypoint);
-            assertTrue(!grid.isBlocked(cx, cy), "the way goes through a wall at " + cx + "," + cy);
-            byTheGate |= cy >= 17 && cy <= 18 && cx >= 14 && cx <= 16;
+        var waypoints = path.getWaypoints();
+        for (int i = 0; i + 1 < waypoints.size(); i++) {
+            var a = waypoints.get(i);
+            var b = waypoints.get(i + 1);
+            int steps = (int) Math.ceil(Math.hypot(b.x() - a.x(), b.y() - a.y()));
+            for (int s = 0; s <= steps; s++) {
+                float x = a.x() + (b.x() - a.x()) * s / Math.max(1, steps);
+                float y = a.y() + (b.y() - a.y()) * s / Math.max(1, steps);
+                int cx = (int) Math.floor(x / cell);
+                int cy = (int) Math.floor(y / cell);
+                if (cy >= 17 && cy <= 18) {
+                    assertTrue(cx >= 14 && cx <= 16, "the way crosses the south wall at " + cx + "," + cy);
+                    byTheGate = true;
+                }
+            }
         }
-        var first = path.getWaypoints().getFirst();
-        var last = path.getWaypoints().getLast();
-        // Waypoints may be sparse: a straight line from before the gate to the court is through the gateway anyway.
-        assertTrue(byTheGate || Math.abs(first.x() - last.x()) < 2.5f * cell, "the way in misses the gate");
+        assertTrue(byTheGate, "the way in misses the gate");
     }
 
     private static boolean near(List<GeneratedDungeon.Piece> towers, float x, float y) {

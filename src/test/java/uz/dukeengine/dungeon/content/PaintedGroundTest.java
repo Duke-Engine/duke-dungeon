@@ -21,10 +21,10 @@ class PaintedGroundTest {
         assertTrue(ground.quarters());
         assertEquals("ground/noise.png", ground.noise());
         assertEquals("ground/variation.png", ground.variation());
-        assertEquals("ground/rock.png", ground.cliffs());
+        assertEquals("ground/world/cliff.png", ground.cliffs());
         assertTrue(ground.cliffSlope() > 0f && ground.cliffSlope() < 45f,
                 "a cliff is drawn before the ground is too steep to walk, at 45 degrees");
-        assertEquals(7, ground.tints().size());
+        assertEquals(15, ground.tints().size()); // the painted maps' seven and the open world's eight
         assertTrue(ground.streamCells() > 0);
     }
 

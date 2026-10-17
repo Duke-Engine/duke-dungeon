@@ -60,6 +60,8 @@ public final class WorldMapWriter {
     static final String NAME = "world";
     static final int SIZE = 512;
     static final long SEED = 20261008L;
+    /** A KayKit broadleaf's trunk at its scenery scale of 3.1, as a footprint in cells: 0.45 of its own units, measured. */
+    static final float TRUNK = 0.14f;
 
     /** The regions, in the order their hearts are listed. */
     enum Biome { MEADOW, STEPPE, FOREST, HIGHLANDS, SNOW }
@@ -126,18 +128,21 @@ public final class WorldMapWriter {
     private static final String FOREST_ZONE = "Qorong'i_o'rmon";
 
     static final Map<String, String> PALETTE = palette();
-    static final Map<String, Float> COVERAGE = Map.of("g", 6f, "d", 4f, "s", 6f, "n", 6f, "r", 4f, "f", 6f,
-            "m", 5f);
+    // Photographed ground (Poly Haven, OpenGameArt; CC0): a copy every few cells, about what one picture shows.
+    static final Map<String, Float> COVERAGE = Map.of("g", 4f, "d", 3f, "s", 4f, "a", 5f, "n", 5f, "r", 4f, "f", 4f,
+            "m", 4f);
 
     private static Map<String, String> palette() {
         var palette = new LinkedHashMap<String, String>();
-        palette.put("g", "ground/grass.png");
-        palette.put("d", "ground/dirt.png");
-        palette.put("s", "ground/sand.png");
-        palette.put("n", "ground/snow.png");
-        palette.put("r", "ground/rock.png");
-        palette.put("f", "ground/forest.png");
-        palette.put("m", "ground/mud.png");
+        // Eight, the most the ground's shader blends. Each file is named for the sound a foot makes on it.
+        palette.put("g", "ground/world/grass.png");   // meadow, and the grass between highland rocks
+        palette.put("d", "ground/world/dirt.png");    // the roads (E52 costs read this letter), bare patches
+        palette.put("s", "ground/world/steppe.png");  // the steppe's withered grass
+        palette.put("a", "ground/world/sand.png");    // the sandy steppe round Qumli dasht
+        palette.put("n", "ground/world/snow.png");
+        palette.put("r", "ground/world/rock.png");    // highland rock, steep ground
+        palette.put("f", "ground/world/forest.png");  // the dark wood's fallen leaves
+        palette.put("m", "ground/world/mud.png");     // the marsh, the lake bed, the river's banks
         return palette;
     }
 
@@ -1906,11 +1911,17 @@ public final class WorldMapWriter {
             }
             return switch (region[y * SIZE + x]) {
                 case MEADOW -> GroundPictures.fbm(u, v, 40, 2, seed + 13) > 0.74 ? 'd' : 'g';
-                case STEPPE -> patch > 0.7 ? 'd' : patch < 0.28 ? 'g' : 's';
+                case STEPPE -> patch > 0.7 ? 'd' : patch < 0.28 ? 'g' : sandy(x, y, patch) ? 'a' : 's';
                 case FOREST -> patch > 0.7 || away < BASIN_REACH + 16 && patch > 0.55 ? 'm' : 'f';
                 case HIGHLANDS -> lean >= 10 || patch > 0.56 ? 'r' : 'g';
                 case SNOW -> lean >= 10 ? 'r' : 'n';
             };
+        }
+
+        /** The steppe round Qumli dasht gone to sand: most of it near the desert fort, thinning out to patches. */
+        private boolean sandy(int x, int y, double patch) {
+            var desert = SITES.get(2);
+            return Math.hypot(x - desert.x(), y - desert.y()) < 40 + 50 * (0.6 - patch);
         }
 
         private boolean nearRoad(int x, int y, int reach) {
@@ -1936,37 +1947,79 @@ public final class WorldMapWriter {
         private record Scatter(String model, int perTenThousand, float scale, float footprint) {
         }
 
+        /** The newer nature packs (CC0), each model re-centred on its trunk: Ultimate Nature, MegaKit, Nature Kit. */
+        private static final String ULT = "models/nature/ultimate/";
+        private static final String MEGA = "models/nature/megakit/";
+        private static final String KENNEY = "models/nature/kenney/";
+
         /**
-         * The dark wood: Inuciian's dark pines and dead crooked trees among the KayKit pines, dark bushes and
-         * blue-grey grass between them, toadstools. A model with a folder in its name is Inuciian's, at scale 1.
+         * The dark wood, thick: Inuciian's dark pines and dead crooked trees among the KayKit pines and broadleaves,
+         * Quaternius' pines, a birch, now and then a great MegaKit tree; mossy stumps and rocks, dark and berried
+         * bushes between them, toadstools. What grows under them is the ground's cover (GroundCover). A model with a
+         * folder in its name is Inuciian's, at scale 1; one under models/ is named whole. Footprints are the trunks,
+         * measured, at the scale given.
          */
         private static final Scatter[] FOREST_TREES = {
-                new Scatter("nature/pine_dark", 700, 1f, 0.15f), new Scatter("pine_tall", 600, 1.67f, 0.15f),
-                new Scatter("pine", 500, 1.67f, 0.15f), new Scatter("nature/dead_tree", 250, 1f, 0.15f),
-                new Scatter("nature/dead_tree_bent", 200, 1f, 0.15f), new Scatter("tree_twisted", 250, 3.1f, 0.15f),
-                new Scatter("nature/dead_tree_tall", 150, 1f, 0.15f), new Scatter("tree", 200, 3.1f, 0.15f),
-                new Scatter("nature/bush_large_dark", 250, 1f, 0f), new Scatter("nature/bush_bare", 200, 1f, 0f),
-                new Scatter("nature/grass_tall_dark", 300, 1f, 0f), new Scatter("nature/grass_short_dark", 250, 1f, 0f),
+                new Scatter("nature/pine_dark", 1300, 1f, 0.09f), new Scatter("pine_tall", 700, 1.67f, 0.05f),
+                new Scatter("pine", 900, 1.67f, 0.05f), new Scatter(ULT + "pine_tree_1", 150, 6f, 0.14f),
+                new Scatter(ULT + "pine_tree_2", 150, 6f, 0.14f), new Scatter(ULT + "pine_tree_3", 100, 6f, 0.14f),
+                new Scatter("tree", 400, 3.1f, TRUNK), new Scatter("tree_round", 300, 3.1f, TRUNK),
+                new Scatter("nature/dead_tree", 200, 1f, 0.25f), new Scatter("nature/dead_tree_bent", 150, 1f, 0.22f),
+                new Scatter("tree_twisted", 250, 3.1f, 0.17f), new Scatter("nature/dead_tree_tall", 120, 1f, 0.1f),
+                new Scatter(ULT + "birch_tree_2", 120, 6f, 0.07f), new Scatter(MEGA + "common_tree_5", 25, 6f, 0.13f),
+                new Scatter(MEGA + "common_tree_1", 15, 6f, 0.13f),
+                new Scatter("nature/bush_large_dark", 300, 1f, 0f), new Scatter("nature/bush_bare", 200, 1f, 0f),
+                new Scatter(ULT + "bush_berries_1", 120, 6f, 0f), new Scatter("nature/grass_tall_dark", 150, 1f, 0f),
                 new Scatter("nature/mushroom_red", 60, 1f, 0f), new Scatter("nature/mushroom_brown", 60, 1f, 0f),
-                new Scatter("nature/stump", 50, 1f, 0.1f), new Scatter("nature/rock", 50, 1f, 0.2f)};
+                new Scatter(ULT + "tree_stump_moss", 80, 6f, 0.32f), new Scatter(ULT + "rock_moss_4", 80, 8f, 0.3f),
+                new Scatter("nature/stump", 40, 1f, 0.1f), new Scatter("nature/rock", 50, 1f, 0.18f)};
+        /** The meadow's groves: KayKit's broadleaves with birches and MegaKit's common trees among them. */
         private static final Scatter[] GROVE = {
-                new Scatter("tree", 1500, 3.1f, 0.15f), new Scatter("tree_round", 1500, 3.1f, 0.15f),
-                new Scatter("bush_small", 400, 3f, 0f)};
+                new Scatter("tree", 1200, 3.1f, TRUNK), new Scatter("tree_round", 1200, 3.1f, TRUNK),
+                new Scatter(ULT + "birch_tree_1", 250, 6f, 0.07f), new Scatter(ULT + "birch_tree_3", 200, 6f, 0.07f),
+                new Scatter(MEGA + "common_tree_1", 50, 6f, 0.13f), new Scatter(MEGA + "common_tree_2", 50, 6f, 0.13f),
+                new Scatter("bush_small", 300, 3f, 0f), new Scatter(ULT + "bush_1", 150, 6f, 0f)};
+        /** The open meadow: its grass is the ground's cover; bushes, and a lone tree. */
         private static final Scatter[] MEADOW = {
-                new Scatter("grass_short", 500, 3f, 0f), new Scatter("grass_tall", 250, 3f, 0f),
-                new Scatter("bush_small", 80, 3f, 0f), new Scatter("tree_round", 40, 3.1f, 0.15f)};
+                new Scatter("bush_small", 80, 3f, 0f), new Scatter(ULT + "bush_1", 60, 6f, 0f),
+                new Scatter(ULT + "bush_2", 60, 6f, 0f), new Scatter(ULT + "bush_berries_1", 20, 6f, 0f),
+                new Scatter(ULT + "birch_tree_1", 30, 6f, 0.07f), new Scatter("tree_round", 40, 3.1f, TRUNK)};
         private static final Scatter[] STEPPE = {
-                new Scatter("bush_small", 120, 3f, 0f), new Scatter("tree_stunted", 30, 3.1f, 0.15f),
-                new Scatter("pebble", 100, 3f, 0f), new Scatter("rock_cluster_low", 40, 3f, 0.3f)};
+                new Scatter("bush_small", 120, 3f, 0f), new Scatter("tree_stunted", 30, 3.1f, TRUNK),
+                new Scatter(ULT + "common_tree_dead_2", 25, 6f, 0.09f), new Scatter("pebble", 100, 3f, 0f),
+                new Scatter("rock_cluster_low", 40, 3f, 0.42f), new Scatter(ULT + "rock_1", 60, 8f, 0.18f)};
+        /** The sandy steppe round Qumli dasht: cacti, palms, dead trees, and Kenney's tall rocks as mesas. */
+        private static final Scatter[] SANDS = {
+                new Scatter(ULT + "cactus_1", 80, 6f, 0.04f), new Scatter(ULT + "cactus_2", 80, 6f, 0.04f),
+                new Scatter(ULT + "cactus_3", 80, 6f, 0.04f), new Scatter(ULT + "cactus_flowers_2", 40, 6f, 0.05f),
+                new Scatter(KENNEY + "cactus_tall", 60, 6f, 0.18f), new Scatter(KENNEY + "cactus_short", 60, 6f, 0.15f),
+                new Scatter(KENNEY + "tree_palm_bend", 30, 6f, 0.13f),
+                new Scatter(KENNEY + "tree_palm_detailed_short", 30, 6f, 0.19f),
+                new Scatter(ULT + "palm_tree_1", 20, 6f, 0.05f), new Scatter(ULT + "common_tree_dead_1", 30, 6f, 0.07f),
+                new Scatter(KENNEY + "rock_tall_a", 8, 10f, 1.0f), new Scatter(KENNEY + "rock_tall_c", 15, 6f, 0.42f),
+                new Scatter(KENNEY + "rock_tall_g", 15, 6f, 0.44f)};
+        /** The highlands: rock, MegaKit's and Quaternius' pines, and Kenney's standing stones. */
         private static final Scatter[] HIGHLANDS = {
-                new Scatter("rock_cluster", 200, 3f, 0.3f), new Scatter("stone", 200, 3f, 0.2f),
-                new Scatter("pebble", 300, 3f, 0f), new Scatter("pine", 250, 1.67f, 0.15f)};
+                new Scatter("rock_cluster", 200, 3f, 0.42f), new Scatter("stone", 150, 3f, 0.16f),
+                new Scatter(MEGA + "rock_medium_1", 150, 8f, 0.44f), new Scatter(ULT + "rock_4", 150, 8f, 0.3f),
+                new Scatter(KENNEY + "stone_tall_b", 25, 6f, 0.67f), new Scatter("pebble", 200, 3f, 0f),
+                new Scatter("pine", 250, 1.67f, 0.05f), new Scatter(ULT + "pine_tree_2", 200, 6f, 0.14f),
+                new Scatter(MEGA + "pine_5", 100, 6f, 0.09f)};
+        /** The snow: Quaternius' snowy pines and birch, snowy rocks, bushes and stumps. */
         private static final Scatter[] SNOW = {
-                new Scatter("pine_tall", 200, 1.67f, 0.15f), new Scatter("rock_cluster", 150, 3f, 0.3f),
-                new Scatter("stone", 100, 3f, 0.2f)};
+                new Scatter(ULT + "pine_tree_snow_1", 200, 6f, 0.14f), new Scatter(ULT + "pine_tree_snow_2", 200, 6f, 0.14f),
+                new Scatter(ULT + "pine_tree_snow_3", 200, 6f, 0.14f), new Scatter(ULT + "pine_tree_snow_4", 150, 6f, 0.14f),
+                new Scatter(ULT + "birch_tree_snow_1", 60, 6f, 0.07f), new Scatter("pine_tall", 100, 1.67f, 0.05f),
+                new Scatter(ULT + "rock_snow_4", 150, 8f, 0.3f), new Scatter(ULT + "rock_snow_1", 100, 8f, 0.18f),
+                new Scatter(ULT + "bush_snow_1", 100, 6f, 0f), new Scatter(ULT + "tree_stump_snow", 50, 6f, 0.32f),
+                new Scatter("rock_cluster", 80, 3f, 0.42f)};
+        /** The marsh by the lake: willows and dead willows over reeds; its grass is the ground's cover. */
         private static final Scatter[] MARSH = {
-                new Scatter("grass_tall", 600, 3f, 0f), new Scatter("nature/cattails", 250, 1f, 0f),
-                new Scatter("bush_small", 150, 3f, 0f), new Scatter("tree_twisted", 60, 3.1f, 0.15f)};
+                new Scatter(ULT + "willow_1", 150, 6f, 0.08f), new Scatter(ULT + "willow_3", 150, 6f, 0.09f),
+                new Scatter(ULT + "willow_5", 150, 6f, 0.09f), new Scatter(ULT + "willow_dead_1", 100, 6f, 0.07f),
+                new Scatter(ULT + "willow_dead_2", 80, 6f, 0.08f), new Scatter(MEGA + "dead_tree_1", 30, 6f, 0.13f),
+                new Scatter("nature/cattails", 300, 1f, 0f), new Scatter("bush_small", 100, 3f, 0f),
+                new Scatter("tree_twisted", 40, 3.1f, 0.17f)};
 
         /**
          * What stands about, cell by cell in a fixed order: never on a road or a step from one, on a site, by a
@@ -1997,7 +2050,8 @@ public final class WorldMapWriter {
                         float down = y + (15 + rng.nextInt(71)) / 100f;
                         float size = scatter.scale() * (85 + rng.nextInt(31)) / 100f;
                         pieces.add(new Piece(modelOf(scatter), across, down, rng.nextInt(360),
-                                Math.round(size * 100) / 100f, 0xFFFFFF, scatter.footprint()));
+                                Math.round(size * 100) / 100f, 0xFFFFFF,
+                                Math.round(scatter.footprint() * size / scatter.scale() * 100) / 100f));
                         break; // one piece a cell
                     }
                 }
@@ -2011,14 +2065,15 @@ public final class WorldMapWriter {
         }
 
         private static String modelOf(Scatter scatter) {
-            return scatter.model().contains("/") ? INUCIIAN + scatter.model() + ".glb"
+            return scatter.model().startsWith("models/") ? scatter.model() + ".glb"
+                    : scatter.model().contains("/") ? INUCIIAN + scatter.model() + ".glb"
                     : MODELS + scatter.model() + ".gltf";
         }
 
         /**
          * How thick the dark wood stands at a cell: thinned a third along a road's shoulders, so the camera above
          * sees the hero walking it, and half again as thick in a ring round the kampir's clearing, so her yard is
-         * walled in trees. Outside the forest, as its scatter says.
+         * walled in trees. Elsewhere a third again as thick as it was, broken by glades. Outside the forest, as its scatter says.
          */
         private double thickness(int x, int y) {
             if (region[y * SIZE + x] != Biome.FOREST) {
@@ -2029,7 +2084,13 @@ public final class WorldMapWriter {
             if (fromHut > hut.radius() - 1 && fromHut < hut.radius() + 7 && !nearRoad(x, y, 4)) {
                 return 1.6;
             }
-            return nearRoad(x, y, 5) ? 0.65 : 1;
+            // Glades: open ground in the wood, where its cover grows and the light comes down.
+            double u = (x + 0.5) / SIZE;
+            double v = (y + 0.5) / SIZE;
+            if (GroundPictures.fbm(u, v, 20, 2, seed + 31) < 0.3) {
+                return 0.12;
+            }
+            return nearRoad(x, y, 5) ? 0.65 : 1.3;
         }
 
         private Scatter[] scattersAt(int x, int y) {
@@ -2041,7 +2102,7 @@ public final class WorldMapWriter {
             return switch (region[y * SIZE + x]) {
                 case FOREST -> FOREST_TREES;
                 case MEADOW -> GroundPictures.fbm(u, v, 14, 3, seed + 21) > 0.66 ? GROVE : MEADOW;
-                case STEPPE -> STEPPE;
+                case STEPPE -> surfaceAt(x, y) == 'a' ? SANDS : STEPPE;
                 case HIGHLANDS -> HIGHLANDS;
                 case SNOW -> SNOW;
             };

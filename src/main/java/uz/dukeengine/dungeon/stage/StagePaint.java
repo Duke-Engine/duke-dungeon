@@ -6,6 +6,7 @@ import uz.dukeengine.core.data.Paint;
 import uz.dukeengine.core.map.Dressed;
 import uz.dukeengine.core.map.Painted;
 import uz.dukeengine.core.map.Sectored;
+import uz.dukeengine.core.map.Subdivided;
 import uz.dukeengine.core.map.Zoned;
 import uz.dukeengine.dungeon.gen.GeneratedDungeon;
 import uz.dukeengine.dungeon.map.StaticMap;
@@ -22,10 +23,13 @@ import uz.dukeengine.dungeon.map.StaticMap;
  * @param coverage how many cells one copy of each picture covers
  * @param scenery  what stands about on the ground for its look — trees, rocks, grass — in the order written
  * @param water    its lakes and rivers, drawn by the client; the cells under them are the map's own {@code #} to block
+ * @param walked   how many cells a side it is walked at for each one it is drawn at -- the world's
+ *     {@code NavigationCellsPerCell} once it is played -- so a tree stands in the way as far as its trunk, and not as
+ *     the whole of the ten-unit cell it stands in
  */
 public record StagePaint(String name, @Paint List<String> rows, Map<String, String> palette,
-        Map<String, Float> coverage, List<GeneratedDungeon.Piece> scenery, List<StaticMap.Water> water)
-        implements Painted, Dressed, Zoned, Sectored {
+        Map<String, Float> coverage, List<GeneratedDungeon.Piece> scenery, List<StaticMap.Water> water, int walked)
+        implements Painted, Dressed, Zoned, Sectored, Subdivided {
 
     /**
      * How many cells a side a map is before its routes are looked for by sectors, and how wide a sector then is: a
@@ -38,6 +42,33 @@ public record StagePaint(String name, @Paint List<String> rows, Map<String, Stri
     public StagePaint {
         scenery = scenery == null ? List.of() : List.copyOf(scenery);
         water = water == null ? List.of() : List.copyOf(water);
+        walked = Math.max(1, walked);
+    }
+
+    /** Walked a cell to a cell, as it is drawn. */
+    public StagePaint(String name, List<String> rows, Map<String, String> palette, Map<String, Float> coverage,
+            List<GeneratedDungeon.Piece> scenery, List<StaticMap.Water> water) {
+        this(name, rows, palette, coverage, scenery, water, 1);
+    }
+
+    /** The same stage walked at {@code cellsPerCell} cells a side for each of its own. */
+    public StagePaint walkedAt(int cellsPerCell) {
+        return new StagePaint(name, rows, palette, coverage, scenery, water, cellsPerCell);
+    }
+
+    /** The same stage with {@code more} standing after its own scenery, which keeps every piece of its own at its number. */
+    public StagePaint withMore(List<GeneratedDungeon.Piece> more) {
+        if (more.isEmpty()) {
+            return this;
+        }
+        var all = new java.util.ArrayList<>(scenery);
+        all.addAll(more);
+        return new StagePaint(name, rows, palette, coverage, all, water, walked);
+    }
+
+    @Override
+    public int navigationCellsPerCell() {
+        return walked;
     }
 
     /** Painted ground with nothing standing on it. */

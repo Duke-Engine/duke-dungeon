@@ -1575,6 +1575,17 @@ public final class DungeonSettings {
             require(variation.getValue() >= 0f && variation.getValue() <= 1f,
                     "PaintedGround: the variation of " + variation.getKey() + " is 0 to 1");
         }
+        for (var share : ground.coverPerCell().entrySet()) {
+            require(share.getValue() >= 0f && share.getValue() <= 4f,
+                    "PaintedGround: CoverPerCell of " + share.getKey() + " is 0 to 4 pieces a cell");
+        }
+        for (var cover : ground.cover().entrySet()) {
+            try {
+                uz.dukeengine.dungeon.stage.GroundCover.kinds(cover.getValue());
+            } catch (IllegalArgumentException e) {
+                require(false, "PaintedGround: the Cover of " + cover.getKey() + ": " + e.getMessage());
+            }
+        }
     }
 
     /**

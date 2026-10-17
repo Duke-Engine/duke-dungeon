@@ -588,9 +588,20 @@ public final class DungeonRun {
      * heroes come in to, so the cells round them and the status line name one look — but for the keep's cells, which
      * wear the keep's, whatever biome they stand in. A painted stage is its paint, and wears no look at all.
      */
+    /** The painted stage as the client is handed it, grown over and walked finer; and the paint it was made from. */
+    private uz.dukeengine.dungeon.stage.StagePaint covered;
+    private uz.dukeengine.dungeon.stage.StagePaint coveredFrom;
+
     private uz.dukeengine.core.map.MapTemplate looksOf(GeneratedDungeon floor) {
         if (floors.paint() != null) {
-            return floors.paint();
+            // Walked finer than drawn, as a floor that mixes biomes is: a tree is in the way as far as its trunk. And
+            // its ground grown over, for the look: the same cover from the same seed, laid after its own scenery.
+            if (covered == null || coveredFrom != floors.paint()) {
+                coveredFrom = floors.paint();
+                covered = coveredFrom.withMore(uz.dukeengine.dungeon.stage.GroundCover.lay(coveredFrom, floor, zones(),
+                        settings.paintedGround(), floors.seed())).walkedAt(settings.world().navigationCellsPerCell());
+            }
+            return covered;
         }
         if (floor.biomes() == null) {
             return null;
