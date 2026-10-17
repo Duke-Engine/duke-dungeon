@@ -1471,6 +1471,9 @@ public final class Main {
                 for (var word : uz.dukeengine.dungeon.food.Food.WORDS) {
                     unit.alsoAnimation(settings.food().clipOf(word));
                 }
+                // The traversal links the hero may cross (jump, vault, climb, drop): the client must be able to
+                // play the link's clip while the hero is carried across it.
+                unit.alsoAnimation("Jump_Full_Short");
                 for (var library : hero.animations()) {
                     unit.animationsFrom(library);
                 }

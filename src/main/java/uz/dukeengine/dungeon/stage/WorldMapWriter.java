@@ -13,7 +13,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Set;
+import uz.dukeengine.core.math.Coord3D;
 import uz.dukeengine.core.pathfind.HeightMap;
+import uz.dukeengine.core.pathfind.TraversalLink;
+import uz.dukeengine.dungeon.content.Content;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.dungeon.gen.DeterministicRng;
 import uz.dukeengine.dungeon.gen.GeneratedDungeon;
@@ -313,6 +316,40 @@ public final class WorldMapWriter {
     /** The cells the roads run over, row by row. */
     static boolean[] roads(long seed) {
         return new World(seed).road;
+    }
+
+    /** The ways across what no walk crosses, read from {@code data/world/traversal.duke}, in cells. */
+    static List<TraversalLink> traversalLinks() {
+        var text = Content.read("data/world/traversal.duke");
+        var links = new ArrayList<TraversalLink>();
+        var inBlock = false;
+        for (var line : text.split("\n", -1)) {
+            var words = line.strip().split("\\s+");
+            if (words.length == 0 || words[0].isEmpty() || words[0].startsWith(";")) {
+                continue;
+            }
+            if (words[0].equalsIgnoreCase("TraversalLinks")) {
+                inBlock = true;
+                continue;
+            }
+            if (inBlock && words[0].equalsIgnoreCase("End")) {
+                inBlock = false;
+                continue;
+            }
+            if (!inBlock) {
+                continue;
+            }
+            if (words.length < 10) {
+                throw new IllegalStateException("a traversal link needs kind ax ay bx by frames arcHeight clip bothWays low: "
+                        + line);
+            }
+            links.add(new TraversalLink(
+                    new Coord3D(Float.parseFloat(words[1]), Float.parseFloat(words[2]), 0f),
+                    new Coord3D(Float.parseFloat(words[3]), Float.parseFloat(words[4]), 0f),
+                    words[0], Integer.parseInt(words[5]), Float.parseFloat(words[6]),
+                    words[7], Boolean.parseBoolean(words[8]), Boolean.parseBoolean(words[9])));
+        }
+        return List.copyOf(links);
     }
 
     /** One world being drawn: every field of it, in the order it is drawn. */
@@ -1201,7 +1238,7 @@ public final class WorldMapWriter {
             return new Stage(NAME, "Ochiq dunyo",
                     "Butun qirollik bir xaritada: shahar, qorong'i o'rmon, ozod qilinadigan yerlar va malika qasri.",
                     1, 1, seed, floor, new StagePaint(NAME, paint, PALETTE, COVERAGE, scenery(yard, castles, dressed),
-                    waters),
+                            waters, 1, traversalLinks()),
                     new MapStory(npcs, zones, List.of(), List.of()));
         }
 

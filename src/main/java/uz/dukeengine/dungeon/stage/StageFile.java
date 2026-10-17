@@ -133,6 +133,25 @@ public final class StageFile {
                 out.append("  ; then its outline in cells; a river starts at its first two corners.\n");
                 list(out, "Water", paint.water().stream().map(w -> "\"" + w.written() + "\"").toList());
             }
+            var links = paint.traversalLinks();
+            if (!links.isEmpty()) {
+                out.append("  ; Ways across what no walk crosses: jump, vault, climb, drop, in cells.\n");
+                out.append("  TraversalLinks = [\n");
+                for (int i = 0; i < links.size(); i++) {
+                    var link = links.get(i);
+                    out.append("    TraversalLink\n");
+                    out.append("      A = [" + number(link.a().x()) + ", " + number(link.a().y()) + ", " + number(link.a().z()) + "]\n");
+                    out.append("      B = [" + number(link.b().x()) + ", " + number(link.b().y()) + ", " + number(link.b().z()) + "]\n");
+                    out.append("      Kind = " + link.kind() + "\n");
+                    out.append("      Frames = " + link.frames() + "\n");
+                    out.append("      ArcHeight = " + number(link.arcHeight()) + "\n");
+                    out.append("      Clip = " + link.clip() + "\n");
+                    out.append("      BothWays = " + (link.bothWays() ? "Yes" : "No") + "\n");
+                    out.append("      Low = " + (link.low() ? "Yes" : "No") + "\n");
+                    out.append("    End" + (i < links.size() - 1 ? "," : "") + "\n");
+                }
+                out.append("  ]\n");
+            }
         }
         return out.append("End\n").toString();
     }
@@ -165,6 +184,11 @@ public final class StageFile {
 
     private static String placed(String kind, Placement at) {
         return kind + " " + at.cellX() + " " + at.cellY();
+    }
+
+    /** A float that is a whole number is written without a decimal point. */
+    private static String number(float value) {
+        return value == Math.rint(value) ? String.valueOf((int) value) : String.valueOf(value);
     }
 
     // ---- reading ----
@@ -281,7 +305,8 @@ public final class StageFile {
                 }
             }
         }
-        return new StagePaint(map.name(), map.paint(), map.palette(), map.coverage(), scenery, map.water());
+        return new StagePaint(map.name(), map.paint(), map.palette(), map.coverage(), scenery, map.water(), 1,
+                map.traversalLinks());
     }
 
     /** Scenery as a map file writes it: the pieces in their order, a line each time the row of cells changes. */

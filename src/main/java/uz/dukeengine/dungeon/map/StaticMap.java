@@ -6,9 +6,11 @@ import uz.dukeengine.core.data.Grid;
 import uz.dukeengine.core.data.Paint;
 import uz.dukeengine.core.data.Relief;
 import uz.dukeengine.core.map.Described;
+import uz.dukeengine.core.map.Linked;
 import uz.dukeengine.core.map.MapTemplate;
 import uz.dukeengine.core.map.Painted;
 import uz.dukeengine.core.map.Peopled;
+import uz.dukeengine.core.pathfind.TraversalLink;
 import uz.dukeengine.core.thing.Layered;
 import uz.dukeengine.dungeon.content.Monster;
 import uz.dukeengine.dungeon.content.Prop;
@@ -57,13 +59,15 @@ public record StaticMap(String name, String displayName, String description, int
         @uz.dukeengine.core.data.Link(Prop.class) List<Placed> props,
         @Paint List<String> paint, Map<String, String> palette, Map<String, Float> coverage,
         @uz.dukeengine.core.data.Link(Monster.class) List<Placed> npcs, List<Zone> zones, List<Placed> items,
-        List<String> quests, List<String> scenery, List<Water> water, boolean floorMission)
-        implements MapTemplate, Described, Peopled, Layered, Painted {
+        List<String> quests, List<String> scenery, List<Water> water, boolean floorMission,
+        List<TraversalLink> traversalLinks)
+        implements MapTemplate, Described, Peopled, Layered, Painted, Linked {
 
     /** What a block leaves out. */
     public static final StaticMap DEFAULTS = new StaticMap("", "", "", 1, 1, 0L, 0f, null, List.of(), List.of(),
             List.of(), List.of(), null, List.of(), List.of(), List.of(), Map.of(), Map.of(), List.of(), List.of(),
-            List.of(), List.of(), List.of(), List.of(), false);
+            List.of(), List.of(), List.of(), List.of(), false,
+            List.of());
 
     public StaticMap {
         cells = cells == null ? List.of() : List.copyOf(cells);
@@ -83,6 +87,12 @@ public record StaticMap(String name, String displayName, String description, int
         quests = quests == null ? List.of() : List.copyOf(quests);
         scenery = scenery == null ? List.of() : List.copyOf(scenery);
         water = water == null ? List.of() : List.copyOf(water);
+        traversalLinks = traversalLinks == null ? List.of() : List.copyOf(traversalLinks);
+    }
+
+    @Override
+    public List<TraversalLink> traversalLinks() {
+        return traversalLinks;
     }
 
     /**
