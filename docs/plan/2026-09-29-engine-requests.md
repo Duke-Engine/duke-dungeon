@@ -107,6 +107,7 @@ and runs them himself in a cloud session; each section below stands on its own f
 | E94 | interact with the nearest: the context-order target in a front cone within reach, its word for a prompt drawn over it, sent on a key | landed, db83232a on `e90-94-action`: adopted on the game's branch `action2` (the Jangovar scheme); **game no longer uses (2026-10-16); engine to move into a separate controls module** |
 | E95 | a PUSH that throws a crowd: the farthest moved first, and a body in the way pushed on with it rather than stopping the one behind | landed, engine master 7df782cf: victims thrown farthest first, fellow victims pass through, none ends inside another; the landing's test asks every one in reach thrown |
 | E96 | interact with the map's own scenery: E94's nearest target taken from the ground rule (`groundOrder`) too, a scenery piece (a felled tree, E66) its prompt and its click | landed, engine master 7df782cf: interact scans the map's scenery through the ground rule, so Action's E on a felled-able tree says Kesish with no game change; **game no longer uses (2026-10-16); engine to move into a separate controls module** |
+| E97 | a fine walking grid at the cost of a coarse one: the open world is walked at NavigationCellsPerCell 2 so a trunk is in the way as far as itself, and a route search there costs 4-7 times what it did (circles tested per fine cell, the nearest-reachable fallback over a million cells) | asked 2026-10-17 (living world) |
 
 Versions: 0.7.0 is never released; the split ships as 0.8.0, the next and only Maven Central release. Until then the
 game builds against the local engine. E12–E15 reached it together at 668045f0 (their pull requests merged as
@@ -1962,3 +1963,31 @@ The cutscene's camera shake needed nothing: `SkillEffects.knock` applies an Effe
 scaled only by the player's own setting (ListShow's MaxShakeIntensity caps EffectList shakes, not these). What held
 the intro's impact to 0.8 s and 2.0 was the game's own SkillLookTest; it now lets a look only a story's STREAK lands
 with (a cutscene's) go to 1.5 s and 5.0, and the impact knocks 1.0 s at 4.0.
+
+## E97 — A fine walking grid at the cost of a coarse one (2026-10-17, medium; living world)
+
+The open world (a `StagePaint`, 512 cells a side) was walked a cell to a cell. A trunk's circle closes no cell, but a
+route's cell is only stood on where its CENTRE clears every circle by the mover's radius (`Pathfinder.fits`), so at
+ten-unit cells a 1.5-unit trunk with a rogue's 4 closed the whole cell it stood in, often its neighbours too. Measured
+(`TrunkGapTest`, a fence of trunks with one gap, the hero sent from six cells off it so the route has to find it): at
+k = 1 a gap of 15 units (1.5 times his width) was found 6 times in 10 and only 20 (twice his width) every time; at
+k = 2, 14 every time; at k = 4, 13. The game now walks the world at `World.NavigationCellsPerCell` = 2 (StagePaint is
+`Subdivided`), as its descent floors already were.
+
+What it cost, headless on the shipped world (warm round): the grid 1024 by 1024, heap +54 MB (45 to 99), an idle frame
+unchanged (0.18 to 0.21 ms), a route to a near place in the city 1-2 ms before and 3-17 ms now, and an order to a
+place the shut gate keeps him from (findPathOrNearest's nearest-reachable fallback) 10-22 ms before and 36-94 ms now,
+one of them 290 ms the first time.
+
+Asked, either of:
+1. **Sub-cell fit on the coarse grid.** `fits` asks whether a body fits ANYWHERE in the cell (the centre, else the
+   point of the cell farthest from the circles near it, kept as the cell's standing point and used as its waypoint),
+   so k = 1 finds the gaps k = 4 finds and costs what k = 1 did.
+2. **Or a cheaper fine grid.** The circles are still (scenery, `setObstacleCircle`): close each fine cell once per
+   clearance a game uses (a bit set per distinct footprint radius, rebuilt where the circles change), so a fine
+   cell's test is a bit, not a scan of the circles round it; and the nearest-reachable fallback, when `Zones` says
+   the goal is in another zone, searches toward the nearest cell of the mover's zone by the zones' own boundary
+   rather than the whole grid.
+
+Done when the shipped world at k = 2 (or k = 1 with 1.) routes a near order in under 3 ms and an unreachable one in
+under 25 ms, warm, and `TrunkGapTest` passes.

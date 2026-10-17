@@ -60,6 +60,8 @@ public final class WorldMapWriter {
     static final String NAME = "world";
     static final int SIZE = 512;
     static final long SEED = 20261008L;
+    /** A KayKit broadleaf's trunk at its scenery scale of 3.1, as a footprint in cells: 0.45 of its own units, measured. */
+    static final float TRUNK = 0.14f;
 
     /** The regions, in the order their hearts are listed. */
     enum Biome { MEADOW, STEPPE, FOREST, HIGHLANDS, SNOW }
@@ -1941,32 +1943,32 @@ public final class WorldMapWriter {
          * blue-grey grass between them, toadstools. A model with a folder in its name is Inuciian's, at scale 1.
          */
         private static final Scatter[] FOREST_TREES = {
-                new Scatter("nature/pine_dark", 700, 1f, 0.15f), new Scatter("pine_tall", 600, 1.67f, 0.15f),
-                new Scatter("pine", 500, 1.67f, 0.15f), new Scatter("nature/dead_tree", 250, 1f, 0.15f),
-                new Scatter("nature/dead_tree_bent", 200, 1f, 0.15f), new Scatter("tree_twisted", 250, 3.1f, 0.15f),
-                new Scatter("nature/dead_tree_tall", 150, 1f, 0.15f), new Scatter("tree", 200, 3.1f, 0.15f),
+                new Scatter("nature/pine_dark", 700, 1f, 0.09f), new Scatter("pine_tall", 600, 1.67f, 0.05f),
+                new Scatter("pine", 500, 1.67f, 0.05f), new Scatter("nature/dead_tree", 250, 1f, 0.25f),
+                new Scatter("nature/dead_tree_bent", 200, 1f, 0.22f), new Scatter("tree_twisted", 250, 3.1f, 0.17f),
+                new Scatter("nature/dead_tree_tall", 150, 1f, 0.1f), new Scatter("tree", 200, 3.1f, TRUNK),
                 new Scatter("nature/bush_large_dark", 250, 1f, 0f), new Scatter("nature/bush_bare", 200, 1f, 0f),
                 new Scatter("nature/grass_tall_dark", 300, 1f, 0f), new Scatter("nature/grass_short_dark", 250, 1f, 0f),
                 new Scatter("nature/mushroom_red", 60, 1f, 0f), new Scatter("nature/mushroom_brown", 60, 1f, 0f),
-                new Scatter("nature/stump", 50, 1f, 0.1f), new Scatter("nature/rock", 50, 1f, 0.2f)};
+                new Scatter("nature/stump", 50, 1f, 0.1f), new Scatter("nature/rock", 50, 1f, 0.18f)};
         private static final Scatter[] GROVE = {
-                new Scatter("tree", 1500, 3.1f, 0.15f), new Scatter("tree_round", 1500, 3.1f, 0.15f),
+                new Scatter("tree", 1500, 3.1f, TRUNK), new Scatter("tree_round", 1500, 3.1f, TRUNK),
                 new Scatter("bush_small", 400, 3f, 0f)};
         private static final Scatter[] MEADOW = {
                 new Scatter("grass_short", 500, 3f, 0f), new Scatter("grass_tall", 250, 3f, 0f),
-                new Scatter("bush_small", 80, 3f, 0f), new Scatter("tree_round", 40, 3.1f, 0.15f)};
+                new Scatter("bush_small", 80, 3f, 0f), new Scatter("tree_round", 40, 3.1f, TRUNK)};
         private static final Scatter[] STEPPE = {
-                new Scatter("bush_small", 120, 3f, 0f), new Scatter("tree_stunted", 30, 3.1f, 0.15f),
-                new Scatter("pebble", 100, 3f, 0f), new Scatter("rock_cluster_low", 40, 3f, 0.3f)};
+                new Scatter("bush_small", 120, 3f, 0f), new Scatter("tree_stunted", 30, 3.1f, TRUNK),
+                new Scatter("pebble", 100, 3f, 0f), new Scatter("rock_cluster_low", 40, 3f, 0.42f)};
         private static final Scatter[] HIGHLANDS = {
-                new Scatter("rock_cluster", 200, 3f, 0.3f), new Scatter("stone", 200, 3f, 0.2f),
-                new Scatter("pebble", 300, 3f, 0f), new Scatter("pine", 250, 1.67f, 0.15f)};
+                new Scatter("rock_cluster", 200, 3f, 0.42f), new Scatter("stone", 200, 3f, 0.16f),
+                new Scatter("pebble", 300, 3f, 0f), new Scatter("pine", 250, 1.67f, 0.05f)};
         private static final Scatter[] SNOW = {
-                new Scatter("pine_tall", 200, 1.67f, 0.15f), new Scatter("rock_cluster", 150, 3f, 0.3f),
-                new Scatter("stone", 100, 3f, 0.2f)};
+                new Scatter("pine_tall", 200, 1.67f, 0.05f), new Scatter("rock_cluster", 150, 3f, 0.42f),
+                new Scatter("stone", 100, 3f, 0.16f)};
         private static final Scatter[] MARSH = {
                 new Scatter("grass_tall", 600, 3f, 0f), new Scatter("nature/cattails", 250, 1f, 0f),
-                new Scatter("bush_small", 150, 3f, 0f), new Scatter("tree_twisted", 60, 3.1f, 0.15f)};
+                new Scatter("bush_small", 150, 3f, 0f), new Scatter("tree_twisted", 60, 3.1f, 0.17f)};
 
         /**
          * What stands about, cell by cell in a fixed order: never on a road or a step from one, on a site, by a
@@ -1997,7 +1999,8 @@ public final class WorldMapWriter {
                         float down = y + (15 + rng.nextInt(71)) / 100f;
                         float size = scatter.scale() * (85 + rng.nextInt(31)) / 100f;
                         pieces.add(new Piece(modelOf(scatter), across, down, rng.nextInt(360),
-                                Math.round(size * 100) / 100f, 0xFFFFFF, scatter.footprint()));
+                                Math.round(size * 100) / 100f, 0xFFFFFF,
+                                Math.round(scatter.footprint() * size / scatter.scale() * 100) / 100f));
                         break; // one piece a cell
                     }
                 }

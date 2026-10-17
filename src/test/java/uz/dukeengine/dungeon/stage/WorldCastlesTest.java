@@ -47,10 +47,10 @@ class WorldCastlesTest {
         float cell = PathGrid.DEFAULT_CELL_SIZE;
         // Walls are shut: the cells under the town wall's first length, east of its north-west corner.
         var city = WorldMapWriter.SITES.getFirst();
-        assertTrue(grid.isBlocked(city.x() - 9, city.y() - 12), "the town wall stands in nobody's way");
+        assertTrue(MapCells.shut(grid, city.x() - 9, city.y() - 12), "the town wall stands in nobody's way");
         for (var site : WorldMapWriter.SITES.subList(1, WorldMapWriter.SITES.size())) { // he starts in the city
             var court = new Coord3D((site.x() + 0.5f) * cell, (site.y() + 0.5f) * cell, 0f);
-            assertFalse(grid.isBlocked(site.x(), site.y()), site.zone() + "'s court is walled up");
+            assertFalse(MapCells.shut(grid, site.x(), site.y()), site.zone() + "'s court is walled up");
             var path = logic.findPath(hero.getPosition(), court);
             assertFalse(path.isEmpty(), "no way into " + site.zone());
             var end = path.getWaypoints().getLast();

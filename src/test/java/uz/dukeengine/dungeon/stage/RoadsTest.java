@@ -24,6 +24,7 @@ class RoadsTest {
         var grid = game.getLogic().getPathGrid();
         assertTrue(grid.hasStepCosts(), "the world's roads are not costed");
         var rows = stage.paint().rows();
+        int k = grid.cellsPerMapCell(); // walked finer than drawn: a map cell is k by k of the grid's
         boolean road = false;
         boolean open = false;
         for (int y = 0; y < rows.size() && !(road && open); y++) {
@@ -31,10 +32,10 @@ class RoadsTest {
                 char c = rows.get(y).charAt(x);
                 if (c == 'd' && !road) {
                     road = true;
-                    assertEquals(Roads.ROAD_PERCENT, grid.stepPercent(x, y));
+                    assertEquals(Roads.ROAD_PERCENT, grid.stepPercent(x * k, y * k));
                 } else if (c != 'd' && !open) {
                     open = true;
-                    assertEquals(Roads.OPEN_PERCENT, grid.stepPercent(x, y));
+                    assertEquals(Roads.OPEN_PERCENT, grid.stepPercent(x * k + k - 1, y * k + k - 1));
                 }
             }
         }

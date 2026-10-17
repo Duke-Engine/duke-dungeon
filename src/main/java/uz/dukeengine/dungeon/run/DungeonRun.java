@@ -590,7 +590,8 @@ public final class DungeonRun {
      */
     private uz.dukeengine.core.map.MapTemplate looksOf(GeneratedDungeon floor) {
         if (floors.paint() != null) {
-            return floors.paint();
+            // Walked finer than drawn, as a floor that mixes biomes is: a tree is in the way as far as its trunk.
+            return floors.paint().walkedAt(settings.world().navigationCellsPerCell());
         }
         if (floor.biomes() == null) {
             return null;
