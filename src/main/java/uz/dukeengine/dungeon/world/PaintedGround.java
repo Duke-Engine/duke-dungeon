@@ -1,5 +1,6 @@
 package uz.dukeengine.dungeon.world;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -33,18 +34,27 @@ import java.util.Map;
  *     colour
  * @param hazeTo            and how many it has gone by, so the edge of the ground built round the camera is never seen;
  *     0 for no haze. Every floor of the descent, and every small stage, is drawn whole to its walls
+ * @param cover             what grows on each surface, for the look alone, by the palette value that names it: models
+ *     held apart by commas, each {@code path weight scale}, a piece of it the share its weight is of the surface's
+ *     — see {@code stage.GroundCover}
+ * @param coverPerCell      how many pieces of cover stand in a cell of each surface, on the average, 0 to 4
+ * @param coverKeepsOff     the map's zones nothing grows in: its towns, yards, courts and the gate's corridor
  */
 public record PaintedGround(boolean blend, String noise, float raggedness, float sharpness, float noiseCoverage,
         String variation, float variationCoverage, Map<String, Integer> tints, Map<String, Float> variations,
         String cliffs, float cliffSlope, float cliffCoverage, boolean quarters, int streamCells, String water,
-        int waterTint, float riverFlow, int minimapCells, float hazeFrom, float hazeTo) {
+        int waterTint, float riverFlow, int minimapCells, float hazeFrom, float hazeTo, Map<String, String> cover,
+        Map<String, Float> coverPerCell, List<String> coverKeepsOff) {
 
     /** What a block leaves out: no blend, no cliffs, the ground drawn a surface a cell. */
     public static final PaintedGround DEFAULTS = new PaintedGround(false, null, 0f, 1f, 8f, null, 64f, Map.of(),
-            Map.of(), null, 40f, 4f, false, 0, null, 0xB4AFAFAF, 0.2f, 0, 0f, 0f);
+            Map.of(), null, 40f, 4f, false, 0, null, 0xB4AFAFAF, 0.2f, 0, 0f, 0f, Map.of(), Map.of(), List.of());
 
     public PaintedGround {
         tints = tints == null ? Map.of() : Map.copyOf(tints);
         variations = variations == null ? Map.of() : Map.copyOf(variations);
+        cover = cover == null ? Map.of() : Map.copyOf(cover);
+        coverPerCell = coverPerCell == null ? Map.of() : Map.copyOf(coverPerCell);
+        coverKeepsOff = coverKeepsOff == null ? List.of() : List.copyOf(coverKeepsOff);
     }
 }

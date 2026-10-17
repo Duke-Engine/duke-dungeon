@@ -225,6 +225,36 @@ PaintedGround
   ; never seen. The descent's floors are drawn whole to their walls.
   HazeFrom = 34
   HazeTo = 46
+  ; What grows on the open world's ground, for the look alone: many small
+  ; pieces of scenery with no footprint -- walked through, never targeted, never
+  ; read by the simulation -- grown from the map's seed after its own scenery
+  ; (stage.GroundCover). By the palette's picture: "model weight scale" held
+  ; apart by commas, each a share of that surface's by its weight; CoverPerCell
+  ; how many stand in a cell of it on the average. The models are in metres and
+  ; the hero stands 12 units tall, so a 0.5 m tuft at 11 is knee-high to him.
+  ; Nothing grows on a road, in water or stone, on a cliff, under a wall or a rock,
+  ; or in CoverKeepsOff's zones. Each piece is drawn into its chunk's merged
+  ; geometry, so what it costs is triangles, not draw calls: a meadow cell is
+  ; about 300 more of them (engine ask E98 for a ground-cover layer of its own).
+  Cover = [
+    ground/world/grass.png = "models/nature/kenney/grass.glb 5 11, models/nature/kenney/grass_large.glb 4 11, models/nature/ultimate/grass.glb 3 11, models/nature/megakit/grass_common_short.glb 3 10, models/nature/megakit/grass_common_tall.glb 1 9, models/nature/kenney/flower_yellow_a.glb 1 9, models/nature/kenney/flower_red_a.glb 1 9, models/nature/kenney/flower_purple_a.glb 1 9, models/nature/megakit/clover_1.glb 1 9",
+    ground/world/forest.png = "models/nature/megakit/fern_1.glb 4 9, models/nature/kenney/grass_leafs.glb 3 11, models/nature/megakit/plant_1.glb 2 9, models/nature/ultimate/plant_3.glb 1 9, models/nature/kenney/mushroom_tan_group.glb 1 8, models/nature/megakit/clover_1.glb 1 9",
+    ground/world/steppe.png = "models/nature/ultimate/grass_short.glb 4 12, models/nature/megakit/grass_wispy_short.glb 3 10, models/nature/ultimate/wheat.glb 2 10, models/nature/megakit/grass_wispy_tall.glb 1 9",
+    ground/world/sand.png = "models/nature/ultimate/plant_2.glb 3 8, models/nature/megakit/grass_wispy_short.glb 2 9, models/nature/kenney/rock_small_a.glb 2 6",
+    ground/world/snow.png = "models/nature/ultimate/plant_2.glb 2 7, models/nature/kenney/rock_small_d.glb 1 6",
+    ground/world/rock.png = "models/nature/kenney/rock_small_a.glb 2 6, models/nature/kenney/rock_small_d.glb 2 6, models/nature/megakit/grass_wispy_short.glb 2 9",
+    ground/world/mud.png = "models/inuciian/nature/cattails.glb 3 0.9, models/nature/kenney/grass_large.glb 3 11, models/nature/megakit/grass_common_tall.glb 2 10, models/nature/kenney/grass_leafs.glb 1 11",
+  ]
+  CoverPerCell = [
+    ground/world/grass.png = 1.6,
+    ground/world/forest.png = 1.0,
+    ground/world/steppe.png = 0.9,
+    ground/world/sand.png = 0.2,
+    ground/world/snow.png = 0.15,
+    ground/world/rock.png = 0.25,
+    ground/world/mud.png = 0.9,
+  ]
+  CoverKeepsOff = [Poytaxt, Yashil_dala, Qumli_dasht, Toshli_adir, Kampir_kulbasi, Malika_qasri, Olmazor, Bog'iston, Qoratepa, Tolzor, Yangiobod, Minora_1, Minora_2, Minora_3, Minora_4, Minora_5, Eski_ibodatxona, Tosh_doira, Yo'lak, Eski_qabrlar, Saroy, Taxt, Bozor, Yerto'la, Qonish]
 End
 
 ; ---------------------------------------------------------------------------

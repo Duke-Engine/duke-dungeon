@@ -56,6 +56,16 @@ public record StagePaint(String name, @Paint List<String> rows, Map<String, Stri
         return new StagePaint(name, rows, palette, coverage, scenery, water, cellsPerCell);
     }
 
+    /** The same stage with {@code more} standing after its own scenery, which keeps every piece of its own at its number. */
+    public StagePaint withMore(List<GeneratedDungeon.Piece> more) {
+        if (more.isEmpty()) {
+            return this;
+        }
+        var all = new java.util.ArrayList<>(scenery);
+        all.addAll(more);
+        return new StagePaint(name, rows, palette, coverage, all, water, walked);
+    }
+
     @Override
     public int navigationCellsPerCell() {
         return walked;
