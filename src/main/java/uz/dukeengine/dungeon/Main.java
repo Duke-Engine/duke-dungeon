@@ -1473,7 +1473,7 @@ public final class Main {
                 }
                 // The traversal links the hero may cross (jump, vault, climb, drop): the client must be able to
                 // play the link's clip while the hero is carried across it.
-                unit.alsoAnimation("Jump_Full_Short");
+                unit.alsoAnimation("Jump");
                 for (var library : hero.animations()) {
                     unit.animationsFrom(library);
                 }

@@ -112,6 +112,9 @@ BORROWED = [
     ("Chop", "ual", None, "Chop_Overhead", False, 1.0, 0.0),
     ("Gather", "ual", None, "Interact", False, 1.0, 0.0),
     ("Cook", "ual", None, "Fixing_Kneeling", False, 1.0, 0.0),
+    # Carried across a traversal link (E81, data/world/traversal.duke): Quaternius' airborne loop, which the
+    # engine loops for the link's frames while it carries him along the arc.
+    ("Jump", "ual", None, "Jump_Loop", False, 1.0, 0.0),
 ]
 SWORD_BONE = "sword"
 HAND = "L.forearm"  # the rig has no hand bone: the fingers start at the forearm's end

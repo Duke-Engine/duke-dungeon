@@ -23,6 +23,9 @@ tasks.withType<Test>().configureEach {
     // with pictures of their own -- Lange and the Huntress -- took the suite past it halfway through; the bestiary's
     // licensed monsters (golem and spider skins, troll, minotaur) took it past 1 GB.
     jvmArgs("-XX:MaxDirectMemorySize=2g")
+    // The living world (a 1024-cell walking grid, its nature kits) took the default 512 MB heap past its end in the
+    // last tests of a whole run, which the test process dies of without a word.
+    maxHeapSize = "2g"
 }
 
 // The credits the front menu rolls are CREDITS.md's own rows, shipped beside the game's data.

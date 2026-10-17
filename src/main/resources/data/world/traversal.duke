@@ -1,42 +1,34 @@
 ; ---------------------------------------------------------------------------
-; O'tish nuqtalari (traversal links) ochiq dunyoda (maps/world).
+; O'tish nuqtalari (traversal links) ochiq dunyoda (maps/world), E81.
 ;
-; Har bir qator bir nuqta:
-;   tur ax ay bx by frames arcHeight clip bothWays low
+; Har bir qator bitta nuqta:
+;   tur  ax ay  bx by  kadrlar  yoy  klip  ikki_tomon  past
 ;
-;   tur      - Jump (qochish), Vault (devorga otish), Climb (chiqish), Drop (tushish)
-;   ax ay    - bosh oxir (huqqa cells)
-;   bx by    - ikkinchi oxir (huqqa cells)
-;   frames   - necha frameda o'tiladi
-;   arcHeight- o'tishda quying balandligi (huqqa o'ninchisi)
-;   clip     - qahramon o'ynatadigan animatsiya nomi
-;   bothWays - Yes: har ikki tomonidan o'tilishi mumkin, No: faqat a dan b ga
-;   low      - Yes: qichqirish (dodge) undan o'tganda uni to'pdan o'tkazadi
+;   tur        - Jump (sakrash), Vault (oshib o'tish), Climb (chiqish), Drop (tushish)
+;   ax ay      - birinchi uchi, kataklarda (katak o'rtasi uchun .5)
+;   bx by      - ikkinchi uchi, kataklarda
+;   kadrlar    - o'tish necha kadr davom etadi (30 kadr = 1 soniya)
+;   yoy        - sakrash yoyining balandligi, dunyo birliklarida
+;   klip       - o'tayotganda qahramon o'ynaydigan animatsiya (har bir qahramonda bor: Jump)
+;   ikki_tomon - true: ikkala tomondan o'tiladi, false: faqat a dan b ga
+;   past       - true: chetlanish ham undan o'tadi (hozir ishlatilmaydi)
 ;
-; Barcha oxirlar yurilishga qulay yerda (suv, qirraliq devor yoki qochilmagan
-; qir bo'lmasa). Ma'lumot WorldMapWriter oqiydi va maps/world/world.map ga yoziladi.
+; Har bir nuqta 2-3 katak kenglikdagi suv yoki loy oqimini kesib o'tadi: ikkala uchi
+; yuriladigan yerda, yurib aylanib o'tish esa kamida 40 katak. Shahar, saroy, jang
+; maydoni, qishloqlar va minoralardan uzoqda. WorldMapWriter o'qiydi va
+; maps/world/world.map ga yozadi; TraversalWorldTest tekshiradi.
 ; ---------------------------------------------------------------------------
 TraversalLinks
-  ; Qolning daromadi ustidan qochish (ikkinchi tomon qir bo'lganligi uchun yurish
-  ; ikki yana qo'lda yurib ketishi shartdan, qochish kengroq bo'lganida foydalaniladi).
-  Jump   107 247   107 271   14  6   Jump_Full_Short   Yes   No
-  Jump   113 245   113 271   14  6   Jump_Full_Short   Yes   No
-  Jump   119 247   119 269   14  6   Jump_Full_Short   Yes   No
-  Jump   123 250   123 267   14  6   Jump_Full_Short   Yes   No
-  ; Qal'a devori ustidan devorga otish (shahar devorining yopiq qismi).
-  Vault  100 448   100 450   10  3   Vault             Yes   No
-  Vault  125 448   125 450   10  3   Vault             Yes   No
-  ; Tomonliq qir ustiga chiqish va qirdan tushish.
-  Climb  100 429   100 433   12  8   Jump_Full_Short   Yes   No
-  Climb  116 427   116 431   12  8   Jump_Full_Short   Yes   No
-  Drop   121 453   121 457   10  4   Jump_Full_Short   Yes   No
-  Drop   113 461   113 465   10  4   Jump_Full_Short   Yes   No
-  ; Shahar va qasr orasidagi qisqa yo'llar (ikki tomon).
-  Vault  113 461   117 461   8   3   Vault             Yes   Yes
-  Climb  103 458   107 458   10  5   Jump_Full_Short   Yes   Yes
-  Drop   104 463   104 467   8   4   Jump_Full_Short   Yes   Yes
-  Jump   116 427   120 427   10  4   Jump_Full_Short   Yes   Yes
-  Vault  100 429   104 429   9   3   Vault             Yes   Yes
-  ; Faqat bir tomonlama nuqta (eshitqan: faqat a dan b ga).
-  Jump   107 247   113 245   10  4   Jump_Full_Short   No    No
+  Jump  263.5 163.5   266.5 163.5   12  8   Jump   true   false
+  Jump  209.5 154.5   209.5 157.5   12  8   Jump   true   false
+  Jump  147.5 232.5   151.5 232.5   14  8   Jump   true   false
+  Jump  160.5 204.5   164.5 204.5   14  8   Jump   true   false
+  Jump  241.5 146.5   245.5 146.5   14  8   Jump   true   false
+  Jump  298.5 192.5   298.5 196.5   14  8   Jump   true   false
+  Jump  318.5 194.5   318.5 198.5   14  8   Jump   true   false
+  Jump  356.5 202.5   356.5 206.5   14  8   Jump   true   false
+  Jump  379.5 194.5   379.5 198.5   14  8   Jump   true   false
+  Jump  396.5 183.5   396.5 187.5   14  8   Jump   true   false
+  Jump  415.5 173.5   415.5 177.5   14  8   Jump   true   false
+  Jump  510.5 110.5   510.5 114.5   14  8   Jump   true   false
 End

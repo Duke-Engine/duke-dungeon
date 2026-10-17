@@ -26,6 +26,8 @@ WORK = [
     ("Chop", "Rig_Medium_Tools.glb", "Chopping", 1.333 / 1.2),
     ("Gather", "Rig_Medium_General.glb", "Interact", 1.0),
     ("Cook", "Rig_Medium_Tools.glb", "Working_C", 1.0),
+    # Carried across a traversal link (E81): MovementBasic's airborne loop, under the knight's and Huntress' name.
+    ("Jump", "Rig_Medium_MovementBasic.glb", "Jump_Idle", 1.0),
 ]
 
 args = sys.argv[sys.argv.index("--") + 1:]

@@ -95,16 +95,18 @@ CLIPS = {
     # Written under RENAME's names -- Chop, Gather, Cook -- the same three the knight has. The chop is posed on the
     # UAL rig as it is opened (art/anim/overhead_chop.py): no library holds one a grown body can use.
     "Chop_Overhead": UAL, "Interact": UAL, "Fixing_Kneeling": UAL,
+    # Carried across a traversal link (E81): the airborne loop, written as Jump as the knight's is.
+    "Jump_Loop": UAL,
 }
 # The name a clip is written under, where it is not its library's.
-RENAME = {"Chop_Overhead": "Chop", "Interact": "Gather", "Fixing_Kneeling": "Cook"}
+RENAME = {"Chop_Overhead": "Chop", "Interact": "Gather", "Fixing_Kneeling": "Cook", "Jump_Loop": "Jump"}
 # Frames a clip is cut to. The client plays her Attack from the frame the arrow leaves, once a shot, and she
 # shoots every ReloadFrames 24 = 0.8s: Ranged_Bow_Release looses on its first frames and has settled by its 19th,
 # so its last half second, which every next shot cut off, is dropped (HeroClipFitTest).
 CUT = {"Ranged_Bow_Release": 19}
 LIBRARIES = ["ranged.glb", "movement.glb", "general.glb"]
 # Made on the spot, but their hips wander: the drift from first frame to last is taken out.
-IN_PLACE = {"Idle_Loop", "Roll", "Spell_Simple_Shoot", "Running_A", "Interact", "Fixing_Kneeling"}
+IN_PLACE = {"Idle_Loop", "Roll", "Spell_Simple_Shoot", "Running_A", "Interact", "Fixing_Kneeling", "Jump_Loop"}
 
 # Hers <- theirs, a table a library. ALIGN: her bone is swung from her A-pose onto their T-pose
 # first, by the direction to the bone named; RIDE: it keeps her bone's rest relative to the one

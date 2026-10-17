@@ -2513,163 +2513,123 @@ StaticMap
   ; Ways across what no walk crosses: jump, vault, climb, drop, in cells.
   TraversalLinks = [
     TraversalLink
-      A = [107, 247, 0]
-      B = [107, 271, 0]
+      A = [263.5, 163.5, 0]
+      B = [266.5, 163.5, 0]
       Kind = Jump
-      Frames = 14
-      ArcHeight = 6
-      Clip = Jump_Full_Short
-      BothWays = No
-      Low = No
-    End,
-    TraversalLink
-      A = [113, 245, 0]
-      B = [113, 271, 0]
-      Kind = Jump
-      Frames = 14
-      ArcHeight = 6
-      Clip = Jump_Full_Short
-      BothWays = No
-      Low = No
-    End,
-    TraversalLink
-      A = [119, 247, 0]
-      B = [119, 269, 0]
-      Kind = Jump
-      Frames = 14
-      ArcHeight = 6
-      Clip = Jump_Full_Short
-      BothWays = No
-      Low = No
-    End,
-    TraversalLink
-      A = [123, 250, 0]
-      B = [123, 267, 0]
-      Kind = Jump
-      Frames = 14
-      ArcHeight = 6
-      Clip = Jump_Full_Short
-      BothWays = No
-      Low = No
-    End,
-    TraversalLink
-      A = [100, 448, 0]
-      B = [100, 450, 0]
-      Kind = Vault
-      Frames = 10
-      ArcHeight = 3
-      Clip = Vault
-      BothWays = No
-      Low = No
-    End,
-    TraversalLink
-      A = [125, 448, 0]
-      B = [125, 450, 0]
-      Kind = Vault
-      Frames = 10
-      ArcHeight = 3
-      Clip = Vault
-      BothWays = No
-      Low = No
-    End,
-    TraversalLink
-      A = [100, 429, 0]
-      B = [100, 433, 0]
-      Kind = Climb
       Frames = 12
       ArcHeight = 8
-      Clip = Jump_Full_Short
-      BothWays = No
+      Clip = Jump
+      BothWays = Yes
       Low = No
     End,
     TraversalLink
-      A = [116, 427, 0]
-      B = [116, 431, 0]
-      Kind = Climb
+      A = [209.5, 154.5, 0]
+      B = [209.5, 157.5, 0]
+      Kind = Jump
       Frames = 12
       ArcHeight = 8
-      Clip = Jump_Full_Short
-      BothWays = No
+      Clip = Jump
+      BothWays = Yes
       Low = No
     End,
     TraversalLink
-      A = [121, 453, 0]
-      B = [121, 457, 0]
-      Kind = Drop
-      Frames = 10
-      ArcHeight = 4
-      Clip = Jump_Full_Short
-      BothWays = No
-      Low = No
-    End,
-    TraversalLink
-      A = [113, 461, 0]
-      B = [113, 465, 0]
-      Kind = Drop
-      Frames = 10
-      ArcHeight = 4
-      Clip = Jump_Full_Short
-      BothWays = No
-      Low = No
-    End,
-    TraversalLink
-      A = [113, 461, 0]
-      B = [117, 461, 0]
-      Kind = Vault
-      Frames = 8
-      ArcHeight = 3
-      Clip = Vault
-      BothWays = No
-      Low = No
-    End,
-    TraversalLink
-      A = [103, 458, 0]
-      B = [107, 458, 0]
-      Kind = Climb
-      Frames = 10
-      ArcHeight = 5
-      Clip = Jump_Full_Short
-      BothWays = No
-      Low = No
-    End,
-    TraversalLink
-      A = [104, 463, 0]
-      B = [104, 467, 0]
-      Kind = Drop
-      Frames = 8
-      ArcHeight = 4
-      Clip = Jump_Full_Short
-      BothWays = No
-      Low = No
-    End,
-    TraversalLink
-      A = [116, 427, 0]
-      B = [120, 427, 0]
+      A = [147.5, 232.5, 0]
+      B = [151.5, 232.5, 0]
       Kind = Jump
-      Frames = 10
-      ArcHeight = 4
-      Clip = Jump_Full_Short
-      BothWays = No
+      Frames = 14
+      ArcHeight = 8
+      Clip = Jump
+      BothWays = Yes
       Low = No
     End,
     TraversalLink
-      A = [100, 429, 0]
-      B = [104, 429, 0]
-      Kind = Vault
-      Frames = 9
-      ArcHeight = 3
-      Clip = Vault
-      BothWays = No
-      Low = No
-    End,
-    TraversalLink
-      A = [107, 247, 0]
-      B = [113, 245, 0]
+      A = [160.5, 204.5, 0]
+      B = [164.5, 204.5, 0]
       Kind = Jump
-      Frames = 10
-      ArcHeight = 4
-      Clip = Jump_Full_Short
-      BothWays = No
+      Frames = 14
+      ArcHeight = 8
+      Clip = Jump
+      BothWays = Yes
+      Low = No
+    End,
+    TraversalLink
+      A = [241.5, 146.5, 0]
+      B = [245.5, 146.5, 0]
+      Kind = Jump
+      Frames = 14
+      ArcHeight = 8
+      Clip = Jump
+      BothWays = Yes
+      Low = No
+    End,
+    TraversalLink
+      A = [298.5, 192.5, 0]
+      B = [298.5, 196.5, 0]
+      Kind = Jump
+      Frames = 14
+      ArcHeight = 8
+      Clip = Jump
+      BothWays = Yes
+      Low = No
+    End,
+    TraversalLink
+      A = [318.5, 194.5, 0]
+      B = [318.5, 198.5, 0]
+      Kind = Jump
+      Frames = 14
+      ArcHeight = 8
+      Clip = Jump
+      BothWays = Yes
+      Low = No
+    End,
+    TraversalLink
+      A = [356.5, 202.5, 0]
+      B = [356.5, 206.5, 0]
+      Kind = Jump
+      Frames = 14
+      ArcHeight = 8
+      Clip = Jump
+      BothWays = Yes
+      Low = No
+    End,
+    TraversalLink
+      A = [379.5, 194.5, 0]
+      B = [379.5, 198.5, 0]
+      Kind = Jump
+      Frames = 14
+      ArcHeight = 8
+      Clip = Jump
+      BothWays = Yes
+      Low = No
+    End,
+    TraversalLink
+      A = [396.5, 183.5, 0]
+      B = [396.5, 187.5, 0]
+      Kind = Jump
+      Frames = 14
+      ArcHeight = 8
+      Clip = Jump
+      BothWays = Yes
+      Low = No
+    End,
+    TraversalLink
+      A = [415.5, 173.5, 0]
+      B = [415.5, 177.5, 0]
+      Kind = Jump
+      Frames = 14
+      ArcHeight = 8
+      Clip = Jump
+      BothWays = Yes
+      Low = No
+    End,
+    TraversalLink
+      A = [510.5, 110.5, 0]
+      B = [510.5, 114.5, 0]
+      Kind = Jump
+      Frames = 14
+      ArcHeight = 8
+      Clip = Jump
+      BothWays = Yes
       Low = No
     End
   ]
