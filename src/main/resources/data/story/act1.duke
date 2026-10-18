@@ -277,6 +277,42 @@ Quest
   ]
 End
 
+; Led to the palace, the commander's work done: the queen is the next to see. Without it nothing in the quest log
+; said where to go once she stopped (a save there loaded with no quest at all).
+Quest
+  Name = MeetTheQueen
+  Kind = MAIN
+  Title = "Malika huzurida"
+  Description = "Qo'mondon sizni saroyga olib keldi. Taxt oldidagi malika bilan gaplashing."
+  Steps = [
+    Step
+      Goal = TALK
+      Target = Act1Queen
+      Where = Taxt
+      Text = "Malika bilan gaplashing"
+    End
+  ]
+End
+
+Trigger
+  Name = QueenAwaits
+  Map = world
+  When = QUEST_DONE
+  Target = FollowCommander
+  If = [
+    Condition
+      Is = FLAG_UNSET
+      Target = Welcomed
+    End
+  ]
+  Actions = [
+    Action
+      Act = START_QUEST
+      Target = MeetTheQueen
+    End
+  ]
+End
+
 ; The menu's own framing over the field, the line held, then the camera eases to the ritualists.
 Cutscene
   Name = Summoning
@@ -978,6 +1014,10 @@ Trigger
     Action
       Act = FLAG
       Target = Welcomed
+    End,
+    Action
+      Act = FINISH_QUEST
+      Target = MeetTheQueen
     End,
     Action
       Act = FINISH_QUEST

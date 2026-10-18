@@ -3,6 +3,7 @@ package uz.dukeengine.dungeon.story;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import uz.dukeengine.core.math.Coord3D;
@@ -147,6 +148,73 @@ class CampaignWalkTest {
             play(session, 1);
         }
         assertEquals("urush", run.getStageName(), "out by the field to the war");
+    }
+
+    /** Followed halfway, then killed: back from the death, the commander can still be followed to the palace. */
+    @Test
+    void aDeathWhileFollowingTheCommanderLeavesTheWayOpen() {
+        var session = Dungeon.newSession(7L, SETTINGS);
+        session.run().skipTo(CAMPAIGN, 1, null);
+        session.game().runHeadless(1);
+        var run = session.run();
+        Act1Test.playUntilFlag(session, "BattleWon", 2400);
+        for (int i = 0; i < 600; i++) {
+            if (i % 30 == 0) {
+                var her = all(session.game(), "Act1Commander").getFirst().getPosition();
+                hero(session).getLocomotor().moveTo(new Coord3D(her.x() - 15f, her.y() + 15f, 0f));
+            }
+            play(session, 1);
+        }
+        hero(session).getBody().damage(1e7f);
+        play(session, SETTINGS.run().respawnDelayFrames() + 30);
+        assertEquals(uz.dukeengine.dungeon.run.DungeonRun.State.RUNNING, run.getState(), "back from the death");
+        for (int i = 0; i < 12000 && run.getQuests().active().stream()
+                .anyMatch(q -> q.quest().equals("FollowCommander")); i++) {
+            if (i % 30 == 0) {
+                var her = all(session.game(), "Act1Commander").getFirst().getPosition();
+                hero(session).getLocomotor().moveTo(new Coord3D(her.x() - 15f, her.y() + 15f, 0f));
+            }
+            play(session, 1);
+        }
+        assertTrue(run.getQuests().finished().contains("FollowCommander")
+                || run.getScript().flagged("Welcomed"), "still led to the palace after the death");
+    }
+
+    /** Saved halfway behind the commander and loaded into a new game: the walk goes on to the palace. */
+    @Test
+    void aSaveWhileFollowingTheCommanderLoadsAndTheWalkGoesOn() {
+        var session = Dungeon.newSession(7L, SETTINGS);
+        session.run().skipTo(CAMPAIGN, 1, null);
+        session.game().runHeadless(1);
+        var saves = new ArrayList<uz.dukeengine.dungeon.run.SaveGame>();
+        session.run().onCheckpoint(saves::add);
+        Act1Test.playUntilFlag(session, "BattleWon", 2400);
+        for (int i = 0; i < 600; i++) {
+            if (i % 30 == 0) {
+                var her = all(session.game(), "Act1Commander").getFirst().getPosition();
+                hero(session).getLocomotor().moveTo(new Coord3D(her.x() - 15f, her.y() + 15f, 0f));
+            }
+            play(session, 1);
+        }
+        var save = session.run().saveNow();
+        var loaded = Dungeon.newSession(7L, SETTINGS);
+        loaded.run().resume(save, uz.dukeengine.dungeon.run.Floors.resumed(save, SETTINGS));
+        loaded.game().runHeadless(2);
+        var run = loaded.run();
+        for (int i = 0; i < 12000 && run.getQuests().active().stream()
+                .anyMatch(q -> q.quest().equals("FollowCommander")); i++) {
+            if (i % 30 == 0) {
+                var her = all(loaded.game(), "Act1Commander").getFirst().getPosition();
+                hero(loaded).getLocomotor().moveTo(new Coord3D(her.x() - 15f, her.y() + 15f, 0f));
+            }
+            play(loaded, 1);
+        }
+        assertTrue(run.getQuests().finished().contains("FollowCommander"), "led to the palace, before or after the load");
+        assertTrue(run.getQuests().active().stream().anyMatch(q -> q.quest().equals("MeetTheQueen")),
+                "and the log says to see the queen: " + run.getQuests().active());
+        walkToPerson(loaded, "Act1Queen", 6000);
+        assertTrue(run.getScript().flagged("Welcomed"), "welcomed after the load");
+        assertTrue(run.getQuests().finished().contains("MeetTheQueen"));
     }
 
     /** Every fighter of the dungeon's standing in {@code zone} struck down by the hero. */
