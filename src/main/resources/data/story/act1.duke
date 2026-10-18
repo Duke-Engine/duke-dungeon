@@ -1699,6 +1699,11 @@ Trigger
     Action
       Act = CUTSCENE
       Target = CastleShown
+    End,
+    Action
+      ; Its lord to kill: written as a quest but never started, so the castle opened on an empty log.
+      Act = START_QUEST
+      Target = DarkCastle
     End
   ]
 End

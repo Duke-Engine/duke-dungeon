@@ -87,7 +87,13 @@ class CampaignWalkTest {
                 + ", " + (int) distance(hero, x, y) + " short of (" + (int) x + ", " + (int) y + ")");
     }
 
+    /** Before every walk the quest log has something in it: a player never stands with nothing to do. */
+    private static void guided(Dungeon.Session session, String where) {
+        assertTrue(!session.run().getQuests().active().isEmpty(), "nothing in the quest log on the way to " + where);
+    }
+
     private static void walkToZone(Dungeon.Session session, String zone, int frames) {
+        guided(session, zone);
         var at = Act1Test.zone(session.run().getStageName(), zone);
         var hero = hero(session);
         // Inside the place is enough: its middle may be under a grave mound or a throne.
@@ -100,6 +106,7 @@ class CampaignWalkTest {
     }
 
     private static void walkToPerson(Dungeon.Session session, String person, int frames) {
+        guided(session, person);
         var who = all(session.game(), person).getFirst();
         walkTo(session, person, who.getPosition().x(), who.getPosition().y(), 2 * CELL, frames);
         play(session, SETTINGS.story().dialogue().checkFrames() + 3);
@@ -215,6 +222,36 @@ class CampaignWalkTest {
         walkToPerson(loaded, "Act1Queen", 6000);
         assertTrue(run.getScript().flagged("Welcomed"), "welcomed after the load");
         assertTrue(run.getQuests().finished().contains("MeetTheQueen"));
+    }
+
+    /**
+     * Every joint of both acts saved and loaded into a new game, as Continue does: the run goes on, the hero stands, and
+     * the quest log says what to do.
+     */
+    @Test
+    void everyJointSavedAndLoadedGoesOn() {
+        for (var act : List.of("act1", "act2")) {
+            var campaign = SETTINGS.campaign(act);
+            for (int joint = 1; joint <= campaign.joints().size(); joint++) {
+                var session = Dungeon.newSession(7L, SETTINGS);
+                session.run().skipTo(campaign, joint, null);
+                session.game().runHeadless(2);
+                play(session, 120);
+                var save = session.run().saveNow();
+                if (save == null) {
+                    continue; // mid-fight (the hall): the save from its entry stands, by design
+                }
+                var loaded = Dungeon.newSession(7L, SETTINGS);
+                loaded.run().resume(save, uz.dukeengine.dungeon.run.Floors.resumed(save, SETTINGS));
+                loaded.game().runHeadless(2);
+                play(loaded, 300);
+                var where = act + " joint " + joint + " (" + loaded.run().getStageName() + ")";
+                assertEquals(uz.dukeengine.dungeon.run.DungeonRun.State.RUNNING, loaded.run().getState(), where);
+                assertTrue(!all(loaded.game(), loaded.run().getHeroTemplate()).isEmpty(), "a hero stands: " + where);
+                assertTrue(!loaded.run().getQuests().active().isEmpty() || loaded.run().getMission() != null,
+                        "something to do: " + where);
+            }
+        }
     }
 
     /** Every fighter of the dungeon's standing in {@code zone} struck down by the hero. */
