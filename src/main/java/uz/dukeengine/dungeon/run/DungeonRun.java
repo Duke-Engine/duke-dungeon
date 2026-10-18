@@ -670,6 +670,7 @@ public final class DungeonRun {
 
     /** The floor the world was built around, with everyone on it. */
     private void lay(DukeGame game, GeneratedDungeon floor) {
+        cleared.clear(); // a map laid again stands its camps up again
         look = lookOf(floor);
         var looks = looksOf(floor);
         if (looks != null) {
@@ -1381,14 +1382,41 @@ public final class DungeonRun {
         // A camp cleared: every zone with none of the dungeon's creatures standing in it any more is heard CLEARED
         // (a once-only trigger hears it once). See docs/plan/2026-10-15-act2.md.
         if (lastLogic != null) {
-            float cell = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
             for (var zone : zones()) {
-                boolean held = lastLogic.getObjects().stream().anyMatch(thing -> thing.getBody() != null
-                        && !thing.isEffectivelyDead() && thing.getPlayerIndex() == dungeonPlayer.getIndex()
-                        && !camp.isAnimal(thing) && zone.holds(thing.getPosition().x(), thing.getPosition().y(), cell));
-                if (!held) {
+                if (!held(zone)) {
+                    cleared.add(zone.name());
                     script.heard(uz.dukeengine.dungeon.story.Trigger.When.CLEARED, zone.name(), 0);
                 }
+            }
+        }
+    }
+
+    /**
+     * The zones a death has left empty of the dungeon's creatures, heard CLEARED again every CheckFrames while they stay
+     * so: a trigger whose If did not hold when the last of them fell -- a camp cleared before the witch told her secret
+     * -- fires once it does. Only a camp emptied by killing counts, never one its creatures have wandered out of.
+     */
+    private final java.util.Set<String> cleared = new java.util.LinkedHashSet<>();
+
+    private boolean held(uz.dukeengine.dungeon.map.StaticMap.Zone zone) {
+        float cell = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
+        return lastLogic.getObjects().stream().anyMatch(thing -> thing.getBody() != null
+                && !thing.isEffectivelyDead() && thing.getPlayerIndex() == dungeonPlayer.getIndex()
+                && !camp.isAnimal(thing) && zone.holds(thing.getPosition().x(), thing.getPosition().y(), cell));
+    }
+
+    private void stillCleared() {
+        if (cleared.isEmpty() || lastLogic == null) {
+            return;
+        }
+        for (var zone : zones()) {
+            if (!cleared.contains(zone.name())) {
+                continue;
+            }
+            if (held(zone)) {
+                cleared.remove(zone.name());
+            } else {
+                script.heard(uz.dukeengine.dungeon.story.Trigger.When.CLEARED, zone.name(), 0);
             }
         }
     }
@@ -2685,6 +2713,7 @@ public final class DungeonRun {
             return;
         }
         quests.holding(bags());
+        stillCleared();
         float cell = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
         var standing = new ArrayList<String>();
         for (var seat : seats) {
