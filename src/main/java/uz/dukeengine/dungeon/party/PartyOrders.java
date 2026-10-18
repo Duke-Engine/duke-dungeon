@@ -62,6 +62,8 @@ public final class PartyOrders {
     /** Buying one of a merchant's wares, and selling him a thing from the bag. */
     /** A machine has shown the conversations said, so far, to the end. */
     static final String READ = "read";
+    /** The answer to an offer: the count of the conversation, twice, and one more if it was accepted. */
+    static final String ANSWER = "answer";
     static final String BUY = "buy";
     static final String SELL = "sell";
     /** A draught from the belt: the order's number is which of its stacks. */
@@ -99,6 +101,8 @@ public final class PartyOrders {
             case UseItem use -> new GameOrder(use.playerIndex(), USE, List.of(), null, use.target(), use.slot());
             case uz.dukeengine.dungeon.run.Read read -> new GameOrder(read.playerIndex(), READ, List.of(), null, null,
                     read.count());
+            case uz.dukeengine.dungeon.run.Answer answer -> new GameOrder(answer.playerIndex(), ANSWER, List.of(),
+                    null, null, answer.count() * 2 + (answer.accept() ? 1 : 0));
             case uz.dukeengine.dungeon.run.Buy buy -> new GameOrder(buy.playerIndex(), BUY, List.of(), null,
                     buy.merchant(), buy.ware());
             case uz.dukeengine.dungeon.run.Sell sell -> new GameOrder(sell.playerIndex(), SELL, List.of(), null,
@@ -158,6 +162,8 @@ public final class PartyOrders {
             case TRAVEL -> new uz.dukeengine.dungeon.run.TravelTo(order.playerIndex(), (int) order.number());
             case CRAFT -> new uz.dukeengine.dungeon.run.Craft(order.playerIndex(), (int) order.number());
             case READ -> new uz.dukeengine.dungeon.run.Read(order.playerIndex(), (int) order.number());
+            case ANSWER -> new uz.dukeengine.dungeon.run.Answer(order.playerIndex(), (int) order.number() / 2,
+                    (int) order.number() % 2 == 1);
             case BUY -> order.target() == null ? null
                     : new uz.dukeengine.dungeon.run.Buy(order.playerIndex(), order.target(), (int) order.number());
             case SELL -> order.target() == null ? null

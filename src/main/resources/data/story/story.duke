@@ -14,6 +14,9 @@
 ; The box at the bottom of the screen, and the marks over people's heads.
 Dialogue
   ContinueHint = "Davom etish uchun bosing / Space"
+  ; The question after an offer's last line, and the keys that answer it.
+  OfferQuestion = "Topshiriqni qabul qilasizmi?"
+  OfferHint = "Enter / chap tugma: qabul qilaman  |  Esc / o'ng tugma: hozir emas"
   GiveMark = ui/cursors/default/mark_exclamation.png
   HandInMark = ui/cursors/default/mark_question.png
   MarkColour = 0xE8C15A

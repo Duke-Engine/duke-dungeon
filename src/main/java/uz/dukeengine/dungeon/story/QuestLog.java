@@ -98,10 +98,19 @@ public final class QuestLog {
         told(new Event(Trigger.When.QUEST_STARTED, quest, 0));
     }
 
-    /** Play {@code conversation}: heard, said, and its quests started. */
+    /**
+     * Play {@code conversation}: heard, said, and its quests started -- but an offer is only said: it is heard and its
+     * quests started when he accepts it ({@link #accept}).
+     */
     public void play(String conversation) {
         var known = story.conversation(conversation);
         if (known == null) {
+            return;
+        }
+        if (known.offer()) {
+            var more = new ArrayList<>(said);
+            more.add(conversation);
+            said = List.copyOf(more);
             return;
         }
         if (!heard.contains(conversation)) {
@@ -110,6 +119,22 @@ public final class QuestLog {
         var more = new ArrayList<>(said);
         more.add(conversation);
         said = List.copyOf(more);
+        told(new Event(Trigger.When.HEARD, conversation, 0));
+        for (var quest : known.starts()) {
+            start(quest);
+        }
+    }
+
+    /**
+     * The hero's answer to an offer said: accepted, it is heard and its quests started; turned down, nothing happens
+     * and the person offers it again when he asks.
+     */
+    public void accept(String conversation, boolean yes) {
+        var known = story.conversation(conversation);
+        if (known == null || !known.offer() || !yes || heard.contains(conversation)) {
+            return;
+        }
+        heard.add(conversation);
         told(new Event(Trigger.When.HEARD, conversation, 0));
         for (var quest : known.starts()) {
             start(quest);
@@ -188,9 +213,15 @@ public final class QuestLog {
             }
         }
         var person = story.npc(npc);
-        if (person != null && !person.talk().isBlank() && (asked || !heard.contains(person.talk()))) {
-            play(person.talk());
-            return true;
+        var greeting = person == null || person.talk().isBlank() ? null : story.conversation(person.talk());
+        if (greeting != null) {
+            // An offer is made only to a hero who asks, and only until he has accepted it; a greeting once unasked.
+            boolean say = greeting.offer() ? asked && !heard.contains(greeting.name())
+                    : asked || !heard.contains(greeting.name());
+            if (say) {
+                play(greeting.name());
+                return true;
+            }
         }
         return false;
     }

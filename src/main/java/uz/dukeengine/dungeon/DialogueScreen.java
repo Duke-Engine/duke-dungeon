@@ -42,6 +42,12 @@ final class DialogueScreen implements Painter, CanvasInput {
     private Dungeon.Session counted;
     private int shown;
     private int line;
+    /** The answers given to offers, by the conversation's place in the run's said list; sent with the next Read. */
+    private final java.util.Map<Integer, Boolean> answers = new java.util.HashMap<>();
+    /** When the question of an offer came on the screen, so a key pressed through its last line does not answer it. */
+    private long askedSince;
+    /** How long after its coming up the question of an offer takes no answer. */
+    private static final long ASK_LOCKOUT_NANOS = 400_000_000L;
     /** Whether the world was paused here, so it is this that lets it go again — and nothing else's pause. */
     private boolean pausedHere;
 
@@ -92,11 +98,13 @@ final class DialogueScreen implements Painter, CanvasInput {
             shown = 0;
             line = 0;
             told = 0;
+            answers.clear();
         }
         var said = now.run().getQuests().said();
         while (shown < said.size()) {
             var conversation = settings.story().conversation(said.get(shown));
-            if (conversation != null && line < conversation.lines().size()) {
+            // An offer has one more place than it has lines: the question.
+            if (conversation != null && line < conversation.lines().size() + (conversation.offer() ? 1 : 0)) {
                 tell(now);
                 return new Showing(conversation, line);
             }
@@ -116,25 +124,65 @@ final class DialogueScreen implements Painter, CanvasInput {
      */
     private void tell(Dungeon.Session now) {
         if (shown > told) {
+            for (int done = told + 1; done <= shown; done++) {
+                var answer = answers.remove(done);
+                if (answer != null) { // his answer to an offer goes first, then the Read that says he is done with it
+                    now.game().postCommand(uz.dukeengine.dungeon.party.PartyOrders.of(
+                            new uz.dukeengine.dungeon.run.Answer(now.game().getLocalPlayerIndex(), done, answer)));
+                }
+            }
             told = shown;
             now.game().postCommand(uz.dukeengine.dungeon.party.PartyOrders.of(
                     new uz.dukeengine.dungeon.run.Read(now.game().getLocalPlayerIndex(), shown)));
         }
     }
 
-    /** The next line, or the end of the conversation. */
+    /** The next line, or the end of the conversation: an offer's last line is followed by its question, not its end. */
     void next() {
-        if (showing() != null) {
+        var now = showing();
+        if (now != null && !asking(now)) {
             line++;
         }
     }
 
-    /** The rest of this conversation, skipped. */
+    /** The rest of this conversation, skipped: an offer's skipped to its question, which still has to be answered. */
     void skip() {
-        if (showing() != null) {
-            shown++;
-            line = 0;
+        var now = showing();
+        if (now == null) {
+            return;
         }
+        if (now.conversation().offer() && !asking(now)) {
+            line = now.conversation().lines().size();
+            return;
+        }
+        shown++;
+        line = 0;
+    }
+
+    /** Whether the screen shows an offer's question, not one of its lines. */
+    private static boolean asking(Showing now) {
+        return now.conversation().offer() && now.line() >= now.conversation().lines().size();
+    }
+
+    /**
+     * The answer to the question on the screen: accepted or turned down, the conversation over either way. An answer
+     * given within a moment of the question's coming up is not one: the key that read the last line is still down.
+     */
+    void answer(boolean accept) {
+        var now = showing();
+        if (now == null || !asking(now) || System.nanoTime() - askedSince < ASK_LOCKOUT_NANOS) {
+            return;
+        }
+        shown++;
+        answers.put(shown, accept);
+        line = 0;
+        askedSince = 0;
+    }
+
+    /** A test's answer: no lockout, as no one is mashing a key. */
+    void answerNow(boolean accept) {
+        askedSince = 1;
+        answer(accept);
     }
 
     @Override
@@ -247,6 +295,26 @@ final class DialogueScreen implements Painter, CanvasInput {
         if (showing() == null) {
             return underInput != null && underInput.take(event);
         }
+        var asked = showing();
+        if (asking(asked)) {
+            // An offer's question: Enter, Space or the left button accept it; Escape or the right button turn it down.
+            if (event instanceof Key key) {
+                if (key.down() && !key.repeat()) {
+                    if (key.code() == SPACE || key.code() == ENTER || key.code() == NUMPAD_ENTER) {
+                        answer(true);
+                    } else if (key.code() == ESCAPE) {
+                        answer(false);
+                    }
+                }
+            } else if (event instanceof Button button && button.down()) {
+                if (button.button() == Mouse.LEFT) {
+                    answer(true);
+                } else if (button.button() == Mouse.RIGHT) {
+                    answer(false);
+                }
+            }
+            return !(event instanceof Pointer);
+        }
         switch (event) {
             case Key key -> {
                 boolean on = key.code() == SPACE || key.code() == ENTER || key.code() == NUMPAD_ENTER;
@@ -297,7 +365,17 @@ final class DialogueScreen implements Painter, CanvasInput {
 
     private void box(Canvas canvas, Showing now) {
         var look = settings.menu();
-        var said = now.conversation().lines().get(now.line());
+        boolean question = asking(now);
+        if (question && askedSince == 0) {
+            askedSince = System.nanoTime();
+        } else if (!question) {
+            askedSince = 0;
+        }
+        var words = settings.story().dialogue();
+        // An offer's question is put by the one who said its last line.
+        var said = question
+                ? new Conversation.Line(now.conversation().lines().getLast().speaker(), words.offerQuestion())
+                : now.conversation().lines().get(now.line());
         var speaker = settings.story().speaker(said.speaker());
         var font = Canvas.Font.of("Georgia", Math.clamp(Math.round(canvas.height() * 0.022f), 13, 26));
         var small = Canvas.Font.of("Georgia", Math.clamp(Math.round(canvas.height() * 0.016f), 11, 18));
@@ -341,7 +419,7 @@ final class DialogueScreen implements Painter, CanvasInput {
             canvas.drawText(font, row, tx, ty, bone);
             ty += lineHigh;
         }
-        var hint = settings.story().dialogue().continueHint();
+        var hint = question ? words.offerHint() : words.continueHint();
         var hintSize = canvas.measure(small, hint);
         canvas.drawText(small, hint, left + wide - pad - hintSize.width(), top + high - pad * 0.5f
                 - hintSize.lineHeight(), 0x90000000 | look.boneColour());

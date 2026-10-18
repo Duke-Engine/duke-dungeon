@@ -16,11 +16,14 @@ package uz.dukeengine.dungeon.story;
  * @param followLook  the effect over whoever a FOLLOW step leads him after, played every GlowFrames; blank for none
  * @param followNear  how near, in units, a hero keeps for the one he follows to walk on
  * @param followFar   how far he may stray before they stop and wait for him
+ * @param offerQuestion what an offer asks once its lines are said
+ * @param offerHint   what is written under that question: the keys that answer it
  */
 public record Dialogue(String continueHint, String giveMark, String handInMark, int markColour, int checkFrames,
-        String glowLook, int glowFrames, int readWaitFrames, String followLook, float followNear, float followFar) {
+        String glowLook, int glowFrames, int readWaitFrames, String followLook, float followNear, float followFar,
+        String offerQuestion, String offerHint) {
 
     public static final Dialogue DEFAULTS = new Dialogue("Davom etish uchun bosing / Space",
             "ui/cursors/default/mark_exclamation.png", "ui/cursors/default/mark_question.png", 0xE8C15A, 10, "", 30,
-            300, "", 90f, 150f);
+            300, "", 90f, 150f, "Topshiriqni qabul qilasizmi?", "Enter / chap tugma: qabul qilaman  |  Esc / o'ng tugma: hozir emas");
 }

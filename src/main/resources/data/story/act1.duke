@@ -1182,6 +1182,7 @@ Conversation
       Text = "Qahramon! Yerto'lamdan skeletlar chiqib kelyapti. Yerto'la shaharning o'ng yuqori burchagida, mening ustaxonam tepasida. Uchala skeletni qirib bering — evaziga qo'lqop beraman."
     End
   ]
+  Offer = Yes
   Starts = [Cellar]
 End
 
@@ -1203,6 +1204,7 @@ Conversation
       Text = "O'g'lim, marhum cholimning uzugini yerto'lada tushirib qo'ydim. Topib bersang, duo qilaman."
     End
   ]
+  Offer = Yes
   Starts = [LostRing]
 End
 

@@ -2246,6 +2246,17 @@ public final class DungeonRun {
         inCutscene = true;
     }
 
+    /**
+     * A player answered the offer that was the {@code count}th conversation said: accepted, its quests start (turned
+     * down, nothing does, and the person offers it again when he asks). Told with his clock first, as a talk is.
+     */
+    public void answer(int playerIndex, int count, boolean accept) {
+        var said = quests.said();
+        if (seatOf(playerIndex) != null && count >= 1 && count <= said.size()) {
+            quests.accept(said.get(count - 1), accept);
+        }
+    }
+
     /** A player's machine has shown to the end the first {@code count} conversations said. */
     public void read(int playerIndex, int count) {
         var seat = seatOf(playerIndex);

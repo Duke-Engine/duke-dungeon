@@ -80,6 +80,14 @@ class Act2Test {
         play(session, SETTINGS.story().dialogue().checkFrames() * 2 + 3);
     }
 
+    /** Asked of a person and, where she offers something, accepted: what a player does at the question. */
+    private static void askAndAccept(Dungeon.Session session, String person) {
+        var who = all(session.game(), person).getFirst();
+        var player = heroine(session).getPlayerIndex();
+        session.run().talkTo(session.game(), player, who.getId());
+        session.run().answer(player, session.run().getQuests().said().size(), true);
+    }
+
     private static void strike(Dungeon.Session session, GameObject foe) {
         var her = heroine(session);
         foe.getBody().damage(1e8f, DamageType.NORMAL, new Death(DeathType.NORMAL, her.getId(), her.getPlayerIndex()));
@@ -135,6 +143,7 @@ class Act2Test {
         walkUpTo(session, "BabaYaga");
         assertTrue(script.flagged("SecretKnown"), "the queen's secret told");
         walkUpTo(session, "Damsel");
+        askAndAccept(session, "Damsel");
         play(session, 30);
         assertTrue(run.getQuests().finished().contains("CagedGirl"), "the girl is free");
         assertTrue(all(game, "Damsel").isEmpty(), "out of her cage");
@@ -263,6 +272,7 @@ class Act2Test {
         strike(session, all(game, "Necromancer").getFirst());
         play(session, 5);
         walkUpTo(session, "Damsel");
+        askAndAccept(session, "Damsel");
         play(session, 30);
         assertTrue(session.run().getScript().flagged("GirlFreed"));
         heroine(session).getBody().damage(1e8f);

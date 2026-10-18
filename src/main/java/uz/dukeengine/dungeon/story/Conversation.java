@@ -3,13 +3,17 @@ package uz.dukeengine.dungeon.story;
 import java.util.List;
 
 /**
- * A few lines said in turn, with no choices, and the quests they hand out as they are said.
+ * A few lines said in turn, with no choices, and the quests they hand out as they are said -- or, for an offer, as
+ * they are accepted.
  *
  * @param starts the quests started as it plays, in this order
+ * @param offer  whether it offers its quests rather than gives them: said only when the hero asks the person for it
+ *               (never because he walked past), with a question after the last line, and its quests started only if he
+ *               accepts
  */
-public record Conversation(String name, List<Line> lines, List<String> starts) {
+public record Conversation(String name, List<Line> lines, List<String> starts, boolean offer) {
 
-    public static final Conversation DEFAULTS = new Conversation("", List.of(), List.of());
+    public static final Conversation DEFAULTS = new Conversation("", List.of(), List.of(), false);
 
     public Conversation {
         lines = lines == null ? List.of() : List.copyOf(lines);

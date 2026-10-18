@@ -556,6 +556,9 @@ public final class Dungeon {
                 case uz.dukeengine.dungeon.run.SkipCutscene skip -> run.skipCutscene(game);
                 // A machine has read what was said so far: a cutscene waiting on it may begin. See DungeonRun.cue.
                 case uz.dukeengine.dungeon.run.Read read -> run.read(read.playerIndex(), read.count());
+                // The answer to an offer he has just been shown: accepted, its quests start. See DungeonRun.answer.
+                case uz.dukeengine.dungeon.run.Answer answer ->
+                        run.answer(answer.playerIndex(), answer.count(), answer.accept());
                 // Trading with a merchant he is near. See DungeonRun.buy and sell.
                 case uz.dukeengine.dungeon.run.Buy buy -> run.buy(game, buy.playerIndex(), buy.merchant(), buy.ware());
                 case uz.dukeengine.dungeon.run.Sell sell -> run.sell(game, sell.playerIndex(), sell.merchant(), sell.slot());

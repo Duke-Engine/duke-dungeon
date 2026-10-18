@@ -216,4 +216,46 @@ class DialogueScreenTest {
         assertTrue(screen.take(new CanvasInput.Key(CanvasInput.ESCAPE, true, false)));
         assertTrue(painted(screen).text.stream().noneMatch(t -> t.equals("Savdogar Botir")), "closed");
     }
+
+    /** An offer's lines end in its question: too early a key is no answer, Esc turns it down, Enter accepts it. */
+    @Test
+    void anOfferEndsInAQuestionThatEscTurnsDownAndEnterAccepts() throws InterruptedException {
+        var session = Dungeon.newSession(7L, SETTINGS);
+        session.run().skipTo(SETTINGS.campaign(), 2, null);
+        var game = session.game();
+        game.runHeadless(2);
+        var screen = new DialogueScreen(null, null, SETTINGS);
+        DialogueScreen.show(session);
+        var smith = named(game, "Blacksmith");
+        var hero = named(game, session.run().getHeroTemplate());
+        hero.setPosition(new Coord3D(smith.getPosition().x() + 12f, smith.getPosition().y(), hero.getPosition().z()));
+        var words = SETTINGS.story().dialogue();
+
+        // Turned down with Esc: the question after the one line, and nothing started.
+        session.run().talkTo(game, hero.getPlayerIndex(), smith.getId());
+        var line = painted(screen);
+        assertTrue(line.text.contains(words.continueHint()) && !line.text.contains(words.offerQuestion()), "its line");
+        assertTrue(screen.take(new CanvasInput.Key(CanvasInput.SPACE, true, false)));
+        var question = painted(screen);
+        assertTrue(question.text.contains(words.offerQuestion()), question.text.toString());
+        assertTrue(question.text.contains(words.offerHint()), "the keys that answer it");
+        assertTrue(screen.take(new CanvasInput.Key(CanvasInput.ENTER, true, false)));
+        assertTrue(painted(screen).text.contains(words.offerQuestion()), "a key at once is not an answer");
+        Thread.sleep(450);
+        assertTrue(screen.take(new CanvasInput.Key(CanvasInput.ESCAPE, true, false)));
+        assertFalse(painted(screen).text.contains(words.offerQuestion()), "answered");
+        painted(screen);
+        game.runHeadless(3);
+        assertTrue(session.run().getQuests().active().stream().noneMatch(q -> q.quest().equals("Cellar")), "turned down");
+
+        // Asked again, accepted with Enter.
+        session.run().talkTo(game, hero.getPlayerIndex(), smith.getId());
+        assertTrue(screen.take(new CanvasInput.Key(CanvasInput.SPACE, true, false)));
+        painted(screen);
+        Thread.sleep(450);
+        assertTrue(screen.take(new CanvasInput.Key(CanvasInput.ENTER, true, false)));
+        painted(screen); // each frame's paint hands the answer to the game
+        game.runHeadless(3);
+        assertTrue(session.run().getQuests().active().stream().anyMatch(q -> q.quest().equals("Cellar")), "accepted");
+    }
 }

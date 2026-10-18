@@ -102,6 +102,7 @@ Conversation
       Text = "Kalit o'sha o'likchida — u meni kampirga sotgan. Uni o'ldirsangiz, kalit sizniki."
     End
   ]
+  Offer = Yes
   Starts = [CagedGirl]
 End
 
