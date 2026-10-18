@@ -405,3 +405,49 @@ Sound
   Gain = 1.0
   Files = [audio/sfx/boss_appears.ogg]
 End
+
+; Where the three beams meet, over the landing: a white flash that climbs to the beams' joint, sparks thrown out from
+; it, and light on the field under it. Played once as the beams are lit.
+Effect
+  Name = BeamMeet
+  Layers = [
+    Layer
+      Name = Flash
+      Type = IMPACT
+      Texture = kit/effects/particles/light_02.png
+      Blend = Additive
+      Count = 1
+      Life = [0.6, 0.6]
+      Size = [18, 26]
+      Colour = [0xFFFFFF, 0xB8E0FF]
+      Alpha = [1, 0]
+      Height = 40
+    End,
+    Layer
+      Name = Sparks
+      Type = BURST
+      Texture = kit/effects/particles/star_04.png
+      Blend = Additive
+      Count = 40
+      Seconds = 0.6
+      Life = [0.4, 0.9]
+      Size = [2.0, 0.3]
+      Colour = [0xFFFFFF, 0x9AD0FF]
+      Alpha = [1, 0]
+      Speed = [20, 45]
+      Direction = UP
+      Spread = 120
+      Radius = 3
+      Height = 40
+    End,
+    Layer
+      Name = Glow
+      Type = LIGHT
+      LightColour = 0xC8E8FF
+      LightPower = 4
+      LightRadius = 90
+      Seconds = 1.5
+      Height = 40
+    End
+  ]
+End

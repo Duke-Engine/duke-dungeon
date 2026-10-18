@@ -497,6 +497,22 @@ Trigger
   ]
 End
 
+; +104: the three beams meet over the landing in one bright flash.
+Trigger
+  Name = BeamsMeet
+  Map = world
+  When = AFTER
+  Target = RitualBegins
+  Delay = 104
+  Actions = [
+    Action
+      Act = EFFECT
+      Target = BeamMeet
+      Zone = Qonish
+    End
+  ]
+End
+
 ; +120: the beams feed a pillar of light that rises to the sky.
 Trigger
   Name = PillarRises
