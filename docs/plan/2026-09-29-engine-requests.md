@@ -2023,3 +2023,12 @@ Asked: a ground-cover layer in the client, beside the scenery, for decoration th
 Done when the game hands its cover through the layer instead of as scenery, the meadow window draws its grass in a
 handful of draw calls at a measured frame cost under 1 ms on the owner's RTX 3070 at 1280x720, and `GroundCoverTest`'s
 rules (thick, the same from a seed, nothing on roads, stone or in town) hold for what is drawn.
+
+## E99 — A laser with its own material, so its glow can be a shader (2026-10-18, small; visual)
+
+The seamless intro's beams (Laser RitualBeam, SkyPillarBeam) are drawn by `Lasers` with the engine's `Unshaded.j3md`,
+additive, as flat ribbons. That reads as thin lines, not light. Asked: an optional `Material` (a `.j3md` path, as
+Effect layers name none) on `Laser`, used for each beam's ribbon in place of `Unshaded`, with the same parameters
+passed through (Texture, Color, the scroll Time, the tile count). The game then ships its own `MatDefs/duke/Beam.j3md`:
+a soft falloff across the ribbon, a pulse along it, and a brighter core. Done when a test lays a Laser with a Material and
+the ribbon's geometry carries that material, and a Laser without one is drawn as now.
