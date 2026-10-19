@@ -2032,3 +2032,13 @@ Effect layers name none) on `Laser`, used for each beam's ribbon in place of `Un
 passed through (Texture, Color, the scroll Time, the tile count). The game then ships its own `MatDefs/duke/Beam.j3md`:
 a soft falloff across the ribbon, a pulse along it, and a brighter core. Done when a test lays a Laser with a Material and
 the ribbon's geometry carries that material, and a Laser without one is drawn as now.
+
+## E100 — Ground cover crashes the window under fog (2026-10-19, small; bug, blocks E98)
+
+Played, the window dies on the first cover chunk: `IllegalStateException: You must set the 'UseInstancing' parameter to
+true on the material prior to adding it to InstancedNode`, from `TerrainScene.coverOf` -> `InstancedNode.instance`.
+`coverModel` sets UseInstancing only where the material has the parameter, but with a fog map `refogOwnMaterials` draws
+scenery in `MatDefs/duke/FoggedTerrain.j3md`, which has none, so the geometry goes into the InstancedNode anyway.
+Asked: FoggedTerrain (its vertex shader) gains UseInstancing, as Lighting has it; or, at least, a geometry whose
+material cannot be instanced is attached plainly, not instanced. Done when a client test grows cover on a fogged map
+without the exception. Until then the game hands the window GroundCover.NONE (Atmosphere.paint).

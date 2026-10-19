@@ -71,7 +71,9 @@ final class Atmosphere implements Painter {
         var cover = uz.dukeengine.dungeon.run.DungeonRun.coverLaid();
         if (cover != coverShown) {
             coverShown = cover;
-            duke.groundCover(cover == null ? uz.dukeengine.client3d.GroundCover.NONE : cover);
+            // ponytail: held back until E100 -- the engine instances cover drawn in FoggedTerrain, which has no UseInstancing,
+            // and the window dies on the first chunk. Hand it `cover` again once E100 lands.
+            duke.groundCover(uz.dukeengine.client3d.GroundCover.NONE);
         }
         var match = DialogueScreen.match();
         // Not while an intro has the screen: the backdrop made the match shows the hour once the seat is taken and the
