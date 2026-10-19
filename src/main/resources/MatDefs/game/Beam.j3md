@@ -1,0 +1,29 @@
+MaterialDef Game Beam {
+
+    // A beam of light as a ribbon: a white-hot core that falls off softly to
+    // its edges, the picture scrolled along it, and bright pulses running up
+    // its length. Drawn additively by the engine's Lasers (E99), which sets
+    // the four parameters below.
+
+    MaterialParameters {
+        Texture2D ColorMap
+        Color Color
+        // Seconds times the laser's ScrollRate: what the picture has scrolled.
+        Float Time
+        // How many times the picture is laid along the line.
+        Float Tiles
+    }
+
+    Technique {
+        VertexShader GLSL150 GLSL100 : MatDefs/game/Beam.vert
+        FragmentShader GLSL150 GLSL100 : MatDefs/game/Beam.frag
+
+        WorldParameters {
+            WorldViewProjectionMatrix
+        }
+
+        Defines {
+            HAS_COLORMAP : ColorMap
+        }
+    }
+}

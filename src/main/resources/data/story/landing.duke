@@ -8,6 +8,7 @@
 ; three sides. A Laser is how the engine draws a beam the simulation owns (World.beam).
 Laser
   Name = RitualBeam
+  Material = MatDefs/game/Beam.j3md
   NumBeams = 3
   InnerBeamWidth = 1.2
   OuterBeamWidth = 5
@@ -25,6 +26,7 @@ End
 ; The pillar of light the beams feed, from the ground at the landing up into the sky.
 Laser
   Name = SkyPillarBeam
+  Material = MatDefs/game/Beam.j3md
   NumBeams = 3
   InnerBeamWidth = 6
   OuterBeamWidth = 22
@@ -430,7 +432,7 @@ Effect
       Blend = Additive
       Count = 40
       Seconds = 0.6
-      Life = [0.4, 0.9]
+      Life = [0.35, 0.75]
       Size = [2.0, 0.3]
       Colour = [0xFFFFFF, 0x9AD0FF]
       Alpha = [1, 0]
