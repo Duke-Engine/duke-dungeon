@@ -147,18 +147,18 @@ class MissionScreenTest {
                 "with its count: " + session.run().getTracker().words());
     }
 
-    private static Tracker listed(Tracker.Kind kind, Tracker.Step... steps) {
-        return new Tracker(List.of(new Tracker.Entry(kind, "T", List.of(steps))));
+    private static Tracker listed(uz.dukeengine.rpg.story.Quest.Kind kind, uz.dukeengine.rpg.story.Tracked.Line... steps) {
+        return new Tracker(List.of(new uz.dukeengine.rpg.story.Tracked(kind, "T", List.of(steps))));
     }
 
     /** A main mission is gold with a filled mark, a side one plain with an open mark, and the done step ticked and dimmer. */
     @Test
     void aMainMissionIsGoldASideOnePlainAndADoneStepTickedAndDimmed() {
         int frame = 500;
-        var steps = new Tracker.Step[] {new Tracker.Step("old", true, 480), new Tracker.Step("now", false, 400)};
+        var steps = new uz.dukeengine.rpg.story.Tracked.Line[] {new uz.dukeengine.rpg.story.Tracked.Line("old", true, 480), new uz.dukeengine.rpg.story.Tracked.Line("now", false, 400)};
 
-        var main = MissionScreen.rows(listed(Tracker.Kind.MAIN, steps), frame, SETTINGS);
-        var side = MissionScreen.rows(listed(Tracker.Kind.SIDE, steps), frame, SETTINGS);
+        var main = MissionScreen.rows(listed(uz.dukeengine.rpg.story.Quest.Kind.MAIN, steps), frame, SETTINGS);
+        var side = MissionScreen.rows(listed(uz.dukeengine.rpg.story.Quest.Kind.SIDE, steps), frame, SETTINGS);
 
         assertEquals(List.of("◆ T", "✓ old", "• now"), main.stream().map(row -> row.text()).toList());
         assertEquals(List.of("◇ T", "✓ old", "• now"), side.stream().map(row -> row.text()).toList());
@@ -169,7 +169,7 @@ class MissionScreenTest {
         assertTrue(main.get(1).indented() && main.get(2).indented() && !main.get(0).indented());
 
         var drawn = new Drawn(null);
-        MissionScreen.tracker(drawn, listed(Tracker.Kind.SIDE, steps), frame, false, SETTINGS);
+        MissionScreen.tracker(drawn, listed(uz.dukeengine.rpg.story.Quest.Kind.SIDE, steps), frame, false, SETTINGS);
         assertNotNull(drawn.line("◇ T"), "the side mission is drawn: " + drawn.lines);
     }
 
@@ -177,12 +177,12 @@ class MissionScreenTest {
     @Test
     void aStepJustBegunGlowsAndThenSettles() {
         int glow = SETTINGS.run().glowFrames();
-        var begun = new Tracker.Step("now", false, 100);
+        var begun = new uz.dukeengine.rpg.story.Tracked.Line("now", false, 100);
         int plain = 0xFF000000 | SETTINGS.menu().boneColour();
 
-        int fresh = MissionScreen.rows(listed(Tracker.Kind.MAIN, begun), 100, SETTINGS).get(1).argb();
-        int half = MissionScreen.rows(listed(Tracker.Kind.MAIN, begun), 100 + glow / 2, SETTINGS).get(1).argb();
-        int over = MissionScreen.rows(listed(Tracker.Kind.MAIN, begun), 100 + glow, SETTINGS).get(1).argb();
+        int fresh = MissionScreen.rows(listed(uz.dukeengine.rpg.story.Quest.Kind.MAIN, begun), 100, SETTINGS).get(1).argb();
+        int half = MissionScreen.rows(listed(uz.dukeengine.rpg.story.Quest.Kind.MAIN, begun), 100 + glow / 2, SETTINGS).get(1).argb();
+        int over = MissionScreen.rows(listed(uz.dukeengine.rpg.story.Quest.Kind.MAIN, begun), 100 + glow, SETTINGS).get(1).argb();
 
         assertEquals(0xFFFFFFFF, fresh, "white as it begins");
         assertTrue((half & 0xFF) > (plain & 0xFF) && (half & 0xFF) < 0xFF, "between, half way");

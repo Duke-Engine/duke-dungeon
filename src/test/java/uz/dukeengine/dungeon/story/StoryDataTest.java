@@ -1,5 +1,9 @@
 package uz.dukeengine.dungeon.story;
 
+import uz.dukeengine.rpg.story.Speaker;
+import uz.dukeengine.rpg.story.Conversation;
+import uz.dukeengine.rpg.story.Npc;
+import uz.dukeengine.rpg.story.Quest;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -24,7 +28,7 @@ class StoryDataTest {
         var story = DungeonSettings.load().story();
         var quest = story.quest("WallSkeletons");
         assertNotNull(quest);
-        assertEquals(Tracker.Kind.MAIN, quest.kind());
+        assertEquals(uz.dukeengine.rpg.story.Quest.Kind.MAIN, quest.kind());
         assertEquals(Quest.Goal.KILL, quest.steps().getFirst().goal());
         assertEquals(5, quest.steps().getFirst().count());
         assertEquals("CommanderThanks", quest.steps().get(1).onDone().says());

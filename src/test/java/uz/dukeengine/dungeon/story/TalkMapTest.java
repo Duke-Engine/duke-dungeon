@@ -1,5 +1,6 @@
 package uz.dukeengine.dungeon.story;
 
+import uz.dukeengine.rpg.story.QuestLog;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -71,7 +72,7 @@ class TalkMapTest {
         game.runHeadless(CHECK + 1);
         assertEquals(List.of("CommanderGreets"), run.getQuests().barked(), "walking up, she calls out to him");
         assertEquals(List.of(), run.getQuests().said(), "over her head, not in the box that stops the world");
-        var titles = run.getTracker().entries().stream().map(Tracker.Entry::title).toList();
+        var titles = run.getTracker().entries().stream().map(uz.dukeengine.rpg.story.Tracked::title).toList();
         assertEquals(List.of("Devordagi skeletlar", "Yo'qolgan tumor"), titles,
                 "her MAIN, then her SIDE: a story map runs no floor mission");
 

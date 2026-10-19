@@ -1,5 +1,15 @@
 package uz.dukeengine.dungeon.story;
 
+import uz.dukeengine.rpg.story.QuestLog;
+import uz.dukeengine.rpg.story.Script;
+import uz.dukeengine.rpg.story.Trigger;
+
+import uz.dukeengine.rpg.story.Conversation;
+import uz.dukeengine.rpg.story.Merchant;
+import uz.dukeengine.rpg.story.Npc;
+import uz.dukeengine.rpg.story.Quest;
+import uz.dukeengine.rpg.story.Speaker;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -11,7 +21,7 @@ import java.util.List;
  */
 public record Story(Dialogue dialogue, List<Speaker> speakers, List<Conversation> conversations, List<Npc> npcs,
         List<Quest> quests, List<Trigger> triggers, List<Cutscene> cutscenes, Trade trade,
-        List<Merchant> merchants, List<Boss> bosses) {
+        List<Merchant> merchants, List<Boss> bosses) implements uz.dukeengine.rpg.story.Lore {
 
     public static final Story NONE = new Story(Dialogue.DEFAULTS, List.of(), List.of(), List.of(), List.of());
 
@@ -183,8 +193,8 @@ public record Story(Dialogue dialogue, List<Speaker> speakers, List<Conversation
 
     private void trigger(Trigger trigger, Collection<String> monsters, Collection<String> items, List<String> wrong) {
         var named = "Trigger " + trigger.name();
-        if (trigger.when() == null) {
-            wrong.add(named + " has no When: one of " + java.util.Arrays.toString(Trigger.When.values()));
+        if (trigger.when() == null || !When.ALL.contains(trigger.when())) {
+            wrong.add(named + " waits on " + trigger.when() + ": a When is one of " + new java.util.TreeSet<>(When.ALL));
             return;
         }
         if (trigger.delay() < 0) {
@@ -192,45 +202,45 @@ public record Story(Dialogue dialogue, List<Speaker> speakers, List<Conversation
         }
         var target = trigger.target();
         switch (trigger.when()) {
-            case MAP_START -> {
+            case When.MAP_START -> {
             }
-            case ZONE, FLAG -> {
+            case When.ZONE, When.FLAG -> {
                 if (target.isBlank()) {
                     wrong.add(named + " waits on a " + trigger.when() + " and names none");
                 }
             }
-            case DIED, BEATEN -> {
+            case When.DIED, When.BEATEN -> {
                 if (!monsters.contains(target)) {
                     wrong.add(named + " waits for a " + target + " to fall, and no Monster is called that");
                 }
             }
-            case SEEN -> {
+            case When.SEEN -> {
                 if (cutscene(target) == null) {
                     wrong.add(named + " waits for " + target + " to be seen, and no Cutscene is called that");
                 }
             }
-            case QUEST_STARTED, QUEST_DONE, STEP_DONE -> {
+            case When.QUEST_STARTED, When.QUEST_DONE, When.STEP_DONE -> {
                 var quest = quest(target);
                 if (quest == null) {
                     wrong.add(named + " waits on " + target + ", and no Quest is called that");
-                } else if (trigger.when() == Trigger.When.STEP_DONE
+                } else if (When.STEP_DONE.equals(trigger.when())
                         && (trigger.step() < 1 || trigger.step() > quest.steps().size())) {
                     wrong.add(named + " waits on step " + trigger.step() + " of " + target + ", which has "
                             + quest.steps().size());
                 }
             }
-            case HEARD -> conversation(target, named, wrong);
-            case CLEARED -> {
+            case When.HEARD -> conversation(target, named, wrong);
+            case When.CLEARED -> {
                 if (target.isBlank()) {
                     wrong.add(named + " waits for a zone to be CLEARED and names none");
                 }
             }
-            case DEPTH -> {
+            case When.DEPTH -> {
                 if (!target.matches("[1-9][0-9]*")) {
                     wrong.add(named + " waits on DEPTH " + target + ": a depth is a number, 1 or more");
                 }
             }
-            case AFTER -> {
+            case When.AFTER -> {
                 if (trigger(target) == null) {
                     wrong.add(named + " comes after " + target + ", and no Trigger is called that");
                 }
@@ -239,16 +249,17 @@ public record Story(Dialogue dialogue, List<Speaker> speakers, List<Conversation
         if (trigger.actions().isEmpty()) {
             wrong.add(named + " does nothing: it has no Actions");
         }
-        for (var action : trigger.actions()) {
+        for (var action : uz.dukeengine.dungeon.story.Action.of(trigger)) {
             action(named, action, false, monsters, items, wrong);
         }
         for (var condition : trigger.If()) {
             var what = condition.target();
             boolean known = condition.is() != null && switch (condition.is()) {
-                case FLAG_SET, FLAG_UNSET -> !what.isBlank();
-                case HOLDS, WEARS, LACKS -> items.contains(what);
-                case QUEST_ACTIVE, QUEST_DONE -> quest(what) != null;
-                case ALIVE, DEAD -> monsters.contains(what);
+                case Is.FLAG_SET, Is.FLAG_UNSET -> !what.isBlank();
+                case Is.HOLDS, Is.WEARS, Is.LACKS -> items.contains(what);
+                case Is.QUEST_ACTIVE, Is.QUEST_DONE -> quest(what) != null;
+                case Is.ALIVE, Is.DEAD -> monsters.contains(what);
+                default -> false;
             };
             if (!known) {
                 wrong.add(named + " asks If " + condition.is() + " " + what + ", and the files have no such thing: "
@@ -258,7 +269,7 @@ public record Story(Dialogue dialogue, List<Speaker> speakers, List<Conversation
     }
 
     /** What is wrong with one action: a trigger's, or ({@code inPhase}) a phase's, whose CALL and EFFECT need no Zone. */
-    private void action(String named, Trigger.Action action, boolean inPhase, Collection<String> monsters,
+    private void action(String named, uz.dukeengine.dungeon.story.Action action, boolean inPhase, Collection<String> monsters,
             Collection<String> items, List<String> wrong) {
         if (action.act() == null) {
             wrong.add(named + " has an Action with no Act");
@@ -326,7 +337,7 @@ public record Story(Dialogue dialogue, List<Speaker> speakers, List<Conversation
                 }
             }
             case KNOCK, KILL -> {
-                if (!monsters.contains(what) || action.act() == Trigger.Act.KNOCK && action.zone().isBlank()) {
+                if (!monsters.contains(what) || action.act() == uz.dukeengine.dungeon.story.Action.Act.KNOCK && action.zone().isBlank()) {
                     wrong.add(named + " " + action.act() + "s " + what + ", who is no Monster, or to no Zone");
                 }
             }
@@ -341,7 +352,7 @@ public record Story(Dialogue dialogue, List<Speaker> speakers, List<Conversation
                 }
             }
             case MOVE, LEAP, FALL -> {
-                if (!Trigger.HEROES.equals(what) && !monsters.contains(what) || action.zone().isBlank()
+                if (!uz.dukeengine.dungeon.story.Action.HEROES.equals(what) && !monsters.contains(what) || action.zone().isBlank()
                         || action.frames() < 1 || action.height() < 0f) {
                     wrong.add(named + " " + action.act() + "s " + what + ", who is no Monster nor Hero, or to no"
                             + " Zone, or over fewer than one frame or from below the ground");
@@ -373,7 +384,7 @@ public record Story(Dialogue dialogue, List<Speaker> speakers, List<Conversation
                 }
             }
             case POSE -> {
-                if (!monsters.contains(what) && !Trigger.HEROES.equals(what) || action.clip().isBlank()
+                if (!monsters.contains(what) && !uz.dukeengine.dungeon.story.Action.HEROES.equals(what) || action.clip().isBlank()
                         || action.frames() < 1) {
                     wrong.add(named + " poses " + what + ", who is no Monster nor Hero, or with no Clip, or for no"
                             + " frames");
@@ -386,14 +397,14 @@ public record Story(Dialogue dialogue, List<Speaker> speakers, List<Conversation
                 }
             }
             case SKY, STREAK -> {
-                if (!Trigger.HEROES.equals(what) || action.zone().isBlank() || action.height() <= 0f
-                        || action.act() == Trigger.Act.STREAK && action.frames() < 1) {
+                if (!uz.dukeengine.dungeon.story.Action.HEROES.equals(what) || action.zone().isBlank() || action.height() <= 0f
+                        || action.act() == uz.dukeengine.dungeon.story.Action.Act.STREAK && action.frames() < 1) {
                     wrong.add(named + " " + action.act() + "s " + what + ": only the heroes, over a Zone, from a Height"
                             + " above it");
                 }
             }
             case HOLD, SOUND -> {
-                if (action.zone().isBlank() || action.act() == Trigger.Act.SOUND && what.isBlank()) {
+                if (action.zone().isBlank() || action.act() == uz.dukeengine.dungeon.story.Action.Act.SOUND && what.isBlank()) {
                     wrong.add(named + " " + action.act() + "s at no Zone, or names nothing");
                 }
             }

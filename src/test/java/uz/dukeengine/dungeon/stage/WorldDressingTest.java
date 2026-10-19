@@ -174,7 +174,7 @@ class WorldDressingTest {
         var session = Dungeon.newStageSession(stage, SETTINGS);
         session.game().runHeadless(1);
         var base = session.run().saveNow();
-        var flags = new uz.dukeengine.dungeon.story.Script.State(List.of(), List.of("FreedGreen"), List.of(),
+        var flags = new uz.dukeengine.rpg.story.Script.State(List.of(), List.of("FreedGreen"), List.of(),
                 List.of());
         var save = new SaveGame(base.seed(), base.stage(), base.depth(), base.hero(), base.experience(),
                 base.ranks(), base.bag(), base.quests(), flags, 0, base.souls(), base.givenTo(),

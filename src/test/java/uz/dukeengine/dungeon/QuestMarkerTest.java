@@ -14,7 +14,7 @@ import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.dungeon.map.StaticMap;
 import uz.dukeengine.dungeon.stage.Stages;
 import uz.dukeengine.dungeon.story.MapStory;
-import uz.dukeengine.dungeon.story.QuestLog;
+import uz.dukeengine.rpg.story.QuestLog;
 
 /**
  * The owner's ask after MSI 1.0.39: a quest taken shows where to go -- on the world map, by an arrow round the hero,

@@ -35,14 +35,14 @@ import uz.dukeengine.rpg.skill.SkillRanks;
  * @param mounted    whether he rode his horse (docs/plan/2026-10-15-mounts.md); on foot in an older save
  */
 public record SaveGame(long seed, String stage, int depth, String hero, int experience, List<Rank> ranks,
-        List<Item> bag, uz.dukeengine.dungeon.story.QuestLog.State quests,
-        uz.dukeengine.dungeon.story.Script.State script, int gold, int souls, String givenTo, List<String> places,
+        List<Item> bag, uz.dukeengine.rpg.story.QuestLog.State quests,
+        uz.dukeengine.rpg.story.Script.State script, int gold, int souls, String givenTo, List<String> places,
         List<Integer> felled, int clock, boolean mounted) {
 
     /** A save of a hero on foot: as one written before riding was. */
     public SaveGame(long seed, String stage, int depth, String hero, int experience, List<Rank> ranks,
-            List<Item> bag, uz.dukeengine.dungeon.story.QuestLog.State quests,
-            uz.dukeengine.dungeon.story.Script.State script, int gold, int souls, String givenTo, List<String> places,
+            List<Item> bag, uz.dukeengine.rpg.story.QuestLog.State quests,
+            uz.dukeengine.rpg.story.Script.State script, int gold, int souls, String givenTo, List<String> places,
             List<Integer> felled, int clock) {
         this(seed, stage, depth, hero, experience, ranks, bag, quests, script, gold, souls, givenTo, places, felled,
                 clock, false);
@@ -50,43 +50,43 @@ public record SaveGame(long seed, String stage, int depth, String hero, int expe
 
     /** A save with no clock in it: as one written before the day turned. */
     public SaveGame(long seed, String stage, int depth, String hero, int experience, List<Rank> ranks,
-            List<Item> bag, uz.dukeengine.dungeon.story.QuestLog.State quests,
-            uz.dukeengine.dungeon.story.Script.State script, int gold, int souls, String givenTo, List<String> places,
+            List<Item> bag, uz.dukeengine.rpg.story.QuestLog.State quests,
+            uz.dukeengine.rpg.story.Script.State script, int gold, int souls, String givenTo, List<String> places,
             List<Integer> felled) {
         this(seed, stage, depth, hero, experience, ranks, bag, quests, script, gold, souls, givenTo, places, felled, 0);
     }
 
     /** A save with no trees felled in it: as one written before chopping was. */
     public SaveGame(long seed, String stage, int depth, String hero, int experience, List<Rank> ranks,
-            List<Item> bag, uz.dukeengine.dungeon.story.QuestLog.State quests,
-            uz.dukeengine.dungeon.story.Script.State script, int gold, int souls, String givenTo, List<String> places) {
+            List<Item> bag, uz.dukeengine.rpg.story.QuestLog.State quests,
+            uz.dukeengine.rpg.story.Script.State script, int gold, int souls, String givenTo, List<String> places) {
         this(seed, stage, depth, hero, experience, ranks, bag, quests, script, gold, souls, givenTo, places, List.of());
     }
 
     /** A save with no places found in it: as one written before they were saved. */
     public SaveGame(long seed, String stage, int depth, String hero, int experience, List<Rank> ranks,
-            List<Item> bag, uz.dukeengine.dungeon.story.QuestLog.State quests,
-            uz.dukeengine.dungeon.story.Script.State script, int gold, int souls, String givenTo) {
+            List<Item> bag, uz.dukeengine.rpg.story.QuestLog.State quests,
+            uz.dukeengine.rpg.story.Script.State script, int gold, int souls, String givenTo) {
         this(seed, stage, depth, hero, experience, ranks, bag, quests, script, gold, souls, givenTo, List.of());
     }
 
     /** A save with no souls in it: as one written before the medallion was. */
     public SaveGame(long seed, String stage, int depth, String hero, int experience, List<Rank> ranks,
-            List<Item> bag, uz.dukeengine.dungeon.story.QuestLog.State quests,
-            uz.dukeengine.dungeon.story.Script.State script, int gold) {
+            List<Item> bag, uz.dukeengine.rpg.story.QuestLog.State quests,
+            uz.dukeengine.rpg.story.Script.State script, int gold) {
         this(seed, stage, depth, hero, experience, ranks, bag, quests, script, gold, 0, "");
     }
 
     /** A save with no gold in it: as one written before gold was. */
     public SaveGame(long seed, String stage, int depth, String hero, int experience, List<Rank> ranks,
-            List<Item> bag, uz.dukeengine.dungeon.story.QuestLog.State quests,
-            uz.dukeengine.dungeon.story.Script.State script) {
+            List<Item> bag, uz.dukeengine.rpg.story.QuestLog.State quests,
+            uz.dukeengine.rpg.story.Script.State script) {
         this(seed, stage, depth, hero, experience, ranks, bag, quests, script, 0);
     }
 
     /** A save with quests and no triggers in it: as one written before triggers were saved. */
     public SaveGame(long seed, String stage, int depth, String hero, int experience, List<Rank> ranks,
-            List<Item> bag, uz.dukeengine.dungeon.story.QuestLog.State quests) {
+            List<Item> bag, uz.dukeengine.rpg.story.QuestLog.State quests) {
         this(seed, stage, depth, hero, experience, ranks, bag, quests, null);
     }
 
@@ -179,8 +179,8 @@ public record SaveGame(long seed, String stage, int depth, String hero, int expe
 
     /** The same, with the run's quests. */
     public static SaveGame of(long seed, String stage, int depth, String hero, int experience, SkillRanks learnt,
-            LootBag carried, uz.dukeengine.dungeon.story.QuestLog.State quests,
-            uz.dukeengine.dungeon.story.Script.State script, int gold) {
+            LootBag carried, uz.dukeengine.rpg.story.QuestLog.State quests,
+            uz.dukeengine.rpg.story.Script.State script, int gold) {
         var ranks = new ArrayList<Rank>();
         for (var skill : learnt.getSkills()) {
             ranks.add(new Rank(skill.key(), learnt.rankOf(skill.key())));
@@ -350,16 +350,16 @@ public record SaveGame(long seed, String stage, int depth, String hero, int expe
                 }
             }
             var bag = new ArrayList<Item>();
-            var going = new ArrayList<uz.dukeengine.dungeon.story.QuestLog.Active>();
-            var waiting = new ArrayList<uz.dukeengine.dungeon.story.Script.Waiting>();
+            var going = new ArrayList<uz.dukeengine.rpg.story.QuestLog.Active>();
+            var waiting = new ArrayList<uz.dukeengine.rpg.story.Script.Waiting>();
             for (var item : save.blocks()) {
                 if (item.word().equals("Waiting")) {
-                    waiting.add(new uz.dukeengine.dungeon.story.Script.Waiting(word(item, "Trigger"),
+                    waiting.add(new uz.dukeengine.rpg.story.Script.Waiting(word(item, "Trigger"),
                             counted(item, "Frames")));
                     continue;
                 }
                 if (item.word().equals("Quest")) {
-                    going.add(new uz.dukeengine.dungeon.story.QuestLog.Active(word(item, "Name"),
+                    going.add(new uz.dukeengine.rpg.story.QuestLog.Active(word(item, "Name"),
                             counted(item, "Step"), counted(item, "Count"), 0));
                     continue;
                 }
@@ -372,10 +372,10 @@ public record SaveGame(long seed, String stage, int depth, String hero, int expe
                         within(item, "Extra", -MOST_WORTH, MOST_WORTH)));
             }
             var quests = field(save, "Quests") == null ? null
-                    : new uz.dukeengine.dungeon.story.QuestLog.State(going, items(save, "Finished"),
+                    : new uz.dukeengine.rpg.story.QuestLog.State(going, items(save, "Finished"),
                             items(save, "Heard"));
             var script = field(save, "Script") == null ? null
-                    : new uz.dukeengine.dungeon.story.Script.State(items(save, "Fired"), items(save, "Flags"), waiting,
+                    : new uz.dukeengine.rpg.story.Script.State(items(save, "Fired"), items(save, "Flags"), waiting,
                             items(save, "Occupied"));
             var stage = field(save, "Stage");
             return new SaveGame(Long.parseLong(word(save, "Seed")), stage == null ? null : text(stage, "Stage"),

@@ -1,5 +1,6 @@
 package uz.dukeengine.dungeon.story;
 
+import uz.dukeengine.rpg.story.Merchant;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -203,7 +204,7 @@ class TradeTest {
         var wall = Stages.load("talk", SETTINGS).story().zones().stream().filter(z -> z.name().equals("Wall"))
                 .findFirst().orElseThrow();
         var script = SETTINGS.story().trigger("Ambush");
-        assertTrue(script.actions().stream().anyMatch(action -> action.act() == Trigger.Act.WALK));
+        assertTrue(uz.dukeengine.dungeon.story.Action.of(script).stream().anyMatch(action -> action.act() == uz.dukeengine.dungeon.story.Action.Act.WALK));
         session.run().getQuests().finishNow("WallSkeletons");
         game.runHeadless(300);
         float cell = PathGrid.DEFAULT_CELL_SIZE;

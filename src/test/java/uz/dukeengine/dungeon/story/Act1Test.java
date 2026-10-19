@@ -1,5 +1,8 @@
 package uz.dukeengine.dungeon.story;
 
+import uz.dukeengine.rpg.story.Trigger;
+import uz.dukeengine.rpg.story.Merchant;
+import uz.dukeengine.rpg.story.Script;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;

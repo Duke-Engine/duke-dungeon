@@ -102,8 +102,8 @@ class SkillLookTest {
     private static java.util.Set<String> cutsceneLooks() {
         var looks = new java.util.HashSet<String>();
         for (var trigger : SETTINGS.story().triggers()) {
-            for (var action : trigger.actions()) {
-                if (action.act() == uz.dukeengine.dungeon.story.Trigger.Act.STREAK && !action.landed().isBlank()) {
+            for (var action : uz.dukeengine.dungeon.story.Action.of(trigger)) {
+                if (action.act() == uz.dukeengine.dungeon.story.Action.Act.STREAK && !action.landed().isBlank()) {
                     looks.add(action.landed());
                 }
             }

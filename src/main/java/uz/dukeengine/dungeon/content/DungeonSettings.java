@@ -122,13 +122,13 @@ public final class DungeonSettings {
     private HitFeel hitFeel = HitFeel.DEFAULTS;
     private Audio audio = Audio.DEFAULTS;
     private uz.dukeengine.dungeon.story.Dialogue dialogue = uz.dukeengine.dungeon.story.Dialogue.DEFAULTS;
-    private final List<uz.dukeengine.dungeon.story.Speaker> speakers = new java.util.ArrayList<>();
-    private final List<uz.dukeengine.dungeon.story.Conversation> conversations = new java.util.ArrayList<>();
-    private final List<uz.dukeengine.dungeon.story.Npc> npcs = new java.util.ArrayList<>();
-    private final List<uz.dukeengine.dungeon.story.Quest> quests = new java.util.ArrayList<>();
-    private final List<uz.dukeengine.dungeon.story.Trigger> triggers = new java.util.ArrayList<>();
+    private final List<uz.dukeengine.rpg.story.Speaker> speakers = new java.util.ArrayList<>();
+    private final List<uz.dukeengine.rpg.story.Conversation> conversations = new java.util.ArrayList<>();
+    private final List<uz.dukeengine.rpg.story.Npc> npcs = new java.util.ArrayList<>();
+    private final List<uz.dukeengine.rpg.story.Quest> quests = new java.util.ArrayList<>();
+    private final List<uz.dukeengine.rpg.story.Trigger> triggers = new java.util.ArrayList<>();
     private final List<uz.dukeengine.dungeon.story.Cutscene> cutscenes = new java.util.ArrayList<>();
-    private final List<uz.dukeengine.dungeon.story.Merchant> merchants = new java.util.ArrayList<>();
+    private final List<uz.dukeengine.rpg.story.Merchant> merchants = new java.util.ArrayList<>();
     private final List<uz.dukeengine.dungeon.story.Boss> bosses = new java.util.ArrayList<>();
     private uz.dukeengine.dungeon.story.Trade trade = uz.dukeengine.dungeon.story.Trade.DEFAULTS;
     private uz.dukeengine.dungeon.story.GoldBurst goldBurst = uz.dukeengine.dungeon.story.GoldBurst.DEFAULTS;
@@ -614,13 +614,13 @@ public final class DungeonSettings {
                 case Hud block -> hud = once(block, once);
                 case uz.dukeengine.dungeon.world.Party block -> party = once(block, once);
                 case uz.dukeengine.dungeon.story.Dialogue block -> dialogue = once(block, once);
-                case uz.dukeengine.dungeon.story.Speaker speaker -> speakers.add(speaker);
-                case uz.dukeengine.dungeon.story.Conversation conversation -> conversations.add(conversation);
-                case uz.dukeengine.dungeon.story.Npc npc -> npcs.add(npc);
-                case uz.dukeengine.dungeon.story.Quest quest -> quests.add(quest);
-                case uz.dukeengine.dungeon.story.Trigger trigger -> triggers.add(trigger);
+                case uz.dukeengine.rpg.story.Speaker speaker -> speakers.add(speaker);
+                case uz.dukeengine.rpg.story.Conversation conversation -> conversations.add(conversation);
+                case uz.dukeengine.rpg.story.Npc npc -> npcs.add(npc);
+                case uz.dukeengine.rpg.story.Quest quest -> quests.add(quest);
+                case uz.dukeengine.rpg.story.Trigger trigger -> triggers.add(trigger);
                 case uz.dukeengine.dungeon.story.Cutscene cutscene -> cutscenes.add(cutscene);
-                case uz.dukeengine.dungeon.story.Merchant merchant -> merchants.add(merchant);
+                case uz.dukeengine.rpg.story.Merchant merchant -> merchants.add(merchant);
                 case uz.dukeengine.dungeon.story.Boss boss -> {
                     // A later Boss block of a name is the one fought: a map's or a test's own over the shipped.
                     bosses.removeIf(earlier -> earlier.name().equals(boss.name()));
@@ -1404,7 +1404,7 @@ public final class DungeonSettings {
             looks.add(boss.beatenLook());
             boss.phases().forEach(phase -> phase.actions().forEach(action -> looks.add(effectOf(action))));
         }
-        triggers.forEach(trigger -> trigger.actions().forEach(action -> looks.add(effectOf(action))));
+        triggers.forEach(trigger -> uz.dukeengine.dungeon.story.Action.of(trigger).forEach(action -> looks.add(effectOf(action))));
         for (var look : looks) {
             require(look.isBlank() || effects.stream().anyMatch(effect -> effect.name().equals(look)),
                     "the story plays the Effect " + look + ", and no Effect block describes it");
@@ -1413,8 +1413,8 @@ public final class DungeonSettings {
             require(!title.text().isBlank() && title.fadeIn() >= 0f && title.hold() > 0f && title.fadeOut() >= 0f,
                     "Title " + title.name() + ": it says something, and is held a while");
         }
-        triggers.forEach(trigger -> trigger.actions().forEach(action -> require(
-                action.act() != uz.dukeengine.dungeon.story.Trigger.Act.TITLE || title(action.target()) != null,
+        triggers.forEach(trigger -> uz.dukeengine.dungeon.story.Action.of(trigger).forEach(action -> require(
+                action.act() != uz.dukeengine.dungeon.story.Action.Act.TITLE || title(action.target()) != null,
                 "Trigger " + trigger.name() + " shows the Title " + action.target() + ", and no Title is called that")));
         require(dialogue.glowFrames() >= 1, "Dialogue's GlowFrames is how often a quest's target glows again: at least 1");
         for (var moment : moments) {
@@ -1705,8 +1705,8 @@ public final class DungeonSettings {
     }
 
     /** The Effect an EFFECT action plays, or blank for an action of another Act. */
-    private static String effectOf(uz.dukeengine.dungeon.story.Trigger.Action action) {
-        return action.act() == uz.dukeengine.dungeon.story.Trigger.Act.EFFECT ? action.target() : action.landed();
+    private static String effectOf(uz.dukeengine.dungeon.story.Action action) {
+        return action.act() == uz.dukeengine.dungeon.story.Action.Act.EFFECT ? action.target() : action.landed();
     }
 
     private static void require(boolean condition, String message) {

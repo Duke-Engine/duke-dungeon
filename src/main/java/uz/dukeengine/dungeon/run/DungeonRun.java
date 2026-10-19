@@ -7,7 +7,7 @@ import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.core.thing.ObjectId;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.dungeon.gen.GeneratedDungeon;
-import uz.dukeengine.dungeon.story.QuestLog;
+import uz.dukeengine.rpg.story.QuestLog;
 import uz.dukeengine.rpg.hero.HeroProgress;
 import uz.dukeengine.rpg.item.KeyDrop;
 import uz.dukeengine.rpg.item.ItemUse;
@@ -173,7 +173,7 @@ public final class DungeonRun {
      */
     private volatile Tracker tracker = Tracker.NONE;
     /** The steps of this floor already finished and still listed, each until its time is up; the simulation's alone. */
-    private final List<Tracker.Step> finished = new ArrayList<>();
+    private final List<uz.dukeengine.rpg.story.Tracked.Line> finished = new ArrayList<>();
     /** The step said last frame, and the frame it began at; null before the floor says its first. */
     private Mission.Step said;
     private int saidSince;
@@ -204,7 +204,7 @@ public final class DungeonRun {
         this.seal = seal;
         this.clock = clock;
         this.quests = new QuestLog(settings.story(), settings.loot(), settings.lootDrops().joinCount());
-        this.script = new uz.dukeengine.dungeon.story.Script(settings.story());
+        this.script = new uz.dukeengine.rpg.story.Script(settings.story().triggers());
         this.fight = new BossFight(settings.story());
         script.judgedBy(this::holds);
         this.orders = orders;
@@ -408,7 +408,7 @@ public final class DungeonRun {
         if (moved != null) {
             var flags = new ArrayList<String>(kept == null ? List.of() : kept.flags());
             moved.flags().stream().filter(flag -> !flags.contains(flag)).forEach(flags::add);
-            kept = new uz.dukeengine.dungeon.story.Script.State(kept == null ? List.of() : kept.fired(), flags,
+            kept = new uz.dukeengine.rpg.story.Script.State(kept == null ? List.of() : kept.fired(), flags,
                     List.of(), List.of());
         }
         if (kept == null) {
@@ -458,7 +458,7 @@ public final class DungeonRun {
         }
         joint.flags().stream().filter(flag -> !flags.contains(flag)).forEach(flags::add);
         resume(new SaveGame(chosen.seed(), joint.map(), chosen.firstDepth(), campaign.hero(), joint.experience(),
-                List.of(), items, null, new uz.dukeengine.dungeon.story.Script.State(List.of(), flags,
+                List.of(), items, null, new uz.dukeengine.rpg.story.Script.State(List.of(), flags,
                         List.of(), List.of()), joint.gold()), chosen);
         joint.quests().forEach(quests::start); // the quests that joint has going
         skippedTo = joint.at();
@@ -750,7 +750,7 @@ public final class DungeonRun {
         }
         if (!skippedTo.isBlank()) {
             // A joint skipped to on a great map: he starts where that joint's story is, not at the map's way in.
-            act(game, new uz.dukeengine.dungeon.story.Trigger.Action(uz.dukeengine.dungeon.story.Trigger.Act.PLACE,
+            act(game, new uz.dukeengine.dungeon.story.Action(uz.dukeengine.dungeon.story.Action.Act.PLACE,
                     "", 1, skippedTo, 1, 0f, ""));
             var there = zoneNamed(skippedTo);
             if (there != null) {
@@ -782,7 +782,7 @@ public final class DungeonRun {
         var run = settings.run();
         if (said == null || step != said) {
             if (said != null && step.ordinal() > said.ordinal() && mission != null) {
-                finished.add(new Tracker.Step(doneWords(mission, run, said), true, frame));
+                finished.add(new uz.dukeengine.rpg.story.Tracked.Line(doneWords(mission, run, said), true, frame));
             }
             keyLying = step == Mission.Step.TAKE ? keyDropped(game, said != null) : null;
             said = step;
@@ -791,9 +791,9 @@ public final class DungeonRun {
         finished.removeIf(done -> frame - done.since() >= run.doneFrames());
         var words = mission == null ? run.killBossWord() : words(mission, run, step);
         var steps = new ArrayList<>(finished);
-        steps.add(new Tracker.Step(words, false, saidSince));
+        steps.add(new uz.dukeengine.rpg.story.Tracked.Line(words, false, saidSince));
         tracker = descendAtFrame > 0 ? Tracker.NONE
-                : new Tracker(floorMission() ? listed(new Tracker.Entry(Tracker.Kind.MAIN, run.missionTitle(), steps))
+                : new Tracker(floorMission() ? listed(new uz.dukeengine.rpg.story.Tracked(uz.dukeengine.rpg.story.Quest.Kind.MAIN, run.missionTitle(), steps))
                         : quests.entries());
         questsNow = quests.state();
         storyNow = floors.story();
@@ -960,30 +960,31 @@ public final class DungeonRun {
      * Whether a trigger's condition holds this moment: a flag, what a hero carries or wears (any hero of a party), a
      * quest going or done, a creature standing on the floor or none.
      */
-    private boolean holds(uz.dukeengine.dungeon.story.Trigger.Condition condition) {
+    private boolean holds(uz.dukeengine.rpg.story.Trigger.Condition condition) {
         var what = condition.target();
         return switch (condition.is()) {
-            case FLAG_SET, FLAG_UNSET -> script.flagsAlone(condition);
-            case LACKS -> !holds(new uz.dukeengine.dungeon.story.Trigger.Condition(
-                    uz.dukeengine.dungeon.story.Trigger.Is.HOLDS, what));
-            case HOLDS, WEARS -> bags().stream().anyMatch(bag -> {
+            case uz.dukeengine.dungeon.story.Is.FLAG_SET, uz.dukeengine.dungeon.story.Is.FLAG_UNSET -> script.flagsAlone(condition);
+            case uz.dukeengine.dungeon.story.Is.LACKS -> !holds(new uz.dukeengine.rpg.story.Trigger.Condition(
+                    uz.dukeengine.dungeon.story.Is.HOLDS, what));
+            case uz.dukeengine.dungeon.story.Is.HOLDS, uz.dukeengine.dungeon.story.Is.WEARS -> bags().stream().anyMatch(bag -> {
                 for (int place = 0; place < bag.slots().size(); place++) {
                     var item = bag.at(place);
                     boolean worn = !bag.wears() || place >= bag.backpackSize();
                     if (item != null && item.id().equals(what)
-                            && (condition.is() == uz.dukeengine.dungeon.story.Trigger.Is.HOLDS || worn)) {
+                            && (uz.dukeengine.dungeon.story.Is.HOLDS.equals(condition.is()) || worn)) {
                         return true;
                     }
                 }
                 return false;
             });
-            case QUEST_ACTIVE -> quests.active().stream().anyMatch(each -> each.quest().equals(what));
-            case QUEST_DONE -> quests.finished().contains(what);
-            case ALIVE, DEAD -> {
+            case uz.dukeengine.dungeon.story.Is.QUEST_ACTIVE -> quests.active().stream().anyMatch(each -> each.quest().equals(what));
+            case uz.dukeengine.dungeon.story.Is.QUEST_DONE -> quests.finished().contains(what);
+            case uz.dukeengine.dungeon.story.Is.ALIVE, uz.dukeengine.dungeon.story.Is.DEAD -> {
                 boolean alive = lastLogic != null && lastLogic.getObjects().stream().anyMatch(thing ->
                         thing.getTemplate().name().equals(what) && !thing.isEffectivelyDead());
-                yield alive == (condition.is() == uz.dukeengine.dungeon.story.Trigger.Is.ALIVE);
+                yield alive == uz.dukeengine.dungeon.story.Is.ALIVE.equals(condition.is());
             }
+            default -> false;
         };
     }
 
@@ -1328,7 +1329,7 @@ public final class DungeonRun {
     private volatile List<Mark> marks = List.of();
 
     /** The floor's mission first, then every quest going: the MAIN ones first, then the SIDE. */
-    private List<Tracker.Entry> listed(Tracker.Entry floor) {
+    private List<uz.dukeengine.rpg.story.Tracked> listed(uz.dukeengine.rpg.story.Tracked floor) {
         return java.util.stream.Stream.concat(java.util.stream.Stream.of(floor), quests.entries().stream()).toList();
     }
 
@@ -1369,7 +1370,7 @@ public final class DungeonRun {
         restock(); // every merchant's stock is the data's again
         script.mapStarted(floors.stageName());
         // A campaign's descent says how deep it has come: DEPTH, the floor's depth. See docs/plan/2026-10-15-act1.md.
-        script.heard(uz.dukeengine.dungeon.story.Trigger.When.DEPTH, Integer.toString(depth), 0);
+        script.heard(uz.dukeengine.dungeon.story.When.DEPTH, Integer.toString(depth), 0);
         marks();
     }
 
@@ -1386,14 +1387,14 @@ public final class DungeonRun {
         quests.died(death.templateName(), bags());
         drunk(death);
         camp.died(lastLogic, death);
-        script.heard(uz.dukeengine.dungeon.story.Trigger.When.DIED, death.templateName(), 0);
+        script.heard(uz.dukeengine.dungeon.story.When.DIED, death.templateName(), 0);
         // A camp cleared: every zone with none of the dungeon's creatures standing in it any more is heard CLEARED
         // (a once-only trigger hears it once). See docs/plan/2026-10-15-act2.md.
         if (lastLogic != null) {
             for (var zone : zones()) {
                 if (!held(zone)) {
                     cleared.add(zone.name());
-                    script.heard(uz.dukeengine.dungeon.story.Trigger.When.CLEARED, zone.name(), 0);
+                    script.heard(uz.dukeengine.dungeon.story.When.CLEARED, zone.name(), 0);
                 }
             }
         }
@@ -1424,7 +1425,7 @@ public final class DungeonRun {
             if (held(zone)) {
                 cleared.remove(zone.name());
             } else {
-                script.heard(uz.dukeengine.dungeon.story.Trigger.When.CLEARED, zone.name(), 0);
+                script.heard(uz.dukeengine.dungeon.story.When.CLEARED, zone.name(), 0);
             }
         }
     }
@@ -1432,7 +1433,7 @@ public final class DungeonRun {
     // ---- triggers and cutscenes: see docs/plan/2026-10-08-story-scripting.md ----
 
     /** The run's triggers: what has fired, the flags, what waits. */
-    private final uz.dukeengine.dungeon.story.Script script;
+    private final uz.dukeengine.rpg.story.Script script;
     /** The floor's bosses: who is beaten, and which phase each is in. See docs/plan/2026-10-09-final-fight.md. */
     private final BossFight fight;
     /** The cutscene playing, or null; the shot it is on, and that shot's frames left (-1 before it begins). */
@@ -1454,7 +1455,7 @@ public final class DungeonRun {
         fight.tick(game.getLogic(), script, (action, caller) -> act(game, action, caller),
                 uz.dukeengine.core.player.PlayerList.NEUTRAL_INDEX);
         for (var trigger : script.due()) {
-            for (var action : trigger.actions()) {
+            for (var action : uz.dukeengine.dungeon.story.Action.of(trigger)) {
                 act(game, action);
             }
         }
@@ -1485,12 +1486,12 @@ public final class DungeonRun {
         }
     }
 
-    private void act(DukeGame game, uz.dukeengine.dungeon.story.Trigger.Action action) {
+    private void act(DukeGame game, uz.dukeengine.dungeon.story.Action action) {
         act(game, action, null);
     }
 
     /** One action done: a trigger's, or — {@code caller} the boss — a phase's. */
-    private void act(DukeGame game, uz.dukeengine.dungeon.story.Trigger.Action action, GameObject caller) {
+    private void act(DukeGame game, uz.dukeengine.dungeon.story.Action action, GameObject caller) {
         var logic = game.getLogic();
         var what = action.target();
         switch (action.act()) {
@@ -1557,7 +1558,7 @@ public final class DungeonRun {
                 var flat = new uz.dukeengine.core.math.Coord3D(zone.middleX(cell), zone.middleY(cell), 0f);
                 var to = new uz.dukeengine.core.math.Coord3D(flat.x(), flat.y(), logic.groundHeight(flat));
                 for (var thing : List.copyOf(logic.getObjects())) {
-                    boolean moved = action.act() == uz.dukeengine.dungeon.story.Trigger.Act.PLACE
+                    boolean moved = action.act() == uz.dukeengine.dungeon.story.Action.Act.PLACE
                             ? seats.stream().anyMatch(seat -> thing.getId().equals(seat.heroId))
                             : thing.getTemplate().name().equals(what) && !thing.isEffectivelyDead();
                     if (moved) {
@@ -1580,7 +1581,7 @@ public final class DungeonRun {
                 float cell = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
                 var flat = new uz.dukeengine.core.math.Coord3D(zone.middleX(cell), zone.middleY(cell), 0f);
                 var to = new uz.dukeengine.core.math.Coord3D(flat.x(), flat.y(), logic.groundHeight(flat));
-                boolean heroes = uz.dukeengine.dungeon.story.Trigger.HEROES.equals(what);
+                boolean heroes = uz.dukeengine.dungeon.story.Action.HEROES.equals(what);
                 for (var thing : List.copyOf(logic.getObjects())) {
                     boolean moved = heroes ? seats.stream().anyMatch(seat -> thing.getId().equals(seat.heroId))
                             : thing.getTemplate().name().equals(what) && !thing.isEffectivelyDead();
@@ -1588,10 +1589,10 @@ public final class DungeonRun {
                         continue;
                     }
                     uz.dukeengine.combat.module.Errand.giveUpAll(thing);
-                    var move = action.act() == uz.dukeengine.dungeon.story.Trigger.Act.FALL
+                    var move = action.act() == uz.dukeengine.dungeon.story.Action.Act.FALL
                             ? uz.dukeengine.core.module.ScriptedMove.fall(thing, to, action.height(), action.frames())
                             : uz.dukeengine.core.module.ScriptedMove.along(thing, to, action.frames(),
-                                    action.act() == uz.dukeengine.dungeon.story.Trigger.Act.LEAP
+                                    action.act() == uz.dukeengine.dungeon.story.Action.Act.LEAP
                                             ? action.height() : 0f);
                     if (!action.landed().isBlank()) {
                         move.onLanded(() -> logic.effect(action.landed(), thing));
@@ -1660,7 +1661,7 @@ public final class DungeonRun {
                 }
             }
             case POSE -> {
-                boolean heroes = uz.dukeengine.dungeon.story.Trigger.HEROES.equals(what);
+                boolean heroes = uz.dukeengine.dungeon.story.Action.HEROES.equals(what);
                 for (var thing : List.copyOf(logic.getObjects())) {
                     if (heroes ? seats.stream().anyMatch(seat -> thing.getId().equals(seat.heroId))
                             : thing.getTemplate().name().equals(what) && !thing.isEffectivelyDead()) {
@@ -1903,7 +1904,7 @@ public final class DungeonRun {
         float cell = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
         for (var each : List.copyOf(quests.active())) {
             var step = settings.story().quest(each.quest()).steps().get(each.step());
-            var where = step.goal() == uz.dukeengine.dungeon.story.Quest.Goal.FOLLOW ? zoneNamed(step.where()) : null;
+            var where = step.goal() == uz.dukeengine.rpg.story.Quest.Goal.FOLLOW ? zoneNamed(step.where()) : null;
             if (where == null) {
                 continue;
             }
@@ -2362,7 +2363,7 @@ public final class DungeonRun {
     /** The cutscene played to its end, or skipped: over, and heard as SEEN. */
     private void seen(DukeGame game) {
         if (cutscene != null) {
-            script.heard(uz.dukeengine.dungeon.story.Trigger.When.SEEN, cutscene.name(), 0);
+            script.heard(uz.dukeengine.dungeon.story.When.SEEN, cutscene.name(), 0);
         }
         endCutscene(game);
     }
@@ -2385,7 +2386,7 @@ public final class DungeonRun {
     }
 
     /** The run's triggers: what has fired, the flags, what waits. */
-    public uz.dukeengine.dungeon.story.Script getScript() {
+    public uz.dukeengine.rpg.story.Script getScript() {
         return script;
     }
 
@@ -2515,7 +2516,7 @@ public final class DungeonRun {
         }
         var step = known.steps().get(at);
         return !step.where().isBlank() ? step.where()
-                : step.goal() == uz.dukeengine.dungeon.story.Quest.Goal.REACH ? step.target() : "";
+                : step.goal() == uz.dukeengine.rpg.story.Quest.Goal.REACH ? step.target() : "";
     }
 
     /** Every hero's potion stacks joined, as things come into his bag. See {@link Belt#stack}. */
@@ -2646,7 +2647,7 @@ public final class DungeonRun {
         for (var each : quests.active()) {
             var step = settings.story().quest(each.quest()).steps().get(each.step());
             // Whoever a FOLLOW leads him after wears the follow mark over their head, whatever its Glow says.
-            boolean follow = step.goal() == uz.dukeengine.dungeon.story.Quest.Goal.FOLLOW
+            boolean follow = step.goal() == uz.dukeengine.rpg.story.Quest.Goal.FOLLOW
                     && !dialogue.followLook().isBlank();
             if (!step.glow() && !follow) {
                 continue;
@@ -2660,7 +2661,7 @@ public final class DungeonRun {
     }
 
     /** Whether {@code thing} is what {@code step} asks for. */
-    private static boolean glows(uz.dukeengine.dungeon.story.Quest.Step step, GameObject thing) {
+    private static boolean glows(uz.dukeengine.rpg.story.Quest.Step step, GameObject thing) {
         return switch (step.goal()) {
             case COLLECT -> {
                 var lying = thing.findModule(uz.dukeengine.rpg.item.GroundItem.class);
@@ -3027,14 +3028,14 @@ public final class DungeonRun {
     }
 
     /** A merchant's stock on this floor: the person, and how many of each of his wares are left. */
-    private record Shop(ObjectId id, List<uz.dukeengine.dungeon.story.Merchant.Ware> wares, int[] left) {
+    private record Shop(ObjectId id, List<uz.dukeengine.rpg.story.Merchant.Ware> wares, int[] left) {
     }
 
     private final List<Shop> shops = new ArrayList<>();
     /** The world the run ticks, for a death heard outside a tick: what the dead creature's level was. */
     private uz.dukeengine.core.GameLogic lastLogic;
     /** What each merchant has left, for the window, by the id of the person: written whole as it changes. */
-    private volatile java.util.Map<Integer, List<uz.dukeengine.dungeon.story.Merchant.Ware>> stock =
+    private volatile java.util.Map<Integer, List<uz.dukeengine.rpg.story.Merchant.Ware>> stock =
             java.util.Map.of();
 
     /**
@@ -3053,22 +3054,22 @@ public final class DungeonRun {
             if (merchant.gear() > 0 && items.active() && lastLogic != null) {
                 for (var thing : items.stock(lastLogic.random().nextInt(0, (1 << 30) - 1), heroLevel(),
                         merchant.gear())) {
-                    wares.add(new uz.dukeengine.dungeon.story.Merchant.Ware(thing.id(), items.price(thing), 1));
+                    wares.add(new uz.dukeengine.rpg.story.Merchant.Ware(thing.id(), items.price(thing), 1));
                 }
             }
             shops.add(new Shop(who.id(), List.copyOf(wares),
-                    wares.stream().mapToInt(uz.dukeengine.dungeon.story.Merchant.Ware::count).toArray()));
+                    wares.stream().mapToInt(uz.dukeengine.rpg.story.Merchant.Ware::count).toArray()));
         }
         published();
     }
 
     private void published() {
-        var now = new java.util.TreeMap<Integer, List<uz.dukeengine.dungeon.story.Merchant.Ware>>();
+        var now = new java.util.TreeMap<Integer, List<uz.dukeengine.rpg.story.Merchant.Ware>>();
         for (var shop : shops) {
-            var wares = new ArrayList<uz.dukeengine.dungeon.story.Merchant.Ware>();
+            var wares = new ArrayList<uz.dukeengine.rpg.story.Merchant.Ware>();
             for (int i = 0; i < shop.left().length; i++) {
                 var ware = shop.wares().get(i);
-                wares.add(new uz.dukeengine.dungeon.story.Merchant.Ware(ware.item(), ware.price(), shop.left()[i]));
+                wares.add(new uz.dukeengine.rpg.story.Merchant.Ware(ware.item(), ware.price(), shop.left()[i]));
             }
             now.put(shop.id().value(), List.copyOf(wares));
         }
@@ -3076,7 +3077,7 @@ public final class DungeonRun {
     }
 
     /** What the merchant {@code id} has left, each ware with its count now; empty for nobody who trades. */
-    public List<uz.dukeengine.dungeon.story.Merchant.Ware> stockOf(int id) {
+    public List<uz.dukeengine.rpg.story.Merchant.Ware> stockOf(int id) {
         return stock.getOrDefault(id, List.of());
     }
 

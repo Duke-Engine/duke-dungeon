@@ -469,7 +469,7 @@ class MissionTest {
         var words = SETTINGS.run();
         var first = run.getTracker().entries();
         assertEquals(1, first.size(), "one mission today");
-        assertEquals(Tracker.Kind.MAIN, first.getFirst().kind());
+        assertEquals(uz.dukeengine.rpg.story.Quest.Kind.MAIN, first.getFirst().kind());
         assertEquals(words.missionTitle(), first.getFirst().title());
         assertEquals(1, first.getFirst().steps().size(), "only the step to do: " + first);
 
@@ -536,7 +536,7 @@ class MissionTest {
 
         var entries = session.run().getTracker().entries();
         assertFalse(entries.isEmpty());
-        assertEquals(uz.dukeengine.dungeon.run.Tracker.Kind.MAIN, entries.getFirst().kind());
+        assertEquals(uz.dukeengine.rpg.story.Quest.Kind.MAIN, entries.getFirst().kind());
         assertEquals(SETTINGS.run().missionTitle(), entries.getFirst().title());
     }
 

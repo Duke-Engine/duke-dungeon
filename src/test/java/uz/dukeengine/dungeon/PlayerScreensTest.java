@@ -21,7 +21,7 @@ import uz.dukeengine.dungeon.run.Sheet;
 import uz.dukeengine.dungeon.run.Tracker;
 import uz.dukeengine.dungeon.stage.Stages;
 import uz.dukeengine.dungeon.story.MapStory;
-import uz.dukeengine.dungeon.story.QuestLog;
+import uz.dukeengine.rpg.story.QuestLog;
 import uz.dukeengine.game.DukeGame;
 
 /**
@@ -180,7 +180,7 @@ class PlayerScreensTest {
         var entries = QuestLogScreen.entries(session.run().questsNow(), SETTINGS.story());
         assertEquals(List.of("WallSkeletons", "LostLocket"), entries.stream().map(QuestLogScreen.Entry::quest).toList());
         var first = entries.getFirst();
-        assertEquals(Tracker.Kind.MAIN, first.kind());
+        assertEquals(uz.dukeengine.rpg.story.Quest.Kind.MAIN, first.kind());
         assertEquals("Devordagi skeletlar", first.title());
         assertEquals(List.of(new QuestLogScreen.Line("Skeletlarni qiring 0/5", false)), first.steps());
         assertEquals(SETTINGS.story().quest("WallSkeletons").description(), first.description());

@@ -113,13 +113,13 @@ public final class Content {
             named(Fog.class), named(uz.dukeengine.dungeon.world.PaintedGround.class), named(Tiles.class), named(EffectBudget.class), named(HitFeel.class),
             named(Audio.class), named(World.class), named(ProceduralMap.class), named(StaticMap.class),
             named(uz.dukeengine.dungeon.world.Party.class),
-            named(uz.dukeengine.dungeon.story.Speaker.class), named(uz.dukeengine.dungeon.story.Conversation.class),
-            named(uz.dukeengine.dungeon.story.Npc.class), named(uz.dukeengine.dungeon.story.Quest.class),
+            named(uz.dukeengine.rpg.story.Speaker.class), named(uz.dukeengine.rpg.story.Conversation.class),
+            named(uz.dukeengine.rpg.story.Npc.class), named(uz.dukeengine.rpg.story.Quest.class),
             named(uz.dukeengine.dungeon.story.Dialogue.class), named(uz.dukeengine.dungeon.world.SaveMenu.class),
             named(uz.dukeengine.dungeon.world.MainMenu.class), named(uz.dukeengine.dungeon.world.Splash.class), named(uz.dukeengine.dungeon.world.Screens.class),
             named(uz.dukeengine.dungeon.world.Travel.class), named(uz.dukeengine.dungeon.world.DayNight.class),
-            named(uz.dukeengine.dungeon.story.Trigger.class), named(uz.dukeengine.dungeon.story.Cutscene.class),
-            named(uz.dukeengine.dungeon.story.Merchant.class), named(uz.dukeengine.dungeon.story.Trade.class),
+            named(uz.dukeengine.rpg.story.Trigger.class), named(uz.dukeengine.dungeon.story.Cutscene.class),
+            named(uz.dukeengine.rpg.story.Merchant.class), named(uz.dukeengine.dungeon.story.Trade.class),
             named(uz.dukeengine.dungeon.story.GoldBurst.class),
             named(HeavyBlow.class), named(CritBlow.class), named(uz.dukeengine.client3d.HitStop.class), named(uz.dukeengine.client3d.Flinch.class), named(BigDeath.class), named(uz.dukeengine.core.content.EffectList.class),
             named(uz.dukeengine.dungeon.story.Boss.class), named(uz.dukeengine.dungeon.story.Medallion.class),
@@ -175,7 +175,10 @@ public final class Content {
 
     /** Each block of {@code text} as the record its word names; {@code source} is how errors name the text. */
     public static List<Record> records(String text, String source) {
-        var binder = new Binder().vocabulary(ModuleData.class, ModuleFactory.vocabularyOf(MODULES));
+        var binder = new Binder().vocabulary(ModuleData.class, ModuleFactory.vocabularyOf(MODULES))
+                // A trigger's Action blocks are the game's own (E22): the engine's Trigger holds them as its Action.
+                .vocabulary(uz.dukeengine.rpg.story.Trigger.Action.class,
+                        Map.of("Action", uz.dukeengine.dungeon.story.Action.class));
         var records = new ArrayList<Record>();
         for (var block : DukeText.parse(text, source)) {
             var type = TYPES.get(block.word().toLowerCase(Locale.ROOT));

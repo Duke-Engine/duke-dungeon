@@ -82,14 +82,14 @@ final class MissionScreen {
         float size = Math.clamp(canvas.height() * 0.04f, 20f, 48f);
         for (var unit : snapshot.units()) {
             for (var mark : marks) {
-                if (mark.id() != unit.id() || mark.mark() == uz.dukeengine.dungeon.story.QuestLog.Mark.NONE) {
+                if (mark.id() != unit.id() || mark.mark() == uz.dukeengine.rpg.story.QuestLog.Mark.NONE) {
                     continue;
                 }
                 var over = canvas.screenOf(unit.x(), unit.y(), unit.z() + 18f);
                 if (over == null) {
                     continue;
                 }
-                var picture = mark.mark() == uz.dukeengine.dungeon.story.QuestLog.Mark.GIVE ? dialogue.giveMark()
+                var picture = mark.mark() == uz.dukeengine.rpg.story.QuestLog.Mark.GIVE ? dialogue.giveMark()
                         : dialogue.handInMark();
                 canvas.drawImage(Canvas.Image.of(picture), over.x() - size / 2f, over.y() - size, over.x() + size / 2f,
                         over.y(), 0xFF000000 | dialogue.markColour(), Canvas.Blend.ALPHA);
@@ -227,7 +227,7 @@ final class MissionScreen {
         int dim = 0x90000000 | look.boneColour();
         var rows = new ArrayList<Row>();
         for (var entry : tracker.entries()) {
-            boolean main = entry.kind() == Tracker.Kind.MAIN;
+            boolean main = entry.kind() == uz.dukeengine.rpg.story.Quest.Kind.MAIN;
             rows.add(new Row((main ? "◆ " : "◇ ") + entry.title(), main ? gold : bone, false));
             for (var step : entry.steps()) {
                 if (step.done()) {
@@ -324,7 +324,7 @@ final class MissionScreen {
             for (var line : conversation.lines()) {
                 int frames = barkFrames(line.text());
                 if (into < frames) {
-                    int who = uz.dukeengine.dungeon.story.Speaker.HERO.equals(line.speaker()) ? bark.hero() : bark.person();
+                    int who = uz.dukeengine.rpg.story.Speaker.HERO.equals(line.speaker()) ? bark.hero() : bark.person();
                     for (var unit : snapshot.units()) {
                         if (unit.id() == who) {
                             var over = canvas.screenOf(unit.x(), unit.y(), unit.z() + 22f);

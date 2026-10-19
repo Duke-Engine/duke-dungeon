@@ -1,5 +1,9 @@
 package uz.dukeengine.dungeon.story;
 
+import uz.dukeengine.rpg.story.QuestLog;
+import uz.dukeengine.rpg.story.Script;
+import uz.dukeengine.rpg.story.Trigger;
+
 import java.util.List;
 
 /**

@@ -13,7 +13,7 @@ import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.dungeon.stage.Stage;
 import uz.dukeengine.dungeon.stage.Stages;
 import uz.dukeengine.dungeon.story.MapStory;
-import uz.dukeengine.dungeon.story.QuestLog;
+import uz.dukeengine.rpg.story.QuestLog;
 import uz.dukeengine.game.DukeGame;
 
 /** The run's quests go into a save and come back out of it; a save from before quests were saved starts them anew. */

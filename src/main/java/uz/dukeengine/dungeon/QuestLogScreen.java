@@ -6,7 +6,7 @@ import uz.dukeengine.client3d.Canvas;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.dungeon.run.Tracker;
 import uz.dukeengine.dungeon.story.MapStory;
-import uz.dukeengine.dungeon.story.QuestLog;
+import uz.dukeengine.rpg.story.QuestLog;
 import uz.dukeengine.dungeon.story.Story;
 
 /**
@@ -22,7 +22,7 @@ final class QuestLogScreen {
     }
 
     /** One quest as the log lists it. */
-    record Entry(String quest, Tracker.Kind kind, String title, List<Line> steps, String description,
+    record Entry(String quest, uz.dukeengine.rpg.story.Quest.Kind kind, String title, List<Line> steps, String description,
             boolean finished) {
     }
 
@@ -51,7 +51,7 @@ final class QuestLogScreen {
      */
     static List<Entry> entries(QuestLog.State state, Story story) {
         var entries = new ArrayList<Entry>();
-        for (var kind : Tracker.Kind.values()) {
+        for (var kind : uz.dukeengine.rpg.story.Quest.Kind.values()) {
             for (var going : state.active()) {
                 var quest = story.quest(going.quest());
                 if (quest == null || quest.kind() != kind) {
@@ -119,7 +119,7 @@ final class QuestLogScreen {
         return null;
     }
 
-    private static float[] targetOf(uz.dukeengine.dungeon.story.Quest.Step step, MapStory where,
+    private static float[] targetOf(uz.dukeengine.rpg.story.Quest.Step step, MapStory where,
             List<uz.dukeengine.core.view.UnitView> seen, float fromX, float fromY) {
         float cell = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
         switch (step.goal()) {
@@ -128,7 +128,7 @@ final class QuestLogScreen {
             }
             case KILL, FOLLOW -> {
                 // The nearest standing of what is to be killed, or the one to follow, wherever they have got to.
-                boolean any = step.goal() == uz.dukeengine.dungeon.story.Quest.Goal.FOLLOW;
+                boolean any = step.goal() == uz.dukeengine.rpg.story.Quest.Goal.FOLLOW;
                 float[] nearest = null;
                 double best = Double.MAX_VALUE;
                 for (var unit : seen) {
@@ -141,7 +141,7 @@ final class QuestLogScreen {
                 return nearest;
             }
             case TALK, GIVE, COLLECT -> {
-                for (var placed : step.goal() == uz.dukeengine.dungeon.story.Quest.Goal.COLLECT ? where.items()
+                for (var placed : step.goal() == uz.dukeengine.rpg.story.Quest.Goal.COLLECT ? where.items()
                         : where.npcs()) {
                     if (placed.kind().equals(step.target())) {
                         return new float[] {(placed.x() + 0.5f) * cell, (placed.y() + 0.5f) * cell};
@@ -248,7 +248,7 @@ final class QuestLogScreen {
         canvas.line(rx - pad * 0.5f, top, rx - pad * 0.5f, box.y() + box.height() - pad * 2f, 1f,
                 0x80000000 | look.stoneEdgeColour());
         y = top;
-        canvas.drawText(bold, mark(chosen) + chosen.title(), rx, y, chosen.kind() == Tracker.Kind.MAIN ? gold : bone);
+        canvas.drawText(bold, mark(chosen) + chosen.title(), rx, y, chosen.kind() == uz.dukeengine.rpg.story.Quest.Kind.MAIN ? gold : bone);
         y += line * 1.2f;
         for (var step : chosen.steps()) {
             canvas.drawText(font, (step.done() ? "✓ " : "• ") + step.text(), rx, y, step.done() ? dim : bone);
@@ -283,7 +283,7 @@ final class QuestLogScreen {
             canvas.fillRect(x - 4f, y - 2f, wide + 8f, high, 0x60000000 | look.torchColour());
         }
         int argb = entry.finished() ? 0x90000000 | look.boneColour()
-                : entry.kind() == Tracker.Kind.MAIN ? 0xFF000000 | look.torchColour() : 0xFF000000 | look.boneColour();
+                : entry.kind() == uz.dukeengine.rpg.story.Quest.Kind.MAIN ? 0xFF000000 | look.torchColour() : 0xFF000000 | look.boneColour();
         canvas.drawText(font, mark(entry) + entry.title(), x, y, argb);
         if (stepShown) {
             var small = Canvas.Font.of(font.family(), Math.max(10, Math.round(font.pixelHeight() * 0.85f)))
@@ -297,6 +297,6 @@ final class QuestLogScreen {
 
     /** The tracker's mark: ◆ for a MAIN, ◇ for a SIDE, ✓ for one finished. */
     private static String mark(Entry entry) {
-        return entry.finished() ? "✓ " : entry.kind() == Tracker.Kind.MAIN ? "◆ " : "◇ ";
+        return entry.finished() ? "✓ " : entry.kind() == uz.dukeengine.rpg.story.Quest.Kind.MAIN ? "◆ " : "◇ ";
     }
 }

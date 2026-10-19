@@ -6,8 +6,8 @@ import uz.dukeengine.client3d.Canvas;
 import uz.dukeengine.client3d.CanvasInput;
 import uz.dukeengine.client3d.Painter;
 import uz.dukeengine.dungeon.content.DungeonSettings;
-import uz.dukeengine.dungeon.story.Conversation;
-import uz.dukeengine.dungeon.story.Speaker;
+import uz.dukeengine.rpg.story.Conversation;
+import uz.dukeengine.rpg.story.Speaker;
 
 /**
  * The box at the bottom of the screen a conversation is said in: the speaker's picture in a frame — or the first

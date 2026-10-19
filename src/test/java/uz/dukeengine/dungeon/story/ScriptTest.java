@@ -1,5 +1,7 @@
 package uz.dukeengine.dungeon.story;
 
+import uz.dukeengine.rpg.story.Trigger;
+import uz.dukeengine.rpg.story.Script;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -77,8 +79,8 @@ class ScriptTest {
     @Test
     void theShippedStoryHasTheDemosTriggersAndCutscene() {
         var story = DungeonSettings.load().story();
-        assertEquals(Trigger.When.ZONE, story.trigger("HallSeen").when());
-        assertEquals(Trigger.Act.SPAWN, story.trigger("Ambush").actions().get(1).act());
+        assertEquals(uz.dukeengine.dungeon.story.When.ZONE, story.trigger("HallSeen").when());
+        assertEquals(uz.dukeengine.dungeon.story.Action.Act.SPAWN, uz.dukeengine.dungeon.story.Action.of(story.trigger("Ambush")).get(1).act());
         assertEquals(2, story.cutscene("ChestReveal").shots().size());
     }
 
@@ -128,7 +130,7 @@ class ScriptTest {
 
     @Test
     void aZoneFiresOnceOnItsMapAndARepeatOnlyOnComingBackIn() {
-        var script = new Script(SETTINGS.story());
+        var script = new Script(SETTINGS.story().triggers());
         script.mapStarted("elsewhere");
         script.standing(List.of("Door"));
         assertEquals(List.of(), names(script.due()), "Door belongs to another map");
@@ -144,7 +146,7 @@ class ScriptTest {
 
     @Test
     void afterWaitsOutItsDelay() {
-        var script = new Script(SETTINGS.story());
+        var script = new Script(SETTINGS.story().triggers());
         script.mapStarted("here");
         script.standing(List.of("Door"));
         assertEquals(List.of("Door"), names(script.due()));
@@ -155,16 +157,16 @@ class ScriptTest {
 
     @Test
     void aStepIsHeardByItsNumberAndTheStateComesBack() {
-        var script = new Script(SETTINGS.story());
-        script.heard(Trigger.When.STEP_DONE, "WallSkeletons", 1);
+        var script = new Script(SETTINGS.story().triggers());
+        script.heard(uz.dukeengine.dungeon.story.When.STEP_DONE, "WallSkeletons", 1);
         assertEquals(List.of(), names(script.due()));
-        script.heard(Trigger.When.STEP_DONE, "WallSkeletons", 2);
+        script.heard(uz.dukeengine.dungeon.story.When.STEP_DONE, "WallSkeletons", 2);
         assertEquals(List.of("SecondStep"), names(script.due()));
         script.flag("Two");
         script.mapStarted("here");
         script.standing(List.of("Door"));
 
-        var again = new Script(SETTINGS.story());
+        var again = new Script(SETTINGS.story().triggers());
         again.restore(script.state());
         assertEquals(script.state(), again.state());
         assertTrue(again.flagged("Two"));

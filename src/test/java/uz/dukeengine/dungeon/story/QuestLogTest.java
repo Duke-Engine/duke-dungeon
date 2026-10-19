@@ -1,5 +1,7 @@
 package uz.dukeengine.dungeon.story;
 
+import uz.dukeengine.rpg.story.Quest;
+import uz.dukeengine.rpg.story.QuestLog;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -144,10 +146,10 @@ class QuestLogTest {
         log.start("Walk");
         log.start("LostLocket");
         log.start("WallSkeletons");
-        assertEquals(List.of(Tracker.Kind.MAIN, Tracker.Kind.SIDE, Tracker.Kind.SIDE),
-                log.entries().stream().map(Tracker.Entry::kind).toList());
+        assertEquals(List.of(uz.dukeengine.rpg.story.Quest.Kind.MAIN, uz.dukeengine.rpg.story.Quest.Kind.SIDE, uz.dukeengine.rpg.story.Quest.Kind.SIDE),
+                log.entries().stream().map(uz.dukeengine.rpg.story.Tracked::kind).toList());
         assertEquals(List.of("Devordagi skeletlar", "Yur", "Yo'qolgan tumor"),
-                log.entries().stream().map(Tracker.Entry::title).toList());
+                log.entries().stream().map(uz.dukeengine.rpg.story.Tracked::title).toList());
     }
 
     @Test

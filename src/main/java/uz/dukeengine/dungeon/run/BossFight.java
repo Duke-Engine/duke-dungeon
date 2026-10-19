@@ -7,9 +7,9 @@ import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.core.thing.ObjectId;
 import uz.dukeengine.core.thing.ObjectStatus;
 import uz.dukeengine.dungeon.story.Boss;
-import uz.dukeengine.dungeon.story.Script;
+import uz.dukeengine.rpg.story.Script;
 import uz.dukeengine.dungeon.story.Story;
-import uz.dukeengine.dungeon.story.Trigger;
+import uz.dukeengine.rpg.story.Trigger;
 
 /**
  * The floor's bosses as the story fights them — see {@code docs/plan/2026-10-09-final-fight.md}: every creature a
@@ -21,7 +21,7 @@ final class BossFight {
 
     /** What a phase's actions are done by: the run, which has the world — {@code caller} the boss whose phase it is. */
     interface Acts {
-        void act(Trigger.Action action, GameObject caller);
+        void act(uz.dukeengine.dungeon.story.Action action, GameObject caller);
     }
 
     private static final class Fighter {
@@ -84,7 +84,7 @@ final class BossFight {
             if (book != null && book.isBeaten()) {
                 fighter.beaten = true;
                 beat(logic, thing, fighter.boss, nobodysSide);
-                script.heard(Trigger.When.BEATEN, fighter.boss.name(), 0);
+                script.heard(uz.dukeengine.dungeon.story.When.BEATEN, fighter.boss.name(), 0);
                 continue;
             }
             if (fighter.next < fighter.boss.phases().size()) {

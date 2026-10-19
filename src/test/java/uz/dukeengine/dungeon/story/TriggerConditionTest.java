@@ -1,5 +1,6 @@
 package uz.dukeengine.dungeon.story;
 
+import uz.dukeengine.rpg.story.Trigger;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;

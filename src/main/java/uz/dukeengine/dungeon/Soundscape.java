@@ -176,7 +176,7 @@ final class Soundscape implements Painter {
     }
 
     /** One more quest finished, or one more taken: a jump of several is a save loaded, and says nothing. */
-    private void questsHeard(uz.dukeengine.dungeon.story.QuestLog.State state) {
+    private void questsHeard(uz.dukeengine.rpg.story.QuestLog.State state) {
         int nowActive = state.active().size();
         int nowFinished = state.finished().size();
         if (finished >= 0 && nowFinished == finished + 1) {

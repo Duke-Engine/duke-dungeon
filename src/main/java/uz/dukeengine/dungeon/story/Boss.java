@@ -25,7 +25,7 @@ public record Boss(String name, String beatenLook, List<Phase> phases) {
      * skills of its own whose keys {@code skills} lists (empty: all of them), and does its actions, once, in order.
      */
     public record Phase(int below, String afterFlag, int damageTaken, List<String> skills,
-            List<Trigger.Action> actions) {
+            List<uz.dukeengine.dungeon.story.Action> actions) {
 
         public static final Phase DEFAULTS = new Phase(100, "", 100, List.of(), List.of());
 
