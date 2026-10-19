@@ -2042,3 +2042,18 @@ scenery in `MatDefs/duke/FoggedTerrain.j3md`, which has none, so the geometry go
 Asked: FoggedTerrain (its vertex shader) gains UseInstancing, as Lighting has it; or, at least, a geometry whose
 material cannot be instanced is attached plainly, not instanced. Done when a client test grows cover on a fogged map
 without the exception. Until then the game hands the window GroundCover.NONE (Atmosphere.paint).
+
+## E101 — The minimap shows the land before it is walked (2026-10-19, small; open world)
+
+The minimap is black wherever the hero has not been: `MinimapPicture` paints every undiscovered cell `unseen()`, the
+fog's colour. On the open world the owner wants what open-world games do: the land is always drawn on the minimap,
+and discovery only changes how it reads.
+- **Never seen:** the map's own ground (the painted surfaces' colours, water, roads, stone), dimmed.
+- **Seen once, out of sight now:** the ground at full colour, with no units on it.
+- **In sight:** as now.
+
+Asked: a client setting, e.g. `Visuals.minimapUnseenShows(float dim)`, 0 keeping today's black. When set, an unseen
+cell is painted as the ground's colour times `dim` instead of the fog's colour. On a painted map (`Painted`), the
+ground's colour is the surface picture's mean colour, as the 3D ground and the world map have it. Units and marks stay
+hidden on unseen cells, as now. Done when a client test paints a painted map's minimap with nothing discovered and gets
+the dimmed ground, not black, and a cell once seen gets its full colour.
