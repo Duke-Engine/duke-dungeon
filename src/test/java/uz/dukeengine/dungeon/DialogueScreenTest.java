@@ -193,6 +193,7 @@ class DialogueScreenTest {
                             hero.getPlayerIndex()));
         }
         game.runHeadless(2);
+        session.run().giveGold(hero.getPlayerIndex(), 100); // kills pay too little for a gauntlet now
         var merchant = named(game, "Merchant");
         hero.setPosition(new Coord3D(merchant.getPosition().x() + 12f, merchant.getPosition().y(),
                 merchant.getPosition().z()));

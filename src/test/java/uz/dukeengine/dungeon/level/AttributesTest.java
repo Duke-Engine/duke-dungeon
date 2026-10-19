@@ -47,9 +47,9 @@ class AttributesTest {
 
     /** The shipped blocks these tests rewrite, whole so the anchor cannot match another hero's. */
     private static final String KNIGHT_STRENGTH =
-            "    Attribute\n      Name = STR\n      Base = 22\n      Growth = 3.0\n    End,\n";
+            "    Attribute\n      Name = STR\n      Base = 22\n      Growth = 0.8\n    End,\n";
     private static final String ROGUE_AGILITY =
-            "    Attribute\n      Name = AGI\n      Base = 12\n      Growth = 2.2\n    End,\n";
+            "    Attribute\n      Name = AGI\n      Base = 12\n      Growth = 0.6\n    End,\n";
 
     private static final HeroBase KNIGHTS_BLOCK = new HeroBase(716f, 19.5f, 0f, 8f);
     private static final HeroBase ARCHERS_BLOCK = new HeroBase(430f, 27.2f, 0f, 2f);
@@ -290,7 +290,7 @@ class AttributesTest {
         assertEquals(300, stronger.heroNamed("Knight").attributes().base().at(STR));
 
         var quicker = DungeonSettings.parse(data.replace(ROGUE_AGILITY,
-                ROGUE_AGILITY.replace("Growth = 2.2", "Growth = 3.4")));
+                ROGUE_AGILITY.replace("Growth = 0.6", "Growth = 3.4")));
         assertEquals(34, quicker.heroNamed("Rogue").attributes().perLevel().at(AGI));
 
         var swapped = DungeonSettings.parse(data.replace("  Primary = AGI", "  Primary = STR"));

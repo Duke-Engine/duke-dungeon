@@ -33,7 +33,7 @@ ItemRules
   Prices = [100, 250, 500, 1200]
   PricePerLevel = 8
   ; The chance an elite drops anything (a monster's and a boss's are LootDrops').
-  EliteDropPercent = 40
+  EliteDropPercent = 15
   ; The wilds' elites too (data/units/wilds_*.duke): bigger, tinted, with an affix or two.
   Elites = [Brute, Champion, Warden, Reaper, BloodWolf, FireLizard, StoneGoleling, VenomFrog, BanditVeteran,
     GiantArmabee, OrcWarlord, ZombieGiant, BroodMother, BloodShark, PirateCaptain, FrostYeti, HellDemon, FireGolem,
@@ -44,8 +44,8 @@ ItemRules
     Wyvern, DemonBrute, Minotaur]
   ; Of an ordinary or elite drop, how many in a hundred are food or drink.
   PotionPercent = 35
-  ; A boss drops two things, a level above its own.
-  BossDrops = 2
+  ; A boss drops one thing, a level above its own (two until the owner cut drops, 2026-10-19).
+  BossDrops = 1
   BossLevel = 1
   ; A base is found from its Level to six levels past it, then is left behind.
   BaseWindow = 6

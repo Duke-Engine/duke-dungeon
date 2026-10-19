@@ -54,7 +54,7 @@ import uz.dukeengine.combat.module.WeaponUpdate;
 class SealTest {
 
     private static final DungeonSettings SETTINGS = DungeonSettings.load();
-    private static final long SEED = 21L;
+    private static final long SEED = 12L;
 
     /** Long enough for a fight at the gate to have been fought: ten seconds. */
     private static final int A_WHILE = 300;
@@ -901,7 +901,7 @@ class SealTest {
      */
     @Test
     void theKnightsChargeNeverCarriesHimOverTheShutGate() {
-        for (long seed : new long[] {21, 24, 25, 29}) {
+        for (long seed : new long[] {21, 25, 29, 27}) {
             for (boolean opened : new boolean[] {false, true}) {
                 var floor = floor("Knight", seed);
                 var keep = floor.dungeon().keep();
@@ -945,7 +945,7 @@ class SealTest {
     void aSprintOrABlinkThatKeepsToItsOwnSideGoesOffWhileTheGateIsShut() {
         for (var skill : new String[][] {{"Rogue", "E"}, {"Mage", "E"}}) {
             char key = skill[1].charAt(0);
-            for (long seed : new long[] {21, 24, 25, 29}) { // the gate on the keep's south, west, east and north
+            for (long seed : new long[] {21, 25, 29, 27}) { // the gate on the keep's south, west, east and north
                 for (int from : new int[] {1, -1}) {
                     var floor = floor(skill[0], seed);
                     var keep = floor.dungeon().keep();

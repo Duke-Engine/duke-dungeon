@@ -187,17 +187,17 @@ Hero
     Attribute
       Name = STR
       Base = 22
-      Growth = 3.0
+      Growth = 0.8
     End,
     Attribute
       Name = AGI
       Base = 10
-      Growth = 1.2
+      Growth = 0.3
     End,
     Attribute
       Name = INT
       Base = 8
-      Growth = 1.0
+      Growth = 0.3
     End
   ]
   ; ★ WHAT HE CASTS OUT OF, before his intelligence: 10 + 8 x 5 = 50. The shallowest
@@ -271,7 +271,7 @@ Hero
       ; makes the fourth 85, which does kill a line of them.
       Effect = WAVE
       Damage = 40
-      DamagePerLevel = 15
+      DamagePerLevel = 3.75
       ; Five of his own reaches, and well short of the archer's 68.
       Distance = 50
       ; About a skeleton's width each side of the line: what it runs THROUGH, not a
@@ -285,8 +285,8 @@ Hero
       ; No stun: the charge and the pull are the knight's stuns, and a cheap
       ; spammable stun would make them pointless.
       CooldownFrames = 150
-      CooldownPerLevel = -8
-      MaxRank = 4
+      CooldownPerLevel = -1
+      MaxRank = 27
       ; A white-steel flash at his hand as he throws it -- see Effect WaveFlash, beside the
       ; SwordWave it flies as (data/projectiles/sword_wave.duke). Its own rather than the mage's
       ; CastFlash, because the client keys a cast's gesture by its Look.
@@ -301,7 +301,7 @@ Hero
       Icon = icons/skills/skill_cleave.png
       Blurb = Qilichini siltaydi va undan to'lqin otilib chiqadi. To'lqin yo'lidagi har bir dushmanni bir martadan kesib o'tadi — tanaga urilib to'xtamaydi, faqat devor yoki o'z masofasi tugaganda to'xtaydi.
       ManaCost = 10
-      ManaCostPerLevel = 1
+      ManaCostPerLevel = 0
     End,
 
     Skill
@@ -321,13 +321,13 @@ Hero
       ; His shield's width past his own body: the things he actually runs into.
       Radius = 8
       Damage = 30
-      DamagePerLevel = 10
+      DamagePerLevel = 2.5
       ; A second and a quarter of nobody hitting back, at every rank: it is what
       ; he spends it for -- the line he gathered stands still for his sword.
       StunFrames = 38
       CooldownFrames = 330
-      CooldownPerLevel = -15
-      MaxRank = 4
+      CooldownPerLevel = -2
+      MaxRank = 27
       ; Dust where he pushed off and himself at the end -- see Effect Charge.
       Look = Charge
       ; ★ HIS GESTURE: leaning in and driving -- Quaternius' Push_Loop on his rig -- for exactly as
@@ -338,7 +338,7 @@ Hero
       Icon = icons/skills/skill_dash.png
       Blurb = Qalqonini oldinga tutib, ko'rsatilgan tomonga yugurib ketadi. Yo'lida uchragan har bir dushmanni ilib, o'zi bilan birga suradi, to'xtaganda esa ularni oldiga tashlab, gangitib qo'yadi.
       ManaCost = 14
-      ManaCostPerLevel = 1
+      ManaCostPerLevel = 0
     End,
 
     Skill
@@ -357,9 +357,9 @@ Hero
       ; not held, E32).
       Effect = DRAGON_BLOOD
       BoostPercent = 8
-      BoostPerLevel = 5
-      Heal = 3
-      MaxRank = 4
+      BoostPerLevel = 1
+      Heal = 0.5
+      MaxRank = 27
       Name = Ajdar qoni
       Icon = icons/skills/skill_dragon_blood.png
       Blurb = Tomirlarida ajdar qoni oqadi: har bir zarbadan kamroq zarar oladi va har soniyada o'zi tuzalib boradi. Har bir darajada ikkalasi ham kuchayadi. Bosilmaydi — doim ishlaydi.
@@ -378,18 +378,18 @@ Hero
       Radius = 36
       Range = 12
       Damage = 60
-      DamagePerLevel = 40
+      DamagePerLevel = 10
       ; Two and a half seconds of a room standing still, at every rank: long enough
       ; for a wave and a few swings, too short to clear a room of brutes with.
       StunFrames = 75
       CooldownFrames = 1200
-      CooldownPerLevel = -150
+      CooldownPerLevel = -19
       ; Half way up the ladder, as the archer's is: the run has to be earned.
       ; Three points, and each waits for the hero: the first at level 4, the second
       ; at 8, the third at 12. A MINIMUM rather than an appointment -- pass on it at
       ; 8 and it is still there at 9.
-      MaxRank = 3
-      LevelPerRank = 4
+      MaxRank = 19
+      LevelPerRank = 5
       ; A turn of the air round him as wide as the pull -- see Effect Whirlwind.
       Look = Whirlwind
       ; ★ HIS GESTURE: one hand raised to call the room in -- KayKit's Ranged_Magic_Raise on his rig
@@ -401,7 +401,7 @@ Hero
       Icon = icons/skills/skill_whirlwind.png
       Blurb = Atrofidagi barcha dushmanlarni bir nuqtaga — o'zining ro'parasiga — tortib keladi, ularga zarar yetkazadi va gangitib qo'yadi. To'plangan dushmanlarni bitta to'lqin bilan kesish mumkin.
       ManaCost = 35
-      ManaCostPerLevel = 5
+      ManaCostPerLevel = 1
     End,
     Skill
       ; His stagger, no slot of the four: never bought, never drawn on his bar, his from the start. A

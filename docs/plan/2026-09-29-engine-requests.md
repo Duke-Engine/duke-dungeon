@@ -2057,3 +2057,19 @@ cell is painted as the ground's colour times `dim` instead of the fog's colour. 
 ground's colour is the surface picture's mean colour, as the 3D ground and the world map have it. Units and marks stay
 hidden on unseen cells, as now. Done when a client test paints a painted map's minimap with nothing discovered and gets
 the dimmed ground, not black, and a cell once seen gets its full colour.
+
+## E102 — A walker wedged in the highlands, moving for ever (2026-10-19, small; bug)
+
+On the open world (a `StagePaint`, walked at k = 2), the heroine sent from (3821, 3973) to the queen's castle at
+(3285, 975) climbs into the highlands and stops at (4278.8, 1699.7, z 392). She stays there for 17,000 frames with
+`isMoving()` true and nothing within 40 units of her. A player sent the same way would stand there for ever.
+
+Reproduce: duke-dungeon `CampaignWalkTest.actTwosWorldIsWalkedFromTheLandingToTheQueensCastle`, at the game commit
+named in the message. It walks Act 2 by orders only, re-ordering the same goal every 60 frames, and fails on its walk to
+`Malika_qasri`. The route changed when the game slowed its heroes' growth, so a slower walker comes up a different way,
+not that the place is new.
+
+Asked: find why the route leads into a place the body cannot leave (a cliff edge, a ramp, a fine cell the coarse
+route promised, or a level step). Either the route does not go there, or the walker detects being still while moving
+and re-plans or slides free. Done when an engine test of a walker at that kind of place gets out, and the game's walk
+test passes.

@@ -2,14 +2,17 @@
 ; Gold and trading — see docs/plan/2026-10-08-people-and-trade.md.
 ;
 ; Every kill of the dungeon's pays the killer GoldPerKill + GoldPerLevel x its
-; level. A merchant's Stock is "item price count" each; a map restocks him as its
-; floor is laid. A thing sells for SellPercent of its price (a merchant's price,
+; level, and a boss BossGold whatever its level. Kept small (the owner, 2026-10-19):
+; gold is for a merchant's few good things, not a reward for every corpse.
+; A merchant's Stock is "item price count" each; a map restocks him as its floor
+; is laid. A thing sells for SellPercent of its price (a merchant's price,
 ; or BasePrice for one nobody stocks), times its level; quest things and keys do
 ; not sell.
 ; ---------------------------------------------------------------------------
 Trade
-  GoldPerKill = 4
-  GoldPerLevel = 2
+  GoldPerKill = 1
+  GoldPerLevel = 0
+  BossGold = 10
   SellPercent = 40
   BasePrice = 30
   ; How often, in frames, a wandering person picks somewhere new to stroll to.

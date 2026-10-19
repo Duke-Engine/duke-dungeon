@@ -18,17 +18,19 @@ ProceduralMap
     ; the chambers fill -- MaxRoomSpacing below keeps them together, and space
     ; nothing reaches just stays rock. Kept inside the 100 by 76 the 3D client
     ; carries today, which is deep.map's size, and deep.map stays the larger.
-    MapWidth = 96
-    MapHeight = 72
+    ; Halved, by area, from 96 by 72 (the owner, 2026-10-19: a floor took too long to
+    ; cross), and its chambers with it.
+    MapWidth = 68
+    MapHeight = 52
 
     ; MinRooms is what the generator aims for, and it can only be a number that
     ; actually fits: chambers are placed by trying and rejecting, and one that will
-    ; not go in is one the floor does without. Sixteen is what always fits at these
+    ; not go in is one the floor does without. Eight is what always fits at these
     ; sizes -- the file must not claim a floor it cannot keep, and
     ; DungeonGeneratorTest holds it to its word. MaxRooms stays under deep.map's 28,
     ; the stage that is there to be bigger than any floor of the descent.
-    MinRooms = 16
-    MaxRooms = 26
+    MinRooms = 8
+    MaxRooms = 13
     ; The footprint a chamber is grown in, in cells across. The chamber itself is
     ; rounder and rougher than its footprint, and never bigger.
     MinRoomSize = 7
@@ -49,7 +51,7 @@ ProceduralMap
     ; How far a new chamber may be from the nearest one already placed, in cells.
     ; Keeps the floor compact: chambers scattered to opposite corners are joined by
     ; long empty tunnels, which are the part a player walks rather than plays.
-    MaxRoomSpacing = 30
+    MaxRoomSpacing = 22
 
     ; Per chamber other than the hero's. Every occupied one gets at least the minimum.
     MinSkeletonsPerRoom = 2

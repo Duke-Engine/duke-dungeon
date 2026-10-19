@@ -28,6 +28,8 @@ import java.util.Map;
  * @param water             the picture a map's lakes and rivers are drawn with; none, and its water is not drawn
  * @param waterTint         {@code 0xAARRGGBB}: the ground's light times this colour, and how opaque the water is deep
  * @param riverFlow         how fast a river's picture runs down it, in its own lengths a second
+ * @param minimapUnseen     how bright ground nobody has seen is on the minimap, its own colour times this (E101);
+ *                          0 for black, as before
  * @param minimapCells      how many cells a side round the camera the minimap shows on a map wider than that; 0, and
  *     every map is shown whole
  * @param hazeFrom          on a wide world, how many cells round the camera the ground starts to fade into the fog's
@@ -44,11 +46,11 @@ public record PaintedGround(boolean blend, String noise, float raggedness, float
         String variation, float variationCoverage, Map<String, Integer> tints, Map<String, Float> variations,
         String cliffs, float cliffSlope, float cliffCoverage, boolean quarters, int streamCells, String water,
         int waterTint, float riverFlow, int minimapCells, float hazeFrom, float hazeTo, Map<String, String> cover,
-        Map<String, Float> coverPerCell, List<String> coverKeepsOff) {
+        Map<String, Float> coverPerCell, List<String> coverKeepsOff, float minimapUnseen) {
 
     /** What a block leaves out: no blend, no cliffs, the ground drawn a surface a cell. */
     public static final PaintedGround DEFAULTS = new PaintedGround(false, null, 0f, 1f, 8f, null, 64f, Map.of(),
-            Map.of(), null, 40f, 4f, false, 0, null, 0xB4AFAFAF, 0.2f, 0, 0f, 0f, Map.of(), Map.of(), List.of());
+            Map.of(), null, 40f, 4f, false, 0, null, 0xB4AFAFAF, 0.2f, 0, 0f, 0f, Map.of(), Map.of(), List.of(), 0f);
 
     public PaintedGround {
         tints = tints == null ? Map.of() : Map.copyOf(tints);

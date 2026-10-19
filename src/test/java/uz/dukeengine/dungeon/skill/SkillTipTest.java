@@ -88,9 +88,9 @@ class SkillTipTest {
         assertTrue(tip.contains("|tipRow=Q,Zarar,"), "no damage row");
         assertTrue(tip.contains("|tipFoot=Q,Ctrl+Q · 1 nuqta"),
                 "the foot should name the keys that buy it: " + tip);
-        // 55 at the first rank and +9 a rank, so 64 at the second and 73 at the
-        // third -- growth is counted from the FIRST rank, not from nothing.
-        assertTrue(tip.contains("|tipRow=Q,Zarar,64,73"),
+        // 55 at the first rank and +2.25 a rank (a hundred levels, 2026-10-19), so 57 at the second and 60 at
+        // the third, rounded -- growth is counted from the FIRST rank, not from nothing.
+        assertTrue(tip.contains("|tipRow=Q,Zarar,57,60"),
                 "the damage row should be this rank and the next: " + tip);
     }
 

@@ -396,13 +396,14 @@ Progression
   ; The hero starts at level 1 and everything here is what levels 2 and up add.
   ; Level 1 grants nothing, so his template reads as the starting hero rather
   ; than as the hero minus his first level.
-  ; ★ FIFTEEN, and the number is not free. A level is a POINT now -- see
-  ; SkillRanks -- and three ordinary skills at four ranks each plus an ultimate
-  ; at three is exactly fifteen. So a hero who reaches the top has everything,
-  ; and every level before that is a decision about the ORDER rather than about
-  ; what he ends up with. Move this and the two stop agreeing: at fourteen he
-  ; never finishes, at sixteen the last level has nowhere to go.
-  MaxLevel = 15
+  ; A HUNDRED, and the number is not free. A level is a POINT -- see SkillRanks --
+  ; and three ordinary skills at twenty-five ranks each plus an ultimate at
+  ; twenty-five (one every fourth level) is exactly a hundred. So a hero who
+  ; reaches the top has everything, and every level before that is a decision
+  ; about the ORDER. Raised from fifteen (the owner, 2026-10-19); every rank's
+  ; growth was cut to match, so the top is about twice the old fifteenth level,
+  ; not seven times it.
+  MaxLevel = 100
   ; How far the ordinary three may drift apart. Two: enough to favour one without
   ; abandoning the others, and what stops a skill being taken four times running
   ; while the other two sit at nothing.
@@ -411,7 +412,7 @@ Progression
   ; Experience to reach level 2, and how much more each level after that costs.
   ; A skeleton is worth ExperienceValue in its template.
   XpBase = 30
-  XpStep = 15
+  XpStep = 6
 
   ; ★ WHAT A LEVEL IS WORTH IS NOT WRITTEN HERE ANY MORE. His health, speed, mana
   ; and the weight of his blow all come out of his attributes, which grow by what
@@ -544,7 +545,7 @@ LootDrops
   Template = Chest
   ; How often an ordinary monster leaves something. Loot that always drops is not
   ; loot, it is a tax on killing things.
-  DropPercent = 15
+  DropPercent = 5
   ; The thing guarding the way down always leaves something. It is the one fight
   ; on the floor the player cannot walk past.
   BossDropPercent = 100

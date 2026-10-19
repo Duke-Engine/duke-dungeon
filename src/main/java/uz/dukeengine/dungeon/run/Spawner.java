@@ -137,12 +137,24 @@ public final class Spawner {
             way = walk.to(dungeon.boss().at().cellX(), dungeon.boss().at().cellY());
         }
         var levels = new int[dungeon.monsters().size()];
+        var steps = new int[levels.length];
         for (int i = 0; i < levels.length; i++) {
             var at = dungeon.monsters().get(i).at();
+            steps[i] = walk.to(at.cellX(), at.cellY());
             levels[i] = keep != null && keep.holds(at.cellX(), at.cellY()) ? settings.beforeBossLevel(tier)
-                    : settings.levelAlong(tier, walk.to(at.cellX(), at.cellY()), way);
+                    : settings.levelAlong(tier, steps[i], way);
         }
-        return levels;
+        // Further along is never lower: on a small floor a monster outside can be further along than the keep's guard,
+        // who stands at the level before the boss. Each takes the highest of those no further along than it.
+        var raised = levels.clone();
+        for (int i = 0; i < levels.length; i++) {
+            for (int j = 0; j < levels.length; j++) {
+                if (steps[j] <= steps[i]) {
+                    raised[i] = Math.max(raised[i], levels[j]);
+                }
+            }
+        }
+        return raised;
     }
 
     /** How many steps from the way in a fountain may stand, looking for room enough round it. */

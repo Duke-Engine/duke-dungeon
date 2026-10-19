@@ -201,17 +201,17 @@ Hero
     Attribute
       Name = STR
       Base = 8
-      Growth = 1.2
+      Growth = 0.3
     End,
     Attribute
       Name = AGI
       Base = 9
-      Growth = 1.0
+      Growth = 0.3
     End,
     Attribute
       Name = INT
       Base = 10
-      Growth = 2.0
+      Growth = 0.6
     End
   ]
   ; ★ WHAT HE CASTS OUT OF, before his intelligence. The deepest pool of the three
@@ -335,7 +335,7 @@ Hero
       ; stops. The one it actually hit takes the full figure and is NOT hit twice.
       Effect = SKILLSHOT
       Damage = 55
-      DamagePerLevel = 9
+      DamagePerLevel = 2.25
       ; ★ SHORTENED from 90. At ninety he threw it further than the rogue's bow
       ; reaches (60) and nearly as far as his aimed shot (68), which made the
       ; squishiest hero in the game also the one who never had to be in the room.
@@ -354,16 +354,16 @@ Hero
       ; Five seconds. Short for him and long for anybody else -- the archer's Q comes
       ; back in three and the knight's in two and a half.
       CooldownFrames = 150
-      CooldownPerLevel = -4
+      CooldownPerLevel = -1
       ; Four points may go into it, and it waits for nothing but one of them.
-      MaxRank = 4
+      MaxRank = 27
       ; What it looks like going off -- see Effect CastFlash.
       Look = CastFlash
       Name = Olov o'qi
       Icon = icons/skills/skill_fire_arrow.png
       Blurb = Yo'nalish bo'ylab olov o'qi otadi. Birinchi uchragan tanaga yoki devorga urilib to'xtaydi va o'sha joyda portlaydi.
       ManaCost = 22
-      ManaCostPerLevel = 2
+      ManaCostPerLevel = 0
     End,
 
     Skill
@@ -382,7 +382,7 @@ Hero
       ; halves its step without having been told anything about a mage.
       Effect = AREA_AT_SPOT
       Damage = 40
-      DamagePerLevel = 7
+      DamagePerLevel = 1.75
       ; How far off he may drop it: short of his Fireball's 64 and the meteor's 55, so
       ; it is for what is already close. Aimed further, it comes down at the edge of that.
       Range = 40
@@ -392,16 +392,16 @@ Hero
       SlowFrames = 90
       ; Ten seconds. The escape has to be spent rather than leaned on.
       CooldownFrames = 300
-      CooldownPerLevel = -8
+      CooldownPerLevel = -1
       ; Four points may go into it, and it waits for nothing but one of them.
-      MaxRank = 4
+      MaxRank = 27
       ; What it looks like going off -- see Effect FrostNova.
       Look = FrostNova
       Name = Muz to'lqini
       Icon = icons/skills/skill_frost_nova.png
       Blurb = Tanlangan joyda muz portlatadi: u yerdagilarga zarar beradi va ularni bir muddat sekinlashtiradi. Zarari emas — sekinlashuvi muhim.
       ManaCost = 38
-      ManaCostPerLevel = 3
+      ManaCostPerLevel = 0
     End,
 
     Skill
@@ -426,16 +426,16 @@ Hero
       ; undoes a mistake, so it has to be rationed harder than the ones that make
       ; them.
       CooldownFrames = 360
-      CooldownPerLevel = -10
+      CooldownPerLevel = -1
       ; Four points may go into it, and it waits for nothing but one of them.
-      MaxRank = 4
+      MaxRank = 27
       ; What it looks like going off -- see Effect Blink.
       Look = Blink
       Name = Siljish
       Icon = icons/skills/skill_dash.png
       Blurb = Bir zumda boshqa joyda paydo bo'ladi. Oradagi narsa — devormi, dushmanmi — umuman ahamiyatsiz.
       ManaCost = 25
-      ManaCostPerLevel = -2
+      ManaCostPerLevel = -1
     End,
 
     Skill
@@ -459,7 +459,7 @@ Hero
       ; mark AND the meteor, since the two are the same object at two moments.
       Effect = METEOR
       Damage = 160
-      DamagePerLevel = 28
+      DamagePerLevel = 7
       Range = 55
       Radius = 44
       WindUpFrames = 45
@@ -468,13 +468,13 @@ Hero
       ; the same; this lands more than three times a Fireball in one go, on ground
       ; the player chose, so it is rationed harder than either.
       CooldownFrames = 1080
-      CooldownPerLevel = -30
+      CooldownPerLevel = -4
       ; Half way up the ladder, as both other ultimates are.
       ; Three points, and each waits for the hero: the first at level 4, the second
       ; at 8, the third at 12. A MINIMUM rather than an appointment -- pass on it at
       ; 8 and it is still there at 9.
-      MaxRank = 3
-      LevelPerRank = 4
+      MaxRank = 19
+      LevelPerRank = 5
       ; What it looks like going off -- see Effect MeteorCall.
       Look = MeteorCall
       ; ★ WHAT HE IS SEEN DOING, as against what the spell does. A two-handed cast
@@ -499,7 +499,7 @@ Hero
       Icon = icons/skills/skill_meteor.png
       Blurb = Tanlangan joyga meteor chaqiradi. U bir zumda tushmaydi: yerda ogohlantiruvchi doira paydo bo'ladi, va undan chiqib ketishga ulgurgan omon qoladi.
       ManaCost = 70
-      ManaCostPerLevel = 5
+      ManaCostPerLevel = 1
     End,
     Skill
       ; His stagger, no slot of the four: never bought, never drawn on his bar, his from the start. A

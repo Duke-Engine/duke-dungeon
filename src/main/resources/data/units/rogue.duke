@@ -228,17 +228,17 @@ Hero
     Attribute
       Name = STR
       Base = 10
-      Growth = 1.6
+      Growth = 0.4
     End,
     Attribute
       Name = AGI
       Base = 12
-      Growth = 2.2
+      Growth = 0.6
     End,
     Attribute
       Name = INT
       Base = 8
-      Growth = 1.0
+      Growth = 0.3
     End
   ]
   ; ★ WHAT HE CASTS OUT OF, before his intelligence: 40 + 8 x 5 = 80.
@@ -435,12 +435,12 @@ Hero
       WindUpFrames = 15
       Projectile = HeavyArrow
       Damage = 45
-      DamagePerLevel = 7
+      DamagePerLevel = 1.75
       Range = 68
       CooldownFrames = 90
-      CooldownPerLevel = -3
+      CooldownPerLevel = 0
       ; Four points may go into it, and it waits for nothing but one of them.
-      MaxRank = 4
+      MaxRank = 27
       ; The picture in his slot. A path here and nothing in Java: a fifth skill is
       ; a fifth block of this file.
       Icon = icons/skills/skill_arrow_shot.png
@@ -453,7 +453,7 @@ Hero
       Name = Og'ir o'q
       Blurb = Kamonni to'liq tortib bitta dushmanga og'ir o'q otadi. O'q xonani kesib o'tadi, shuning uchun nishon qochib ulgurishi mumkin.
       ManaCost = 14
-      ManaCostPerLevel = 1
+      ManaCostPerLevel = 0
     End,
 
     Skill
@@ -462,12 +462,12 @@ Hero
       ; off around himself, so it is the panic button rather than an opening move.
       Effect = AREA_DAMAGE
       Damage = 28
-      DamagePerLevel = 4
+      DamagePerLevel = 1
       Radius = 40
       CooldownFrames = 180
-      CooldownPerLevel = -5
+      CooldownPerLevel = -1
       ; Four points may go into it, and it waits for nothing but one of them.
-      MaxRank = 4
+      MaxRank = 27
       Icon = icons/skills/skill_arrow_volley.png
       ; What it looks like going off -- see Effect Volley.
       Look = Volley
@@ -478,7 +478,7 @@ Hero
       Name = O'q yomg'iri
       Blurb = Atrofdagi hamma dushmanga bir vaqtda zarar yetkazadi. Qurshab olinganda bosiladi.
       ManaCost = 24
-      ManaCostPerLevel = 2
+      ManaCostPerLevel = 0
     End,
 
     Skill
@@ -489,9 +489,9 @@ Hero
       Effect = DASH
       Distance = 58
       CooldownFrames = 150
-      CooldownPerLevel = -4
+      CooldownPerLevel = -1
       ; Four points may go into it, and it waits for nothing but one of them.
-      MaxRank = 4
+      MaxRank = 27
       Icon = icons/skills/skill_dash.png
       ; What it looks like going off -- see Effect Sprint.
       Look = Sprint
@@ -518,16 +518,16 @@ Hero
       ; would count the same level twice.
       Effect = EMPOWER
       BoostPercent = 80
-      BoostPerLevel = 12
+      BoostPerLevel = 2
       DurationFrames = 180
       CooldownFrames = 900
-      CooldownPerLevel = -30
+      CooldownPerLevel = -4
       ; Half way up the ladder: the run has to be earned before it turns.
       ; Three points, and each waits for the hero: the first at level 4, the second
       ; at 8, the third at 12. A MINIMUM rather than an appointment -- pass on it at
       ; 8 and it is still there at 9.
-      MaxRank = 3
-      LevelPerRank = 4
+      MaxRank = 19
+      LevelPerRank = 5
       ; Lorc, game-icons.net (CC BY 3.0) — see CREDITS.md.
       Icon = icons/skills/skill_piercing_volley.png
       ; What it looks like going off -- see Effect Focus.
@@ -538,7 +538,7 @@ Hero
       Name = Nishonga ol
       Blurb = Bir muddat uning hamma zarbalari kuchliroq bo'ladi. O'zi hech kimga tegmaydi — bu boshqa hamma narsani qimmatroq qiladigan oyna.
       ManaCost = 40
-      ManaCostPerLevel = 3
+      ManaCostPerLevel = 0
     End,
     Skill
       ; His stagger, no slot of the four: never bought, never drawn on his bar, his from the start. A

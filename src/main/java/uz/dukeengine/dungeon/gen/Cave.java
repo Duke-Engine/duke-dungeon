@@ -117,6 +117,11 @@ final class Cave {
         return x >= 0 && y >= 0 && x < width && y < height && cells[y][x] == FLOOR;
     }
 
+    /** Whether a cell is still a grove's ground: a keep raised or a way in cleared over one since makes it no grove. */
+    boolean isGrove(int x, int y) {
+        return x >= 0 && y >= 0 && x < width && y < height && cells[y][x] == GROVE;
+    }
+
     /** Whether a cell is rock: not floor, and not a grove's ground either. */
     boolean isStone(int x, int y) {
         return x >= 0 && y >= 0 && x < width && y < height && cells[y][x] == STONE;

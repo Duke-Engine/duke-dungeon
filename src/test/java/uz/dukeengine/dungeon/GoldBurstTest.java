@@ -63,7 +63,7 @@ class GoldBurstTest {
         var hero = hero(game);
         var skeleton = all(game, "Skeleton").getFirst();
         var at = skeleton.getPosition();
-        int gold = SETTINGS.story().trade().goldFor(LevelBonus.levelOf(skeleton));
+        int gold = SETTINGS.story().trade().goldFor(LevelBonus.levelOf(skeleton), false);
         game.getLogic().drainEvents();
         // Its death as the world hears it, without running a frame: a frame's client takes the events it posts.
         bounty(skeleton).onDie(new Death(DeathType.NORMAL, hero.getId(), hero.getPlayerIndex()));

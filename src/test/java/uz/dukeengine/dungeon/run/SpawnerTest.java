@@ -23,7 +23,7 @@ class SpawnerTest {
     private static final DungeonSettings SETTINGS = DungeonSettings.load();
 
     /**
-     * Depth 3 of seed 422, with the way in at the foot of the keep's road: a party spread out from the fountain a
+     * Depth 3 of seed 1 (422 until the floors were halved, 2026-10-19), with the way in at the foot of the keep's road: a party spread out from the fountain a
      * cell at a time, over floor that joins the keep at its threshold, stood its fifth hero on that threshold.
      *
      * <p>The way in is laid there by hand. Seed 422 at depth 3 once drew its way in beside its keep, and no floor the
@@ -34,7 +34,7 @@ class SpawnerTest {
      */
     @Test
     void aPartyOfFiveNeverStandsInTheKeep() {
-        var drawn = DungeonGenerator.generate(422L, SETTINGS, 3);
+        var drawn = DungeonGenerator.generate(1L, SETTINGS, 3);
         var keep = drawn.keep();
         var floor = withTheWayInAtTheFootOfTheRoad(drawn);
         var arena = Dungeon.world(floor.asciiMap(), floor.levelMap(), SETTINGS, Content.units(),

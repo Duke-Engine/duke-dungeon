@@ -3095,7 +3095,8 @@ public final class DungeonRun {
         if (seat == null) {
             return;
         }
-        int paid = settings.story().trade().goldFor(level);
+        boolean boss = monster.getId().equals(bossId) || settings.story().boss(monster.getTemplate().name()) != null;
+        int paid = settings.story().trade().goldFor(level, boss);
         seat.gold += paid;
         // The world the corpse lies in, which is the one drawn: a run outlives the worlds its floors are laid in.
         var world = monster.getWorld();
@@ -3138,6 +3139,14 @@ public final class DungeonRun {
     public int goldOf(int playerIndex) {
         var seat = seatOf(playerIndex);
         return seat == null ? 0 : seat.gold;
+    }
+
+    /** Gold into this player's purse, as a story's GOLD puts it there: for a test, now kills pay so little. */
+    public void giveGold(int playerIndex, int gold) {
+        var seat = seatOf(playerIndex);
+        if (seat != null) {
+            seat.gold += gold;
+        }
     }
 
     /** The shop of the merchant {@code id} whose hero of {@code seat} is near enough to trade, or null. */

@@ -32,7 +32,7 @@ final class Scenery {
         // the edge of their cell, so every trunk stands on ground no chamber's floor was promised as open.
         for (var cell : cave.groves()) {
             var grove = biomes.at(cell[0], cell[1]).grove();
-            if (grove == null || grove.models().isEmpty()) {
+            if (grove == null || grove.models().isEmpty() || !cave.isGrove(cell[0], cell[1])) {
                 continue;
             }
             for (int n = 0; n < grove.perCell(); n++) {

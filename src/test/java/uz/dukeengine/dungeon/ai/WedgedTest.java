@@ -42,6 +42,18 @@ class WedgedTest {
             """);
 
     /** One cell of floor between two walls, thirty cells long. */
+    /** Open floor thirty cells a side, walled round. */
+    private static String field() {
+        var text = new StringBuilder();
+        for (int y = 0; y < 30; y++) {
+            for (int x = 0; x < 30; x++) {
+                text.append(x == 0 || y == 0 || x == 29 || y == 29 ? '#' : '.');
+            }
+            text.append('\n');
+        }
+        return text.toString();
+    }
+
     private static String corridor() {
         return corridor(30);
     }
@@ -205,35 +217,28 @@ class WedgedTest {
      * A thing that never moves is part of the ground, not a body in the way: he walks past it, as past a wall, rather
      * than stand waiting for it to step aside.
      *
-     * <p>The way in of the descent's first floor on seed 3179 has a statue beside its fountain, and the road north runs
-     * between the two, grazing the statue. From there the statue is a hair in front of him with the fountain at his
-     * side, which for a body would be a reason to stand; a statue never steps aside, and he stood there for good, 16
-     * units from where he set out. (Seed 26 had this scene until biomes were laid out as a few large regions, which
-     * moved what stands where on every floor; 3179 has it just the same, and he walks the same road six cells north.)
+     * <p>The scene, laid by hand: a statue a hair in front of him and a little aside, a fountain at his side, and the
+     * road on between the two. It was a seed's way in (26, then 3179) until the floors were laid otherwise; a scene that
+     * waits on luck means nothing the first time the luck changes. Grazing the statue with the fountain at his side,
+     * which for a body would be a reason to stand, he stood there for good, 16 units from where he set out.
      */
     @Test
     void aThingThatNeverMovesIsWalkedPastRatherThanWaitedFor() {
-        var game = Dungeon.newSession(3179L, DungeonSettings.load()).game();
+        var arena = Dungeon.world(field(), DungeonSettings.load());
+        var game = arena.game();
+        game.spawn("Rogue", arena.hero(), 200f, 200f);
+        game.spawn("Statue", arena.dungeon(), 190f, 180f);
+        game.spawn("Fountain", arena.dungeon(), 180f, 200f);
         game.runHeadless(2);
         var hero = creature(game, "Rogue", 0);
         var setOut = hero.getPosition();
-        // The scene this tells of, or nothing: the statue and the fountain just where the road grazes the one with the
-        // other at his side. A way in laid otherwise fails here, rather than passing with no graze in it at all.
-        assertTrue(standsAt(game, "Statue", setOut.x() - 10f, setOut.y() - 20f)
-                        && standsAt(game, "Fountain", setOut.x() - 20f, setOut.y()),
-                "the way in is no longer laid with the statue and fountain this walks between: find the graze again");
 
-        game.postCommand(new CombatOrder.MoveTo(game.getLocalPlayerIndex(), List.of(hero.getId()),
-                new Coord3D(227.5f, 165f, 0f)));
+        game.postCommand(new CombatOrder.MoveTo(hero.getPlayerIndex(), List.of(hero.getId()),
+                new Coord3D(200f, 140f, 0f)));
         game.runHeadless(80); // long enough to be well past it, and to the end of the road, six cells on
 
         assertTrue(hero.getPosition().distance(setOut) > 40f,
                 "he stood waiting for the statue to step aside, at " + hero.getPosition());
-    }
-
-    private static boolean standsAt(DukeGame game, String template, float x, float y) {
-        return game.getLogic().getObjects().stream().anyMatch(thing -> thing.getTemplate().name().equals(template)
-                && Math.abs(thing.getPosition().x() - x) < 0.5f && Math.abs(thing.getPosition().y() - y) < 0.5f);
     }
 
     /**

@@ -245,7 +245,7 @@ class HeroAttributesTest {
     void theFileIsWhatDecidesTheHeroInTheWorld() {
         float shipped = play("Knight").body().getBody().getMaxHealth();
 
-        var knightStrength = "    Attribute\n      Name = STR\n      Base = 22\n      Growth = 3.0\n    End,\n";
+        var knightStrength = "    Attribute\n      Name = STR\n      Base = 22\n      Growth = 0.8\n    End,\n";
         var stronger = DungeonSettings.parse(Content.data()
                 .replace(knightStrength, knightStrength.replace("Base = 22", "Base = 30")));
         assertEquals(shipped + 8 * 12, play("Knight", stronger).body().getBody().getMaxHealth(), 0f,

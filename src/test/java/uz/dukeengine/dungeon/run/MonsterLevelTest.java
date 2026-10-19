@@ -203,8 +203,11 @@ class MonsterLevelTest {
                 if (keep.holds(monster.at().cellX(), monster.at().cellY())) {
                     continue;
                 }
-                assertEquals(SETTINGS.levelAlong(1, stepsTo(walk, monster), way), levels[i], "seed " + seed + ": a "
-                        + monster.kind() + " " + stepsTo(walk, monster) + " steps in, of " + way);
+                // At least its share, and never past the level before the boss: raised above its share only where the
+                // keep's guard stands nearer the way in than it does (see Spawner.levelsOf).
+                int share = SETTINGS.levelAlong(1, stepsTo(walk, monster), way);
+                assertTrue(levels[i] >= share && levels[i] <= SETTINGS.beforeBossLevel(1), "seed " + seed + ": a "
+                        + monster.kind() + " " + stepsTo(walk, monster) + " steps in, of " + way + ", at " + levels[i]);
                 lowest = Math.min(lowest, levels[i]);
             }
         }

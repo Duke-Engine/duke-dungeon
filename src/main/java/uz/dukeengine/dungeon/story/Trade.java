@@ -11,17 +11,21 @@ package uz.dukeengine.dungeon.story;
  * @param wanderFrames how often a wandering person picks somewhere new to stroll to
  * @param gainWord     the gold a kill paid, floated over the corpse; {@code %d} the gold
  * @param goldIcon     the coins drawn before the purse, a path from the resource root
+ * @param bossGold     what a boss pays, whatever its level: a floor's, or a story's Boss
  */
 public record Trade(int goldPerKill, int goldPerLevel, int sellPercent, int basePrice, int wanderFrames,
         String goldWord, String gainWord, String stockWord, String bagWord, String closeHint, String noGoldWord,
-        String fullWord, String soldOutWord, String cantSellWord, String goldIcon) {
+        String fullWord, String soldOutWord, String cantSellWord, String goldIcon, int bossGold) {
 
     public static final Trade DEFAULTS = new Trade(4, 2, 40, 30, 150, "Oltin", "+%d oltin", "Sotiladi",
             "Xaltangiz", "Esc — yopish", "Oltin yetmaydi", "Xalta to'la", "Qolmadi", "Buni sotib bo'lmaydi",
-            "icons/items/gold.png");
+            "icons/items/gold.png", 10);
 
-    /** What a kill of a monster at {@code level} pays. */
-    public int goldFor(int level) {
+    /** What a kill of a monster at {@code level} pays; a boss, {@code bossGold} and no more. */
+    public int goldFor(int level, boolean boss) {
+        if (boss) {
+            return Math.max(0, bossGold);
+        }
         return Math.max(0, goldPerKill + goldPerLevel * Math.max(1, level));
     }
 }

@@ -83,10 +83,10 @@ class TradeTest {
         killed(hero(game), skeleton);
         game.runHeadless(2);
         int player = hero(game).getPlayerIndex();
-        assertEquals(SETTINGS.story().trade().goldFor(level), session.run().goldOf(player));
+        assertEquals(SETTINGS.story().trade().goldFor(level, false), session.run().goldOf(player));
         all(game, "Skeleton").getFirst().getBody().damage(1_000_000f);
         game.runHeadless(2);
-        assertEquals(SETTINGS.story().trade().goldFor(level), session.run().goldOf(player), "nobody's kill pays nobody");
+        assertEquals(SETTINGS.story().trade().goldFor(level, false), session.run().goldOf(player), "nobody's kill pays nobody");
     }
 
     /** E27: an arrow names its archer, so the Rogue's arrow kill pays him — it paid nobody before. */
@@ -104,7 +104,7 @@ class TradeTest {
                 List.of(hero.getId()), skeleton.getId()));
         game.runHeadless(120);
         assertTrue(!all(game, "Skeleton").contains(skeleton), "shot dead");
-        assertEquals(SETTINGS.story().trade().goldFor(level), session.run().goldOf(hero.getPlayerIndex()),
+        assertEquals(SETTINGS.story().trade().goldFor(level, false), session.run().goldOf(hero.getPlayerIndex()),
                 "and the arrow's kill is his gold");
     }
 
@@ -124,8 +124,10 @@ class TradeTest {
             killed(hero(game), skeleton);
         }
         game.runHeadless(2);
+        assertEquals(7 * SETTINGS.story().trade().goldFor(1, false), run.goldOf(player), "seven kills pay a little");
+        run.giveGold(player, 100); // a gauntlet costs more than kills pay now
         int rich = run.goldOf(player);
-        assertTrue(rich >= 80, "seven kills pay for a gauntlet: " + rich);
+        assertTrue(rich >= 80, "enough for a gauntlet: " + rich);
 
         beside(game, merchant);
         game.postCommand(PartyOrders.of(new TalkTo(player, merchant.getId())));
