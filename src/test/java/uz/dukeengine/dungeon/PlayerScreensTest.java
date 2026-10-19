@@ -124,6 +124,7 @@ class PlayerScreensTest {
         var hero = named(game, SETTINGS.run().defaultHero());
         hero.setPosition(new Coord3D(commander.getPosition().x() + 12f, commander.getPosition().y(),
                 commander.getPosition().z()));
+        session.run().talkTo(game, hero.getPlayerIndex(), commander.getId()); // asked: in the box
         game.runHeadless(SETTINGS.story().dialogue().checkFrames() + 1);
     }
 

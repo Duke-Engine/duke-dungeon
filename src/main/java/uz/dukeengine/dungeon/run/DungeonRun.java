@@ -592,6 +592,10 @@ public final class DungeonRun {
     private uz.dukeengine.dungeon.stage.StagePaint covered;
     private uz.dukeengine.dungeon.stage.StagePaint coveredFrom;
 
+    /** A floor of one theme as the simulation walks it: no looks of its own, only how finely. */
+    private record Walked(String name, int navigationCellsPerCell) implements uz.dukeengine.core.map.Subdivided {
+    }
+
     private uz.dukeengine.core.map.MapTemplate looksOf(GeneratedDungeon floor) {
         if (floors.paint() != null) {
             // Walked finer than drawn, as a floor that mixes biomes is: a tree is in the way as far as its trunk. Its
@@ -605,7 +609,10 @@ public final class DungeonRun {
             return covered;
         }
         if (floor.biomes() == null) {
-            return null;
+            // One theme whole, drawn in the floor's own look, but walked finer all the same: walked a cell to a cell,
+            // a pillar of radius 3 closed every ten-unit cell its outline came near, and two of them thirty apart
+            // left no way between (the owner, 2026-10-19). Finer, a round thing is kept off by its true outline.
+            return new Walked("descent", settings.world().navigationCellsPerCell());
         }
         var looks = new java.util.ArrayList<String>();
         for (var biome : floor.biomes().biomes()) {
@@ -731,6 +738,7 @@ public final class DungeonRun {
         streakUntil = Integer.MIN_VALUE;
         trails.clear();
         beams.clear();
+        barks = List.of();
         laidBattles.clear();
         seats.forEach(seat -> seat.lastInside = null);
         var gate = gate();
@@ -2691,6 +2699,26 @@ public final class DungeonRun {
      * the bags, the zones and the people looked at.
      */
     private void story(DukeGame game) {
+        // A conversation in the box stops the world, played alone: his last order stops with it, so he does not stand
+        // frozen in a stride and walk on when it is read.
+        int saidNow = quests.said().size();
+        if (saidNow != saidStopped) {
+            boolean more = saidNow > saidStopped;
+            saidStopped = saidNow;
+            // Not in a cutscene or the intro: there the story moves him itself.
+            if (more && !game.isMultiplayer() && !inCutscene() && !inIntro()) {
+                for (var seat : seats) {
+                    var hero = seat.heroId == null ? null : game.getLogic().findObject(seat.heroId);
+                    if (hero != null && !hero.isEffectivelyDead()) {
+                        uz.dukeengine.combat.module.Errand.giveUpAll(hero);
+                        var legs = hero.getLocomotor();
+                        if (legs != null && legs.isMoving()) {
+                            legs.stop();
+                        }
+                    }
+                }
+            }
+        }
         stroll(game);
         follow(game);
         tellTheRanks(game);
@@ -2781,7 +2809,19 @@ public final class DungeonRun {
      * the trade window opened on his player's machine.
      */
     private boolean spoke(DukeGame game, Seat seat, Person who, GameObject hero, GameObject there, boolean asked) {
+        int barkedBefore = quests.barked().size();
         boolean said = quests.talk(who.npc(), seat.progress.getLoot(), asked);
+        if (quests.barked().size() > barkedBefore) {
+            var more = new ArrayList<Bark>();
+            int now = game.getLogic().getFrame();
+            for (var bark : barks) { // a minute's worth kept: every greeting is said well inside it
+                if (now - bark.frame() < 60 * uz.dukeengine.core.GameConstants.LOGICFRAMES_PER_SECOND) {
+                    more.add(bark);
+                }
+            }
+            more.add(new Bark(there.getId().value(), hero.getId().value(), quests.barked().getLast(), now));
+            barks = List.copyOf(more);
+        }
         if (said || asked) {
             face(there, hero);
         }
@@ -3234,6 +3274,11 @@ public final class DungeonRun {
         return seats.stream().map(seat -> seat.progress.getLoot()).toList();
     }
 
+    /** The side the floor's monsters and props are on. */
+    public GamePlayer dungeonPlayer() {
+        return dungeonPlayer;
+    }
+
     /** The run's quests: what is going, finished and heard. */
     public QuestLog getQuests() {
         return quests;
@@ -3242,6 +3287,22 @@ public final class DungeonRun {
     /** What each person on the floor shows over their head — from any thread. */
     public List<Mark> getMarks() {
         return marks;
+    }
+
+    /**
+     * A greeting called out to a hero walking past, its lines said over their heads in turn from {@code frame}: the
+     * person's by {@code person}, the hero's by {@code hero}. Drawing only: not saved.
+     */
+    public record Bark(int person, int hero, String conversation, int frame) {
+    }
+
+    private volatile List<Bark> barks = List.of();
+    /** How many conversations had been said when the heroes were last stopped for one. */
+    private int saidStopped;
+
+    /** The greetings called out lately — from any thread. */
+    public List<Bark> getBarks() {
+        return barks;
     }
 
     // ---- the medallion and the turning: see docs/plan/2026-10-09-medallion.md ----

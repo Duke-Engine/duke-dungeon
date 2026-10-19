@@ -111,7 +111,8 @@ class DialogueScreenTest {
         var hero = named(game, SETTINGS.run().defaultHero());
         hero.setPosition(new Coord3D(commander.getPosition().x() + 12f, commander.getPosition().y(),
                 commander.getPosition().z()));
-        game.runHeadless(SETTINGS.story().dialogue().checkFrames() + 1);
+        session.run().talkTo(game, hero.getPlayerIndex(), commander.getId()); // asked: the box; walked past, a bubble
+        game.runHeadless(2);
 
         var first = painted(screen);
         assertTrue(first.text.contains("Qo'mondon Laylo"), first.text.toString());

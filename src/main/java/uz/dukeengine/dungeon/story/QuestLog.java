@@ -37,6 +37,7 @@ public final class QuestLog {
     private int now;
     /** Every conversation played this session, in order — for the window, from any thread; never cleared. */
     private volatile List<String> said = List.of();
+    private volatile List<String> barked = List.of();
 
     /**
      * @param items every LootItem the files have, for what a quest gives
@@ -123,6 +124,32 @@ public final class QuestLog {
         for (var quest : known.starts()) {
             start(quest);
         }
+    }
+
+    /**
+     * A greeting called out to a hero walking past: heard, its quests started and its HEARD told, as {@link #play}
+     * does, but said over the person's head ({@link #barked}) while the world goes on, not in the box that stops it.
+     */
+    public void bark(String conversation) {
+        var known = story.conversation(conversation);
+        if (known == null) {
+            return;
+        }
+        if (!heard.contains(conversation)) {
+            heard.add(conversation);
+        }
+        var more = new ArrayList<>(barked);
+        more.add(conversation);
+        barked = List.copyOf(more);
+        told(new Event(Trigger.When.HEARD, conversation, 0));
+        for (var quest : known.starts()) {
+            start(quest);
+        }
+    }
+
+    /** Every greeting called out in passing, in order: drawn over the person's head. */
+    public List<String> barked() {
+        return barked;
     }
 
     /**
@@ -219,7 +246,11 @@ public final class QuestLog {
             boolean say = greeting.offer() ? asked && !heard.contains(greeting.name())
                     : asked || !heard.contains(greeting.name());
             if (say) {
-                play(greeting.name());
+                if (asked || greeting.offer()) {
+                    play(greeting.name());
+                } else {
+                    bark(greeting.name());
+                }
                 return true;
             }
         }

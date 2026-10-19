@@ -64,6 +64,7 @@ class LocketShownTest {
         var hero = all(game, SETTINGS.run().defaultHero()).getFirst();
         hero.setPosition(new Coord3D(commander.getPosition().x() + 12f, commander.getPosition().y(),
                 commander.getPosition().z()));
+        session.run().talkTo(game, hero.getPlayerIndex(), commander.getId()); // asked: in the box
         game.runHeadless(CHECK + 1);
         return session;
     }

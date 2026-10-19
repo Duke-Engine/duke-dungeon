@@ -56,6 +56,7 @@ final class MissionScreen {
         tracker(canvas, match.run().getTracker(), snapshot.frame(), folded, settings);
         marks(canvas, match, snapshot, settings);
         pointers(canvas, match, snapshot, settings);
+        barks(canvas, match, snapshot, settings);
         var heroes = settings.heroes().stream().map(hero -> hero.name()).collect(Collectors.toUnmodifiableSet());
         for (var unit : snapshot.units()) {
             var progress = heroes.contains(unit.templateName()) ? match.run().progressOf(unit.playerIndex()) : null;
@@ -297,6 +298,73 @@ final class MissionScreen {
      * His words over his bar, the bubble's tail pointing down at it, kept on the screen: sideways by the window's
      * edges, and, for a bar with no room above it, lowered from the top edge over the bar.
      */
+    /** How long a line called out in passing stays over a head: a second and a half, and a moment more a word. */
+    static int barkFrames(String text) {
+        float perSecond = uz.dukeengine.core.GameConstants.LOGICFRAMES_PER_SECOND;
+        return Math.round(perSecond * (1.5f + 0.3f * text.split(" ").length));
+    }
+
+    /**
+     * A greeting called out to a hero walking past (DungeonRun.Bark): its lines in turn, each in a bubble over the one
+     * who says it, the world going on under them.
+     */
+    static void barks(Canvas canvas, Dungeon.Session match, uz.dukeengine.core.view.WorldSnapshot snapshot,
+            DungeonSettings settings) {
+        var barks = match.run().getBarks();
+        if (barks.isEmpty()) {
+            return;
+        }
+        var font = Canvas.Font.of("Georgia", Math.clamp(Math.round(canvas.height() * 0.018f), 12, 22));
+        for (var bark : barks) {
+            var conversation = settings.story().conversation(bark.conversation());
+            if (conversation == null) {
+                continue;
+            }
+            int into = snapshot.frame() - bark.frame();
+            for (var line : conversation.lines()) {
+                int frames = barkFrames(line.text());
+                if (into < frames) {
+                    int who = uz.dukeengine.dungeon.story.Speaker.HERO.equals(line.speaker()) ? bark.hero() : bark.person();
+                    for (var unit : snapshot.units()) {
+                        if (unit.id() == who) {
+                            var over = canvas.screenOf(unit.x(), unit.y(), unit.z() + 22f);
+                            if (over != null) {
+                                bubble(canvas, font, line.text(), over.x(), over.y(), settings.menu());
+                            }
+                        }
+                    }
+                    break;
+                }
+                into -= frames;
+            }
+        }
+    }
+
+    /** A bubble of words standing on a point of the screen, cut into rows no wider than a third of it. */
+    private static void bubble(Canvas canvas, Canvas.Font font, String words, float middle, float bottom,
+            MenuStyle look) {
+        var rows = DialogueScreen.wrap(canvas, font, words, Math.max(220f, canvas.width() / 4f));
+        float pad = font.pixelHeight() * 0.5f;
+        float lineHigh = canvas.measure(font, "Ag").lineHeight();
+        float wide = 0f;
+        for (var row : rows) {
+            wide = Math.max(wide, canvas.measure(font, row).width());
+        }
+        wide += pad * 2f;
+        float high = lineHigh * rows.size() + pad;
+        float left = Math.clamp(middle - wide / 2f, 4f, Math.max(4f, canvas.width() - wide - 4f));
+        float top = Math.max(4f, bottom - high - pad);
+        canvas.fillRect(left, top, wide, high, 0xF0000000 | look.stoneDeepColour());
+        canvas.openRect(left, top, wide, high, 1.5f, 0xFF000000 | look.stoneEdgeColour());
+        canvas.fillTriangle(middle - pad, top + high, middle + pad, top + high, middle, top + high + pad,
+                0xF0000000 | look.stoneDeepColour());
+        float y = top + pad / 2f;
+        for (var row : rows) {
+            canvas.drawText(font, row, left + pad, y, 0xFF000000 | look.boneColour());
+            y += lineHigh;
+        }
+    }
+
     private static void bubble(Canvas canvas, String words, Canvas.Box bar, MenuStyle look) {
         var font = Canvas.Font.of("Georgia", Math.clamp(Math.round(canvas.height() * 0.018f), 12, 22));
         var size = canvas.measure(font, words);

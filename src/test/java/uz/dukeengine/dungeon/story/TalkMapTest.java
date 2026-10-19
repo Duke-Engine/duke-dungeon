@@ -69,7 +69,8 @@ class TalkMapTest {
         var hero = named(game, SETTINGS.run().defaultHero());
         beside(hero, commander);
         game.runHeadless(CHECK + 1);
-        assertEquals(List.of("CommanderGreets"), run.getQuests().said(), "walking up, she greets him");
+        assertEquals(List.of("CommanderGreets"), run.getQuests().barked(), "walking up, she calls out to him");
+        assertEquals(List.of(), run.getQuests().said(), "over her head, not in the box that stops the world");
         var titles = run.getTracker().entries().stream().map(Tracker.Entry::title).toList();
         assertEquals(List.of("Devordagi skeletlar", "Yo'qolgan tumor"), titles,
                 "her MAIN, then her SIDE: a story map runs no floor mission");
@@ -103,12 +104,13 @@ class TalkMapTest {
         var hero = named(game, SETTINGS.run().defaultHero());
         beside(hero, commander);
         game.runHeadless(CHECK + 1);
-        assertEquals(1, session.run().getQuests().said().size());
+        assertEquals(1, session.run().getQuests().barked().size(), "called out in passing");
         game.runHeadless(CHECK * 3);
-        assertEquals(1, session.run().getQuests().said().size(), "standing by her, nothing new is said");
+        assertEquals(1, session.run().getQuests().barked().size(), "standing by her, nothing new is said");
+        assertEquals(0, session.run().getQuests().said().size());
 
         game.postCommand(PartyOrders.of(new TalkTo(hero.getPlayerIndex(), commander.getId())));
         game.runHeadless(2);
-        assertEquals(2, session.run().getQuests().said().size(), "asked, she greets him again");
+        assertEquals(1, session.run().getQuests().said().size(), "asked, she greets him again, in the box");
     }
 }

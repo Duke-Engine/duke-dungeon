@@ -1195,7 +1195,7 @@ Conversation
   Lines = [
     Line
       Speaker = Blacksmith
-      Text = "Qahramon! Yerto'lamdan skeletlar chiqib kelyapti. Yerto'la shaharning o'ng yuqori burchagida, mening ustaxonam tepasida. Uchala skeletni qirib bering — evaziga qo'lqop beraman."
+      Text = "Qahramon! Shaharni kalamush va ko'rshapalaklar bosib ketdi — bozorda ham, ko'chada ham. Uyasi shaharning o'ng yuqori burchagidagi yerto'lada, mening ustaxonam tepasida. Uyani tozalab bering — evaziga qo'lqop beraman."
     End
   ]
   Offer = Yes
@@ -1207,7 +1207,7 @@ Conversation
   Lines = [
     Line
       Speaker = Blacksmith
-      Text = "Tinchlik qaytdi! Mana, va'da qilgan qo'lqopim."
+      Text = "Uyasi tozalandi, shahar nafas oldi! Mana, va'da qilgan qo'lqopim."
     End
   ]
 End
@@ -1237,14 +1237,22 @@ End
 Quest
   Name = Cellar
   Kind = SIDE
-  Title = "Yerto'ladagi skeletlar"
-  Description = "Temirchining yerto'lasi shaharning o'ng yuqori (shimoli-sharqiy) burchagida, ustaxonasining tepasida — M xaritada belgilangan. U yerga boring, uchala skeletni o'ldiring, so'ng temirchiga qayting."
+  Title = "Kalamush va ko'rshapalaklar"
+  Description = "Shaharni kalamush va ko'rshapalaklar bosib ketgan. Ularning uyasi temirchining yerto'lasida — shaharning o'ng yuqori (shimoli-sharqiy) burchagida, M xaritada belgilangan. Avval kalamushlarni, so'ng uyadan uchib chiqadigan ko'rshapalaklarni qiring, keyin temirchiga qayting."
   Steps = [
     Step
       Goal = KILL
-      Target = Skeleton
-      Count = 3
-      Text = "Shaharning o'ng yuqori burchagidagi yerto'laga boring, skeletlarni qiring %d/%d"
+      Target = Rat
+      Count = 5
+      Text = "Kalamushlarni qiring — uyasi shaharning o'ng yuqori burchagidagi yerto'lada %d/%d"
+      Where = "Yerto'la"
+      Glow = Yes
+    End,
+    Step
+      Goal = KILL
+      Target = Bat
+      Count = 5
+      Text = "Uyadan uchib chiqqan ko'rshapalaklarni qiring %d/%d"
       Where = "Yerto'la"
       Glow = Yes
     End,
@@ -1312,8 +1320,8 @@ Trigger
   Actions = [
     Action
       Act = SPAWN
-      Target = Skeleton
-      Count = 3
+      Target = Rat
+      Count = 5
       Zone = "Yerto'la"
     End
   ]
@@ -1913,6 +1921,114 @@ Effect
       LightRadius = 50
       Seconds = 1.5
       Height = 20
+    End
+  ]
+End
+
+; The nest's bats fly out once its rats are dead: the step after them, so every one of them counts.
+Trigger
+  Name = CellarBatsFly
+  Map = world
+  When = STEP_DONE
+  Target = Cellar
+  Step = 1
+  Actions = [
+    Action
+      Act = SPAWN
+      Target = Bat
+      Count = 5
+      Zone = "Yerto'la"
+    End
+  ]
+End
+
+; The capital overrun: rats in the market and the cellar, bats over the streets, from the hero's first
+; coming in until the blacksmith's nest is cleared -- laid again whenever the world is (a load lays it fresh).
+Trigger
+  Name = PestsInTheCapital
+  Map = world
+  When = ZONE
+  Target = Poytaxt
+  If = [
+    Condition
+      Is = FLAG_SET
+      Target = Act1
+    End,
+    Condition
+      Is = FLAG_UNSET
+      Target = PestsLaid
+    End
+  ]
+  Actions = [
+    Action
+      Act = FLAG
+      Target = PestsLaid
+    End,
+    Action
+      Act = SPAWN
+      Target = Rat
+      Count = 4
+      Zone = Bozor
+    End,
+    Action
+      Act = SPAWN
+      Target = Bat
+      Count = 3
+      Zone = Poytaxt
+    End,
+    Action
+      Act = SPAWN
+      Target = Rat
+      Count = 2
+      Zone = "Yerto'la"
+    End
+  ]
+End
+
+Trigger
+  Name = PestsLaidAgain
+  Map = world
+  When = MAP_START
+  Repeat = Yes
+  If = [
+    Condition
+      Is = FLAG_SET
+      Target = Act1
+    End,
+    Condition
+      Is = FLAG_SET
+      Target = PestsLaid
+    End,
+    Condition
+      Is = FLAG_UNSET
+      Target = PestsGone
+    End
+  ]
+  Actions = [
+    Action
+      Act = SPAWN
+      Target = Rat
+      Count = 4
+      Zone = Bozor
+    End,
+    Action
+      Act = SPAWN
+      Target = Bat
+      Count = 3
+      Zone = Poytaxt
+    End
+  ]
+End
+
+Trigger
+  Name = PestsGone
+  Map = world
+  When = QUEST_DONE
+  Target = Cellar
+  Actions = [
+    Action
+      Act = FLAG
+      Target = PestsGone
     End
   ]
 End

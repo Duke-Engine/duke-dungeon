@@ -260,7 +260,7 @@ class MedallionTest {
         var session = session();
         var game = session.game();
         given(session);
-        assertTrue(session.run().getQuests().said().contains("QueenGives"));
+        assertTrue(session.run().getQuests().heard().contains("QueenGives"));
         int skeletons = 4;
         for (int at = 0; at < skeletons; at++) {
             kill(session, hero(game));
