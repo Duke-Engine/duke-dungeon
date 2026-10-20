@@ -10,10 +10,10 @@ Laser
   Name = RitualBeam
   Material = MatDefs/game/Beam.j3md
   NumBeams = 3
-  InnerBeamWidth = 1.2
-  OuterBeamWidth = 5
-  InnerColour = 0xFFFFF4FF
-  OuterColour = 0x70B060FF
+  InnerBeamWidth = 2.4
+  OuterBeamWidth = 11
+  InnerColour = 0xFFFFFFFF
+  OuterColour = 0xC0E8FFFF
   Texture = kit/effects/particles/trace_07.png
   ScrollRate = 1.6
   Tile = Yes

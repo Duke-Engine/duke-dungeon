@@ -1,0 +1,156 @@
+; ---------------------------------------------------------------------------
+; A graveyard's raiser and its graves (data/story/graveyards.duke, docs/plan/2026-10-19-open-world-act1.md).
+; Neither is ever placed by a floor (MinDepth 99, Weight 0): a Graveyard block lays them.
+; ---------------------------------------------------------------------------
+
+; A grave the dead climb out of: a mound with a sword at its head. It never moves and never strikes. It cannot be
+; killed by a blow, only beaten -- its UNYIELDING -- and the game strikes it down then, once its raiser has fallen;
+; while the raiser stands, nothing it takes holds (Graveyards).
+Monster
+  Name = Grave
+  DisplayName = "Qabr"
+  KindOf = [SELECTABLE]
+  Geometry = Cylinder
+    Radius = 6
+    Height = 6
+  End
+  VisionRange = 0
+  Modules = [
+    GrowableBody
+      MaxHealth = 400
+    End,
+    SkillBook
+    End,
+    StatusUpdate
+    End,
+    ExperienceModule
+      ExperienceValue = 40
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+  MinDepth = 99
+  Weight = 0
+  Colour = 0x4E4636
+  Scale = 1
+  Model = models/inuciian/nature/mound.glb
+  ModelScale = 1.4
+  Tint = 0x8A7A90
+  Skills = [
+    Skill
+      Key = Q
+      Effect = UNYIELDING
+      HealBelowPercent = 1
+      MaxRank = 1
+      Name = "Sehr bilan himoyalangan"
+    End
+  ]
+End
+
+; The mage who stands before the graves and raises the dead out of them, casting the while: the necromancer's
+; look and fire, its own name, never placed by a floor.
+Monster
+  Name = GraveRaiser
+  DisplayName = "Qabr sehrgari"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 7
+    Height = 20
+  End
+  VisionRange = 130
+  Modules = [
+    GrowableBody
+      MaxHealth = 460
+    End,
+    MoveUpdate
+      Speed = 13
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 20
+      ; It throws fire, like the Revenant it is a bigger cousin of. Further than
+      ; the Revenant reaches, because a boss's room should be a fight from the
+      ; doorway rather than something to be walked up to.
+      AttackRange = 56
+      ReloadFrames = 50
+      AttackOnTheMove = No
+    End,
+    ; The same fire as the Revenant's, thrown by something three times the size --
+    ; so it is a bigger ball, which is a projectile of its own rather than a number
+    ; on this one. See Projectile GreaterFireball.
+    Bow
+      Projectile = GreaterFireball
+      Speed = 210
+      ; Out at the end of a staff held by something twenty units tall.
+      MuzzleOffset = 12
+    End,
+    ; It throws at what it can see, like everything else down here that throws.
+    EyesOnly
+    End,
+    AutoHealUpdate
+      HealPerSecond = 9
+    End,
+    Swing
+    End,
+    ; That it has skills: one, never cast -- see its Skill block, below.
+    SkillBook
+    End,
+    ; Timers for the statuses it is wearing -- the engine's own, and today that
+    ; means SLOWED. MoveUpdate already halves the step of anything wearing it, and
+    ; StatusUpdate already counts it down and takes it off, so a monster that
+    ; carries this thaws by itself whether or not whoever chilled it is still alive.
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 130
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+
+
+  SenseRadius = 55
+  ChaseRadius = 195
+  ; It throws rather than walks up, so it stops well short -- inside its own
+  ; reach of 56, the way every other thrower down here is.
+  CloseDistance = 46
+  AlertRadius = 110
+  RepathFrames = 8
+  SwingFrames = 18
+  ; Casting, and standing as though about to.
+  Attack = Ranged_Magic_Shoot
+  Idle = Ranged_Magic_Spellcasting_Long
+  MinDepth = 99
+  Weight = 0
+  Colour = 0x9A6AD8
+  Scale = 1.9
+  ; The staff-carrier, which is what a thing that mends itself should look like.
+  ; GeometryHeight is 20.
+  Model = models/monsters/skeleton_mage.glb
+  Animations = Humanoid
+  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
+  WalkStride = 6.85
+  UpperBody = spine
+  ; What is looking at you out of the dark.
+  Effect = EmberEyes
+  ModelScale = 9.2
+  Held = Held
+    Model = models/monsters/staff.gltf
+    Bone = handslot.r
+    Scale = 1.2
+  End
+  Tint = 0xB89CFF
+
+  Skills = [
+    Skill
+      Key = Q
+      ; A quarter of every blow back, never cast, as every boss has -- see the
+      ; Warden's. Its Bow stands before its Swing and takes every shot, so what it
+      ; throws is drunk where it arrives.
+      Effect = LIFESTEAL
+      BoostPercent = 25
+      MaxRank = 1
+      Name = Qon so'rish
+    End
+  ]
+End

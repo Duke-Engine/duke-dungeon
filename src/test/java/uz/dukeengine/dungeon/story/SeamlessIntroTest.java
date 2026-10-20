@@ -91,7 +91,7 @@ class SeamlessIntroTest {
                     || script.state().fired().contains("BattleWon")) {
                 at.putIfAbsent("talk", now);
             }
-            if (script.flagged("BattleWon")) {
+            if (session.run().getQuests().active().stream().anyMatch(q -> q.quest().equals("FirstWave"))) {
                 at.putIfAbsent("lead", now);
             }
         }
@@ -102,8 +102,8 @@ class SeamlessIntroTest {
         assertEquals(120, at.get("pillar") - began, 1, "the pillar rises at 120");
         assertEquals(150, at.get("meteor") - began, 1, "the meteor falls at 150");
         assertEquals(174, at.get("impact") - began, 1, "and strikes 24 frames later");
-        assertTrue(session.run().getQuests().active().stream().anyMatch(q -> q.quest().equals("FollowCommander")),
-                "the commander leads him on");
+        assertTrue(session.run().getQuests().active().stream().anyMatch(q -> q.quest().equals("FirstWave")),
+                "the dead come out of the graves at the line");
         session.game().runHeadless(200);
         assertTrue(logic.getBeams().isEmpty(), "every beam out");
     }
@@ -243,7 +243,7 @@ class SeamlessIntroTest {
         var stood = hero(session).getPosition();
         int held = 0;
         // The cutscene plays its own frames: the lines are read at once, the shots run their length.
-        while (!script.flagged("BattleWon")) {
+        while (!script.state().fired().contains("BattleWon")) { // the trigger that lets the battle go
             assertTrue(hero(session).hasStatus(ObjectStatus.DISABLED), "held while he is told");
             frame(session, false);
             held++;
@@ -256,6 +256,7 @@ class SeamlessIntroTest {
                     "nobody was struck while the battle was held");
         }
         assertEquals(stood.x(), hero(session).getPosition().x(), 0.01f, "he did not step");
+        session.game().runHeadless(1); // the trigger fired: its actions done by the next frame
         assertFalse(session.run().holdsTheBattle(), "let go when the talk is over");
         session.game().runHeadless(3);
         assertFalse(hero(session).hasStatus(ObjectStatus.DISABLED), "free to move");

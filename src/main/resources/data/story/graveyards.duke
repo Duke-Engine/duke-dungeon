@@ -1,0 +1,171 @@
+; ---------------------------------------------------------------------------
+; The graveyards: the dead climb out of them while their raiser stands, and the Black Knight draws strength from
+; every one left (docs/plan/2026-10-19-open-world-act1.md). A grave's first Paying risen pay; the rest are changed --
+; darker, ChangedLevels stronger, and worth nothing -- so a graveyard cannot be farmed.
+; ---------------------------------------------------------------------------
+Graves
+  Paying = 9
+  ChangedLevels = 3
+  ChangedWord = CHANGED
+  ; Added to its colour: a cold, dark blue-black.
+  ChangedRed = -0.35
+  ChangedGreen = -0.25
+  ChangedBlue = 0.15
+  EaseFrames = 20
+End
+
+; The raiser's spell, from its hands to the grave a body climbs out of.
+Laser
+  Name = RaiseBeam
+  Material = MatDefs/game/Beam.j3md
+  NumBeams = 3
+  InnerBeamWidth = 1
+  OuterBeamWidth = 5
+  InnerColour = 0xFFE8D8FF
+  OuterColour = 0x9060C0FF
+  Texture = kit/effects/particles/trace_07.png
+  ScrollRate = 2.2
+  Tile = Yes
+  TilingScalar = 1
+  Segments = 6
+  ArcHeight = 6
+  SegmentOverlapRatio = 0.05
+End
+
+; The ward over a grave while its raiser stands: a sickly violet ring on the ground and motes rising off it.
+Effect
+  Name = GraveWard
+  Layers = [
+    Layer
+      Name = Ring
+      Type = AURA
+      Texture = kit/effects/particles/circle_05.png
+      Blend = Additive
+      Count = 1
+      Seconds = 1.1
+      Size = [18, 18]
+      Colour = [0xB070FF, 0x6030A0]
+      Alpha = [0.55, 0.55]
+      FadeIn = 0.2
+      FadeOut = 0.3
+      PulseRate = 2
+      PulseDepth = 0.35
+      Height = 0.3
+    End,
+    Layer
+      Name = Motes
+      Type = BURST
+      Texture = kit/effects/particles/star_01.png
+      Blend = Additive
+      Count = 4
+      Life = [0.5, 0.75]
+      Size = [1.4, 0.3]
+      Colour = [0xD0A0FF, 0x7040C0]
+      Alpha = [0.9, 0]
+      Speed = [6, 12]
+      Direction = UP
+      Spread = 20
+      Radius = 5
+      Height = 1
+    End
+  ]
+End
+
+; The earth thrown up as one of the dead climbs out.
+Effect
+  Name = GraveRises
+  Layers = [
+    Layer
+      Name = Earth
+      Type = BURST
+      Texture = kit/effects/particles/smoke_03.png
+      Blend = Alpha
+      Count = 10
+      Life = [0.5, 0.9]
+      Size = [4, 10]
+      Colour = [0x5A4A38, 0x3A3028]
+      Alpha = [0.8, 0]
+      Speed = [8, 18]
+      Direction = UP
+      Spread = 50
+      Radius = 3
+      Height = 1
+    End,
+    Layer
+      Name = Spark
+      Type = BURST
+      Texture = kit/effects/particles/star_04.png
+      Blend = Additive
+      Count = 8
+      Life = [0.3, 0.6]
+      Size = [1.8, 0.2]
+      Colour = [0xD0A0FF, 0x6030A0]
+      Alpha = [1, 0]
+      Speed = [12, 26]
+      Direction = UP
+      Spread = 70
+      Radius = 2
+      Height = 2
+    End
+  ]
+End
+
+; A grave struck down: its earth and stone thrown out, the last of the spell going out of it.
+Effect
+  Name = GraveBroken
+  Layers = [
+    Layer
+      Name = Dust
+      Type = BURST
+      Texture = kit/effects/particles/smoke_01.png
+      Blend = Alpha
+      Count = 14
+      Life = [0.6, 1.0]
+      Size = [6, 16]
+      Colour = [0x6A5A48, 0x40362C]
+      Alpha = [0.75, 0]
+      Speed = [10, 22]
+      Direction = UP
+      Spread = 80
+      Radius = 4
+      Height = 1
+    End,
+    Layer
+      Name = Spell
+      Type = BURST
+      Texture = kit/effects/particles/star_09.png
+      Blend = Additive
+      Count = 16
+      Life = [0.3, 0.7]
+      Size = [2.4, 0.3]
+      Colour = [0xFFFFFF, 0x9060E0]
+      Alpha = [1, 0]
+      Speed = [20, 40]
+      Direction = UP
+      Spread = 120
+      Radius = 2
+      Height = 3
+    End
+  ]
+End
+
+; Act 1's: the old graves west of the field, where the first wave climbs out (act1.duke). Laid once the queen has
+; given soldiers (GravesWake).
+Graveyard
+  Name = OldGraves
+  Map = world
+  Zone = Eski_qabrlar
+  Wakes = GravesWake
+  Raiser = GraveRaiser
+  Grave = Grave
+  Graves = 3
+  Ring = 2.5
+  Raises = [Skeleton, Skeleton, Runner]
+  EveryFrames = 150
+  MostStanding = 6
+  ShieldLook = GraveWard
+  ShieldFrames = 30
+  RisesLook = GraveRises
+  BrokenLook = GraveBroken
+  RaiseBeam = RaiseBeam
+End

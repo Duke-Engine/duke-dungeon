@@ -120,8 +120,7 @@ class CampaignWalkTest {
         var run = session.run();
         var script = run.getScript();
 
-        Act1Test.playUntilFlag(session, "HeroLanded", 1200);
-        Act1Test.playUntilFlag(session, "BattleWon", 1200);
+        Act1Test.throughTheWave(session);
 
         // Behind the commander to the palace, keeping near her as a player does.
         var commander = all(session.game(), "Act1Commander").getFirst();
@@ -136,21 +135,23 @@ class CampaignWalkTest {
         assertTrue(run.getQuests().finished().contains("FollowCommander"), "followed her all the way to the palace");
 
         walkToPerson(session, "Act1Queen", 3000);
-        assertTrue(run.getQuests().active().stream().anyMatch(q -> q.quest().equals("Training")), "the training set");
+        assertTrue(run.getQuests().active().stream().anyMatch(q -> q.quest().equals("Training")), "sent to the graves");
 
         walkToZone(session, "Eski_qabrlar", 6000);
-        assertTrue(!all(session.game(), "Reaper").isEmpty(), "the graves' keeper rose");
-        var reaper = all(session.game(), "Reaper").getFirst();
-        reaper.getBody().damage(1e7f, uz.dukeengine.core.module.DamageType.NORMAL,
+        var raiser = all(session.game(), "GraveRaiser").getFirst();
+        raiser.getBody().damage(1e7f, uz.dukeengine.core.module.DamageType.NORMAL,
                 new uz.dukeengine.core.module.Death(uz.dukeengine.core.module.DeathType.NORMAL, hero(session).getId(),
                         hero(session).getPlayerIndex()));
         play(session, 10);
-        assertTrue(script.flagged("Trained"), "trained");
+        for (var grave : all(session.game(), "Grave")) {
+            grave.getBody().setHealth(1f); // beaten: struck down now its raiser is gone
+            play(session, 3);
+        }
+        play(session, 10);
+        assertTrue(script.flagged("Trained"), "the graves gone");
+        assertTrue(script.flagged("WarBegun"), "he goes on alone");
 
-        walkToZone(session, "Saroy", 6000);
-        assertTrue(script.flagged("WarBegun"), "the war council held");
-
-        walkToZone(session, "Darvoza_oldi", 6000);
+        walkToZone(session, "Yashil_dala", 12000);
         for (int i = 0; i < 120 && !"urush".equals(run.getStageName()); i++) {
             play(session, 1);
         }
@@ -164,7 +165,7 @@ class CampaignWalkTest {
         session.run().skipTo(CAMPAIGN, 1, null);
         session.game().runHeadless(1);
         var run = session.run();
-        Act1Test.playUntilFlag(session, "BattleWon", 2400);
+        Act1Test.throughTheWave(session);
         for (int i = 0; i < 600; i++) {
             if (i % 30 == 0) {
                 var her = all(session.game(), "Act1Commander").getFirst().getPosition();
@@ -195,7 +196,7 @@ class CampaignWalkTest {
         session.game().runHeadless(1);
         var saves = new ArrayList<uz.dukeengine.dungeon.run.SaveGame>();
         session.run().onCheckpoint(saves::add);
-        Act1Test.playUntilFlag(session, "BattleWon", 2400);
+        Act1Test.throughTheWave(session);
         for (int i = 0; i < 600; i++) {
             if (i % 30 == 0) {
                 var her = all(session.game(), "Act1Commander").getFirst().getPosition();

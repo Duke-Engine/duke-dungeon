@@ -77,6 +77,7 @@ Game
     data/units/warden.duke,
     data/units/reaper.duke,
     data/units/necromancer.duke,
+    data/units/graveyard.duke,
     data/units/champion.duke,
     ; People, who talk rather than fight: see data/story/.
     data/units/commander.duke,
@@ -185,6 +186,7 @@ Game
     data/story/kampir.duke,
     data/story/act1.duke,
     data/story/landing.duke,
+    data/story/graveyards.duke,
     data/story/villages.duke,
     data/story/act2.duke,
     data/story/credits.duke,

@@ -1428,6 +1428,10 @@ public final class Main {
                         .upperBody(look.upperBody());
                 carry(unit, look.held());
                 unit.die(look.death());
+                // Changed: one of a graveyard's dead past what it pays (Graves) -- darker, and worth nothing.
+                var graves = settings.graves();
+                unit.tint(java.util.Set.of(graves.changedWord()), graves.changedRed(), graves.changedGreen(),
+                        graves.changedBlue(), graves.easeFrames());
                 for (var library : look.libraries()) {
                     unit.animationsFrom(library);
                 }

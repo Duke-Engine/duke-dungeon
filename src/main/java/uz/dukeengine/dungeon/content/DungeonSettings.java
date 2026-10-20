@@ -148,6 +148,8 @@ public final class DungeonSettings {
     private final List<uz.dukeengine.dungeon.story.Title> titles = new java.util.ArrayList<>();
     private final List<uz.dukeengine.dungeon.story.Battle> battles = new java.util.ArrayList<>();
     private final List<uz.dukeengine.dungeon.story.Gate> gates = new java.util.ArrayList<>();
+    private final List<uz.dukeengine.dungeon.story.Graveyard> graveyards = new java.util.ArrayList<>();
+    private uz.dukeengine.dungeon.story.Graves graves = uz.dukeengine.dungeon.story.Graves.DEFAULTS;
     private final List<uz.dukeengine.core.content.Laser> lasers = new java.util.ArrayList<>();
 
     /** Every attribute, in file order — the order a hero's are held in and the panel draws them. */
@@ -387,6 +389,16 @@ public final class DungeonSettings {
     /** Every Gate block, in file order: the first that holds is the one kept. */
     public List<uz.dukeengine.dungeon.story.Gate> gates() {
         return List.copyOf(gates);
+    }
+
+    /** The graveyards the dead climb out of (docs/plan/2026-10-19-open-world-act1.md). */
+    public List<uz.dukeengine.dungeon.story.Graveyard> graveyards() {
+        return List.copyOf(graveyards);
+    }
+
+    /** What every graveyard shares: what its risen pay, and what the changed ones are. */
+    public uz.dukeengine.dungeon.story.Graves graves() {
+        return graves;
     }
 
     /** How the simulation's beams are drawn (the engine's Laser looks): the ritual's, the pillar of light. */
@@ -644,6 +656,8 @@ public final class DungeonSettings {
                 case uz.dukeengine.dungeon.story.Title title -> titles.add(title);
                 case uz.dukeengine.dungeon.story.Battle battle -> battles.add(battle);
                 case uz.dukeengine.dungeon.story.Gate gate -> gates.add(gate);
+                case uz.dukeengine.dungeon.story.Graveyard yard -> graveyards.add(yard);
+                case uz.dukeengine.dungeon.story.Graves block -> graves = once(block, once);
                 case uz.dukeengine.core.content.Laser laser -> lasers.add(laser);
                 case uz.dukeengine.dungeon.world.SaveMenu block -> saveMenu = once(block, once);
                 case uz.dukeengine.dungeon.world.MainMenu block -> mainMenu = once(block, once);

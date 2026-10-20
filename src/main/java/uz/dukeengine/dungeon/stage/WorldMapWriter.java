@@ -1340,7 +1340,7 @@ public final class WorldMapWriter {
                 Map.entry("town/town_gate", "0"), Map.entry("town/town_tower_round", "0.98"),
                 Map.entry("town/town_tower_round_low", "0.79"), Map.entry("town/town_tower_slim", "0.49"),
                 Map.entry("town/town_house", "1.2"), Map.entry("town/town_palace_tower", "1.2"),
-                Map.entry("fort/fort_wall", "3x1.1"), Map.entry("fort/fort_wall_gable", "1.5x1.1"),
+                Map.entry("fort/fort_wall", "3x1.1"), Map.entry("fort/fort_wall_gable", "1x1.1"),
                 Map.entry("fort/fort_wall_ruined", "3x1.1"), Map.entry("fort/fort_gatehouse", "0"),
                 Map.entry("fort/fort_house_front", "1x1.1"), Map.entry("fort/fort_house_front_narrow", "1x1.1"),
                 Map.entry("fort/fort_keep", "0.57"), Map.entry("fort/fort_tower_cone", "0.39"),
@@ -1372,9 +1372,9 @@ public final class WorldMapWriter {
                 "town/town_gate", "town/town_wall_tower", 4, "town/town_tower_round", "town/town_tower_round_low",
                 false);
         private static final Style ROYAL = new Style(3, 0, new String[] {"fort/fort_wall"}, "fort/fort_gatehouse",
-                null, "fort/fort_wall_gable", 1.5f, "fort/fort_tower_cone", "fort/fort_turret", false);
+                null, "fort/fort_wall_gable", 2f, "fort/fort_tower_cone", "fort/fort_turret", false);
         private static final Style QUEEN = new Style(3, 0, new String[] {"fort/fort_wall"}, "fort/fort_gatehouse",
-                null, "fort/fort_wall_gable", 1.5f, "fort/fort_tower_stepped", "fort/fort_turret", true);
+                null, "fort/fort_wall_gable", 2f, "fort/fort_tower_stepped", "fort/fort_turret", true);
         private static final Style DESERT = new Style(4, 0, new String[] {"desert/desert_block_long",
                 "desert/desert_block_long_b"}, null, null, null, 0, "desert/desert_pillar_tall",
                 "desert/desert_pillar_tall", false);

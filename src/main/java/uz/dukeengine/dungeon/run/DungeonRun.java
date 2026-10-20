@@ -206,6 +206,7 @@ public final class DungeonRun {
         this.quests = new QuestLog(settings.story(), settings.loot(), settings.lootDrops().joinCount());
         this.script = new uz.dukeengine.rpg.story.Script(settings.story().triggers());
         this.fight = new BossFight(settings.story());
+        this.graveyards = new Graveyards(settings);
         script.judgedBy(this::holds);
         this.orders = orders;
         this.dungeonPlayer = dungeonPlayer;
@@ -739,6 +740,7 @@ public final class DungeonRun {
         trails.clear();
         beams.clear();
         barks = List.of();
+        graveyards.lay(game.getLogic(), floors.stageName(), graveRun(game)); // the dead climbing out of their graves
         laidBattles.clear();
         seats.forEach(seat -> seat.lastInside = null);
         var gate = gate();
@@ -2700,6 +2702,10 @@ public final class DungeonRun {
      * the bags, the zones and the people looked at.
      */
     private void story(DukeGame game) {
+        graveyards.update(game.getLogic(), graveRun(game));
+        if (game.getLogic().getFrame() % settings.story().dialogue().checkFrames() == 0) {
+            graveyards.wake(game.getLogic(), floors.stageName(), graveRun(game));
+        }
         // A conversation in the box stops the world, played alone: his last order stops with it, so he does not stand
         // frozen in a stride and walk on when it is read.
         int saidNow = quests.said().size();
@@ -3309,6 +3315,58 @@ public final class DungeonRun {
     private volatile List<Bark> barks = List.of();
     /** How many conversations had been said when the heroes were last stopped for one. */
     private int saidStopped;
+
+    /** The graveyards of the map being played: see Graveyards. */
+    private final Graveyards graveyards;
+
+    /** What a graveyard is lent of the run. */
+    private Graveyards.Run graveRun(DukeGame game) {
+        return new Graveyards.Run() {
+            @Override
+            public uz.dukeengine.dungeon.map.StaticMap.Zone zone(String name) {
+                return zoneNamed(name);
+            }
+
+            @Override
+            public boolean flagged(String flag) {
+                return script.flagged(flag);
+            }
+
+            @Override
+            public void flag(String flag) {
+                script.flag(flag);
+            }
+
+            @Override
+            public int side() {
+                return dungeonPlayer.getIndex();
+            }
+
+            @Override
+            public int levelOf(uz.dukeengine.dungeon.story.Graveyard yard) {
+                return yard.level() > 0 ? yard.level() : settings.beforeBossLevel(depth);
+            }
+
+            @Override
+            public void pays(GameObject monster, int level) {
+                monster.addModule(new Bounty(monster, level, DungeonRun.this::pay));
+            }
+
+            @Override
+            public void beam(String look, uz.dukeengine.core.math.Coord3D from, uz.dukeengine.core.math.Coord3D to,
+                    int frames) {
+                var logic = game.getLogic();
+                beams.add(new Lit(logic.beam(look, from, to, 1f), logic.getFrame() + frames));
+            }
+
+            @Override
+            public void struck(GameObject grave) {
+                var kind = grave.getTemplate().name();
+                quests.died(kind, bags());
+                script.heard(uz.dukeengine.dungeon.story.When.DIED, kind, 0);
+            }
+        };
+    }
 
     /** The greetings called out lately — from any thread. */
     public List<Bark> getBarks() {

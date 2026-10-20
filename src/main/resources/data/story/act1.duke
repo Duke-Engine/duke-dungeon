@@ -45,7 +45,7 @@ Campaign
     End,
     Joint
       Map = world
-      Flags = [Act1, HeroLanded, BattleWon, Welcomed]
+      Flags = [Act1, HeroLanded, BattleWon, Welcomed, GravesWake]
       Items = [Medallion]
       Quests = [Training]
       Experience = 120
@@ -54,14 +54,14 @@ Campaign
     End,
     Joint
       Map = urush
-      Flags = [Act1, HeroLanded, BattleWon, Welcomed, Trained, WarBegun]
+      Flags = [Act1, HeroLanded, BattleWon, Welcomed, GravesWake, GoneOldGraves, Trained, WarBegun]
       Items = [Medallion]
       Experience = 400
       Gold = 200
     End,
     Joint
       Map = qora_qasr
-      Flags = [Act1, HeroLanded, BattleWon, Welcomed, Trained, WarBegun, LandsFreed]
+      Flags = [Act1, HeroLanded, BattleWon, Welcomed, GravesWake, GoneOldGraves, Trained, WarBegun, LandsFreed]
       Items = [Medallion]
       Experience = 800
       Gold = 300
@@ -647,6 +647,107 @@ Trigger
     Action
       Act = KILL
       Target = EnemyCommander
+    End
+  ]
+End
+
+; ---- the first wave: out of the old graves, onto what is left of the line ----
+
+Conversation
+  Name = WaveComes
+  Lines = [
+    Line
+      Speaker = Act1Commander
+      Text = "Qarang — qabrlar tomondan yana kelishyapti! Qahramon, jang qil!"
+    End
+  ]
+End
+
+Conversation
+  Name = Retreat
+  Lines = [
+    Line
+      Speaker = Act1Commander
+      Text = "Safimizdan faqat ikkimiz qoldik. Ular o'sha qabrlardan tinmay chiqyapti."
+    End,
+    Line
+      Speaker = Act1Commander
+      Text = "Yolg'iz qarshilik qila olmaymiz. Shaharga chekinamiz — malika nima qilishni biladi. Ortimdan yur!"
+    End
+  ]
+End
+
+Quest
+  Name = FirstWave
+  Kind = MAIN
+  Title = "Birinchi to'lqin"
+  Description = "Qabrlardan chiqqan o'liklar safga yopirildi. Ularni qiring."
+  Steps = [
+    Step
+      Goal = KILL
+      Target = Skeleton
+      Count = 6
+      Where = Darvoza_oldi
+      Text = "Qabrlardan chiqqan o'liklarni qiring %d/%d"
+      Glow = Yes
+    End
+  ]
+End
+
+; A moment after the battle is let go -- its dead counted already, so none of them is the wave's -- the dead come
+; out of the old graves at the line.
+Trigger
+  Name = FirstWaveRises
+  Map = world
+  When = AFTER
+  Target = BattleWon
+  Delay = 90
+  Actions = [
+    Action
+      Act = SAY
+      Target = WaveComes
+    End,
+    Action
+      Act = SPAWN
+      Target = Skeleton
+      Count = 6
+      Zone = Dushman_safi
+    End,
+    Action
+      Act = SPAWN
+      Target = Runner
+      Count = 2
+      Zone = Dushman_safi
+    End,
+    Action
+      Act = START_QUEST
+      Target = FirstWave
+    End
+  ]
+End
+
+; The wave down: nobody of the line is left but the two of them, and they fall back to the city.
+Trigger
+  Name = WaveBeaten
+  Map = world
+  When = QUEST_DONE
+  Target = FirstWave
+  Actions = [
+    Action
+      Act = REMOVE
+      Target = Soldier
+    End,
+    Action
+      Act = REMOVE
+      Target = Militia
+    End,
+    Action
+      Act = KILL
+      Target = Runner
+    End,
+    Action
+      Act = SAY
+      Target = Retreat
     End,
     Action
       Act = FLAG
@@ -777,6 +878,11 @@ Gate
     Condition
       Is = FLAG_SET
       Target = Act1
+    End,
+    Condition
+      ; Open once he goes on alone after the graves: the world is his to cross (open-world Act 1).
+      Is = FLAG_UNSET
+      Target = WarBegun
     End
   ]
   Open = [Darvoza_oldi, "Yo'lak", Poytaxt, Eski_qabrlar]
@@ -927,7 +1033,7 @@ Conversation
     End,
     Line
       Speaker = Act1Queen
-      Text = "Ha. Uni o'ldiring — yo'l ochiladi. Ammo avval mashq qiling: hozir u sizni bir zarbada yiqitadi."
+      Text = "Ha. Uni o'ldiring — yo'l ochiladi. Ammo avval o'sha qabrlarni to'xtating: o'liklar ulardan tinmay chiqmoqda. Askarlarimni oling."
     End
   ]
   Starts = [Training]
@@ -938,20 +1044,41 @@ Conversation
   Lines = [
     Line
       Speaker = Act1Commander
-      Text = "Mashq — shimoliy darvoza ortidagi eski qabrlarda. U yerda o'liklar tinmaydi: ularning qo'riqchisini yeng, so'ng qayt."
+      Text = "Askarlarim qabrlar oldida sizni kutadi. Qabrlar — shimoliy darvoza ortida, g'arbda. Ular oldida sehrgar turibdi: u tirik ekan, qabrlarga zarar yetmaydi."
     End
   ]
 End
 
+; The graves (data/story/graveyards.duke): the raiser first, for while it stands nothing the graves take holds,
+; then each grave struck down on its own.
 Quest
   Name = Training
   Kind = MAIN
-  Title = "Mashq"
+  Title = "Eski qabrlar"
+  Description = "O'liklar shimoliy darvoza ortidagi eski qabrlardan chiqmoqda. Qabrlar oldida sehrgar turibdi: u tirik ekan, qabrlarga zarar yetmaydi. Avval uni o'ldiring, so'ng qabrlarni birma-bir buzing."
   Steps = [
     Step
       Goal = REACH
       Target = Eski_qabrlar
       Text = "Shimoliy darvozadan chiqib, eski qabrlarga boring"
+    End,
+    Step
+      Goal = KILL
+      Target = GraveRaiser
+      Where = Eski_qabrlar
+      Text = "Qabr sehrgarini o'ldiring"
+      Glow = Yes
+    End,
+    Step
+      Goal = KILL
+      Target = Grave
+      Count = 3
+      Where = Eski_qabrlar
+      Text = "Qabrlarni birma-bir buzing %d/%d"
+      Glow = Yes
+      OnDone = Done
+        Experience = 150
+      End
     End
   ]
 End
@@ -1032,6 +1159,11 @@ Trigger
       Target = Welcomed
     End,
     Action
+      ; The graves' raiser stands before them now, the dead climbing out (data/story/graveyards.duke).
+      Act = FLAG
+      Target = GravesWake
+    End,
+    Action
       Act = FINISH_QUEST
       Target = MeetTheQueen
     End,
@@ -1094,12 +1226,13 @@ End
 Quest
   Name = ToWar
   Kind = MAIN
-  Title = "Urushga"
+  Title = "Qora ritsar"
+  Description = "Qo'mondon shahar himoyasiga qaytdi. Qora ritsarning qarorgohi shimolda, tog'lar ortida. Yo'lda uchragan g'or va qabrlarni yo'q qiling: ular unga kuch beradi."
   Steps = [
     Step
       Goal = REACH
-      Target = Darvoza_oldi
-      Text = "Shimoliy darvozadan urushga chiqing"
+      Target = Yashil_dala
+      Text = "Shimolga — Qora ritsar qarorgohiga yo'l oling"
     End
   ]
 End
@@ -1374,43 +1507,76 @@ Trigger
 End
 
 ; ===========================================================================
-; 3. The training, at the old graves west of the field (world: Eski_qabrlar).
+; 3. The old graves, west of the field (world: Eski_qabrlar): the raiser, the graves, and what comes after
+;    them -- the cave, the Black Knight's camp in the north, the city attacked, the farewell
+;    (docs/plan/2026-10-19-open-world-act1.md).
 ; ===========================================================================
 
 Conversation
-  Name = TrainingOver
+  Name = SoldiersCome
+  Lines = [
+    Line
+      Speaker = Act1Commander
+      Text = "Askarlar shu yerda. Sehrgarni o'ldiring — qolganini birga bitiramiz!"
+    End
+  ]
+End
+
+Conversation
+  Name = CaveSeen
   Lines = [
     Line
       Speaker = Hero
-      Text = "Yetarli. Medalyon kuchimni sezyapman. Endi saroyga qaytaman."
+      Text = "Anavi nima? Tog' etagida — qop-qora og'iz."
+    End,
+    Line
+      Speaker = Act1Commander
+      Text = "G'or. Ichi monstrlarga to'la. Qora ritsar hukmronlik qila boshlagandan beri bunaqa g'orlar ko'payib ketdi."
+    End,
+    Line
+      Speaker = Act1Commander
+      Text = "Uni yo'q qilish uchun ichidagi barcha monstrlarni o'ldirish kerak. Lekin u yerdan hali hech kim qaytib kelmagan."
+    End,
+    Line
+      Speaker = Hero
+      Text = "Qora ritsarning qarorgohi qayerda?"
+    End,
+    Line
+      Speaker = Act1Commander
+      Text = "Shimolda. Tog'lar ortida."
     End
   ]
 End
 
-Quest
-  Name = TrainingDeep
-  Kind = MAIN
-  Title = "Mashq: eski qabrlar"
-  Steps = [
-    Step
-      Goal = KILL
-      Target = Reaper
-      Where = Eski_qabrlar
-      Text = "Qabrlar qo'riqchisini yenging"
-      Glow = Yes
-      OnDone = Done
-        Experience = 150
-      End
+Conversation
+  Name = CityAttacked
+  Lines = [
+    Line
+      Speaker = Soqchi
+      Text = "Qo'mondon! Shaharga hujum qilishdi! Darvoza zo'rg'a turibdi!"
+    End,
+    Line
+      Speaker = Act1Commander
+      Text = "Biz shahar himoyasiga qaytishimiz kerak."
+    End,
+    Line
+      Speaker = Hero
+      Text = "Siz boravering. Men Qora ritsarni topaman va buning barchasiga chek qo'yaman."
+    End,
+    Line
+      Speaker = Act1Commander
+      Text = "Omad yor bo'lsin. Bilib qo'y: uning oldiga borguningcha iloji boricha ko'proq g'or va qabrlarni yo'q qil. Ular unga kuch beradi."
     End
   ]
 End
 
-; The graves stir as he comes: six of the dead and their keeper rise.
+; At the graves: the soldiers the queen gave come up, and the commander with them.
 Trigger
   Name = TrainingBegins
   Map = world
-  When = QUEST_DONE
+  When = STEP_DONE
   Target = Training
+  Step = 1
   Actions = [
     Action
       ; The chapter's name over the screen as it opens.
@@ -1418,57 +1584,24 @@ Trigger
       Target = ChapterTraining
     End,
     Action
-      Act = START_QUEST
-      Target = TrainingDeep
-    End,
-    Action
-      Act = SPAWN
-      Target = Skeleton
-      Count = 6
+      Act = ALLY
+      Target = Soldier
+      Count = 4
       Zone = Eski_qabrlar
     End,
     Action
-      Act = SPAWN
-      Target = Reaper
-      Count = 1
-      Zone = Eski_qabrlar
+      Act = SAY
+      Target = SoldiersCome
     End
   ]
 End
 
-; A load in the middle of it lays the world fresh: the graves rise again.
-Trigger
-  Name = TrainingRisesAgain
-  Map = world
-  When = MAP_START
-  Repeat = Yes
-  If = [
-    Condition
-      Is = QUEST_ACTIVE
-      Target = TrainingDeep
-    End
-  ]
-  Actions = [
-    Action
-      Act = SPAWN
-      Target = Skeleton
-      Count = 6
-      Zone = Eski_qabrlar
-    End,
-    Action
-      Act = SPAWN
-      Target = Reaper
-      Count = 1
-      Zone = Eski_qabrlar
-    End
-  ]
-End
-
+; The last grave down: the cave, the camp in the north, the city attacked, and he goes on alone.
 Trigger
   Name = TrainingDone
   Map = world
   When = QUEST_DONE
-  Target = TrainingDeep
+  Target = Training
   Actions = [
     Action
       Act = FLAG
@@ -1476,11 +1609,28 @@ Trigger
     End,
     Action
       Act = SAY
-      Target = TrainingOver
+      Target = CaveSeen
+    End,
+    Action
+      Act = SAY
+      Target = CityAttacked
+    End,
+    Action
+      Act = REMOVE
+      Target = Soqchi
+    End,
+    Action
+      Act = REMOVE
+      Target = Soldier
+    End,
+    Action
+      ; No council in the palace: he is on his own now (the old way back to the queen waited on this).
+      Act = FLAG
+      Target = WarBegun
     End,
     Action
       Act = START_QUEST
-      Target = BackToPalace
+      Target = ToWar
     End,
     Action
       Act = CHECKPOINT

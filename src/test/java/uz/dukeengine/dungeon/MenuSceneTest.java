@@ -154,13 +154,13 @@ class MenuSceneTest {
         scene.adoptAsMatch(game, SETTINGS.campaign());
         assertEquals(run.heroPlayer().getIndex(), game.getLocalPlayerIndex(), "the seat taken");
         assertTrue(run.getScript().flagged("Act1"), "the act begun");
-        for (int i = 0; i < 2400 && !run.getScript().flagged("BattleWon"); i++) {
+        for (int i = 0; i < 2400 && !run.getScript().state().fired().contains("BattleWon"); i++) {
             run.read(game.getLocalPlayerIndex(), 10_000);
             if (run.inCutscene()) {
                 run.skipCutscene(game);
             }
             game.runHeadless(1);
-            if (!run.getScript().flagged("BattleWon")) {
+            if (!run.getScript().state().fired().contains("BattleWon")) {
                 assertTrue(run.inIntro(), "the intro holds the screen until the commander leads: frame " + i);
             }
             long laid = logic.getObjects().stream().filter(o -> o.getTemplate().name().equals("Soldier")).count();
@@ -169,7 +169,7 @@ class MenuSceneTest {
                 assertEquals(3, scene.ritualists().size(), "the backdrop's ritualists are the intro's");
             }
         }
-        assertTrue(run.getScript().flagged("HeroLanded") && run.getScript().flagged("BattleWon"),
+        assertTrue(run.getScript().flagged("HeroLanded") && run.getScript().state().fired().contains("BattleWon"),
                 "the intro played on the adopted world");
         assertTrue(game.getLogic() == logic, "the same world: nothing laid again, nothing loaded");
         assertTrue(logic.getFrame() > frame + 200, "its frames went on from " + frame + ": " + logic.getFrame());

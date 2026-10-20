@@ -57,10 +57,7 @@ class FollowAndGateTest {
         var session = Dungeon.newSession(11L, SETTINGS);
         session.run().skipTo(SETTINGS.campaign(), 1, null);
         session.game().runHeadless(1);
-        for (int i = 0; i < 2400 && !session.run().getScript().flagged("BattleWon"); i++) {
-            play(session, 1);
-        }
-        assertTrue(session.run().getScript().flagged("BattleWon"), "the premise: the intro played");
+        assertTrue(uz.dukeengine.dungeon.story.Wave.beaten(session, 2400), "the premise: the intro played, the wave beaten");
         play(session, 2);
         return session;
     }

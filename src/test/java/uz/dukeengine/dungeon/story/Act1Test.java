@@ -135,8 +135,7 @@ class Act1Test {
         var soldiers = all(game, "Soldier");
         assertEquals(4, soldiers.size(), "the kingdom's soldiers stand in the line");
         assertEquals(hero(session).getPlayerIndex(), soldiers.getFirst().getPlayerIndex(), "on his side");
-        playUntilFlag(session, "HeroLanded", 1200);
-        playUntilFlag(session, "BattleWon", 1200);
+        throughTheWave(session);
         assertEquals("world", run.getStageName(), "no other map: the battle won, he stays on the world");
         assertTrue(all(game, "EnemyCommander").isEmpty(), "the enemy commander is dead");
 
@@ -151,21 +150,25 @@ class Act1Test {
         assertTrue(run.getQuests().active().stream().anyMatch(q -> q.quest().equals("Training")));
         assertFalse(all(game, "Merchant").isEmpty(), "the merchant is on the plaza");
 
-        // 3. The training at the old graves: the keeper rises and falls; back to the palace for the war council.
+        // 3. The old graves: the soldiers come up, the raiser falls, each grave is struck down; he goes on alone.
         standIn(session, "Eski_qabrlar");
         play(session, 5);
-        assertFalse(all(game, "Reaper").isEmpty(), "the graves' keeper rose");
-        strike(session, "Reaper");
+        assertEquals(4, all(game, "Soldier").size(), "the queen's soldiers come up");
+        strike(session, "GraveRaiser");
         play(session, 5);
-        assertTrue(script.flagged("Trained"));
-        standIn(session, "Saroy");
+        for (var grave : all(game, "Grave")) {
+            grave.getBody().setHealth(1f); // beaten: struck down now its raiser is gone
+            play(session, 3);
+        }
         play(session, 5);
-        assertTrue(script.flagged("WarBegun"), "the war council held");
+        assertTrue(script.flagged("Trained"), "the graves gone");
+        assertTrue(script.flagged("WarBegun"), "and he goes on alone, the commander back to the city");
+        assertTrue(all(game, "Soldier").isEmpty(), "her soldiers with her");
         assertTrue(run.getQuests().active().stream().anyMatch(q -> q.quest().equals("ToWar")));
         assertEquals("world", run.getStageName(), "all of it on the world");
 
         // 4. The war: out by the field, two keep floors.
-        standIn(session, "Darvoza_oldi");
+        standIn(session, "Yashil_dala");
         playUntil(session, "urush", 60);
         assertEquals(3, run.getDepth());
         assertNotNull(run.getMission(), "a keep floor: clear outside, the key, the gate, the boss");
@@ -186,6 +189,25 @@ class Act1Test {
         assertTrue(script.state().fired().contains("ActOneEnds"), "1-qism tugadi");
         assertEquals(DungeonRun.State.WON, run.getState());
         assertEquals("1-qism tugadi", game.titleCardShowing().text(), "the act ends on its title card");
+    }
+
+    /**
+     * The first wave beaten: the battle let go, the dead out of the graves struck down as they come, until the line's
+     * two fall back (BattleWon).
+     */
+    static void throughTheWave(Dungeon.Session session) {
+        playUntilFlag(session, "HeroLanded", 1200);
+        for (int i = 0; i < 1200 && session.run().getQuests().active().stream()
+                .noneMatch(q -> q.quest().equals("FirstWave")) && !session.run().getScript().flagged("BattleWon"); i++) {
+            play(session, 1);
+        }
+        for (int i = 0; i < 60 && !session.run().getScript().flagged("BattleWon"); i++) {
+            if (!all(session.game(), "Skeleton").isEmpty()) {
+                strike(session, "Skeleton");
+            }
+            play(session, 2);
+        }
+        assertTrue(session.run().getScript().flagged("BattleWon"), "the wave beaten");
     }
 
     /** Played on until {@code flag} is set, at most {@code frames}. */
@@ -218,7 +240,7 @@ class Act1Test {
     @Test
     void aDeathInTheCampaignGoesBackToItsLastCheckpoint() {
         var session = newGame();
-        playUntilFlag(session, "BattleWon", 1200);
+        throughTheWave(session);
         standIn(session, "Saroy");
         walkUpTo(session, "Act1Queen");
         play(session, 5);
