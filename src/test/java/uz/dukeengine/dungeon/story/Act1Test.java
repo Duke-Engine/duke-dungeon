@@ -163,6 +163,14 @@ class Act1Test {
         assertTrue(all(game, "Soldier").isEmpty(), "her soldiers with her");
         assertTrue(all(game, "KingdomArcher").isEmpty() && all(game, "KingdomHealer").isEmpty());
         assertEquals(1, all(game, "Act1Commander").size(), "she walks back to the city herself");
+        var capital = zone("world", "Poytaxt");
+        float cell = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
+        var left = all(game, "Act1Commander").getFirst().getPosition();
+        play(session, 300);
+        var on = all(game, "Act1Commander").getFirst().getPosition();
+        assertTrue(Math.hypot(on.x() - capital.middleX(cell), on.y() - capital.middleY(cell))
+                < Math.hypot(left.x() - capital.middleX(cell), left.y() - capital.middleY(cell)) - 100,
+                "on her way to the capital: " + left + " -> " + on);
         assertTrue(run.getQuests().active().stream().anyMatch(q -> q.quest().equals("ToWar")));
         assertEquals("world", run.getStageName(), "all of it on the world");
 
@@ -231,6 +239,20 @@ class Act1Test {
         var her = all(game, "Act1Commander").getFirst().getPosition();
         assertTrue(Math.hypot(her.x() - stood.get().x(), her.y() - stood.get().y()) < 200f,
                 "where she fought, not somewhere else: " + her);
+
+        // He keeps by her: she walks on toward the capital, not standing where she fought.
+        var capital = zone("world", "Poytaxt");
+        float cell = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
+        double before = Math.hypot(her.x() - capital.middleX(cell), her.y() - capital.middleY(cell));
+        for (int i = 0; i < 600; i++) {
+            var now = all(game, "Act1Commander").getFirst().getPosition();
+            var hero = hero(session);
+            hero.setPosition(new uz.dukeengine.core.math.Coord3D(now.x() - 15f, now.y() + 15f, hero.getPosition().z()));
+            play(session, 1);
+        }
+        var went = all(game, "Act1Commander").getFirst().getPosition();
+        double after = Math.hypot(went.x() - capital.middleX(cell), went.y() - capital.middleY(cell));
+        assertTrue(after < before - 100, "she leads him on to the capital: " + before + " -> " + after);
     }
 
     /** Played on until {@code flag} is set, at most {@code frames}. */

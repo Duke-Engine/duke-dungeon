@@ -394,6 +394,9 @@ final class DialogueScreen implements Painter, CanvasInput {
     private uz.dukeengine.core.view.CameraView beforeTalk;
     private boolean talkTookDriven;
     private Showing aimedAt;
+    /** The view put back after a talk, waiting to be shown before the camera is let go; and how long it waits at most. */
+    private uz.dukeengine.core.view.CameraView releasing;
+    private int releaseWait;
 
     /**
      * A talk with him filmed close (the owner, 2026-10-20): the two face each other and the camera comes down over the
@@ -406,6 +409,17 @@ final class DialogueScreen implements Painter, CanvasInput {
             return;
         }
         var camera = match.game().camera();
+        if (releasing != null && (now == null || now.line() >= now.conversation().lines().size())) {
+            // Let go only once the picture has shown the view put back: the client keeps, as the player's own, the
+            // last view the game showed it -- let go at once, it would keep the close-up.
+            var shown = match.game().getSnapshot().camera();
+            if (--releaseWait <= 0 || shown != null && Math.abs(shown.zoom() - releasing.zoom()) < 0.5f
+                    && Math.abs(shown.angle() - releasing.angle()) < 0.01f) {
+                camera.release();
+                match.game().moveView(releasing.x(), releasing.y());
+                releasing = null;
+            }
+        }
         if (now == null || now.line() >= now.conversation().lines().size()) {
             if (beforeTalk != null) {
                 var was = beforeTalk;
@@ -414,8 +428,8 @@ final class DialogueScreen implements Painter, CanvasInput {
                 camera.pitch(was.pitch());
                 camera.zoom(was.zoom());
                 if (!talkTookDriven) {
-                    camera.release();
-                    match.game().moveView(was.x(), was.y());
+                    releasing = was;
+                    releaseWait = 30;
                 }
                 beforeTalk = null;
             }
@@ -446,6 +460,12 @@ final class DialogueScreen implements Painter, CanvasInput {
         }
         var speaker = Speaker.HERO.equals(said) ? hero : them;
         var listener = speaker == hero ? them : hero;
+        if (beforeTalk == null && releasing != null) {
+            // A talk again before the last one let go: the view to put back is still the player's.
+            beforeTalk = releasing;
+            talkTookDriven = false;
+            releasing = null;
+        }
         if (beforeTalk == null) {
             talkTookDriven = camera.isDriven();
             if (!talkTookDriven) {
