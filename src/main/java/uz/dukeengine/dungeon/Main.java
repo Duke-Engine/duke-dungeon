@@ -620,9 +620,8 @@ public final class Main {
         shell.settingsRow(uz.dukeengine.dungeon.content.Lang.SETTING,
                 uz.dukeengine.dungeon.content.Lang.t("Til (qayta ochilganda)"), uz.dukeengine.dungeon.content.Lang.NAMES, 0,
                 choice -> { });
-        // Whether a match is played, not the backdrop behind the menu: only then is the interface hidden for an intro.
-        // The engine puts back next frame what it hid this one, as it was (E104) -- hid while the menu was up, the menu
-        // came back over the adopted match.
+        // Whether a match is played, not the backdrop behind the menu: only then is the interface hidden for an intro --
+        // hidden behind the menu, the menu would go with it (E105 keeps it hidden once the match has it).
         var inMatch = new java.util.concurrent.atomic.AtomicBoolean();
         duke.onLeaving(() -> {
             inMatch.set(false);

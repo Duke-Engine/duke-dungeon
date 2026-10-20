@@ -94,6 +94,9 @@ class CaveTest {
         var at = hero(session).getPosition();
         assertTrue(Math.hypot(at.x() - mouth.middleX(CELL), at.y() - mouth.middleY(CELL)) < 40f,
                 "at its mouth: " + at);
+        assertTrue(session.game().getLogic().getObjects().stream().anyMatch(o -> o.getTemplate().name().equals("CaveSeal")
+                && Math.hypot(o.getPosition().x() - mouth.middleX(CELL), o.getPosition().y() - mouth.middleY(CELL)) < 20f),
+                "its mouth sealed");
 
         // Out of the mouth and in again: a cave gone takes nobody in.
         hero(session).setPosition(new Coord3D(at.x() + 60f, at.y(), at.z()));

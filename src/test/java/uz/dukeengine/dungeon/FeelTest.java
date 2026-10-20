@@ -22,7 +22,7 @@ class FeelTest {
     /** The people who are placed in a story and never killed in play: one rig, an Idle and no fall. */
     // A Grave is struck down by the game (Graveyards), never killed by a blow: it has no death to play.
     private static final Set<String> NEVER_KILLED = Set.of("Imp", "BabaYaga", "Damsel", "DamselCaged", "FreedDamsel", "EmptyCage",
-            "Grave");
+            "Grave", "CaveSeal");
 
     private static Visuals wired() {
         var visuals = Visuals.create();

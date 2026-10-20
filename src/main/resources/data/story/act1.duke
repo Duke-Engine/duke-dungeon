@@ -20,6 +20,10 @@ Campaign
   Word = "1-qism: Oxirgi qahramon"
   Blurb = "Jang maydonidan qora qasrgacha. Hikoya shu yerdan boshlanadi."
   Hero = Knight
+  ; From his landing until the first wave is beaten he cannot die: his health stops at one (the owner's
+  ; scenario, docs/plan/2026-10-19-open-world-act1.md).
+  UndyingFrom = HeroLanded
+  UndyingUntil = BattleWon
   ; Generated floors under names of their own: their bosses open the next floor as the descent's
   ; do, and the story's DEPTH triggers say when they end.
   Descents = [

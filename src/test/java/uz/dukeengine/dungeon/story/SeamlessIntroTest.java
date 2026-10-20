@@ -58,6 +58,27 @@ class SeamlessIntroTest {
         session.game().runHeadless(1);
     }
 
+    /** Landed, he cannot die until the first wave is beaten: a killing blow leaves him at his floor. */
+    @Test
+    void fromHisLandingTheFirstWaveCannotKillHim() {
+        var session = newGame();
+        var script = session.run().getScript();
+        for (int i = 0; i < 2400 && !script.flagged("HeroLanded"); i++) {
+            frame(session, true);
+        }
+        session.game().runHeadless(2); // the rank told
+        var hero = hero(session);
+        hero.getBody().damage(1e7f);
+        session.game().runHeadless(2);
+        assertFalse(hero.isEffectivelyDead(), "his health stops at its floor");
+        assertTrue(hero.getBody().getHealth() > 0f);
+        script.flag("BattleWon");
+        session.game().runHeadless(2);
+        hero.getBody().damage(1e7f);
+        session.game().runHeadless(2);
+        assertTrue(hero.isEffectivelyDead(), "mortal again after");
+    }
+
     /** The line's words are called out over their heads, not said in a box: the battle never stops for them. */
     @Test
     void theLineShoutsAndTheBattleGoesOn() {

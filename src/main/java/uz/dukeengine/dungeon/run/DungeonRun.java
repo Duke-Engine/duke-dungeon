@@ -743,6 +743,7 @@ public final class DungeonRun {
         barks = List.of();
         graveyards.lay(game.getLogic(), floors.stageName(), graveRun(game)); // the dead climbing out of their graves
         caves.laid(floors.stageName(), caveRun(game));
+        sealCaves(game.getLogic());
         strengthened.clear();
         strengthen(game.getLogic());
         laidBattles.clear();
@@ -2319,6 +2320,22 @@ public final class DungeonRun {
         }
     }
 
+    /** Every cave of this map that is gone, its mouth stopped with its seal: a cleared cave is seen sealed. */
+    private void sealCaves(uz.dukeengine.core.GameLogic logic) {
+        for (var cave : settings.caves()) {
+            var rock = cave.seal().isBlank() ? null : logic.findTemplate(cave.seal());
+            var zone = rock != null && cave.map().equals(floors.stageName()) && script.flagged(cave.goneFlag())
+                    ? zoneNamed(cave.zone()) : null;
+            if (zone != null) {
+                // Just inside, behind where a hero coming back up stands.
+                var at = groundAt(logic, zone);
+                var inside = new uz.dukeengine.core.math.Coord3D(at.x(), at.y() - 9f, 0f);
+                logic.spawn(rock, new uz.dukeengine.core.math.Coord3D(inside.x(), inside.y(), logic.groundHeight(inside)),
+                        uz.dukeengine.core.player.PlayerList.NEUTRAL_INDEX);
+            }
+        }
+    }
+
     private uz.dukeengine.dungeon.map.StaticMap.Zone zoneNamed(String name) {
         return zones().stream().filter(zone -> zone.name().equals(name)).findFirst().orElse(null);
     }
@@ -2793,6 +2810,11 @@ public final class DungeonRun {
             if (book == null) {
                 continue;
             }
+            // From his landing until the first wave is beaten he cannot die (Campaign undyingFrom): no blow takes his
+            // body below one, as an UNYIELDING keeps its bearer -- the engine's own floor, held by the story.
+            boolean undying = settings.campaigns().stream().anyMatch(act -> !act.undyingFrom().isBlank()
+                    && script.flagged(act.undyingFrom()) && !script.flagged(act.undyingUntil()));
+            hero.getBody().setLeastHealth(undying ? 1f : 0f);
             for (var skill : seat.learnt.getSkills()) {
                 if (skill.effect().isPassive()) {
                     book.setRank(skill.key(), seat.learnt.rankOf(skill.key()));

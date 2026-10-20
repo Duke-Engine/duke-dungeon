@@ -20,11 +20,15 @@ import java.util.List;
  * @param joints       in order: the first is where a new game opens
  * @param retired      the maps the act no longer plays, each with the joint that took its place: a save on one
  *                     loads as that joint (see docs/plan/2026-10-15-seamless-campaign.md, "Old saves")
+ * @param undyingFrom  a flag from which its hero cannot die -- no blow takes his body below one, the floor an
+ *                     UNYIELDING keeps -- until {@code undyingUntil}; blank for never
+ * @param undyingUntil the flag that ends it
  */
 public record Campaign(String name, String word, String blurb, String hero, String follows, int defaultLevel,
-        List<Descent> descents, List<Joint> joints, List<Retired> retired) {
+        List<Descent> descents, List<Joint> joints, List<Retired> retired, String undyingFrom, String undyingUntil) {
 
-    public static final Campaign DEFAULTS = new Campaign("act1", "", "", "", "", 1, List.of(), List.of(), List.of());
+    public static final Campaign DEFAULTS = new Campaign("act1", "", "", "", "", 1, List.of(), List.of(), List.of(),
+            "", "");
 
     public Campaign {
         descents = descents == null ? List.of() : List.copyOf(descents);

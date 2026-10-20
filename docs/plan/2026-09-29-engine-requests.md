@@ -2110,3 +2110,5 @@ left over the played match. The game now says true only once the match is adopte
 Asked: `showAgain()` puts back only what is still as `hide` left it -- something whose cull hint changed meanwhile
 (hidden by its own owner, or shown) is left alone -- or the menu is not among what it hides. Done when a client test
 hides the interface for a frame, calls `menu.hide()` between, and the menu stays hidden after `showAgain()`.
+
+Landed: eb51c0fb (2026-10-20). The interface is put away by the gui viewport drawing only the kept nodes; no piece's cull hint is touched. The game moved to it.

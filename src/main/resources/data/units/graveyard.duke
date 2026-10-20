@@ -180,3 +180,40 @@ Monster
     End
   ]
 End
+
+; A cleared cave's mouth stopped with a rock as the world is laid (Cave's Seal, DungeonRun.sealCaves): nobody's, no
+; harm, no death (an UNYIELDING, as a grave) -- the cave is seen sealed.
+Monster
+  Name = CaveSeal
+  DisplayName = "Muhrlangan g'or"
+  Geometry = Cylinder
+    Radius = 5
+    Height = 14
+  End
+  VisionRange = 0
+  Modules = [
+    GrowableBody
+      MaxHealth = 100
+    End,
+    SkillBook
+    End,
+    StatusUpdate
+    End
+  ]
+  MinDepth = 99
+  Weight = 0
+  Colour = 0x5A544C
+  Scale = 1
+  Model = models/nature/kenney/rock_tall_c.glb
+  ModelScale = 7
+  Tint = 0x5A544C
+  Skills = [
+    Skill
+      Key = Q
+      Effect = UNYIELDING
+      HealBelowPercent = 1
+      MaxRank = 1
+      Name = "Tosh"
+    End
+  ]
+End

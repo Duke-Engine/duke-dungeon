@@ -25,20 +25,26 @@ and the dark castle (`qora_qasr`). Everything happens on the open world. Act 2, 
 
 ## A grave
 
-- Its **raiser**, a mage, stands in front of it. He has an aura round the graves and plays a casting animation while
-  monsters keep climbing out of them.
-- While the raiser lives, the **graves cannot be harmed**.
-- When the raiser is dead, each grave can be struck and **destroyed one by one**.
-- The graves raise monsters on a beat, with a cap on how many stand at once. They stop when the graves are gone.
+Reworked 2026-10-20 as an ender dragon's crystals (the owner):
+
+- Its **raiser**, a mage, stands in the middle of its graves. He never walks: he throws from far off, his beams on
+  every grave, and lends the risen lifesteal, haste and healing.
+- While **any grave stands, the raiser takes nothing**: the graves keep him whole. Each grave is struck down on its own.
+- The graves all down, the raiser can be killed. **Left unhurt for 3 seconds** he casts for 7 and every broken grave
+  stands again; a blow in the cast breaks it.
+- The raiser dead, the graveyard is gone: counted, and gone across saves.
+- The graves raise monsters on a beat, with a cap on how many stand at once; the risen keep to their graves (a leash).
+- Before the queen sends him (`RaisesAfter`), the old graves stand dormant: seen, raising nothing, nothing of them hurt.
+- A grave is a building: nothing pulls or pushes it off its place.
 - **What a kill gives:** the first `Paying` monsters of a grave (9 by default) give experience, drops and gold. After
   that its monsters come out **changed**: tinted blue-black, harder hitting, and giving **no experience, no drop and no
   gold**. This makes farming a grave pointless.
-- A destroyed grave is counted. It stays destroyed across saves.
 
 ## A cave
 
 - An entrance on the open world. Entering it lays a generated floor, as the descent does today.
-- It is **destroyed when every monster on its floor is dead**. It is then counted, and its entrance is shown as sealed.
+- It is **destroyed when every monster on its floor is dead**. It is then counted, and its entrance is shown sealed:
+  a rock laid in its mouth (`CaveSeal`) as the world is laid.
 - The cap on paying kills does not apply: a cave is finite.
 
 ## The Black Knight's strength
