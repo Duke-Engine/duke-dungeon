@@ -261,6 +261,15 @@ public final class WorldMapWriter {
     static final String OPENING = "Darvoza_oldi";
     static final String LANDING = "Qonish";
     static final String GRAVES = "Eski_qabrlar";
+    /** The cave he sees from the old graves (open-world Act 1), and the wilds' caves and graveyards, numbered from 1. */
+    static final String CAVE_SEEN = "Gor_kirish";
+    static final String CAVE = "Gor_";
+    static final String GRAVEYARD = "Qabriston_";
+    /** The Black Knight's camp, in the north: stepping into it is going into his castle (open-world Act 1). */
+    static final String CAMP = "Qora_qarorgoh";
+    /** Where the wilds' graveyards and caves are sought, in shares of the world: off the sites, one or two a region. */
+    static final double[][] WILD_GRAVES = {{0.12, 0.72}, {0.33, 0.45}, {0.62, 0.62}, {0.88, 0.62}};
+    static final double[][] WILD_CAVES = {{0.30, 0.76}, {0.48, 0.80}, {0.70, 0.45}, {0.30, 0.28}, {0.85, 0.40}};
 
 
     private WorldMapWriter() {
@@ -1684,6 +1693,27 @@ public final class WorldMapWriter {
             pieces.add(yardPiece("props/candles", gx - 4.6f, gy + 0.4f, 0, 0f));
             pieces.add(Piece.of(KITS + "room/room_column_stump.gltf " + (gx + 4.4f) + " " + (gy + 3.4f) + " 0 1 0"));
             pieces.add(Piece.of(KITS + "room/room_column_stump.gltf " + (gx - 4.4f) + " " + (gy - 3.6f) + " 40 1 0"));
+            // The cave he sees from the old graves: a mouth in the rocks north of them (open-world Act 1).
+            int[] mouth = roomNear(graves[0] + 3, graves[1] - 16, 3, true);
+            caveMouth(pieces, zones, CAVE_SEEN, mouth);
+            // The Black Knight's camp, far in the north: dark towers round a yard, its gate to the south.
+            int[] camp = roomNear((int) (0.40 * SIZE), (int) (0.10 * SIZE), 6, true);
+            for (int[] at : new int[][] {{-5, -5}, {5, -5}, {-5, 3}, {5, 3}}) {
+                pieces.add(piece("fort/fort_tower_stepped", camp[0] + at[0], camp[1] + at[1], 0, true));
+            }
+            pieces.add(piece("fort/fort_keep", camp[0], camp[1] - 5, 0, true));
+            zones.add(new Zone(CAMP, camp[0], camp[1], 0, 0, 3));
+            keep(camp[0], camp[1], 8);
+            quiet.add(camp);
+            // The wilds' graveyards and caves, the Black Knight's strength: each a place of its own, off the roads.
+            for (int i = 0; i < WILD_GRAVES.length; i++) {
+                int[] at = roomNear((int) (WILD_GRAVES[i][0] * SIZE), (int) (WILD_GRAVES[i][1] * SIZE), 6, true);
+                graveyard(pieces, zones, GRAVEYARD + (i + 1), at);
+            }
+            for (int i = 0; i < WILD_CAVES.length; i++) {
+                int[] at = roomNear((int) (WILD_CAVES[i][0] * SIZE), (int) (WILD_CAVES[i][1] * SIZE), 3, true);
+                caveMouth(pieces, zones, CAVE + (i + 1), at);
+            }
             keep(fx, fy, 14);
             keep(graves[0], graves[1], 7);
             quiet.add(field);
@@ -1691,6 +1721,43 @@ public final class WorldMapWriter {
             closeUnder(pieces, taken);
             return pieces;
         }
+
+        /**
+         * A cave's mouth at {@code at}: three tall rocks round it, open to the south, and a zone of one cell in it that
+         * takes a hero in (Caves). Kept clear of trees and quiet of the wilds' monsters.
+         */
+        private void caveMouth(List<Piece> pieces, List<Zone> zones, String name, int[] at) {
+            float x = at[0] + 0.5f;
+            float y = at[1] + 0.5f;
+            pieces.add(new Piece(KENNEY_ROCK + "rock_tall_a.glb", x - 1.6f, y - 0.4f, 20, 9f, 0x6A645C, 0.9f));
+            pieces.add(new Piece(KENNEY_ROCK + "rock_tall_c.glb", x + 1.6f, y - 0.4f, 200, 7f, 0x6A645C, 0.6f));
+            pieces.add(new Piece(KENNEY_ROCK + "rock_tall_g.glb", x, y - 1.7f, 90, 8f, 0x5A544C, 0.7f));
+            zones.add(new Zone(name, at[0], at[1], 0, 0, 1));
+            keep(at[0], at[1], 4);
+            quiet.add(at);
+        }
+
+        /** A graveyard of the wilds at {@code at}: rows of mounds with a sword at each head, a dead tree, and its zone. */
+        private void graveyard(List<Piece> pieces, List<Zone> zones, String name, int[] at) {
+            float gx = at[0] + 0.5f;
+            float gy = at[1] + 0.5f;
+            for (int row = 0; row < 2; row++) {
+                for (int col = 0; col < 3; col++) {
+                    float mx = gx - 3f + col * 3f;
+                    float my = gy - 1.2f + row * 2.5f;
+                    pieces.add(new Piece(INUCIIAN + "nature/mound.glb", mx, my, (row * 3 + col) * 23 % 30, 1f,
+                            0xFFFFFF, 0f));
+                    pieces.add(new Piece(KITS + "room/room_sword_leaning.gltf", mx, my - 0.8f, 90, 1f, 0xB0A898,
+                            0f));
+                }
+            }
+            pieces.add(yardPiece("nature/dead_tree_bent", gx + 5.2f, gy - 3.6f, 200, 0f));
+            zones.add(new Zone(name, at[0], at[1], 0, 0, 6));
+            keep(at[0], at[1], 7);
+            quiet.add(at);
+        }
+
+        private static final String KENNEY_ROCK = "models/nature/kenney/";
 
         /** The walked, gentle cell nearest (x, y) with {@code reach} of such ground round it; off the roads if asked. */
         private int[] roomNear(int x, int y, int reach, boolean offRoad) {

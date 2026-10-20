@@ -102,15 +102,6 @@ class Act1Test {
         play(session, 2);
     }
 
-    /** A floor of a campaign descent finished: its boss down, the next floor laid behind it. */
-    private static void throughTheFloor(Dungeon.Session session) {
-        int depth = session.run().getDepth();
-        strike(session, SETTINGS.bossKindAt(depth));
-        for (int i = 0; i < 600 && session.run().getDepth() == depth; i++) {
-            play(session, 1);
-        }
-    }
-
     @Test
     void everyJointsMapIsOneTheGameCanLay() {
         assertEquals(5, CAMPAIGN.joints().size());
@@ -167,13 +158,11 @@ class Act1Test {
         assertTrue(run.getQuests().active().stream().anyMatch(q -> q.quest().equals("ToWar")));
         assertEquals("world", run.getStageName(), "all of it on the world");
 
-        // 4. The war: out by the field, two keep floors.
-        standIn(session, "Yashil_dala");
-        playUntil(session, "urush", 60);
-        assertEquals(3, run.getDepth());
-        assertNotNull(run.getMission(), "a keep floor: clear outside, the key, the gate, the boss");
-        throughTheFloor(session);
-        throughTheFloor(session);
+        // 4. The road north: into the Black Knight's camp, and so into his castle. Nothing of the world cleared, he
+        // stands at his whole strength.
+        int all = SETTINGS.graveyards().size() + SETTINGS.caves().size();
+        assertEquals(SETTINGS.knightStrength().percent(all - 1, all), run.knightStrength(), "only the old graves gone");
+        standIn(session, "Qora_qarorgoh");
         playUntil(session, "qora_qasr", 60);
 
         // 5. The castle: its lord's death is the turning, saved for Act 2, and the act ends.
@@ -278,10 +267,15 @@ class Act1Test {
         var session = Dungeon.newSession(3L, SETTINGS);
         session.run().skipTo(4);
         session.game().runHeadless(3);
+        session.run().getScript().flag("WarBegun");
+        var mouth = zone("world", "Gor_1");
+        hero(session).setPosition(new Coord3D(mouth.middleX(CELL), mouth.middleY(CELL), hero(session).getPosition().z()));
+        play(session, SETTINGS.story().dialogue().checkFrames() * 2 + 3);
+        assertEquals("Gor_1", session.run().getStageName(), "down a cave's mouth");
         var save = SaveGame.read(session.run().saveNow().text(), "test");
-        assertEquals("urush", save.stage());
+        assertEquals("Gor_1", save.stage());
         var floors = Floors.resumed(save, SETTINGS);
-        assertEquals("urush", floors.stageName());
+        assertEquals("Gor_1", floors.stageName());
         assertTrue(floors.descends());
         assertEquals(0, floors.lastDepth(), "the story says where it ends");
     }

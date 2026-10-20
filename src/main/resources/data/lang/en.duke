@@ -1045,3 +1045,5 @@
 "Qabr" => "Grave"
 "Qabr sehrgari" => "Grave Sorcerer"
 "Sehr bilan himoyalangan" => "Warded by sorcery"
+"Qora ritsarning qarorgohi. Qanchalik ko'p qabr va g'or qolgan bo'lsa, u shunchalik kuchli bo'ladi..." => "The Black Knight's camp. The more graves and caves are left, the stronger he will be..."
+"Qora ritsar kuchi: %d%%" => "Black Knight's strength: %d%%"

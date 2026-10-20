@@ -131,7 +131,7 @@ public final class Content {
             named(uz.dukeengine.dungeon.story.Campaign.class), named(uz.dukeengine.dungeon.story.Title.class),
             named(uz.dukeengine.dungeon.story.Place.class), named(uz.dukeengine.dungeon.story.Credits.class),
             named(uz.dukeengine.dungeon.story.Battle.class),
-            named(uz.dukeengine.dungeon.story.Gate.class), named(uz.dukeengine.dungeon.story.Graveyard.class),
+            named(uz.dukeengine.dungeon.story.Gate.class), named(uz.dukeengine.dungeon.story.Graveyard.class), named(uz.dukeengine.dungeon.story.Cave.class), named(uz.dukeengine.dungeon.story.KnightStrength.class),
             named(uz.dukeengine.dungeon.story.Graves.class), named(uz.dukeengine.core.content.Laser.class));
 
     /** The blocks a world builds things from. */

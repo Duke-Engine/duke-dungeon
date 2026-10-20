@@ -1,0 +1,125 @@
+; ---------------------------------------------------------------------------
+; The open world's caves and its graveyards in the wilds (docs/plan/2026-10-19-open-world-act1.md): the Black
+; Knight draws strength from every one left. Each opens once the hero goes on alone (WarBegun). A cave's floor is the
+; campaign's Descent of its name (act1.duke); its mouth is the world's zone of the same name (WorldMapWriter).
+; ---------------------------------------------------------------------------
+
+; The one he sees from the old graves.
+Cave
+  Name = Gor_kirish
+  Map = world
+  Zone = Gor_kirish
+  Wakes = WarBegun
+End
+
+Cave
+  Name = Gor_1
+  Map = world
+  Zone = Gor_1
+  Wakes = WarBegun
+End
+
+Cave
+  Name = Gor_2
+  Map = world
+  Zone = Gor_2
+  Wakes = WarBegun
+End
+
+Cave
+  Name = Gor_3
+  Map = world
+  Zone = Gor_3
+  Wakes = WarBegun
+End
+
+Cave
+  Name = Gor_4
+  Map = world
+  Zone = Gor_4
+  Wakes = WarBegun
+End
+
+Cave
+  Name = Gor_5
+  Map = world
+  Zone = Gor_5
+  Wakes = WarBegun
+End
+
+; The wilds' graveyards: as the old graves, a raiser before three graves, each laid once he goes on alone.
+Graveyard
+  Name = Qabriston_1
+  Map = world
+  Zone = Qabriston_1
+  Wakes = WarBegun
+  Raiser = GraveRaiser
+  Grave = Grave
+  Graves = 3
+  Ring = 4.5
+  Raises = [Skeleton, Runner, Skeleton]
+  EveryFrames = 150
+  MostStanding = 6
+  ShieldLook = GraveWard
+  ShieldFrames = 30
+  RisesLook = GraveRises
+  BrokenLook = GraveBroken
+  RaiseBeam = RaiseBeam
+End
+
+Graveyard
+  Name = Qabriston_2
+  Map = world
+  Zone = Qabriston_2
+  Wakes = WarBegun
+  Raiser = GraveRaiser
+  Grave = Grave
+  Graves = 3
+  Ring = 4.5
+  Raises = [Skeleton, SkeletonMage, Runner]
+  EveryFrames = 140
+  MostStanding = 7
+  ShieldLook = GraveWard
+  ShieldFrames = 30
+  RisesLook = GraveRises
+  BrokenLook = GraveBroken
+  RaiseBeam = RaiseBeam
+End
+
+Graveyard
+  Name = Qabriston_3
+  Map = world
+  Zone = Qabriston_3
+  Wakes = WarBegun
+  Raiser = GraveRaiser
+  Grave = Grave
+  Graves = 4
+  Ring = 4.5
+  Raises = [Skeleton, Revenant, Runner]
+  EveryFrames = 130
+  MostStanding = 7
+  ShieldLook = GraveWard
+  ShieldFrames = 30
+  RisesLook = GraveRises
+  BrokenLook = GraveBroken
+  RaiseBeam = RaiseBeam
+End
+
+Graveyard
+  Name = Qabriston_4
+  Map = world
+  Zone = Qabriston_4
+  Wakes = WarBegun
+  Raiser = GraveRaiser
+  Grave = Grave
+  Graves = 4
+  Ring = 4.5
+  Raises = [Revenant, SkeletonMage, Stalker]
+  EveryFrames = 120
+  MostStanding = 8
+  ShieldLook = GraveWard
+  ShieldFrames = 30
+  RisesLook = GraveRises
+  BrokenLook = GraveBroken
+  RaiseBeam = RaiseBeam
+End

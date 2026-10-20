@@ -207,6 +207,7 @@ public final class DungeonRun {
         this.script = new uz.dukeengine.rpg.story.Script(settings.story().triggers());
         this.fight = new BossFight(settings.story());
         this.graveyards = new Graveyards(settings);
+        this.caves = new Caves(settings);
         script.judgedBy(this::holds);
         this.orders = orders;
         this.dungeonPlayer = dungeonPlayer;
@@ -741,6 +742,9 @@ public final class DungeonRun {
         beams.clear();
         barks = List.of();
         graveyards.lay(game.getLogic(), floors.stageName(), graveRun(game)); // the dead climbing out of their graves
+        caves.laid(floors.stageName(), caveRun(game));
+        strengthened.clear();
+        strengthen(game.getLogic());
         laidBattles.clear();
         seats.forEach(seat -> seat.lastInside = null);
         var gate = gate();
@@ -796,7 +800,7 @@ public final class DungeonRun {
         steps.add(new uz.dukeengine.rpg.story.Tracked.Line(words, false, saidSince));
         tracker = descendAtFrame > 0 ? Tracker.NONE
                 : new Tracker(floorMission() ? listed(new uz.dukeengine.rpg.story.Tracked(uz.dukeengine.rpg.story.Quest.Kind.MAIN, run.missionTitle(), steps))
-                        : quests.entries());
+                        : withStrength(quests.entries()));
         questsNow = quests.state();
         storyNow = floors.story();
     }
@@ -927,6 +931,10 @@ public final class DungeonRun {
             // ★ A map with a story is not won by its boss falling: the story says what follows — a trigger on her
             // death, its WIN, a MAP — and no banner says "won" for it (the owner, 2026-10-09).
             bossId = null;
+        }
+        if (bossId != null && logic.findObject(bossId) == null && descendAtFrame == 0
+                && caves.inside(floors.stageName()) != null) {
+            bossId = null; // a cave's boss is one of its monsters: the cave is cleared with the last of them (Caves)
         }
         if (bossId != null && logic.findObject(bossId) == null && descendAtFrame == 0) {
             // Nothing below this one: the last boss is the end of the game rather
@@ -2703,8 +2711,10 @@ public final class DungeonRun {
      */
     private void story(DukeGame game) {
         graveyards.update(game.getLogic(), graveRun(game));
+        strengthen(game.getLogic());
         if (game.getLogic().getFrame() % settings.story().dialogue().checkFrames() == 0) {
             graveyards.wake(game.getLogic(), floors.stageName(), graveRun(game));
+            caves.update(floors.stageName(), caveRun(game));
         }
         // A conversation in the box stops the world, played alone: his last order stops with it, so he does not stand
         // frozen in a stride and walk on when it is read.
@@ -3318,6 +3328,104 @@ public final class DungeonRun {
 
     /** The graveyards of the map being played: see Graveyards. */
     private final Graveyards graveyards;
+
+    /** How strong the Black Knight stands now, in percent: half at the least, the rest as much as is left of the world's
+     * graves and caves (KnightStrength). */
+    public int knightStrength() {
+        var rule = settings.knightStrength();
+        int all = settings.graveyards().size() + settings.caves().size();
+        int left = (int) settings.graveyards().stream().filter(yard -> !script.flagged(yard.goneFlag())).count()
+                + (int) settings.caves().stream().filter(cave -> !script.flagged(cave.goneFlag())).count();
+        return rule.percent(left, all);
+    }
+
+    /** The quests going, and under them how strong the Black Knight stands while the road to him is going. */
+    private List<uz.dukeengine.rpg.story.Tracked> withStrength(List<uz.dukeengine.rpg.story.Tracked> entries) {
+        var rule = settings.knightStrength();
+        if (rule.word().isBlank() || quests.active().stream().noneMatch(q -> q.quest().equals(rule.during()))) {
+            return entries;
+        }
+        var more = new ArrayList<>(entries);
+        more.add(new uz.dukeengine.rpg.story.Tracked(uz.dukeengine.rpg.story.Quest.Kind.MAIN,
+                String.format(rule.word(), knightStrength()), List.of()));
+        return more;
+    }
+
+    /** The Black Knights cut to their strength already: each once. */
+    private final java.util.Set<uz.dukeengine.core.thing.ObjectId> strengthened = new java.util.HashSet<>();
+
+    /** The Black Knight laid in his castle, his health and his blow cut to how strong he stands. */
+    private void strengthen(uz.dukeengine.core.GameLogic logic) {
+        var rule = settings.knightStrength();
+        if (rule.boss().isBlank() || !rule.map().equals(floors.stageName())) {
+            return;
+        }
+        float share = knightStrength() / 100f;
+        for (var thing : logic.getObjects()) {
+            if (!thing.getTemplate().name().equals(rule.boss()) || thing.isEffectivelyDead()) {
+                continue;
+            }
+            if (!strengthened.add(thing.getId())) {
+                continue; // cut once, as he is laid or as the story stands him up
+            }
+            if (thing.getBody() instanceof uz.dukeengine.rpg.hero.GrowableBody body) {
+                body.setMaxHealth(body.getMaxHealth() * share); // grown only ever up: set it
+                body.setHealth(body.getMaxHealth());
+            }
+            var bonus = thing.findModule(uz.dukeengine.rpg.hero.LevelBonus.class);
+            int level = uz.dukeengine.rpg.hero.LevelBonus.levelOf(thing);
+            if (bonus != null) {
+                thing.replaceModule(bonus, new uz.dukeengine.rpg.hero.LevelBonus(thing, level,
+                        bonus.damageMultiplier() * share, 1f));
+            } else {
+                thing.addModule(new uz.dukeengine.rpg.hero.LevelBonus(thing, level, share, 1f));
+            }
+        }
+    }
+
+    /** The caves of the open world: see Caves. */
+    private final Caves caves;
+
+    /** What a cave is lent of the run. */
+    private Caves.Run caveRun(DukeGame game) {
+        return new Caves.Run() {
+            @Override
+            public uz.dukeengine.dungeon.map.StaticMap.Zone zone(String name) {
+                return zoneNamed(name);
+            }
+
+            @Override
+            public boolean flagged(String flag) {
+                return script.flagged(flag);
+            }
+
+            @Override
+            public void flag(String flag) {
+                script.flag(flag);
+            }
+
+            @Override
+            public List<GameObject> heroes() {
+                var logic = game.getLogic();
+                return seats.stream().map(seat -> seat.heroId == null ? null : logic.findObject(seat.heroId))
+                        .filter(hero -> hero != null && !hero.isEffectivelyDead()).toList();
+            }
+
+            @Override
+            public int monstersLeft() {
+                return (int) game.getLogic().getObjects().stream()
+                        .filter(thing -> thing.findModule(Bounty.class) != null && !thing.isEffectivelyDead()
+                                && thing.getPlayerIndex() == dungeonPlayer.getIndex())
+                        .count();
+            }
+
+            @Override
+            public void toMap(String name, String at) {
+                nextMap = name;
+                skippedTo = at;
+            }
+        };
+    }
 
     /** What a graveyard is lent of the run. */
     private Graveyards.Run graveRun(DukeGame game) {

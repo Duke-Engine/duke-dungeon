@@ -99,10 +99,31 @@ class MountTest {
      * (E74). On his keys, as the engine multiplies his MOUNT into a walk along (a click-to-move's step is held to his
      * own top speed by its giving way: noted for the engine in E89's section).
      */
+    /** The way from where he stands that is open for 150 units, by the walking grid: no stone, nothing in the way. */
+    private static int openWay(DukeGame game) {
+        var hero = hero(game);
+        var grid = game.getLogic().getPathGrid();
+        float r = uz.dukeengine.core.thing.Solid.of(hero.getTemplate()).footprintRadius() + 2f;
+        for (int angle : new int[] {0, 90, 180, 270}) {
+            boolean open = true;
+            for (float along = 0f; along <= 150f && open; along += 2.5f) {
+                float x = hero.getPosition().x() + along * (float) Math.cos(Math.toRadians(angle));
+                float y = hero.getPosition().y() + along * (float) Math.sin(Math.toRadians(angle));
+                int cx = (int) (x / grid.getCellSize());
+                int cy = (int) (y / grid.getCellSize());
+                open = !grid.isBlocked(cx, cy) && !grid.isCliff(cx, cy) && grid.clearOfCircles(x, y, r);
+            }
+            if (open) {
+                return angle;
+            }
+        }
+        throw new AssertionError("no way open from the tower: the scene is gone");
+    }
+
     private static float stride(DukeGame game) {
         var hero = hero(game);
         var legs = hero.findModule(MoveUpdate.class);
-        legs.moveAlong(0);
+        legs.moveAlong(openWay(game));
         game.runHeadless(10);
         float went = 0f;
         for (int frame = 0; frame < 30; frame++) {

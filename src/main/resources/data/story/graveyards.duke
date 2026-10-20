@@ -159,7 +159,7 @@ Graveyard
   Raiser = GraveRaiser
   Grave = Grave
   Graves = 3
-  Ring = 2.5
+  Ring = 4.5
   Raises = [Skeleton, Skeleton, Runner]
   EveryFrames = 150
   MostStanding = 6

@@ -149,7 +149,9 @@ public final class DungeonSettings {
     private final List<uz.dukeengine.dungeon.story.Battle> battles = new java.util.ArrayList<>();
     private final List<uz.dukeengine.dungeon.story.Gate> gates = new java.util.ArrayList<>();
     private final List<uz.dukeengine.dungeon.story.Graveyard> graveyards = new java.util.ArrayList<>();
+    private final List<uz.dukeengine.dungeon.story.Cave> caves = new java.util.ArrayList<>();
     private uz.dukeengine.dungeon.story.Graves graves = uz.dukeengine.dungeon.story.Graves.DEFAULTS;
+    private uz.dukeengine.dungeon.story.KnightStrength knightStrength = uz.dukeengine.dungeon.story.KnightStrength.DEFAULTS;
     private final List<uz.dukeengine.core.content.Laser> lasers = new java.util.ArrayList<>();
 
     /** Every attribute, in file order — the order a hero's are held in and the panel draws them. */
@@ -394,6 +396,16 @@ public final class DungeonSettings {
     /** The graveyards the dead climb out of (docs/plan/2026-10-19-open-world-act1.md). */
     public List<uz.dukeengine.dungeon.story.Graveyard> graveyards() {
         return List.copyOf(graveyards);
+    }
+
+    /** How strong the Black Knight stands for what is left of the graves and caves. */
+    public uz.dukeengine.dungeon.story.KnightStrength knightStrength() {
+        return knightStrength;
+    }
+
+    /** The caves of the open world: a mouth, and a floor of its own under it. */
+    public List<uz.dukeengine.dungeon.story.Cave> caves() {
+        return List.copyOf(caves);
     }
 
     /** What every graveyard shares: what its risen pay, and what the changed ones are. */
@@ -657,7 +669,9 @@ public final class DungeonSettings {
                 case uz.dukeengine.dungeon.story.Battle battle -> battles.add(battle);
                 case uz.dukeengine.dungeon.story.Gate gate -> gates.add(gate);
                 case uz.dukeengine.dungeon.story.Graveyard yard -> graveyards.add(yard);
+                case uz.dukeengine.dungeon.story.Cave cave -> caves.add(cave);
                 case uz.dukeengine.dungeon.story.Graves block -> graves = once(block, once);
+                case uz.dukeengine.dungeon.story.KnightStrength block -> knightStrength = once(block, once);
                 case uz.dukeengine.core.content.Laser laser -> lasers.add(laser);
                 case uz.dukeengine.dungeon.world.SaveMenu block -> saveMenu = once(block, once);
                 case uz.dukeengine.dungeon.world.MainMenu block -> mainMenu = once(block, once);

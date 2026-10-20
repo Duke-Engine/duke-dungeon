@@ -187,6 +187,7 @@ Game
     data/story/act1.duke,
     data/story/landing.duke,
     data/story/graveyards.duke,
+    data/story/caves.duke,
     data/story/villages.duke,
     data/story/act2.duke,
     data/story/credits.duke,

@@ -151,11 +151,11 @@ class CampaignWalkTest {
         assertTrue(script.flagged("Trained"), "the graves gone");
         assertTrue(script.flagged("WarBegun"), "he goes on alone");
 
-        walkToZone(session, "Yashil_dala", 12000);
-        for (int i = 0; i < 120 && !"urush".equals(run.getStageName()); i++) {
+        walkToZone(session, "Qora_qarorgoh", 30000);
+        for (int i = 0; i < 120 && !"qora_qasr".equals(run.getStageName()); i++) {
             play(session, 1);
         }
-        assertEquals("urush", run.getStageName(), "out by the field to the war");
+        assertEquals("qora_qasr", run.getStageName(), "north across the world to the Black Knight's castle");
     }
 
     /** Followed halfway, then killed: back from the death, the commander can still be followed to the palace. */

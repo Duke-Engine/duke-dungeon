@@ -4,8 +4,8 @@
 ;
 ;   1. world      the opening battle, on the field before the capital's north gate (Darvoza_oldi)
 ;   2. world      the palace: the queen, her gold and her medallion; people's small asks
-;   3. world      the training at the old graves west of the field (Eski_qabrlar), then the war council
-;   4. urush      the war: the descent's keep floors, two of them
+;   3. world      the old graves west of the field (Eski_qabrlar): their raiser, the graves, the farewell
+;   4. world      the open world: its graves and caves, and the road north to the Black Knight's camp
 ;   5. qora_qasr  the dark castle: its lord's death, the medallion drinks him whole — the turning
 ;
 ; Joints 1-3 are the one open world: no loading screen between them. The act's world story runs
@@ -23,9 +23,31 @@ Campaign
   ; Generated floors under names of their own: their bosses open the next floor as the descent's
   ; do, and the story's DEPTH triggers say when they end.
   Descents = [
+    ; The open world's caves, each a floor of its own under its mouth (data/story/caves.duke): the deeper the
+    ; floor, the harder its monsters.
     Descent
-      Name = urush
+      Name = Gor_kirish
+      FirstDepth = 2
+    End,
+    Descent
+      Name = Gor_1
+      FirstDepth = 2
+    End,
+    Descent
+      Name = Gor_2
       FirstDepth = 3
+    End,
+    Descent
+      Name = Gor_3
+      FirstDepth = 4
+    End,
+    Descent
+      Name = Gor_4
+      FirstDepth = 4
+    End,
+    Descent
+      Name = Gor_5
+      FirstDepth = 5
     End
   ]
   ; In order; the first is where a new game opens. What a hero skipped straight to one is given
@@ -53,11 +75,13 @@ Campaign
       At = Eski_qabrlar
     End,
     Joint
-      Map = urush
+      Map = world
       Flags = [Act1, HeroLanded, BattleWon, Welcomed, GravesWake, GoneOldGraves, Trained, WarBegun]
       Items = [Medallion]
+      Quests = [ToWar]
       Experience = 400
       Gold = 200
+      At = Eski_qabrlar
     End,
     Joint
       Map = qora_qasr
@@ -81,6 +105,10 @@ Campaign
     Retired
       Map = mashq
       Joint = 3
+    End,
+    Retired
+      Map = urush
+      Joint = 4
     End
   ]
 End
@@ -1231,7 +1259,7 @@ Quest
   Steps = [
     Step
       Goal = REACH
-      Target = Yashil_dala
+      Target = Qora_qarorgoh
       Text = "Shimolga — Qora ritsar qarorgohiga yo'l oling"
     End
   ]
@@ -1304,19 +1332,6 @@ Trigger
     Action
       Act = START_QUEST
       Target = BackToPalace
-    End
-  ]
-End
-
-Trigger
-  Name = ToTheWar
-  Map = world
-  When = QUEST_DONE
-  Target = ToWar
-  Actions = [
-    Action
-      Act = MAP
-      Target = urush
     End
   ]
 End
@@ -1639,116 +1654,54 @@ Trigger
 End
 
 ; ===========================================================================
-; 4. urush — the war: the descent's keep floors (clear outside, key, gate, boss).
+; 4. The Black Knight's camp, in the north of the world (world: Qora_qarorgoh): stepping into it takes him into his
+;    castle. How strong he stands there is what is left of the graves and the caves (KnightStrength).
 ; ===========================================================================
 
 Conversation
-  Name = WarFirstKeep
+  Name = CampReached
   Lines = [
     Line
-      Speaker = Act1Commander
-      Text = "Mana, birinchi bosib olingan qal'a. Tashqaridagilarni qiring, kalitni oling, darvozani oching — sarkardasi ichkarida."
+      Speaker = Hero
+      Text = "Qora ritsarning qarorgohi. Qanchalik ko'p qabr va g'or qolgan bo'lsa, u shunchalik kuchli bo'ladi..."
     End
   ]
 End
 
-Conversation
-  Name = WarSecondKeep
-  Lines = [
-    Line
-      Speaker = Act1Commander
-      Text = "Bir qal'a ozod! Keyingisi — qora ritsar qasriga yo'l ochadigan oxirgi qal'a."
-    End
-  ]
-End
-
-Conversation
-  Name = WarToCastle
-  Lines = [
-    Line
-      Speaker = Act1Commander
-      Text = "Yerlarimiz ozod. Qolgani — qora qasr. U yerga sen yolg'iz borasan, qahramon."
-    End
-  ]
-End
-
-Quest
-  Name = War
-  Kind = MAIN
-  Title = "Bosib olingan yerlar"
-  Steps = [
-    Step
-      Goal = KILL
-      Target = Necromancer
-      Text = "Birinchi qal'a sarkardasini o'ldiring"
-      OnDone = Done
-        Experience = 150
-      End
-    End,
-    Step
-      Goal = KILL
-      Target = Champion
-      Text = "Ikkinchi qal'a sarkardasini o'ldiring"
-      OnDone = Done
-        Experience = 250
-      End
-    End
-  ]
-End
-
+; The camp reached: into the Black Knight's castle.
 Trigger
-  Name = WarBegins
-  Map = urush
-  When = MAP_START
-  Actions = [
-    Action
-      ; The chapter's name over the screen as it opens.
-      Act = TITLE
-      Target = ChapterWar
-    End,
-    Action
-      Act = START_QUEST
-      Target = War
-    End,
-    Action
-      Act = SAY
-      Target = WarFirstKeep
-    End
-  ]
-End
-
-Trigger
-  Name = SecondKeep
-  Map = urush
-  When = DEPTH
-  Target = 4
-  Actions = [
-    Action
-      Act = SAY
-      Target = WarSecondKeep
-    End
-  ]
-End
-
-Trigger
-  Name = WarWon
-  Map = urush
-  When = DEPTH
-  Target = 5
+  Name = ToTheCastle
+  Map = world
+  When = QUEST_DONE
+  Target = ToWar
   Actions = [
     Action
       Act = FLAG
       Target = LandsFreed
     End,
     Action
+      Act = TITLE
+      Target = ChapterWar
+    End,
+    Action
       Act = SAY
-      Target = WarToCastle
+      Target = CampReached
     End,
     Action
       Act = MAP
       Target = qora_qasr
     End
   ]
+End
+
+; How strong the Black Knight stands in his castle: half of himself at the least, and the other half as much as there
+; are graves and caves left of all the world has (Graveyard and Cave blocks); shown while the road north is going.
+KnightStrength
+  Boss = DarkLord
+  Map = qora_qasr
+  Least = 50
+  Word = "Qora ritsar kuchi: %d%%"
+  During = ToWar
 End
 
 ; ===========================================================================
