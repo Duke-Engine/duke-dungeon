@@ -61,7 +61,16 @@ public final class WorldMapWriter {
 
     static final Path FOLDER = MapWriter.FOLDER.resolve("world");
     static final String NAME = "world";
-    static final int SIZE = 512;
+    static final int SIZE = 256;
+    /**
+     * The world as a share of the 512 it was drawn at: what shapes the land as a whole -- how far the regions' edges
+     * wander, the lake's reach -- shrinks with it, while the hills keep their own size (their noise is read at 512's
+     * scale) and so their slopes, and every town, camp and road keeps its cells (the owner, 2026-10-20: a smaller,
+     * fuller world).
+     */
+    static final double SCALE = SIZE / 512.0;
+    /** The cells across that the hills' noise is read over: theirs at 512, whatever the world's size. */
+    private static final double HILLS = 512.0;
     static final long SEED = 20261008L;
     /** A KayKit broadleaf's trunk at its scenery scale of 3.1, as a footprint in cells: 0.45 of its own units, measured. */
     static final float TRUNK = 0.14f;
@@ -90,7 +99,7 @@ public final class WorldMapWriter {
             new Site("Yashil_dala", 0.40, 0.62, 16),
             new Site("Qumli_dasht", 0.76, 0.80, 16),
             new Site("Toshli_adir", 0.54, 0.42, 14),
-            new Site("Kampir_kulbasi", 0.09, 0.17, 9),
+            new Site("Kampir_kulbasi", 0.14, 0.19, 9),
             new Site("Malika_qasri", 0.64, 0.19, 12));
     private static final int CITY = 0;
     /** Yalmog'iz kampir's hut, by its place in {@link #SITES}. */
@@ -102,7 +111,7 @@ public final class WorldMapWriter {
 
     /** The low basin where a lake would be, as a share of the map, and its reach in cells. */
     private static final double[] BASIN = {0.22, 0.50};
-    private static final int BASIN_REACH = 24;
+    private static final int BASIN_REACH = (int) Math.round(24 * SCALE);
 
     /** How far a road may rise or fall in one cell, in sixteenths of a cell: half what a cliff is. */
     private static final int GRADE = 8;
@@ -243,10 +252,14 @@ public final class WorldMapWriter {
             {0.72, 0.24, 1, new String[] {"Shayton", "Shayton", "CultMage"}},
     };
     /** How far the bestiary's groups keep from the city -- its gate, the opening field and the corridor -- in cells. */
-    static final int BEASTS_KEEP_FROM_CITY = 70;
+    static final int BEASTS_KEEP_FROM_CITY = (int) Math.round(70 * SCALE);
 
     /** How far a wild camp keeps from a village, a tower, a landmark or a site's edge, in cells. */
-    static final int WILD_QUIET = 30;
+    static final int WILD_QUIET = (int) Math.round(30 * SCALE);
+    /** How far a wild camp's middle keeps from the opening field's and the old graves': their reach, 20 past it and its own. */
+    static final int CAMPAIGN_CLEAR = 40;
+    /** How far a village keeps from the city's middle, in cells: past its walls and the opening battle's field. */
+    static final int VILLAGE_FROM_CITY = 45;
     private static final int ROAMING_GROUPS = 4;
 
     /** The villages, one by each road but the forest's, in the order of those roads. */
@@ -320,6 +333,11 @@ public final class WorldMapWriter {
     /** How many cells of shelves no ramp reached were sealed. */
     static int sealedCells(long seed) {
         return new World(seed).sealedCells;
+    }
+
+    /** The cells the river runs in, row by row. */
+    static boolean[] channel(long seed) {
+        return new World(seed).channel;
     }
 
     /** The cells the roads run over, row by row. */
@@ -402,6 +420,7 @@ public final class WorldMapWriter {
                         ? List.of(route(door(SITES.get(join[1])), SITES.get(join[1])),
                                 route(SITES.get(CITY), door(SITES.get(join[1]))))
                         : List.of(route(SITES.get(join[0]), SITES.get(join[1])));
+                roadMiddles.add(paths.getFirst().get(paths.getFirst().size() / 2)); // where its tower looks from
                 for (var path : paths) {
                     grade(path);
                     for (var cell : path) {
@@ -938,10 +957,10 @@ public final class WorldMapWriter {
         private double[] distances(double x, double y) {
             double u = x / SIZE;
             double v = y / SIZE;
-            double wx = x + 260 * (GroundPictures.fbm(u, v, 2, 3, seed + 101) - 0.5)
-                    + 70 * (GroundPictures.fbm(u, v, 7, 2, seed + 103) - 0.5);
-            double wy = y + 260 * (GroundPictures.fbm(u, v, 2, 3, seed + 102) - 0.5)
-                    + 70 * (GroundPictures.fbm(u, v, 7, 2, seed + 104) - 0.5);
+            double wx = x + 260 * SCALE * (GroundPictures.fbm(u, v, 2, 3, seed + 101) - 0.5)
+                    + 70 * SCALE * (GroundPictures.fbm(u, v, 7, 2, seed + 103) - 0.5);
+            double wy = y + 260 * SCALE * (GroundPictures.fbm(u, v, 2, 3, seed + 102) - 0.5)
+                    + 70 * SCALE * (GroundPictures.fbm(u, v, 7, 2, seed + 104) - 0.5);
             var distances = new double[HEARTS.length];
             for (int i = 0; i < HEARTS.length; i++) {
                 distances[i] = Math.hypot(wx - HEARTS[i][0] * SIZE, wy - HEARTS[i][1] * SIZE);
@@ -976,8 +995,11 @@ public final class WorldMapWriter {
         }
 
         private double heightOf(Biome biome, int x, int y) {
-            double u = (double) x / SIZE;
-            double v = (double) y / SIZE;
+            // The hills at their own size, whatever the world's: read over HILLS cells, so a slope stays a slope.
+            double u = x / HILLS;
+            double v = y / HILLS;
+            double peakU = (double) x / SIZE;
+            double peakV = (double) y / SIZE;
             return switch (biome) {
                 case MEADOW -> 64 + 70 * GroundPictures.fbm(u, v, 4, 4, seed + 1);
                 case STEPPE -> 48 + 50 * GroundPictures.fbm(u, v, 6, 3, seed + 2);
@@ -985,14 +1007,14 @@ public final class WorldMapWriter {
                 // Terraces: level shelves a few cells high whose risers are steep enough to be cliffs.
                 case HIGHLANDS -> terrace(140 + 460 * ridged(u, v, 5, 4, seed + 4), 64);
                 case SNOW -> 280 + 440 * ridged(u, v, 3, 5, seed + 5)
-                        + 260 * Math.min(1, Math.hypot(1 - u, v) < 0.35 ? 1 - Math.hypot(1 - u, v) / 0.35 : 0);
+                        + 260 * Math.min(1, Math.hypot(1 - peakU, peakV) < 0.35 ? 1 - Math.hypot(1 - peakU, peakV) / 0.35 : 0);
             };
         }
 
         /** The low ground where a lake would be: drawn down to a flat floor across its middle. */
         private double basin(int x, int y, double height) {
             double away = Math.hypot(x - BASIN[0] * SIZE, y - BASIN[1] * SIZE);
-            double wobble = 30 * (GroundPictures.fbm((double) x / SIZE, (double) y / SIZE, 5, 2, seed + 7) - 0.5);
+            double wobble = 30 * SCALE * (GroundPictures.fbm((double) x / SIZE, (double) y / SIZE, 5, 2, seed + 7) - 0.5);
             return lerp(height, 20, smooth((BASIN_REACH + wobble - away) / 18));
         }
 
@@ -1189,18 +1211,20 @@ public final class WorldMapWriter {
             }
             // The bestiary's groups: off the city's ground and the campaign's, and clear of every quiet place.
             for (var beasts : BEASTS) {
-                for (int g = 0; g < (int) beasts[2]; g++) {
-                    int x = (int) Math.round((double) beasts[0] * SIZE) + rng.nextInt(-30, 30);
-                    int y = (int) Math.round((double) beasts[1] * SIZE) + rng.nextInt(-30, 30);
-                    int gx = x;
-                    int gy = y;
+                int spread = (int) Math.round(30 * SCALE);
+                // Each group tries a few spots round its place: a small world has more quiet places to miss.
+                for (int g = 0, tries = 0; g < (int) beasts[2] && tries < 40 * (int) beasts[2]; tries++) {
+                    int x = (int) Math.round((double) beasts[0] * SIZE) + rng.nextInt(-spread, spread);
+                    int y = (int) Math.round((double) beasts[1] * SIZE) + rng.nextInt(-spread, spread);
                     if (Math.hypot(x - city.x(), y - city.y()) < BEASTS_KEEP_FROM_CITY
-                            || quiet.stream().anyMatch(q -> Math.hypot(q[0] - gx, q[1] - gy) < 20)) {
+                            || quiet.stream().anyMatch(q -> Math.hypot(q[0] - x, q[1] - y) < WILD_QUIET)
+                            || campaignPlaces.stream().anyMatch(q -> Math.hypot(q[0] - x, q[1] - y) < CAMPAIGN_CLEAR)) {
                         continue;
                     }
                     for (var kind : (String[]) beasts[3]) {
                         monsters.add(new Monster(kind, free(taken, x, y)));
                     }
+                    g++;
                 }
             }
             for (int[] corner : new int[][] {{-6, -6}, {6, -6}, {-6, 6}, {6, 6}}) {
@@ -1230,8 +1254,9 @@ public final class WorldMapWriter {
                 var site = SITES.get(i);
                 zones.add(new Zone(site.zone(), site.x(), site.y(), 0, 0, site.radius()));
             }
+            // The forest region's own zone: its reach shrinks with the world.
             zones.add(new Zone(FOREST_ZONE, (int) (HEARTS[Biome.FOREST.ordinal()][0] * SIZE),
-                    (int) (HEARTS[Biome.FOREST.ordinal()][1] * SIZE), 0, 0, 44));
+                    (int) (HEARTS[Biome.FOREST.ordinal()][1] * SIZE), 0, 0, (int) Math.round(44 * SCALE)));
             zones.addAll(places); // the villages, the towers and the landmarks, after the sites
             for (var monster : monsters) {
                 keep(monster.at().cellX(), monster.at().cellY(), 1);
@@ -1435,13 +1460,17 @@ public final class WorldMapWriter {
             var hill = SITES.get(3);
             ring(pieces, hill.x() - 6, hill.y() - 6, 12, RUIN, Set.of());
             // A watchtower beside each road, about halfway, but on the forest's.
-            for (var join : ROADS) {
+            for (int r = 0; r < ROADS.length; r++) {
+                var join = ROADS[r];
                 if (join[0] == HUT || join[1] == HUT) {
                     continue;
                 }
                 var a = SITES.get(join[0]);
                 var b = SITES.get(join[1]);
                 var spot = besideTheRoad((a.x() + b.x()) / 2, (a.y() + b.y()) / 2);
+                if (spot == null) { // a road that goes the long way round: by its own middle
+                    spot = besideTheRoad(roadMiddles.get(r)[0], roadMiddles.get(r)[1]);
+                }
                 if (spot != null) {
                     pieces.add(piece("town/town_tower_slim", spot[0] + 0.5f, spot[1] + 0.5f, 0, false));
                     towers.add(spot);
@@ -1524,7 +1553,8 @@ public final class WorldMapWriter {
                         int cy = y + dy;
                         if (Math.max(Math.abs(dx), Math.abs(dy)) == reach && cx > 12 && cy > 12 && cx < SIZE - 12
                                 && cy < SIZE - 12 && walked[cy * SIZE + cx] && lean(cx, cy) < 6
-                                && !roadNear(cx, cy, 2) && roadNear(cx, cy, 3) && !nearASite(cx, cy, 4)) {
+                                && !roadNear(cx, cy, 2) && roadNear(cx, cy, 3) && !nearASite(cx, cy, 4)
+                                && towers.stream().noneMatch(t -> Math.hypot(t[0] - cx, t[1] - cy) < 10)) {
                             return new int[] {cx, cy};
                         }
                     }
@@ -1569,8 +1599,15 @@ public final class WorldMapWriter {
 
         /** Where each watchtower stands, in the order the roads are, as castles laid them. */
         private final List<int[]> towers = new ArrayList<>();
+        /** The middle cell of each road as it runs, in the order of {@link #ROADS}: a winding road's, not the line's. */
+        private final List<int[]> roadMiddles = new ArrayList<>();
         /** The middles of the villages, landmarks and towers: no roaming band is set down near one. */
         private final List<int[]> quiet = new ArrayList<>();
+        /**
+         * The opening field and the old graves: kept {@link #CAMPAIGN_CLEAR} cells clear of the wilds' monsters, so no
+         * fight is pulled into the campaign's places, however small the world.
+         */
+        private final List<int[]> campaignPlaces = new ArrayList<>();
 
         /**
          * The world's ordinary places, after its castles and before its monsters: a village a third of the way along
@@ -1594,6 +1631,10 @@ public final class WorldMapWriter {
                 for (double t = 0.3; at == null && t < 0.8; t += 0.15) {
                     at = nearTheRoad((int) Math.round(a.x() + t * (b.x() - a.x())),
                             (int) Math.round(a.y() + t * (b.y() - a.y())), 6);
+                    var city = SITES.get(CITY);
+                    if (at != null && Math.hypot(at[0] - city.x(), at[1] - city.y()) < VILLAGE_FROM_CITY) {
+                        at = null; // off the city's ground and its opening battle's field
+                    }
                 }
                 if (at != null) {
                     pieces.addAll(village(VILLAGES.get(village), at[0], at[1], village, taken, props, npcs, zones));
@@ -1652,7 +1693,7 @@ public final class WorldMapWriter {
             int gate = city.y() - 12 + 3;
             zones.add(new Zone("Yo'lak", fx - 4, fy, 9, Math.max(1, gate - fy), 0));
             // The old graves just beyond the enemy's line, seen from the opening battle: the first wave climbs out of them.
-            int[] graves = roomNear(fx, fy - 9, 6, true);
+            int[] graves = roomNear(fx, fy - 18, 6, true);
             zones.add(new Zone(GRAVES, graves[0], graves[1], 0, 0, 6));
             // The palace: the royal castle's court (castles: its ring 9 a side from C + (-11, -4)), the throne by its
             // west wall facing the gate in its east one.
@@ -1708,8 +1749,8 @@ public final class WorldMapWriter {
             }
             keep(fx, fy, 14);
             keep(graves[0], graves[1], 7);
-            quiet.add(field);
-            quiet.add(graves);
+            campaignPlaces.add(field);
+            campaignPlaces.add(graves);
             closeUnder(pieces, taken);
             return pieces;
         }
@@ -1777,11 +1818,18 @@ public final class WorldMapWriter {
                 }
             }
             closeUnder(pieces, taken);
+            // The middle held while its well, scarecrow and people find their cells, so none of them is set on it:
+            // it is where a walk to the village ends.
+            long middle = (long) y * SIZE + x;
+            boolean held = taken.add(middle);
             props.add(new Prop("Well", free(taken, x + 1, y - 1))); // beside the middle, which is kept walkable
             props.add(new Prop("Scarecrow", free(taken, x + 5, y + 1)));
             for (int i = 0; i <= number % 3; i++) {
                 var at = free(taken, x - 1 + 2 * i, y + 1);
                 npcs.add(new StaticMap.Placed(i % 2 == 0 ? "Villager" : "Farmer", at.cellX(), at.cellY()));
+            }
+            if (held) {
+                taken.remove(middle);
             }
             zones.add(new Zone(name, x, y, 0, 0, 6));
             keep(x, y, 7);
@@ -2231,10 +2279,11 @@ public final class WorldMapWriter {
                     : Math.hypot(x - BASIN[0] * SIZE, y - BASIN[1] * SIZE) > BASIN_REACH + 24) {
                 return false;
             }
-            if (quiet.stream().anyMatch(q -> Math.hypot(q[0] - x, q[1] - y) < WILD_QUIET)) {
+            if (quiet.stream().anyMatch(q -> Math.hypot(q[0] - x, q[1] - y) < WILD_QUIET)
+                    || campaignPlaces.stream().anyMatch(q -> Math.hypot(q[0] - x, q[1] - y) < CAMPAIGN_CLEAR)) {
                 return false;
             }
-            return SITES.stream().noneMatch(site -> Math.hypot(site.x() - x, site.y() - y) < site.radius() + WILD_QUIET);
+            return SITES.stream().noneMatch(site -> Math.hypot(site.x() - x, site.y() - y) < site.radius() + 20);
         }
 
         private Placement free(Set<Long> taken, int x, int y) {

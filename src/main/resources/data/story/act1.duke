@@ -891,12 +891,12 @@ End
 
 Place
   Map = world
-  Zone = "GuardNorth 116 413 1"
+  Zone = "GuardNorth 59 182 1"
 End
 
 Place
   Map = world
-  Zone = "GuardEast 129 421 1"
+  Zone = "GuardEast 72 190 1"
 End
 
 ; The guards at the corridor's ends, while the act keeps the world shut.
@@ -992,17 +992,17 @@ End
 ; act's own places, as Act 2's are). In cells: name x y radius.
 Place
   Map = world
-  Zone = "CourtSide 108 463 1"
+  Zone = "CourtSide 51 232 1"
 End
 
 Place
   Map = world
-  Zone = "BlacksmithSpot 118 457 1"
+  Zone = "BlacksmithSpot 61 226 1"
 End
 
 Place
   Map = world
-  Zone = "OldWomanSpot 115 465 1"
+  Zone = "OldWomanSpot 58 234 1"
 End
 
 ; The capital's people, every time the world is laid in the act (a load lays it again): the queen on

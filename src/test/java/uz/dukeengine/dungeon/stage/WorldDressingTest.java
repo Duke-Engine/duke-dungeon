@@ -74,7 +74,11 @@ class WorldDressingTest {
             assertTrue(SETTINGS.screens().placeNames().containsKey(landmark), landmark + " is no place on the map");
         }
         var scenery = stage.paint().scenery();
-        assertTrue(scenery.stream().anyMatch(p -> p.model().endsWith("town_bridge.gltf")), "no bridge");
+        // A bridge wherever a road fords the river (the 256 world's roads go round its spring and mouth, and need none).
+        var road = WorldMapWriter.roads(WorldMapWriter.SEED);
+        var river = WorldMapWriter.channel(WorldMapWriter.SEED);
+        boolean fords = java.util.stream.IntStream.range(0, road.length).anyMatch(i -> road[i] && river[i]);
+        assertEquals(fords, scenery.stream().anyMatch(p -> p.model().endsWith("town_bridge.gltf")), "a bridge on a ford");
         assertTrue(scenery.stream().anyMatch(p -> p.model().contains("weapons/medieval/")), "no battlefield arms");
         var towers = DungeonRun.towers(stage.story(), SETTINGS.travel());
         assertEquals(5, towers.size(), "a tower a road but the forest's");
@@ -95,6 +99,8 @@ class WorldDressingTest {
         assertNotNull(SETTINGS.story().merchant("Pedlar"), "the pedlar sells nothing");
         var game = Dungeon.newStageSession(stage, SETTINGS).game();
         game.runHeadless(1);
+        // His round, not the wide world's sleep: he starts out of the landing's SLEEP_CELLS and would doze till met.
+        game.getLogic().setSleep(null);
         var traveller = named(game, "Traveller");
         var from = traveller.getPosition();
         game.runHeadless(SETTINGS.story().trade().wanderFrames() * 3);

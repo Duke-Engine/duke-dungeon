@@ -14,21 +14,18 @@
 ;   past       - true: chetlanish ham undan o'tadi (hozir ishlatilmaydi)
 ;
 ; Har bir nuqta 2-3 katak kenglikdagi suv yoki loy oqimini kesib o'tadi: ikkala uchi
-; yuriladigan yerda, yurib aylanib o'tish esa kamida 40 katak. Shahar, saroy, jang
+; yuriladigan yerda, aylanib o'tish esa ancha uzoq. Shahar, saroy, jang
 ; maydoni, qishloqlar va minoralardan uzoqda. WorldMapWriter o'qiydi va
 ; maps/world/world.map ga yozadi; TraversalWorldTest tekshiradi.
 ; ---------------------------------------------------------------------------
 TraversalLinks
-  Jump  263.5 163.5   266.5 163.5   12  8   Jump   true   false
-  Jump  209.5 154.5   209.5 157.5   12  8   Jump   true   false
-  Jump  147.5 232.5   151.5 232.5   14  8   Jump   true   false
-  Jump  160.5 204.5   164.5 204.5   14  8   Jump   true   false
-  Jump  241.5 146.5   245.5 146.5   14  8   Jump   true   false
-  Jump  298.5 192.5   298.5 196.5   14  8   Jump   true   false
-  Jump  318.5 194.5   318.5 198.5   14  8   Jump   true   false
-  Jump  356.5 202.5   356.5 206.5   14  8   Jump   true   false
-  Jump  379.5 194.5   379.5 198.5   14  8   Jump   true   false
-  Jump  396.5 183.5   396.5 187.5   14  8   Jump   true   false
-  Jump  415.5 173.5   415.5 177.5   14  8   Jump   true   false
-  Jump  510.5 110.5   510.5 114.5   14  8   Jump   true   false
+  Jump  115.5 68.5   119.5 68.5   14  8   Jump   true   false
+  Jump  125.5 73.5   125.5 77.5   14  8   Jump   true   false
+  Jump  223.5 85.5   223.5 89.5   14  8   Jump   true   false
+  Jump  207.5 86.5   207.5 90.5   14  8   Jump   true   false
+  Jump  189.5 96.5   189.5 100.5   14  8   Jump   true   false
+  Jump  165.5 98.5   165.5 102.5   14  8   Jump   true   false
+  Jump  174.5 98.5   174.5 102.5   14  8   Jump   true   false
+  Jump  79.5 105.5   83.5 105.5   14  8   Jump   true   false
+  Jump  66.5 120.5   66.5 124.5   14  8   Jump   true   false
 End

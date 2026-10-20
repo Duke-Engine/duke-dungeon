@@ -2288,6 +2288,9 @@ public final class DungeonRun {
                 if (hero != null) {
                     hero.setPosition(sky);
                     Battles.daze(hero, 2);
+                    // Nobody's mark up there, and for his fall and his kneeling after: a foe under the sky would
+                    // swing at him as he lands.
+                    hero.setTargetableFrom(frame + 90);
                 }
             }
         }

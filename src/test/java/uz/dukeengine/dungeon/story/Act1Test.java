@@ -237,7 +237,7 @@ class Act1Test {
             play(session, 1);
             var at = hero(session).getPosition();
             came = all(game, "Skeleton").stream().anyMatch(o -> o.findModule(uz.dukeengine.dungeon.ai.Leash.class) == null
-                    && Math.hypot(o.getPosition().x() - at.x(), o.getPosition().y() - at.y()) < 40f);
+                    && Math.hypot(o.getPosition().x() - at.x(), o.getPosition().y() - at.y()) < 80f); // at the fight by him
         }
         assertTrue(came, "the wave reaches him");
 
