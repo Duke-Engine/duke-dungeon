@@ -2112,3 +2112,26 @@ Asked: `showAgain()` puts back only what is still as `hide` left it -- something
 hides the interface for a frame, calls `menu.hide()` between, and the menu stays hidden after `showAgain()`.
 
 Landed: eb51c0fb (2026-10-20). The interface is put away by the gui viewport drawing only the kept nodes; no piece's cull hint is touched. The game moved to it.
+
+## E106 — The engine put in order: the action code in a module of its own, SOLID/DRY/KISS, Java 25 (2026-10-20, large; the owner)
+
+The owner asks for one pass over the whole engine before more is built on it.
+
+1. **Action controls out of the core.** Code written for the action (third-person, WASD) controls is still spread
+   through the engine. All of it moves into its own module, as the WASD parts did on 2026-10-16. The RTS client and the
+   game must build and run with that module absent. A module-boundary test (for example ArchUnit, or a plain test over
+   the imports) fails if the core or the RTS client reaches into it.
+2. **SOLID, DRY, KISS.** Find the classes that do too much (DukeRtsApp, SkillBook, GameLogic, DukeGame and the like),
+   logic repeated across classes, and indirection that buys nothing. Split, merge or delete as each needs. Behaviour
+   stays the same; the existing tests are the check.
+3. **Java 25 throughout.** Where old idioms remain, use what the language now has: records for plain data carriers,
+   sealed interfaces with pattern-matching `switch` over closed hierarchies, switch expressions, `var` where the type is
+   plain from the right-hand side, text blocks, `List.of`/`Stream.toList()`, `Math.clamp`, `SequencedCollection`
+   (`getFirst`/`getLast`), unnamed variables `_`, and the like. No change for its own sake: only where the new form is
+   clearer.
+4. **Public API.** The game uses what it uses today (Duke3D, DukeGame, GameCamera, SkillBook, Visuals and the rest).
+   Any rename or move there is listed in this file with the new name, so the game can follow in one step.
+
+Done when the action module is separate and optional with the boundary test green, the full engine build and tests
+pass, and a short report (in this section) lists what was split, merged, removed and modernised, plus any public API
+the game must follow.
