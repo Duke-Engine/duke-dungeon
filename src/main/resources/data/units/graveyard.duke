@@ -33,7 +33,7 @@ Monster
   Colour = 0x4E4636
   Scale = 1
   Model = models/inuciian/nature/mound.glb
-  ModelScale = 1.4
+  ModelScale = 1.25
   Tint = 0x8A7A90
   Skills = [
     Skill
@@ -61,16 +61,10 @@ Monster
     GrowableBody
       MaxHealth = 460
     End,
-    MoveUpdate
-      Speed = 13
-      TurnRate = 0
-    End,
     WeaponUpdate
       Damage = 20
-      ; It throws fire, like the Revenant it is a bigger cousin of. Further than
-      ; the Revenant reaches, because a boss's room should be a fight from the
-      ; doorway rather than something to be walked up to.
-      AttackRange = 56
+      ; It never walks (no MoveUpdate): it stands among its graves and throws fire from far off.
+      AttackRange = 120
       ReloadFrames = 50
       AttackOnTheMove = No
     End,
@@ -91,7 +85,7 @@ Monster
     End,
     Swing
     End,
-    ; That it has skills: one, never cast -- see its Skill block, below.
+    ; Its spells for the dead it raises -- see its Skill blocks, below.
     SkillBook
     End,
     ; Timers for the statuses it is wearing -- the engine's own, and today that
@@ -109,11 +103,12 @@ Monster
   ]
 
 
-  SenseRadius = 55
-  ChaseRadius = 195
-  ; It throws rather than walks up, so it stops well short -- inside its own
-  ; reach of 56, the way every other thrower down here is.
-  CloseDistance = 46
+  ; It sees as far as it throws, and never comes: stood among its graves, it fights from there.
+  SenseRadius = 130
+  ChaseRadius = 140
+  CloseDistance = 110
+  ; It casts on its dead while he is anywhere it can reach.
+  SkillDistance = [0, 130]
   AlertRadius = 110
   RepathFrames = 8
   SwingFrames = 18
@@ -141,16 +136,47 @@ Monster
   End
   Tint = 0xB89CFF
 
+  ; What it gives the dead it raises, all in the skill system: their blows drink life back (its aura over its
+  ; graves), one of them at a time strikes faster, and a hurt one is mended.
   Skills = [
     Skill
       Key = Q
-      ; A quarter of every blow back, never cast, as every boss has -- see the
-      ; Warden's. Its Bow stands before its Swing and takes every shot, so what it
-      ; throws is drunk where it arrives.
-      Effect = LIFESTEAL
+      Effect = LIFESTEAL_AURA
       BoostPercent = 25
+      Radius = 75
+      Look = BloodAura
+      TickFrames = 30
       MaxRank = 1
-      Name = Qon so'rish
+      Icon = icons/stats/stat_lifesteal.png
+      Blurb = Qabrlari atrofidagi o'liklar har zarbasidan jon qaytarib oladi.
+      Name = "Qon qabri"
+    End,
+    Skill
+      Key = W
+      Effect = HASTE
+      BoostPercent = 60
+      DurationFrames = 150
+      Range = 90
+      CooldownFrames = 210
+      Look = Hasted
+      MaxRank = 1
+      Icon = icons/stats/stat_speed.png
+      Blurb = Bir o'likni bir necha soniya ancha tezroq urdiradi.
+      Name = Shiddat
+    End,
+    Skill
+      Key = E
+      Effect = HEAL
+      Heal = 40
+      HealBelowPercent = 70
+      Range = 100
+      WindUpFrames = 20
+      Projectile = MendingLight
+      CooldownFrames = 150
+      MaxRank = 1
+      Icon = icons/stats/stat_health.png
+      Blurb = Yarador o'likning jonini to'ldiradi.
+      Name = "O'lik nafasi"
     End
   ]
 End

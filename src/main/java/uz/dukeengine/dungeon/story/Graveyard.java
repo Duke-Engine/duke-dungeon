@@ -25,14 +25,17 @@ import java.util.List;
  * @param shieldLook   an Effect played on each grave every {@code shieldFrames} while it is shielded; blank for none
  * @param risesLook    an Effect played where one climbs out
  * @param brokenLook   an Effect played where a grave is struck down
- * @param raiseBeam    a Laser from the raiser's hands to the grave as one climbs out; blank for none
+ * @param raiseBeam    a Laser from the raiser's hands to each grave while it stands, and to the one a body climbs
+ *                     out of; blank for none
+ * @param leash        how far from the graveyard's middle, in cells, its dead go after anybody: past it they turn
+ *                     back to their graves
  */
 public record Graveyard(String name, String map, String zone, String wakes, String gone, String raiser, String grave,
         int graves, float ring, List<String> raises, int everyFrames, int mostStanding, int level, String shieldLook,
-        int shieldFrames, String risesLook, String brokenLook, String raiseBeam) {
+        int shieldFrames, String risesLook, String brokenLook, String raiseBeam, float leash) {
 
     public static final Graveyard DEFAULTS = new Graveyard("", "world", "", "", "", "", "Grave", 3, 2f, List.of(), 150,
-            6, 0, "", 30, "", "", "");
+            6, 0, "", 30, "", "", "", 10f);
 
     public Graveyard {
         raises = raises == null ? List.of() : List.copyOf(raises);

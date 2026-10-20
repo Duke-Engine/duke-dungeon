@@ -222,6 +222,8 @@ PaintedGround
   ; The land shows on the minimap before he has walked it, as in any open-world game:
   ; never seen, its own colour this bright; seen once, whole (E101). 0 is black.
   MinimapUnseen = 0.4
+  ; Never fogged: the capital's streets are open to sight from the act's start (E103).
+  AlwaysSeen = [Poytaxt]
   ; On a wide world (a painted map 256 cells or more) the ground fades into the
   ; fog's colour from HazeFrom cells
   ; round the camera to HazeTo, inside the StreamCells it builds, so its edge is

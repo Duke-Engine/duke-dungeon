@@ -736,13 +736,25 @@ Trigger
       Target = WaveComes
     End,
     Action
-      Act = SPAWN
+      ; The commander draws her sword: she fights beside him through the wave.
+      Act = REMOVE
+      Target = Act1Commander
+    End,
+    Action
+      Act = ALLY
+      Target = Act1CommanderFighter
+      Count = 1
+      Zone = Saf
+    End,
+    Action
+      ; Out of the graves, straight at him.
+      Act = CHARGE
       Target = Skeleton
       Count = 6
       Zone = Dushman_safi
     End,
     Action
-      Act = SPAWN
+      Act = CHARGE
       Target = Runner
       Count = 2
       Zone = Dushman_safi
@@ -768,6 +780,16 @@ Trigger
     Action
       Act = REMOVE
       Target = Militia
+    End,
+    Action
+      ; Her sword away: the commander again, to lead him to the city.
+      Act = REMOVE
+      Target = Act1CommanderFighter
+    End,
+    Action
+      Act = SPAWN
+      Target = Act1Commander
+      Zone = Saf
     End,
     Action
       Act = KILL

@@ -46,8 +46,81 @@ Monster
   End
 End
 
-; The queen in Act 1: STAND-IN look (the KayKit mage tinted violet, as the medallion demo's),
-; until the owner picks her free model.
+; The commander with her sword out: who stands beside him through the first wave (act1.duke, FirstWave), on his
+; side and fighting. She cannot be killed, only brought to one knee (UNYIELDING); the wave beaten, she is the
+; commander again who leads him to the city. Her look is the commander's, a shade apart.
+Monster
+  Name = Act1CommanderFighter
+  DisplayName = "Qo'mondon"
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 4
+    Height = 12
+  End
+  VisionRange = 90
+  Modules = [
+    GrowableBody
+      MaxHealth = 600
+    End,
+    MoveUpdate
+      Speed = 18
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 18
+      AttackRange = 10
+      ReloadFrames = 13
+      PreAttackFrames = 17
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 0
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+  SenseRadius = 90
+  ChaseRadius = 160
+  CloseDistance = 4
+  AlertRadius = 90
+  RepathFrames = 10
+  SwingFrames = 12
+  Idle = Melee_Blocking
+  Attack = Melee_1H_Attack_Chop
+  MinDepth = 99
+  Weight = 0
+  Colour = 0xE8C15B
+  Scale = 1.0
+  Model = models/heroes/ranger.glb
+  Tint = 0xF4DCC4
+  ModelScale = 5.5
+  Facing = 90
+  Animations = Humanoid
+  Walk = Running_A
+  WalkStride = 14.83
+  UpperBody = spine
+  Held = Held
+    Model = models/weapons/medieval/sword.glb
+    Bone = handslot.r
+  End
+  Skills = [
+    Skill
+      Key = Q
+      Effect = UNYIELDING
+      HealBelowPercent = 30
+      MaxRank = 1
+      Name = "Yiqiladi, o'lmaydi"
+    End
+  ]
+End
+
+; The queen in Act 1: the licensed queen where it is shipped (below), the KayKit mage tinted violet where not.
 Monster
   Name = Act1Queen
   DisplayName = Malika
@@ -75,6 +148,20 @@ Monster
   ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
   WalkStride = 3.58
   UpperBody = spine
+  ; The same look as Act 2's Queen (data/units/queen.duke) where the licensed model is shipped.
+  Licensed = MonsterLook
+    Model = models/licensed/queen.glb
+    ModelScale = 7.06
+    ; A shade warmer than Act 2's, the years before her turning: no two kinds are drawn alike.
+    Tint = 0xFFF4E8
+    Facing = 90
+    Idle = Idle
+    Walk = Walk
+    Attack = Attack
+    Death = Death
+    WalkStride = 7.15
+    UpperBody = spine
+  End
 End
 
 ; Two townsfolk of the capital who ask small things of him (the side quests). STAND-IN names and looks.

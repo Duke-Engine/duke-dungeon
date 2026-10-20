@@ -98,7 +98,9 @@ public record Action(Act act, String target, int count, String zone, int frames,
         /** What a HOLD holds, let go. */
         RELEASE,
         /** The sound cue the Target names, heard at the zone's middle: the meteor's boom. */
-        SOUND
+        SOUND,
+        /** {@code Count} of a Monster at the zone, sent straight at the nearest hero: a wave that comes for him. */
+        CHARGE
     }
 
     public static final Action DEFAULTS = new Action(null, "", 1, "", 30, 0f, "", "", "", "", 0f, 0f);

@@ -199,6 +199,28 @@ class Act1Test {
         assertTrue(session.run().getScript().flagged("BattleWon"), "the wave beaten");
     }
 
+    /** Through the first wave the commander fights beside him, on his side; the wave beaten, she leads him on. */
+    @Test
+    void theCommanderFightsTheFirstWaveBesideHim() {
+        var session = newGame();
+        var game = session.game();
+        playUntilFlag(session, "HeroLanded", 1200);
+        for (int i = 0; i < 1200 && session.run().getQuests().active().stream()
+                .noneMatch(q -> q.quest().equals("FirstWave")); i++) {
+            play(session, 1);
+        }
+        play(session, 3);
+        var fighter = all(game, "Act1CommanderFighter");
+        assertEquals(1, fighter.size(), "her sword out");
+        assertEquals(hero(session).getPlayerIndex(), fighter.getFirst().getPlayerIndex(), "on his side");
+        assertTrue(all(game, "Act1Commander").isEmpty(), "not the commander who only talks");
+
+        throughTheWave(session);
+        play(session, 3);
+        assertTrue(all(game, "Act1CommanderFighter").isEmpty(), "her sword away");
+        assertEquals(1, all(game, "Act1Commander").size(), "the commander again, to lead him");
+    }
+
     /** Played on until {@code flag} is set, at most {@code frames}. */
     static void playUntilFlag(Dungeon.Session session, String flag, int frames) {
         for (int i = 0; i < frames && !session.run().getScript().flagged(flag); i++) {

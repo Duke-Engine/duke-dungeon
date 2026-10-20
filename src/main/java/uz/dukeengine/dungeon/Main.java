@@ -536,6 +536,15 @@ public final class Main {
         visuals.streamGround(settings.paintedGround().streamCells(),
                 map -> map instanceof uz.dukeengine.core.map.Painted painted
                         && painted.palette() != null && !painted.palette().isEmpty());
+        // Open to sight besides his eyes (E103): what a cutscene's camera is brought to, and the capital.
+        visuals.alsoSeen(() -> {
+            var match = DialogueScreen.match();
+            if (match == null) {
+                return java.util.List.of();
+            }
+            return match.run().seenPlaces().stream()
+                    .map(place -> new uz.dukeengine.client3d.Visuals.Seen(place[0], place[1], place[2])).toList();
+        });
         // Both held rather than passed straight in, because the question below
         // reaches back into both: whose eyes open the map, what his four keys ask
         // the player to point at, and how far each of them reaches are all part of

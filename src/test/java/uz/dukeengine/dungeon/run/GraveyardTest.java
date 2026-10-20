@@ -91,6 +91,50 @@ class GraveyardTest {
     }
 
     @Test
+    void theRaiserStandsAmongItsGravesAndThrowsFromFarOff() {
+        var session = woken();
+        var raiser = all(session, "GraveRaiser").getFirst();
+        var stood = raiser.getPosition();
+        var hero = hero(session);
+        // In its reach but well off it: it throws from where it stands, and never comes.
+        hero.setPosition(new Coord3D(stood.x() + 100f, stood.y(), hero.getPosition().z()));
+        for (int i = 0; i < 200; i++) {
+            session.game().runHeadless(1);
+            hero.getBody().setHealth(hero.getBody().getMaxHealth());
+        }
+        assertEquals(stood.x(), raiser.getPosition().x(), 0.01f, "it never walked");
+        assertEquals(stood.y(), raiser.getPosition().y(), 0.01f);
+    }
+
+    @Test
+    void itsDeadKeepToTheirGravesAndDoNotChaseHimAway() {
+        var session = woken();
+        var every = SETTINGS.graveyards().getFirst().everyFrames();
+        float cell = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
+        float leash = SETTINGS.graveyards().getFirst().leash() * cell;
+        var hero = hero(session);
+        // He comes up to them, then runs far off: they follow no further than their leash.
+        hero.setPosition(new Coord3D(GRAVES.middleX(cell) + leash * 0.6f, GRAVES.middleY(cell), hero.getPosition().z()));
+        for (int i = 0; i < every * 2 + 60; i++) {
+            session.game().runHeadless(1);
+            hero.getBody().setHealth(hero.getBody().getMaxHealth());
+        }
+        hero.setPosition(new Coord3D(GRAVES.middleX(cell) + leash * 4f, GRAVES.middleY(cell), hero.getPosition().z()));
+        for (int i = 0; i < 400; i++) {
+            session.game().runHeadless(1);
+            hero.getBody().setHealth(hero.getBody().getMaxHealth());
+        }
+        var risen = session.game().getLogic().getObjects().stream()
+                .filter(o -> o.findModule(uz.dukeengine.dungeon.ai.Leash.class) != null && !o.isEffectivelyDead())
+                .toList();
+        assertTrue(!risen.isEmpty(), "some of the dead stand");
+        for (var one : risen) {
+            assertTrue(Math.hypot(one.getPosition().x() - GRAVES.middleX(cell), one.getPosition().y() - GRAVES.middleY(cell))
+                    <= leash + 20f, "back at its graves, not after him: " + one.getPosition());
+        }
+    }
+
+    @Test
     void whileTheRaiserStandsNothingAGraveTakesHolds() {
         var session = woken();
         var grave = all(session, "Grave").getFirst();

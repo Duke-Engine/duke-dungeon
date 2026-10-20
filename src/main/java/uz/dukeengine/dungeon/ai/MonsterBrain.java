@@ -147,6 +147,18 @@ public final class MonsterBrain extends UnitScript {
             }
             return;
         }
+        if (offTheLeash(unit().getPosition())) {
+            // Strayed past its place: back to it, whatever it was after.
+            if (chasing) {
+                giveUp();
+            }
+            wounded = false;
+            var legs = unit().findModule(MoveUpdate.class);
+            if (legs != null && !legs.isMoving()) {
+                legs.moveTo(unit().findModule(Leash.class).home());
+            }
+            return;
+        }
         // Once roused, it keeps looking further than it first noticed — and once
         // hurt, it stops looking and simply comes.
         float reachOut = wounded ? THE_WHOLE_FLOOR
@@ -418,11 +430,18 @@ public final class MonsterBrain extends UnitScript {
      * so a monster inside does not learn who came or gather at the gate, and one outside is not drawn in. The same
      * search and tie-break as {@code findNearestEnemy}, with the seal added to what a candidate must pass.
      */
+    /** Whether {@code at} is past the place it is kept to (a Leash on it), if it is kept to one. */
+    private boolean offTheLeash(uz.dukeengine.core.math.Coord3D at) {
+        var leash = unit().findModule(Leash.class);
+        return leash != null && leash.beyond(at);
+    }
+
     private GameObject nearestEnemy(float range) {
         return world().findClosest(unit().getPosition(), range, candidate ->
                 candidate != unit()
                         && candidate.getBody() != null
                         && !candidate.isEffectivelyDead()
+                        && !offTheLeash(candidate.getPosition())
                         && world().getRelationship(unit().getPlayerIndex(), candidate.getPlayerIndex())
                                 == Relationship.ENEMIES
                         && !seal.parts(world(), unit().getPosition(), candidate.getPosition()));

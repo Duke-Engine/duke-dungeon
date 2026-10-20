@@ -1676,19 +1676,10 @@ public final class WorldMapWriter {
             // The field: banner posts by the line.
             pieces.add(new Piece(KITS + "town/town_banner_post.gltf", fx - 5.5f, fy + 8.5f, 0, 1f, 0xFFFFFF, 0f));
             pieces.add(new Piece(KITS + "town/town_banner_post.gltf", fx + 6.5f, fy + 8.5f, 0, 1f, 0xFFFFFF, 0f));
-            // The old graves: three rows of mounds, a sword leaning at each head, a dead tree, candles, stumps.
+            // The old graves: a dead tree, candles, stumps. The graves themselves are the graveyard's own, which can be
+            // struck down (data/story/graveyards.duke): mounds drawn here as well stood about as a picture of graves.
             float gx = graves[0] + 0.5f;
             float gy = graves[1] + 0.5f;
-            for (int row = 0; row < 3; row++) {
-                for (int col = 0; col < 3; col++) {
-                    float mx = gx - 3f + col * 3f;
-                    float my = gy - 2.5f + row * 2.5f;
-                    pieces.add(new Piece(INUCIIAN + "nature/mound.glb", mx, my, (row * 3 + col) * 23 % 30, 1f,
-                            0xFFFFFF, 0f));
-                    pieces.add(new Piece(KITS + "room/room_sword_leaning.gltf", mx, my - 0.8f, 90, 1f, 0xB0A898,
-                            0f));
-                }
-            }
             pieces.add(yardPiece("nature/dead_tree_bent", gx + 5.2f, gy - 3.6f, 200, 0f));
             pieces.add(yardPiece("props/candles", gx - 4.6f, gy + 0.4f, 0, 0f));
             pieces.add(Piece.of(KITS + "room/room_column_stump.gltf " + (gx + 4.4f) + " " + (gy + 3.4f) + " 0 1 0"));
@@ -1737,20 +1728,10 @@ public final class WorldMapWriter {
             quiet.add(at);
         }
 
-        /** A graveyard of the wilds at {@code at}: rows of mounds with a sword at each head, a dead tree, and its zone. */
+        /** A graveyard of the wilds at {@code at}: a dead tree and its zone; its graves are the graveyard's own. */
         private void graveyard(List<Piece> pieces, List<Zone> zones, String name, int[] at) {
             float gx = at[0] + 0.5f;
             float gy = at[1] + 0.5f;
-            for (int row = 0; row < 2; row++) {
-                for (int col = 0; col < 3; col++) {
-                    float mx = gx - 3f + col * 3f;
-                    float my = gy - 1.2f + row * 2.5f;
-                    pieces.add(new Piece(INUCIIAN + "nature/mound.glb", mx, my, (row * 3 + col) * 23 % 30, 1f,
-                            0xFFFFFF, 0f));
-                    pieces.add(new Piece(KITS + "room/room_sword_leaning.gltf", mx, my - 0.8f, 90, 1f, 0xB0A898,
-                            0f));
-                }
-            }
             pieces.add(yardPiece("nature/dead_tree_bent", gx + 5.2f, gy - 3.6f, 200, 0f));
             zones.add(new Zone(name, at[0], at[1], 0, 0, 6));
             keep(at[0], at[1], 7);

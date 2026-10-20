@@ -51,6 +51,8 @@ final class Graveyards {
     private static final class Laid {
         final Graveyard yard;
         ObjectId raiser;
+        /** The graveyard's middle, where the raiser stands and its dead are kept to. */
+        Coord3D middle;
         final List<ObjectId> graves = new ArrayList<>();
         final List<ObjectId> standing = new ArrayList<>();
         int raised;
@@ -100,6 +102,7 @@ final class Graveyards {
             Spawner.scale(raiser, level, settings);
             run.pays(raiser, level);
             one.raiser = raiser.getId();
+            one.middle = raiser.getPosition();
             for (int i = 0; i < yard.graves(); i++) {
                 double around = 2 * Math.PI * i / Math.max(1, yard.graves());
                 float gx = mx + (float) Math.cos(around) * yard.ring() * cell;
@@ -133,6 +136,13 @@ final class Graveyards {
                     body.setHealth(body.getMaxHealth());
                     if (!yard.shieldLook().isBlank() && frame % Math.max(1, yard.shieldFrames()) == 0) {
                         logic.effect(yard.shieldLook(), grave);
+                        if (!yard.raiseBeam().isBlank()) {
+                            // Its spell on the grave, a line from its hands held while it stands.
+                            var from = raiser.getPosition();
+                            var to = grave.getPosition();
+                            run.beam(yard.raiseBeam(), new Coord3D(from.x(), from.y(), from.z() + Battles.HANDS),
+                                    new Coord3D(to.x(), to.y(), to.z() + 2f), Math.max(1, yard.shieldFrames()) + 2);
+                        }
                     }
                     graves.add(grave);
                 } else if (body.getHealth() <= body.getMaxHealth() * 0.02f) {
@@ -192,6 +202,10 @@ final class Graveyards {
         }
         one.raised++;
         one.standing.add(risen.getId());
+        if (one.middle != null) { // it keeps to its graves: past them it turns back
+            risen.addModule(new uz.dukeengine.dungeon.ai.Leash(risen, one.middle,
+                    yard.leash() * uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE));
+        }
         if (!yard.risesLook().isBlank()) {
             logic.effect(yard.risesLook(), risen.getPosition(), 0f);
         }

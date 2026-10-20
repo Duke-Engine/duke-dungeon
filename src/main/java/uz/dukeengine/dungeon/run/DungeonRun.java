@@ -1799,6 +1799,33 @@ public final class DungeonRun {
             case SAY -> quests.play(what);
             case START_QUEST -> quests.start(what);
             case FINISH_QUEST -> quests.finishNow(what);
+            case CHARGE -> {
+                var zone = zoneNamed(action.zone());
+                var template = logic.getThingFactory().findTemplate(what);
+                if (zone == null || template == null) {
+                    return;
+                }
+                var cells = zone.cells();
+                for (int i = 0; i < action.count(); i++) {
+                    var cell = cells.get(i % cells.size());
+                    var placed = new uz.dukeengine.dungeon.map.StaticMap.Placed(what, cell[0], cell[1]);
+                    var spawned = logic.spawn(template, ground(logic, placed), dungeonPlayer.getIndex());
+                    Spawner.scale(spawned, settings.beforeBossLevel(depth), settings);
+                    spawned.addModule(new Bounty(spawned, settings.beforeBossLevel(depth), this::pay));
+                    GameObject nearest = null;
+                    for (var seat : seats) {
+                        var hero = seat.heroId == null ? null : logic.findObject(seat.heroId);
+                        if (hero != null && !hero.isEffectivelyDead() && (nearest == null
+                                || spawned.getPosition().distance(hero.getPosition()) < spawned.getPosition().distance(nearest.getPosition()))) {
+                            nearest = hero;
+                        }
+                    }
+                    var legs = spawned.getLocomotor();
+                    if (nearest != null && legs != null) {
+                        legs.moveTo(nearest.getPosition()); // it comes for him: its brain takes over in sight of him
+                    }
+                }
+            }
             case SPAWN -> {
                 var zone = zoneNamed(action.zone());
                 var template = logic.getThingFactory().findTemplate(what);
@@ -2298,6 +2325,9 @@ public final class DungeonRun {
             } else if (zone != null) {
                 float cell = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
                 camera.moveTo(zone.middleX(cell), zone.middleY(cell), shot.frames(), shot.ease());
+                // What the camera is brought to see is open to sight while it looks (E103).
+                shotSeen = new float[] {zone.middleX(cell), zone.middleY(cell),
+                        (Math.max(zone.radius(), Math.max(zone.width(), zone.height()) / 2f) + 6f) * cell};
             }
             // Turned, tilted and drawn in or back over the same frames, eased (E41); after the move, which stops a turn.
             if (!Float.isNaN(shot.turn())) {
@@ -2353,6 +2383,7 @@ public final class DungeonRun {
         if (cutscene == null) {
             return;
         }
+        shotSeen = null;
         cutscene = null;
         inCutscene = false;
         game.camera().release();
@@ -3381,6 +3412,39 @@ public final class DungeonRun {
                 thing.addModule(new uz.dukeengine.rpg.hero.LevelBonus(thing, level, share, 1f));
             }
         }
+    }
+
+    /** Where the cutscene's camera has been brought to look, opened to sight while it plays; null for nowhere. */
+    private volatile float[] shotSeen;
+
+    /**
+     * What the fog is opened over besides the heroes' eyes (E103), as circles {x, y, radius} in world units -- from any
+     * thread: the place a cutscene shows, and the zones the ground never fogs (PaintedGround's AlwaysSeen), each covered
+     * by small circles so a wall in it does not cut the rest off.
+     */
+    public List<float[]> seenPlaces() {
+        var out = new ArrayList<float[]>();
+        var shot = shotSeen;
+        if (shot != null) {
+            out.add(shot);
+        }
+        float cell = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
+        for (var name : settings.paintedGround().alwaysSeen()) {
+            var zone = zoneNamed(name);
+            if (zone == null) {
+                continue;
+            }
+            if (zone.width() > 0 && zone.height() > 0) {
+                for (int y = zone.y(); y <= zone.y() + zone.height(); y += 5) {
+                    for (int x = zone.x(); x <= zone.x() + zone.width(); x += 5) {
+                        out.add(new float[] {(x + 0.5f) * cell, (y + 0.5f) * cell, 5f * cell});
+                    }
+                }
+            } else {
+                out.add(new float[] {zone.middleX(cell), zone.middleY(cell), (zone.radius() + 1f) * cell});
+            }
+        }
+        return out;
     }
 
     /** The caves of the open world: see Caves. */
