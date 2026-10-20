@@ -2073,3 +2073,17 @@ Asked: find why the route leads into a place the body cannot leave (a cliff edge
 route promised, or a level step). Either the route does not go there, or the walker detects being still while moving
 and re-plans or slides free. Done when an engine test of a walker at that kind of place gets out, and the game's walk
 test passes.
+
+## E103 — Places the game opens to sight, besides the hero's eyes (2026-10-20, small; open world)
+
+Discovery opens the fog only round the units of the eyes' template (`Visuals.getDiscoveryTemplate`). Two things the
+owner needs cannot be said with that:
+- **A cutscene's shots.** The camera eases to the palace or the graves to show them, and the place is under the fog:
+  the player watches black.
+- **The capital, always open.** Its streets should never be fogged once the act has begun.
+
+Asked: `Visuals.alsoSeen(Supplier<List<Seen>>)`, `record Seen(float x, float y, float radius)` in world units, read
+every frame the fog is worked. Each circle is opened as a unit's eyes open one: visible while it is listed, and
+remembered after. Blocked sight (`blockSight`) can be ignored for these. An empty list, or none set, works as now.
+Done when a client test lists a circle far from every unit and its cells come out visible, and once it is no longer
+listed they are remembered.
