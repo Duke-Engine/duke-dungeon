@@ -1,6 +1,7 @@
 package uz.dukeengine.dungeon;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -76,14 +77,14 @@ class FightOnlyWhenToldTest {
         assertTrue(session.orders().fightsOnlyWhenTold(game.getLocalPlayerIndex()));
     }
 
-    /** The client says it as his hero is chosen -- on the menu, before the match runs. */
+    /** Chosen, his hero fights by himself, the RTS way (the owner, 2026-10-20): the client no longer says it. */
     @Test
-    void choosingHisHeroSaysIt() {
+    void choosingHisHeroLeavesHimFightingByHimself() {
         var settings = DungeonSettings.load();
         var session = Dungeon.newSession(7L, settings);
         Main.heroChosen(session, settings, Main.looks(settings), Main.controls(settings), settings.run().defaultHero());
         session.game().runHeadless(4);
-        assertTrue(session.orders().fightsOnlyWhenTold(session.game().getLocalPlayerIndex()));
+        assertFalse(session.orders().fightsOnlyWhenTold(session.game().getLocalPlayerIndex()));
     }
 
     @Test

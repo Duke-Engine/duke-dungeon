@@ -65,6 +65,11 @@ Graveyard
   RisesLook = GraveRises
   BrokenLook = GraveBroken
   RaiseBeam = RaiseBeam
+  ; Its graves all down and left unhurt three seconds, it casts seven and raises them all again.
+  CalmFrames = 90
+  RestoreFrames = 210
+  RestoreClip = Ranged_Magic_Spellcasting_Long
+  RestoreLook = GraveRises
 End
 
 Graveyard
@@ -84,6 +89,11 @@ Graveyard
   RisesLook = GraveRises
   BrokenLook = GraveBroken
   RaiseBeam = RaiseBeam
+  ; Its graves all down and left unhurt three seconds, it casts seven and raises them all again.
+  CalmFrames = 90
+  RestoreFrames = 210
+  RestoreClip = Ranged_Magic_Spellcasting_Long
+  RestoreLook = GraveRises
 End
 
 Graveyard
@@ -103,6 +113,11 @@ Graveyard
   RisesLook = GraveRises
   BrokenLook = GraveBroken
   RaiseBeam = RaiseBeam
+  ; Its graves all down and left unhurt three seconds, it casts seven and raises them all again.
+  CalmFrames = 90
+  RestoreFrames = 210
+  RestoreClip = Ranged_Magic_Spellcasting_Long
+  RestoreLook = GraveRises
 End
 
 Graveyard
@@ -122,4 +137,9 @@ Graveyard
   RisesLook = GraveRises
   BrokenLook = GraveBroken
   RaiseBeam = RaiseBeam
+  ; Its graves all down and left unhurt three seconds, it casts seven and raises them all again.
+  CalmFrames = 90
+  RestoreFrames = 210
+  RestoreClip = Ranged_Magic_Spellcasting_Long
+  RestoreLook = GraveRises
 End

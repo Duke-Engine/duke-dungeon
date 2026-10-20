@@ -141,20 +141,28 @@ class Act1Test {
         assertTrue(run.getQuests().active().stream().anyMatch(q -> q.quest().equals("Training")));
         assertFalse(all(game, "Merchant").isEmpty(), "the merchant is on the plaza");
 
-        // 3. The old graves: the soldiers come up, the raiser falls, each grave is struck down; he goes on alone.
+        // 3. The old graves: the commander and the queen's people come up, each grave is struck down, then the raiser
+        // they kept whole; he goes on alone.
         standIn(session, "Eski_qabrlar");
         play(session, 5);
-        assertEquals(4, all(game, "Soldier").size(), "the queen's soldiers come up");
-        strike(session, "GraveRaiser");
-        play(session, 5);
+        assertEquals(1, all(game, "Act1CommanderFighter").size(), "the commander fights beside him");
+        assertEquals(3, all(game, "Soldier").size(), "the queen's soldiers come up");
+        assertEquals(2, all(game, "KingdomArcher").size(), "her archers");
+        assertEquals(1, all(game, "KingdomHealer").size(), "and a healer");
         for (var grave : all(game, "Grave")) {
-            grave.getBody().setHealth(1f); // beaten: struck down now its raiser is gone
+            grave.getBody().setHealth(1f); // beaten: its UNYIELDING keeps it from falling by the blow
             play(session, 3);
+        }
+        assertTrue(all(game, "Grave").isEmpty(), "every grave struck down");
+        if (!all(game, "GraveRaiser").isEmpty()) { // his people may have had it already
+            strike(session, "GraveRaiser");
         }
         play(session, 5);
         assertTrue(script.flagged("Trained"), "the graves gone");
         assertTrue(script.flagged("WarBegun"), "and he goes on alone, the commander back to the city");
         assertTrue(all(game, "Soldier").isEmpty(), "her soldiers with her");
+        assertTrue(all(game, "KingdomArcher").isEmpty() && all(game, "KingdomHealer").isEmpty());
+        assertEquals(1, all(game, "Act1Commander").size(), "she walks back to the city herself");
         assertTrue(run.getQuests().active().stream().anyMatch(q -> q.quest().equals("ToWar")));
         assertEquals("world", run.getStageName(), "all of it on the world");
 
@@ -214,11 +222,15 @@ class Act1Test {
         assertEquals(1, fighter.size(), "her sword out");
         assertEquals(hero(session).getPlayerIndex(), fighter.getFirst().getPlayerIndex(), "on his side");
         assertTrue(all(game, "Act1Commander").isEmpty(), "not the commander who only talks");
+        var stood = new java.util.concurrent.atomic.AtomicReference<>(fighter.getFirst().getPosition());
 
         throughTheWave(session);
         play(session, 3);
         assertTrue(all(game, "Act1CommanderFighter").isEmpty(), "her sword away");
         assertEquals(1, all(game, "Act1Commander").size(), "the commander again, to lead him");
+        var her = all(game, "Act1Commander").getFirst().getPosition();
+        assertTrue(Math.hypot(her.x() - stood.get().x(), her.y() - stood.get().y()) < 200f,
+                "where she fought, not somewhere else: " + her);
     }
 
     /** Played on until {@code flag} is set, at most {@code frames}. */

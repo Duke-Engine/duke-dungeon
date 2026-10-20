@@ -1007,16 +1007,9 @@ public final class Main {
         // chair is a skill that does nothing at all.
         aimsFor(keys, settings, him);
         ringsFor(visuals, settings, him);
-        // Said to every machine: his hero fights only when told -- an attack order, an attack-move -- and picks no
-        // fight of his own (the owner's choice; his weapon acquires nothing, E87).
-        java.util.function.Consumer<uz.dukeengine.game.DukeGame> tell = game -> game.postCommand(PartyOrders.of(
-                new uz.dukeengine.dungeon.ai.FightOnlyWhenTold(game.getLocalPlayerIndex(), true)));
-        // Chosen on the menu, before the match runs: said as it starts; chosen in a running one: now.
-        if (session.game().getLogic() == null) {
-            session.game().onStart(tell);
-        } else {
-            tell.accept(session.game());
-        }
+        // His hero fights by himself again, the RTS way -- an enemy in reach is struck without an order (the owner,
+        // 2026-10-20: the fight-only-when-told of the action controls is gone with them). FightOnlyWhenTold stays an
+        // order for whoever wants it.
         attackRingFor(visuals, session.game(), him);
     }
 

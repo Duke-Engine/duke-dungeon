@@ -2,9 +2,9 @@ package uz.dukeengine.dungeon.run;
 
 import java.util.ArrayList;
 import java.util.List;
+import uz.dukeengine.combat.module.ExperienceModule;
 import uz.dukeengine.core.GameLogic;
 import uz.dukeengine.core.math.Coord3D;
-import uz.dukeengine.combat.module.ExperienceModule;
 import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.core.thing.ObjectId;
 import uz.dukeengine.dungeon.content.DungeonSettings;
@@ -12,12 +12,13 @@ import uz.dukeengine.dungeon.map.StaticMap;
 import uz.dukeengine.dungeon.story.Graveyard;
 
 /**
- * The graveyards of the map being played, as their {@link Graveyard} blocks say: laid with the map, raising their dead
- * on a beat, shielded while their raisers stand, struck down a grave at a time once they fall, and gone for good when
- * the last grave is. See docs/plan/2026-10-19-open-world-act1.md.
+ * The graveyards of the map being played, as their {@link Graveyard} blocks say -- an ender dragon's crystals (the owner,
+ * 2026-10-20): the raiser stands among its graves and nothing it takes holds while one of them stands; the dead climb
+ * out of them on a beat; each grave is struck down on its own; the last down, the raiser can be killed, and left a while
+ * unhurt it casts and raises them all again. Laid with the map, dormant -- seen, but raising nothing and taking nothing
+ * -- until its RaisesAfter flag. See docs/plan/2026-10-19-open-world-act1.md.
  *
- * <p>Nothing here is saved but the flag a graveyard sets as it goes: a load lays one again whole, raiser and all, if it
- * is not gone.
+ * <p>Nothing here is saved but the flag a graveyard sets as it goes: a load lays one again whole, if it is not gone.
  */
 final class Graveyards {
 
@@ -53,11 +54,19 @@ final class Graveyards {
         ObjectId raiser;
         /** The graveyard's middle, where the raiser stands and its dead are kept to. */
         Coord3D middle;
+        /** Where each grave stands, standing or struck down: where it is raised again. */
+        final List<Coord3D> places = new ArrayList<>();
+        /** The grave standing at each place, or null where it is down. */
         final List<ObjectId> graves = new ArrayList<>();
         final List<ObjectId> standing = new ArrayList<>();
         int raised;
         int next;
         int nextGrave;
+        /** The raiser's health when last looked, to tell a blow; and the frame it was last struck. */
+        float health = -1f;
+        int struckAt;
+        /** The frame it began raising its graves again; 0 while it is not. */
+        int restoring;
 
         Laid(Graveyard yard) {
             this.yard = yard;
@@ -89,8 +98,7 @@ final class Graveyards {
             }
             var zone = run.zone(yard.zone());
             var raiserKind = logic.findTemplate(yard.raiser());
-            var graveKind = logic.findTemplate(yard.grave());
-            if (zone == null || raiserKind == null || graveKind == null) {
+            if (zone == null || raiserKind == null || logic.findTemplate(yard.grave()) == null) {
                 continue;
             }
             var one = new Laid(yard);
@@ -105,45 +113,43 @@ final class Graveyards {
             one.middle = raiser.getPosition();
             for (int i = 0; i < yard.graves(); i++) {
                 double around = 2 * Math.PI * i / Math.max(1, yard.graves());
-                float gx = mx + (float) Math.cos(around) * yard.ring() * cell;
-                float gy = my + (float) Math.sin(around) * yard.ring() * cell;
-                var grave = logic.spawn(graveKind, ground(logic, gx, gy), run.side());
-                one.graves.add(grave.getId());
+                one.places.add(ground(logic, mx + (float) Math.cos(around) * yard.ring() * cell,
+                        my + (float) Math.sin(around) * yard.ring() * cell));
+                one.graves.add(raise(logic, run, yard, one.places.getLast()).getId());
             }
             one.next = logic.getFrame() + yard.everyFrames();
             laid.add(one);
         }
     }
 
-    /** A frame of every graveyard laid: shielded, raising, struck down, gone. */
+    /** A frame of every graveyard laid: dormant, or keeping its raiser, raising, struck down, raised again, gone. */
     void update(GameLogic logic, Run run) {
         int frame = logic.getFrame();
         for (var each = laid.iterator(); each.hasNext(); ) {
             var one = each.next();
             var yard = one.yard;
             var raiser = logic.findObject(one.raiser);
-            boolean shielded = raiser != null && !raiser.isEffectivelyDead();
+            if (raiser == null || raiser.isEffectivelyDead()) {
+                run.flag(yard.goneFlag()); // the raiser dead: the graveyard is gone
+                each.remove();
+                continue;
+            }
+            boolean awake = yard.raisesAfter().isBlank() || run.flagged(yard.raisesAfter());
             var graves = new ArrayList<GameObject>();
-            for (var id : List.copyOf(one.graves)) {
-                var grave = logic.findObject(id);
+            for (int i = 0; i < one.graves.size(); i++) {
+                var id = one.graves.get(i);
+                var grave = id == null ? null : logic.findObject(id);
                 if (grave == null || grave.getBody() == null) {
-                    one.graves.remove(id);
+                    one.graves.set(i, null);
                     continue;
                 }
                 var body = grave.getBody();
-                if (shielded) {
-                    // Nothing it takes holds while its raiser stands before it.
-                    body.setHealth(body.getMaxHealth());
-                    if (!yard.shieldLook().isBlank() && frame % Math.max(1, yard.shieldFrames()) == 0) {
-                        logic.effect(yard.shieldLook(), grave);
-                        if (!yard.raiseBeam().isBlank()) {
-                            // Its spell on the grave, a line from its hands held while it stands.
-                            var from = raiser.getPosition();
-                            var to = grave.getPosition();
-                            run.beam(yard.raiseBeam(), new Coord3D(from.x(), from.y(), from.z() + Battles.HANDS),
-                                    new Coord3D(to.x(), to.y(), to.z() + 2f), Math.max(1, yard.shieldFrames()) + 2);
-                        }
-                    }
+                var place = one.places.get(i);
+                if (grave.getPosition().x() != place.x() || grave.getPosition().y() != place.y()) {
+                    grave.setPosition(place); // a building: a pull or a push moves it nowhere (the owner, 2026-10-20)
+                }
+                if (!awake) {
+                    body.setHealth(body.getMaxHealth()); // dormant: nothing of it is hurt
                     graves.add(grave);
                 } else if (body.getHealth() <= body.getMaxHealth() * 0.02f) {
                     // Beaten (its UNYIELDING keeps it from dying by a blow): the game strikes it down.
@@ -152,32 +158,94 @@ final class Graveyards {
                     }
                     run.struck(grave);
                     grave.markDestroyed();
-                    one.graves.remove(id);
+                    one.graves.set(i, null);
                 } else {
                     graves.add(grave);
                 }
             }
-            if (graves.isEmpty()) {
-                if (!shielded) {
-                    run.flag(yard.goneFlag());
-                    each.remove();
+            var raiserBody = raiser.getBody();
+            if (!awake || !graves.isEmpty()) {
+                // Kept whole by its graves: nothing it takes holds while one of them stands.
+                raiserBody.setHealth(raiserBody.getMaxHealth());
+                one.health = raiserBody.getMaxHealth();
+                one.restoring = 0;
+                one.struckAt = frame;
+                if (awake && frame % Math.max(1, yard.shieldFrames()) == 0) { // dormant, it stands quiet
+                    if (!yard.shieldLook().isBlank()) {
+                        logic.effect(yard.shieldLook(), raiser);
+                    }
+                    if (!yard.raiseBeam().isBlank()) {
+                        var from = raiser.getPosition();
+                        for (var grave : graves) {
+                            var to = grave.getPosition();
+                            run.beam(yard.raiseBeam(), new Coord3D(from.x(), from.y(), from.z() + Battles.HANDS),
+                                    new Coord3D(to.x(), to.y(), to.z() + 2f), Math.max(1, yard.shieldFrames()) + 2);
+                        }
+                    }
                 }
+            } else {
+                restore(logic, run, one, raiser, frame);
+            }
+            if (!awake) {
                 continue;
             }
             one.standing.removeIf(id -> {
                 var risen = logic.findObject(id);
                 return risen == null || risen.isEffectivelyDead();
             });
-            if (frame >= one.next && one.standing.size() < yard.mostStanding() && !yard.raises().isEmpty()) {
+            if (!graves.isEmpty() && frame >= one.next && one.standing.size() < yard.mostStanding()
+                    && !yard.raises().isEmpty()) {
                 one.next = frame + yard.everyFrames();
                 var grave = graves.get(one.nextGrave++ % graves.size());
-                rise(logic, run, one, grave, raiser, shielded);
+                rise(logic, run, one, grave, raiser);
             }
         }
     }
 
+    /**
+     * Its graves all down: the raiser can be hurt. Left unhurt for CalmFrames it begins to raise them again, its clip
+     * playing; struck in it, it begins again; through RestoreFrames of it, every grave stands again where it stood.
+     */
+    private void restore(GameLogic logic, Run run, Laid one, GameObject raiser, int frame) {
+        var yard = one.yard;
+        float health = raiser.getBody().getHealth();
+        if (one.health >= 0f && health < one.health - 0.01f) {
+            one.struckAt = frame;
+            one.restoring = 0; // struck in it: the spell broken
+        }
+        one.health = health;
+        if (one.restoring == 0) {
+            if (frame - one.struckAt >= yard.calmFrames()) {
+                one.restoring = frame;
+                if (!yard.restoreClip().isBlank()) {
+                    raiser.busy(yard.restoreClip(), yard.restoreFrames());
+                }
+            }
+            return;
+        }
+        if (!yard.restoreLook().isBlank() && (frame - one.restoring) % 30 == 0) {
+            logic.effect(yard.restoreLook(), raiser);
+        }
+        if (frame - one.restoring >= yard.restoreFrames()) {
+            for (int i = 0; i < one.places.size(); i++) {
+                if (one.graves.get(i) == null) {
+                    one.graves.set(i, raise(logic, run, yard, one.places.get(i)).getId());
+                    if (!yard.risesLook().isBlank()) {
+                        logic.effect(yard.risesLook(), one.places.get(i), 0f);
+                    }
+                }
+            }
+            one.restoring = 0;
+            one.struckAt = frame;
+        }
+    }
+
+    private static GameObject raise(GameLogic logic, Run run, Graveyard yard, Coord3D place) {
+        return logic.spawn(logic.findTemplate(yard.grave()), place, run.side());
+    }
+
     /** One of the dead climbs out of {@code grave}: paying while the graveyard has paid fewer than it may, changed after. */
-    private void rise(GameLogic logic, Run run, Laid one, GameObject grave, GameObject raiser, boolean raiserStands) {
+    private void rise(GameLogic logic, Run run, Laid one, GameObject grave, GameObject raiser) {
         var yard = one.yard;
         var kind = logic.findTemplate(yard.raises().get(one.raised % yard.raises().size()));
         if (kind == null) {
@@ -209,7 +277,7 @@ final class Graveyards {
         if (!yard.risesLook().isBlank()) {
             logic.effect(yard.risesLook(), risen.getPosition(), 0f);
         }
-        if (raiserStands && !yard.raiseBeam().isBlank()) {
+        if (!yard.raiseBeam().isBlank()) {
             var from = raiser.getPosition();
             run.beam(yard.raiseBeam(), new Coord3D(from.x(), from.y(), from.z() + Battles.HANDS),
                     new Coord3D(at.x(), at.y(), at.z() + 2f), 20);

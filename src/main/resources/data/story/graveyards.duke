@@ -149,13 +149,14 @@ Effect
   ]
 End
 
-; Act 1's: the old graves west of the field, where the first wave climbs out (act1.duke). Laid once the queen has
-; given soldiers (GravesWake).
+; Act 1's: the old graves beyond the enemy's line, seen from the opening battle on, where the first wave climbs out
+; (act1.duke). Dormant -- nothing raised, nothing of it hurt -- until the queen gives soldiers (GravesWake).
 Graveyard
   Name = OldGraves
   Map = world
   Zone = Eski_qabrlar
-  Wakes = GravesWake
+  Wakes = Act1
+  RaisesAfter = GravesWake
   Raiser = GraveRaiser
   Grave = Grave
   Graves = 3
@@ -168,4 +169,9 @@ Graveyard
   RisesLook = GraveRises
   BrokenLook = GraveBroken
   RaiseBeam = RaiseBeam
+  ; Its graves all down and left unhurt three seconds, it casts seven and raises them all again.
+  CalmFrames = 90
+  RestoreFrames = 210
+  RestoreClip = Ranged_Magic_Spellcasting_Long
+  RestoreLook = GraveRises
 End

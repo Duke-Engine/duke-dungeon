@@ -100,7 +100,12 @@ public record Action(Act act, String target, int count, String zone, int frames,
         /** The sound cue the Target names, heard at the zone's middle: the meteor's boom. */
         SOUND,
         /** {@code Count} of a Monster at the zone, sent straight at the nearest hero: a wave that comes for him. */
-        CHARGE
+        CHARGE,
+        /**
+         * Every one of the Target becomes the Monster or Npc {@code Drawn} where it stands, facing as it faced: a
+         * person drawing her sword (on the first hero's side, as ALLY lays it) or sheathing it (a person again).
+         */
+        BECOME
     }
 
     public static final Action DEFAULTS = new Action(null, "", 1, "", 30, 0f, "", "", "", "", 0f, 0f);

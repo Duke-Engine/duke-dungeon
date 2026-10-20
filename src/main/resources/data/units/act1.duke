@@ -588,3 +588,163 @@ Monster
     Bone = handslot.r
   End
 End
+
+; The queen's men the commander takes to the old graves (act1.duke, TrainingBegins): with the soldiers, two archers
+; and a healer. On his side (ALLY), never placed by a floor.
+Monster
+  Name = KingdomArcher
+  DisplayName = Kamonchi
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 4
+    Height = 12
+  End
+  VisionRange = 80
+  Modules = [
+    GrowableBody
+      MaxHealth = 55
+    End,
+    MoveUpdate
+      Speed = 16
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 7
+      AttackRange = 70
+      ReloadFrames = 45
+      AttackOnTheMove = No
+    End,
+    Swing
+    End,
+    SkillBook
+    End,
+    Bow
+      Projectile = Arrow
+      Speed = 200
+      MuzzleOffset = 8
+    End,
+    EyesOnly
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 10
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+  SenseRadius = 80
+  ChaseRadius = 130
+  CloseDistance = 6
+  AlertRadius = 80
+  RepathFrames = 10
+  SwingFrames = 14
+  KeepDistance = [40, 60]
+  MinDepth = 99
+  Weight = 0
+  Colour = 0x5A9A6A
+  Scale = 1.0
+  Model = models/heroes/rogue.glb
+  Tint = 0xC8E0C0
+  ModelScale = 5.0
+  Facing = 90
+  Animations = Humanoid
+  Idle = Ranged_Bow_Idle
+  Attack = Ranged_Bow_Release_Up
+  Walk = Running_A
+  WalkStride = 13.48
+  UpperBody = spine
+  Held = Held
+    Model = models/heroes/bow.gltf
+    Bone = handslot.l
+    ; The bow runs along +Z, as the crossbow does: a quarter turn lays it along the hand.
+    Yaw = 90
+  End
+End
+
+Monster
+  Name = KingdomHealer
+  DisplayName = Tabib
+  KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
+  Geometry = Cylinder
+    Radius = 4
+    Height = 12
+  End
+  VisionRange = 80
+  Modules = [
+    GrowableBody
+      MaxHealth = 45
+    End,
+    MoveUpdate
+      Speed = 15
+      TurnRate = 0
+    End,
+    WeaponUpdate
+      Damage = 4
+      AttackRange = 60
+      ReloadFrames = 60
+      AttackOnTheMove = No
+    End,
+    SkillBook
+    End,
+    Swing
+    End,
+    Bow
+      Projectile = HolySpark
+      Speed = 95
+      MuzzleOffset = 8
+    End,
+    EyesOnly
+    End,
+    StatusUpdate
+    End,
+    MonsterBrain
+    End,
+    ExperienceModule
+      ExperienceValue = 10
+      ExperienceRequired = [0, 0, 0]
+    End
+  ]
+  SenseRadius = 80
+  ChaseRadius = 130
+  CloseDistance = 6
+  AlertRadius = 80
+  RepathFrames = 10
+  SwingFrames = 20
+  KeepDistance = [40, 60]
+  MinDepth = 99
+  Weight = 0
+  Colour = 0xE8E0A8
+  Scale = 1.0
+  Model = models/heroes/mage.glb
+  Tint = 0xF0F0D8
+  ModelScale = 4.8
+  Facing = 90
+  Animations = Humanoid
+  Attack = Ranged_Magic_Shoot
+  Idle = Ranged_Magic_Spellcasting_Long
+  Walk = Running_A
+  WalkStride = 12.94
+  UpperBody = spine
+  Held = Held
+    Model = models/heroes/staff.gltf
+    Bone = handslot.r
+  End
+  ; It mends the hero and the queen's men: the skeleton healer's light, on his side.
+  SkillDistance = [0, 70]
+  Skills = [
+    Skill
+      Key = Q
+      Effect = HEAL
+      Heal = 35
+      HealBelowPercent = 70
+      Range = 70
+      WindUpFrames = 20
+      Projectile = MendingLight
+      CooldownFrames = 180
+      MaxRank = 1
+      Name = Muqaddas nur
+    End
+  ]
+End

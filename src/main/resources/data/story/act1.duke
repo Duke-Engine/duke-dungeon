@@ -757,28 +757,23 @@ Trigger
       Target = WaveComes
     End,
     Action
-      ; The commander draws her sword: she fights beside him through the wave.
-      Act = REMOVE
+      ; The commander draws her sword where she stands: she fights beside him through the wave.
+      Act = BECOME
       Target = Act1Commander
-    End,
-    Action
-      Act = ALLY
-      Target = Act1CommanderFighter
-      Count = 1
-      Zone = Qonish
+      Drawn = Act1CommanderFighter
     End,
     Action
       ; Out of the graves, straight at him.
       Act = CHARGE
       Target = Skeleton
       Count = 6
-      Zone = Dushman_safi
+      Zone = Eski_qabrlar
     End,
     Action
       Act = CHARGE
       Target = Runner
       Count = 2
-      Zone = Dushman_safi
+      Zone = Eski_qabrlar
     End,
     Action
       Act = START_QUEST
@@ -803,14 +798,10 @@ Trigger
       Target = Militia
     End,
     Action
-      ; Her sword away: the commander again, to lead him to the city.
-      Act = REMOVE
+      ; Her sword away where she stands: the commander again, to lead him to the city from there.
+      Act = BECOME
       Target = Act1CommanderFighter
-    End,
-    Action
-      Act = SPAWN
-      Target = Act1Commander
-      Zone = Qonish
+      Drawn = Act1Commander
     End,
     Action
       Act = KILL
@@ -1115,18 +1106,18 @@ Conversation
   Lines = [
     Line
       Speaker = Act1Commander
-      Text = "Askarlarim qabrlar oldida sizni kutadi. Qabrlar — shimoliy darvoza ortida, g'arbda. Ular oldida sehrgar turibdi: u tirik ekan, qabrlarga zarar yetmaydi."
+      Text = "Askarlarim bilan qabrlar oldida sizni kutaman. Qabrlar — jang maydonining narigi tomonida. Ular orasida sehrgar turibdi: qabrlar turgan ekan, unga zarar yetmaydi."
     End
   ]
 End
 
-; The graves (data/story/graveyards.duke): the raiser first, for while it stands nothing the graves take holds,
-; then each grave struck down on its own.
+; The graves (data/story/graveyards.duke), an ender dragon's crystals: each grave struck down on its own, for while
+; one stands the raiser takes nothing that holds; then the raiser, before it raises them again.
 Quest
   Name = Training
   Kind = MAIN
   Title = "Eski qabrlar"
-  Description = "O'liklar shimoliy darvoza ortidagi eski qabrlardan chiqmoqda. Qabrlar oldida sehrgar turibdi: u tirik ekan, qabrlarga zarar yetmaydi. Avval uni o'ldiring, so'ng qabrlarni birma-bir buzing."
+  Description = "O'liklar shimoliy darvoza ortidagi eski qabrlardan chiqmoqda. Ular orasida sehrgar turibdi: qabrlar turgan ekan, unga zarar yetmaydi - qabrlar uning jonini to'ldiradi. Avval qabrlarni birma-bir buzing, so'ng sehrgarni o'ldiring."
   Steps = [
     Step
       Goal = REACH
@@ -1135,17 +1126,17 @@ Quest
     End,
     Step
       Goal = KILL
-      Target = GraveRaiser
-      Where = Eski_qabrlar
-      Text = "Qabr sehrgarini o'ldiring"
-      Glow = Yes
-    End,
-    Step
-      Goal = KILL
       Target = Grave
       Count = 3
       Where = Eski_qabrlar
       Text = "Qabrlarni birma-bir buzing %d/%d"
+      Glow = Yes
+    End,
+    Step
+      Goal = KILL
+      Target = GraveRaiser
+      Where = Eski_qabrlar
+      Text = "Endi sehrgarni o'ldiring: tinch qo'ysangiz, qabrlarni tiklaydi"
       Glow = Yes
       OnDone = Done
         Experience = 150
@@ -1575,7 +1566,7 @@ Conversation
   Lines = [
     Line
       Speaker = Act1Commander
-      Text = "Askarlar shu yerda. Sehrgarni o'ldiring — qolganini birga bitiramiz!"
+      Text = "Askarlar shu yerda. Avval qabrlarni buzamiz — keyin sehrgarning navbati!"
     End
   ]
 End
@@ -1642,9 +1633,32 @@ Trigger
       Target = ChapterTraining
     End,
     Action
+      ; The commander comes with them, her sword out: from the palace to the graves.
+      Act = REMOVE
+      Target = Act1Commander
+    End,
+    Action
+      Act = ALLY
+      Target = Act1CommanderFighter
+      Count = 1
+      Zone = Eski_qabrlar
+    End,
+    Action
       Act = ALLY
       Target = Soldier
-      Count = 4
+      Count = 3
+      Zone = Eski_qabrlar
+    End,
+    Action
+      Act = ALLY
+      Target = KingdomArcher
+      Count = 2
+      Zone = Eski_qabrlar
+    End,
+    Action
+      Act = ALLY
+      Target = KingdomHealer
+      Count = 1
       Zone = Eski_qabrlar
     End,
     Action
@@ -1680,6 +1694,25 @@ Trigger
     Action
       Act = REMOVE
       Target = Soldier
+    End,
+    Action
+      Act = REMOVE
+      Target = KingdomArcher
+    End,
+    Action
+      Act = REMOVE
+      Target = KingdomHealer
+    End,
+    Action
+      ; Her sword away where she stands: the commander again, and back to the city it is attacked.
+      Act = BECOME
+      Target = Act1CommanderFighter
+      Drawn = Act1Commander
+    End,
+    Action
+      Act = WALK
+      Target = Act1Commander
+      Zone = Poytaxt
     End,
     Action
       ; No council in the palace: he is on his own now (the old way back to the queen waited on this).
@@ -1939,18 +1972,21 @@ End
 
 Title
   Name = ChapterCapital
+  Small = Yes
   Text = Poytaxt
   Subtext = "1-qism"
 End
 
 Title
   Name = ChapterTraining
+  Small = Yes
   Text = "Mashq: eski qabrlar"
   Subtext = "1-qism"
 End
 
 Title
   Name = ChapterWar
+  Small = Yes
   Text = "Bosib olingan yerlar"
   Subtext = "1-qism"
 End

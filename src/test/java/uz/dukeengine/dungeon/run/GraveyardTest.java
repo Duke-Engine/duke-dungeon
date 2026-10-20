@@ -13,10 +13,10 @@ import uz.dukeengine.dungeon.Dungeon;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 
 /**
- * The old graves (data/story/graveyards.duke): laid once their flag comes, the raiser before them and the graves in a
- * ring; the graves shielded while the raiser stands; the dead climbing out on a beat, the first nine paying and every
- * one after changed and worth nothing; and, the raiser down, each grave struck down on its own until the last sets the
- * graveyard's flag and nothing climbs out again.
+ * The old graves (data/story/graveyards.duke), an ender dragon's crystals: laid with the map and dormant until the
+ * queen sends him; the raiser kept whole while a grave stands, each grave struck down on its own; the dead climbing out
+ * on a beat, the first nine paying and every one after changed and worth nothing; the raiser left unhurt raising its
+ * graves again; and the raiser killed setting the graveyard's flag.
  */
 class GraveyardTest {
 
@@ -43,6 +43,10 @@ class GraveyardTest {
         var hero = hero(session);
         hero.setPosition(new Coord3D(hero.getPosition().x() - 600f, hero.getPosition().y(), hero.getPosition().z()));
         nearTheGraves(session).forEach(GameObject::markDestroyed); // the training's, already standing there
+        session.game().getLogic().getObjects().stream() // and his allies: the graves are this test's alone
+                .filter(o -> o.getTemplate() != null && List.of("Act1CommanderFighter", "Soldier", "KingdomArcher",
+                        "KingdomHealer").contains(o.getTemplate().name()))
+                .forEach(GameObject::markDestroyed);
         game.runHeadless(2);
         session.run().getScript().flag("GravesWake");
         game.runHeadless(SETTINGS.story().dialogue().checkFrames() + 1);
@@ -78,16 +82,19 @@ class GraveyardTest {
     }
 
     @Test
-    void laidOnceItsFlagComesTheRaiserBeforeItsGraves() {
+    void laidWithTheMapButDormantUntilTheQueenSendsHim() {
         var session = Dungeon.newSession(7L, SETTINGS);
-        session.run().skipTo(SETTINGS.campaign(), 2, null); // the palace: the queen has not sent him yet
+        session.run().skipTo(SETTINGS.campaign(), 1, null); // the opening: the queen has not sent him yet
         session.game().runHeadless(SETTINGS.story().dialogue().checkFrames() + 2);
-        assertTrue(all(session, "GraveRaiser").isEmpty(), "not before its flag");
-        assertTrue(all(session, "Grave").isEmpty());
-
-        var woken = woken();
-        assertEquals(1, all(woken, "GraveRaiser").size());
-        assertEquals(3, all(woken, "Grave").size());
+        assertEquals(1, all(session, "GraveRaiser").size(), "seen from the start");
+        assertEquals(3, all(session, "Grave").size());
+        var grave = all(session, "Grave").getFirst();
+        grave.getBody().setHealth(grave.getBody().getMaxHealth() * 0.01f);
+        session.game().runHeadless(SETTINGS.graveyards().getFirst().everyFrames() * 2);
+        assertEquals(grave.getBody().getMaxHealth(), grave.getBody().getHealth(), 0.01f, "dormant: nothing of it hurt");
+        assertEquals(3, all(session, "Grave").size());
+        assertTrue(session.game().getLogic().getObjects().stream()
+                .noneMatch(o -> o.findModule(uz.dukeengine.dungeon.ai.Leash.class) != null), "nothing raised");
     }
 
     @Test
@@ -135,13 +142,43 @@ class GraveyardTest {
     }
 
     @Test
-    void whileTheRaiserStandsNothingAGraveTakesHolds() {
+    void whileAGraveStandsNothingTheRaiserTakesHoldsAndEachGraveFallsOnItsOwn() {
         var session = woken();
-        var grave = all(session, "Grave").getFirst();
-        grave.getBody().setHealth(grave.getBody().getMaxHealth() * 0.01f);
+        var raiser = all(session, "GraveRaiser").getFirst();
+        var graves = all(session, "Grave");
+        for (int i = 0; i < graves.size(); i++) {
+            raiser.getBody().setHealth(1f);
+            session.game().runHeadless(2);
+            assertEquals(raiser.getBody().getMaxHealth(), raiser.getBody().getHealth(), 0.01f, "kept whole by its graves");
+            graves.get(i).getBody().setHealth(1f); // beaten: its UNYIELDING keeps it from falling by the blow
+            session.game().runHeadless(2);
+            assertEquals(graves.size() - 1 - i, all(session, "Grave").size(), "struck down, one at a time");
+        }
+        assertFalse(session.run().getScript().flagged(SETTINGS.graveyards().getFirst().goneFlag()), "not gone yet");
+        raiser.getBody().setHealth(raiser.getBody().getMaxHealth() * 0.5f);
         session.game().runHeadless(2);
-        assertEquals(grave.getBody().getMaxHealth(), grave.getBody().getHealth(), 0.01f, "whole again");
-        assertEquals(3, all(session, "Grave").size(), "and standing");
+        assertTrue(raiser.getBody().getHealth() < raiser.getBody().getMaxHealth() * 0.6f, "its graves down, it is hurt");
+    }
+
+    @Test
+    void leftUnhurtItRaisesItsGravesAgainAndAStrikeBreaksTheSpell() {
+        var session = woken();
+        var yard = SETTINGS.graveyards().getFirst();
+        var raiser = all(session, "GraveRaiser").getFirst();
+        all(session, "Grave").forEach(g -> g.getBody().setHealth(1f));
+        session.game().runHeadless(2);
+        assertTrue(all(session, "Grave").isEmpty());
+
+        playClearing(session, yard.calmFrames() + yard.restoreFrames() / 2);
+        raiser.getBody().setHealth(raiser.getBody().getHealth() - 5f); // struck in the middle of it
+        playClearing(session, yard.restoreFrames() / 2 + 10);
+        assertTrue(all(session, "Grave").isEmpty(), "the spell broken");
+
+        playClearing(session, yard.calmFrames() + yard.restoreFrames() + 5);
+        assertEquals(3, all(session, "Grave").size(), "left alone, every grave stands again");
+        raiser.getBody().setHealth(1f);
+        session.game().runHeadless(2);
+        assertEquals(raiser.getBody().getMaxHealth(), raiser.getBody().getHealth(), 0.01f, "and keeps it whole again");
     }
 
     @Test
@@ -161,22 +198,24 @@ class GraveyardTest {
     }
 
     @Test
-    void theRaiserDownEachGraveIsStruckDownAndTheLastSetsItsFlag() {
+    void aGraveIsABuildingNoPullMovesIt() {
         var session = woken();
-        var raiser = all(session, "GraveRaiser").getFirst();
-        raiser.getBody().setHealth(0f);
-        session.game().runHeadless(3);
-        var gone = SETTINGS.graveyards().getFirst().goneFlag();
+        var grave = all(session, "Grave").getFirst();
+        var stood = grave.getPosition();
+        grave.setPosition(new Coord3D(stood.x() + 60f, stood.y() - 40f, stood.z())); // as the knight's R drags it
+        session.game().runHeadless(2);
+        assertEquals(stood.x(), grave.getPosition().x(), 0.01f, "back where it stands");
+        assertEquals(stood.y(), grave.getPosition().y(), 0.01f);
+    }
 
-        var graves = all(session, "Grave");
-        for (int i = 0; i < graves.size(); i++) {
-            var grave = graves.get(i);
-            grave.getBody().setHealth(1f); // beaten: its UNYIELDING keeps it from falling by the blow
-            session.game().runHeadless(2);
-            assertEquals(graves.size() - 1 - i, all(session, "Grave").size(), "struck down, one at a time");
-            assertEquals(i == graves.size() - 1, session.run().getScript().flagged(gone),
-                    "the flag only with the last of them");
-        }
+    @Test
+    void theRaiserKilledSetsItsFlagAndNothingClimbsOutAgain() {
+        var session = woken();
+        all(session, "Grave").forEach(g -> g.getBody().setHealth(1f));
+        session.game().runHeadless(2);
+        all(session, "GraveRaiser").getFirst().getBody().setHealth(0f);
+        session.game().runHeadless(3);
+        assertTrue(session.run().getScript().flagged(SETTINGS.graveyards().getFirst().goneFlag()));
         int risen = playClearing(session, SETTINGS.graveyards().getFirst().everyFrames() * 3);
         assertEquals(0, risen, "and nothing climbs out of a graveyard that is gone");
     }

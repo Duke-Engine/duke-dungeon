@@ -328,6 +328,8 @@
 "Minoradan minoraga" => "From tower to tower"
 
 ; ---- units/act1.duke ----
+"Kamonchi" => "Archer"
+"Tabib" => "Healer"
 "Askar" => "Soldier"
 "Navkar" => "Militia"
 "Yiqiladi, o'lmaydi" => "Falls but never dies"
@@ -1030,7 +1032,9 @@
 "O'liklar shimoliy darvoza ortidagi eski qabrlardan chiqmoqda. Qabrlar oldida sehrgar turibdi: u tirik ekan, qabrlarga zarar yetmaydi. Avval uni o'ldiring, so'ng qabrlarni birma-bir buzing." => "The dead are coming out of the old graves beyond the north gate. A sorcerer stands before them: while he lives, nothing can harm the graves. Kill him first, then break the graves one by one."
 "Qabr sehrgarini o'ldiring" => "Kill the grave sorcerer"
 "Qabrlarni birma-bir buzing %d/%d" => "Break the graves one by one %d/%d"
-"Askarlar shu yerda. Sehrgarni o'ldiring — qolganini birga bitiramiz!" => "The soldiers are here. Kill the sorcerer — we will finish the rest together!"
+"Endi sehrgarni o'ldiring: tinch qo'ysangiz, qabrlarni tiklaydi" => "Now kill the sorcerer: leave him be, and he raises the graves again"
+"Askarlarim bilan qabrlar oldida sizni kutaman. Qabrlar — jang maydonining narigi tomonida. Ular orasida sehrgar turibdi: qabrlar turgan ekan, unga zarar yetmaydi." => "I will wait for you at the graves with my soldiers. They lie beyond the battlefield. A sorcerer stands among them: while the graves stand, nothing can harm him."
+"Askarlar shu yerda. Avval qabrlarni buzamiz — keyin sehrgarning navbati!" => "The soldiers are here. The graves first — then the sorcerer's turn!"
 "Anavi nima? Tog' etagida — qop-qora og'iz." => "What is that? At the foot of the hill — a black mouth."
 "G'or. Ichi monstrlarga to'la. Qora ritsar hukmronlik qila boshlagandan beri bunaqa g'orlar ko'payib ketdi." => "A cave. Full of monsters. Since the Black Knight began to rule, caves like it have multiplied."
 "Uni yo'q qilish uchun ichidagi barcha monstrlarni o'ldirish kerak. Lekin u yerdan hali hech kim qaytib kelmagan." => "To destroy one, every monster in it must be killed. But nobody who went in has come back yet."

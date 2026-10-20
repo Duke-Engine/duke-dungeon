@@ -1611,7 +1611,11 @@ public final class DungeonRun {
             }
             case TITLE -> {
                 var card = settings.title(what);
-                if (card != null) {
+                if (card != null && card.small()) {
+                    // A line at the top the game goes on under, drawn by the game's own screen.
+                    smallTitle = card;
+                    smallTitleAt = logic.getFrame();
+                } else if (card != null) {
                     // Drawn only, as every look is: the client shows it and says when it is gone (E42).
                     game.titleCard(card.text(), card.subtext(), card.fadeIn(), card.hold(), card.fadeOut());
                 }
@@ -1799,6 +1803,30 @@ public final class DungeonRun {
             case SAY -> quests.play(what);
             case START_QUEST -> quests.start(what);
             case FINISH_QUEST -> quests.finishNow(what);
+            case BECOME -> {
+                var into = logic.getThingFactory().findTemplate(action.drawn());
+                if (into == null) {
+                    return;
+                }
+                boolean person = settings.story().npc(action.drawn()) != null;
+                for (var thing : List.copyOf(logic.getObjects())) {
+                    if (!thing.getTemplate().name().equals(what) || thing.isEffectivelyDead()) {
+                        continue;
+                    }
+                    var at = thing.getPosition();
+                    float facing = thing.getOrientation();
+                    people.removeIf(who -> who.id().equals(thing.getId()));
+                    logic.destroyObject(thing);
+                    var became = logic.spawn(into, at, person ? uz.dukeengine.core.player.PlayerList.NEUTRAL_INDEX
+                            : seats.getFirst().player.getIndex());
+                    became.setOrientation(facing);
+                    if (person) {
+                        people.add(new Person(became.getId(), action.drawn(), at.x(), at.y()));
+                    } else {
+                        Spawner.scale(became, settings.beforeBossLevel(depth), settings);
+                    }
+                }
+            }
             case CHARGE -> {
                 var zone = zoneNamed(action.zone());
                 var template = logic.getThingFactory().findTemplate(what);
@@ -2203,6 +2231,22 @@ public final class DungeonRun {
      */
     public boolean inIntro() {
         return inCutscene || introNow || awaitingAdoption;
+    }
+
+    private volatile uz.dukeengine.dungeon.story.Title smallTitle;
+    private volatile int smallTitleAt;
+
+    /** The small title shown at {@code frame} and how far through its seconds, or null for none. From any thread. */
+    public uz.dukeengine.dungeon.story.Title smallTitleAt(int frame) {
+        var card = smallTitle;
+        float seconds = card == null ? 0f : card.fadeIn() + card.hold() + card.fadeOut();
+        return card != null && frame - smallTitleAt < seconds * uz.dukeengine.core.GameConstants.LOGICFRAMES_PER_SECOND
+                ? card : null;
+    }
+
+    /** Seconds since the small title came up. */
+    public float smallTitleSeconds(int frame) {
+        return (frame - smallTitleAt) / (float) uz.dukeengine.core.GameConstants.LOGICFRAMES_PER_SECOND;
     }
 
     /** Whether the story holds the battle now: every fighter in its zone kept still. */

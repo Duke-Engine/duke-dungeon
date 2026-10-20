@@ -138,14 +138,16 @@ class CampaignWalkTest {
         assertTrue(run.getQuests().active().stream().anyMatch(q -> q.quest().equals("Training")), "sent to the graves");
 
         walkToZone(session, "Eski_qabrlar", 6000);
-        var raiser = all(session.game(), "GraveRaiser").getFirst();
-        raiser.getBody().damage(1e7f, uz.dukeengine.core.module.DamageType.NORMAL,
-                new uz.dukeengine.core.module.Death(uz.dukeengine.core.module.DeathType.NORMAL, hero(session).getId(),
-                        hero(session).getPlayerIndex()));
-        play(session, 10);
         for (var grave : all(session.game(), "Grave")) {
-            grave.getBody().setHealth(1f); // beaten: struck down now its raiser is gone
+            grave.getBody().setHealth(1f); // beaten: its UNYIELDING keeps it from falling by the blow
             play(session, 3);
+        }
+        play(session, 5);
+        var raisers = all(session.game(), "GraveRaiser");
+        if (!raisers.isEmpty()) { // the graves down, it can die -- unless his people had it already
+            raisers.getFirst().getBody().damage(1e7f, uz.dukeengine.core.module.DamageType.NORMAL,
+                    new uz.dukeengine.core.module.Death(uz.dukeengine.core.module.DeathType.NORMAL,
+                            hero(session).getId(), hero(session).getPlayerIndex()));
         }
         play(session, 10);
         assertTrue(script.flagged("Trained"), "the graves gone");

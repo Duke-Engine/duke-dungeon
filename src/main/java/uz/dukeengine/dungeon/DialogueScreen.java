@@ -201,6 +201,9 @@ final class DialogueScreen implements Painter, CanvasInput {
             trade.paint(canvas, match);
             cards.trade(canvas, trade, match);
         }
+        if (!inCutscene()) {
+            smallTitle(canvas);
+        }
         var now = showing();
         pause(now != null);
         if (inCutscene()) {
@@ -218,6 +221,37 @@ final class DialogueScreen implements Painter, CanvasInput {
     private static boolean inCutscene() {
         var now = match;
         return now != null && now.run().inIntro();
+    }
+
+    /** A chapter's name opened in the world: a strip at the top, faded in and out, nothing taken from the player. */
+    private static void smallTitle(Canvas canvas) {
+        var now = match;
+        var logic = now == null ? null : now.game().getLogic();
+        var card = logic == null ? null : now.run().smallTitleAt(logic.getFrame());
+        if (card == null) {
+            return;
+        }
+        float t = now.run().smallTitleSeconds(logic.getFrame());
+        float shown = t < card.fadeIn() ? t / Math.max(0.01f, card.fadeIn())
+                : t < card.fadeIn() + card.hold() ? 1f
+                : 1f - (t - card.fadeIn() - card.hold()) / Math.max(0.01f, card.fadeOut());
+        shown = Math.max(0f, Math.min(1f, shown));
+        var big = Canvas.Font.of("Georgia", Math.max(16, Math.round(canvas.height() * 0.032f))).bold(true);
+        var small = Canvas.Font.of("Georgia", Math.max(12, Math.round(canvas.height() * 0.018f)));
+        var words = canvas.measure(big, card.text());
+        var under = card.subtext().isBlank() ? null : canvas.measure(small, card.subtext());
+        float pad = words.lineHeight() * 0.5f;
+        float wide = Math.max(words.width(), under == null ? 0f : under.width()) + pad * 4f;
+        float high = words.lineHeight() + (under == null ? 0f : under.lineHeight()) + pad * 1.5f;
+        float left = (canvas.width() - wide) / 2f;
+        float top = canvas.height() * 0.08f;
+        canvas.fillRect(left, top, wide, high, Math.round(shown * 150f) << 24);
+        int alpha = Math.round(shown * 255f) << 24;
+        canvas.drawText(big, card.text(), (canvas.width() - words.width()) / 2f, top + pad * 0.75f, alpha | 0xF0E6C8);
+        if (under != null) {
+            canvas.drawText(small, card.subtext(), (canvas.width() - under.width()) / 2f,
+                    top + pad * 0.75f + words.lineHeight(), alpha | 0xC8BEA0);
+        }
     }
 
     /** The black bars across the top and the bottom of a cutscene. */

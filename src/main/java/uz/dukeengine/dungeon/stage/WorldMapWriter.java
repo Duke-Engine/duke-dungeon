@@ -1651,7 +1651,8 @@ public final class WorldMapWriter {
             zones.add(new Zone(LANDING, fx, fy, 0, 0, 1));
             int gate = city.y() - 12 + 3;
             zones.add(new Zone("Yo'lak", fx - 4, fy, 9, Math.max(1, gate - fy), 0));
-            int[] graves = roomNear(fx - 16, fy + 2, 6, true);
+            // The old graves just beyond the enemy's line, seen from the opening battle: the first wave climbs out of them.
+            int[] graves = roomNear(fx, fy - 9, 6, true);
             zones.add(new Zone(GRAVES, graves[0], graves[1], 0, 0, 6));
             // The palace: the royal castle's court (castles: its ring 9 a side from C + (-11, -4)), the throne by its
             // west wall facing the gate in its east one.
