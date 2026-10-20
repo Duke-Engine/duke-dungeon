@@ -2087,3 +2087,14 @@ every frame the fog is worked. Each circle is opened as a unit's eyes open one: 
 remembered after. Blocked sight (`blockSight`) can be ignored for these. An empty list, or none set, works as now.
 Done when a client test lists a circle far from every unit and its cells come out visible, and once it is no longer
 listed they are remembered.
+
+## E104 — The interface hidden while the game says so (2026-10-20, small; campaign intro)
+
+Through the intro (the ritual, the hero in the sky, his landing, what he is told) the player has no hand in the game,
+and the owner wants it to look like a film: the letterbox only. Today the bottom panel (minimap, portrait, the hero's
+bars and skills, the belt), the purse and the corner hints are drawn over the game's letterbox.
+
+Asked: `Duke3D.interfaceHidden(BooleanSupplier)` (or the same on Visuals), read every frame. While it says true the
+engine draws none of its own interface: the panel and everything in it, the minimap, the hotkey hints, the cursor's
+order marks. The game's own Painter is still drawn (its letterbox and its dialogue box). Absent, as now. Done when a
+client test with the supplier true draws no panel quad and with it false draws the panel as before.
