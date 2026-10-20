@@ -670,6 +670,11 @@ public final class Main {
         }
         // The floor's key and every quest's target on the minimap too, held to its edge when off it (E61).
         duke.minimapMarks(() -> MissionScreen.minimapMarks(current.get(), settings));
+        // Through an intro the player has no hand in it: the letterbox and the box alone, no interface (E104).
+        duke.interfaceHidden(() -> {
+            var match = DialogueScreen.match();
+            return match != null && match.run().inIntro();
+        });
         duke.launch();
     }
 

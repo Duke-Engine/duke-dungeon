@@ -2322,12 +2322,15 @@ public final class DungeonRun {
             var camera = game.camera();
             if (!shot.path().isEmpty()) {
                 camera.along(path(camera, shot.path()), shot.frames(), shot.ease()); // one smooth move (E85)
+                var last = shot.path().getLast().zone();
+                var end = last.isBlank() ? null : zoneNamed(last);
+                if (end != null) {
+                    shotSeen = seen(end);
+                }
             } else if (zone != null) {
                 float cell = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
                 camera.moveTo(zone.middleX(cell), zone.middleY(cell), shot.frames(), shot.ease());
-                // What the camera is brought to see is open to sight while it looks (E103).
-                shotSeen = new float[] {zone.middleX(cell), zone.middleY(cell),
-                        (Math.max(zone.radius(), Math.max(zone.width(), zone.height()) / 2f) + 6f) * cell};
+                shotSeen = seen(zone); // what the camera is brought to see is open to sight while it looks (E103)
             }
             // Turned, tilted and drawn in or back over the same frames, eased (E41); after the move, which stops a turn.
             if (!Float.isNaN(shot.turn())) {
@@ -3414,6 +3417,16 @@ public final class DungeonRun {
         }
     }
 
+    /**
+     * A shot's place as it is opened to sight: wide, for a cutscene shows what is round it too -- the player has no
+     * hand in it, and a lit place says more than a black one (the owner, 2026-10-20).
+     */
+    private static float[] seen(uz.dukeengine.dungeon.map.StaticMap.Zone zone) {
+        float cell = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
+        float extent = Math.max(zone.radius(), Math.max(zone.width(), zone.height()) / 2f);
+        return new float[] {zone.middleX(cell), zone.middleY(cell), Math.max(extent + 12f, 22f) * cell};
+    }
+
     /** Where the cutscene's camera has been brought to look, opened to sight while it plays; null for nowhere. */
     private volatile float[] shotSeen;
 
@@ -3427,6 +3440,17 @@ public final class DungeonRun {
         var shot = shotSeen;
         if (shot != null) {
             out.add(shot);
+        }
+        if (inIntro()) {
+            // An intro's battle open whole while it plays: the landing and the ring the ritualists stand round it.
+            for (var name : laidBattles) {
+                var battle = settings.battle(name);
+                var landing = battle == null || battle.landing().isBlank() ? null : zoneNamed(battle.landing());
+                if (landing != null) {
+                    float c = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
+                    out.add(new float[] {landing.middleX(c), landing.middleY(c), battle.ring() + 80f});
+                }
+            }
         }
         float cell = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
         for (var name : settings.paintedGround().alwaysSeen()) {

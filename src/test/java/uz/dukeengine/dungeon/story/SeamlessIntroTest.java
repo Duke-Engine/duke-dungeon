@@ -281,8 +281,8 @@ class SeamlessIntroTest {
         double nearest = Double.MAX_VALUE;
         int stood = 0;
         var was = camera.current();
-        // Its line said, then the path's 150 frames.
-        for (int i = 0; i < 15; i++) {
+        // Down close over the line (45 frames and 5 held), its line said, then the path's 150 frames.
+        for (int i = 0; i < 65; i++) {
             frame(session, false);
             was = camera.current();
         }

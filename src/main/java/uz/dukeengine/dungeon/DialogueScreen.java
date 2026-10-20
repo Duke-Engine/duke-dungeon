@@ -194,7 +194,9 @@ final class DialogueScreen implements Painter, CanvasInput {
             cards.paint(canvas, match);
         }
         trade.floats(canvas, match);
-        trade.purse(canvas, match);
+        if (!inCutscene()) { // no purse through an intro: no interface at all (E104)
+            trade.purse(canvas, match);
+        }
         if (!inCutscene()) {
             trade.paint(canvas, match);
             cards.trade(canvas, trade, match);

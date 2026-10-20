@@ -346,7 +346,22 @@ Cutscene
   Name = Summoning
   Shots = [
     Shot
-      ; The line held, seen from where the camera stands: the menu's own framing, when the backdrop became the game.
+      ; Down close over the line as it holds (the owner, 2026-10-20: the battle seen, not the field).
+      Frames = 45
+      Hold = 5
+      Ease = IN_OUT
+      Path = [
+        Key
+        End,
+        Key
+          Zone = Saf
+          Turn = 0
+          Pitch = 50
+          Zoom = 135
+        End
+      ]
+    End,
+    Shot
       Says = BattleHolds
       Hold = 10
     End,
@@ -623,6 +638,12 @@ Trigger
       Drawn = RitualistVanish
     End,
     Action
+      ; She comes to him where he landed: what he is told, she tells him there.
+      Act = WALK
+      Target = Act1Commander
+      Zone = Qonish
+    End,
+    Action
       Act = FLAG
       Target = HeroLanded
     End
@@ -744,7 +765,7 @@ Trigger
       Act = ALLY
       Target = Act1CommanderFighter
       Count = 1
-      Zone = Saf
+      Zone = Qonish
     End,
     Action
       ; Out of the graves, straight at him.
@@ -789,7 +810,7 @@ Trigger
     Action
       Act = SPAWN
       Target = Act1Commander
-      Zone = Saf
+      Zone = Qonish
     End,
     Action
       Act = KILL

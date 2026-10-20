@@ -17,6 +17,21 @@ class SeenPlacesTest {
     }
 
     @Test
+    void theIntrosBattleIsOpenWholeWhileItPlays() {
+        var session = Dungeon.newSession(7L, SETTINGS);
+        session.run().skipTo(SETTINGS.campaign(), 1, null);
+        session.game().runHeadless(5);
+        assertTrue(session.run().inIntro(), "the premise: the intro plays");
+        float cell = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
+        var zones = Stages.load("world", SETTINGS).story().zones();
+        var places = session.run().seenPlaces();
+        for (var name : java.util.List.of("Qonish", "Saf", "Dushman_safi")) {
+            var zone = zones.stream().filter(z -> z.name().equals(name)).findFirst().orElseThrow();
+            assertTrue(covers(places, zone.middleX(cell), zone.middleY(cell)), name + " is open while it plays");
+        }
+    }
+
+    @Test
     void theCapitalIsAlwaysOpenAndACutscenesPlaceWhileItIsShown() {
         var session = Dungeon.newSession(7L, SETTINGS);
         session.run().skipTo(SETTINGS.campaign(), 2, null);
