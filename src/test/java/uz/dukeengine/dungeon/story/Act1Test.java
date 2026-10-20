@@ -231,6 +231,15 @@ class Act1Test {
         assertEquals(hero(session).getPlayerIndex(), fighter.getFirst().getPlayerIndex(), "on his side");
         assertTrue(all(game, "Act1Commander").isEmpty(), "not the commander who only talks");
         var stood = new java.util.concurrent.atomic.AtomicReference<>(fighter.getFirst().getPosition());
+        // The dead climb out of the graves and come for him: the graves are no shut land.
+        boolean came = false;
+        for (int i = 0; i < 600 && !came; i++) {
+            play(session, 1);
+            var at = hero(session).getPosition();
+            came = all(game, "Skeleton").stream().anyMatch(o -> o.findModule(uz.dukeengine.dungeon.ai.Leash.class) == null
+                    && Math.hypot(o.getPosition().x() - at.x(), o.getPosition().y() - at.y()) < 40f);
+        }
+        assertTrue(came, "the wave reaches him");
 
         throughTheWave(session);
         play(session, 3);

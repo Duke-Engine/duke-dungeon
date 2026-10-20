@@ -106,7 +106,7 @@ final class Graveyards {
             float cell = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
             float mx = zone.middleX(cell);
             float my = zone.middleY(cell);
-            var raiser = logic.spawn(raiserKind, ground(logic, mx, my), run.side());
+            var raiser = logic.spawn(raiserKind, ground(logic, mx, my), sideOf(yard, run));
             Spawner.scale(raiser, level, settings);
             run.pays(raiser, level);
             one.raiser = raiser.getId();
@@ -134,7 +134,10 @@ final class Graveyards {
                 each.remove();
                 continue;
             }
-            boolean awake = yard.raisesAfter().isBlank() || run.flagged(yard.raisesAfter());
+            boolean awake = awake(yard, run);
+            if (awake && raiser.getPlayerIndex() != run.side()) {
+                raiser.setPlayerIndex(run.side()); // woken: the dead's side, its graves with it
+            }
             var graves = new ArrayList<GameObject>();
             for (int i = 0; i < one.graves.size(); i++) {
                 var id = one.graves.get(i);
@@ -144,6 +147,9 @@ final class Graveyards {
                     continue;
                 }
                 var body = grave.getBody();
+                if (awake && grave.getPlayerIndex() != run.side()) {
+                    grave.setPlayerIndex(run.side());
+                }
                 var place = one.places.get(i);
                 if (grave.getPosition().x() != place.x() || grave.getPosition().y() != place.y()) {
                     grave.setPosition(place); // a building: a pull or a push moves it nowhere (the owner, 2026-10-20)
@@ -240,8 +246,17 @@ final class Graveyards {
         }
     }
 
+    /** Dormant, nobody's: nothing of it fights or is fought until its RaisesAfter flag; then the dead's side. */
+    private static int sideOf(Graveyard yard, Run run) {
+        return awake(yard, run) ? run.side() : uz.dukeengine.core.player.PlayerList.NEUTRAL_INDEX;
+    }
+
+    private static boolean awake(Graveyard yard, Run run) {
+        return yard.raisesAfter().isBlank() || run.flagged(yard.raisesAfter());
+    }
+
     private static GameObject raise(GameLogic logic, Run run, Graveyard yard, Coord3D place) {
-        return logic.spawn(logic.findTemplate(yard.grave()), place, run.side());
+        return logic.spawn(logic.findTemplate(yard.grave()), place, sideOf(yard, run));
     }
 
     /** One of the dead climbs out of {@code grave}: paying while the graveyard has paid fewer than it may, changed after. */

@@ -117,8 +117,9 @@ class FollowAndGateTest {
     }
 
     /**
-     * The world shut on the path grid but for the way to the capital (E84): a walk to the old graves stops short of them
-     * and he is told why; welcomed by the queen, the shut land moves out past the graves and the same walk arrives.
+     * The world shut on the path grid but for the way to the capital and the old graves the first wave climbs out of
+     * (E84): a walk off the field to the west stops short and he is told why, the walk to the graves
+     * arrives; welcomed by the queen, the next gate's land is his.
      */
     @Test
     void theWorldIsShutButForTheWayToTheCapitalUntilTheStoryOpensIt() {
@@ -128,11 +129,12 @@ class FollowAndGateTest {
         assertTrue(session.run().gateShut(), "its land shut on the grid");
         var graves = zone("Eski_qabrlar");
         var field = zone("Darvoza_oldi");
-        var into = new Coord3D(graves.middleX(CELL), graves.middleY(CELL), 0f);
+        float westX = field.middleX(CELL) - 26 * CELL; // off the field to the west: shut land
+        float westY = field.middleY(CELL);
         put(hero(session), field.middleX(CELL), field.middleY(CELL));
-        hero(session).getLocomotor().moveTo(into);
+        hero(session).getLocomotor().moveTo(new Coord3D(westX, westY, 0f));
         String told = null;
-        for (int i = 0; i < 600; i++) {
+        for (int i = 0; i < 1200; i++) {
             play(session, 1);
             var note = session.run().progressOf(hero(session).getPlayerIndex()).getLoot()
                     .noteAt(session.game().getLogic().getFrame());
@@ -140,22 +142,21 @@ class FollowAndGateTest {
                 told = note;
             }
             var at = hero(session).getPosition();
-            assertFalse(graves.holds(at.x(), at.y(), CELL) && !field.holds(at.x(), at.y(), CELL),
-                    "he never walks into the shut graves");
+            assertTrue(at.x() > westX + 6 * CELL, "he never walks into the shut land: " + at);
         }
-        assertEquals("Hozir u yerga bormaymiz.", told, "and is told so at the edge");
-        // Welcomed by the queen, the graves open.
-        session.run().getScript().flag("Welcomed");
-        play(session, SETTINGS.story().dialogue().checkFrames() + 1);
-        assertEquals("Act1Capital", session.run().gateName());
-        hero(session).getLocomotor().moveTo(into);
+        assertEquals("Hozir u yerga bormaymiz.", told, "and is told so at the edge: " + hero(session).getPosition());
+        // The graves the wave comes out of are open: the dead come, and he can go to them.
+        hero(session).getLocomotor().moveTo(new Coord3D(graves.middleX(CELL), graves.middleY(CELL), 0f));
         boolean arrived = false;
         for (int i = 0; i < 900 && !arrived; i++) {
             play(session, 1);
             var at = hero(session).getPosition();
             arrived = graves.holds(at.x(), at.y(), CELL) && !field.holds(at.x(), at.y(), CELL);
         }
-        assertTrue(arrived, "the graves are open now");
+        assertTrue(arrived, "the graves are open from the battle on");
+        session.run().getScript().flag("Welcomed");
+        play(session, SETTINGS.story().dialogue().checkFrames() + 1);
+        assertEquals("Act1Capital", session.run().gateName());
     }
 
     @Test

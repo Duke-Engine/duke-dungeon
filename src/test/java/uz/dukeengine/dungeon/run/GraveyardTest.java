@@ -87,6 +87,8 @@ class GraveyardTest {
         session.run().skipTo(SETTINGS.campaign(), 1, null); // the opening: the queen has not sent him yet
         session.game().runHeadless(SETTINGS.story().dialogue().checkFrames() + 2);
         assertEquals(1, all(session, "GraveRaiser").size(), "seen from the start");
+        assertEquals(uz.dukeengine.core.player.PlayerList.NEUTRAL_INDEX, all(session, "GraveRaiser").getFirst().getPlayerIndex(),
+                "dormant, nobody's: it throws at nobody");
         assertEquals(3, all(session, "Grave").size());
         var grave = all(session, "Grave").getFirst();
         grave.getBody().setHealth(grave.getBody().getMaxHealth() * 0.01f);
@@ -146,6 +148,7 @@ class GraveyardTest {
     void whileAGraveStandsNothingTheRaiserTakesHoldsAndEachGraveFallsOnItsOwn() {
         var session = woken();
         var raiser = all(session, "GraveRaiser").getFirst();
+        assertEquals(session.run().dungeonSide(), raiser.getPlayerIndex(), "woken: the dead's side");
         var graves = all(session, "Grave");
         for (int i = 0; i < graves.size(); i++) {
             raiser.getBody().setHealth(1f);

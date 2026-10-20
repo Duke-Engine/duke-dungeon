@@ -942,7 +942,7 @@ Gate
       Target = Welcomed
     End
   ]
-  Open = [Darvoza_oldi, "Yo'lak", Poytaxt]
+  Open = [Darvoza_oldi, "Yo'lak", Poytaxt, Eski_qabrlar]
   Start = Darvoza_oldi
   Word = "Hozir u yerga bormaymiz."
 End
