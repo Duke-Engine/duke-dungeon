@@ -105,7 +105,13 @@ public record Action(Act act, String target, int count, String zone, int frames,
          * Every one of the Target becomes the Monster or Npc {@code Drawn} where it stands, facing as it faced: a
          * person drawing her sword (on the first hero's side, as ALLY lays it) or sheathing it (a person again).
          */
-        BECOME
+        BECOME,
+        /**
+         * The Conversation the Target names called out over its speakers' heads in turn, bubbles the world goes on
+         * under: a commander to her line, not a word to him (the owner, 2026-10-20). Each line is over the nearest one
+         * of its speaker's kind, or of a kind whose name begins with it (Act1Commander as Act1CommanderFighter).
+         */
+        SHOUT
     }
 
     public static final Action DEFAULTS = new Action(null, "", 1, "", 30, 0f, "", "", "", "", 0f, 0f);

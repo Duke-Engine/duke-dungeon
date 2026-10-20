@@ -94,7 +94,8 @@ class GraveyardTest {
         assertEquals(grave.getBody().getMaxHealth(), grave.getBody().getHealth(), 0.01f, "dormant: nothing of it hurt");
         assertEquals(3, all(session, "Grave").size());
         assertTrue(session.game().getLogic().getObjects().stream()
-                .noneMatch(o -> o.findModule(uz.dukeengine.dungeon.ai.Leash.class) != null), "nothing raised");
+                .noneMatch(o -> o.findModule(uz.dukeengine.dungeon.ai.Leash.class) != null
+                        && o.getPlayerIndex() == session.run().dungeonSide()), "nothing raised");
     }
 
     @Test

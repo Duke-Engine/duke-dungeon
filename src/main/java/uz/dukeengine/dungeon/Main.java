@@ -620,7 +620,12 @@ public final class Main {
         shell.settingsRow(uz.dukeengine.dungeon.content.Lang.SETTING,
                 uz.dukeengine.dungeon.content.Lang.t("Til (qayta ochilganda)"), uz.dukeengine.dungeon.content.Lang.NAMES, 0,
                 choice -> { });
+        // Whether a match is played, not the backdrop behind the menu: only then is the interface hidden for an intro.
+        // The engine puts back next frame what it hid this one, as it was (E104) -- hid while the menu was up, the menu
+        // came back over the adopted match.
+        var inMatch = new java.util.concurrent.atomic.AtomicBoolean();
         duke.onLeaving(() -> {
+            inMatch.set(false);
             saveTo(current.get(), saves, Saves.AUTOSAVE);
             // Back at the front menu, the next game is a new match, its rows read afresh (a save just made is there
             // to continue). Built here, before the menu is shown -- about 60 ms, also spent when the window closes.
@@ -648,6 +653,7 @@ public final class Main {
                 return;
             }
             scene.adoptAsMatch(game, campaign);
+            inMatch.set(true); // its interface hidden from here on: the menu is put away already
             heroChosen(scene.session(), settings, visuals, keys, campaign.hero());
         });
         duke.shell(shell);
@@ -659,6 +665,7 @@ public final class Main {
                 heroChosen(session, settings, visuals, keys, act.hero());
                 session.run().skipTo(act, joint, null);
                 duke.startMatch(session.game());
+                inMatch.set(true);
                 break;
             }
         }
@@ -673,7 +680,7 @@ public final class Main {
         // Through an intro the player has no hand in it: the letterbox and the box alone, no interface (E104).
         duke.interfaceHidden(() -> {
             var match = DialogueScreen.match();
-            return match != null && match.run().inIntro();
+            return inMatch.get() && match != null && match.run().inIntro();
         });
         duke.launch();
     }

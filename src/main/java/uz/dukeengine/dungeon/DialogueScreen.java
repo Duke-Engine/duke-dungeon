@@ -206,6 +206,7 @@ final class DialogueScreen implements Painter, CanvasInput {
         }
         var now = showing();
         pause(now != null);
+        closeUp(now);
         if (inCutscene()) {
             letterbox(canvas);
         }
@@ -387,6 +388,96 @@ final class DialogueScreen implements Painter, CanvasInput {
             logic.setGamePaused(false);
             pausedHere = false;
         }
+    }
+
+    /** The camera as it was before a talk took it, and whether the game had it then; null while no talk has it. */
+    private uz.dukeengine.core.view.CameraView beforeTalk;
+    private boolean talkTookDriven;
+    private Showing aimedAt;
+
+    /**
+     * A talk with him filmed close (the owner, 2026-10-20): the two face each other and the camera comes down over the
+     * listener's shoulder to the face of whoever says the line; the talk over, the camera is as it was. The world is
+     * paused under the box, but its picture is still made, the game's camera with it.
+     */
+    private void closeUp(Showing now) {
+        var match = DialogueScreen.match;
+        if (match == null || match.game().getLogic() == null || match.game().isMultiplayer()) {
+            return;
+        }
+        var camera = match.game().camera();
+        if (now == null || now.line() >= now.conversation().lines().size()) {
+            if (beforeTalk != null) {
+                var was = beforeTalk;
+                camera.moveTo(was.x(), was.y(), 0);
+                camera.angle(was.angle());
+                camera.pitch(was.pitch());
+                camera.zoom(was.zoom());
+                if (!talkTookDriven) {
+                    camera.release();
+                    match.game().moveView(was.x(), was.y());
+                }
+                beforeTalk = null;
+            }
+            aimedAt = null;
+            return;
+        }
+        if (now.equals(aimedAt)) {
+            return;
+        }
+        var snapshot = match.game().getSnapshot();
+        var heroId = match.run().heroId();
+        uz.dukeengine.core.view.UnitView hero = null;
+        for (var unit : snapshot.units()) {
+            if (heroId != null && unit.id() == heroId.value()) {
+                hero = unit;
+            }
+        }
+        if (hero == null) {
+            return;
+        }
+        var lines = now.conversation().lines();
+        var said = lines.get(now.line()).speaker();
+        String other = lines.stream().map(Conversation.Line::speaker).filter(s -> !Speaker.HERO.equals(s))
+                .findFirst().orElse(null);
+        var them = other == null ? null : nearest(snapshot, other, hero);
+        if (them == null) {
+            return; // nobody with him to film: a word from afar
+        }
+        var speaker = Speaker.HERO.equals(said) ? hero : them;
+        var listener = speaker == hero ? them : hero;
+        if (beforeTalk == null) {
+            talkTookDriven = camera.isDriven();
+            if (!talkTookDriven) {
+                // Taken, the player's own view is adopted -- its turn, tilt and distance; where it looked is his.
+                camera.moveTo(hero.x(), hero.y(), 0);
+            }
+            beforeTalk = camera.current();
+        }
+        aimedAt = now;
+        float pitch = (float) Math.toRadians(settings.story().dialogue().closePitch());
+        camera.moveTo(speaker.x(), speaker.y(), 0);
+        // Looking from the listener to the speaker: from behind the listener, at the speaker's face.
+        camera.lookToward(speaker.x() + (speaker.x() - listener.x()), speaker.y() + (speaker.y() - listener.y()));
+        camera.pitch(pitch);
+        camera.zoom(settings.story().dialogue().closeZoom());
+    }
+
+    /** The one of {@code kind} (or of a kind its name begins) standing nearest {@code to} within a talk's reach. */
+    private static uz.dukeengine.core.view.UnitView nearest(uz.dukeengine.core.view.WorldSnapshot snapshot,
+            String kind, uz.dukeengine.core.view.UnitView to) {
+        uz.dukeengine.core.view.UnitView best = null;
+        double bestFar = 200.0;
+        for (var unit : snapshot.units()) {
+            if (unit.templateName().startsWith(kind)) {
+                double far = Math.hypot(unit.x() - to.x(), unit.y() - to.y());
+                if (far < bestFar) {
+                    best = unit;
+                    bestFar = far;
+                }
+            }
+        }
+        return best;
     }
 
     /** Who says it, as the box writes them: a Speaker's DisplayName, or the hero's. */

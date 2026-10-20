@@ -324,7 +324,8 @@ final class MissionScreen {
             for (var line : conversation.lines()) {
                 int frames = barkFrames(line.text());
                 if (into < frames) {
-                    int who = uz.dukeengine.rpg.story.Speaker.HERO.equals(line.speaker()) ? bark.hero() : bark.person();
+                    int who = uz.dukeengine.rpg.story.Speaker.HERO.equals(line.speaker()) ? bark.hero()
+                            : bark.person() >= 0 ? bark.person() : shouter(snapshot, line.speaker());
                     for (var unit : snapshot.units()) {
                         if (unit.id() == who) {
                             var over = canvas.screenOf(unit.x(), unit.y(), unit.z() + 22f);
@@ -338,6 +339,20 @@ final class MissionScreen {
                 into -= frames;
             }
         }
+    }
+
+    /** A shout's speaker (DungeonRun's SHOUT): one of its kind standing, or of a kind its name begins; -1 for none. */
+    static int shouter(uz.dukeengine.core.view.WorldSnapshot snapshot, String speaker) {
+        int loose = -1;
+        for (var unit : snapshot.units()) {
+            if (unit.templateName().equals(speaker)) {
+                return unit.id();
+            }
+            if (loose < 0 && unit.templateName().startsWith(speaker)) {
+                loose = unit.id();
+            }
+        }
+        return loose;
     }
 
     /** A bubble of words standing on a point of the screen, cut into rows no wider than a third of it. */

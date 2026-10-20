@@ -1551,12 +1551,22 @@ public final class DungeonRun {
                     return;
                 }
                 var cells = zone.cells();
+                // Kept to the place it was called to, the zone and a cell round it: a line holds its line, the
+                // queen's people fight at the graves (the owner, 2026-10-20: she holds the line, not the landing).
+                float size = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
+                var home = groundAt(logic, zone);
+                float reach = 0f;
+                for (var cell : cells) {
+                    reach = Math.max(reach, (float) Math.hypot((cell[0] + 0.5f) * size - home.x(),
+                            (cell[1] + 0.5f) * size - home.y()));
+                }
                 for (int i = 0; i < action.count(); i++) {
                     var cell = cells.get(i % cells.size());
                     var spawned = logic.spawn(template, ground(logic,
                             new uz.dukeengine.dungeon.map.StaticMap.Placed(what, cell[0], cell[1])),
                             seats.getFirst().player.getIndex());
                     Spawner.scale(spawned, settings.beforeBossLevel(depth), settings);
+                    spawned.addModule(new uz.dukeengine.dungeon.ai.Leash(spawned, home, reach + size));
                 }
             }
             case PLACE, KNOCK -> {
@@ -1803,6 +1813,14 @@ public final class DungeonRun {
             case SAY -> quests.play(what);
             case START_QUEST -> quests.start(what);
             case FINISH_QUEST -> quests.finishNow(what);
+            case SHOUT -> {
+                // Over heads, the world going on: no box, nobody stopped. Its speakers found as it is drawn.
+                var heroId = seats.isEmpty() ? null : seats.getFirst().heroId;
+                var hero = heroId == null ? null : logic.findObject(heroId);
+                var more = new ArrayList<>(barks);
+                more.add(new Bark(-1, hero == null ? -1 : hero.getId().value(), what, logic.getFrame()));
+                barks = List.copyOf(more);
+            }
             case BECOME -> {
                 var into = logic.getThingFactory().findTemplate(action.drawn());
                 if (into == null) {
@@ -2800,6 +2818,9 @@ public final class DungeonRun {
         if (saidNow != saidStopped) {
             boolean more = saidNow > saidStopped;
             saidStopped = saidNow;
+            if (more && !game.isMultiplayer()) {
+                faceToFace(game.getLogic(), quests.said().getLast());
+            }
             // Not in a cutscene or the intro: there the story moves him itself.
             if (more && !game.isMultiplayer() && !inCutscene() && !inIntro()) {
                 for (var seat : seats) {
@@ -2931,6 +2952,41 @@ public final class DungeonRun {
             trades = List.copyOf(more);
         }
         return said;
+    }
+
+    /**
+     * A talk with him begun: he and the one it is with turned to face each other (the owner, 2026-10-20), the camera
+     * filming them close (DialogueScreen). The one it is with: the nearest of its first other speaker's kind, or of a
+     * kind whose name begins with it (the commander as she fights).
+     */
+    private void faceToFace(uz.dukeengine.core.GameLogic logic, String conversation) {
+        var talk = settings.story().conversation(conversation);
+        var heroId = seats.isEmpty() ? null : seats.getFirst().heroId;
+        var hero = heroId == null ? null : logic.findObject(heroId);
+        if (talk == null || hero == null) {
+            return;
+        }
+        var other = talk.lines().stream().map(uz.dukeengine.rpg.story.Conversation.Line::speaker)
+                .filter(s -> !uz.dukeengine.rpg.story.Speaker.HERO.equals(s)).findFirst().orElse(null);
+        if (other == null) {
+            return;
+        }
+        GameObject them = null;
+        double nearest = 200.0;
+        for (var thing : logic.getObjects()) {
+            if (thing != hero && !thing.isEffectivelyDead() && thing.getTemplate().name().startsWith(other)) {
+                double far = Math.hypot(thing.getPosition().x() - hero.getPosition().x(),
+                        thing.getPosition().y() - hero.getPosition().y());
+                if (far < nearest) {
+                    nearest = far;
+                    them = thing;
+                }
+            }
+        }
+        if (them != null) {
+            face(them, hero);
+            face(hero, them);
+        }
     }
 
     private static void face(GameObject person, GameObject hero) {

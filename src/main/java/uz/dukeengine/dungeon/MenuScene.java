@@ -145,7 +145,7 @@ final class MenuScene {
         var line = zone(battle.kingdomZone());
         var leader = battle.leader().isBlank() ? null : logic.getThingFactory().findTemplate(battle.leader());
         if (line != null && leader != null) {
-            standIn = logic.spawn(leader, Battles.middleOf(logic, line), uz.dukeengine.core.player.PlayerList.NEUTRAL_INDEX);
+            standIn = logic.spawn(leader, Battles.middleOf(logic, line), heroSide); // fighting in her line
         }
         keepHeroAway();
     }

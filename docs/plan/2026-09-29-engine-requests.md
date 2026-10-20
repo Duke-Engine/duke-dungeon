@@ -2098,3 +2098,15 @@ Asked: `Duke3D.interfaceHidden(BooleanSupplier)` (or the same on Visuals), read 
 engine draws none of its own interface: the panel and everything in it, the minimap, the hotkey hints, the cursor's
 order marks. The game's own Painter is still drawn (its letterbox and its dialogue box). Absent, as now. Done when a
 client test with the supplier true draws no panel quad and with it false draws the panel as before.
+
+## E105 — A hidden interface put back over what was put away meanwhile (2026-10-20, small; bug in E104)
+
+`DukeRtsApp.simpleUpdate` calls `interfaceHiding.showAgain()` first, putting back what it hid last frame *as it was
+then*. The front menu (StoneMenu's root) is under the guiNode, so while `interfaceHidden` says true on the frame before
+the backdrop is adopted, the menu is recorded as shown; `adoptBackdrop` then calls `menu.hide()`, and the next
+`showAgain()` sets it back to shown. The owner saw the act's empty campaign page ("1-qism: Oxirgi qahramon", Orqaga)
+left over the played match. The game now says true only once the match is adopted, so it no longer bites.
+
+Asked: `showAgain()` puts back only what is still as `hide` left it -- something whose cull hint changed meanwhile
+(hidden by its own owner, or shown) is left alone -- or the menu is not among what it hides. Done when a client test
+hides the interface for a frame, calls `menu.hide()` between, and the menu stays hidden after `showAgain()`.

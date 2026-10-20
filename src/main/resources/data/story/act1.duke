@@ -221,7 +221,7 @@ Battle
   Enemy = [Skeleton, Skeleton, Skeleton, Skeleton, Skeleton, Skeleton, Skeleton, Runner, Runner, SkeletonMage, EnemyCommander]
   KingdomZone = Saf
   EnemyZone = Dushman_safi
-  Leader = Act1Commander
+  Leader = Act1CommanderFighter
   Ritualist = Ritualist
   Ritualists = 3
   Landing = Qonish
@@ -362,7 +362,7 @@ Cutscene
       ]
     End,
     Shot
-      Says = BattleHolds
+      ; The line's words over their heads (BattleStart's SHOUT), the battle going on: the camera flies on over them.
       Hold = 10
     End,
     Shot
@@ -485,6 +485,11 @@ Trigger
     Action
       Act = CUTSCENE
       Target = Summoning
+    End,
+    Action
+      ; Called out over the line, not said to him: bubbles, and the battle never stops (the owner, 2026-10-20).
+      Act = SHOUT
+      Target = BattleHolds
     End
   ]
 End
@@ -502,6 +507,13 @@ Trigger
     End
   ]
   Actions = [
+    Action
+      ; She is put back in her line as the ritual begins, the fight drawn after her off the spot the meteor strikes:
+      ; foes pressed round her at the landing would have him down stunned before his wave.
+      Act = KNOCK
+      Target = Act1CommanderFighter
+      Zone = Saf
+    End,
     Action
       Act = POSE
       Target = Ritualist
@@ -638,14 +650,30 @@ Trigger
       Drawn = RitualistVanish
     End,
     Action
-      ; She comes to him where he landed: what he is told, she tells him there.
+      Act = FLAG
+      Target = HeroLanded
+    End
+  ]
+End
+
+; The shockwave's throw done: she sheathes her sword where she fought and comes to him where he landed -- what he is
+; told, she tells him there.
+Trigger
+  Name = CommanderComes
+  Map = world
+  When = AFTER
+  Target = Impact
+  Delay = 40
+  Actions = [
+    Action
+      Act = BECOME
+      Target = Act1CommanderFighter
+      Drawn = Act1Commander
+    End,
+    Action
       Act = WALK
       Target = Act1Commander
       Zone = Qonish
-    End,
-    Action
-      Act = FLAG
-      Target = HeroLanded
     End
   ]
 End
@@ -1010,8 +1038,33 @@ Trigger
   ]
 End
 
-; The commander: on the field until the battle is won, then on the road ahead of him to the palace,
-; and at the palace from his welcome on.
+; Before he lands she fights in the line herself (the owner, 2026-10-20): the battle has her light while the line falls.
+Trigger
+  Name = Act1CommanderFights
+  Map = world
+  When = MAP_START
+  Repeat = Yes
+  If = [
+    Condition
+      Is = FLAG_SET
+      Target = Act1
+    End,
+    Condition
+      Is = FLAG_UNSET
+      Target = HeroLanded
+    End
+  ]
+  Actions = [
+    Action
+      Act = ALLY
+      Target = Act1CommanderFighter
+      Zone = Saf
+    End
+  ]
+End
+
+; The commander, once he has landed: on the field until the battle is won, then on the road ahead of him to the
+; palace, and at the palace from his welcome on.
 Trigger
   Name = Act1CommanderField
   Map = world
@@ -1025,6 +1078,10 @@ Trigger
     Condition
       Is = FLAG_UNSET
       Target = Welcomed
+    End,
+    Condition
+      Is = FLAG_SET
+      Target = HeroLanded
     End
   ]
   Actions = [
