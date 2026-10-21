@@ -154,4 +154,96 @@ class PersonTest {
         assertTrue(reaches(game, walker, 13, 5, 1500) >= 0,
                 "past the stone round PostC, on to PostB: " + walker.getPosition());
     }
+
+    // ---- the guard: patrols on the hero's side, and fights within its leash ----
+
+    static GameObject hero(DukeGame game) {
+        return game.getLogic().getObjects().stream()
+                .filter(thing -> thing.getTemplate().name().equals(SETTINGS.run().defaultHero())).findFirst()
+                .orElseThrow();
+    }
+
+    /** A Skeleton of the dungeon's at cell {@code (x, y)}. */
+    static GameObject skeleton(Dungeon.Session session, float x, float y) {
+        var logic = session.game().getLogic();
+        return logic.spawn(logic.getThingFactory().findTemplate("Skeleton"),
+                new uz.dukeengine.core.math.Coord3D((x + 0.5f) * CELL, (y + 0.5f) * CELL, 0f),
+                session.run().dungeonPlayer().getIndex());
+    }
+
+    /** How far, in cells, the nearer of the two posts is. */
+    static double fromAPost(GameObject thing) {
+        return Math.min(cellsFrom(thing, 5, 5), cellsFrom(thing, 13, 5));
+    }
+
+    @Test
+    void aGuardFightsAFoeWithinItsLeash() {
+        var session = session();
+        var game = session.game();
+        var sentry = at(game, 12, 20);
+        assertEquals("Act1CommanderFighter", sentry.getTemplate().name());
+        assertEquals(hero(game).getPlayerIndex(), sentry.getPlayerIndex(), "on the hero's side");
+        var foe = skeleton(session, sentry.getPosition().x() / CELL + 2.5f, sentry.getPosition().y() / CELL - 0.5f);
+        float whole = foe.getBody().getHealth();
+        for (int i = 0; i < 300 && !foe.isEffectivelyDead() && foe.getBody().getHealth() >= whole; i++) {
+            game.runHeadless(1);
+        }
+        assertTrue(foe.isEffectivelyDead() || foe.getBody().getHealth() < whole, "struck by the guard");
+    }
+
+    @Test
+    void aGuardIgnoresAFoeBeyondItsLeash() {
+        var session = session();
+        var game = session.game();
+        var sentry = at(game, 12, 20);
+        assertTrue(reaches(game, sentry, 13, 5, 600) >= 0, "the guard comes to its round: " + sentry.getPosition());
+        // Eight cells below PostB: within what it sees, past its six cells' leash from anywhere on its round.
+        var foe = skeleton(session, 13, 13);
+        var held = foe.getPosition();
+        float whole = foe.getBody().getHealth();
+        for (int i = 0; i < 300; i++) {
+            foe.setPosition(held);
+            game.runHeadless(1);
+            assertTrue(fromAPost(sentry) <= 6.5, "the guard keeps to its round: " + sentry.getPosition());
+        }
+        assertEquals(whole, foe.getBody().getHealth(), "untouched");
+    }
+
+    @Test
+    void aGuardDrawnOffComesBackAndPatrolsOn() {
+        var session = session();
+        var game = session.game();
+        var sentry = at(game, 12, 20);
+        assertTrue(reaches(game, sentry, 13, 5, 600) >= 0, "the guard comes to its round");
+        var foe = skeleton(session, 13, 10); // at its leash's edge
+        for (int i = 0; i < 900 && !foe.isEffectivelyDead(); i++) {
+            game.runHeadless(1);
+        }
+        assertTrue(foe.isEffectivelyDead(), "the guard kills it");
+        int back = -1;
+        for (int i = 0; i < 600 && back < 0; i++) {
+            back = fromAPost(sentry) <= 1.5 ? i : -1;
+            game.runHeadless(1);
+        }
+        assertTrue(back >= 0, "back at a post: " + sentry.getPosition());
+        boolean atB = cellsFrom(sentry, 13, 5) <= 1.5;
+        assertTrue(reaches(game, sentry, atB ? 5 : 13, 5, 900) >= 0, "and on to the other: " + sentry.getPosition());
+    }
+
+    @Test
+    void aGuardIsNotTalkedTo() {
+        var session = session();
+        var game = session.game();
+        var run = session.run();
+        var sentry = at(game, 12, 20);
+        var hero = hero(game);
+        hero.setPosition(new uz.dukeengine.core.math.Coord3D(sentry.getPosition().x() + 12f, sentry.getPosition().y(),
+                sentry.getPosition().z()));
+        int said = run.getQuests().said().size();
+        int barked = run.getQuests().barked().size();
+        run.talkTo(game, hero.getPlayerIndex(), sentry.getId());
+        game.runHeadless(SETTINGS.story().dialogue().checkFrames() * 3);
+        assertEquals(said, run.getQuests().said().size(), "nothing said");
+        assertEquals(barked, run.getQuests().barked().size(), "nor called out");
+    }
 }

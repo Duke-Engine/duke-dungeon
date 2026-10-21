@@ -1355,7 +1355,10 @@ public final class DungeonRun {
         final uz.dukeengine.dungeon.ai.Patrol patrol;
         /** On its way to the patrol's stop, rather than standing at it. */
         boolean walking = true;
-        /** Stopped on its way -- for a hero who came to talk, or a fight -- to set off again for the same stop. */
+        /**
+         * Stopped on its way -- for a hero who came to talk, or a guard's fight, after which it makes for the stop
+         * nearest -- to set off again for that stop.
+         */
         boolean halted = true;
         /** The frame it walks on from where it stands. */
         int standUntil;
@@ -1397,8 +1400,15 @@ public final class DungeonRun {
             var placedAs = settings.person(placed.kind());
             var template = logic.getThingFactory().findTemplate(placedAs == null ? placed.kind() : placedAs.kind());
             if (template != null) {
-                var person = logic.spawn(template, ground(logic, placed),
-                        uz.dukeengine.core.player.PlayerList.NEUTRAL_INDEX);
+                // A GUARD stands on the hero's side, grown to the floor as an ally is, and kept to its round by a leash.
+                boolean guard = placedAs != null && placedAs.brain() == uz.dukeengine.dungeon.story.Person.Brain.GUARD;
+                var person = logic.spawn(template, ground(logic, placed), guard ? seats.getFirst().player.getIndex()
+                        : uz.dukeengine.core.player.PlayerList.NEUTRAL_INDEX);
+                if (guard) {
+                    Spawner.scale(person, settings.beforeBossLevel(depth), settings);
+                    person.addModule(new uz.dukeengine.dungeon.ai.Leash(person, person.getPosition(),
+                            placedAs.leash() * uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE));
+                }
                 people.add(new Folk(person.getId(), placed.kind(), person.getPosition().x(),
                         person.getPosition().y(), placedAs, roundsOf(placedAs, person)));
             }
@@ -2564,7 +2574,7 @@ public final class DungeonRun {
         var seat = seatOf(playerIndex);
         var who = people.stream().filter(each -> each.id().equals(person)).findFirst().orElse(null);
         var hero = seat == null || seat.heroId == null ? null : game.getLogic().findObject(seat.heroId);
-        var there = who == null ? null : game.getLogic().findObject(person);
+        var there = who == null || who.guard() ? null : game.getLogic().findObject(person); // a guard is not talked to
         if (hero == null || there == null || hero.isEffectivelyDead()) {
             return;
         }
@@ -2968,7 +2978,8 @@ public final class DungeonRun {
             var there = logic.findObject(who.id());
             for (var seat : seats) {
                 var hero = seat.heroId == null ? null : logic.findObject(seat.heroId);
-                if (there == null || hero == null || hero.isEffectivelyDead() || !near(hero, there, who)) {
+                if (there == null || hero == null || hero.isEffectivelyDead() || who.guard()
+                        || !near(hero, there, who)) {
                     continue;
                 }
                 boolean asked = who.id().equals(seat.talkingTo);
@@ -3153,6 +3164,19 @@ public final class DungeonRun {
         }
         var rounds = who.rounds();
         int now = logic.getFrame();
+        var leash = there.findModule(uz.dukeengine.dungeon.ai.Leash.class);
+        if (who.guard() && leash != null) {
+            // A guard's brain fights what comes within its leash, and walks it back when a chase takes it past; the
+            // leash is held where the fight found it. Peaceful, it walks on, from the stop nearest where it is.
+            var weapon = there.findModule(uz.dukeengine.combat.module.WeaponUpdate.class);
+            if (weapon != null && weapon.getTarget() != null || leash.beyond(there.getPosition())) {
+                rounds.patrol.nearest(farFromStops(who.person(), there));
+                rounds.walking = true;
+                rounds.halted = true;
+                return;
+            }
+            leash.home(there.getPosition());
+        }
         if (heroNear) {
             if (legs.isMoving()) {
                 legs.stop();

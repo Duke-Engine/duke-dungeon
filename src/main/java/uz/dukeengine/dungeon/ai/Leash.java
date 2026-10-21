@@ -14,7 +14,7 @@ import uz.dukeengine.rpg.RpgModuleGroups;
 @ModuleGroup(RpgModuleGroups.ITEMS)
 public final class Leash extends Module {
 
-    private final Coord3D home;
+    private Coord3D home;
     private final float radius;
 
     public Leash(GameObject owner, Coord3D home, float radius) {
@@ -25,6 +25,14 @@ public final class Leash extends Module {
 
     public Coord3D home() {
         return home;
+    }
+
+    /**
+     * Kept to another place from now: a guard's leash is held round wherever its patrol has brought it, and stays where
+     * a fight found it until the fight is over.
+     */
+    public void home(Coord3D home) {
+        this.home = home;
     }
 
     /** Whether {@code at} is past the leash. */
