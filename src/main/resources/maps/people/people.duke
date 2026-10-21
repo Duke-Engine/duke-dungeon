@@ -53,16 +53,6 @@ Conversation
   Starts = [SmithsOre]
 End
 
-Conversation
-  Name = SmithThanks
-  Lines = [
-    Line
-      Speaker = Smith
-      Text = "Rahmat! Mana, va'da qilganim."
-    End
-  ]
-End
-
 Quest
   Name = SmithsOre
   Kind = SIDE
@@ -85,10 +75,22 @@ Quest
       Target = Smith
       Text = "Temirchiga qayting"
       OnDone = Done
-        Says = SmithThanks
         Experience = 50
         Item = Gauntlet
       End
+    End
+  ]
+End
+
+; The gold is a trigger's: a quest's Done pays experience and a thing, never gold. No Map: it is heard on every map.
+Trigger
+  Name = SmithsOrePays
+  When = QUEST_DONE
+  Target = SmithsOre
+  Actions = [
+    Action
+      Act = GOLD
+      Count = 30
     End
   ]
 End
