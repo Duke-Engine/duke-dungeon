@@ -4,17 +4,34 @@
 ; take its ; off and write the words. Written by ./gradlew langTable (rows are kept by key; notes added here
 ; by hand are not), checked by LangTest and ./gradlew langReport. The menu font draws plain ASCII and the
 ; dashes, no more.
+;
+; Glossary (2026-10-21 rewrite: natural fantasy-RPG English, meaning over words; use these everywhere):
+;   Qo'mondon = the Commander      Malika = the Queen       Qora ritsar = the Black Knight
+;   Poytaxt = the Capital          Eski qabrlar = the Old Graves
+;   g'or = cave    qahramon = hero    oltin = gold    names (Garen, Erika, Lira, Laylo, Botir...) stay as they are
+;   Qora qasr = the Black Castle   Qorong'i o'rmon = the Dark Forest   Yalmog'iz kampir = Baba Yaga (kampir = the crone)
+;   Dushman sarkardasi = the Enemy Warlord   Qorovul = Watchman   Soqchi = Guard   Tumor (slot) = Amulet
+;   Qon so'rish = Lifesteal   Shiddat = Haste   G'azab = Fury   Jon (stat) = Health, Jonlar (medallion) = Souls
+; Terms fixed in the rewrite:
+;   "Dark Knight" -> "Black Knight" (unit, speaker, quest, maps)   "Dark Castle" -> "the Black Castle"
+;   "old crypts" -> "the Old Graves"   "Capital" -> "the Capital"   "queen"/"commander" -> "the Queen"/"the Commander"
+;   Hud.HealthWord "Soul" -> "Health"   "Blood Drain" -> "Lifesteal" (stat and every skill of that Uzbek name)
+;   "Charm" (slot, every item and affix) -> "Amulet"; the Commander's tumor -> "Locket"
+;   "Master of the Bow" -> "Master Archer"   "Shield and Sword" -> "Sword and Shield"
+;   "Enemy Commander" -> "Enemy Warlord"   "Guard Jasur" -> "Watchman Jasur"   "Militia" -> "Man-at-Arms"
+;   "Stone Golem" (Tosh qanot) -> "Stonewing", so it no longer shares the Stone Golem's name; "Imp" (Shaytoncha) -> "Devilkin"
+;   "The curse is lifted" -> "The curse is broken"   menu hints: "UP/DOWN select    ENTER confirm    ESC back"
 Language = English
 
 ; ---- data/world/world.duke ----
 Run.DiedWord = "You died"  ; uz: You died
 Run.NextDepthWord = "Depth %d"  ; uz: Chuqurlik %d
-Run.MissionTitle = "Boss Keep"  ; uz: Boss qal'asi
-Run.ClearWord = "Slay monsters %d/%d"  ; uz: Monstrlarni qir %d/%d
-Run.TakeKeyWord = "Take the key: it stands in a pillar of golden light, the arrow shows the way"  ; uz: Kalitni oling: oltin nur ustunida, o'q yo'lni ko'rsatadi
-Run.GiveKeyWord = "Give the key to the gate"  ; uz: Kalitni darvozaga ber
-Run.KillBossWord = "Kill the boss"  ; uz: Bossni o'ldir
-Run.KeyDroppedWord = "The key dropped!"  ; uz: Kalit tushdi!
+Run.MissionTitle = "The Boss's Keep"  ; uz: Boss qal'asi
+Run.ClearWord = "Slay the monsters %d/%d"  ; uz: Monstrlarni qir %d/%d
+Run.TakeKeyWord = "Take the key: it waits in the pillar of golden light - follow the arrow"  ; uz: Kalitni oling: oltin nur ustunida, o'q yo'lni ko'rsatadi
+Run.GiveKeyWord = "Bring the key to the gate"  ; uz: Kalitni darvozaga ber
+Run.KillBossWord = "Slay the boss"  ; uz: Bossni o'ldir
+Run.KeyDroppedWord = "The key has dropped!"  ; uz: Kalit tushdi!
 Run.MissionsTab = "Missions (J)"  ; uz: Missiyalar (J)
 Attribute.Strength.ShortName = "STR"  ; uz: STR
 Attribute.Strength.Word = "Strength"  ; uz: Kuch
@@ -22,29 +39,29 @@ Attribute.Agility.ShortName = "AGI"  ; uz: AGI
 Attribute.Agility.Word = "Agility"  ; uz: Epchillik
 Attribute.Intelligence.ShortName = "INT"  ; uz: INT
 Attribute.Intelligence.Word = "Intelligence"  ; uz: Aql
-LootDrops.FullWord = "Bag is full"  ; uz: Sumka to'la
-LootDrops.TakeHint = "Right click: pick up"  ; uz: O'ng tugma: olish
-LootDrops.DropHint = "Left click: put down"  ; uz: Chap tugma: yerga qo'yish
-LootDrops.UseHint = "Left click: use"  ; uz: Chap tugma: ishlatish
+LootDrops.FullWord = "Your bag is full"  ; uz: Sumka to'la
+LootDrops.TakeHint = "Right-click: pick up"  ; uz: O'ng tugma: olish
+LootDrops.DropHint = "Left-click: drop"  ; uz: Chap tugma: yerga qo'yish
+LootDrops.UseHint = "Left-click: use"  ; uz: Chap tugma: ishlatish
 LootDrops.HealthRegenWord = "Health/s"  ; uz: Jon/s
 LootDrops.ManaRegenWord = "Mana/s"  ; uz: Mana/s
-LootDrops.AttackSpeedWord = "Attack speed"  ; uz: Hujum tezligi
-LootDrops.NoUseWord = "This key opens only the boss's gate"  ; uz: Bu kalit faqat boss darvozasini ochadi
-LootDrops.NoWayWord = "I can't get there"  ; uz: U yerga yetib bora olmadim
+LootDrops.AttackSpeedWord = "Attack Speed"  ; uz: Hujum tezligi
+LootDrops.NoUseWord = "This key only opens the boss's gate"  ; uz: Bu kalit faqat boss darvozasini ochadi
+LootDrops.NoWayWord = "I can't reach that spot"  ; uz: U yerga yetib bora olmadim
 LootDrops.WornSlots = "Weapon"  ; uz: Qurol
 LootDrops.WornSlots.1 = "Armour"  ; uz: Zirh
 LootDrops.WornSlots.2 = "Helmet"  ; uz: Dubulg'a
 LootDrops.WornSlots.3 = "Boots"  ; uz: Etik
-LootDrops.WornSlots.4 = "Charm"  ; uz: Tumor
+LootDrops.WornSlots.4 = "Amulet"  ; uz: Tumor
 LootDrops.WornSlots.5 = "Ring"  ; uz: Uzuk
-LootDrops.WornIn = "Worn as: "  ; uz: Kiyiladi: 
-LootDrops.WearHint = "Left click: wear"  ; uz: Chap tugma: kiyish
-LootDrops.OffHint = "Left click: take off"  ; uz: Chap tugma: yechish
+LootDrops.WornIn = "Slot: "  ; uz: Kiyiladi: 
+LootDrops.WearHint = "Left-click: equip"  ; uz: Chap tugma: kiyish
+LootDrops.OffHint = "Left-click: unequip"  ; uz: Chap tugma: yechish
 LootItem.Gauntlet.DisplayName = "Gauntlets of Might"  ; uz: Kuch qo'lqopi
 LootItem.Gauntlet.Slot = "Armour"  ; uz: Zirh
 LootItem.Boots.DisplayName = "Nimble Boots"  ; uz: Chaqqon etik
 LootItem.Boots.Slot = "Boots"  ; uz: Etik
-LootItem.Tome.DisplayName = "Book of Wisdom"  ; uz: Donolik kitobi
+LootItem.Tome.DisplayName = "Tome of Wisdom"  ; uz: Donolik kitobi
 LootItem.Tome.Slot = "Helmet"  ; uz: Dubulg'a
 LootItem.Key.DisplayName = "Key"  ; uz: Kalit
 
@@ -63,81 +80,81 @@ Hud.SecondsWord = "s"  ; uz: s
 Hud.RaiseKeyWord = "Ctrl+"  ; uz: Ctrl+
 Hud.RaiseWord = "Costs 1 point"  ; uz: 1 nuqta sarflanadi
 Hud.MaxedWord = "Max rank"  ; uz: Eng yuqori daraja
-Hud.NoPointsWord = "No points"  ; uz: Nuqta yo'q
+Hud.NoPointsWord = "No points left"  ; uz: Nuqta yo'q
 Hud.LockedWord = "locked"  ; uz: yopiq
 Hud.ItemsWord = "ITEMS"  ; uz: NARSALAR
-Hud.HeroTitle = "Master of the Bow"  ; uz: O'q ustasi
+Hud.HeroTitle = "Master Archer"  ; uz: O'q ustasi
 Hud.CmdMoveWord = "Move"  ; uz: Yur
 Hud.CmdAttackWord = "Attack"  ; uz: Hujum
 Hud.CmdStopWord = "Stop"  ; uz: To'xta
 Hud.CmdGuardWord = "Guard"  ; uz: Himoya
 Hud.ChooseHeroWord = "CHOOSE YOUR HERO"  ; uz: QAHRAMONNI TANLANG
-Hud.ChooseHeroHint = "UP DOWN choose    ENTER enter    ESC back"  ; uz: YUQORI PAST tanlang    ENTER kirish    ESC ortga
-Hud.ChooseModeWord = "HOW DO YOU PLAY"  ; uz: QANDAY O'YNAYSIZ
-Hud.ChooseModeHint = "UP DOWN choose    ENTER take    ESC back"  ; uz: YUQORI PAST tanlang    ENTER tanlash    ESC ortga
+Hud.ChooseHeroHint = "UP/DOWN select    ENTER confirm    ESC back"  ; uz: YUQORI PAST tanlang    ENTER kirish    ESC ortga
+Hud.ChooseModeWord = "HOW WILL YOU PLAY"  ; uz: QANDAY O'YNAYSIZ
+Hud.ChooseModeHint = "UP/DOWN select    ENTER confirm    ESC back"  ; uz: YUQORI PAST tanlang    ENTER tanlash    ESC ortga
 Hud.EndlessWord = "Endless Descent"  ; uz: Cheksiz tushish
-Hud.EndlessBlurb = "A new floor every time. How deep can you go?"  ; uz: Har safar yangi qavat. Qanchaga tushasiz?
-Hud.StagesWord = "Stage"  ; uz: Bosqich
-Hud.StagesBlurb = "A map that never changes. Losing teaches."  ; uz: O'zgarmaydigan xarita. Yutqazish o'rgatadi.
+Hud.EndlessBlurb = "A new floor every time. How deep dare you go?"  ; uz: Har safar yangi qavat. Qanchaga tushasiz?
+Hud.StagesWord = "Stages"  ; uz: Bosqich
+Hud.StagesBlurb = "A map that never changes. Every defeat teaches."  ; uz: O'zgarmaydigan xarita. Yutqazish o'rgatadi.
 Hud.ChooseStageWord = "CHOOSE A STAGE"  ; uz: BOSQICHNI TANLANG
-Hud.ChooseStageHint = "UP DOWN choose    ENTER take    ESC back"  ; uz: YUQORI PAST tanlang    ENTER tanlash    ESC ortga
+Hud.ChooseStageHint = "UP/DOWN select    ENTER confirm    ESC back"  ; uz: YUQORI PAST tanlang    ENTER tanlash    ESC ortga
 Hud.AttackWord = "Attack"  ; uz: Zarba
 Hud.ArmourWord = "Armour"  ; uz: Zirh
 Hud.SpeedWord = "Speed"  ; uz: Tezlik
-Hud.HealthWord = "Soul"  ; uz: Jon
+Hud.HealthWord = "Health"  ; uz: Jon
 Hud.PrimaryWord = "Primary attribute"  ; uz: Asosiy atribut
-Hud.EachPointWord = "Each point gives:"  ; uz: Har bir birlik beradi:
+Hud.EachPointWord = "Each point grants:"  ; uz: Har bir birlik beradi:
 Hud.SpeedNowWord = "Current speed:"  ; uz: Hozirgi tezlik:
 Hud.ManaWord = "Mana"  ; uz: Mana
-Hud.LifestealWord = "Blood Drain"  ; uz: Qon so'rish
+Hud.LifestealWord = "Lifesteal"  ; uz: Qon so'rish
 Hud.PassiveWord = "Passive"  ; uz: Passiv
 UnitBar.LevelWord = "level:"  ; uz: level:
 
 ; ---- data/world/party.duke ----
-Party.WhoWord = "WHO GOES WITH YOU"  ; uz: KIM BILAN KIRASIZ
-Party.WhoHint = "UP DOWN choose    ENTER take    ESC back"  ; uz: YUQORI PAST tanlang    ENTER tanlash    ESC ortga
-Party.AloneWord = "Alone"  ; uz: Yolg'iz
-Party.AloneBlurb = "One hero, the whole dungeon."  ; uz: Bitta qahramon, butun zindon.
-Party.HostWord = "Host a party"  ; uz: Jamoa ochish
-Party.HostBlurb = "You host, the others connect to this computer's address."  ; uz: Siz ochasiz, boshqalar shu kompyuterning manziliga ulanadi.
-Party.JoinWord = "Join a party"  ; uz: Jamoaga qo'shilish
-Party.JoinBlurb = "Enter the address of the player who opened the party."  ; uz: Jamoani ochgan o'yinchining manzilini kiritasiz.
+Party.WhoWord = "WHO COMES WITH YOU"  ; uz: KIM BILAN KIRASIZ
+Party.WhoHint = "UP/DOWN select    ENTER confirm    ESC back"  ; uz: YUQORI PAST tanlang    ENTER tanlash    ESC ortga
+Party.AloneWord = "Solo"  ; uz: Yolg'iz
+Party.AloneBlurb = "One hero against the whole dungeon."  ; uz: Bitta qahramon, butun zindon.
+Party.HostWord = "Host a Party"  ; uz: Jamoa ochish
+Party.HostBlurb = "You host; the others connect to this computer's address."  ; uz: Siz ochasiz, boshqalar shu kompyuterning manziliga ulanadi.
+Party.JoinWord = "Join a Party"  ; uz: Jamoaga qo'shilish
+Party.JoinBlurb = "Enter the address of the player hosting the party."  ; uz: Jamoani ochgan o'yinchining manzilini kiritasiz.
 Party.HowManyWord = "HOW MANY HEROES"  ; uz: NECHA QAHRAMON
 Party.PlayersWord = "%d heroes"  ; uz: %d qahramon
 Party.WaitingWord = "WAITING FOR THE PARTY"  ; uz: JAMOA KUTILMOQDA
-Party.WaitingHint = "Address: %s    it starts when all %d are in"  ; uz: Manzil: %s    hammasi (%d) kirganda boshlanadi
+Party.WaitingHint = "Address: %s    starts when all %d have joined"  ; uz: Manzil: %s    hammasi (%d) kirganda boshlanadi
 Party.JoiningWord = "JOINING THE PARTY"  ; uz: JAMOAGA ULANILMOQDA
-Party.JoiningHint = "Wait for the host to start"  ; uz: Jamoani ochgan o'yinchi boshlashini kuting
-Party.AddressPrompt = "Enter the host's address (IP or IP:port):"  ; uz: Jamoani ochgan o'yinchining manzili (IP yoki IP:port):
+Party.JoiningHint = "Waiting for the host to start"  ; uz: Jamoani ochgan o'yinchi boshlashini kuting
+Party.AddressPrompt = "Host's address (IP or IP:port):"  ; uz: Jamoani ochgan o'yinchining manzili (IP yoki IP:port):
 Party.CancelWord = "Cancel"  ; uz: Bekor qilish
-Party.FailedWord = "The party did not gather"  ; uz: Jamoa yig'ilmadi
-Party.GatheringWord = "Heroes are gathering"  ; uz: Qahramonlar yig'ilmoqda
+Party.FailedWord = "The party could not gather"  ; uz: Jamoa yig'ilmadi
+Party.GatheringWord = "The heroes are gathering"  ; uz: Qahramonlar yig'ilmoqda
 
 ; ---- data/world/saves.duke ----
 SaveMenu.Title = "DUNGEON"  ; uz: ZINDON
-SaveMenu.Hint = "UP DOWN choose    ENTER take    ESC back"  ; uz: YUQORI PAST tanlang    ENTER tanlash    ESC ortga
+SaveMenu.Hint = "UP/DOWN select    ENTER confirm    ESC back"  ; uz: YUQORI PAST tanlang    ENTER tanlash    ESC ortga
 SaveMenu.ContinueWord = "Continue"  ; uz: Davom ettirish
 SaveMenu.LoadWord = "Load"  ; uz: Yuklash
-SaveMenu.LoadBlurb = "Choose one of your saved games."  ; uz: Saqlangan o'yinlardan birini tanlang.
-SaveMenu.NewWord = "New game"  ; uz: Yangi o'yin
+SaveMenu.LoadBlurb = "Pick up one of your saved games."  ; uz: Saqlangan o'yinlardan birini tanlang.
+SaveMenu.NewWord = "New Game"  ; uz: Yangi o'yin
 SaveMenu.NewBlurb = "A fresh run from the first floor."  ; uz: Birinchi qavatdan yangi yurish.
 SaveMenu.LoadTitle = "LOAD GAME"  ; uz: O'YINNI YUKLASH
 SaveMenu.AutosaveWord = "Autosave"  ; uz: Avtosaqlash
 SaveMenu.SlotWord = "Slot %s"  ; uz: %s-joy
 SaveMenu.AboutSave = "%s, level %d, floor %d"  ; uz: %s, %d-daraja, %d-qavat
 SaveMenu.SaveWord = "Save"  ; uz: Saqlash
-SaveMenu.SaveBlurb = "Only a solo game can be saved"  ; uz: Faqat yolg'iz o'yin saqlanadi
+SaveMenu.SaveBlurb = "Only solo games can be saved"  ; uz: Faqat yolg'iz o'yin saqlanadi
 SaveMenu.SaveTitle = "SAVE GAME"  ; uz: O'YINNI SAQLASH
 
 ; ---- data/world/menu.duke ----
 MainMenu.Title = "Last Hero"  ; uz: Last Hero
-MainMenu.Subtitle = "A different dungeon every time"  ; uz: Har safar boshqa zindon
+MainMenu.Subtitle = "A new dungeon every time"  ; uz: Har safar boshqa zindon
 MainMenu.SettingsWord = "Settings"  ; uz: Sozlamalar
 MainMenu.QuitWord = "Quit"  ; uz: Chiqish
 MainMenu.CreditsWord = "Credits"  ; uz: Mualliflar
-MainMenu.CreditsBlurb = "Whose work this game is made of"  ; uz: O'yin kimlarning ishidan yasalgan
+MainMenu.CreditsBlurb = "The people whose work made this game"  ; uz: O'yin kimlarning ishidan yasalgan
 MainMenu.CreditsTitle = "CREDITS"  ; uz: MUALLIFLAR
-MainMenu.CreditsHint = "UP DOWN choose    ESC back"  ; uz: YUQORI PAST tanlang    ESC ortga
+MainMenu.CreditsHint = "UP/DOWN scroll    ESC back"  ; uz: YUQORI PAST tanlang    ESC ortga
 MainMenu.Words = "PAUSED = PAUSED"  ; uz: PAUSED = TO'XTATILDI
 MainMenu.Words.1 = "Resume = Resume"  ; uz: Resume = Davom etish
 MainMenu.Words.2 = "Settings = Settings"  ; uz: Settings = Sozlamalar
@@ -146,7 +163,7 @@ MainMenu.Words.4 = "Quit to the desktop = Quit to the desktop"  ; uz: Quit to th
 MainMenu.Words.5 = "ESC resume = ESC resume"  ; uz: ESC resume = ESC davom etish
 MainMenu.Words.6 = "QUIT TO THE MAIN MENU? = QUIT TO THE MAIN MENU?"  ; uz: QUIT TO THE MAIN MENU? = BOSH MENYUGA CHIQILSINMI?
 MainMenu.Words.7 = "QUIT TO THE DESKTOP? = QUIT TO THE DESKTOP?"  ; uz: QUIT TO THE DESKTOP? = O'YINDAN CHIQILSINMI?
-MainMenu.Words.8 = "everything on this floor is lost = everything on this floor is lost"  ; uz: everything on this floor is lost = o'yin saqlanadi, qaytib davom ettirasiz
+MainMenu.Words.8 = "everything on this floor is lost = your game is saved - you can pick it up later"  ; uz: everything on this floor is lost = o'yin saqlanadi, qaytib davom ettirasiz
 MainMenu.Words.9 = "Keep playing = Keep playing"  ; uz: Keep playing = O'ynashda davom etish
 MainMenu.Words.10 = "Quit = Quit"  ; uz: Quit = Chiqish
 MainMenu.Words.11 = "ESC keep playing = ESC keep playing"  ; uz: ESC keep playing = ESC o'ynashda davom etish
@@ -173,44 +190,44 @@ MainMenu.Words.31 = "Cancel = Cancel"  ; uz: Cancel = Bekor qilish
 MainMenu.Words.32 = "Back = Back"  ; uz: Back = Orqaga
 MainMenu.Words.33 = "anti-aliasing from the next launch = anti-aliasing from the next launch"  ; uz: anti-aliasing from the next launch = silliqlash keyingi ishga tushirishda
 MainMenu.Words.34 = "unsaved changes = unsaved changes"  ; uz: unsaved changes = saqlanmagan o'zgarishlar
-MainMenu.Words.35 = "UP DOWN choose    LEFT RIGHT change    ESC back = UP DOWN choose    LEFT RIGHT change    ESC back"  ; uz: UP DOWN choose    LEFT RIGHT change    ESC back = YUQORI PAST tanlang    CHAP O'NG o'zgartiring    ESC chiqish
-MainMenu.Words.36 = "UP DOWN choose    ENTER take = UP DOWN choose    ENTER take"  ; uz: UP DOWN choose    ENTER take = YUQORI PAST tanlang    ENTER tanlash
-MainMenu.Words.37 = "Keys = Keys"  ; uz: Keys = Tugmalar
-MainMenu.Words.38 = "Pan up = Pan up"  ; uz: Pan up = Kamera yuqoriga
-MainMenu.Words.39 = "Pan left = Pan left"  ; uz: Pan left = Kamera chapga
-MainMenu.Words.40 = "Pan down = Pan down"  ; uz: Pan down = Kamera pastga
-MainMenu.Words.41 = "Pan right = Pan right"  ; uz: Pan right = Kamera o'ngga
-MainMenu.Words.42 = "Turn left = Turn left"  ; uz: Turn left = Chapga burish
-MainMenu.Words.43 = "Turn right = Turn right"  ; uz: Turn right = O'ngga burish
+MainMenu.Words.35 = "UP DOWN choose    LEFT RIGHT change    ESC back = UP/DOWN select    LEFT/RIGHT change    ESC back"  ; uz: UP DOWN choose    LEFT RIGHT change    ESC back = YUQORI PAST tanlang    CHAP O'NG o'zgartiring    ESC chiqish
+MainMenu.Words.36 = "UP DOWN choose    ENTER take = UP/DOWN select    ENTER confirm"  ; uz: UP DOWN choose    ENTER take = YUQORI PAST tanlang    ENTER tanlash
+MainMenu.Words.37 = "Keys = Controls"  ; uz: Keys = Tugmalar
+MainMenu.Words.38 = "Pan up = Camera up"  ; uz: Pan up = Kamera yuqoriga
+MainMenu.Words.39 = "Pan left = Camera left"  ; uz: Pan left = Kamera chapga
+MainMenu.Words.40 = "Pan down = Camera down"  ; uz: Pan down = Kamera pastga
+MainMenu.Words.41 = "Pan right = Camera right"  ; uz: Pan right = Kamera o'ngga
+MainMenu.Words.42 = "Turn left = Rotate left"  ; uz: Turn left = Chapga burish
+MainMenu.Words.43 = "Turn right = Rotate right"  ; uz: Turn right = O'ngga burish
 MainMenu.Words.44 = "Zoom in = Zoom in"  ; uz: Zoom in = Yaqinlashtirish
 MainMenu.Words.45 = "Zoom out = Zoom out"  ; uz: Zoom out = Uzoqlashtirish
-MainMenu.Words.46 = "Reset view = Reset view"  ; uz: Reset view = Kamerani tiklash
+MainMenu.Words.46 = "Reset view = Reset camera"  ; uz: Reset view = Kamerani tiklash
 MainMenu.Words.47 = "Stop = Stop"  ; uz: Stop = To'xta
-MainMenu.Words.48 = "Scatter = Scatter"  ; uz: Scatter = Tarqalish
+MainMenu.Words.48 = "Scatter = Spread out"  ; uz: Scatter = Tarqalish
 MainMenu.Words.49 = "Force attack = Force attack"  ; uz: Force attack = Majburiy hujum
 MainMenu.Words.50 = "Queue waypoints = Queue waypoints"  ; uz: Queue waypoints = Yo'l nuqtalari navbati
 MainMenu.Words.51 = "Add to selection = Add to selection"  ; uz: Add to selection = Tanlovga qo'shish
 MainMenu.Words.52 = "Select all = Select all"  ; uz: Select all = Hammasini tanlash
-MainMenu.Words.53 = "Select all of kind = Select all of kind"  ; uz: Select all of kind = Shu turdagilarni tanlash
+MainMenu.Words.53 = "Select all of kind = Select all of this kind"  ; uz: Select all of kind = Shu turdagilarni tanlash
 MainMenu.Words.54 = "Select same type = Select same type"  ; uz: Select same type = Bir xilini tanlash
-MainMenu.Words.55 = "Next unit = Next unit"  ; uz: Next unit = Keyingi jangchi
-MainMenu.Words.56 = "Previous unit = Previous unit"  ; uz: Previous unit = Oldingi jangchi
-MainMenu.Words.57 = "Centre on base = Centre on base"  ; uz: Centre on base = Qarorgohga qaytish
+MainMenu.Words.55 = "Next unit = Next fighter"  ; uz: Next unit = Keyingi jangchi
+MainMenu.Words.56 = "Previous unit = Previous fighter"  ; uz: Previous unit = Oldingi jangchi
+MainMenu.Words.57 = "Centre on base = Back to base"  ; uz: Centre on base = Qarorgohga qaytish
 MainMenu.Words.58 = "Latest alert = Latest alert"  ; uz: Latest alert = So'nggi ogohlantirish
-MainMenu.Words.59 = "Options = Options"  ; uz: Options = Menyu
-MainMenu.Words.60 = "Toggle command bar = Toggle command bar"  ; uz: Toggle command bar = Buyruqlar paneli
-MainMenu.Words.61 = "Chat all = Chat all"  ; uz: Chat all = Hammaga xabar
-MainMenu.Words.62 = "Chat allies = Chat allies"  ; uz: Chat allies = Ittifoqchilarga xabar
+MainMenu.Words.59 = "Options = Menu"  ; uz: Options = Menyu
+MainMenu.Words.60 = "Toggle command bar = Command bar"  ; uz: Toggle command bar = Buyruqlar paneli
+MainMenu.Words.61 = "Chat all = Message everyone"  ; uz: Chat all = Hammaga xabar
+MainMenu.Words.62 = "Chat allies = Message allies"  ; uz: Chat allies = Ittifoqchilarga xabar
 MainMenu.Words.63 = "Screenshot = Screenshot"  ; uz: Screenshot = Skrinshot
 MainMenu.Words.64 = "Pause = Pause"  ; uz: Pause = Pauza
 Splash.EngineWord = "Duke Engine"  ; uz: Duke Engine
 Splash.LoadingWord = "Loading..."  ; uz: Yuklanmoqda…
-Splash.Tips = "Food restores health: eat it with the Z key."  ; uz: Taom jonni tiklaydi: Z tugmasi bilan yeng.
-Splash.Tips.1 = "The G key lights a campfire if you have wood; food is cooked at a campfire."  ; uz: G tugmasi o'tin bo'lsa gulxan yoqadi; gulxanda ovqat pishiriladi.
-Splash.Tips.2 = "The M key opens the map."  ; uz: M tugmasi xaritani ochadi.
-Splash.Tips.3 = "The L key opens the quest log."  ; uz: L tugmasi topshiriqlar daftarini ochadi.
-Splash.Tips.4 = "The C key opens the hero sheet."  ; uz: C tugmasi qahramon varag'ini ochadi.
-Splash.Tips.5 = "Pick up what a fallen enemy leaves behind."  ; uz: Yiqilgan dushmandan qolgan narsalarni yig'ib oling.
+Splash.Tips = "Food restores health: press Z to eat."  ; uz: Taom jonni tiklaydi: Z tugmasi bilan yeng.
+Splash.Tips.1 = "Got firewood? Press G to light a campfire, then cook your food over it."  ; uz: G tugmasi o'tin bo'lsa gulxan yoqadi; gulxanda ovqat pishiriladi.
+Splash.Tips.2 = "Press M to open the map."  ; uz: M tugmasi xaritani ochadi.
+Splash.Tips.3 = "Press L to open your quest log."  ; uz: L tugmasi topshiriqlar daftarini ochadi.
+Splash.Tips.4 = "Press C to open your character sheet."  ; uz: C tugmasi qahramon varag'ini ochadi.
+Splash.Tips.5 = "Loot whatever fallen enemies leave behind."  ; uz: Yiqilgan dushmandan qolgan narsalarni yig'ib oling.
 
 ; ---- data/world/screens.duke ----
 Screens.SheetTitle = "Hero"  ; uz: Qahramon
@@ -219,22 +236,22 @@ Screens.MapTitle = "Map"  ; uz: Xarita
 Screens.TrackerWord = "Missions"  ; uz: Missiyalar
 Screens.ExperienceWord = "Experience"  ; uz: Tajriba
 Screens.AttributesWord = "Attributes"  ; uz: Atributlar
-Screens.FiguresWord = "Figures"  ; uz: Ko'rsatkichlar
-Screens.WornWord = "Worn"  ; uz: Kiyimlar
+Screens.FiguresWord = "Stats"  ; uz: Ko'rsatkichlar
+Screens.WornWord = "Equipped"  ; uz: Kiyimlar
 Screens.EmptyWord = "empty"  ; uz: bo'sh
 Screens.PerSecondWord = "/s"  ; uz: /s
 Screens.ActiveWord = "Active"  ; uz: Faol
-Screens.FinishedWord = "Finished"  ; uz: Bajarilgan
+Screens.FinishedWord = "Completed"  ; uz: Bajarilgan
 Screens.NoQuestsWord = "No quests yet"  ; uz: Hozircha topshiriq yo'q
-Screens.ShowOnMapWord = "Show on the map"  ; uz: Xaritada ko'rsatish
+Screens.ShowOnMapWord = "Show on map"  ; uz: Xaritada ko'rsatish
 Screens.CloseHint = "Esc — close"  ; uz: Esc — yopish
 Screens.MapHint = "Wheel — zoom   Drag — pan   Esc — close"  ; uz: G'ildirak — yaqinlashtirish   Sudrash — surish   Esc — yopish
-Screens.Places = "Poytaxt = Capital"  ; uz: Poytaxt = Poytaxt
+Screens.Places = "Poytaxt = The Capital"  ; uz: Poytaxt = Poytaxt
 Screens.Places.1 = "Yashil_dala = Green Field"  ; uz: Yashil_dala = Yashil dala
 Screens.Places.2 = "Qumli_dasht = Sandy Steppe"  ; uz: Qumli_dasht = Qumli dasht
 Screens.Places.3 = "Toshli_adir = Stony Hills"  ; uz: Toshli_adir = Toshli adir
-Screens.Places.4 = "Kampir_kulbasi = Crone's Hut"  ; uz: Kampir_kulbasi = Kampir kulbasi
-Screens.Places.5 = "Malika_qasri = Queen's Castle"  ; uz: Malika_qasri = Malika qasri
+Screens.Places.4 = "Kampir_kulbasi = The Crone's Hut"  ; uz: Kampir_kulbasi = Kampir kulbasi
+Screens.Places.5 = "Malika_qasri = The Queen's Castle"  ; uz: Malika_qasri = Malika qasri
 Screens.Places.6 = "Olmazor = Olmazor"  ; uz: Olmazor = Olmazor
 Screens.Places.7 = "Bog'iston = Bog'iston"  ; uz: Bog'iston = Bog'iston
 Screens.Places.8 = "Qoratepa = Qoratepa"  ; uz: Qoratepa = Qoratepa
@@ -247,11 +264,11 @@ Screens.Places.14 = "Minora_4 = Tower"  ; uz: Minora_4 = Minora
 Screens.Places.15 = "Minora_5 = Tower"  ; uz: Minora_5 = Minora
 Screens.Places.16 = "Eski_ibodatxona = Old Temple"  ; uz: Eski_ibodatxona = Eski ibodatxona
 Screens.Places.17 = "Tosh_doira = Stone Circle"  ; uz: Tosh_doira = Tosh doira
-Screens.Places.18 = "Jang_maydoni = Battlefield"  ; uz: Jang_maydoni = Jang maydoni
-Screens.Places.19 = "Qorong'i_o'rmon = Dark Forest"  ; uz: Qorong'i_o'rmon = Qorong'i o'rmon
+Screens.Places.18 = "Jang_maydoni = The Battlefield"  ; uz: Jang_maydoni = Jang maydoni
+Screens.Places.19 = "Qorong'i_o'rmon = The Dark Forest"  ; uz: Qorong'i_o'rmon = Qorong'i o'rmon
 Screens.Places.20 = "Throne = Throne"  ; uz: Throne = Taxt
 Screens.Places.21 = "Altar = Altar"  ; uz: Altar = Mehrob
-Screens.Places.22 = "Square = Square"  ; uz: Square = Maydon
+Screens.Places.22 = "Square = Town Square"  ; uz: Square = Maydon
 Screens.Places.23 = "Gate = Gate"  ; uz: Gate = Darvoza
 Screens.Places.24 = "Cellar = Cellar"  ; uz: Cellar = Yerto'la
 
@@ -264,12 +281,12 @@ Screens.Places.24 = "Cellar = Cellar"  ; uz: Cellar = Yerto'la
 ; Crafting.Tags.5 = ""  ; uz: dubulga = teri_qalpoq charm_qalpoq zanjirli_dubulga temir_dubulga shoxli_dubulga plastinka_dubulga
 ; Crafting.Tags.6 = ""  ; uz: zirh = postin charm_kamzul sehrgar_libosi zanjirli_sovut temir_sovut plastinka_sovut
 Crafting.Title = "Crafting"  ; uz: Hunar
-Crafting.LearnWord = "New recipe: %s"  ; uz: Yangi hunar: %s
-Crafting.MissingWord = "Something is missing"  ; uz: Nimadir yetishmayapti
-Crafting.UnknownWord = "You do not know this recipe"  ; uz: Bu hunarni bilmaysiz
+Crafting.LearnWord = "Recipe learned: %s"  ; uz: Yangi hunar: %s
+Crafting.MissingWord = "Missing materials"  ; uz: Nimadir yetishmayapti
+Crafting.UnknownWord = "You don't know this recipe"  ; uz: Bu hunarni bilmaysiz
 Crafting.GoldWord = "gold"  ; uz: oltin
 Crafting.SecondsWord = "s"  ; uz: s
-Crafting.ToLearnWord = "%d more recipes to learn: merchants sell the scrolls"  ; uz: Yana %d hunar o'rganish mumkin: chizmalar savdogarlarda
+Crafting.ToLearnWord = "%d more recipes to learn - merchants sell the scrolls"  ; uz: Yana %d hunar o'rganish mumkin: chizmalar savdogarlarda
 Crafting.NoneWord = "No recipes yet"  ; uz: Hozircha hunar yo'q
 ; Crafting.From = ""  ; uz: otin 1
 ; Crafting.From.1 = ""  ; uz: ruda 2
@@ -334,8 +351,8 @@ Crafting.NoneWord = "No recipes yet"  ; uz: Hozircha hunar yo'q
 
 ; ---- data/world/travel.duke ----
 Travel.NoGoldWord = "Not enough gold"  ; uz: Oltin yetmaydi
-Travel.UnknownWord = "This tower has not been found yet"  ; uz: Bu minora hali topilmagan
-Travel.TravelHint = "Click a tower you have found — travel there: {cost} gold"  ; uz: Topilgan minorani bosing — u yerga borish: {cost} oltin
+Travel.UnknownWord = "You haven't found this tower yet"  ; uz: Bu minora hali topilmagan
+Travel.TravelHint = "Click a tower you have found to travel there — {cost} gold"  ; uz: Topilgan minorani bosing — u yerga borish: {cost} oltin
 
 ; ---- data/world/daynight.duke ----
 ; DayNight.Sky = ""  ; uz: 0 30 28 40 0x8CA8E0 0x4A5A9A 0x0A1428
@@ -406,39 +423,39 @@ Theme.DarkWood.Name.5 = "Barrel"  ; uz: Barrel
 
 ; ---- data/units/rogue.duke ----
 Hero.Rogue.DisplayName = "Erika"  ; uz: Erika
-Hero.Rogue.Title = "Master of the Bow"  ; uz: O'q ustasi
+Hero.Rogue.Title = "Master Archer"  ; uz: O'q ustasi
 Hero.Rogue.Name.1 = "STR"  ; uz: STR
 Hero.Rogue.Name.2 = "AGI"  ; uz: AGI
 Hero.Rogue.Name.3 = "INT"  ; uz: INT
-Hero.Rogue.Name.4 = "Heavy Arrow"  ; uz: Og'ir o'q
-Hero.Rogue.Blurb = "Draws the bow fully and looses a heavy arrow at a single enemy. The arrow cuts across the room, so the target may have time to run."  ; uz: Kamonni to'liq tortib bitta dushmanga og'ir o'q otadi. O'q xonani kesib o'tadi, shuning uchun nishon qochib ulgurishi mumkin.
-Hero.Rogue.Name.5 = "Arrow Rain"  ; uz: O'q yomg'iri
-Hero.Rogue.Blurb.1 = "Damages every enemy around her at once. Used when surrounded."  ; uz: Atrofdagi hamma dushmanga bir vaqtda zarar yetkazadi. Qurshab olinganda bosiladi.
+Hero.Rogue.Name.4 = "Heavy Shot"  ; uz: Og'ir o'q
+Hero.Rogue.Blurb = "Draws her bow to the full and looses a heavy arrow at a single enemy. It takes a moment to cross the room - the target may yet slip away."  ; uz: Kamonni to'liq tortib bitta dushmanga og'ir o'q otadi. O'q xonani kesib o'tadi, shuning uchun nishon qochib ulgurishi mumkin.
+Hero.Rogue.Name.5 = "Rain of Arrows"  ; uz: O'q yomg'iri
+Hero.Rogue.Blurb.1 = "Strikes every enemy around her at once. Your answer to being surrounded."  ; uz: Atrofdagi hamma dushmanga bir vaqtda zarar yetkazadi. Qurshab olinganda bosiladi.
 Hero.Rogue.Name.6 = "Dash"  ; uz: Chopish
-Hero.Rogue.Blurb.2 = "Dashes swiftly in the chosen direction. Hurts no one — it is a way out of a fight, not into one."  ; uz: Ko'rsatilgan tomonga tez siljiydi. Hech kimga zarar bermaydi — bu jangdan chiqish yo'li, jangga kirish emas.
+Hero.Rogue.Blurb.2 = "A swift dash in the chosen direction. It harms no one — it is a way out of a fight, not into one."  ; uz: Ko'rsatilgan tomonga tez siljiydi. Hech kimga zarar bermaydi — bu jangdan chiqish yo'li, jangga kirish emas.
 Hero.Rogue.Name.7 = "Take Aim"  ; uz: Nishonga ol
-Hero.Rogue.Blurb.3 = "For a time all her blows hit harder. She hits no one herself — it is a window that makes everything else worth more."  ; uz: Bir muddat uning hamma zarbalari kuchliroq bo'ladi. O'zi hech kimga tegmaydi — bu boshqa hamma narsani qimmatroq qiladigan oyna.
+Hero.Rogue.Blurb.3 = "For a while every blow she lands hits harder. It strikes no one itself — it is a window that makes everything else count for more."  ; uz: Bir muddat uning hamma zarbalari kuchliroq bo'ladi. O'zi hech kimga tegmaydi — bu boshqa hamma narsani qimmatroq qiladigan oyna.
 Hero.Rogue.NotIn = "Bog'iston"  ; uz: Bog'iston
 Hero.Rogue.Name.8 = "Horse"  ; uz: Ot
-; Hero.Rogue.Name.9 = ""  ; uz: Qo'nish zarbasi
+Hero.Rogue.Name.9 = "Landing Strike"  ; uz: Qo'nish zarbasi
 
 ; ---- data/units/knight.duke ----
 Hero.Knight.DisplayName = "Garen"  ; uz: Garen
-Hero.Knight.Title = "Shield and Sword"  ; uz: Qalqon va qilich
+Hero.Knight.Title = "Sword and Shield"  ; uz: Qalqon va qilich
 Hero.Knight.Name.1 = "STR"  ; uz: STR
 Hero.Knight.Name.2 = "AGI"  ; uz: AGI
 Hero.Knight.Name.3 = "INT"  ; uz: INT
 Hero.Knight.Name.4 = "Sword Wave"  ; uz: Qilich to'lqini
-Hero.Knight.Blurb = "He swings his sword and a wave bursts from it. The wave cuts through every enemy in its path once — it is not stopped by bodies, only by a wall or the end of its range."  ; uz: Qilichini siltaydi va undan to'lqin otilib chiqadi. To'lqin yo'lidagi har bir dushmanni bir martadan kesib o'tadi — tanaga urilib to'xtamaydi, faqat devor yoki o'z masofasi tugaganda to'xtaydi.
+Hero.Knight.Blurb = "He swings his sword and unleashes a wave of force. It cuts through every enemy in its path once and is not stopped by bodies — only by a wall or the end of its range."  ; uz: Qilichini siltaydi va undan to'lqin otilib chiqadi. To'lqin yo'lidagi har bir dushmanni bir martadan kesib o'tadi — tanaga urilib to'xtamaydi, faqat devor yoki o'z masofasi tugaganda to'xtaydi.
 Hero.Knight.Name.5 = "Shield Charge"  ; uz: Qalqon bilan surish
-Hero.Knight.Blurb.1 = "Holding his shield forward, he rushes in the chosen direction. He catches every enemy in his path and carries them along, then throws them down in front of him when he stops, leaving them stunned."  ; uz: Qalqonini oldinga tutib, ko'rsatilgan tomonga yugurib ketadi. Yo'lida uchragan har bir dushmanni ilib, o'zi bilan birga suradi, to'xtaganda esa ularni oldiga tashlab, gangitib qo'yadi.
+Hero.Knight.Blurb.1 = "Shield raised, he charges in the chosen direction, sweeping up every enemy in his path and driving them before him. When he stops, he hurls them down at his feet, stunned."  ; uz: Qalqonini oldinga tutib, ko'rsatilgan tomonga yugurib ketadi. Yo'lida uchragan har bir dushmanni ilib, o'zi bilan birga suradi, to'xtaganda esa ularni oldiga tashlab, gangitib qo'yadi.
 Hero.Knight.Name.6 = "Dragon Blood"  ; uz: Ajdar qoni
-Hero.Knight.Blurb.2 = "Dragon blood runs in his veins: he takes less damage from every blow and heals himself every second. Both grow stronger with each rank. Not cast — always active."  ; uz: Tomirlarida ajdar qoni oqadi: har bir zarbadan kamroq zarar oladi va har soniyada o'zi tuzalib boradi. Har bir darajada ikkalasi ham kuchayadi. Bosilmaydi — doim ishlaydi.
+Hero.Knight.Blurb.2 = "Dragon blood runs in his veins: he takes less damage from every blow and heals a little every second. Both grow with each rank. Never cast — always at work."  ; uz: Tomirlarida ajdar qoni oqadi: har bir zarbadan kamroq zarar oladi va har soniyada o'zi tuzalib boradi. Har bir darajada ikkalasi ham kuchayadi. Bosilmaydi — doim ishlaydi.
 Hero.Knight.Name.7 = "Reverse Polarity"  ; uz: Teskari qutb
-Hero.Knight.Blurb.3 = "Pulls every enemy around him to one point — right in front of him — damaging and stunning them. The gathered enemies can be cut down with a single wave."  ; uz: Atrofidagi barcha dushmanlarni bir nuqtaga — o'zining ro'parasiga — tortib keladi, ularga zarar yetkazadi va gangitib qo'yadi. To'plangan dushmanlarni bitta to'lqin bilan kesish mumkin.
+Hero.Knight.Blurb.3 = "Drags every enemy around him to a single point right in front of him, damaging and stunning them. Gathered like that, they fall to a single Sword Wave."  ; uz: Atrofidagi barcha dushmanlarni bir nuqtaga — o'zining ro'parasiga — tortib keladi, ularga zarar yetkazadi va gangitib qo'yadi. To'plangan dushmanlarni bitta to'lqin bilan kesish mumkin.
 Hero.Knight.NotIn = "Bog'iston"  ; uz: Bog'iston
 Hero.Knight.Name.8 = "Horse"  ; uz: Ot
-; Hero.Knight.Name.9 = ""  ; uz: Qo'nish zarbasi
+Hero.Knight.Name.9 = "Landing Strike"  ; uz: Qo'nish zarbasi
 
 ; ---- data/units/skeleton.duke ----
 Monster.Skeleton.DisplayName = "Skeleton"  ; uz: Skelet
@@ -455,7 +472,7 @@ Monster.Stalker.DisplayName = "Stalker"  ; uz: Izquvar
 ; ---- data/units/revenant.duke ----
 Monster.Revenant.DisplayName = "Revenant"  ; uz: Qaytgan murda
 Monster.Revenant.Name.1 = "Blood Aura"  ; uz: Qon aurasi
-Monster.Revenant.Blurb = "Allies around him recover health with every blow they land."  ; uz: Atrofidagi o'zinikilar har zarbasidan jon qaytarib oladi.
+Monster.Revenant.Blurb = "Nearby allies regain health with every blow they land."  ; uz: Atrofidagi o'zinikilar har zarbasidan jon qaytarib oladi.
 
 ; ---- data/units/skeleton_mage.duke ----
 Monster.SkeletonMage.DisplayName = "Skeleton Mage"  ; uz: Skelet sehrgar
@@ -465,15 +482,15 @@ Monster.SkeletonMage.Name.2 = "Fireball"  ; uz: Olov shari
 Monster.SkeletonHealer.DisplayName = "Skeleton Healer"  ; uz: Skelet tabib
 Monster.SkeletonHealer.Name.1 = "Holy Light"  ; uz: Muqaddas nur
 Monster.SkeletonHealer.Name.2 = "Mana Spring"  ; uz: Sehr buloqi
-Monster.SkeletonHealer.Blurb = "Allies around him refill their mana faster."  ; uz: Atrofidagi o'zinikilarning manasi tezroq to'ladi.
+Monster.SkeletonHealer.Blurb = "Nearby allies regain mana faster."  ; uz: Atrofidagi o'zinikilarning manasi tezroq to'ladi.
 
 ; ---- data/units/skeleton_summoner.duke ----
 Monster.SkeletonSummoner.DisplayName = "Skeleton Summoner"  ; uz: Skelet chaqiruvchi
 Monster.SkeletonSummoner.Name.1 = "Summon"  ; uz: Chaqiruv
 Monster.SkeletonSummoner.Name.2 = "Haste"  ; uz: Shiddat
-Monster.SkeletonSummoner.Blurb = "For a few seconds hits much faster."  ; uz: Bir necha soniya ancha tezroq uradi.
+Monster.SkeletonSummoner.Blurb = "Attacks much faster for a few seconds."  ; uz: Bir necha soniya ancha tezroq uradi.
 Monster.SkeletonSummoner.Name.3 = "Might"  ; uz: Qudrat
-Monster.SkeletonSummoner.Blurb.1 = "Allies around him hit harder, and their skills grow stronger too."  ; uz: Atrofidagi o'zinikilar qattiqroq uradi, mahoratlari ham kuchliroq.
+Monster.SkeletonSummoner.Blurb.1 = "Nearby allies hit harder, and their skills grow stronger too."  ; uz: Atrofidagi o'zinikilar qattiqroq uradi, mahoratlari ham kuchliroq.
 
 ; ---- data/units/mage.duke ----
 Hero.Mage.DisplayName = "Lira"  ; uz: Lira
@@ -482,44 +499,44 @@ Hero.Mage.Name.1 = "STR"  ; uz: STR
 Hero.Mage.Name.2 = "AGI"  ; uz: AGI
 Hero.Mage.Name.3 = "INT"  ; uz: INT
 Hero.Mage.Name.4 = "Fire Bolt"  ; uz: Olov o'qi
-Hero.Mage.Blurb = "Fires a bolt of flame in the chosen direction. It stops at the first body or wall it hits and explodes there."  ; uz: Yo'nalish bo'ylab olov o'qi otadi. Birinchi uchragan tanaga yoki devorga urilib to'xtaydi va o'sha joyda portlaydi.
-Hero.Mage.Name.5 = "Ice Wave"  ; uz: Muz to'lqini
-Hero.Mage.Blurb.1 = "Detonates ice at the chosen spot: it damages everything there and slows it for a while. The slow matters more than the damage."  ; uz: Tanlangan joyda muz portlatadi: u yerdagilarga zarar beradi va ularni bir muddat sekinlashtiradi. Zarari emas — sekinlashuvi muhim.
+Hero.Mage.Blurb = "Hurls a bolt of flame in the chosen direction. It bursts on the first body or wall it strikes."  ; uz: Yo'nalish bo'ylab olov o'qi otadi. Birinchi uchragan tanaga yoki devorga urilib to'xtaydi va o'sha joyda portlaydi.
+Hero.Mage.Name.5 = "Frost Wave"  ; uz: Muz to'lqini
+Hero.Mage.Blurb.1 = "Shatters ice at the chosen spot, damaging everything there and slowing it for a while. The slow matters more than the damage."  ; uz: Tanlangan joyda muz portlatadi: u yerdagilarga zarar beradi va ularni bir muddat sekinlashtiradi. Zarari emas — sekinlashuvi muhim.
 Hero.Mage.Name.6 = "Blink"  ; uz: Siljish
-Hero.Mage.Blurb.2 = "Appears elsewhere in an instant. What lies between — wall or enemy — does not matter at all."  ; uz: Bir zumda boshqa joyda paydo bo'ladi. Oradagi narsa — devormi, dushmanmi — umuman ahamiyatsiz.
-Hero.Mage.Blurb.3 = "Calls a meteor down on the chosen spot. It does not land at once: a warning circle appears on the ground, and whoever manages to step out of it survives."  ; uz: Tanlangan joyga meteor chaqiradi. U bir zumda tushmaydi: yerda ogohlantiruvchi doira paydo bo'ladi, va undan chiqib ketishga ulgurgan omon qoladi.
+Hero.Mage.Blurb.2 = "She vanishes and reappears elsewhere in an instant. Whatever lies between — wall or enemy — makes no difference."  ; uz: Bir zumda boshqa joyda paydo bo'ladi. Oradagi narsa — devormi, dushmanmi — umuman ahamiyatsiz.
+Hero.Mage.Blurb.3 = "Calls a meteor down on the chosen spot. It does not fall at once: a warning circle marks the ground, and whoever steps out of it in time survives."  ; uz: Tanlangan joyga meteor chaqiradi. U bir zumda tushmaydi: yerda ogohlantiruvchi doira paydo bo'ladi, va undan chiqib ketishga ulgurgan omon qoladi.
 Hero.Mage.NotIn = "Bog'iston"  ; uz: Bog'iston
 Hero.Mage.Name.8 = "Horse"  ; uz: Ot
-; Hero.Mage.Name.9 = ""  ; uz: Qo'nish zarbasi
+Hero.Mage.Name.9 = "Landing Strike"  ; uz: Qo'nish zarbasi
 
 ; ---- data/units/warden.duke ----
 Monster.Warden.DisplayName = "Warden"  ; uz: Qo'riqchi
-Monster.Warden.Name.1 = "Blood Drain"  ; uz: Qon so'rish
+Monster.Warden.Name.1 = "Lifesteal"  ; uz: Qon so'rish
 
 ; ---- data/units/reaper.duke ----
 Monster.Reaper.DisplayName = "Reaper"  ; uz: O'roqchi
-Monster.Reaper.Name.1 = "Blood Drain"  ; uz: Qon so'rish
+Monster.Reaper.Name.1 = "Lifesteal"  ; uz: Qon so'rish
 
 ; ---- data/units/necromancer.duke ----
 Monster.Necromancer.DisplayName = "Necromancer"  ; uz: Nekromant
-Monster.Necromancer.Name.1 = "Blood Drain"  ; uz: Qon so'rish
+Monster.Necromancer.Name.1 = "Lifesteal"  ; uz: Qon so'rish
 
 ; ---- data/units/graveyard.duke ----
 Monster.Grave.DisplayName = "Grave"  ; uz: Qabr
-Monster.Grave.Name.1 = "Warded by sorcery"  ; uz: Sehr bilan himoyalangan
+Monster.Grave.Name.1 = "Warded by Sorcery"  ; uz: Sehr bilan himoyalangan
 Monster.GraveRaiser.DisplayName = "Grave Sorcerer"  ; uz: Qabr sehrgari
-; Monster.GraveRaiser.Blurb = ""  ; uz: Qabrlari atrofidagi o'liklar har zarbasidan jon qaytarib oladi.
-; Monster.GraveRaiser.Name.1 = ""  ; uz: Qon qabri
-; Monster.GraveRaiser.Blurb.1 = ""  ; uz: Bir o'likni bir necha soniya ancha tezroq urdiradi.
+Monster.GraveRaiser.Blurb = "The dead around his graves regain health with every blow they land."  ; uz: Qabrlari atrofidagi o'liklar har zarbasidan jon qaytarib oladi.
+Monster.GraveRaiser.Name.1 = "Blood Grave"  ; uz: Qon qabri
+Monster.GraveRaiser.Blurb.1 = "Drives one of the dead to strike much faster for a few seconds."  ; uz: Bir o'likni bir necha soniya ancha tezroq urdiradi.
 Monster.GraveRaiser.Name.2 = "Haste"  ; uz: Shiddat
-; Monster.GraveRaiser.Blurb.2 = ""  ; uz: Yarador o'likning jonini to'ldiradi.
-; Monster.GraveRaiser.Name.3 = ""  ; uz: O'lik nafasi
-Monster.CaveSeal.DisplayName = "Sealed cave"  ; uz: Muhrlangan g'or
-Monster.CaveSeal.Name.1 = "Stone"  ; uz: Tosh
+Monster.GraveRaiser.Blurb.2 = "Restores the health of a wounded corpse."  ; uz: Yarador o'likning jonini to'ldiradi.
+Monster.GraveRaiser.Name.3 = "Breath of the Dead"  ; uz: O'lik nafasi
+Monster.CaveSeal.DisplayName = "Sealed Cave"  ; uz: Muhrlangan g'or
+Monster.CaveSeal.Name.1 = "Living Stone"  ; uz: Tosh
 
 ; ---- data/units/champion.duke ----
 Monster.Champion.DisplayName = "Champion"  ; uz: Pahlavon
-Monster.Champion.Name.1 = "Blood Drain"  ; uz: Qon so'rish
+Monster.Champion.Name.1 = "Lifesteal"  ; uz: Qon so'rish
 
 ; ---- data/units/commander.duke ----
 Monster.Commander.DisplayName = "Commander Laylo"  ; uz: Qo'mondon Laylo
@@ -536,7 +553,7 @@ Monster.QueenBoss.Name.1 = "Fireball"  ; uz: Olov shari
 
 ; ---- data/units/cursed_hero.duke ----
 Monster.CursedHero.DisplayName = "Cursed Hero"  ; uz: La'natlangan qahramon
-Monster.CursedHero.Name.1 = "Beaten but never dies"  ; uz: Mag'lub bo'ladi, o'lmaydi
+Monster.CursedHero.Name.1 = "Can be beaten, never killed"  ; uz: Mag'lub bo'ladi, o'lmaydi
 
 ; ---- data/units/baba_yaga.duke ----
 Monster.BabaYaga.DisplayName = "Baba Yaga"  ; uz: Yalmog'iz kampir
@@ -550,15 +567,15 @@ Monster.Imp.DisplayName = "Imp"  ; uz: Ajina
 ; ---- data/units/act1.duke ----
 Monster.Act1Commander.DisplayName = "Commander"  ; uz: Qo'mondon
 Monster.Act1CommanderFighter.DisplayName = "Commander"  ; uz: Qo'mondon
-Monster.Act1CommanderFighter.Name.1 = "Falls but never dies"  ; uz: Yiqiladi, o'lmaydi
+Monster.Act1CommanderFighter.Name.1 = "Falls, but never dies"  ; uz: Yiqiladi, o'lmaydi
 Monster.Act1Queen.DisplayName = "Queen"  ; uz: Malika
 Monster.Blacksmith.DisplayName = "Master Smith"  ; uz: Temirchi Usta
 Monster.OldWoman.DisplayName = "Granny Zebo"  ; uz: Zebo momo
 Monster.Soldier.DisplayName = "Soldier"  ; uz: Askar
-Monster.Militia.DisplayName = "Militia"  ; uz: Navkar
-Monster.EnemyCommander.DisplayName = "Enemy Commander"  ; uz: Dushman sarkardasi
-Monster.EnemyCommander.Name.1 = "Falls but never dies"  ; uz: Yiqiladi, o'lmaydi
-Monster.DarkLord.DisplayName = "Dark Knight"  ; uz: Qora ritsar
+Monster.Militia.DisplayName = "Man-at-Arms"  ; uz: Navkar
+Monster.EnemyCommander.DisplayName = "Enemy Warlord"  ; uz: Dushman sarkardasi
+Monster.EnemyCommander.Name.1 = "Falls, but never dies"  ; uz: Yiqiladi, o'lmaydi
+Monster.DarkLord.DisplayName = "Black Knight"  ; uz: Qora ritsar
 Monster.Ritualist.DisplayName = "Ritualist"  ; uz: Kohin
 Monster.Soqchi.DisplayName = "Royal Guard"  ; uz: Qirol soqchisi
 Monster.KingdomArcher.DisplayName = "Archer"  ; uz: Kamonchi
@@ -574,7 +591,7 @@ Monster.TowerKeeper.DisplayName = "Tower Keeper"  ; uz: Minorabon
 
 ; ---- data/units/act2.duke ----
 Monster.Baker.DisplayName = "Baker Karim"  ; uz: Novvoy Karim
-Monster.Guard.DisplayName = "Guard Jasur"  ; uz: Qorovul Jasur
+Monster.Guard.DisplayName = "Watchman Jasur"  ; uz: Qorovul Jasur
 Monster.Elder.DisplayName = "Elder Hamid"  ; uz: Oqsoqol Hamid
 Monster.FreedDamsel.DisplayName = "Maiden"  ; uz: Qiz
 Monster.EmptyCage.DisplayName = "Cage"  ; uz: Qafas
@@ -582,15 +599,15 @@ Monster.EmptyCage.DisplayName = "Cage"  ; uz: Qafas
 ; ---- data/units/wilds_forest.duke ----
 Monster.Wolf.DisplayName = "Wolf"  ; uz: Bo'ri
 Monster.Spider.DisplayName = "Spider"  ; uz: O'rgimchak
-Monster.Sporeling.DisplayName = "Poison Mushroom"  ; uz: Zaharli qo'ziqorin
+Monster.Sporeling.DisplayName = "Poison Toadstool"  ; uz: Zaharli qo'ziqorin
 Monster.BloodWolf.DisplayName = "Blood Wolf"  ; uz: Qonxo'r bo'ri
 Monster.BloodWolf.Name.1 = "Bloodthirst"  ; uz: Qonxo'r
 Monster.BloodWolf.Name.2 = "Haste"  ; uz: Shiddat
-Monster.BloodWolf.Blurb = "For a few seconds hits much faster."  ; uz: Bir necha soniya ancha tezroq uradi.
+Monster.BloodWolf.Blurb = "Attacks much faster for a few seconds."  ; uz: Bir necha soniya ancha tezroq uradi.
 Monster.GoblinChief.DisplayName = "Goblin Chief"  ; uz: Pakana sardor
-Monster.GoblinChief.Name.1 = "Blood Drain"  ; uz: Qon so'rish
+Monster.GoblinChief.Name.1 = "Lifesteal"  ; uz: Qon so'rish
 Monster.GoblinChief.Name.2 = "Fury"  ; uz: G'azab
-Monster.GoblinChief.Blurb = "Allies around him hit harder."  ; uz: Atrofidagi o'zinikilar qattiqroq uradi.
+Monster.GoblinChief.Blurb = "Nearby allies hit harder."  ; uz: Atrofidagi o'zinikilar qattiqroq uradi.
 
 ; ---- data/units/wilds_desert.duke ----
 Monster.Cactoro.DisplayName = "Cactus Brute"  ; uz: Kaktusvoy
@@ -598,66 +615,66 @@ Monster.Lizard.DisplayName = "Lizard"  ; uz: Kaltakesak
 Monster.Jinn.DisplayName = "Jinn"  ; uz: Jin
 Monster.FireLizard.DisplayName = "Fire Lizard"  ; uz: Olovli kaltakesak
 Monster.FireLizard.Name.1 = "Fury"  ; uz: G'azab
-Monster.FireLizard.Blurb = "Allies around him hit harder."  ; uz: Atrofidagi o'zinikilar qattiqroq uradi.
+Monster.FireLizard.Blurb = "Nearby allies hit harder."  ; uz: Atrofidagi o'zinikilar qattiqroq uradi.
 Monster.FireLizard.Name.2 = "Bloodthirst"  ; uz: Qonxo'r
 Monster.Dragon.DisplayName = "Dragon"  ; uz: Ajdar
 Monster.Dragon.Name.1 = "Fire Breath"  ; uz: Olov nafasi
-Monster.Dragon.Name.2 = "Blood Drain"  ; uz: Qon so'rish
+Monster.Dragon.Name.2 = "Lifesteal"  ; uz: Qon so'rish
 
 ; ---- data/units/wilds_highlands.duke ----
 Monster.Goleling.DisplayName = "Rock Spirit"  ; uz: Qoya jini
 Monster.Ogre.DisplayName = "Ogre"  ; uz: Dev
 Monster.Shaman.DisplayName = "Mountain Shaman"  ; uz: Tog' shomoni
-Monster.StoneGoleling.DisplayName = "Stone Golem"  ; uz: Tosh qanot
+Monster.StoneGoleling.DisplayName = "Stonewing"  ; uz: Tosh qanot
 Monster.StoneGoleling.Name.1 = "Stone Skin"  ; uz: Toshteri
 Monster.StoneGoleling.Name.2 = "Haste"  ; uz: Shiddat
-Monster.StoneGoleling.Blurb = "For a few seconds hits much faster."  ; uz: Bir necha soniya ancha tezroq uradi.
+Monster.StoneGoleling.Blurb = "Attacks much faster for a few seconds."  ; uz: Bir necha soniya ancha tezroq uradi.
 Monster.GiantKing.DisplayName = "Giant King"  ; uz: Alp dev
 Monster.GiantKing.Name.1 = "Stone Skin"  ; uz: Toshteri
-Monster.GiantKing.Name.2 = "Blood Drain"  ; uz: Qon so'rish
+Monster.GiantKing.Name.2 = "Lifesteal"  ; uz: Qon so'rish
 
 ; ---- data/units/wilds_marsh.duke ----
 Monster.Slime.DisplayName = "Slime"  ; uz: Shilimshiq
 Monster.Frog.DisplayName = "Frog"  ; uz: Qurbaqa
 Monster.Wisp.DisplayName = "Wisp"  ; uz: Arvoh
-Monster.VenomFrog.DisplayName = "Poison Frog"  ; uz: Zaharli qurbaqa
+Monster.VenomFrog.DisplayName = "Venom Toad"  ; uz: Zaharli qurbaqa
 Monster.VenomFrog.Name.1 = "Blood Aura"  ; uz: Qon aurasi
-Monster.VenomFrog.Blurb = "Allies around him recover health with every blow they land."  ; uz: Atrofidagi o'zinikilar har zarbasidan jon qaytarib oladi.
+Monster.VenomFrog.Blurb = "Nearby allies regain health with every blow they land."  ; uz: Atrofidagi o'zinikilar har zarbasidan jon qaytarib oladi.
 Monster.VenomFrog.Name.2 = "Stone Skin"  ; uz: Toshteri
 Monster.BogHorror.DisplayName = "Bog Horror"  ; uz: Alvasti
 Monster.BogHorror.Name.1 = "Blood Aura"  ; uz: Qon aurasi
-Monster.BogHorror.Blurb = "Allies around him recover health with every blow they land."  ; uz: Atrofidagi o'zinikilar har zarbasidan jon qaytarib oladi.
+Monster.BogHorror.Blurb = "Nearby allies regain health with every blow they land."  ; uz: Atrofidagi o'zinikilar har zarbasidan jon qaytarib oladi.
 Monster.BogHorror.Name.2 = "Haste"  ; uz: Shiddat
-Monster.BogHorror.Blurb.1 = "For a few seconds hits much faster."  ; uz: Bir necha soniya ancha tezroq uradi.
+Monster.BogHorror.Blurb.1 = "Attacks much faster for a few seconds."  ; uz: Bir necha soniya ancha tezroq uradi.
 
 ; ---- data/units/bestiary_roads.duke ----
 Monster.Bandit.DisplayName = "Bandit"  ; uz: Qaroqchi
-Monster.Brigand.DisplayName = "Brigand"  ; uz: Yo'lto'sar
+Monster.Brigand.DisplayName = "Highwayman"  ; uz: Yo'lto'sar
 Monster.BanditArcher.DisplayName = "Bandit Archer"  ; uz: Kamonchi qaroqchi
 Monster.BanditVeteran.DisplayName = "Bandit Veteran"  ; uz: Qaroqchi bahodir
 Monster.BanditVeteran.Name.1 = "Bloodthirst"  ; uz: Qonxo'r
-Monster.BanditVeteran.Blurb = "For a few seconds hits much faster."  ; uz: Bir necha soniya ancha tezroq uradi.
+Monster.BanditVeteran.Blurb = "Attacks much faster for a few seconds."  ; uz: Bir necha soniya ancha tezroq uradi.
 Monster.BanditVeteran.Name.2 = "Haste"  ; uz: Shiddat
-Monster.BanditChief.DisplayName = "Bandit Chief"  ; uz: Qaroqchilar sardori
+Monster.BanditChief.DisplayName = "Bandit Lord"  ; uz: Qaroqchilar sardori
 Monster.BanditChief.Name.1 = "Lightning Strike"  ; uz: Yashin zarbasi
-Monster.BanditChief.Blurb = "For a few seconds hits much faster."  ; uz: Bir necha soniya ancha tezroq uradi.
+Monster.BanditChief.Blurb = "Attacks much faster for a few seconds."  ; uz: Bir necha soniya ancha tezroq uradi.
 Monster.BanditChief.Name.2 = "Haste"  ; uz: Shiddat
 Monster.GreyWolf.DisplayName = "Grey Wolf"  ; uz: Kulrang bo'ri
 Monster.Bull.DisplayName = "Wild Bull"  ; uz: Yovvoyi buqa
-Monster.Bull.Name.1 = "Horn Strike"  ; uz: Shox zarbasi
+Monster.Bull.Name.1 = "Gore"  ; uz: Shox zarbasi
 
 ; ---- data/units/bestiary_grove.duke ----
 Monster.Armabee.DisplayName = "Armoured Bee"  ; uz: Zirhli ari
 Monster.Stag.DisplayName = "Stag"  ; uz: Bug'u
-Monster.Wasp.DisplayName = "Poison Wasp"  ; uz: Zaharli ari
-Monster.ArmabeeGuard.DisplayName = "Bee Guard"  ; uz: Ari qo'riqchisi
+Monster.Wasp.DisplayName = "Venom Wasp"  ; uz: Zaharli ari
+Monster.ArmabeeGuard.DisplayName = "Hive Guard"  ; uz: Ari qo'riqchisi
 Monster.GiantArmabee.DisplayName = "Giant Bee"  ; uz: Ulkan ari
-Monster.GiantArmabee.Name.1 = "Blood Drain"  ; uz: Qon so'rish
-Monster.GiantArmabee.Blurb = "For a few seconds hits much faster."  ; uz: Bir necha soniya ancha tezroq uradi.
+Monster.GiantArmabee.Name.1 = "Lifesteal"  ; uz: Qon so'rish
+Monster.GiantArmabee.Blurb = "Attacks much faster for a few seconds."  ; uz: Bir necha soniya ancha tezroq uradi.
 Monster.GiantArmabee.Name.2 = "Haste"  ; uz: Shiddat
 Monster.MushroomKing.DisplayName = "Mushroom King"  ; uz: Qo'ziqorin qirol
 Monster.MushroomKing.Name.1 = "Mushroom Brood"  ; uz: Qo'ziqorin bolalari
-Monster.MushroomKing.Blurb = "Allies around him hit harder."  ; uz: Atrofidagi o'zinikilar qattiqroq uradi.
+Monster.MushroomKing.Blurb = "Nearby allies hit harder."  ; uz: Atrofidagi o'zinikilar qattiqroq uradi.
 Monster.MushroomKing.Name.2 = "Fury"  ; uz: G'azab
 Monster.Fox.DisplayName = "Fox"  ; uz: Tulki
 
@@ -666,30 +683,30 @@ Monster.OrcGrunt.DisplayName = "Orc"  ; uz: Ork
 Monster.OrcWarrior.DisplayName = "Orc Warrior"  ; uz: Ork jangchisi
 Monster.OrcHunter.DisplayName = "Orc Hunter"  ; uz: Ork ovchisi
 Monster.OrcWarlord.DisplayName = "Orc Warlord"  ; uz: Ork sarkardasi
-Monster.OrcWarlord.Name.1 = "Blood Drain"  ; uz: Qon so'rish
-Monster.OrcWarlord.Blurb = "Allies around him hit harder."  ; uz: Atrofidagi o'zinikilar qattiqroq uradi.
+Monster.OrcWarlord.Name.1 = "Lifesteal"  ; uz: Qon so'rish
+Monster.OrcWarlord.Blurb = "Nearby allies hit harder."  ; uz: Atrofidagi o'zinikilar qattiqroq uradi.
 Monster.OrcWarlord.Name.2 = "Fury"  ; uz: G'azab
 Monster.Troll.DisplayName = "Troll"  ; uz: Trol
-Monster.Troll.Name.1 = "Grasp"  ; uz: Changal
+Monster.Troll.Name.1 = "Crushing Grip"  ; uz: Changal
 Monster.Troll.Name.2 = "Thick Hide"  ; uz: Qalin teri
 
 ; ---- data/units/bestiary_crypt.duke ----
 Monster.Zombie.DisplayName = "Zombie"  ; uz: Murda
-Monster.Zombie.Name.1 = "Flesh Eater"  ; uz: Go'sht yeyish
+Monster.Zombie.Name.1 = "Feast on Flesh"  ; uz: Go'sht yeyish
 Monster.ZombieGhoul.DisplayName = "Ghoul"  ; uz: Gul
 Monster.GhostSkull.DisplayName = "Skull Wraith"  ; uz: Kalla arvoh
 Monster.ZombieBrute.DisplayName = "Zombie Brute"  ; uz: Murda pahlavon
 Monster.ZombieGiant.DisplayName = "Giant Zombie"  ; uz: Ulkan murda
-Monster.ZombieGiant.Name.1 = "Blood Drain"  ; uz: Qon so'rish
-Monster.ZombieGiant.Blurb = "Allies around him hit harder."  ; uz: Atrofidagi o'zinikilar qattiqroq uradi.
+Monster.ZombieGiant.Name.1 = "Lifesteal"  ; uz: Qon so'rish
+Monster.ZombieGiant.Blurb = "Nearby allies hit harder."  ; uz: Atrofidagi o'zinikilar qattiqroq uradi.
 Monster.ZombieGiant.Name.2 = "Fury"  ; uz: G'azab
 Monster.FallenKing.DisplayName = "The Cursed King"  ; uz: La'natlangan qirol
-Monster.FallenKing.Name.1 = "Risen from the Grave"  ; uz: Qabrdan turganlar
-Monster.FallenKing.Blurb = "Allies around him recover health with every blow they land."  ; uz: Atrofidagi o'zinikilar har zarbasidan jon qaytarib oladi.
+Monster.FallenKing.Name.1 = "The Risen"  ; uz: Qabrdan turganlar
+Monster.FallenKing.Blurb = "Nearby allies regain health with every blow they land."  ; uz: Atrofidagi o'zinikilar har zarbasidan jon qaytarib oladi.
 Monster.FallenKing.Name.2 = "Curse"  ; uz: La'nat
-Monster.FallenKing.Name.3 = "Black Fire"  ; uz: Qora olov
+Monster.FallenKing.Name.3 = "Blackfire"  ; uz: Qora olov
 Monster.ZombieCrawler.DisplayName = "Crawling Corpse"  ; uz: Sudraluvchi murda
-Monster.SkullCrawler.DisplayName = "Skull Crawler"  ; uz: Kalla o'rgimchak
+Monster.SkullCrawler.DisplayName = "Skull Spider"  ; uz: Kalla o'rgimchak
 Monster.Bat.DisplayName = "Bat"  ; uz: Ko'rshapalak
 Monster.Rat.DisplayName = "Rat"  ; uz: Kalamush
 Monster.Witch.DisplayName = "Witch"  ; uz: Jodugar
@@ -697,23 +714,23 @@ Monster.CaveSpider.DisplayName = "Cave Spider"  ; uz: G'or o'rgimchagi
 Monster.CaveSpider.Name.1 = "Web"  ; uz: To'r
 Monster.BroodMother.DisplayName = "Brood Mother"  ; uz: O'rgimchak ona
 Monster.BroodMother.Name.1 = "Web"  ; uz: To'r
-Monster.BroodMother.Name.2 = "Blood Drain"  ; uz: Qon so'rish
+Monster.BroodMother.Name.2 = "Lifesteal"  ; uz: Qon so'rish
 
 ; ---- data/units/bestiary_coast.duke ----
 Monster.Crab.DisplayName = "Crab"  ; uz: Qisqichbaqa
 Monster.Sharkman.DisplayName = "Sharkman"  ; uz: Akula-odam
-Monster.PirateAnne.DisplayName = "Pirate Girl"  ; uz: Dengiz qaroqchi qiz
+Monster.PirateAnne.DisplayName = "Pirate Lass"  ; uz: Dengiz qaroqchi qiz
 Monster.BloodShark.DisplayName = "Blood Shark"  ; uz: Qonli akula
-Monster.BloodShark.Name.1 = "Blood Drain"  ; uz: Qon so'rish
-Monster.BloodShark.Blurb = "For a few seconds hits much faster."  ; uz: Bir necha soniya ancha tezroq uradi.
+Monster.BloodShark.Name.1 = "Lifesteal"  ; uz: Qon so'rish
+Monster.BloodShark.Blurb = "Attacks much faster for a few seconds."  ; uz: Bir necha soniya ancha tezroq uradi.
 Monster.BloodShark.Name.2 = "Haste"  ; uz: Shiddat
 Monster.Kraken.DisplayName = "The Lake Beast"  ; uz: Ko'l maxluqi
-Monster.Kraken.Name.1 = "Entwine"  ; uz: Chirmovchi
-Monster.Kraken.Name.2 = "Wave"  ; uz: To'lqin
+Monster.Kraken.Name.1 = "Entangle"  ; uz: Chirmovchi
+Monster.Kraken.Name.2 = "Tidal Wave"  ; uz: To'lqin
 Monster.PirateMako.DisplayName = "Sea Raider"  ; uz: Dengiz bosqinchisi
 Monster.PirateCaptain.DisplayName = "Captain"  ; uz: Kapitan
-Monster.PirateCaptain.Name.1 = "Blood Drain"  ; uz: Qon so'rish
-Monster.PirateCaptain.Blurb = "For a few seconds hits much faster."  ; uz: Bir necha soniya ancha tezroq uradi.
+Monster.PirateCaptain.Name.1 = "Lifesteal"  ; uz: Qon so'rish
+Monster.PirateCaptain.Blurb = "Attacks much faster for a few seconds."  ; uz: Bir necha soniya ancha tezroq uradi.
 Monster.PirateCaptain.Name.2 = "Haste"  ; uz: Shiddat
 Monster.SkeletonPirate.DisplayName = "Drowned Sailor"  ; uz: Cho'kkan dengizchi
 
@@ -724,29 +741,29 @@ Monster.Hywirl.DisplayName = "Storm Spirit"  ; uz: Bo'ron ruhi
 Monster.IceGolem.DisplayName = "Ice Golem"  ; uz: Muz golemi
 Monster.IceGolem.Name.1 = "Stone Skin"  ; uz: Tosh teri
 Monster.FrostYeti.DisplayName = "White Yeti"  ; uz: Oq yeti
-Monster.FrostYeti.Name.1 = "Blood Drain"  ; uz: Qon so'rish
-Monster.FrostYeti.Blurb = "Allies around him hit harder."  ; uz: Atrofidagi o'zinikilar qattiqroq uradi.
+Monster.FrostYeti.Name.1 = "Lifesteal"  ; uz: Qon so'rish
+Monster.FrostYeti.Blurb = "Nearby allies hit harder."  ; uz: Atrofidagi o'zinikilar qattiqroq uradi.
 Monster.FrostYeti.Name.2 = "Fury"  ; uz: G'azab
 Monster.Wyvern.DisplayName = "Snow Wyvern"  ; uz: Qor ajdari
 Monster.Wyvern.Name.1 = "Frost Breath"  ; uz: Muz nafasi
-Monster.Wyvern.Blurb = "For a few seconds hits much faster."  ; uz: Bir necha soniya ancha tezroq uradi.
+Monster.Wyvern.Blurb = "Attacks much faster for a few seconds."  ; uz: Bir necha soniya ancha tezroq uradi.
 Monster.Wyvern.Name.2 = "Haste"  ; uz: Shiddat
 
 ; ---- data/units/bestiary_demons.duke ----
-Monster.Shayton.DisplayName = "Imp"  ; uz: Shaytoncha
+Monster.Shayton.DisplayName = "Devilkin"  ; uz: Shaytoncha
 Monster.BlueDemon.DisplayName = "Demon"  ; uz: Iblis
 Monster.CultMage.DisplayName = "Dark Mage"  ; uz: Qora sehrgar
 Monster.HellDemon.DisplayName = "Fire Demon"  ; uz: Olovli iblis
-Monster.HellDemon.Name.1 = "Blood Drain"  ; uz: Qon so'rish
-Monster.HellDemon.Blurb = "Allies around him hit harder."  ; uz: Atrofidagi o'zinikilar qattiqroq uradi.
+Monster.HellDemon.Name.1 = "Lifesteal"  ; uz: Qon so'rish
+Monster.HellDemon.Blurb = "Nearby allies hit harder."  ; uz: Atrofidagi o'zinikilar qattiqroq uradi.
 Monster.HellDemon.Name.2 = "Fury"  ; uz: G'azab
 Monster.FireGolem.DisplayName = "Fire Golem"  ; uz: Olov golemi
 Monster.FireGolem.Name.1 = "Stone Skin"  ; uz: Tosh teri
-Monster.FireGolem.Blurb = "Allies around him hit harder."  ; uz: Atrofidagi o'zinikilar qattiqroq uradi.
+Monster.FireGolem.Blurb = "Nearby allies hit harder."  ; uz: Atrofidagi o'zinikilar qattiqroq uradi.
 Monster.FireGolem.Name.2 = "Fire"  ; uz: Olov
 Monster.DemonBrute.DisplayName = "Demon Champion"  ; uz: Iblis bahodir
-Monster.DemonBrute.Name.1 = "Call the Imps"  ; uz: Shaytonlarni chaqirish
-Monster.DemonBrute.Blurb = "Allies around him hit harder."  ; uz: Atrofidagi o'zinikilar qattiqroq uradi.
+Monster.DemonBrute.Name.1 = "Summon Devilkins"  ; uz: Shaytonlarni chaqirish
+Monster.DemonBrute.Blurb = "Nearby allies hit harder."  ; uz: Atrofidagi o'zinikilar qattiqroq uradi.
 Monster.DemonBrute.Name.2 = "Inferno"  ; uz: Do'zax
 Monster.DemonBrute.Name.3 = "Hellfire"  ; uz: Do'zax olovi
 
@@ -757,13 +774,13 @@ Monster.EarthGolem.Name.1 = "Stone Skin"  ; uz: Tosh teri
 Monster.CrownedGolem.DisplayName = "Crowned Shade"  ; uz: Tojdor arvoh
 Monster.LightGolem.DisplayName = "Light Golem"  ; uz: Nur golemi
 Monster.LightGolem.Name.1 = "Stone Skin"  ; uz: Tosh teri
-Monster.LightGolem.Blurb = "Allies around him recover health with every blow they land."  ; uz: Atrofidagi o'zinikilar har zarbasidan jon qaytarib oladi.
+Monster.LightGolem.Blurb = "Nearby allies regain health with every blow they land."  ; uz: Atrofidagi o'zinikilar har zarbasidan jon qaytarib oladi.
 Monster.LightGolem.Name.2 = "Light"  ; uz: Nur
 Monster.ShadowGolem.DisplayName = "Shadow Golem"  ; uz: Soya golemi
 Monster.ShadowGolem.Name.1 = "Stone Skin"  ; uz: Tosh teri
-Monster.ShadowGolem.Name.2 = "Blood Drain"  ; uz: Qon so'rish
+Monster.ShadowGolem.Name.2 = "Lifesteal"  ; uz: Qon so'rish
 Monster.Minotaur.DisplayName = "Minotaur"  ; uz: Minotavr
-Monster.Minotaur.Name.1 = "Horn Charge"  ; uz: Shox hujumi
+Monster.Minotaur.Name.1 = "Goring Charge"  ; uz: Shox hujumi
 Monster.Minotaur.Name.2 = "Earthquake"  ; uz: Yer titrashi
 
 ; ---- data/projectiles/sword_wave.duke ----
@@ -786,8 +803,8 @@ Object.Fountain.DisplayName = "Healing Fountain"  ; uz: Shifo favvorasi
 
 ; ---- data/props/gate.duke ----
 Prop.Gate.DisplayName = "Gate"  ; uz: Darvoza
-Prop.Gate.WithoutKeyWord = "I must find a key for the boss's chamber"  ; uz: Boss xonasi uchun kalit topishim kerak
-Prop.Gate.WithKeyWord = "I have the key — I must bring it to the gate"  ; uz: Kalit menda — uni darvozaga berishim kerak
+Prop.Gate.WithoutKeyWord = "I need the key to the boss's chamber"  ; uz: Boss xonasi uchun kalit topishim kerak
+Prop.Gate.WithKeyWord = "I have the key — now to the gate"  ; uz: Kalit menda — uni darvozaga berishim kerak
 Object.OpenGate.DisplayName = "Gate"  ; uz: Darvoza
 
 ; ---- data/props/key.duke ----
@@ -803,52 +820,52 @@ Prop.Torch.DisplayName = "Torch"  ; uz: Mash'al
 Prop.Boat.DisplayName = "Boat"  ; uz: Qayiq
 
 ; ---- data/props/castle.duke ----
-Prop.CastleColumn.DisplayName = "Castle Column"  ; uz: Qasr ustuni
+Prop.CastleColumn.DisplayName = "Column"  ; uz: Qasr ustuni
 Prop.CastleTable.DisplayName = "Table"  ; uz: Stol
 Prop.CastleBasin.DisplayName = "Stone Basin"  ; uz: Tosh kosa
 
 ; ---- data/story/story.duke ----
 Dialogue.ContinueHint = "Click or press Space to continue"  ; uz: Davom etish uchun bosing / Space
-Dialogue.OfferQuestion = "Will you take this quest?"  ; uz: Topshiriqni qabul qilasizmi?
-Dialogue.OfferHint = "Enter / left click: accept  |  Esc / right click: not now"  ; uz: Enter / chap tugma: qabul qilaman  |  Esc / o'ng tugma: hozir emas
+Dialogue.OfferQuestion = "Accept this quest?"  ; uz: Topshiriqni qabul qilasizmi?
+Dialogue.OfferHint = "Enter / left-click: accept  |  Esc / right-click: not now"  ; uz: Enter / chap tugma: qabul qilaman  |  Esc / o'ng tugma: hozir emas
 Speaker.Commander.DisplayName = "Commander Laylo"  ; uz: Qo'mondon Laylo
-Conversation.CommanderGreets.Text = "At last you have come! You are the summoned hero, aren't you?"  ; uz: Nihoyat keldingiz! Siz chaqirilgan qahramonsiz, to'g'rimi?
+Conversation.CommanderGreets.Text = "At last! You are the hero we summoned, aren't you?"  ; uz: Nihoyat keldingiz! Siz chaqirilgan qahramonsiz, to'g'rimi?
 Conversation.CommanderGreets.Text.1 = "Where... am I? A moment ago I was training."  ; uz: Men... qayerdaman? Bir lahza oldin mashq qilayotgan edim.
-Conversation.CommanderGreets.Text.2 = "There is no time. Skeletons are gathering in the hall behind the wall — destroy five of them."  ; uz: Vaqt yo'q. Devor ortidagi zalda skeletlar to'planmoqda — beshtasini yo'q qiling.
-Conversation.CommanderGreets.Text.3 = "And if you find my charm in the far hall — it was left to me by my mother."  ; uz: Va agar uzoq zalda tumorimni topsangiz — u menga onamdan qolgan.
-Conversation.CommanderThanks.Text = "All five are gone? You truly are a hero."  ; uz: Beshtasi ham yo'q bo'ldi? Siz haqiqatan qahramonsiz.
-Conversation.CommanderThanks.Text.1 = "Here, take this gauntlet. Now only the guard at the end of the hall remains."  ; uz: Mana, bu qo'lqopni oling. Endi zal oxiridagi qo'riqchini yengish qoldi.
-Conversation.LocketReturned.Text = "My charm! Thank you. I will never forget this."  ; uz: Tumorim! Rahmat. Buni hech qachon unutmayman.
+Conversation.CommanderGreets.Text.2 = "No time to explain. Skeletons are massing in the hall behind the wall — destroy five of them."  ; uz: Vaqt yo'q. Devor ortidagi zalda skeletlar to'planmoqda — beshtasini yo'q qiling.
+Conversation.CommanderGreets.Text.3 = "And if you find my locket in the far hall... it was my mother's."  ; uz: Va agar uzoq zalda tumorimni topsangiz — u menga onamdan qolgan.
+Conversation.CommanderThanks.Text = "All five destroyed? You truly are a hero."  ; uz: Beshtasi ham yo'q bo'ldi? Siz haqiqatan qahramonsiz.
+Conversation.CommanderThanks.Text.1 = "Here — take these gauntlets. Now only the Warden at the end of the hall remains."  ; uz: Mana, bu qo'lqopni oling. Endi zal oxiridagi qo'riqchini yengish qoldi.
+Conversation.LocketReturned.Text = "My locket! Thank you. I will never forget this."  ; uz: Tumorim! Rahmat. Buni hech qachon unutmayman.
 Npc.Commander.Role = "Commander"  ; uz: Qo'mondon
-Quest.WallSkeletons.Title = "Skeletons Behind the Wall"  ; uz: Devordagi skeletlar
-Quest.WallSkeletons.Description = "Commander Laylo said: skeletons are gathering in the hall behind the wall. Destroy five and return to her."  ; uz: Qo'mondon Laylo aytdi: devor ortidagi zalda skeletlar to'planmoqda. Beshtasini yo'q qiling va unga qayting.
-Quest.WallSkeletons.Text = "Slay the skeletons %d/%d"  ; uz: Skeletlarni qiring %d/%d
-Quest.WallSkeletons.Text.1 = "Return to the commander"  ; uz: Qo'mondonga qayting
-Quest.LostLocket.Title = "The Lost Charm"  ; uz: Yo'qolgan tumor
-Quest.LostLocket.Description = "The commander's charm, left to her by her mother, is lost in the far hall. Find it and return it to its owner."  ; uz: Qo'mondonga onasidan qolgan tumor uzoq zalda yo'qolgan. Uni topib, egasiga qaytaring.
-Quest.LostLocket.Text = "Find the charm in the far hall"  ; uz: Uzoq zalda tumorni toping
-Quest.LostLocket.Text.1 = "Give the charm to the commander"  ; uz: Tumorni qo'mondonga bering
-LootItem.Locket.DisplayName = "Charm"  ; uz: Tumor
-Conversation.CommanderSeesChest.Text = "There it is — the chest in the corner! My charm must be there."  ; uz: Ana u — burchakdagi sandiq! Tumorim o'sha yerda bo'lishi kerak.
-Conversation.AmbushLine.Text = "Careful! They have come up behind us!"  ; uz: Ehtiyot bo'ling! Ular orqamizdan kelishdi!
-Conversation.LocketHint.Text = "There is the chest, in the corner of the far hall. My charm is inside."  ; uz: Ana o'sha sandiq, uzoq zalning burchagida. Tumorim ichida.
+Quest.WallSkeletons.Title = "Beyond the Wall"  ; uz: Devordagi skeletlar
+Quest.WallSkeletons.Description = "Commander Laylo reports skeletons massing in the hall behind the wall. Destroy five of them, then report back to her."  ; uz: Qo'mondon Laylo aytdi: devor ortidagi zalda skeletlar to'planmoqda. Beshtasini yo'q qiling va unga qayting.
+Quest.WallSkeletons.Text = "Destroy the skeletons %d/%d"  ; uz: Skeletlarni qiring %d/%d
+Quest.WallSkeletons.Text.1 = "Return to the Commander"  ; uz: Qo'mondonga qayting
+Quest.LostLocket.Title = "The Lost Locket"  ; uz: Yo'qolgan tumor
+Quest.LostLocket.Description = "The Commander's locket, a keepsake from her mother, was lost in the far hall. Find it and return it to her."  ; uz: Qo'mondonga onasidan qolgan tumor uzoq zalda yo'qolgan. Uni topib, egasiga qaytaring.
+Quest.LostLocket.Text = "Find the locket in the far hall"  ; uz: Uzoq zalda tumorni toping
+Quest.LostLocket.Text.1 = "Return the locket to the Commander"  ; uz: Tumorni qo'mondonga bering
+LootItem.Locket.DisplayName = "Locket"  ; uz: Tumor
+Conversation.CommanderSeesChest.Text = "There — the chest in the corner! My locket must be inside."  ; uz: Ana u — burchakdagi sandiq! Tumorim o'sha yerda bo'lishi kerak.
+Conversation.AmbushLine.Text = "Look out! They're behind us!"  ; uz: Ehtiyot bo'ling! Ular orqamizdan kelishdi!
+Conversation.LocketHint.Text = "That chest, in the corner of the far hall. My locket is inside."  ; uz: Ana o'sha sandiq, uzoq zalning burchagida. Tumorim ichida.
 
 ; ---- data/story/trade.duke ----
 Trade.GoldWord = "Gold"  ; uz: Oltin
 Trade.GainWord = "+%d"  ; uz: +%d
-Trade.StockWord = "For sale"  ; uz: Sotiladi
+Trade.StockWord = "For Sale"  ; uz: Sotiladi
 Trade.BagWord = "Your Bag"  ; uz: Xaltangiz
 Trade.CloseHint = "Esc — close"  ; uz: Esc — yopish
 Trade.NoGoldWord = "Not enough gold"  ; uz: Oltin yetmaydi
-Trade.FullWord = "Bag is full"  ; uz: Xalta to'la
+Trade.FullWord = "Your bag is full"  ; uz: Xalta to'la
 Trade.SoldOutWord = "Sold out"  ; uz: Qolmadi
-Trade.CantSellWord = "Cannot be sold"  ; uz: Buni sotib bo'lmaydi
+Trade.CantSellWord = "Can't be sold"  ; uz: Buni sotib bo'lmaydi
 Speaker.Merchant.DisplayName = "Merchant Botir"  ; uz: Savdogar Botir
-Conversation.MerchantGreets.Text = "Welcome! If you have gold, I have good wares. Click me if you want to talk."  ; uz: Xush kelibsiz! Oltiningiz bo'lsa, menda yaxshi mollar bor. Gaplashmoqchi bo'lsangiz, meni bosing.
+Conversation.MerchantGreets.Text = "Welcome, welcome! Bring gold and you'll find fine wares here. Click on me if you want to trade."  ; uz: Xush kelibsiz! Oltiningiz bo'lsa, menda yaxshi mollar bor. Gaplashmoqchi bo'lsangiz, meni bosing.
 Npc.Merchant.Role = "Merchant"  ; uz: Savdogar
-LootItem.Amulet.DisplayName = "Life Charm"  ; uz: Hayot tumori
-LootItem.Amulet.Slot = "Charm"  ; uz: Tumor
-LootItem.Ring.DisplayName = "Mana Ring"  ; uz: Mana uzugi
+LootItem.Amulet.DisplayName = "Amulet of Life"  ; uz: Hayot tumori
+LootItem.Amulet.Slot = "Amulet"  ; uz: Tumor
+LootItem.Ring.DisplayName = "Ring of Mana"  ; uz: Mana uzugi
 LootItem.Ring.Slot = "Ring"  ; uz: Uzuk
 LootItem.Whetstone.DisplayName = "Whetstone"  ; uz: Charx toshi
 LootItem.Whetstone.Slot = "Weapon"  ; uz: Qurol
@@ -859,16 +876,16 @@ ItemRules.Rarities.1 = "Magic"  ; uz: Sehrli
 ItemRules.Rarities.2 = "Rare"  ; uz: Noyob
 ItemRules.Rarities.3 = "Legendary"  ; uz: Afsonaviy
 ItemRules.FirstNames = "Black"  ; uz: Qora
-ItemRules.FirstNames.1 = "Bloody"  ; uz: Qonli
-ItemRules.FirstNames.2 = "Icy"  ; uz: Muzli
-ItemRules.FirstNames.3 = "Fiery"  ; uz: Olovli
+ItemRules.FirstNames.1 = "Blood"  ; uz: Qonli
+ItemRules.FirstNames.2 = "Frost"  ; uz: Muzli
+ItemRules.FirstNames.3 = "Burning"  ; uz: Olovli
 ItemRules.FirstNames.4 = "Night"  ; uz: Tungi
 ItemRules.FirstNames.5 = "Wrathful"  ; uz: Qahrli
 ItemRules.FirstNames.6 = "Silent"  ; uz: Jim
 ItemRules.FirstNames.7 = "Wicked"  ; uz: Yovuz
 ItemRules.FirstNames.8 = "Ancient"  ; uz: Qadimiy
-ItemRules.FirstNames.9 = "Final"  ; uz: So'nggi
-ItemRules.FirstNames.10 = "Stormy"  ; uz: Bo'ronli
+ItemRules.FirstNames.9 = "Last"  ; uz: So'nggi
+ItemRules.FirstNames.10 = "Howling"  ; uz: Bo'ronli
 ItemRules.FirstNames.11 = "Silver"  ; uz: Kumush
 ItemRules.FirstNames.12 = "Iron"  ; uz: Temir
 ItemRules.FirstNames.13 = "Cold"  ; uz: Sovuq
@@ -876,10 +893,10 @@ ItemRules.FirstNames.14 = "Grim"  ; uz: Shum
 ItemRules.FirstNames.15 = "Mad"  ; uz: Telba
 ItemRules.SecondNames = "Fang"  ; uz: tish
 ItemRules.SecondNames.1 = "Blade"  ; uz: tig'
-ItemRules.SecondNames.2 = "Wound"  ; uz: yara
+ItemRules.SecondNames.2 = "Scar"  ; uz: yara
 ItemRules.SecondNames.3 = "Wrath"  ; uz: qahr
 ItemRules.SecondNames.4 = "Death"  ; uz: o'lim
-ItemRules.SecondNames.5 = "Lightning"  ; uz: chaqmoq
+ItemRules.SecondNames.5 = "Thunder"  ; uz: chaqmoq
 ItemRules.SecondNames.6 = "Shadow"  ; uz: soya
 ItemRules.SecondNames.7 = "Storm"  ; uz: bo'ron
 ItemRules.SecondNames.8 = "Serpent"  ; uz: ilon
@@ -891,14 +908,14 @@ ItemRules.SecondNames.13 = "Curse"  ; uz: la'nat
 ItemRules.SecondNames.14 = "Echo"  ; uz: sado
 ItemRules.SecondNames.15 = "Flame"  ; uz: alanga
 ItemRules.LevelWord = "Level %d"  ; uz: %d-daraja
-ItemRules.CompareWord = "Compare with what is worn"  ; uz: Kiyilgan bilan solishtiring
-ItemRules.CountWord = "Count: %d"  ; uz: Soni: %d
-ItemRules.DrinkHint = "%s: eat, drink"  ; uz: %s: yeyish, ichish
+ItemRules.CompareWord = "Compare with what you wear"  ; uz: Kiyilgan bilan solishtiring
+ItemRules.CountWord = "Quantity: %d"  ; uz: Soni: %d
+ItemRules.DrinkHint = "%s: eat or drink"  ; uz: %s: yeyish, ichish
 ItemRules.BeltKeyWord = "Eat from belt: %d"  ; uz: Belbog'dan yeyish: %d
 ItemRules.Treasure = "Treasure"  ; uz: Xazina
-ItemRules.CritChanceWord = "Critical hit"  ; uz: Kritik zarba
+ItemRules.CritChanceWord = "Critical chance"  ; uz: Kritik zarba
 ItemRules.CritDamageWord = "Critical damage"  ; uz: Kritik zarba kuchi
-ItemRules.MoveSpeedWord = "Move speed"  ; uz: Yurish tezligi
+ItemRules.MoveSpeedWord = "Movement speed"  ; uz: Yurish tezligi
 ItemRules.SkillRankWord = "%s skill"  ; uz: %s mahorati
 ItemBase.xanjar.DisplayName = "Dagger"  ; uz: Xanjar
 ItemBase.xanjar.Slot = "Weapon"  ; uz: Qurol
@@ -908,7 +925,7 @@ ItemBase.bolta.DisplayName = "Axe"  ; uz: Bolta
 ItemBase.bolta.Slot = "Weapon"  ; uz: Qurol
 ItemBase.kamon.DisplayName = "Bow"  ; uz: Kamon
 ItemBase.kamon.Slot = "Weapon"  ; uz: Qurol
-ItemBase.hassa.DisplayName = "Mage Staff"  ; uz: Sehrgar hassasi
+ItemBase.hassa.DisplayName = "Staff"  ; uz: Sehrgar hassasi
 ItemBase.hassa.Slot = "Weapon"  ; uz: Qurol
 ItemBase.keng_qilich.DisplayName = "Broadsword"  ; uz: Keng qilich
 ItemBase.keng_qilich.Slot = "Weapon"  ; uz: Qurol
@@ -924,15 +941,15 @@ ItemBase.jang_boltasi.DisplayName = "Battle Axe"  ; uz: Jang boltasi
 ItemBase.jang_boltasi.Slot = "Weapon"  ; uz: Qurol
 ItemBase.egri_qilich.DisplayName = "Scimitar"  ; uz: Egri qilich
 ItemBase.egri_qilich.Slot = "Weapon"  ; uz: Qurol
-ItemBase.postin.DisplayName = "Fur Coat"  ; uz: Po'stin
+ItemBase.postin.DisplayName = "Fur Cloak"  ; uz: Po'stin
 ItemBase.postin.Slot = "Armour"  ; uz: Zirh
 ItemBase.charm_kamzul.DisplayName = "Leather Jerkin"  ; uz: Charm kamzul
 ItemBase.charm_kamzul.Slot = "Armour"  ; uz: Zirh
-ItemBase.sehrgar_libosi.DisplayName = "Mage Robe"  ; uz: Sehrgar libosi
+ItemBase.sehrgar_libosi.DisplayName = "Wizard's Robe"  ; uz: Sehrgar libosi
 ItemBase.sehrgar_libosi.Slot = "Armour"  ; uz: Zirh
 ItemBase.zanjirli_sovut.DisplayName = "Chainmail"  ; uz: Zanjirli sovut
 ItemBase.zanjirli_sovut.Slot = "Armour"  ; uz: Zirh
-ItemBase.temir_sovut.DisplayName = "Iron Armour"  ; uz: Temir sovut
+ItemBase.temir_sovut.DisplayName = "Iron Cuirass"  ; uz: Temir sovut
 ItemBase.temir_sovut.Slot = "Armour"  ; uz: Zirh
 ItemBase.plastinka_sovut.DisplayName = "Plate Armour"  ; uz: Plastinka sovut
 ItemBase.plastinka_sovut.Slot = "Armour"  ; uz: Zirh
@@ -940,13 +957,13 @@ ItemBase.teri_qalpoq.DisplayName = "Hide Cap"  ; uz: Teri qalpoq
 ItemBase.teri_qalpoq.Slot = "Helmet"  ; uz: Dubulg'a
 ItemBase.charm_qalpoq.DisplayName = "Leather Cap"  ; uz: Charm qalpoq
 ItemBase.charm_qalpoq.Slot = "Helmet"  ; uz: Dubulg'a
-ItemBase.zanjirli_dubulga.DisplayName = "Chain Helmet"  ; uz: Zanjirli dubulg'a
+ItemBase.zanjirli_dubulga.DisplayName = "Chain Coif"  ; uz: Zanjirli dubulg'a
 ItemBase.zanjirli_dubulga.Slot = "Helmet"  ; uz: Dubulg'a
-ItemBase.temir_dubulga.DisplayName = "Iron Helmet"  ; uz: Temir dubulg'a
+ItemBase.temir_dubulga.DisplayName = "Iron Helm"  ; uz: Temir dubulg'a
 ItemBase.temir_dubulga.Slot = "Helmet"  ; uz: Dubulg'a
-ItemBase.shoxli_dubulga.DisplayName = "Horned Helmet"  ; uz: Shoxli dubulg'a
+ItemBase.shoxli_dubulga.DisplayName = "Horned Helm"  ; uz: Shoxli dubulg'a
 ItemBase.shoxli_dubulga.Slot = "Helmet"  ; uz: Dubulg'a
-ItemBase.plastinka_dubulga.DisplayName = "Plate Helmet"  ; uz: Plastinka dubulg'a
+ItemBase.plastinka_dubulga.DisplayName = "Plate Helm"  ; uz: Plastinka dubulg'a
 ItemBase.plastinka_dubulga.Slot = "Helmet"  ; uz: Dubulg'a
 ItemBase.choriq.DisplayName = "Rawhide Shoes"  ; uz: Choriq
 ItemBase.choriq.Slot = "Boots"  ; uz: Etik
@@ -956,24 +973,24 @@ ItemBase.zanjirli_etik.DisplayName = "Chain Boots"  ; uz: Zanjirli etik
 ItemBase.zanjirli_etik.Slot = "Boots"  ; uz: Etik
 ItemBase.temir_etik.DisplayName = "Iron Boots"  ; uz: Temir etik
 ItemBase.temir_etik.Slot = "Boots"  ; uz: Etik
-ItemBase.marjon.DisplayName = "Coral Beads"  ; uz: Marjon
-ItemBase.marjon.Slot = "Charm"  ; uz: Tumor
+ItemBase.marjon.DisplayName = "Coral Necklace"  ; uz: Marjon
+ItemBase.marjon.Slot = "Amulet"  ; uz: Tumor
 ItemBase.nishon.DisplayName = "Gold Emblem"  ; uz: Oltin nishon
-ItemBase.nishon.Slot = "Charm"  ; uz: Tumor
-ItemBase.zumrad_tumor.DisplayName = "Emerald Charm"  ; uz: Zumrad tumor
-ItemBase.zumrad_tumor.Slot = "Charm"  ; uz: Tumor
-ItemBase.qadimiy_tumor.DisplayName = "Ancient Charm"  ; uz: Qadimiy tumor
-ItemBase.qadimiy_tumor.Slot = "Charm"  ; uz: Tumor
+ItemBase.nishon.Slot = "Amulet"  ; uz: Tumor
+ItemBase.zumrad_tumor.DisplayName = "Emerald Amulet"  ; uz: Zumrad tumor
+ItemBase.zumrad_tumor.Slot = "Amulet"  ; uz: Tumor
+ItemBase.qadimiy_tumor.DisplayName = "Ancient Amulet"  ; uz: Qadimiy tumor
+ItemBase.qadimiy_tumor.Slot = "Amulet"  ; uz: Tumor
 ItemBase.oltin_uzuk.DisplayName = "Gold Ring"  ; uz: Oltin uzuk
 ItemBase.oltin_uzuk.Slot = "Ring"  ; uz: Uzuk
-ItemBase.muz_uzuk.DisplayName = "Ice Ring"  ; uz: Muz uzuk
+ItemBase.muz_uzuk.DisplayName = "Frost Ring"  ; uz: Muz uzuk
 ItemBase.muz_uzuk.Slot = "Ring"  ; uz: Uzuk
 ItemBase.olmos_uzuk.DisplayName = "Diamond Ring"  ; uz: Olmos uzuk
 ItemBase.olmos_uzuk.Slot = "Ring"  ; uz: Uzuk
 Affix.otkir.Prefix = "Sharp"  ; uz: O'tkir
 Affix.otkir.Slots = "Weapon"  ; uz: Qurol
 Affix.otkir.Slots.1 = "Ring"  ; uz: Uzuk
-Affix.otkir.Slots.2 = "Charm"  ; uz: Tumor
+Affix.otkir.Slots.2 = "Amulet"  ; uz: Tumor
 Affix.mustahkam.Prefix = "Sturdy"  ; uz: Mustahkam
 Affix.mustahkam.Slots = "Armour"  ; uz: Zirh
 Affix.mustahkam.Slots.1 = "Helmet"  ; uz: Dubulg'a
@@ -982,63 +999,63 @@ Affix.baquvvat.Prefix = "Mighty"  ; uz: Baquvvat
 Affix.baquvvat.Slots = "Helmet"  ; uz: Dubulg'a
 Affix.baquvvat.Slots.1 = "Armour"  ; uz: Zirh
 Affix.baquvvat.Slots.2 = "Boots"  ; uz: Etik
-Affix.baquvvat.Slots.3 = "Charm"  ; uz: Tumor
+Affix.baquvvat.Slots.3 = "Amulet"  ; uz: Tumor
 Affix.baquvvat.Slots.4 = "Ring"  ; uz: Uzuk
 Affix.donishmand.Prefix = "Wise"  ; uz: Donishmand
-Affix.donishmand.Slots = "Charm"  ; uz: Tumor
+Affix.donishmand.Slots = "Amulet"  ; uz: Tumor
 Affix.donishmand.Slots.1 = "Ring"  ; uz: Uzuk
 Affix.donishmand.Slots.2 = "Helmet"  ; uz: Dubulg'a
 Affix.donishmand.Slots.3 = "Weapon"  ; uz: Qurol
-Affix.alo.Prefix = "Fine"  ; uz: A'lo
+Affix.alo.Prefix = "Superior"  ; uz: A'lo
 Affix.alo.Slots = "Boots"  ; uz: Etik
 Affix.alo.Slots.1 = "Ring"  ; uz: Uzuk
-Affix.alo.Slots.2 = "Charm"  ; uz: Tumor
+Affix.alo.Slots.2 = "Amulet"  ; uz: Tumor
 Affix.alo.Slots.3 = "Helmet"  ; uz: Dubulg'a
 Affix.alo.Slots.4 = "Armour"  ; uz: Zirh
 Affix.tez.Prefix = "Swift"  ; uz: Tez
 Affix.tez.Slots = "Weapon"  ; uz: Qurol
 Affix.tez.Slots.1 = "Boots"  ; uz: Etik
 Affix.tez.Slots.2 = "Ring"  ; uz: Uzuk
-Affix.tez.Slots.3 = "Charm"  ; uz: Tumor
-Affix.shifobaxsh.Prefix = "Healing"  ; uz: Shifobaxsh
+Affix.tez.Slots.3 = "Amulet"  ; uz: Tumor
+Affix.shifobaxsh.Prefix = "Mending"  ; uz: Shifobaxsh
 Affix.shifobaxsh.Slots = "Armour"  ; uz: Zirh
 Affix.shifobaxsh.Slots.1 = "Helmet"  ; uz: Dubulg'a
 Affix.shifobaxsh.Slots.2 = "Boots"  ; uz: Etik
-Affix.shifobaxsh.Slots.3 = "Charm"  ; uz: Tumor
+Affix.shifobaxsh.Slots.3 = "Amulet"  ; uz: Tumor
 Affix.shifobaxsh.Slots.4 = "Ring"  ; uz: Uzuk
 Affix.ilhomli.Prefix = "Inspired"  ; uz: Ilhomli
 Affix.ilhomli.Slots = "Weapon"  ; uz: Qurol
 Affix.ilhomli.Slots.1 = "Helmet"  ; uz: Dubulg'a
-Affix.ilhomli.Slots.2 = "Charm"  ; uz: Tumor
+Affix.ilhomli.Slots.2 = "Amulet"  ; uz: Tumor
 Affix.ilhomli.Slots.3 = "Ring"  ; uz: Uzuk
-Affix.qonxor.Prefix = "Bloodthirst"  ; uz: Qonxo'r
+Affix.qonxor.Prefix = "Bloodthirsty"  ; uz: Qonxo'r
 Affix.qonxor.Slots = "Weapon"  ; uz: Qurol
 Affix.qonxor.Slots.1 = "Ring"  ; uz: Uzuk
-Affix.qonxor.Slots.2 = "Charm"  ; uz: Tumor
+Affix.qonxor.Slots.2 = "Amulet"  ; uz: Tumor
 Affix.halokatli.Prefix = "Deadly"  ; uz: Halokatli
 Affix.halokatli.Slots = "Weapon"  ; uz: Qurol
 Affix.halokatli.Slots.1 = "Ring"  ; uz: Uzuk
-Affix.halokatli.Slots.2 = "Charm"  ; uz: Tumor
+Affix.halokatli.Slots.2 = "Amulet"  ; uz: Tumor
 Affix.shafqatsiz.Prefix = "Ruthless"  ; uz: Shafqatsiz
 Affix.shafqatsiz.Slots = "Weapon"  ; uz: Qurol
 Affix.shafqatsiz.Slots.1 = "Ring"  ; uz: Uzuk
-Affix.shafqatsiz.Slots.2 = "Charm"  ; uz: Tumor
+Affix.shafqatsiz.Slots.2 = "Amulet"  ; uz: Tumor
 Affix.shamoldek.Prefix = "Windborne"  ; uz: Shamoldek
 Affix.shamoldek.Slots = "Boots"  ; uz: Etik
-Affix.mohir.Prefix = "Skilled"  ; uz: Mohir
+Affix.mohir.Prefix = "Masterful"  ; uz: Mohir
 Affix.mohir.Slots = "Weapon"  ; uz: Qurol
-Affix.mohir.Slots.1 = "Charm"  ; uz: Tumor
+Affix.mohir.Slots.1 = "Amulet"  ; uz: Tumor
 Affix.mohir.Slots.2 = "Helmet"  ; uz: Dubulg'a
 Unique.ajdar_tishi.DisplayName = "Dragon's Tooth"  ; uz: Ajdar tishi
-Unique.ajdar_tishi.Lore = "Ripped from a dragon's mouth; the blade is still warm."  ; uz: Ajdarning og'zidan sug'urib olingan; tig'i hali ham iliq.
-Unique.qala_devori.DisplayName = "Castle Wall"  ; uz: Qal'a devori
-Unique.qala_devori.Lore = "This armour did not bend even on the day the capital fell."  ; uz: Poytaxt qulagan kuni ham bu sovut bukilmagan.
-Unique.bori_boshi.DisplayName = "Wolf's Head"  ; uz: Bo'ri boshi
-Unique.bori_boshi.Lore = "From the skull of the last white wolf; it howls at the full moon."  ; uz: Oxirgi oq bo'rining bosh suyagidan; to'lin oyda uvillaydi.
-Unique.shamol_izi.DisplayName = "Trail of the Wind"  ; uz: Shamol izi
-Unique.shamol_izi.Lore = "No one ever caught a runner who wore it."  ; uz: Uni kiygan chopqirni hech kim quvib yetolmagan.
-Unique.kampir_marjoni.DisplayName = "Crone's Beads"  ; uz: Kampir marjoni
-Unique.kampir_marjoni.Lore = "Baba Yaga tore it from the neck of the girl who ran away."  ; uz: Yalmog'iz kampir uni qochgan qizning bo'ynidan yulib olgan.
+Unique.ajdar_tishi.Lore = "Torn from a dragon's jaws; the blade is still warm."  ; uz: Ajdarning og'zidan sug'urib olingan; tig'i hali ham iliq.
+Unique.qala_devori.DisplayName = "The Bulwark"  ; uz: Qal'a devori
+Unique.qala_devori.Lore = "It did not bend even on the day the Capital fell."  ; uz: Poytaxt qulagan kuni ham bu sovut bukilmagan.
+Unique.bori_boshi.DisplayName = "Wolfskull"  ; uz: Bo'ri boshi
+Unique.bori_boshi.Lore = "Made from the skull of the last white wolf; it howls at the full moon."  ; uz: Oxirgi oq bo'rining bosh suyagidan; to'lin oyda uvillaydi.
+Unique.shamol_izi.DisplayName = "Windstride"  ; uz: Shamol izi
+Unique.shamol_izi.Lore = "No one ever caught the runner who wore these."  ; uz: Uni kiygan chopqirni hech kim quvib yetolmagan.
+Unique.kampir_marjoni.DisplayName = "The Crone's Necklace"  ; uz: Kampir marjoni
+Unique.kampir_marjoni.Lore = "Baba Yaga tore it from the neck of the girl who fled her."  ; uz: Yalmog'iz kampir uni qochgan qizning bo'ynidan yulib olgan.
 Unique.kampir_marjoni.Name.1 = "Crone's Spell: nearby allies +3 Mana/s"  ; uz: Kampir sehri: yonidagilarga +3 Mana/s
 Unique.qonli_ahd.DisplayName = "Blood Oath"  ; uz: Qonli ahd
 Unique.qonli_ahd.Lore = "It asks a drop of blood with every blow — and takes it."  ; uz: Har zarbadan bir tomchi qon so'raydi va oladi.
@@ -1048,37 +1065,37 @@ Potion.rezavor.DisplayName = "Wild Berries"  ; uz: Yovvoyi rezavor
 Potion.qovoq.DisplayName = "Pumpkin"  ; uz: Qovoq
 Potion.non.DisplayName = "Bread"  ; uz: Non
 Potion.qovurilgan_gosht.DisplayName = "Roast Meat"  ; uz: Qovurilgan go'sht
-Potion.shorva.DisplayName = "Soup"  ; uz: Sho'rva
+Potion.shorva.DisplayName = "Hearty Soup"  ; uz: Sho'rva
 Potion.suv.DisplayName = "Water"  ; uz: Suv
 Potion.choy.DisplayName = "Tea"  ; uz: Choy
-Potion.kompot.DisplayName = "Compote"  ; uz: Kompot
+Potion.kompot.DisplayName = "Fruit Compote"  ; uz: Kompot
 Potion.otin.DisplayName = "Firewood"  ; uz: O'tin
 Potion.hayot_shishasi.DisplayName = "Health Potion"  ; uz: Hayot shishasi
 Potion.mana_shishasi.DisplayName = "Mana Potion"  ; uz: Mana shishasi
-Potion.tiklanish_eliksiri.DisplayName = "Elixir of Recovery"  ; uz: Tiklanish eliksiri
+Potion.tiklanish_eliksiri.DisplayName = "Elixir of Renewal"  ; uz: Tiklanish eliksiri
 Potion.katta_hayot_shishasi.DisplayName = "Greater Health Potion"  ; uz: Katta hayot shishasi
 Potion.teri.DisplayName = "Hide"  ; uz: Teri
 Potion.ruda.DisplayName = "Iron Ore"  ; uz: Temir ruda
 Potion.giyoh.DisplayName = "Healing Herbs"  ; uz: Dorivor giyoh
-Potion.olov_toshi.DisplayName = "Ember Stone"  ; uz: Olov toshi
+Potion.olov_toshi.DisplayName = "Firestone"  ; uz: Olov toshi
 Potion.chizma.DisplayName = "Recipe Scroll"  ; uz: Hunar chizmasi
-Unique.olovli_tigh.DisplayName = "Flame Blade"  ; uz: Olovli tig'
-Unique.olovli_tigh.Lore = "An ember stone melted into the blade; it smokes when drawn."  ; uz: Olov toshi tig'ga singib ketgan; qinidan chiqsa tutun taraladi.
+Unique.olovli_tigh.DisplayName = "Emberblade"  ; uz: Olovli tig'
+Unique.olovli_tigh.Lore = "A firestone melted into the steel; it smokes when drawn."  ; uz: Olov toshi tig'ga singib ketgan; qinidan chiqsa tutun taraladi.
 Unique.ritsar_qasami.DisplayName = "Knight's Oath"  ; uz: Ritsar qasami
 Unique.ritsar_qasami.Lore = "Lange tempered it with the oath he swore on his father's sword."  ; uz: Lange uni otasining qilichi ustida ichgan qasami bilan toblagan.
-Unique.ovchi_kamoni.DisplayName = "Huntress' Bow"  ; uz: Ovchi kamoni
-Unique.ovchi_kamoni.Lore = "Cut from the lone poplar of the green field; its arrows outrun the wind."  ; uz: Yashil daladagi yolg'iz terakdan yo'nilgan; o'qi shamolni quvadi.
+Unique.ovchi_kamoni.DisplayName = "The Huntress's Bow"  ; uz: Ovchi kamoni
+Unique.ovchi_kamoni.Lore = "Carved from the lone poplar of the Green Field; its arrows outrun the wind."  ; uz: Yashil daladagi yolg'iz terakdan yo'nilgan; o'qi shamolni quvadi.
 
 ; ---- data/world/food.duke ----
 Food.BuildWord = "Light a campfire"  ; uz: Gulxan yoqish
-Food.NoWoodWord = "A campfire needs %d wood"  ; uz: Gulxanga %d o'tin kerak
+Food.NoWoodWord = "You need %d firewood for a campfire"  ; uz: Gulxanga %d o'tin kerak
 Food.NothingWord = "Nothing to cook"  ; uz: Pishiradigan narsa yo'q
 Food.Name = "Meal"  ; uz: Taom
 Food.Blurb = "Restores health over a few seconds."  ; uz: Bir necha soniya jon tiklanadi.
 Food.HealthRegenWord = "Health/s"  ; uz: Jon/s
-Prop.Stump.DisplayName = "Stump"  ; uz: To'nka
+Prop.Stump.DisplayName = "Tree Stump"  ; uz: To'nka
 Prop.BerryBush.DisplayName = "Berry Bush"  ; uz: Rezavor buta
-Prop.PumpkinPatch.DisplayName = "Pumpkin"  ; uz: Qovoq
+Prop.PumpkinPatch.DisplayName = "Pumpkin Patch"  ; uz: Qovoq
 Prop.Campfire.DisplayName = "Campfire"  ; uz: Gulxan
 Monster.Deer.DisplayName = "Deer"  ; uz: Kiyik
 Monster.Boar.DisplayName = "Wild Boar"  ; uz: Yovvoyi to'ng'iz
@@ -1088,186 +1105,186 @@ Prop.HerbPatch.DisplayName = "Healing Herbs"  ; uz: Dorivor giyoh
 ; ---- data/world/mounts.duke ----
 Mount.KeyWord = "Horse"  ; uz: Ot
 Mount.NoHorseWord = "You have no horse"  ; uz: Otingiz yo'q
-Mount.IndoorsWord = "You cannot ride here"  ; uz: Bu yerda otga minib bo'lmaydi
+Mount.IndoorsWord = "You can't ride here"  ; uz: Bu yerda otga minib bo'lmaydi
 Mount.Name = "Horse"  ; uz: Ot
-; Mount.Blurb = ""  ; uz: Otda: ikki barobar tez.
-Potion.ot.DisplayName = "Horse whistle"  ; uz: Ot hushtagi
+Mount.Blurb = "Mounted: twice as fast."  ; uz: Otda: ikki barobar tez.
+Potion.ot.DisplayName = "Horse Whistle"  ; uz: Ot hushtagi
 Monster.Horse.DisplayName = "Horse"  ; uz: Ot
 Monster.KnightRiding.DisplayName = "Garen"  ; uz: Garen
 Monster.RogueRiding.DisplayName = "Erika"  ; uz: Erika
 Monster.MageRiding.DisplayName = "Lira"  ; uz: Lira
 Monster.Otboqar.DisplayName = "Rustam the Stablemaster"  ; uz: Otboqar Rustam
 Speaker.Otboqar.DisplayName = "Rustam the Stablemaster"  ; uz: Otboqar Rustam
-Conversation.OtboqarGreets.Text = "A good horse is half the road! Take the whistle, press T outside the city, and your horse comes running."  ; uz: Yaxshi ot - yarim yo'l! Hushtagini oling, shahar tashqarisida T ni bosing, oting chopib keladi.
+Conversation.OtboqarGreets.Text = "A good horse is half the journey! Take this whistle - press T outside the city walls and your horse will come running."  ; uz: Yaxshi ot - yarim yo'l! Hushtagini oling, shahar tashqarisida T ni bosing, oting chopib keladi.
 Npc.Otboqar.Role = "Stablemaster"  ; uz: Otboqar
 
 ; ---- data/story/medallion.duke ----
 Medallion.SoulsWord = "Souls"  ; uz: Jonlar
 Medallion.CursedWord = "CURSED"  ; uz: CURSED
-Medallion.TurnedWord = "The hero is cursed"  ; uz: Qahramon la'natlandi
-Medallion.LockedWord = "The medallion cannot be taken off: it has bound itself to me"  ; uz: Medalyonni yechib bo'lmaydi: u menga bog'lanib qolgan
+Medallion.TurnedWord = "The hero has been cursed"  ; uz: Qahramon la'natlandi
+Medallion.LockedWord = "The medallion won't come off: it has bound itself to me"  ; uz: Medalyonni yechib bo'lmaydi: u menga bog'lanib qolgan
 LootItem.Medallion.DisplayName = "The Queen's Medallion"  ; uz: Malikaning medalyoni
-LootItem.Medallion.Slot = "Charm"  ; uz: Tumor
+LootItem.Medallion.Slot = "Amulet"  ; uz: Tumor
 LootItem.Medallion.Name.1 = "Soul Drain"  ; uz: Jon yutish
 Projectile.SoulWisp.DisplayName = "Soul"  ; uz: Jon
 Speaker.Queen.DisplayName = "Queen"  ; uz: Malika
 Npc.Queen.Role = "Queen"  ; uz: Malika
-Conversation.QueenGives.Text = "Welcome, hero. No heroes remain in my kingdom — you are the last."  ; uz: Xush kelibsiz, qahramon. Saltanatimda qahramon qolmadi — siz oxirgisisiz.
-Conversation.QueenGives.Text.1 = "Wear this medallion. It drinks the life of every enemy you slay and pours their strength into you."  ; uz: Bu medalyonni taqing. U siz o'ldirgan har bir dushmanning jonini yutib, kuchini sizga quyadi.
-Conversation.QueenGives.Text.2 = "Only a hero can wear it. Go to the hall, then to the altar."  ; uz: Uni faqat qahramon taqa oladi. Zalga boring, so'ng mehrobga.
-Conversation.QueenGives.Text.3 = "Thank you, my queen."  ; uz: Rahmat, malikam.
-Conversation.QueenTakes.Text = "The medallion is full. Thank you, hero — it is in my hands again."  ; uz: Medalyon to'ldi. Rahmat, qahramon — u yana mening qo'limda.
-Conversation.QueenTakes.Text.1 = "Now you are mine."  ; uz: Endi siz menikisiz.
+Conversation.QueenGives.Text = "Welcome, hero. No heroes remain in my realm — you are the last."  ; uz: Xush kelibsiz, qahramon. Saltanatimda qahramon qolmadi — siz oxirgisisiz.
+Conversation.QueenGives.Text.1 = "Wear this medallion. It drinks the life of every foe you slay and pours their strength into you."  ; uz: Bu medalyonni taqing. U siz o'ldirgan har bir dushmanning jonini yutib, kuchini sizga quyadi.
+Conversation.QueenGives.Text.2 = "Only a hero may wear it. Go to the hall, and then to the altar."  ; uz: Uni faqat qahramon taqa oladi. Zalga boring, so'ng mehrobga.
+Conversation.QueenGives.Text.3 = "Thank you, Your Majesty."  ; uz: Rahmat, malikam.
+Conversation.QueenTakes.Text = "The medallion is full. Thank you, hero — it is mine once more."  ; uz: Medalyon to'ldi. Rahmat, qahramon — u yana mening qo'limda.
+Conversation.QueenTakes.Text.1 = "Now you belong to me."  ; uz: Endi siz menikisiz.
 
 ; ---- data/story/final.duke ----
 Speaker.CursedHero.DisplayName = "Cursed Hero"  ; uz: La'natlangan qahramon
-Conversation.QueenGreets.Text = "So you came too, girl. His heart is mine now."  ; uz: Demak, sen ham keldingmi, qizaloq. Uning qalbi endi meniki.
-Conversation.QueenGreets.Text.1 = "He is my beloved. I am taking him home."  ; uz: U mening yigitim. Uni uyga olib ketaman.
-Conversation.QueenGreets.Text.2 = "Take him — if you can beat him."  ; uz: Olib ket — agar uni yenga olsang.
-Conversation.QueenCalls.Text = "My knight! Come to me — stop her!"  ; uz: Ritsarim! Yonimga kel — uni to'xtat!
-Conversation.HeroSpares.Text = "I will not kill you. This is not you — it is the medallion."  ; uz: Seni o'ldirmayman. Bu sen emassan — bu medalyon.
-Conversation.QueenAlone.Text = "Useless slave! Then I will finish her myself."  ; uz: Yaroqsiz qul! Unda o'zim tugataman.
-Conversation.QueenFalls.Text = "No... my youth... the souls..."  ; uz: Yo'q... yoshligim... jonlar...
+Conversation.QueenGreets.Text = "So you have come as well, little girl. His heart belongs to me now."  ; uz: Demak, sen ham keldingmi, qizaloq. Uning qalbi endi meniki.
+Conversation.QueenGreets.Text.1 = "He is the one I love. I am taking him home."  ; uz: U mening yigitim. Uni uyga olib ketaman.
+Conversation.QueenGreets.Text.2 = "Take him, then — if you can defeat him."  ; uz: Olib ket — agar uni yenga olsang.
+Conversation.QueenCalls.Text = "My knight! To me — stop her!"  ; uz: Ritsarim! Yonimga kel — uni to'xtat!
+Conversation.HeroSpares.Text = "I won't kill you. This isn't you — it's the medallion."  ; uz: Seni o'ldirmayman. Bu sen emassan — bu medalyon.
+Conversation.QueenAlone.Text = "Worthless slave! Then I shall finish her myself."  ; uz: Yaroqsiz qul! Unda o'zim tugataman.
+Conversation.QueenFalls.Text = "No... my youth... my souls..."  ; uz: Yo'q... yoshligim... jonlar...
 Conversation.QueenFalls.Text.1 = "The medallion is broken. They are free now."  ; uz: Medalyon sindi. Ular endi ozod.
 Conversation.QueenFalls.Text.2 = "Where... am I? You... you came looking for me."  ; uz: Men... qayerdaman? Sen... sen meni izlab kelding.
 Conversation.QueenFalls.Text.3 = "Let's go home."  ; uz: Uyga ketamiz.
-Trigger.TheEnd.Target.1 = "The curse is lifted"  ; uz: La'nat ko'tarildi
+Trigger.TheEnd.Target.1 = "The curse is broken"  ; uz: La'nat ko'tarildi
 
 ; ---- data/story/kampir.duke ----
 Speaker.BabaYaga.DisplayName = "Baba Yaga"  ; uz: Yalmog'iz kampir
 Speaker.Damsel.DisplayName = "Maiden"  ; uz: Qiz
-Conversation.KampirGreets.Text = "Oho, a guest... It has been a long while since a hero walked into the dark forest on his own two feet."  ; uz: Oho, mehmon... Qorong'i o'rmonga o'z oyog'i bilan kelgan qahramonni ko'pdan beri ko'rmagandim.
-Conversation.KampirGreets.Text.1 = "The medallion around your queen's neck... Do you know who made it? I do, child."  ; uz: Malikangning bo'ynidagi medalyon... Uni kim yasaganini bilasanmi? Men bilaman, bolam.
-Conversation.KampirGreets.Text.2 = "Every secret has its price. It is not yet time — come back, and then we will talk."  ; uz: Har bir sirning bahosi bor. Hali vaqti emas — qaytib kel, shunda gaplashamiz.
-Conversation.KampirsPrice.Text = "You want to know the secret, my girl? It is not free. First do a job for me."  ; uz: Sirni bilmoqchimisan, qizim? Bepul emas. Avval mening ishimni bajar.
-Conversation.KampirsPrice.Text.1 = "A necromancer roams my forest — robbing my graves and bending souls to his will."  ; uz: O'rmonimda bir o'likchi kezadi — qabrlarimni o'g'irlab, jonlarni o'ziga bo'ysundiradi.
-Conversation.KampirsPrice.Text.2 = "Destroy him. When you come back, I will tell you your queen's secret."  ; uz: Uni yo'q qil. Qaytib kelganingda, malikangning sirini aytaman.
-Conversation.KampirsSecret.Text = "You did it... Then listen. I made the medallion — on the queen's order."  ; uz: Bajarding... Unda eshit. Medalyonni men yasaganman — malikaning buyurtmasi bilan.
-Conversation.KampirsSecret.Text.1 = "It drinks the soul of every enemy slain. Those souls keep the queen young and beautiful forever."  ; uz: U har bir o'ldirilgan dushmanning jonini yutadi. O'sha jonlar malikani abadiy yosh va go'zal saqlaydi.
-Conversation.KampirsSecret.Text.2 = "The hero fills the medallion — then it swallows the hero too. Your beloved is in the dark castle now, under the curse."  ; uz: Qahramon medalyonni to'ldiradi — so'ng u qahramonni ham yutadi. Sening yigiting endi qora qasrda, la'nat ichida.
-Conversation.KampirsSecret.Text.3 = "It will not stop the war — and the queen keeps summoning new heroes. That same light brought you here too."  ; uz: U urushni to'xtatmaydi — malika esa yangi qahramonlar chaqiraveradi. Seni ham shu nur olib keldi.
+Conversation.KampirGreets.Text = "Oho, a guest... It has been an age since any hero walked into the Dark Forest of their own free will."  ; uz: Oho, mehmon... Qorong'i o'rmonga o'z oyog'i bilan kelgan qahramonni ko'pdan beri ko'rmagandim.
+Conversation.KampirGreets.Text.1 = "The medallion around your Queen's neck... Do you know who made it? I do, child."  ; uz: Malikangning bo'ynidagi medalyon... Uni kim yasaganini bilasanmi? Men bilaman, bolam.
+Conversation.KampirGreets.Text.2 = "Every secret has its price. But the time is not yet ripe — come back later, and then we shall talk."  ; uz: Har bir sirning bahosi bor. Hali vaqti emas — qaytib kel, shunda gaplashamiz.
+Conversation.KampirsPrice.Text = "You want the secret, my girl? It does not come free. First you do a job for me."  ; uz: Sirni bilmoqchimisan, qizim? Bepul emas. Avval mening ishimni bajar.
+Conversation.KampirsPrice.Text.1 = "A necromancer prowls my forest — robbing my graves and bending souls to his will."  ; uz: O'rmonimda bir o'likchi kezadi — qabrlarimni o'g'irlab, jonlarni o'ziga bo'ysundiradi.
+Conversation.KampirsPrice.Text.2 = "Destroy him. Come back when it is done, and I will tell you your Queen's secret."  ; uz: Uni yo'q qil. Qaytib kelganingda, malikangning sirini aytaman.
+Conversation.KampirsSecret.Text = "So you did it... Then listen. I made the medallion — at the Queen's command."  ; uz: Bajarding... Unda eshit. Medalyonni men yasaganman — malikaning buyurtmasi bilan.
+Conversation.KampirsSecret.Text.1 = "It swallows the soul of every enemy slain. Those souls keep the Queen young and beautiful forever."  ; uz: U har bir o'ldirilgan dushmanning jonini yutadi. O'sha jonlar malikani abadiy yosh va go'zal saqlaydi.
+Conversation.KampirsSecret.Text.2 = "A hero fills the medallion — and then it swallows the hero too. Your beloved is in the Black Castle now, bound by the curse."  ; uz: Qahramon medalyonni to'ldiradi — so'ng u qahramonni ham yutadi. Sening yigiting endi qora qasrda, la'nat ichida.
+Conversation.KampirsSecret.Text.3 = "It will not end the war — and the Queen keeps summoning new heroes. The same light brought you here."  ; uz: U urushni to'xtatmaydi — malika esa yangi qahramonlar chaqiraveradi. Seni ham shu nur olib keldi.
 Conversation.KampirsSecret.Text.4 = "How do I end it?"  ; uz: Qanday tugataman?
-Conversation.KampirsSecret.Text.5 = "Kill the queen. The medallion will shatter, the souls will go free, the curse will lift. But her castle is sealed by magic."  ; uz: Malikani o'ldir. Medalyon sinadi, jonlar ozod bo'ladi, la'nat ko'tariladi. Ammo uning qasri sehr bilan yopiq.
-Conversation.KampirsSecret.Text.6 = "First free the conquered lands: three castles — the Green Field, the Stony Hills, the Sandy Steppe. Without them the gate will not open."  ; uz: Avval bosib olingan yerlarni ozod qil: uchta qal'a — Yashil dala, Toshli adir, Qumli dasht. Ularsiz darvoza ochilmaydi.
-Conversation.DamselAsks.Text = "Please, let me out of this cage! Before the crone returns from her cauldron..."  ; uz: Iltimos, meni bu qafasdan chiqaring! Kampir qozonidan qaytmasidan oldin...
-Conversation.DamselAsks.Text.1 = "The key is on that necromancer — he sold me to the crone. Kill him and the key is yours."  ; uz: Kalit o'sha o'likchida — u meni kampirga sotgan. Uni o'ldirsangiz, kalit sizniki.
+Conversation.KampirsSecret.Text.5 = "Kill the Queen. The medallion will shatter, the souls will go free and the curse will lift. But her castle is sealed by magic."  ; uz: Malikani o'ldir. Medalyon sinadi, jonlar ozod bo'ladi, la'nat ko'tariladi. Ammo uning qasri sehr bilan yopiq.
+Conversation.KampirsSecret.Text.6 = "First free the conquered lands: three castles — the Green Field, the Stony Hills and the Sandy Steppe. Until then the gate will not open."  ; uz: Avval bosib olingan yerlarni ozod qil: uchta qal'a — Yashil dala, Toshli adir, Qumli dasht. Ularsiz darvoza ochilmaydi.
+Conversation.DamselAsks.Text = "Please, let me out of this cage! Before the crone comes back from her cauldron..."  ; uz: Iltimos, meni bu qafasdan chiqaring! Kampir qozonidan qaytmasidan oldin...
+Conversation.DamselAsks.Text.1 = "The necromancer has the key — he is the one who sold me to her. Kill him and the key is yours."  ; uz: Kalit o'sha o'likchida — u meni kampirga sotgan. Uni o'ldirsangiz, kalit sizniki.
 Npc.BabaYaga.Role = "Witch"  ; uz: Jodugar
 Npc.Damsel.Role = "Captive"  ; uz: Asira
 Npc.Imp.Role = "The Crone's Servant"  ; uz: Kampirning xizmatkori
 
 ; ---- data/story/act1.duke ----
 Campaign.Word = "Part 1: The Last Hero"  ; uz: 1-qism: Oxirgi qahramon
-Campaign.Blurb = "From the battlefield to the dark castle. The story begins here."  ; uz: Jang maydonidan qora qasrgacha. Hikoya shu yerdan boshlanadi.
+Campaign.Blurb = "From the battlefield to the Black Castle. Here the story begins."  ; uz: Jang maydonidan qora qasrgacha. Hikoya shu yerdan boshlanadi.
 Speaker.Act1Commander.DisplayName = "Commander"  ; uz: Qo'mondon
 Speaker.Act1Queen.DisplayName = "Queen"  ; uz: Malika
-Speaker.EnemyCommander.DisplayName = "Enemy Commander"  ; uz: Dushman sarkardasi
-Speaker.DarkLord.DisplayName = "Dark Knight"  ; uz: Qora ritsar
+Speaker.EnemyCommander.DisplayName = "Enemy Warlord"  ; uz: Dushman sarkardasi
+Speaker.DarkLord.DisplayName = "Black Knight"  ; uz: Qora ritsar
 Speaker.Blacksmith.DisplayName = "Master Smith"  ; uz: Temirchi Usta
 Speaker.OldWoman.DisplayName = "Granny Zebo"  ; uz: Zebo momo
 Npc.Act1Commander.Role = "Commander"  ; uz: Qo'mondon
 Npc.Act1Queen.Role = "Queen"  ; uz: Malika
 Npc.Blacksmith.Role = "Blacksmith"  ; uz: Temirchi
 Npc.OldWoman.Role = "Granny"  ; uz: Momo
-Conversation.BattleHolds.Text = "Hold the line! We will not give up a single step from the gate!"  ; uz: Safni ushlang! Darvozadan bir qadam ham chekinmaymiz!
-Conversation.BattleHolds.Text.1 = "Surrender, commander. Your heroes are already finished."  ; uz: Taslim bo'l, qo'mondon. Qahramonlaringiz allaqachon tugagan.
-Conversation.BattleHolds.Text.2 = "We may have no hero, but we are still here! Ritualists, summon him!"  ; uz: Qahramon bo'lmasa ham — biz bormiz! Kohinlar, chaqiring uni!
-Conversation.HeroLands.Text = "Where... is this? I was just training with Erika..."  ; uz: Bu... qayer? Hozirgina Erika bilan mashq qilayotgan edim...
-Conversation.HeroLands.Text.1 = "You fell from the sky in flame — so you are the hero. The ritualists summoned you."  ; uz: Osmondan olov bo'lib tushding — demak, sen qahramonsan. Kohinlar seni chaqirdi.
-Conversation.HeroLands.Text.2 = "No... another one?! Retreat!"  ; uz: Yo'q... yana bittasi?! Chekinish!
-Conversation.AfterLanding.Text = "They are running! Soldiers, finish off the rest!"  ; uz: Ular qochmoqda! Askarlar, qolganini tugating!
-Conversation.AfterLanding.Text.1 = "There are no heroes left in this world. You are the last hero to be summoned."  ; uz: Bu dunyoda qahramon qolmagan. Sen chaqirilgan oxirgi qahramonsan.
-Conversation.AfterLanding.Text.2 = "I have to get home. She is waiting for me."  ; uz: Men uyga qaytishim kerak. U meni kutyapti.
-Conversation.AfterLanding.Text.3 = "Then go to the queen. Only she knows the way. Follow me — the palace is inside the city."  ; uz: Unda malikaning huzuriga yur. Yo'lni faqat u biladi. Ortimdan yur — saroy shahar ichida.
-Quest.FollowCommander.Title = "Following the Commander"  ; uz: Qo'mondon izidan
-Quest.FollowCommander.Description = "The commander is taking you to the queen's palace. Follow her: there is a golden mark above her head. If you fall behind, she will wait for you."  ; uz: Qo'mondon sizni malika saroyiga olib boradi. Uning ortidan yuring: boshi uzra oltin belgi bor. Uzoqlashsangiz, u sizni kutadi.
-Quest.FollowCommander.Text = "Follow the commander to the palace"  ; uz: Qo'mondon izidan saroyga boring
-Quest.MeetTheQueen.Title = "Before the Queen"  ; uz: Malika huzurida
-Quest.MeetTheQueen.Description = "The commander has brought you to the palace. Speak with the queen before her throne."  ; uz: Qo'mondon sizni saroyga olib keldi. Taxt oldidagi malika bilan gaplashing.
-Quest.MeetTheQueen.Text = "Speak with the queen"  ; uz: Malika bilan gaplashing
+Conversation.BattleHolds.Text = "Hold the line! Not one step back from the gate!"  ; uz: Safni ushlang! Darvozadan bir qadam ham chekinmaymiz!
+Conversation.BattleHolds.Text.1 = "Surrender, Commander. Your heroes are finished."  ; uz: Taslim bo'l, qo'mondon. Qahramonlaringiz allaqachon tugagan.
+Conversation.BattleHolds.Text.2 = "We may have no hero — but we still stand! Ritualists, summon him!"  ; uz: Qahramon bo'lmasa ham — biz bormiz! Kohinlar, chaqiring uni!
+Conversation.HeroLands.Text = "Where... is this? A moment ago I was training with Erika..."  ; uz: Bu... qayer? Hozirgina Erika bilan mashq qilayotgan edim...
+Conversation.HeroLands.Text.1 = "You fell from the sky in flames — so you are the hero. The ritualists summoned you."  ; uz: Osmondan olov bo'lib tushding — demak, sen qahramonsan. Kohinlar seni chaqirdi.
+Conversation.HeroLands.Text.2 = "No... another one?! Fall back!"  ; uz: Yo'q... yana bittasi?! Chekinish!
+Conversation.AfterLanding.Text = "They're running! Soldiers, finish the rest!"  ; uz: Ular qochmoqda! Askarlar, qolganini tugating!
+Conversation.AfterLanding.Text.1 = "There are no heroes left in this world. You are the last we could summon."  ; uz: Bu dunyoda qahramon qolmagan. Sen chaqirilgan oxirgi qahramonsan.
+Conversation.AfterLanding.Text.2 = "I have to get home. She's waiting for me."  ; uz: Men uyga qaytishim kerak. U meni kutyapti.
+Conversation.AfterLanding.Text.3 = "Then see the Queen. Only she knows the way. Follow me — the palace is in the city."  ; uz: Unda malikaning huzuriga yur. Yo'lni faqat u biladi. Ortimdan yur — saroy shahar ichida.
+Quest.FollowCommander.Title = "Follow the Commander"  ; uz: Qo'mondon izidan
+Quest.FollowCommander.Description = "The Commander is leading you to the Queen's palace. Follow her — look for the golden mark above her head. If you fall behind, she will wait for you."  ; uz: Qo'mondon sizni malika saroyiga olib boradi. Uning ortidan yuring: boshi uzra oltin belgi bor. Uzoqlashsangiz, u sizni kutadi.
+Quest.FollowCommander.Text = "Follow the Commander to the palace"  ; uz: Qo'mondon izidan saroyga boring
+Quest.MeetTheQueen.Title = "An Audience with the Queen"  ; uz: Malika huzurida
+Quest.MeetTheQueen.Description = "The Commander has brought you to the palace. Speak with the Queen at her throne."  ; uz: Qo'mondon sizni saroyga olib keldi. Taxt oldidagi malika bilan gaplashing.
+Quest.MeetTheQueen.Text = "Speak with the Queen"  ; uz: Malika bilan gaplashing
 Conversation.WaveComes.Text = "Look — more of them, coming from the graves! Hero, fight!"  ; uz: Qarang — qabrlar tomondan yana kelishyapti! Qahramon, jang qil!
-Conversation.Retreat.Text = "Only the two of us are left of the line. They keep coming out of those graves."  ; uz: Safimizdan faqat ikkimiz qoldik. Ular o'sha qabrlardan tinmay chiqyapti.
-Conversation.Retreat.Text.1 = "We cannot hold them alone. We fall back to the city — the queen will know what to do. Follow me!"  ; uz: Yolg'iz qarshilik qila olmaymiz. Shaharga chekinamiz — malika nima qilishni biladi. Ortimdan yur!
+Conversation.Retreat.Text = "Only the two of us are left of the line. They keep pouring out of those graves."  ; uz: Safimizdan faqat ikkimiz qoldik. Ular o'sha qabrlardan tinmay chiqyapti.
+Conversation.Retreat.Text.1 = "We can't hold them alone. Fall back to the city — the Queen will know what to do. Follow me!"  ; uz: Yolg'iz qarshilik qila olmaymiz. Shaharga chekinamiz — malika nima qilishni biladi. Ortimdan yur!
 Quest.FirstWave.Title = "The First Wave"  ; uz: Birinchi to'lqin
-Quest.FirstWave.Description = "The dead out of the graves have fallen on the line. Cut them down."  ; uz: Qabrlardan chiqqan o'liklar safga yopirildi. Ularni qiring.
-Quest.FirstWave.Text = "Cut down the dead out of the graves %d/%d"  ; uz: Qabrlardan chiqqan o'liklarni qiring %d/%d
-Conversation.GateShut.Text = "We are not going there now. First, to the queen."  ; uz: Hozir u yerga bormaymiz. Avval malikaning huzuriga.
+Quest.FirstWave.Description = "The dead have risen from the graves and fallen upon the line. Cut them down."  ; uz: Qabrlardan chiqqan o'liklar safga yopirildi. Ularni qiring.
+Quest.FirstWave.Text = "Cut down the risen dead %d/%d"  ; uz: Qabrlardan chiqqan o'liklarni qiring %d/%d
+Conversation.GateShut.Text = "We're not going that way now. The Queen first."  ; uz: Hozir u yerga bormaymiz. Avval malikaning huzuriga.
 Speaker.Soqchi.DisplayName = "Guard"  ; uz: Soqchi
 Npc.Ritualist.Role = "Ritualist"  ; uz: Kohin
 Npc.Soqchi.Role = "Guard"  ; uz: Soqchi
-Gate.Act1Battle.Word = "We are not going there now."  ; uz: Hozir u yerga bormaymiz.
-Gate.Act1Capital.Word = "We are not going there now."  ; uz: Hozir u yerga bormaymiz.
-Gate.Act1War.Word = "We are not going there now."  ; uz: Hozir u yerga bormaymiz.
-Conversation.CommanderInCapital.Text = "This is the capital. The queen is waiting in the palace, on her throne. Come."  ; uz: Bu — poytaxt. Malika saroyda, taxtida kutmoqda. Yur.
-Conversation.QueenWelcome.Text = "Welcome, hero. The commander has told me of the battle at the gate."  ; uz: Xush kelibsiz, qahramon. Qo'mondon darvoza oldidagi jangni aytib berdi.
-Conversation.QueenWelcome.Text.1 = "The Dark Knight has taken my kingdom: our castles are in his hands, and my people live in fear."  ; uz: Saltanatimni qora ritsar bosib oldi: qal'alarimiz uning qo'lida, xalqim qo'rquvda.
-Conversation.QueenWelcome.Text.2 = "Here is gold — and this medallion. It drinks the life of every enemy you slay and pours their strength into you."  ; uz: Mana, oltin — va bu medalyon. U siz o'ldirgan har bir dushmanning jonini yutib, kuchini sizga quyadi.
-Conversation.QueenWelcome.Text.3 = "Only a hero can wear it."  ; uz: Uni faqat qahramon taqa oladi.
-Conversation.QueenWelcome.Text.4 = "If I kill the Dark Knight, can I go home?"  ; uz: Qora ritsarni o'ldirsam, uyga qayta olamanmi?
-Conversation.QueenWelcome.Text.5 = "Yes. Kill him and the way opens. But first stop those graves: the dead keep coming out of them. Take my soldiers."  ; uz: Ha. Uni o'ldiring — yo'l ochiladi. Ammo avval o'sha qabrlarni to'xtating: o'liklar ulardan tinmay chiqmoqda. Askarlarimni oling.
+Gate.Act1Battle.Word = "We're not going that way now."  ; uz: Hozir u yerga bormaymiz.
+Gate.Act1Capital.Word = "We're not going that way now."  ; uz: Hozir u yerga bormaymiz.
+Gate.Act1War.Word = "We're not going that way now."  ; uz: Hozir u yerga bormaymiz.
+Conversation.CommanderInCapital.Text = "This is the Capital. The Queen awaits on her throne in the palace. Come."  ; uz: Bu — poytaxt. Malika saroyda, taxtida kutmoqda. Yur.
+Conversation.QueenWelcome.Text = "Welcome, hero. The Commander has told me of the battle at the gate."  ; uz: Xush kelibsiz, qahramon. Qo'mondon darvoza oldidagi jangni aytib berdi.
+Conversation.QueenWelcome.Text.1 = "The Black Knight has seized my realm: our castles are in his hands, and my people live in fear."  ; uz: Saltanatimni qora ritsar bosib oldi: qal'alarimiz uning qo'lida, xalqim qo'rquvda.
+Conversation.QueenWelcome.Text.2 = "Here is gold — and this medallion. It drinks the life of every foe you slay and pours their strength into you."  ; uz: Mana, oltin — va bu medalyon. U siz o'ldirgan har bir dushmanning jonini yutib, kuchini sizga quyadi.
+Conversation.QueenWelcome.Text.3 = "Only a hero may wear it."  ; uz: Uni faqat qahramon taqa oladi.
+Conversation.QueenWelcome.Text.4 = "If I kill the Black Knight, can I go home?"  ; uz: Qora ritsarni o'ldirsam, uyga qayta olamanmi?
+Conversation.QueenWelcome.Text.5 = "Yes. Slay him, and the way home will open. But first, stop those graves: the dead keep rising from them. Take my soldiers."  ; uz: Ha. Uni o'ldiring — yo'l ochiladi. Ammo avval o'sha qabrlarni to'xtating: o'liklar ulardan tinmay chiqmoqda. Askarlarimni oling.
 Conversation.ToTrainingLine.Text = "I will wait for you at the graves with my soldiers. They lie beyond the battlefield. A sorcerer stands among them: while the graves stand, nothing can harm him."  ; uz: Askarlarim bilan qabrlar oldida sizni kutaman. Qabrlar — jang maydonining narigi tomonida. Ular orasida sehrgar turibdi: qabrlar turgan ekan, unga zarar yetmaydi.
 Quest.Training.Title = "The Old Graves"  ; uz: Eski qabrlar
-; Quest.Training.Description = ""  ; uz: O'liklar shimoliy darvoza ortidagi eski qabrlardan chiqmoqda. Ular orasida sehrgar turibdi: qabrlar turgan ekan, unga zarar yetmaydi - qabrlar uning jonini to'ldiradi. Avval qabrlarni birma-bir buzing, so'ng sehrgarni o'ldiring.
-Quest.Training.Text = "Leave through the north gate and go to the old crypts"  ; uz: Shimoliy darvozadan chiqib, eski qabrlarga boring
+Quest.Training.Description = "The dead are rising from the Old Graves beyond the north gate. A sorcerer stands among them: while the graves stand, nothing can harm him - they keep restoring his life. Break the graves one by one, then slay the sorcerer."  ; uz: O'liklar shimoliy darvoza ortidagi eski qabrlardan chiqmoqda. Ular orasida sehrgar turibdi: qabrlar turgan ekan, unga zarar yetmaydi - qabrlar uning jonini to'ldiradi. Avval qabrlarni birma-bir buzing, so'ng sehrgarni o'ldiring.
+Quest.Training.Text = "Leave by the north gate and head for the Old Graves"  ; uz: Shimoliy darvozadan chiqib, eski qabrlarga boring
 Quest.Training.Text.1 = "Break the graves one by one %d/%d"  ; uz: Qabrlarni birma-bir buzing %d/%d
-Quest.Training.Text.2 = "Now kill the sorcerer: leave him be, and he raises the graves again"  ; uz: Endi sehrgarni o'ldiring: tinch qo'ysangiz, qabrlarni tiklaydi
-Conversation.WarCouncil.Text = "You are back, hero? The medallion is feeding — can you feel it?"  ; uz: Qaytdingizmi, qahramon? Medalyon to'yinmoqda — sezyapsizmi?
-Conversation.WarCouncil.Text.1 = "Now, war. We will free the captured castles one by one: find the key, open the gate, kill the commander."  ; uz: Endi urush. Bosib olingan qal'alarni birma-bir ozod qilamiz: kalitni topamiz, darvozani ochamiz, sarkardasini o'ldiramiz.
+Quest.Training.Text.2 = "Now slay the sorcerer - leave him be and he raises the graves again"  ; uz: Endi sehrgarni o'ldiring: tinch qo'ysangiz, qabrlarni tiklaydi
+Conversation.WarCouncil.Text = "You're back, hero? The medallion is feeding — can you feel it?"  ; uz: Qaytdingizmi, qahramon? Medalyon to'yinmoqda — sezyapsizmi?
+Conversation.WarCouncil.Text.1 = "Now, the war. We free the captured castles one by one: find the key, open the gate, kill their warlord."  ; uz: Endi urush. Bosib olingan qal'alarni birma-bir ozod qilamiz: kalitni topamiz, darvozani ochamiz, sarkardasini o'ldiramiz.
 Conversation.WarCouncil.Text.2 = "Go. Every death makes you stronger."  ; uz: Boring. Har bir o'lim sizni kuchliroq qiladi.
 Quest.BackToPalace.Title = "Return to the Palace"  ; uz: Saroyga qaytish
-Quest.BackToPalace.Text = "Return to the queen's palace"  ; uz: Malika saroyiga qayting
-Quest.ToWar.Title = "Dark Knight"  ; uz: Qora ritsar
-Quest.ToWar.Description = "The commander has gone back to defend the city. The Black Knight's camp is in the north, beyond the mountains. Destroy the caves and graves you meet on the way: they give him strength."  ; uz: Qo'mondon shahar himoyasiga qaytdi. Qora ritsarning qarorgohi shimolda, tog'lar ortida. Yo'lda uchragan g'or va qabrlarni yo'q qiling: ular unga kuch beradi.
-Quest.ToWar.Text = "Head north — to the Black Knight's camp"  ; uz: Shimolga — Qora ritsar qarorgohiga yo'l oling
-Conversation.BlacksmithAsks.Text = "Hero! Rats and bats have overrun the city — the market, the streets. Their nest is in the cellar in the upper right corner of the city, above my workshop. Clear the nest — in return I will give you gauntlets."  ; uz: Qahramon! Shaharni kalamush va ko'rshapalaklar bosib ketdi — bozorda ham, ko'chada ham. Uyasi shaharning o'ng yuqori burchagidagi yerto'lada, mening ustaxonam tepasida. Uyani tozalab bering — evaziga qo'lqop beraman.
-Conversation.BlacksmithThanks.Text = "The nest is cleared and the city breathes again! Here are the gauntlets I promised."  ; uz: Uyasi tozalandi, shahar nafas oldi! Mana, va'da qilgan qo'lqopim.
-Conversation.OldWomanAsks.Text = "Son, I dropped my late husband's ring in the cellar. If you find it for me, I will bless you."  ; uz: O'g'lim, marhum cholimning uzugini yerto'lada tushirib qo'ydim. Topib bersang, duo qilaman.
-Conversation.OldWomanThanks.Text = "You found it! May your road always be open. Take this charm — it will serve you well."  ; uz: Topdingmi! Ilohim, yo'ling ochiq bo'lsin. Mana bu tumorni ol — senga asqatadi.
+Quest.BackToPalace.Text = "Return to the Queen's palace"  ; uz: Malika saroyiga qayting
+Quest.ToWar.Title = "The Black Knight"  ; uz: Qora ritsar
+Quest.ToWar.Description = "The Commander has gone back to defend the city. The Black Knight's camp lies to the north, beyond the mountains. Destroy every cave and grave you find on the way: they give him strength."  ; uz: Qo'mondon shahar himoyasiga qaytdi. Qora ritsarning qarorgohi shimolda, tog'lar ortida. Yo'lda uchragan g'or va qabrlarni yo'q qiling: ular unga kuch beradi.
+Quest.ToWar.Text = "Head north to the Black Knight's camp"  ; uz: Shimolga — Qora ritsar qarorgohiga yo'l oling
+Conversation.BlacksmithAsks.Text = "Hero! Rats and bats have overrun the city — the market, the streets, everywhere. Their nest is in the cellar in the upper right corner of the city, above my workshop. Clear out that nest and I'll give you a pair of gauntlets."  ; uz: Qahramon! Shaharni kalamush va ko'rshapalaklar bosib ketdi — bozorda ham, ko'chada ham. Uyasi shaharning o'ng yuqori burchagidagi yerto'lada, mening ustaxonam tepasida. Uyani tozalab bering — evaziga qo'lqop beraman.
+Conversation.BlacksmithThanks.Text = "The nest is cleared, and the city can breathe again! Here are the gauntlets I promised."  ; uz: Uyasi tozalandi, shahar nafas oldi! Mana, va'da qilgan qo'lqopim.
+Conversation.OldWomanAsks.Text = "Son, I dropped my late husband's ring down in the cellar. Find it for me and you'll have my blessing."  ; uz: O'g'lim, marhum cholimning uzugini yerto'lada tushirib qo'ydim. Topib bersang, duo qilaman.
+Conversation.OldWomanThanks.Text = "You found it! May your road always be open. Take this amulet — it will serve you well."  ; uz: Topdingmi! Ilohim, yo'ling ochiq bo'lsin. Mana bu tumorni ol — senga asqatadi.
 Quest.Cellar.Title = "Rats and Bats"  ; uz: Kalamush va ko'rshapalaklar
-Quest.Cellar.Description = "Rats and bats have overrun the city. Their nest is in the blacksmith's cellar — the upper right (north-east) corner of the city, marked on the M map. Kill the rats first, then the bats that fly out of the nest, and go back to the blacksmith."  ; uz: Shaharni kalamush va ko'rshapalaklar bosib ketgan. Ularning uyasi temirchining yerto'lasida — shaharning o'ng yuqori (shimoli-sharqiy) burchagida, M xaritada belgilangan. Avval kalamushlarni, so'ng uyadan uchib chiqadigan ko'rshapalaklarni qiring, keyin temirchiga qayting.
-Quest.Cellar.Text = "Kill the rats — their nest is in the cellar in the upper right corner of the city %d/%d"  ; uz: Kalamushlarni qiring — uyasi shaharning o'ng yuqori burchagidagi yerto'lada %d/%d
+Quest.Cellar.Description = "Rats and bats have overrun the city. Their nest is in the blacksmith's cellar, in the upper right (north-east) corner of the city, marked on the map (M). Kill the rats first, then the bats that fly out of the nest, and return to the blacksmith."  ; uz: Shaharni kalamush va ko'rshapalaklar bosib ketgan. Ularning uyasi temirchining yerto'lasida — shaharning o'ng yuqori (shimoli-sharqiy) burchagida, M xaritada belgilangan. Avval kalamushlarni, so'ng uyadan uchib chiqadigan ko'rshapalaklarni qiring, keyin temirchiga qayting.
+Quest.Cellar.Text = "Kill the rats in the cellar, upper right corner of the city %d/%d"  ; uz: Kalamushlarni qiring — uyasi shaharning o'ng yuqori burchagidagi yerto'lada %d/%d
 Quest.Cellar.Text.1 = "Kill the bats that flew out of the nest %d/%d"  ; uz: Uyadan uchib chiqqan ko'rshapalaklarni qiring %d/%d
 Quest.Cellar.Text.2 = "Return to the blacksmith"  ; uz: Temirchiga qayting
 Quest.LostRing.Title = "Granny's Ring"  ; uz: Momoning uzugi
-Quest.LostRing.Description = "Granny Zebo dropped her late husband's ring in the cellar. The cellar is in the upper right corner of the city — marked on the M map."  ; uz: Zebo momo cholining uzugini yerto'lada tushirib qo'ygan. Yerto'la shaharning o'ng yuqori burchagida — M xaritada belgilangan.
-Quest.LostRing.Text = "Find the ring in the cellar in the upper right corner of the city"  ; uz: Shaharning o'ng yuqori burchagidagi yerto'lada uzukni toping
+Quest.LostRing.Description = "Granny Zebo dropped her late husband's ring in the cellar. The cellar is in the upper right corner of the city — marked on the map (M)."  ; uz: Zebo momo cholining uzugini yerto'lada tushirib qo'ygan. Yerto'la shaharning o'ng yuqori burchagida — M xaritada belgilangan.
+Quest.LostRing.Text = "Find the ring in the cellar, upper right corner of the city"  ; uz: Shaharning o'ng yuqori burchagidagi yerto'lada uzukni toping
 Quest.LostRing.Text.1 = "Give the ring to Granny Zebo"  ; uz: Uzukni Zebo momoga bering
-LootItem.FamilyRing.DisplayName = "Old Man's Ring"  ; uz: Cholning uzugi
-Conversation.SoldiersCome.Text = "The soldiers are here. The graves first — then the sorcerer's turn!"  ; uz: Askarlar shu yerda. Avval qabrlarni buzamiz — keyin sehrgarning navbati!
-Conversation.CaveSeen.Text = "What is that? At the foot of the hill — a black mouth."  ; uz: Anavi nima? Tog' etagida — qop-qora og'iz.
-Conversation.CaveSeen.Text.1 = "A cave. Full of monsters. Since the Black Knight began to rule, caves like it have multiplied."  ; uz: G'or. Ichi monstrlarga to'la. Qora ritsar hukmronlik qila boshlagandan beri bunaqa g'orlar ko'payib ketdi.
-Conversation.CaveSeen.Text.2 = "To destroy one, every monster in it must be killed. But nobody who went in has come back yet."  ; uz: Uni yo'q qilish uchun ichidagi barcha monstrlarni o'ldirish kerak. Lekin u yerdan hali hech kim qaytib kelmagan.
+LootItem.FamilyRing.DisplayName = "Late Husband's Ring"  ; uz: Cholning uzugi
+Conversation.SoldiersCome.Text = "The soldiers are here. The graves first — then the sorcerer!"  ; uz: Askarlar shu yerda. Avval qabrlarni buzamiz — keyin sehrgarning navbati!
+Conversation.CaveSeen.Text = "What's that? At the foot of the hill — a pitch-black maw."  ; uz: Anavi nima? Tog' etagida — qop-qora og'iz.
+Conversation.CaveSeen.Text.1 = "A cave, crawling with monsters. Since the Black Knight took power, caves like it have sprung up everywhere."  ; uz: G'or. Ichi monstrlarga to'la. Qora ritsar hukmronlik qila boshlagandan beri bunaqa g'orlar ko'payib ketdi.
+Conversation.CaveSeen.Text.2 = "To destroy one, you must kill every monster inside. But no one who went in has come back yet."  ; uz: Uni yo'q qilish uchun ichidagi barcha monstrlarni o'ldirish kerak. Lekin u yerdan hali hech kim qaytib kelmagan.
 Conversation.CaveSeen.Text.3 = "Where is the Black Knight's camp?"  ; uz: Qora ritsarning qarorgohi qayerda?
-Conversation.CaveSeen.Text.4 = "In the north. Beyond the mountains."  ; uz: Shimolda. Tog'lar ortida.
-Conversation.CityAttacked.Text = "Commander! The city is under attack! The gate barely holds!"  ; uz: Qo'mondon! Shaharga hujum qilishdi! Darvoza zo'rg'a turibdi!
+Conversation.CaveSeen.Text.4 = "North. Beyond the mountains."  ; uz: Shimolda. Tog'lar ortida.
+Conversation.CityAttacked.Text = "Commander! The city is under attack! The gate is barely holding!"  ; uz: Qo'mondon! Shaharga hujum qilishdi! Darvoza zo'rg'a turibdi!
 Conversation.CityAttacked.Text.1 = "We must go back and defend the city."  ; uz: Biz shahar himoyasiga qaytishimiz kerak.
-Conversation.CityAttacked.Text.2 = "Go. I will find the Black Knight and put an end to all of this."  ; uz: Siz boravering. Men Qora ritsarni topaman va buning barchasiga chek qo'yaman.
-Conversation.CityAttacked.Text.3 = "Good luck. Know this: before you reach him, destroy as many caves and graves as you can. They give him strength."  ; uz: Omad yor bo'lsin. Bilib qo'y: uning oldiga borguningcha iloji boricha ko'proq g'or va qabrlarni yo'q qil. Ular unga kuch beradi.
-Conversation.CampReached.Text = "The Black Knight's camp. The more graves and caves are left, the stronger he will be..."  ; uz: Qora ritsarning qarorgohi. Qanchalik ko'p qabr va g'or qolgan bo'lsa, u shunchalik kuchli bo'ladi...
+Conversation.CityAttacked.Text.2 = "Go. I will find the Black Knight and put an end to all this."  ; uz: Siz boravering. Men Qora ritsarni topaman va buning barchasiga chek qo'yaman.
+Conversation.CityAttacked.Text.3 = "Good luck. And mark this: before you reach him, destroy as many caves and graves as you can. They give him strength."  ; uz: Omad yor bo'lsin. Bilib qo'y: uning oldiga borguningcha iloji boricha ko'proq g'or va qabrlarni yo'q qil. Ular unga kuch beradi.
+Conversation.CampReached.Text = "The Black Knight's camp. The more graves and caves still stand, the stronger he will be..."  ; uz: Qora ritsarning qarorgohi. Qanchalik ko'p qabr va g'or qolgan bo'lsa, u shunchalik kuchli bo'ladi...
 KnightStrength.Word = "Black Knight's strength: %d%%"  ; uz: Qora ritsar kuchi: %d%%
-Conversation.DarkLordWarns.Text = "Another one... Did the queen send you too?"  ; uz: Yana bittasi... Malika seni ham yubordimi?
+Conversation.DarkLordWarns.Text = "Another one... Did the Queen send you too?"  ; uz: Yana bittasi... Malika seni ham yubordimi?
 Conversation.DarkLordWarns.Text.1 = "If I kill you, I go home."  ; uz: Seni o'ldirsam, uyga qaytaman.
-Conversation.DarkLordWarns.Text.2 = "I once said the same."  ; uz: Men ham bir vaqtlar shunday deganman.
+Conversation.DarkLordWarns.Text.2 = "I said the same, once."  ; uz: Men ham bir vaqtlar shunday deganman.
 Conversation.QueenLaughs.Text = "Ha-ha-ha... Thank you, hero."  ; uz: Ha-ha-ha... Rahmat, qahramon.
-Conversation.QueenLaughs.Text.1 = "The medallion is full — and it is in my hands again."  ; uz: Medalyon to'ldi — va u yana mening qo'limda.
-Conversation.QueenLaughs.Text.2 = "You... tricked me. The Dark Knight was summoned just like me..."  ; uz: Sen... meni aldading. Qora ritsar ham men kabi chaqirilgan edi...
+Conversation.QueenLaughs.Text.1 = "The medallion is full — and it is mine once more."  ; uz: Medalyon to'ldi — va u yana mening qo'limda.
+Conversation.QueenLaughs.Text.2 = "You... you deceived me. The Black Knight was summoned, just like me..."  ; uz: Sen... meni aldading. Qora ritsar ham men kabi chaqirilgan edi...
 Conversation.QueenLaughs.Text.3 = "Now you are the lord of this castle. Forever. And when I need a new hero — you will fight again."  ; uz: Endi bu qasrning xo'jayini sensan. Abadiy. Menga yangi qahramon kerak bo'lganda — yana jang qilasan.
-Quest.DarkCastle.Title = "The Dark Castle"  ; uz: Qora qasr
-Quest.DarkCastle.Text = "Kill the Dark Knight"  ; uz: Qora ritsarni o'ldiring
+Quest.DarkCastle.Title = "The Black Castle"  ; uz: Qora qasr
+Quest.DarkCastle.Text = "Slay the Black Knight"  ; uz: Qora ritsarni o'ldiring
 Title.ChapterBattle.Text = "The Battle at the Gate"  ; uz: Darvoza oldidagi jang
 Title.ChapterBattle.Subtext = "Part 1"  ; uz: 1-qism
-Title.ChapterCapital.Text = "Capital"  ; uz: Poytaxt
+Title.ChapterCapital.Text = "The Capital"  ; uz: Poytaxt
 Title.ChapterCapital.Subtext = "Part 1"  ; uz: 1-qism
-Title.ChapterTraining.Text = "Training: The Old Crypts"  ; uz: Mashq: eski qabrlar
+Title.ChapterTraining.Text = "Training: The Old Graves"  ; uz: Mashq: eski qabrlar
 Title.ChapterTraining.Subtext = "Part 1"  ; uz: 1-qism
 Title.ChapterWar.Text = "The Conquered Lands"  ; uz: Bosib olingan yerlar
 Title.ChapterWar.Subtext = "Part 1"  ; uz: 1-qism
-Title.ChapterCastle.Text = "The Dark Castle"  ; uz: Qora qasr
+Title.ChapterCastle.Text = "The Black Castle"  ; uz: Qora qasr
 Title.ChapterCastle.Subtext = "Part 1"  ; uz: 1-qism
-Title.ActOneEnd.Text = "Part 1 complete"  ; uz: 1-qism tugadi
+Title.ActOneEnd.Text = "Part 1 Complete"  ; uz: 1-qism tugadi
 Title.ActOneEnd.Subtext = "To be continued..."  ; uz: Davomi bor...
 
 ; ---- data/story/graveyards.duke ----
-; Graves.ChangedWord = ""  ; uz: CHANGED
+Graves.ChangedWord = "CHANGED"  ; uz: CHANGED
 
 ; ---- data/story/villages.duke ----
 Speaker.Villager.DisplayName = "Villager"  ; uz: Qishloqi
@@ -1275,11 +1292,11 @@ Speaker.Farmer.DisplayName = "Farmer"  ; uz: Dehqon
 Speaker.Traveller.DisplayName = "Traveller"  ; uz: Yo'lovchi
 Speaker.Pedlar.DisplayName = "Peddler Sobir"  ; uz: Chayqovchi Sobir
 Speaker.TowerKeeper.DisplayName = "Tower Keeper"  ; uz: Minorabon
-Conversation.VillagerGreets.Text = "Peace be with you, guest! Welcome to our village."  ; uz: Assalomu alaykum, mehmon! Qishlog'imizga xush kelibsiz.
-Conversation.FarmerGreets.Text = "The land gave a good harvest this year. Just keep away from the roads at night."  ; uz: Yer bu yil yaxshi hosil berdi. Faqat kechalari yo'llardan uzoqroq yuring.
-Conversation.TravellerGreets.Text = "May your road be open! I walk from village to village."  ; uz: Yo'lingiz ochiq bo'lsin! Men qishloqdan qishloqqa yuraman.
-Conversation.PedlarGreets.Text = "Stop, stop! I have everything you need for the road — cheap!"  ; uz: To'xtang, to'xtang! Yo'l uchun kerakli narsalar bor — arzon!
-Conversation.KeeperGreets.Text = "There is a road from tower to tower. Which one will you take? I will open the map."  ; uz: Minoradan minoraga yo'l bor. Qaysi biriga borasiz? Xaritani ochaman.
+Conversation.VillagerGreets.Text = "Peace be with you, traveller! Welcome to our village."  ; uz: Assalomu alaykum, mehmon! Qishlog'imizga xush kelibsiz.
+Conversation.FarmerGreets.Text = "The land gave a good harvest this year. Just keep off the roads at night."  ; uz: Yer bu yil yaxshi hosil berdi. Faqat kechalari yo'llardan uzoqroq yuring.
+Conversation.TravellerGreets.Text = "May your road be open! I wander from village to village."  ; uz: Yo'lingiz ochiq bo'lsin! Men qishloqdan qishloqqa yuraman.
+Conversation.PedlarGreets.Text = "Wait, wait! I've got everything you need for the road — and cheap!"  ; uz: To'xtang, to'xtang! Yo'l uchun kerakli narsalar bor — arzon!
+Conversation.KeeperGreets.Text = "A road runs from tower to tower. Which one will it be? I'll open the map."  ; uz: Minoradan minoraga yo'l bor. Qaysi biriga borasiz? Xaritani ochaman.
 Npc.Villager.Role = "Villager"  ; uz: Qishloqi
 Npc.Farmer.Role = "Farmer"  ; uz: Dehqon
 Npc.Traveller.Role = "Traveller"  ; uz: Yo'lovchi
@@ -1290,48 +1307,48 @@ Title.Journey.Subtext = "From tower to tower"  ; uz: Minoradan minoraga
 
 ; ---- data/story/act2.duke ----
 Campaign.act2.Word = "Part 2: The Archer"  ; uz: 2-qism: Kamonchi
-Campaign.act2.Blurb = "Years later, she comes looking for her beloved. If Part 1 was saved, it continues from there."  ; uz: Yillar o'tib, u yigitini izlab keladi. 1-qism saqlangan bo'lsa, o'sha yerdan davom etadi.
+Campaign.act2.Blurb = "Years later, she comes in search of the one she loves. If Part 1 was saved, the story goes on from there."  ; uz: Yillar o'tib, u yigitini izlab keladi. 1-qism saqlangan bo'lsa, o'sha yerdan davom etadi.
 Speaker.Baker.DisplayName = "Baker Karim"  ; uz: Novvoy Karim
-Speaker.Guard.DisplayName = "Guard Jasur"  ; uz: Qorovul Jasur
+Speaker.Guard.DisplayName = "Watchman Jasur"  ; uz: Qorovul Jasur
 Speaker.Elder.DisplayName = "Elder Hamid"  ; uz: Oqsoqol Hamid
 Npc.Baker.Role = "Baker"  ; uz: Novvoy
-Npc.Guard.Role = "Guard"  ; uz: Qorovul
+Npc.Guard.Role = "Watchman"  ; uz: Qorovul
 Npc.Elder.Role = "Elder"  ; uz: Oqsoqol
-Conversation.HeroineArrives.Text = "That same light again... For years I searched for it — and this light has brought me here too."  ; uz: Yana o'sha nur... Yillar davomida uni izladim — va shu nur meni ham olib keldi.
+Conversation.HeroineArrives.Text = "That same light again... For years I searched for it — and now it has brought me here too."  ; uz: Yana o'sha nur... Yillar davomida uni izladim — va shu nur meni ham olib keldi.
 Conversation.HeroineArrives.Text.1 = "He is in this world. I know it."  ; uz: U shu dunyoda. Bilaman.
-Conversation.CommanderMeetsHer.Text = "Another light... The kingdom has summoned a hero again. Who are you?"  ; uz: Yana nur... Saltanat yana qahramon chaqirdi. Sen kimsan?
-Conversation.CommanderMeetsHer.Text.1 = "I am looking for a young man. Years ago he fell here — with a sword, a little bewildered."  ; uz: Men bir yigitni izlayapman. U bundan yillar oldin shu yerga tushgan — qilichli, bir oz sarosimada.
-Conversation.CommanderMeetsHer.Text.2 = "The last hero... He went to the dark castle and never came back. The queen has forbidden anyone to speak of him."  ; uz: Oxirgi qahramon... U qora qasrga ketdi va qaytmadi. Malika u haqda gapirishni taqiqlagan.
-Conversation.CommanderMeetsHer.Text.3 = "I cannot tell you much. Ask in the city — people know what I cannot say."  ; uz: Men senga ko'p narsa aytolmayman. Shaharda so'ra — odamlar men aytolmaganni biladi.
-Conversation.BakerTalks.Text = "A hero? Yes, there was one once. Now even saying his name is frightening. They say evil comes from the dark castle."  ; uz: Qahramon? Ha, bir vaqtlar bor edi. Endi uning nomini aytish ham qo'rqinchli. Qora qasrdan yovuzlik keladi, deyishadi.
-Conversation.GuardTalks.Text = "Twenty years I have stood guard — and the queen has not aged a day. Strange, eh? But I did not say that."  ; uz: Yigirma yil qorovullik qildim — malika bir kun ham qarimadi. Ajib, a? Lekin buni men aytmadim.
-Conversation.ElderTalks.Text = "Even when my grandfather was young, the queen was just as beautiful. No one knows her age..."  ; uz: Bobom yosh bo'lganida ham malika shunday go'zal edi. Uning yoshini hech kim bilmaydi...
-Conversation.ElderKnows.Text = "Looking for the hero? Then learn the queen's secret — it comes with him."  ; uz: Qahramonni izlayapsanmi? Unda malikaning sirini bil — u bilan birga.
-Conversation.ElderKnows.Text.1 = "Deep in the dark forest, in a hut on chicken legs, lives the crone Baba Yaga. Only she knows the queen's secret."  ; uz: Qorong'i o'rmonning tubida, tovuq oyoqli kulbada Yalmog'iz kampir yashaydi. Malikaning sirini faqat u biladi.
-Conversation.ElderKnows.Text.2 = "Then I will go to the forest."  ; uz: Unda o'rmonga boraman.
+Conversation.CommanderMeetsHer.Text = "Another light... The kingdom has summoned a hero once again. Who are you?"  ; uz: Yana nur... Saltanat yana qahramon chaqirdi. Sen kimsan?
+Conversation.CommanderMeetsHer.Text.1 = "I'm looking for a young man. He fell here years ago — carrying a sword, a little lost."  ; uz: Men bir yigitni izlayapman. U bundan yillar oldin shu yerga tushgan — qilichli, bir oz sarosimada.
+Conversation.CommanderMeetsHer.Text.2 = "The last hero... He went to the Black Castle and never returned. The Queen has forbidden anyone to speak of him."  ; uz: Oxirgi qahramon... U qora qasrga ketdi va qaytmadi. Malika u haqda gapirishni taqiqlagan.
+Conversation.CommanderMeetsHer.Text.3 = "I can't tell you much. Ask in the city — the people know what I cannot say."  ; uz: Men senga ko'p narsa aytolmayman. Shaharda so'ra — odamlar men aytolmaganni biladi.
+Conversation.BakerTalks.Text = "A hero? Aye, there was one, once. Now folk are afraid even to say his name. They say evil comes from the Black Castle."  ; uz: Qahramon? Ha, bir vaqtlar bor edi. Endi uning nomini aytish ham qo'rqinchli. Qora qasrdan yovuzlik keladi, deyishadi.
+Conversation.GuardTalks.Text = "Twenty years I've stood watch — and the Queen hasn't aged a day. Strange, eh? But you didn't hear that from me."  ; uz: Yigirma yil qorovullik qildim — malika bir kun ham qarimadi. Ajib, a? Lekin buni men aytmadim.
+Conversation.ElderTalks.Text = "Even when my grandfather was young, the Queen was just as beautiful. No one knows how old she is..."  ; uz: Bobom yosh bo'lganida ham malika shunday go'zal edi. Uning yoshini hech kim bilmaydi...
+Conversation.ElderKnows.Text = "Looking for the hero? Then learn the Queen's secret — the two go together."  ; uz: Qahramonni izlayapsanmi? Unda malikaning sirini bil — u bilan birga.
+Conversation.ElderKnows.Text.1 = "Deep in the Dark Forest, in a hut on chicken legs, lives the crone Baba Yaga. Only she knows the Queen's secret."  ; uz: Qorong'i o'rmonning tubida, tovuq oyoqli kulbada Yalmog'iz kampir yashaydi. Malikaning sirini faqat u biladi.
+Conversation.ElderKnows.Text.2 = "Then I'll go to the forest."  ; uz: Unda o'rmonga boraman.
 Quest.Rumours.Title = "In Search of Him"  ; uz: Uni izlab
-Quest.Rumours.Text = "Ask around the city: the elder knows something"  ; uz: Shaharda so'rab-surishtiring: oqsoqol nimadir biladi
+Quest.Rumours.Text = "Ask around the city - the elder knows something"  ; uz: Shaharda so'rab-surishtiring: oqsoqol nimadir biladi
 Quest.Witch.Title = "The Crone of the Dark Forest"  ; uz: Qorong'i o'rmondagi kampir
-Quest.Witch.Text = "Find the crone Baba Yaga deep in the dark forest"  ; uz: Qorong'i o'rmon tubidagi Yalmog'iz kampirni toping
+Quest.Witch.Text = "Find Baba Yaga deep in the Dark Forest"  ; uz: Qorong'i o'rmon tubidagi Yalmog'iz kampirni toping
 Quest.WitchsPrice.Title = "The Crone's Price"  ; uz: Kampirning bahosi
-Quest.WitchsPrice.Text = "Kill the necromancer in the forest"  ; uz: O'rmondagi o'likchini o'ldiring
+Quest.WitchsPrice.Text = "Slay the necromancer in the forest"  ; uz: O'rmondagi o'likchini o'ldiring
 Quest.WitchsPrice.Text.1 = "Return to the crone"  ; uz: Kampirga qayting
 LootItem.CageKey.DisplayName = "Cage Key"  ; uz: Qafas kaliti
-Conversation.DamselFreed.Text = "I am free! Thank you, sister. If the crone tells you the secret — believe her, she does not lie. She only asks her price."  ; uz: Ozodman! Rahmat, opa. Kampir sizga sirni aytsa — ishoning, u yolg'on gapirmaydi. Faqat narxini so'raydi.
-Quest.CagedGirl.Title = "The Maiden in the Cage"  ; uz: Qafasdagi qiz
+Conversation.DamselFreed.Text = "I'm free! Thank you, sister. If the crone tells you the secret, believe her — she never lies. She only asks her price."  ; uz: Ozodman! Rahmat, opa. Kampir sizga sirni aytsa — ishoning, u yolg'on gapirmaydi. Faqat narxini so'raydi.
+Quest.CagedGirl.Title = "The Girl in the Cage"  ; uz: Qafasdagi qiz
 Quest.CagedGirl.Text = "Take the cage key from the necromancer"  ; uz: Qafas kalitini o'likchidan oling
 Quest.CagedGirl.Text.1 = "Free the girl from the cage"  ; uz: Qizni qafasdan chiqaring
-Conversation.GreenFreed.Text = "The Green Field is free. The merchants return to the road."  ; uz: Yashil dala ozod. Savdogarlar yo'lga qaytadi.
-Conversation.RockyFreed.Text = "The Stony Hills are free. The mountain roads are open again."  ; uz: Toshli adir ozod. Tog' yo'llari yana ochiq.
+Conversation.GreenFreed.Text = "The Green Field is free. The merchants will take to the roads again."  ; uz: Yashil dala ozod. Savdogarlar yo'lga qaytadi.
+Conversation.RockyFreed.Text = "The Stony Hills are free. The mountain passes are open once more."  ; uz: Toshli adir ozod. Tog' yo'llari yana ochiq.
 Conversation.SandFreed.Text = "The Sandy Steppe is free. The caravans will pass again."  ; uz: Qumli dasht ozod. Karvonlar yana o'tadi.
-Conversation.AllFreed.Text = "All three lands are free. The magic of the queen's castle has weakened — now the gate will open."  ; uz: Uchala yer ozod. Malika qasrining sehri zaiflashdi — endi darvoza ochiladi.
+Conversation.AllFreed.Text = "All three lands are free. The magic on the Queen's castle has weakened — now the gate will open."  ; uz: Uchala yer ozod. Malika qasrining sehri zaiflashdi — endi darvoza ochiladi.
 Conversation.CastleSealed.Text = "The gate is sealed by magic. Just as the crone said — I must free the lands first."  ; uz: Darvoza sehr bilan yopiq. Kampir aytgandek — avval yerlarni ozod qilishim kerak.
-Quest.FreeGreen.Title = "Green Field"  ; uz: Yashil dala
-Quest.FreeGreen.Text = "Clear the Green Field camp"  ; uz: Yashil dala lagerini tozalang
-Quest.FreeRocky.Title = "Stony Hills"  ; uz: Toshli adir
-Quest.FreeRocky.Text = "Clear the Stony Hills camp"  ; uz: Toshli adir lagerini tozalang
-Quest.FreeSand.Title = "Sandy Steppe"  ; uz: Qumli dasht
-Quest.FreeSand.Text = "Clear the Sandy Steppe camp"  ; uz: Qumli dasht lagerini tozalang
+Quest.FreeGreen.Title = "The Green Field"  ; uz: Yashil dala
+Quest.FreeGreen.Text = "Clear the camp in the Green Field"  ; uz: Yashil dala lagerini tozalang
+Quest.FreeRocky.Title = "The Stony Hills"  ; uz: Toshli adir
+Quest.FreeRocky.Text = "Clear the camp in the Stony Hills"  ; uz: Toshli adir lagerini tozalang
+Quest.FreeSand.Title = "The Sandy Steppe"  ; uz: Qumli dasht
+Quest.FreeSand.Text = "Clear the camp in the Sandy Steppe"  ; uz: Qumli dasht lagerini tozalang
 Quest.ToTheQueen.Title = "The Queen's Castle"  ; uz: Malika qasri
 Quest.ToTheQueen.Text = "Go to the Queen's Castle"  ; uz: Malika qasriga boring
 Title.ChapterArrival.Text = "Part 2: The Archer"  ; uz: 2-qism: Kamonchi
@@ -1339,13 +1356,13 @@ Title.ChapterArrival.Subtext = "Years later"  ; uz: Yillar o'tib
 Title.ChapterHall.Text = "The Queen's Hall"  ; uz: Malika zali
 Title.ChapterHall.Subtext = "Part 2"  ; uz: 2-qism
 Title.TheEndCard.Text = "The End"  ; uz: Oxiri
-Title.TheEndCard.Subtext = "The curse is lifted"  ; uz: La'nat ko'tarildi
-Conversation.GirlAtHome.Text = "If not for you, I would still be in that cage. The commander gave me shelter."  ; uz: Siz bo'lmaganingizda, hali ham o'sha qafasda bo'lardim. Qo'mondon menga boshpana berdi.
-Npc.FreedDamsel.Role = "Freed"  ; uz: Ozod
+Title.TheEndCard.Subtext = "The curse is broken"  ; uz: La'nat ko'tarildi
+Conversation.GirlAtHome.Text = "If not for you, I would still be in that cage. The Commander has given me shelter."  ; uz: Siz bo'lmaganingizda, hali ham o'sha qafasda bo'lardim. Qo'mondon menga boshpana berdi.
+Npc.FreedDamsel.Role = "Freed Captive"  ; uz: Ozod
 
 ; ---- data/story/credits.duke ----
 Credits.Lines = "# Last Hero"  ; uz: # Last Hero
-Credits.Lines.2 = "# Code, design and story"  ; uz: # Kod, dizayn va hikoya
+Credits.Lines.2 = "# Code, Design and Story"  ; uz: # Kod, dizayn va hikoya
 Credits.Lines.3 = "Abdurasul"  ; uz: Abdurasul
 Credits.Lines.5 = "# Engine"  ; uz: # Dvigatel
 Credits.Lines.6 = "duke-engine — Abdurasul"  ; uz: duke-engine — Abdurasul
@@ -1354,7 +1371,7 @@ Credits.Lines.9 = "# Heroes"  ; uz: # Qahramonlar
 Credits.Lines.10 = "Huntress — Wilson (neilhancart), CC BY 4.0"  ; uz: Huntress — Wilson (neilhancart), CC BY 4.0
 Credits.Lines.11 = "Lange — phucpham1076, CC BY 4.0"  ; uz: Lange — phucpham1076, CC BY 4.0
 Credits.Lines.12 = "Adventurers — KayKit, Kay Lousberg, CC0"  ; uz: Adventurers — KayKit, Kay Lousberg, CC0
-Credits.Lines.14 = "# Creatures and animations"  ; uz: # Maxluqlar va harakatlar
+Credits.Lines.14 = "# Creatures and Animations"  ; uz: # Maxluqlar va harakatlar
 Credits.Lines.15 = "Skeletons, Character Animations — KayKit, CC0"  ; uz: Skeletons, Character Animations — KayKit, CC0
 Credits.Lines.16 = "Universal Animation Library — Quaternius, CC0"  ; uz: Universal Animation Library — Quaternius, CC0
 Credits.Lines.17 = "Standing 2H Magic Area Attack — Mixamo"  ; uz: Standing 2H Magic Area Attack — Mixamo
@@ -1369,10 +1386,10 @@ Credits.Lines.26 = "Baba Yaga's hut — Inuciian, CC BY 4.0"  ; uz: Baba Yaga's 
 Credits.Lines.27 = "Fountain — Poly by Google, CC BY 3.0"  ; uz: Fountain — Poly by Google, CC BY 3.0
 Credits.Lines.28 = "Deer, Pig, Bush with Berries, Pumpkin — Quaternius, CC0"  ; uz: Deer, Pig, Bush with Berries, Pumpkin — Quaternius, CC0
 Credits.Lines.29 = "Campfire — Kenney, CC0"  ; uz: Campfire — Kenney, CC0
-; Credits.Lines.30 = ""  ; uz: Horse — Quaternius, CC0
-; Credits.Lines.31 = ""  ; uz: Nature Kit — Kenney, CC0
-; Credits.Lines.32 = ""  ; uz: Stylized Nature MegaKit, Ultimate Nature Pack — Quaternius, CC0
-; Credits.Lines.33 = ""  ; uz: Ground textures — Poly Haven (Rob Tuytel, Charlotte Baglioni, eye-candy.xyz, Dario Barresi, Rico Cilliers), LuminousDragonGames, CC0
+Credits.Lines.30 = "Horse — Quaternius, CC0"  ; uz: Horse — Quaternius, CC0
+Credits.Lines.31 = "Nature Kit — Kenney, CC0"  ; uz: Nature Kit — Kenney, CC0
+Credits.Lines.32 = "Stylized Nature MegaKit, Ultimate Nature Pack — Quaternius, CC0"  ; uz: Stylized Nature MegaKit, Ultimate Nature Pack — Quaternius, CC0
+Credits.Lines.33 = "Ground textures — Poly Haven (Rob Tuytel, Charlotte Baglioni, eye-candy.xyz, Dario Barresi, Rico Cilliers), LuminousDragonGames, CC0"  ; uz: Ground textures — Poly Haven (Rob Tuytel, Charlotte Baglioni, eye-candy.xyz, Dario Barresi, Rico Cilliers), LuminousDragonGames, CC0
 Credits.Lines.34 = "Old Driveway Gate — animatedheaven"  ; uz: Old Driveway Gate — animatedheaven
 Credits.Lines.36 = "# Castles"  ; uz: # Qasrlar
 Credits.Lines.37 = "Medieval Fortress Kit — Aya Rady, CC BY 4.0"  ; uz: Medieval Fortress Kit — Aya Rady, CC BY 4.0
@@ -1397,12 +1414,12 @@ Credits.Lines.58 = "Male Grunt/Yelling sounds — HaelDB, CC0"  ; uz: Male Grunt
 Credits.Lines.59 = "Footsteps — Fantozzi, CC0"  ; uz: Footsteps — Fantozzi, CC0
 Credits.Lines.60 = "Loopable Dungeon Ambience — JaggedStone, CC0"  ; uz: Loopable Dungeon Ambience — JaggedStone, CC0
 Credits.Lines.61 = "Fireplace Sound loop — PagDev, CC0"  ; uz: Fireplace Sound loop — PagDev, CC0
-; Credits.Lines.62 = ""  ; uz: amb_rain_loop_1 — Kresiek The Furry, CC0
-; Credits.Lines.63 = ""  ; uz: Crickets Ambient Noise — Wolfgang_, CC0
-; Credits.Lines.64 = ""  ; uz: Mild wind background noise — Bashar3A, CC0
-; Credits.Lines.65 = ""  ; uz: 100 CC0 SFX #2 (thunder) — rubberduck, CC0
-; Credits.Lines.66 = ""  ; uz: Horse gallop on different surfaces — congusbongus, CC0
-; Credits.Lines.67 = ""  ; uz: Zebra Whinny — Peet J van Eeden, CC BY 3.0
+Credits.Lines.62 = "amb_rain_loop_1 — Kresiek The Furry, CC0"  ; uz: amb_rain_loop_1 — Kresiek The Furry, CC0
+Credits.Lines.63 = "Crickets Ambient Noise — Wolfgang_, CC0"  ; uz: Crickets Ambient Noise — Wolfgang_, CC0
+Credits.Lines.64 = "Mild wind background noise — Bashar3A, CC0"  ; uz: Mild wind background noise — Bashar3A, CC0
+Credits.Lines.65 = "100 CC0 SFX #2 (thunder) — rubberduck, CC0"  ; uz: 100 CC0 SFX #2 (thunder) — rubberduck, CC0
+Credits.Lines.66 = "Horse gallop on different surfaces — congusbongus, CC0"  ; uz: Horse gallop on different surfaces — congusbongus, CC0
+Credits.Lines.67 = "Zebra Whinny — Peet J van Eeden, CC BY 3.0"  ; uz: Zebra Whinny — Peet J van Eeden, CC BY 3.0
 Credits.Lines.69 = "# Music"  ; uz: # Musiqa
 Credits.Lines.70 = "A Legend Will Rise — CodeManu, CC0"  ; uz: A Legend Will Rise — CodeManu, CC0
 Credits.Lines.71 = "Medieval: Market Day — RandomMind, CC0"  ; uz: Medieval: Market Day — RandomMind, CC0
@@ -1410,27 +1427,27 @@ Credits.Lines.72 = "The Hope, Once Upon a Time, Unexplored — TAD, CC0"  ; uz: 
 Credits.Lines.73 = "Sinister Boss Appears, Battle Theme A, Victory Theme for RPG — cynicmusic, CC0"  ; uz: Sinister Boss Appears, Battle Theme A, Victory Theme for RPG — cynicmusic, CC0
 Credits.Lines.74 = "Boss Battle Music — Juhani Junkala, CC0"  ; uz: Boss Battle Music — Juhani Junkala, CC0
 Credits.Lines.75 = "Laments of the War — Cethiel, CC0"  ; uz: Laments of the War — Cethiel, CC0
-Credits.Lines.77 = "# Fonts and decorations"  ; uz: # Shrift va bezaklar
+Credits.Lines.77 = "# Fonts and Ornaments"  ; uz: # Shrift va bezaklar
 Credits.Lines.78 = "Cinzel — Natanael Gama, SIL OFL 1.1"  ; uz: Cinzel — Natanael Gama, SIL OFL 1.1
 Credits.Lines.79 = "Particle Pack, Fantasy UI Borders, Cursor Pack — Kenney, CC0"  ; uz: Particle Pack, Fantasy UI Borders, Cursor Pack — Kenney, CC0
-Credits.Lines.82 = "# Thank you!"  ; uz: # Rahmat!
-Credits.Lines.83 = "Full list: CREDITS.md"  ; uz: To'liq ro'yxat: CREDITS.md
+Credits.Lines.82 = "# Thank You!"  ; uz: # Rahmat!
+Credits.Lines.83 = "Full list in CREDITS.md"  ; uz: To'liq ro'yxat: CREDITS.md
 
 ; ---- data/fixture-creatures.duke ----
 Object.Rogue.DisplayName = "Hero"  ; uz: Hero
 Object.Skeleton.DisplayName = "Skeleton"  ; uz: Skeleton
 
 ; ---- maps/people/people.duke ----
-; Person.Walker.Role = ""  ; uz: Qorovul
-; Person.Sentry.Role = ""  ; uz: Soqchi
-; Person.Smith.Role = ""  ; uz: Temirchi
-; Speaker.Smith.DisplayName = ""  ; uz: Temirchi Botir
-; Conversation.SmithHello.Text = ""  ; uz: Qahramon! Hovlida skeletlar paydo bo'ldi — ikkitasini yo'q qilib, menga qayting.
-; Quest.SmithsOre.Title = ""  ; uz: Hovlidagi skeletlar
-; Quest.SmithsOre.Description = ""  ; uz: Temirchi Botir so'radi: hovliga borib, u yerdagi ikki skeletni yo'q qiling va unga qayting.
-; Quest.SmithsOre.Text = ""  ; uz: Hovliga boring
-; Quest.SmithsOre.Text.1 = ""  ; uz: Skeletlarni qiring %d/%d
-; Quest.SmithsOre.Text.2 = ""  ; uz: Temirchiga qayting
+Person.Walker.Role = "Watchman"  ; uz: Qorovul
+Person.Sentry.Role = "Guard"  ; uz: Soqchi
+Person.Smith.Role = "Blacksmith"  ; uz: Temirchi
+Speaker.Smith.DisplayName = "Botir the Blacksmith"  ; uz: Temirchi Botir
+Conversation.SmithHello.Text = "Hero! Skeletons have turned up in the yard — destroy two of them and come back to me."  ; uz: Qahramon! Hovlida skeletlar paydo bo'ldi — ikkitasini yo'q qilib, menga qayting.
+Quest.SmithsOre.Title = "Skeletons in the Yard"  ; uz: Hovlidagi skeletlar
+Quest.SmithsOre.Description = "Botir the Blacksmith asked you to go to the yard, destroy the two skeletons there and come back to him."  ; uz: Temirchi Botir so'radi: hovliga borib, u yerdagi ikki skeletni yo'q qiling va unga qayting.
+Quest.SmithsOre.Text = "Go to the yard"  ; uz: Hovliga boring
+Quest.SmithsOre.Text.1 = "Destroy the skeletons %d/%d"  ; uz: Skeletlarni qiring %d/%d
+Quest.SmithsOre.Text.2 = "Return to the blacksmith"  ; uz: Temirchiga qayting
 
 ; ---- the maps' titles and the code's own words ----
 Map.deep.Title = "The Long Dark"  ; uz: The Long Dark
@@ -1438,21 +1455,21 @@ Map.deep.Description = "Wider than any floor and eight times down. Bring everyth
 Map.first.Title = "The First Descent"  ; uz: The First Descent
 Map.first.Description = "One floor, drawn once and never again — learn it, then win it."  ; uz: One floor, drawn once and never again — learn it, then win it.
 Map.hall.Title = "The Queen's Hall"  ; uz: Malika zali
-Map.hall.Description = "The final fight: the cursed hero and the queen."  ; uz: Oxirgi jang: la'natlangan qahramon va malika.
+Map.hall.Description = "The final battle: the cursed hero and the Queen."  ; uz: Oxirgi jang: la'natlangan qahramon va malika.
 Map.jang.Title = "Part 1: The Battle at the Gate"  ; uz: 1-qism: Darvoza oldidagi jang
 Map.jang.Description = "The hero falls from the sky."  ; uz: Qahramon osmondan tushadi.
-Map.medalyon.Title = "Medallion"  ; uz: Medalyon
-Map.medalyon.Description = "The queen's medallion: it drinks souls, and in the end, you."  ; uz: Malikaning medalyoni: jonlarni yutadi, oxirida esa sizni.
+Map.medalyon.Title = "The Medallion"  ; uz: Medalyon
+Map.medalyon.Description = "The Queen's medallion: it devours souls - and in the end, you."  ; uz: Malikaning medalyoni: jonlarni yutadi, oxirida esa sizni.
 Map.painted.Title = "Test Map"  ; uz: Sinov xaritasi
 Map.painted.Description = "A test of painted ground: hills, rock, snow, sand and roads."  ; uz: Bo'yalgan yer sinovi: tepaliklar, qoya, qor, qum va yo'llar.
 Map.poytaxt.Title = "Part 1: The Capital"  ; uz: 1-qism: Poytaxt
-Map.poytaxt.Description = "The queen, the medallion and the road to training."  ; uz: Malika, medalyon va mashqqa yo'l.
+Map.poytaxt.Description = "The Queen, the medallion and the road to training."  ; uz: Malika, medalyon va mashqqa yo'l.
 Map.qasr.Title = "Castle Courtyard"  ; uz: Qasr hovlisi
 Map.qasr.Description = "A test of castle pieces: towers, walls, a gate and the black keep."  ; uz: Qasr bo'laklari sinovi: minoralar, devorlar, darvoza va qora qal'a.
-Map.qora_qasr.Title = "Part 1: The Dark Castle"  ; uz: 1-qism: Qora qasr
-Map.qora_qasr.Description = "The Dark Knight and the secret of the medallion."  ; uz: Qora ritsar va medalyonning siri.
+Map.qora_qasr.Title = "Part 1: The Black Castle"  ; uz: 1-qism: Qora qasr
+Map.qora_qasr.Description = "The Black Knight and the secret of the medallion."  ; uz: Qora ritsar va medalyonning siri.
 Map.talk.Title = "Commander"  ; uz: Qo'mondon
-Map.talk.Description = "Meet the commander: two quests, one hall."  ; uz: Qo'mondon bilan tanishing: ikki topshiriq, bitta zal.
+Map.talk.Description = "Meet the Commander: two quests, one hall."  ; uz: Qo'mondon bilan tanishing: ikki topshiriq, bitta zal.
 Map.world.Title = "Open World"  ; uz: Ochiq dunyo
-Map.world.Description = "The whole kingdom on one map: the city, the dark forest, lands to free and the queen's castle."  ; uz: Butun qirollik bir xaritada: shahar, qorong'i o'rmon, ozod qilinadigan yerlar va malika qasri.
+Map.world.Description = "The whole kingdom on one map: the city, the Dark Forest, the lands to free and the Queen's castle."  ; uz: Butun qirollik bir xaritada: shahar, qorong'i o'rmon, ozod qilinadigan yerlar va malika qasri.
 Settings.Language = "Language (after a restart)"  ; uz: Til (qayta ochilganda)
