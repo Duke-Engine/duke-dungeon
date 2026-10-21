@@ -542,10 +542,22 @@ public final class DungeonSettings {
         var bySource = new java.util.LinkedHashMap<String, String>();
         for (var map : uz.dukeengine.core.map.MapPackages.all("maps", java.nio.file.Path.of("maps"))) {
             if (!map.extras().isEmpty()) {
-                bySource.merge(map.name(), map.extrasText(), (a, b) -> a + "\n" + b);
+                bySource.merge(map.name(), extrasText(map), (a, b) -> a + "\n" + b);
             }
         }
         return joinBlocks(bySource);
+    }
+
+    /**
+     * A map folder's blocks, one text in file order, each file in the language spoken: {@link Lang} knows it as
+     * {@code maps/<map>/<file>.duke}.
+     */
+    static String extrasText(uz.dukeengine.core.map.MapPackage map) {
+        var all = new StringBuilder();
+        for (var extra : map.extras()) {
+            all.append(Lang.apply("maps/" + map.name() + "/" + extra.getFileName(), Lang.read(extra))).append('\n');
+        }
+        return all.toString();
     }
 
     /** A block's kind and name: the word a block opens with, and the first {@code Name = } inside it. */
@@ -585,7 +597,7 @@ public final class DungeonSettings {
      * <p>Null is the game on its own, which is what the endless descent is played by.
      */
     public static DungeonSettings of(uz.dukeengine.core.map.MapPackage map) {
-        return map == null || map.extras().isEmpty() ? load() : parse(Content.data() + "\n" + map.extrasText());
+        return map == null || map.extras().isEmpty() ? load() : parse(Content.data() + "\n" + extrasText(map));
     }
 
     /**

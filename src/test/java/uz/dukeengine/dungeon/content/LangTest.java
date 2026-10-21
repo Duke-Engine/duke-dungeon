@@ -11,16 +11,18 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import uz.dukeengine.dungeon.tools.LangTable;
 
 /**
- * The second language (docs/plan/2026-10-15-english.md): the table is well formed and fits the font, English reads
- * as the same data as Uzbek, and every player-facing string is listed that the table does not yet translate.
+ * The languages (docs/plan/2026-10-15-english.md): texts are known by keys, the English table is well formed, fits the
+ * font and matches the data -- no key the data lacks, no {@code ; uz:} that is not the data's Uzbek, the menus and the
+ * HUD whole -- and English reads as the same data as Uzbek. What English still lacks is listed, not failed.
  */
 class LangTest {
 
@@ -42,36 +44,6 @@ class LangTest {
         return files;
     }
 
-    /** How many player-facing strings the passes of {@link #missing} have looked at. */
-    private static int seen;
-
-    /** Every player-facing string of a file that is not in the table, the way Lang.apply would meet it. */
-    private static List<String> missing(String file, java.util.Map<String, String> table) {
-        // These were written in English to begin with (sounds, projectiles, rigs): nothing to translate.
-        if (file.startsWith("data/sounds/") || file.startsWith("data/projectiles/") || file.startsWith("data/animations/")
-                || file.startsWith("data/fixture")) {
-            return List.of();
-        }
-        var lost = new ArrayList<String>();
-        Lang.rewrite(rawText(file), (key, value, unquoted, indent) -> {
-            // A bare Name is an id unless it has spaces or an apostrophe in it; every quoted string is offered.
-            boolean text = unquoted
-                    ? key.equals("Name") ? value.contains(" ") || value.contains("'") : Lang.textKey(key)
-                    : !key.equals("Cells");
-            if (!text || Lang.ID_KEYS.contains(key) || !value.matches(".*\\p{L}.*")
-                    || !unquoted && value.matches("[^\\s%]*/[^\\s%]*")) {
-                return null;
-            }
-            seen++;
-            if (!table.containsKey(value) && !table.containsKey("@" + key + " " + value)
-                    && !table.containsKey("@" + file + " " + value)) {
-                lost.add(key + " = " + value);
-            }
-            return null;
-        });
-        return lost;
-    }
-
     /** A data file as it stands on disk, before any language. */
     private static String rawText(String file) {
         Lang.use(0);
@@ -79,17 +51,63 @@ class LangTest {
     }
 
     @Test
+    void aKeyIsWhereTheTextLives() {
+        var text = """
+                Conversation
+                  Lines = [
+                    Line
+                      Text = "Birinchi"
+                    End,
+                    Line
+                      Text = "Ikkinchi"
+                    End
+                  ]
+                  Name = BattleHolds
+                  Words = ["bir", "ikki"]
+                End
+                Hud
+                  Title = Bosh
+                  Slots = [Qurol, Zirh]
+                End
+                """;
+        var keys = new ArrayList<String>();
+        Lang.rewrite(text, (key, field, value, unquoted, indent) -> {
+            keys.add(key + " " + value);
+            return null;
+        });
+        assertEquals(List.of("Conversation.BattleHolds.Text Birinchi", "Conversation.BattleHolds.Text.1 Ikkinchi",
+                "Conversation.BattleHolds.Name BattleHolds", "Conversation.BattleHolds.Words bir",
+                "Conversation.BattleHolds.Words.1 ikki", "Hud.Title Bosh", "Hud.Slots Qurol", "Hud.Slots.1 Zirh"), keys);
+        // And the real thing: the three line texts of the battle's holding conversation, a quest's title.
+        var said = new LinkedHashMap<String, String>();
+        Lang.places().forEach(place -> said.put(place.key(), place.uzbek()));
+        assertTrue(said.containsKey("Conversation.BattleHolds.Text.2"), "keys by block, field and count");
+        assertTrue(said.containsKey("Quest.Training.Title"), "a quest's title");
+        assertEquals("Til (qayta ochilganda)", said.get("Settings.Language"));
+    }
+
+    @Test
+    void keysTwoFilesShareAreToldApartByTheirFile() {
+        assertEquals("story/act1", Lang.where("data/story/act1.duke"));
+        assertEquals("maps/talk/talk", Lang.where("maps/talk/talk.duke"));
+        var keys = new HashSet<String>();
+        for (var place : Lang.places()) {
+            assertTrue(keys.add(place.key()), "one place a key: " + place.key());
+        }
+    }
+
+    @Test
     void theTableIsWellFormed() {
-        var table = Lang.table();
-        assertTrue(table.size() > 500, "the English table has its rows: " + table.size());
-        for (var row : table.entrySet()) {
-            assertFalse(row.getValue().isBlank() && !row.getKey().isBlank(), "empty English for: " + row.getKey());
-            var key = row.getKey().startsWith("@") ? row.getKey().substring(row.getKey().indexOf(' ') + 1)
-                    : row.getKey();
+        var table = Lang.table("en");
+        assertEquals("English", table.language());
+        assertTrue(table.rows().size() > 500, "the English table has its rows: " + table.rows().size());
+        for (var row : table.rows().values()) {
+            assertFalse(row.said().isBlank() && row.uzbek() != null && !row.uzbek().isBlank(),
+                    "empty English for: " + row.key());
             // The client's fixed words are pairs; their English is the half the client already says.
-            if (!key.contains(" = ")) {
-                assertEquals(placeholders(key), placeholders(row.getValue()),
-                        "the same %d / {name} slots in both languages: " + row.getKey());
+            if (row.uzbek() != null && !row.uzbek().contains(" = ")) {
+                assertEquals(placeholders(row.uzbek()), placeholders(row.said()),
+                        "the same %d / {name} slots in both languages: " + row.key());
             }
         }
     }
@@ -117,9 +135,9 @@ class LangTest {
             }
         }
         var bad = new ArrayList<String>();
-        for (var row : Lang.table().entrySet()) {
-            row.getValue().codePoints().filter(c -> !glyphs.contains(c)).forEach(
-                    c -> bad.add(row.getValue() + "  has U+" + Integer.toHexString(c)));
+        for (var row : Lang.table("en").rows().values()) {
+            row.said().codePoints().filter(c -> !glyphs.contains(c)).forEach(
+                    c -> bad.add(row.key() + " = " + row.said() + "  has U+" + Integer.toHexString(c)));
         }
         assertTrue(bad.isEmpty(), "English text the font cannot draw: " + bad);
     }
@@ -127,8 +145,7 @@ class LangTest {
     @Test
     void uzbekIsWhatTheFilesSay() {
         Lang.use(0);
-        assertFalse(Lang.isEnglish());
-        assertEquals("Salom", Lang.t("Salom"));
+        assertEquals("Salom", Lang.t("Settings.Language", "Salom"));
         for (var file : files()) {
             var raw = new String(readResource(file), StandardCharsets.UTF_8).replace("\r\n", "\n").replace("\r", "\n");
             assertEquals(raw, Content.read(file), file + " is read as it is in Uzbek");
@@ -146,12 +163,11 @@ class LangTest {
     /** English changes words and nothing else: the same lines, the same fields, and the game loads on it. */
     @Test
     void englishIsTheSameDataInOtherWords() {
-        var uzbek = new java.util.LinkedHashMap<String, String>();
+        var uzbek = new LinkedHashMap<String, String>();
         for (var file : files()) {
             uzbek.put(file, rawText(file));
         }
         Lang.use(1);
-        assertTrue(Lang.isEnglish());
         int changed = 0;
         for (var file : files()) {
             var was = uzbek.get(file).split("\n", -1);
@@ -176,60 +192,81 @@ class LangTest {
         // The client's fixed words each say their English: "Resume = Resume".
         assertEquals("Resume", settings.mainMenu().said().get("Resume"));
         assertEquals("Quit to the desktop", settings.mainMenu().said().get("Quit to the desktop"));
-        assertEquals("Commander", Lang.t("Qo'mondon"));
+        // The words the code says, by their keys.
+        assertEquals("Commander", Lang.t("Map.talk.Title", "Qo'mondon"));
+        assertEquals("Language (after a restart)", Lang.t("Settings.Language", "Til (qayta ochilganda)"));
+        assertEquals("Nimadir", Lang.t("Map.nowhere.Title", "Nimadir"), "a key the table lacks says its Uzbek");
+    }
+
+    /** A map folder's blocks are said in the language too, by the keys they derive there. */
+    @Test
+    void aMapFoldersBlocksAreTranslated() {
+        Lang.use(1);
+        var said = Lang.apply("maps/somewhere/people.duke", "Run\n  DiedWord = \"O'ldingiz\"\nEnd\n");
+        assertEquals("Run\n  DiedWord = \"You died\"\nEnd\n", said);
     }
 
     @Test
     void theLaunchChoice() {
+        assertEquals(List.of("uz", "en"), Lang.CODES);
+        assertEquals(List.of("O'zbekcha", "English"), Lang.NAMES);
         assertEquals(1, Lang.chosen(new String[] {"--lang=en"}, 0));
         assertEquals(0, Lang.chosen(new String[] {"--lang=uz"}, 1));
         assertEquals(1, Lang.chosen(new String[0], 1));
         assertEquals(0, Lang.chosen(new String[0], 0));
+        assertEquals(0, Lang.chosen(new String[0], 7));
     }
 
     /**
-     * Every player-facing string the table lacks, as a warning list in build/lang-missing.txt and the log: a line a
-     * branch adds is Uzbek in English until a row is added. Only the menus and the HUD must be complete.
+     * The table against the data: no row the data has no key for, no {@code ; uz:} other than the data's Uzbek at its
+     * key (a stale row: its Uzbek was changed, its English was not looked at), the menus and the HUD whole. Every other
+     * key English lacks is a warning, listed in build/lang-missing.txt and the log ({@code ./gradlew langReport} too).
      */
     @Test
-    void whatEnglishLacks() throws IOException {
-        var table = Lang.table();
-        var report = new StringBuilder();
-        var core = new ArrayList<String>();
-        int lacking = 0;
-        seen = 0;
-        var every = new LinkedHashSet<String>();
-        for (var file : files()) {
-            for (var line : missing(file, table)) {
-                every.add(line);
-                lacking++;
-                report.append(file).append('\t').append(line).append('\n');
-                if (CORE.contains(file)) {
-                    core.add(file + ": " + line);
-                }
-            }
-        }
-        // The stage list is a menu too: each shipped map's title and description.
-        Lang.use(0);
-        for (var stage : uz.dukeengine.dungeon.stage.Stages.all()) {
-            for (var raw : new String[] {stage.title(), stage.description()}) {
-                var text = raw.length() > 1 && raw.startsWith("\"") && raw.endsWith("\"") ? raw.substring(1, raw.length() - 1) : raw;
-                if (!text.isBlank() && !table.containsKey(text) && !stage.name().equals(text)) {
-                    core.add("map " + stage.name() + ": " + text);
-                    report.append("maps/").append(stage.name()).append('\t').append(text).append('\n');
-                    lacking++;
-                }
-            }
-        }
+    void theTableMatchesTheData() throws IOException {
+        var report = LangTable.report(Lang.table("en"));
+        var printed = report.print("en");
         var out = Path.of("build", "lang-missing.txt");
         Files.createDirectories(out.getParent());
-        Files.writeString(out, report.toString());
-        System.out.println("English covers " + (seen - lacking) + " of " + seen + " player-facing strings in the data files ("
-                + (100 * (seen - lacking) / Math.max(1, seen)) + "%); lacking " + lacking + " (" + every.size()
-                + " distinct), listed in " + out);
-        if (lacking > 0) {
-            System.out.println(report.length() > 6000 ? report.substring(0, 6000) + "..." : report);
+        Files.writeString(out, printed);
+        System.out.println(printed.length() > 6000 ? printed.substring(0, 6000) + "..." : printed);
+        assertTrue(report.unused().isEmpty(), "rows whose key the data does not have: " + report.unused());
+        assertTrue(report.stale().isEmpty(), "rows whose Uzbek has changed since: " + report.stale());
+        var core = new ArrayList<String>();
+        report.missing().forEach((file, places) -> {
+            if (file == null || CORE.contains(file)) {
+                places.forEach(place -> core.add(place.key() + " (" + place.uzbek() + ")"));
+            }
+        });
+        assertTrue(core.isEmpty(), "the menus, the HUD and the stage list are in English entirely, lacking: " + core);
+    }
+
+    /**
+     * The move to keys (2026-10-21) changed no word: every file reads in English by the keyed table exactly as it read
+     * by the table of before (Uzbek-keyed, {@code test/resources/lang/en-before-keys.duke}), and so do the code's words.
+     */
+    @Test
+    void theKeysSayWhatTheTableOfBeforeSaid() throws IOException {
+        String text;
+        try (var in = LangTest.class.getResourceAsStream("/lang/en-before-keys.duke")) {
+            text = new String(in.readAllBytes(), StandardCharsets.UTF_8);
         }
-        assertTrue(core.isEmpty(), "the menus and the HUD are in English entirely, lacking: " + core);
+        var before = LangTable.parseBefore(text);
+        var raw = new LinkedHashMap<String, String>();
+        for (var file : files()) {
+            raw.put(file, rawText(file));
+        }
+        Lang.use(1);
+        for (var file : files()) {
+            var then = Lang.rewrite(raw.get(file), (key, field, value, unquoted, indent) -> Lang.offered(field, unquoted,
+                    indent) ? LangTable.before(before, new Lang.Place(file, key, field, value, true)) : null);
+            assertEquals(then, Content.read(file), file + " reads as it read before keys");
+        }
+        for (var place : Lang.places()) {
+            if (place.file() == null) {
+                assertEquals(before.getOrDefault(place.uzbek(), place.uzbek()), Lang.t(place.key(), place.uzbek()),
+                        place.key());
+            }
+        }
     }
 }

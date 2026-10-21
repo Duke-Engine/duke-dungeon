@@ -377,6 +377,28 @@ tasks.register<JavaExec>("writeWorldMap") {
     maxHeapSize = "2g"
 }
 
+// The languages' tables (data/lang/*.duke) against the data: per language, how many keys it says, and every key it
+// lacks, has stale (its "; uz:" no longer the data's Uzbek) or has that the data no longer has. Prints, fails nothing.
+tasks.register<JavaExec>("langReport") {
+    group = "verification"
+    description = "Print what each language's table lacks, has stale and has unused"
+    mainClass.set("uz.dukeengine.dungeon.tools.LangTable")
+    classpath = sourceSets["main"].runtimeClasspath
+    workingDir = rootProject.projectDir
+    args("--report")
+}
+
+// A language's table written again from the data, its words kept by key; a new code starts a new language.
+//   ./gradlew langTable --args="en"
+//   ./gradlew langTable --args="de --language=Deutsch"
+tasks.register<JavaExec>("langTable") {
+    group = "application"
+    description = "Write data/lang/<code>.duke again: every key in the data's order, the words kept by key"
+    mainClass.set("uz.dukeengine.dungeon.tools.LangTable")
+    classpath = sourceSets["main"].runtimeClasspath
+    workingDir = rootProject.projectDir
+}
+
 // ---------------------------------------------------------------------------
 // The installer, for the machine you are sitting at.
 //
