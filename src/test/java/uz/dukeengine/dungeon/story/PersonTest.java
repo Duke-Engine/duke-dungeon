@@ -94,4 +94,64 @@ class PersonTest {
         assertEquals(8.5f * CELL, commander.getPosition().x(), 0.5f);
         assertEquals(10.5f * CELL, commander.getPosition().y(), 0.5f);
     }
+
+    // ---- brains: stand, wander, patrol ----
+
+    /** How far, in cells, a thing stands from the middle of cell {@code (x, y)}. */
+    static double cellsFrom(GameObject thing, int x, int y) {
+        return Math.hypot(thing.getPosition().x() - (x + 0.5f) * CELL, thing.getPosition().y() - (y + 0.5f) * CELL)
+                / CELL;
+    }
+
+    /**
+     * The frame, within {@code frames}, at which {@code thing} first comes within a cell and a half of {@code (x, y)} --
+     * the Sentry walks the same posts, and one standing on a post keeps the other a step off it; -1 never.
+     */
+    static int reaches(DukeGame game, GameObject thing, int x, int y, int frames) {
+        for (int i = 0; i < frames; i++) {
+            if (cellsFrom(thing, x, y) <= 1.5) {
+                return i;
+            }
+            game.runHeadless(1);
+        }
+        return -1;
+    }
+
+    /** The people map played by the shipped settings with one change to people.duke. */
+    static Dungeon.Session sessionWith(String was, String is) {
+        var duke = Stages.found("people").extrasText();
+        assertTrue(duke.contains(was), was);
+        var settings = DungeonSettings.parse(Content.data() + "\n" + duke.replace(was, is));
+        var session = Dungeon.newStageSession(Stages.load("people", settings), settings);
+        session.game().runHeadless(1);
+        session.game().getLogic().setSleep(null);
+        return session;
+    }
+
+    @Test
+    void aPatrollerWalksToTheNextPostWaitsAndComesBack() {
+        var game = session().game();
+        var walker = at(game, 5, 5);
+        assertTrue(reaches(game, walker, 13, 5, 900) >= 0, "to PostB: " + cellsFrom(walker, 13, 5));
+        game.runHeadless(150); // to its middle, its second there, and away again
+        assertTrue(cellsFrom(walker, 13, 5) > 0.5, "it does not stay at PostB");
+        assertTrue(reaches(game, walker, 5, 5, 900) >= 0, "and back to PostA: " + cellsFrom(walker, 5, 5));
+    }
+
+    @Test
+    void aStanderStaysHome() {
+        var game = session().game();
+        var smith = at(game, 8, 25);
+        game.runHeadless(600);
+        assertTrue(cellsFrom(smith, 8, 25) <= 0.5, "Smith keeps his anvil: " + cellsFrom(smith, 8, 25));
+    }
+
+    @Test
+    void aPatrollerWhosePointIsWalledOffGoesOn() {
+        var game = sessionWith("Points = [PostA, PostB]\n  Mode = BACK_AND_FORTH",
+                "Points = [PostA, PostC, PostB]\n  Mode = BACK_AND_FORTH").game();
+        var walker = at(game, 5, 5);
+        assertTrue(reaches(game, walker, 13, 5, 1500) >= 0,
+                "past the stone round PostC, on to PostB: " + walker.getPosition());
+    }
 }

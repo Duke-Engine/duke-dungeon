@@ -1331,13 +1331,41 @@ public final class DungeonRun {
      * A person standing on this floor: the thing, and the Npc it is. In the order the map writes them.
      *
      * @param person the Person block it was placed as, or null for an ordinary Npc, a creature that talks
+     * @param rounds how far along its patrol a PATROL or a GUARD has come; null for anybody else
      */
     private record Folk(ObjectId id, String npc, float homeX, float homeY,
-            uz.dukeengine.dungeon.story.Person person) {
+            uz.dukeengine.dungeon.story.Person person, Rounds rounds) {
 
         /** An ordinary one: a creature that is an Npc. */
         Folk(ObjectId id, String npc, float homeX, float homeY) {
-            this(id, npc, homeX, homeY, null);
+            this(id, npc, homeX, homeY, null, null);
+        }
+
+        /** Whether it is a GUARD: on the hero's side, and nobody talks to it. */
+        boolean guard() {
+            return person != null && person.brain() == uz.dukeengine.dungeon.story.Person.Brain.GUARD;
+        }
+    }
+
+    /**
+     * A patroller's walk: the stop it is going to or standing at, and whether it is on its way. Only ever touched on
+     * the logic's thread, by {@link #patrol}.
+     */
+    private static final class Rounds {
+        final uz.dukeengine.dungeon.ai.Patrol patrol;
+        /** On its way to the patrol's stop, rather than standing at it. */
+        boolean walking = true;
+        /** Stopped on its way -- for a hero who came to talk, or a fight -- to set off again for the same stop. */
+        boolean halted = true;
+        /** The frame it walks on from where it stands. */
+        int standUntil;
+        /** Where it last got any nearer, and when: three seconds of none and it has come as near as it can. */
+        float lastX = Float.NaN;
+        float lastY = Float.NaN;
+        int movedFrame;
+
+        Rounds(uz.dukeengine.dungeon.ai.Patrol patrol) {
+            this.patrol = patrol;
         }
     }
 
@@ -1372,7 +1400,7 @@ public final class DungeonRun {
                 var person = logic.spawn(template, ground(logic, placed),
                         uz.dukeengine.core.player.PlayerList.NEUTRAL_INDEX);
                 people.add(new Folk(person.getId(), placed.kind(), person.getPosition().x(),
-                        person.getPosition().y(), placedAs));
+                        person.getPosition().y(), placedAs, roundsOf(placedAs, person)));
             }
         }
         var items = settings.items();
@@ -1919,7 +1947,7 @@ public final class DungeonRun {
                         float x = zone.middleX(cell);
                         float y = zone.middleY(cell);
                         legs.moveTo(new uz.dukeengine.core.math.Coord3D(x, y, 0f));
-                        people.set(at, new Folk(who.id(), who.npc(), x, y, who.person())); // home is where she was sent
+                        people.set(at, new Folk(who.id(), who.npc(), x, y, who.person(), who.rounds())); // home is where she was sent
                     }
                 }
             }
@@ -3046,13 +3074,17 @@ public final class DungeonRun {
             var npc = settings.story().npc(who.npc());
             var there = logic.findObject(who.id());
             var legs = there == null ? null : there.getLocomotor();
-            if (npc == null || legs == null || npc.wander() <= 0f && npc.route().isEmpty()) {
+            if (npc == null || legs == null || npc.wander() <= 0f && npc.route().isEmpty() && who.rounds() == null) {
                 continue;
             }
             boolean heroNear = false;
             for (var seat : seats) {
                 var hero = seat.heroId == null ? null : logic.findObject(seat.heroId);
-                heroNear |= hero != null && !hero.isEffectivelyDead() && near(hero, there, who);
+                heroNear |= hero != null && !hero.isEffectivelyDead() && !who.guard() && near(hero, there, who);
+            }
+            if (who.rounds() != null) {
+                patrol(logic, who, there, legs, heroNear);
+                continue;
             }
             if (heroNear) {
                 if (legs.isMoving()) {
@@ -3079,6 +3111,99 @@ public final class DungeonRun {
             legs.moveTo(new uz.dukeengine.core.math.Coord3D(who.homeX() + (float) StrictMath.cos(angle) * reach,
                     who.homeY() + (float) StrictMath.sin(angle) * reach, 0f));
         }
+    }
+
+    /**
+     * A PATROL's or a GUARD's walk, for a Person with Points: null for anybody else. It sets off for the stop nearest
+     * where it was placed.
+     */
+    private Rounds roundsOf(uz.dukeengine.dungeon.story.Person person, GameObject there) {
+        if (person == null || person.points().isEmpty()
+                || person.brain() != uz.dukeengine.dungeon.story.Person.Brain.PATROL
+                && person.brain() != uz.dukeengine.dungeon.story.Person.Brain.GUARD) {
+            return null;
+        }
+        var rounds = new Rounds(new uz.dukeengine.dungeon.ai.Patrol(person.points().size(), person.mode()));
+        rounds.patrol.nearest(farFromStops(person, there));
+        return rounds;
+    }
+
+    /** How far {@code there} stands from each of a person's stops; a stop the map has no zone of, endlessly far. */
+    private double[] farFromStops(uz.dukeengine.dungeon.story.Person person, GameObject there) {
+        float cell = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
+        var far = new double[person.points().size()];
+        for (int i = 0; i < far.length; i++) {
+            var zone = zoneNamed(person.points().get(i));
+            far[i] = zone == null ? Double.MAX_VALUE : Math.hypot(zone.middleX(cell) - there.getPosition().x(),
+                    zone.middleY(cell) - there.getPosition().y());
+        }
+        return far;
+    }
+
+    /**
+     * A patroller walks its stops (docs/plan/2026-10-21-npc-brains-and-quests.md): to the stop, there for its Pause, on
+     * to the next. A stop it can come no nearer to -- walled off, across water -- counts as reached once it has stopped
+     * getting nearer, so it never stands frozen. It stands for a hero who comes to talk, and walks on to the same stop
+     * when he goes. Asleep, far from every hero, it is left where it was, and picks up from there when he comes back.
+     */
+    private void patrol(uz.dukeengine.core.GameLogic logic, Folk who, GameObject there,
+            uz.dukeengine.core.module.Locomotor legs, boolean heroNear) {
+        if (logic.isAsleep(there)) {
+            return;
+        }
+        var rounds = who.rounds();
+        int now = logic.getFrame();
+        if (heroNear) {
+            if (legs.isMoving()) {
+                legs.stop();
+            }
+            rounds.halted |= rounds.walking;
+            return;
+        }
+        if (rounds.walking && rounds.halted) {
+            rounds.halted = false;
+            walkToStop(logic, who, there, legs);
+            return;
+        }
+        if (rounds.walking) {
+            var at = there.getPosition();
+            if (Float.isNaN(rounds.lastX) || Math.hypot(at.x() - rounds.lastX, at.y() - rounds.lastY) > 1.0) {
+                rounds.lastX = at.x();
+                rounds.lastY = at.y();
+                rounds.movedFrame = now;
+            }
+            boolean stuck = now - rounds.movedFrame > 3 * uz.dukeengine.core.GameConstants.LOGICFRAMES_PER_SECOND;
+            if (!legs.isMoving() || stuck) {
+                if (legs.isMoving()) {
+                    legs.stop();
+                }
+                rounds.walking = false;
+                rounds.standUntil = now + Math.round(who.person().pause()
+                        * uz.dukeengine.core.GameConstants.LOGICFRAMES_PER_SECOND);
+            }
+            return;
+        }
+        if (now >= rounds.standUntil) {
+            rounds.patrol.next();
+            walkToStop(logic, who, there, legs);
+        }
+    }
+
+    /** Off to the patrol's stop; a stop the map has no zone of is stood at as if reached. */
+    private void walkToStop(uz.dukeengine.core.GameLogic logic, Folk who, GameObject there,
+            uz.dukeengine.core.module.Locomotor legs) {
+        var rounds = who.rounds();
+        var zone = zoneNamed(who.person().points().get(rounds.patrol.at()));
+        rounds.walking = zone != null;
+        rounds.lastX = Float.NaN;
+        rounds.movedFrame = logic.getFrame();
+        if (zone == null) {
+            rounds.standUntil = logic.getFrame() + Math.round(who.person().pause()
+                    * uz.dukeengine.core.GameConstants.LOGICFRAMES_PER_SECOND);
+            return;
+        }
+        float cell = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
+        legs.moveTo(new uz.dukeengine.core.math.Coord3D(zone.middleX(cell), zone.middleY(cell), 0f));
     }
 
     /**
