@@ -1,0 +1,2 @@
+; The talk map's own blocks: none yet. A map folder's .duke is read with the game's data at startup
+; (docs/plan/2026-10-21-npc-brains-and-quests.md).

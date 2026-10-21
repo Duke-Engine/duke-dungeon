@@ -529,9 +529,49 @@ public final class DungeonSettings {
     private DungeonSettings() {
     }
 
-    /** The settings shipped with the game. */
+    /**
+     * The settings shipped with the game, and the blocks every map folder keeps beside its map: a map's people and
+     * quests are there whichever way the map is reached -- the campaign's world, the menu, --map.
+     */
     public static DungeonSettings load() {
-        return parse(Content.data());
+        return parse(Content.data() + "\n" + mapBlocksText());
+    }
+
+    /** Every shipped or player's map folder's {@code .duke} blocks, one text: see {@link #joinBlocks}. */
+    static String mapBlocksText() {
+        var bySource = new java.util.LinkedHashMap<String, String>();
+        for (var map : uz.dukeengine.core.map.MapPackages.all("maps", java.nio.file.Path.of("maps"))) {
+            if (!map.extras().isEmpty()) {
+                bySource.merge(map.name(), map.extrasText(), (a, b) -> a + "\n" + b);
+            }
+        }
+        return joinBlocks(bySource);
+    }
+
+    /** A block's kind and name: the word a block opens with, and the first {@code Name = } inside it. */
+    private static final java.util.regex.Pattern BLOCK =
+            java.util.regex.Pattern.compile("(?m)^([A-Z][A-Za-z]*)\\s*\\R(?:(?!End\\b)[^\\n]*\\R)*?\\s*Name = (\\S+)");
+
+    /**
+     * The blocks of several map folders, one text in their order, each source's text whole. One kind of block of one
+     * name written in two folders is refused, naming both: one map's person would otherwise stand in for another's.
+     */
+    static String joinBlocks(java.util.Map<String, String> textBySource) {
+        var seen = new java.util.HashMap<String, String>();
+        var all = new StringBuilder();
+        for (var each : textBySource.entrySet()) {
+            var found = BLOCK.matcher(each.getValue());
+            while (found.find()) {
+                var key = found.group(1) + " " + found.group(2);
+                var first = seen.putIfAbsent(key, each.getKey());
+                if (first != null && !first.equals(each.getKey())) {
+                    throw new IllegalArgumentException(key + " is written in two maps' blocks: " + first + " and "
+                            + each.getKey());
+                }
+            }
+            all.append(each.getValue()).append('\n');
+        }
+        return all.toString();
     }
 
     /**
