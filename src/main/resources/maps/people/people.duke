@@ -1,0 +1,94 @@
+; The people map's own blocks (docs/plan/2026-10-21-npc-brains-and-quests.md): the three people its Npcs name, each a
+; Person -- one person placed by a name of their own -- and the smith's talk and quest. Read with the game's data at
+; startup, as every map folder's .duke is.
+
+; Walks between the two posts and back, standing a second at each.
+Person
+  Name = Walker
+  Kind = Villager
+  Role = Qorovul
+  Brain = PATROL
+  Points = [PostA, PostB]
+  Mode = BACK_AND_FORTH
+  Pause = 1
+End
+
+; Walks the same posts on the hero's side, and fights what comes within six cells of its round.
+Person
+  Name = Sentry
+  Kind = Act1CommanderFighter
+  Role = Soqchi
+  Brain = GUARD
+  Points = [PostA, PostB]
+  Mode = LOOP
+  Pause = 1
+  Leash = 6
+End
+
+; Stands at his anvil and asks the hero for a hand.
+Person
+  Name = Smith
+  Kind = Blacksmith
+  Role = Temirchi
+  Talk = SmithHello
+  Radius = 30
+  Brain = STAND
+End
+
+Speaker
+  Name = Smith
+  DisplayName = "Temirchi Botir"
+  Picture =
+End
+
+Conversation
+  Name = SmithHello
+  Lines = [
+    Line
+      Speaker = Smith
+      Text = "Qahramon! Hovlida skeletlar paydo bo'ldi — ikkitasini yo'q qilib, menga qayting."
+    End
+  ]
+  Offer = Yes
+  Starts = [SmithsOre]
+End
+
+Conversation
+  Name = SmithThanks
+  Lines = [
+    Line
+      Speaker = Smith
+      Text = "Rahmat! Mana, va'da qilganim."
+    End
+  ]
+End
+
+Quest
+  Name = SmithsOre
+  Kind = SIDE
+  Title = "Hovlidagi skeletlar"
+  Description = "Temirchi Botir so'radi: hovliga borib, u yerdagi ikki skeletni yo'q qiling va unga qayting."
+  Steps = [
+    Step
+      Goal = REACH
+      Target = Yard
+      Text = "Hovliga boring"
+    End,
+    Step
+      Goal = KILL
+      Target = Skeleton
+      Count = 2
+      Text = "Skeletlarni qiring %d/%d"
+    End,
+    Step
+      Goal = TALK
+      Target = Smith
+      Text = "Temirchiga qayting"
+      OnDone = Done
+        Says = SmithThanks
+        Experience = 50
+        Item = Gauntlet
+      End
+    End
+  ]
+End

@@ -1,0 +1,69 @@
+; Duke Dungeon — a map drawn once, for the tests of placed people (docs/plan/2026-10-21-npc-brains-and-quests.md):
+; a patroller between two posts, a guard on the hero's side, a smith who gives a quest, and a block of stone in the
+; way of a post nobody can reach. Its people are Person blocks in people.duke beside it.
+
+StaticMap
+  Name = people
+  ; No DisplayName nor Description: a test map, listed by its name, with no words to put in English.
+  Difficulty = 1
+  Players = 1
+  Seed = 20261021
+  ; Where the hero comes in.
+  Entrance = [26, 3]
+  ; '#' is stone, a digit the storey a cell stands on.
+  Cells = [
+    "##############################",
+    "#0000000000000000000000000000#",
+    "#0000000000000000000000000000#",
+    "#0000000000000000000000000000#",
+    "#0000000000000000000000000000#",
+    "#0000000000000000000000000000#",
+    "#0000000000000000000000000000#",
+    "#0000000000000000000000000000#",
+    "#0000000000000000000000000000#",
+    "#0000000000000000000000000000#",
+    "#00000000000000###00000000000#",
+    "#00000000000000###00000000000#",
+    "#00000000000000###00000000000#",
+    "#0000000000000000000000000000#",
+    "#0000000000000000000000000000#",
+    "#0000000000000000000000000000#",
+    "#0000000000000000000000000000#",
+    "#0000000000000000000000000000#",
+    "#0000000000000000000000000000#",
+    "#0000000000000000000000000000#",
+    "#0000000000000000000000000000#",
+    "#0000000000000000000000000000#",
+    "#0000000000000000000000000000#",
+    "#0000000000000000000000000000#",
+    "#0000000000000000000000000000#",
+    "#0000000000000000000000000000#",
+    "#0000000000000000000000000000#",
+    "#0000000000000000000000000000#",
+    "#0000000000000000000000000000#",
+    "##############################",
+  ]
+  ; x y width height storey.
+  Rooms = [
+    1 1 28 28 0,
+  ]
+  Links = []
+  ; A grave that never moves nor strikes, in the far corner: a map is won by its boss.
+  Boss = Grave 27 27
+  Monsters = []
+  Props = []
+  ; People: each a Person of people.duke, then the cell they stand in.
+  Npcs = [
+    Walker 5 5,
+    Sentry 12 20,
+    Smith 8 25,
+  ]
+  ; Named places, in cells: name x y width height, or name x y radius; a point is name x y 0.
+  Zones = [
+    PostA 5 5 0,
+    PostB 13 5 0,
+    PostC 16 11 0,
+    Yard 12 20 6,
+  ]
+  Items = []
+End

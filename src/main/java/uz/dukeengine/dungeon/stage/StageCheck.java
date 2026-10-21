@@ -134,6 +134,13 @@ public final class StageCheck {
             if (story.npc(npc.kind()) == null) {
                 problems.add("there is no such person as " + npc.kind() + " — see the Npc blocks in data/story/");
             }
+            // A Person walks this map's zones: each of its Points one of them.
+            var person = settings.person(npc.kind());
+            for (var point : person == null ? List.<String>of() : person.points()) {
+                if (stage.story().zones().stream().noneMatch(zone -> zone.name().equals(point))) {
+                    problems.add("Person " + npc.kind() + " walks to " + point + ", and the map has no zone called that");
+                }
+            }
             standsOn(problems, grid, taken, npc.kind(), Placement.atCell(npc.x(), npc.y()));
         }
         for (var item : stage.story().items()) {

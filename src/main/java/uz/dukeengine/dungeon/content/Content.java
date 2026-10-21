@@ -132,7 +132,8 @@ public final class Content {
             named(uz.dukeengine.dungeon.story.Place.class), named(uz.dukeengine.dungeon.story.Credits.class),
             named(uz.dukeengine.dungeon.story.Battle.class),
             named(uz.dukeengine.dungeon.story.Gate.class), named(uz.dukeengine.dungeon.story.Graveyard.class), named(uz.dukeengine.dungeon.story.Cave.class), named(uz.dukeengine.dungeon.story.KnightStrength.class),
-            named(uz.dukeengine.dungeon.story.Graves.class), named(uz.dukeengine.core.content.Laser.class));
+            named(uz.dukeengine.dungeon.story.Graves.class), named(uz.dukeengine.core.content.Laser.class),
+            named(uz.dukeengine.dungeon.story.Person.class));
 
     /** The blocks a world builds things from. */
     private static final Set<String> TEMPLATES = Set.of("object", "monster", "hero", "projectile", "prop");

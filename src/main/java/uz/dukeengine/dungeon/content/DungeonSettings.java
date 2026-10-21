@@ -125,6 +125,7 @@ public final class DungeonSettings {
     private final List<uz.dukeengine.rpg.story.Speaker> speakers = new java.util.ArrayList<>();
     private final List<uz.dukeengine.rpg.story.Conversation> conversations = new java.util.ArrayList<>();
     private final List<uz.dukeengine.rpg.story.Npc> npcs = new java.util.ArrayList<>();
+    private final List<uz.dukeengine.dungeon.story.Person> persons = new java.util.ArrayList<>();
     private final List<uz.dukeengine.rpg.story.Quest> quests = new java.util.ArrayList<>();
     private final List<uz.dukeengine.rpg.story.Trigger> triggers = new java.util.ArrayList<>();
     private final List<uz.dukeengine.dungeon.story.Cutscene> cutscenes = new java.util.ArrayList<>();
@@ -288,7 +289,10 @@ public final class DungeonSettings {
         // change once read. Unguarded on purpose -- two threads at worst each make an equal one.
         var made = story;
         if (made == null) {
-            made = new uz.dukeengine.dungeon.story.Story(dialogue, speakers, conversations, npcs, quests, triggers,
+            // A placed Person is an Npc of its own name too, so everything that finds people by name finds them.
+            var people = new java.util.ArrayList<>(npcs);
+            persons.forEach(person -> people.add(person.asNpc()));
+            made = new uz.dukeengine.dungeon.story.Story(dialogue, speakers, conversations, people, quests, triggers,
                     cutscenes, trade, merchants, bosses);
             story = made;
         }
@@ -296,6 +300,16 @@ public final class DungeonSettings {
     }
 
     private uz.dukeengine.dungeon.story.Story story;
+
+    /** The Person block of that name -- one person placed on a map by a name of their own -- or null. */
+    public uz.dukeengine.dungeon.story.Person person(String name) {
+        for (var person : persons) {
+            if (person.name().equals(name)) {
+                return person;
+            }
+        }
+        return null;
+    }
 
     /** The blows that are felt, and what they play: see {@link HeavyBlow}. */
     public List<HeavyBlow> heavyBlows() {
@@ -681,6 +695,7 @@ public final class DungeonSettings {
                 case uz.dukeengine.rpg.story.Speaker speaker -> speakers.add(speaker);
                 case uz.dukeengine.rpg.story.Conversation conversation -> conversations.add(conversation);
                 case uz.dukeengine.rpg.story.Npc npc -> npcs.add(npc);
+                case uz.dukeengine.dungeon.story.Person person -> persons.add(person);
                 case uz.dukeengine.rpg.story.Quest quest -> quests.add(quest);
                 case uz.dukeengine.rpg.story.Trigger trigger -> triggers.add(trigger);
                 case uz.dukeengine.dungeon.story.Cutscene cutscene -> cutscenes.add(cutscene);
@@ -1397,7 +1412,25 @@ public final class DungeonSettings {
         itemBases.forEach(base -> known.add(base.name()));
         potions.forEach(potion -> known.add(potion.name()));
         uniques.forEach(unique -> known.add(unique.name()));
-        var story = story().problems(monsters.stream().map(MonsterKind::name).toList(), known);
+        // A placed Person: a creature of the game's, and the one Person or Npc of its name. The story then knows it as
+        // an Npc of that name, and an Npc is checked to be a creature: its name stands for one here.
+        var creatures = new java.util.ArrayList<>(monsters.stream().map(MonsterKind::name).toList());
+        var personNames = new java.util.HashSet<String>();
+        for (var person : persons) {
+            var named = "Person " + person.name();
+            require(!person.name().isBlank() && personNames.add(person.name())
+                    && npcs.stream().noneMatch(npc -> npc.name().equals(person.name())),
+                    named + ": a Name, and no other Person or Npc of it");
+            require(monster(person.kind()) != null, named + " has Kind = " + person.kind()
+                    + ", and no Monster is called that");
+            require(person.radius() >= 0f && person.wander() >= 0f && person.pause() >= 0f && person.leash() > 0f,
+                    named + ": Radius, Wander and Pause are at least 0, and Leash more than 0");
+            require(person.brain() != uz.dukeengine.dungeon.story.Person.Brain.PATROL
+                    && person.brain() != uz.dukeengine.dungeon.story.Person.Brain.GUARD || !person.points().isEmpty(),
+                    named + " walks a " + person.brain() + " and has no Points");
+        }
+        creatures.addAll(personNames);
+        var story = story().problems(creatures, known);
         require(story.isEmpty(), String.join("; ", story));
         validateItems();
         require(goldBurst.coinLook().isBlank()

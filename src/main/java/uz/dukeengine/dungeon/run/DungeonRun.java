@@ -1327,11 +1327,21 @@ public final class DungeonRun {
     /** The run's quests: its state, and what has been said. */
     private final QuestLog quests;
 
-    /** A person standing on this floor: the thing, and the Npc it is. In the order the map writes them. */
-    private record Person(ObjectId id, String npc, float homeX, float homeY) {
+    /**
+     * A person standing on this floor: the thing, and the Npc it is. In the order the map writes them.
+     *
+     * @param person the Person block it was placed as, or null for an ordinary Npc, a creature that talks
+     */
+    private record Folk(ObjectId id, String npc, float homeX, float homeY,
+            uz.dukeengine.dungeon.story.Person person) {
+
+        /** An ordinary one: a creature that is an Npc. */
+        Folk(ObjectId id, String npc, float homeX, float homeY) {
+            this(id, npc, homeX, homeY, null);
+        }
     }
 
-    private final List<Person> people = new ArrayList<>();
+    private final List<Folk> people = new ArrayList<>();
 
     /** What one person shows over their head, by the id of the thing: read by the window. */
     public record Mark(int id, QuestLog.Mark mark) {
@@ -1355,12 +1365,14 @@ public final class DungeonRun {
         var logic = game.getLogic();
         quests.frame(logic.getFrame());
         for (var placed : story.npcs()) {
-            var template = logic.getThingFactory().findTemplate(placed.kind());
+            // A Person's name is drawn as its Kind; any other word is the creature itself.
+            var placedAs = settings.person(placed.kind());
+            var template = logic.getThingFactory().findTemplate(placedAs == null ? placed.kind() : placedAs.kind());
             if (template != null) {
                 var person = logic.spawn(template, ground(logic, placed),
                         uz.dukeengine.core.player.PlayerList.NEUTRAL_INDEX);
-                people.add(new Person(person.getId(), placed.kind(), person.getPosition().x(),
-                        person.getPosition().y()));
+                people.add(new Folk(person.getId(), placed.kind(), person.getPosition().x(),
+                        person.getPosition().y(), placedAs));
             }
         }
         var items = settings.items();
@@ -1840,7 +1852,7 @@ public final class DungeonRun {
                             : seats.getFirst().player.getIndex());
                     became.setOrientation(facing);
                     if (person) {
-                        people.add(new Person(became.getId(), action.drawn(), at.x(), at.y()));
+                        people.add(new Folk(became.getId(), action.drawn(), at.x(), at.y()));
                     } else {
                         Spawner.scale(became, settings.beforeBossLevel(depth), settings);
                     }
@@ -1887,7 +1899,7 @@ public final class DungeonRun {
                     if (person) {
                         var spawned = logic.spawn(template, ground(logic, placed),
                                 uz.dukeengine.core.player.PlayerList.NEUTRAL_INDEX);
-                        people.add(new Person(spawned.getId(), what, spawned.getPosition().x(),
+                        people.add(new Folk(spawned.getId(), what, spawned.getPosition().x(),
                                 spawned.getPosition().y()));
                     } else {
                         var spawned = logic.spawn(template, ground(logic, placed), dungeonPlayer.getIndex());
@@ -1907,7 +1919,7 @@ public final class DungeonRun {
                         float x = zone.middleX(cell);
                         float y = zone.middleY(cell);
                         legs.moveTo(new uz.dukeengine.core.math.Coord3D(x, y, 0f));
-                        people.set(at, new Person(who.id(), who.npc(), x, y)); // home is where she was sent
+                        people.set(at, new Folk(who.id(), who.npc(), x, y, who.person())); // home is where she was sent
                     }
                 }
             }
@@ -2949,7 +2961,7 @@ public final class DungeonRun {
      * A hero talks to a person: what the quests make of it, the person turned to face him, and — asked, of a merchant —
      * the trade window opened on his player's machine.
      */
-    private boolean spoke(DukeGame game, Seat seat, Person who, GameObject hero, GameObject there, boolean asked) {
+    private boolean spoke(DukeGame game, Seat seat, Folk who, GameObject hero, GameObject there, boolean asked) {
         int barkedBefore = quests.barked().size();
         boolean said = quests.talk(who.npc(), seat.progress.getLoot(), asked);
         if (quests.barked().size() > barkedBefore) {
@@ -3443,7 +3455,7 @@ public final class DungeonRun {
         return story.priceOf(item.id()) * joined * story.trade().sellPercent() / 100;
     }
 
-    private boolean near(GameObject hero, GameObject there, Person who) {
+    private boolean near(GameObject hero, GameObject there, Folk who) {
         var npc = settings.story().npc(who.npc());
         float reach = npc == null ? 0f : npc.radius();
         float dx = hero.getPosition().x() - there.getPosition().x();

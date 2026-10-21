@@ -37,6 +37,9 @@ import uz.dukeengine.dungeon.content.Prop;
  *     where the hero starts
  * @param links       which rooms a corridor joins, by their place in {@code rooms}
  * @param boss        who waits in the last room; killing it wins the map
+ * @param npcs        the people standing on it: each a creature that is an Npc, or the name of a Person -- one person
+ *     placed by a name of their own, written in the map folder's {@code .duke} -- then the cell. The link names the
+ *     Monster an editor offers; a Person's name is as good a word there
  * @param levelHeight how tall one of its storeys is, in world units; 0 leaves the world's own. How WIDE a cell
  *     is stays the engine's here: a dungeon counts sight and placement in cells of {@code PathGrid.DEFAULT_CELL_SIZE},
  *     so a map at another width would be a map its own monsters could not see across
@@ -97,7 +100,9 @@ public record StaticMap(String name, String displayName, String description, int
 
     /**
      * A named place, in cells, for a quest to send a hero to: {@code name x y width height}, a rectangle from its
-     * top-left cell, or {@code name x y radius}, a circle round a cell's middle. Zero {@code radius} is a rectangle.
+     * top-left cell, or {@code name x y radius}, a circle round a cell's middle. Zero {@code radius} is a rectangle,
+     * and one of no size -- {@code name x y 0}, the editor's marker pin -- is a point: its one cell, its middle that
+     * cell's, where a patrol stops (docs/plan/2026-10-21-npc-brains-and-quests.md).
      */
     public record Zone(String name, int x, int y, int width, int height, int radius) {
 
@@ -122,16 +127,21 @@ public record StaticMap(String name, String displayName, String description, int
             }
             int cx = (int) Math.floor(px / cell);
             int cy = (int) Math.floor(py / cell);
-            return cx >= x && cx < x + width && cy >= y && cy < y + height;
+            return cx >= x && cx < x + Math.max(1, width) && cy >= y && cy < y + Math.max(1, height);
+        }
+
+        /** Whether it is a point: no radius and no size, one cell. */
+        public boolean point() {
+            return radius <= 0 && width <= 0 && height <= 0;
         }
 
         /** Its middle, in world units, a cell being {@code cell} across. */
         public float middleX(float cell) {
-            return radius > 0 ? (x + 0.5f) * cell : (x + width / 2f) * cell;
+            return radius > 0 || point() ? (x + 0.5f) * cell : (x + width / 2f) * cell;
         }
 
         public float middleY(float cell) {
-            return radius > 0 ? (y + 0.5f) * cell : (y + height / 2f) * cell;
+            return radius > 0 || point() ? (y + 0.5f) * cell : (y + height / 2f) * cell;
         }
 
         /** Its cells, {@code [x, y]} each, in reading order: the middle's first for a circle. Never empty. */
