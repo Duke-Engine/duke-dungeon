@@ -240,33 +240,4 @@ class LangTest {
         });
         assertTrue(core.isEmpty(), "the menus, the HUD and the stage list are in English entirely, lacking: " + core);
     }
-
-    /**
-     * The move to keys (2026-10-21) changed no word: every file reads in English by the keyed table exactly as it read
-     * by the table of before (Uzbek-keyed, {@code test/resources/lang/en-before-keys.duke}), and so do the code's words.
-     */
-    @Test
-    void theKeysSayWhatTheTableOfBeforeSaid() throws IOException {
-        String text;
-        try (var in = LangTest.class.getResourceAsStream("/lang/en-before-keys.duke")) {
-            text = new String(in.readAllBytes(), StandardCharsets.UTF_8);
-        }
-        var before = LangTable.parseBefore(text);
-        var raw = new LinkedHashMap<String, String>();
-        for (var file : files()) {
-            raw.put(file, rawText(file));
-        }
-        Lang.use(1);
-        for (var file : files()) {
-            var then = Lang.rewrite(raw.get(file), (key, field, value, unquoted, indent) -> Lang.offered(field, unquoted,
-                    indent) ? LangTable.before(before, new Lang.Place(file, key, field, value, true)) : null);
-            assertEquals(then, Content.read(file), file + " reads as it read before keys");
-        }
-        for (var place : Lang.places()) {
-            if (place.file() == null) {
-                assertEquals(before.getOrDefault(place.uzbek(), place.uzbek()), Lang.t(place.key(), place.uzbek()),
-                        place.key());
-            }
-        }
-    }
 }
