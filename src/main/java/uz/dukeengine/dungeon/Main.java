@@ -618,7 +618,7 @@ public final class Main {
                 List.of(saveRow(settings, slot -> saveTo(current.get(), saves, slot))));
         // The language, flipped in Settings and spoken from the next launch (the data is read once, in one language).
         shell.settingsRow(uz.dukeengine.dungeon.content.Lang.SETTING,
-                uz.dukeengine.dungeon.content.Lang.t("Til (qayta ochilganda)"), uz.dukeengine.dungeon.content.Lang.NAMES, 0,
+                uz.dukeengine.dungeon.content.Lang.t("Settings.Language", "Til (qayta ochilganda)"), uz.dukeengine.dungeon.content.Lang.NAMES, 0,
                 choice -> { });
         // Whether a match is played, not the backdrop behind the menu: only then is the interface hidden for an intro --
         // hidden behind the menu, the menu would go with it (E105 keeps it hidden once the match has it).
