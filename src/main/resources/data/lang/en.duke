@@ -1420,6 +1420,18 @@ Credits.Lines.83 = "Full list: CREDITS.md"  ; uz: To'liq ro'yxat: CREDITS.md
 Object.Rogue.DisplayName = "Hero"  ; uz: Hero
 Object.Skeleton.DisplayName = "Skeleton"  ; uz: Skeleton
 
+; ---- maps/people/people.duke ----
+; Person.Walker.Role = ""  ; uz: Qorovul
+; Person.Sentry.Role = ""  ; uz: Soqchi
+; Person.Smith.Role = ""  ; uz: Temirchi
+; Speaker.Smith.DisplayName = ""  ; uz: Temirchi Botir
+; Conversation.SmithHello.Text = ""  ; uz: Qahramon! Hovlida skeletlar paydo bo'ldi — ikkitasini yo'q qilib, menga qayting.
+; Quest.SmithsOre.Title = ""  ; uz: Hovlidagi skeletlar
+; Quest.SmithsOre.Description = ""  ; uz: Temirchi Botir so'radi: hovliga borib, u yerdagi ikki skeletni yo'q qiling va unga qayting.
+; Quest.SmithsOre.Text = ""  ; uz: Hovliga boring
+; Quest.SmithsOre.Text.1 = ""  ; uz: Skeletlarni qiring %d/%d
+; Quest.SmithsOre.Text.2 = ""  ; uz: Temirchiga qayting
+
 ; ---- the maps' titles and the code's own words ----
 Map.deep.Title = "The Long Dark"  ; uz: The Long Dark
 Map.deep.Description = "Wider than any floor and eight times down. Bring everything."  ; uz: Wider than any floor and eight times down. Bring everything.
