@@ -293,7 +293,7 @@ public final class Stable {
         }
         if (book.isRiding() && horse != null) {
             var weapon = hero.findModule(WeaponUpdate.class);
-            if (!mayRide(hero) || weapon != null && (weapon.isTargetOrdered() || weapon.getToward() != null
+            if (!mayRide(hero) || weapon != null && (weapon.isTargetOrdered() || weapon.getPointAttack() != null
                     || weapon.getGroundTarget() != null)) {
                 book.dismount(); // an attack he ordered, or a town he rode into
             } else {
