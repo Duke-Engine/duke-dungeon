@@ -43,6 +43,8 @@ package uz.dukeengine.dungeon.content;
  * @param maxPerRoom   how many of it one room may hold, or zero for no limit
  * @param maxMana      the pool its skills are paid from at its first level, in whole points; zero casts free
  * @param manaRegen    how fast that comes back at its first level, in tenths of a point a second
+ * @param respawn      how long, in seconds, after it dies a monster a static map places of this kind comes back
+ *                     where it was placed; zero for never
  */
 public record MonsterKind(
         String name,
@@ -63,7 +65,8 @@ public record MonsterKind(
         float keepFurthest,
         int maxPerRoom,
         int maxMana,
-        int manaRegen) {
+        int manaRegen,
+        float respawn) {
 
     public java.awt.Color awtColour() {
         return new java.awt.Color(colour);

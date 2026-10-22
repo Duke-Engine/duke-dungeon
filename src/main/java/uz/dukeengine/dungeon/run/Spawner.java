@@ -82,10 +82,8 @@ public final class Spawner {
         var levels = levelsOf(dungeon, settings, depth);
         for (int i = 0; i < levels.length; i++) {
             var monster = dungeon.monsters().get(i);
-            var spawned = spawn(game, dungeonPlayer, monster.kind(), at(logic, monster.at()));
+            var spawned = monster(game, dungeonPlayer, monster.kind(), monster.at(), levels[i], settings, depth, drops);
             if (spawned != null) {
-                scale(spawned, levels[i], settings);
-                dropsFrom(spawned, drops, settings, depth, false);
                 monsters.add(spawned);
             }
         }
@@ -116,6 +114,22 @@ public final class Spawner {
             spawn(game, dungeonPlayer, standing, at(logic, fountain));
         }
         return new Placed(java.util.Collections.unmodifiableList(heroes), boss, List.copyOf(monsters), gate);
+    }
+
+    /**
+     * One of a floor's monsters made as it is placed: spawned at {@code at}, grown to {@code level} (see
+     * {@link #scale}) and given what it leaves behind. The one step for a floor's first placing and for a monster that
+     * comes back there, so the one that returns is exactly the one that was; null where no creature is called
+     * {@code kind}.
+     */
+    static GameObject monster(DukeGame game, GamePlayer dungeonPlayer, String kind,
+            GeneratedDungeon.Placement at, int level, DungeonSettings settings, int depth, LootTable drops) {
+        var spawned = spawn(game, dungeonPlayer, kind, at(game.getLogic(), at));
+        if (spawned != null) {
+            scale(spawned, level, settings);
+            dropsFrom(spawned, drops, settings, depth, false);
+        }
+        return spawned;
     }
 
     /**

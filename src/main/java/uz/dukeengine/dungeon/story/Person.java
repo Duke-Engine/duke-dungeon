@@ -24,9 +24,12 @@ import uz.dukeengine.rpg.story.Npc;
  * @param mode   how the stops are walked: see {@link Mode}
  * @param pause  how long, in seconds, they stand at each stop (not Wait: every Java object has a wait())
  * @param leash  a GUARD's: how far, in cells, it leaves its patrol to fight
+ * @param respawn how long, in seconds, after they die they come back at home with their brain, once no hero is within
+ *               twenty cells of it; 0 for never
  */
 public record Person(String name, @Link(Monster.class) String kind, String role, @Link(Conversation.class) String talk,
-        float radius, Brain brain, float wander, List<String> points, Mode mode, float pause, float leash) {
+        float radius, Brain brain, float wander, List<String> points, Mode mode, float pause, float leash,
+        float respawn) {
 
     /** What walks a person. */
     public enum Brain {
@@ -49,7 +52,7 @@ public record Person(String name, @Link(Monster.class) String kind, String role,
     }
 
     public static final Person DEFAULTS = new Person("", "", "", "", 30f, Brain.STAND, 0f, List.of(), Mode.LOOP, 2f,
-            12f);
+            12f, 0f);
 
     public Person {
         points = points == null ? List.of() : List.copyOf(points);

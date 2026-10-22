@@ -717,6 +717,18 @@ public final class DungeonRun {
             }
         }
         mission = floorMission() ? missionOf(game.getLogic(), floor, placed, settings, dungeonPlayer.getIndex()) : null;
+        // A static map's monsters of a kind with a Respawn come back where they stood, at their level; the descent's
+        // floors, drawn fresh each time, do not. Whatever waited on the floor before is gone with it.
+        returning.clear();
+        comebacks.clear();
+        for (var monster : floors.descends() ? List.<GameObject>of() : placed.monsters()) {
+            var kind = settings.monster(monster.getTemplate().name());
+            if (kind != null && kind.respawn() > 0f) {
+                returning.put(monster.getId(), new Comeback(kind.name(), monster.getPosition().x(),
+                        monster.getPosition().y(), uz.dukeengine.rpg.hero.LevelBonus.levelOf(monster), kind.respawn(),
+                        0, null));
+            }
+        }
         // Every monster the floor placed pays the hero who kills it, by its level. See Bounty.
         var paying = new ArrayList<GameObject>(placed.monsters());
         if (placed.boss() != null) {
@@ -956,6 +968,7 @@ public final class DungeonRun {
             descend(game);
             game.setBanner("");
         }
+        comeBack(game);
         story(game);
         scripted(game);
         intro(game);
@@ -1400,17 +1413,7 @@ public final class DungeonRun {
             var placedAs = settings.person(placed.kind());
             var template = logic.getThingFactory().findTemplate(placedAs == null ? placed.kind() : placedAs.kind());
             if (template != null) {
-                // A GUARD stands on the hero's side, grown to the floor as an ally is, and kept to its round by a leash.
-                boolean guard = placedAs != null && placedAs.brain() == uz.dukeengine.dungeon.story.Person.Brain.GUARD;
-                var person = logic.spawn(template, ground(logic, placed), guard ? seats.getFirst().player.getIndex()
-                        : uz.dukeengine.core.player.PlayerList.NEUTRAL_INDEX);
-                if (guard) {
-                    Spawner.scale(person, settings.beforeBossLevel(depth), settings);
-                    person.addModule(new uz.dukeengine.dungeon.ai.Leash(person, person.getPosition(),
-                            placedAs.leash() * uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE));
-                }
-                people.add(new Folk(person.getId(), placed.kind(), person.getPosition().x(),
-                        person.getPosition().y(), placedAs, roundsOf(placedAs, person)));
+                people.add(standing(logic, template, placed.kind(), placedAs, ground(logic, placed)));
             }
         }
         var items = settings.items();
@@ -1435,6 +1438,25 @@ public final class DungeonRun {
         marks();
     }
 
+    /**
+     * One person put on the floor, as a map places them and as one that comes back is: a GUARD on the hero's side,
+     * grown to the floor as an ally is and kept to its round by a leash; anybody else on the neutral side. {@code npc}
+     * is the name the map's Npcs gave them, {@code as} their Person block or null for a creature that merely talks.
+     */
+    private Folk standing(uz.dukeengine.core.GameLogic logic, uz.dukeengine.core.thing.ThingTemplate template,
+            String npc, uz.dukeengine.dungeon.story.Person as, uz.dukeengine.core.math.Coord3D where) {
+        boolean guard = as != null && as.brain() == uz.dukeengine.dungeon.story.Person.Brain.GUARD;
+        var person = logic.spawn(template, where, guard ? seats.getFirst().player.getIndex()
+                : uz.dukeengine.core.player.PlayerList.NEUTRAL_INDEX);
+        if (guard) {
+            Spawner.scale(person, settings.beforeBossLevel(depth), settings);
+            person.addModule(new uz.dukeengine.dungeon.ai.Leash(person, person.getPosition(),
+                    as.leash() * uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE));
+        }
+        return new Folk(person.getId(), npc, person.getPosition().x(), person.getPosition().y(), as,
+                roundsOf(as, person));
+    }
+
     /** The middle of a placed thing's cell, on the ground. */
     private static uz.dukeengine.core.math.Coord3D ground(uz.dukeengine.core.GameLogic logic,
             uz.dukeengine.dungeon.map.StaticMap.Placed placed) {
@@ -1445,6 +1467,7 @@ public final class DungeonRun {
 
     /** A death in the world, heard as it is reaped: every KILL of its kind counts it. */
     public void died(uz.dukeengine.core.event.ObjectDied death) {
+        fallen(death);
         quests.died(death.templateName(), bags());
         drunk(death);
         camp.died(lastLogic, death);
@@ -1459,6 +1482,92 @@ public final class DungeonRun {
                 }
             }
         }
+    }
+
+    // ---- coming back: a Monster's and a Person's Respawn ----
+
+    /**
+     * Something that comes back where it was placed: what it is, the spot, the level it stood at, how long after it
+     * dies, and the frame that is due at (unset while it lives). {@code who} is the person it replaces, null for a monster.
+     *
+     * <p>Nothing pending is saved: a save is made on a floor laid again, and a floor laid stands everyone up again.
+     */
+    private record Comeback(String kind, float x, float y, int level, float seconds, int due, Folk who) {
+
+        /** This, dead at {@code frame}: due its seconds after. */
+        Comeback diedAt(int frame) {
+            return new Comeback(kind, x, y, level, seconds,
+                    frame + Math.round(seconds * uz.dukeengine.core.GameConstants.LOGICFRAMES_PER_SECOND), who);
+        }
+    }
+
+    /** How near, in cells, a hero keeps what is due back from coming: nothing pops up in front of him. */
+    private static final int COMEBACK_CELLS = 20;
+
+    /** The monsters a static map placed that come back, by the thing standing for each now. */
+    private final java.util.Map<ObjectId, Comeback> returning = new java.util.HashMap<>();
+
+    /** Those that have died and wait their time, in the order they died. */
+    private final List<Comeback> comebacks = new ArrayList<>();
+
+    /** A death heard: a monster or a person that comes back is put to wait its Respawn. */
+    private void fallen(uz.dukeengine.core.event.ObjectDied death) {
+        var monster = returning.remove(death.object());
+        if (monster != null) {
+            comebacks.add(monster.diedAt(death.frame()));
+            return;
+        }
+        for (var who : people) {
+            if (who.id().equals(death.object()) && who.person() != null && who.person().respawn() > 0f) {
+                comebacks.add(new Comeback(who.person().kind(), who.homeX(), who.homeY(), 0, who.person().respawn(), 0,
+                        who).diedAt(death.frame()));
+            }
+        }
+    }
+
+    /** Every frame the floor is played: whatever is due back and has no hero within twenty cells of its spot returns. */
+    private void comeBack(DukeGame game) {
+        var logic = game.getLogic();
+        for (var waiting = comebacks.iterator(); waiting.hasNext();) {
+            var back = waiting.next();
+            if (logic.getFrame() < back.due() || heroWithin(logic, back.x(), back.y())) {
+                continue;
+            }
+            waiting.remove();
+            if (back.who() == null) {
+                var monster = Spawner.monster(game, dungeonPlayer, back.kind(),
+                        new GeneratedDungeon.Placement(back.x(), back.y()), back.level(), settings, depth, drops);
+                if (monster != null) {
+                    monster.addModule(new Bounty(monster, back.level(), this::pay));
+                    returning.put(monster.getId(), back);
+                }
+            } else {
+                var template = logic.getThingFactory().findTemplate(back.kind());
+                int at = 0;
+                while (at < people.size() && !people.get(at).id().equals(back.who().id())) {
+                    at++;
+                }
+                if (template != null && at < people.size()) {
+                    var flat = new uz.dukeengine.core.math.Coord3D(back.x(), back.y(), 0f);
+                    people.set(at, standing(logic, template, back.who().npc(), back.who().person(),
+                            new uz.dukeengine.core.math.Coord3D(back.x(), back.y(), logic.groundHeight(flat))));
+                    marks();
+                }
+            }
+        }
+    }
+
+    /** Whether a living hero stands within {@link #COMEBACK_CELLS} cells of a spot. */
+    private boolean heroWithin(uz.dukeengine.core.GameLogic logic, float x, float y) {
+        float reach = COMEBACK_CELLS * uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
+        for (var seat : seats) {
+            var hero = seat.heroId == null ? null : logic.findObject(seat.heroId);
+            if (hero != null && !hero.isEffectivelyDead()
+                    && Math.hypot(hero.getPosition().x() - x, hero.getPosition().y() - y) <= reach) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

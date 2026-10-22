@@ -1297,6 +1297,7 @@ public final class DungeonSettings {
                     name + "'s KeepDistance has to be a band, nearest then furthest");
             require(kind.maxPerRoom() >= 0, name + "'s MaxPerRoom cannot be negative");
             require(kind.maxMana() >= 0 && kind.manaRegen() >= 0, name + "'s MaxMana and ManaRegen cannot be negative");
+            require(kind.respawn() >= 0f, name + "'s Respawn cannot be negative");
             requireLinked(kind.look().animations(), name);
         }
         for (var hero : heroes) {
@@ -1475,8 +1476,9 @@ public final class DungeonSettings {
                     named + ": a Name, and no other Person or Npc of it");
             require(monster(person.kind()) != null, named + " has Kind = " + person.kind()
                     + ", and no Monster is called that");
-            require(person.radius() >= 0f && person.wander() >= 0f && person.pause() >= 0f && person.leash() > 0f,
-                    named + ": Radius, Wander and Pause are at least 0, and Leash more than 0");
+            require(person.radius() >= 0f && person.wander() >= 0f && person.pause() >= 0f && person.leash() > 0f
+                    && person.respawn() >= 0f,
+                    named + ": Radius, Wander, Pause and Respawn are at least 0, and Leash more than 0");
             require(person.brain() != uz.dukeengine.dungeon.story.Person.Brain.PATROL
                     && person.brain() != uz.dukeengine.dungeon.story.Person.Brain.GUARD || !person.points().isEmpty(),
                     named + " walks a " + person.brain() + " and has no Points");

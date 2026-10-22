@@ -40,6 +40,9 @@ import uz.dukeengine.rpg.skill.Skill;
  * @param walkStride    how far one play of its walk carries it, in units: the client paces the walk to its speed by it
  *                      (MonsterClipFitTest measures it off the clip). 0 plays the walk at its own pace
  * @param upperBody     the joint its upper body hangs from, for a blow on the move; none for a rig without one
+ * @param respawn       how long, in seconds, after it dies a monster a static map places of this kind comes back where
+ *                      it was placed, as strong and carrying what it did, once no hero is within twenty cells of
+ *                      the spot; 0 for never
  * @param licensed      a look on a licensed model, drawn instead of the block's own where that model is shipped
  *                      ({@code Licensed = MonsterLook ... End}; see {@link MonsterLook#licensedOr}). Its clips, size
  *                      and facing are its own: nothing of the stand-in's carries over
@@ -55,7 +58,7 @@ public record Monster(@Group("Identity") String name, String displayName, Set<Ki
         @Clip String attack, @Clip String hurt, @Clip String death, float walkStride, String upperBody,
         @Group("Look") @Link(Effect.class) String effect,
         Held held, @Group("Skills") PortraitArt portrait, List<Skill> skills, int maxMana, int manaRegen,
-        @Group("Look") MonsterLook licensed)
+        @Group("Spawning") float respawn, @Group("Look") MonsterLook licensed)
         implements Solid, Sighted, Classified, Titled, Drawn {
 
     /** Two distances, the nearer first: {@code [20, 60]}. */
@@ -69,7 +72,7 @@ public record Monster(@Group("Identity") String name, String displayName, Set<Ki
             Band.NONE, Band.NONE, 0,
             null, null, 1f, 0xFFFFFF, 90f, null,
             null, null, null, null, null, 0f, null, null, Held.NOTHING,
-            null, List.of(), 0, 0, null);
+            null, List.of(), 0, 0, 0f, null);
 
     public Monster {
         displayName = displayName == null ? "" : displayName;
@@ -87,7 +90,7 @@ public record Monster(@Group("Identity") String name, String displayName, Set<Ki
         return new MonsterKind(name, senseRadius, chaseRadius, closeDistance, alertRadius, repathFrames,
                 swingFrames, minDepth, weight, colour, scale, look(), skillDistance.nearest(),
                 skillDistance.furthest(), keepDistance.nearest(), keepDistance.furthest(), maxPerRoom,
-                maxMana, manaRegen);
+                maxMana, manaRegen, respawn);
     }
 
     /** What it is drawn as, which nothing in the simulation may read. */
