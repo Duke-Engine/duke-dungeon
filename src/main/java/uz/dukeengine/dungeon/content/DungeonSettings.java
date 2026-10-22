@@ -311,6 +311,14 @@ public final class DungeonSettings {
         return null;
     }
 
+    /** The Monsters whose blocks give them a MonsterBrain, by name. */
+    private final java.util.Set<String> brained = new java.util.HashSet<>();
+
+    /** Whether the Monster of that name thinks for itself in a fight: its block has a MonsterBrain. */
+    public boolean hasBrain(String monster) {
+        return brained.contains(monster);
+    }
+
     /** The blows that are felt, and what they play: see {@link HeavyBlow}. */
     public List<HeavyBlow> heavyBlows() {
         return List.copyOf(heavyBlows);
@@ -674,6 +682,9 @@ public final class DungeonSettings {
             switch (record) {
                 case Monster monster -> {
                     monsters.add(monster.kind());
+                    if (monster.modules().stream().anyMatch(m -> m instanceof uz.dukeengine.dungeon.ai.MonsterBrain.Data)) {
+                        brained.add(monster.name());
+                    }
                     own(monster.name(), monster.portrait(), monster.skills());
                     requireBook("Monster " + monster.name(), monster.modules(), monster.skills());
                     requireOneSkillPerKey("Monster " + monster.name(), monster.skills());

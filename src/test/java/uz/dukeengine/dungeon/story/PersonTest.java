@@ -84,6 +84,18 @@ class PersonTest {
         assertTrue(problems.stream().noneMatch(problem -> problem.contains("PostA")), problems.toString());
     }
 
+    /** A GUARD fights by a MonsterBrain: one whose Kind has none would never fight, and is refused. */
+    @Test
+    void aGuardWhoseKindHasNoBrainIsRefused() {
+        var duke = Stages.found("people").extrasText().replace("Kind = Act1CommanderFighter", "Kind = Villager");
+        var settings = DungeonSettings.parse(Content.data() + "\n" + duke);
+        var stage = StageFile.read(Stages.found("people").text(), "people");
+        var problems = StageCheck.problems(stage, settings);
+        assertTrue(problems.stream().anyMatch(problem -> problem.contains("Sentry") && problem.contains("Villager")),
+                problems.toString());
+        assertTrue(StageCheck.problems(stage, SETTINGS).isEmpty(), "the shipped Sentry is a fighter");
+    }
+
     /** A Place the story adds to the map is a zone the run walks a patrol to: a Point may name one. */
     @Test
     void aPatrolPointMayBeAPlaceTheStoryAdds() {

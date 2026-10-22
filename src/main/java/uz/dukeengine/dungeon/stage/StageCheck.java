@@ -136,6 +136,12 @@ public final class StageCheck {
             }
             // A Person walks this map's zones, and the Places the story adds to it: each of its Points one of them.
             var person = settings.person(npc.kind());
+            // A GUARD fights by its Kind's MonsterBrain: without one it would walk its round and never fight.
+            if (person != null && person.brain() == uz.dukeengine.dungeon.story.Person.Brain.GUARD
+                    && !settings.hasBrain(person.kind())) {
+                problems.add("Person " + npc.kind() + " is a GUARD, and its Kind " + person.kind()
+                        + " has no MonsterBrain to fight with");
+            }
             for (var point : person == null ? List.<String>of() : person.points()) {
                 if (stage.story().zones().stream().noneMatch(zone -> zone.name().equals(point))
                         && settings.placesOn(stage.id()).stream().noneMatch(zone -> zone.name().equals(point))) {
