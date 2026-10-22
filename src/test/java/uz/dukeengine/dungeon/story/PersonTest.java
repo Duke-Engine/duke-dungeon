@@ -84,6 +84,18 @@ class PersonTest {
         assertTrue(problems.stream().noneMatch(problem -> problem.contains("PostA")), problems.toString());
     }
 
+    /** A Place the story adds to the map is a zone the run walks a patrol to: a Point may name one. */
+    @Test
+    void aPatrolPointMayBeAPlaceTheStoryAdds() {
+        var duke = Stages.found("people").extrasText().replace("Points = [PostA, PostB]\n  Mode = BACK_AND_FORTH",
+                "Points = [PostA, Gate]\n  Mode = BACK_AND_FORTH");
+        var settings = DungeonSettings.parse(Content.data() + "\n" + duke
+                + "\nPlace\n  Map = people\n  Zone = \"Gate 3 3 0\"\nEnd\n");
+        var stage = StageFile.read(Stages.found("people").text(), "people");
+        var problems = StageCheck.problems(stage, settings);
+        assertTrue(problems.stream().noneMatch(problem -> problem.contains("Gate")), problems.toString());
+    }
+
     @Test
     void ordinaryNpcsAreUnchanged() {
         var session = Dungeon.newStageSession(Stages.load("talk", SETTINGS), SETTINGS);
