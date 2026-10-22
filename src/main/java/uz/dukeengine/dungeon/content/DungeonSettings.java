@@ -553,13 +553,42 @@ public final class DungeonSettings {
 
     /** Every shipped or player's map folder's {@code .duke} blocks, one text: see {@link #joinBlocks}. */
     static String mapBlocksText() {
+        return mapBlocksText(java.nio.file.Path.of("maps"));
+    }
+
+    /**
+     * The same with the player's maps in {@code theirs}, a player's map taking the place of a shipped one of its name.
+     * A shipped map's blocks that are wrong stop the game, as any data file's do; a player's map whose blocks do not
+     * read, or name what another map's already name, is skipped with a warning naming it.
+     */
+    static String mapBlocksText(java.nio.file.Path theirs) {
+        var own = uz.dukeengine.core.map.MapPackages.under(theirs);
+        var ownNames = own.stream().map(uz.dukeengine.core.map.MapPackage::name).collect(java.util.stream.Collectors.toSet());
         var bySource = new java.util.LinkedHashMap<String, String>();
-        for (var map : uz.dukeengine.core.map.MapPackages.all("maps", java.nio.file.Path.of("maps"))) {
-            if (!map.extras().isEmpty()) {
-                bySource.merge(map.name(), extrasText(map), (a, b) -> a + "\n" + b);
+        for (var map : uz.dukeengine.core.map.MapPackages.shipped("maps")) {
+            if (!map.extras().isEmpty() && !ownNames.contains(map.name())) {
+                bySource.put(map.name(), extrasText(map));
             }
         }
-        return joinBlocks(bySource);
+        var all = joinBlocks(bySource);
+        for (var map : own) {
+            if (map.extras().isEmpty()) {
+                continue;
+            }
+            try {
+                var blocks = extrasText(map);
+                var with = new java.util.LinkedHashMap<>(bySource);
+                with.put(map.name(), blocks);
+                var joined = joinBlocks(with);
+                parse(Content.data() + "\n" + joined); // read as the game would: a block that does not, refused here
+                bySource = with;
+                all = joined;
+            } catch (RuntimeException e) {
+                java.util.logging.Logger.getLogger(DungeonSettings.class.getName()).warning(() -> "the blocks of "
+                        + map.extras() + " are not read: " + e.getMessage());
+            }
+        }
+        return all;
     }
 
     /**
