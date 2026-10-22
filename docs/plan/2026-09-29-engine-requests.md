@@ -2135,3 +2135,5 @@ The owner asks for one pass over the whole engine before more is built on it.
 Done when the action module is separate and optional with the boundary test green, the full engine build and tests
 pass, and a short report (in this section) lists what was split, merged, removed and modernised, plus any public API
 the game must follow.
+
+Adopted by the game (2026-10-22, branch e106): Stable reads WeaponUpdate.getPointAttack(); MountTest walks the open way by moveTo instead of the removed moveAlong. The game needs no action module (classic controls only). Suite 1576/0 on engine master 8fe41eeb.

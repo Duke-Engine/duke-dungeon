@@ -123,7 +123,10 @@ class MountTest {
     private static float stride(DukeGame game) {
         var hero = hero(game);
         var legs = hero.findModule(MoveUpdate.class);
-        legs.moveAlong(openWay(game));
+        int way = openWay(game); // straight on along the open way: a walk to a point 150 units off
+        var at = hero.getPosition();
+        legs.moveTo(new uz.dukeengine.core.math.Coord3D(at.x() + 150f * (float) Math.cos(Math.toRadians(way)),
+                at.y() + 150f * (float) Math.sin(Math.toRadians(way)), at.z()));
         game.runHeadless(10);
         float went = 0f;
         for (int frame = 0; frame < 30; frame++) {
@@ -132,7 +135,7 @@ class MountTest {
             var to = hero.getPosition();
             went += (float) Math.hypot(to.x() - from.x(), to.y() - from.y());
         }
-        legs.moveAlong(-1);
+        legs.stop();
         return went;
     }
 
