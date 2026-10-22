@@ -155,6 +155,30 @@ class PersonTest {
                 "past the stone round PostC, on to PostB: " + walker.getPosition());
     }
 
+    /**
+     * A traveller whose Route names a place whose middle is stone -- as a castle stands in the capital's middle --
+     * walks to the open cell nearest it and goes on, rather than walking at the stone for ever.
+     */
+    @Test
+    void aTravellerWhosePlaceIsBlockedInTheMiddleGoesOn() {
+        var data = Content.data();
+        var route = "Route = [Olmazor, Poytaxt, \"Bog'iston\", Poytaxt]";
+        assertTrue(data.contains(route));
+        var settings = DungeonSettings.parse(data.replace(route, "Route = [PostB, PostC]") + "\n"
+                + Stages.found("people").extrasText());
+        var text = Stages.found("people").text();
+        assertTrue(text.contains("Smith 8 25,"));
+        var session = Dungeon.newStageSession(StageFile.read(text.replace("Smith 8 25,",
+                "Smith 8 25,\n    Traveller 20 8,"), "people"), settings);
+        var game = session.game();
+        game.runHeadless(1);
+        game.getLogic().setSleep(null);
+        var traveller = at(game, 20, 8);
+        assertEquals("Traveller", traveller.getTemplate().name());
+        // PostC, the nearer, first; then on to PostB.
+        assertTrue(reaches(game, traveller, 13, 5, 3000) >= 0, "past PostC, on to PostB: " + traveller.getPosition());
+    }
+
     // ---- the guard: patrols on the hero's side, and fights within its leash ----
 
     static GameObject hero(DukeGame game) {

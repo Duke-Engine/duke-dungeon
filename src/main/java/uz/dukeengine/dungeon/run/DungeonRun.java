@@ -3109,7 +3109,7 @@ public final class DungeonRun {
             }
             if (!npc.route().isEmpty()) {
                 // A traveller: on to the next place of his round once he has come to a stop.
-                var next = legs.isMoving() ? null : nextOnRoute(npc.route(), there);
+                var next = legs.isMoving() ? null : nextOnRoute(logic, npc.route(), there);
                 if (next != null) {
                     legs.moveTo(next);
                 }
@@ -3226,15 +3226,57 @@ public final class DungeonRun {
                     * uz.dukeengine.core.GameConstants.LOGICFRAMES_PER_SECOND);
             return;
         }
-        float cell = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
-        legs.moveTo(new uz.dukeengine.core.math.Coord3D(zone.middleX(cell), zone.middleY(cell), 0f));
+        legs.moveTo(aimAt(logic, zone));
+    }
+
+    /**
+     * Where a walker makes for to come to {@code zone}: its middle, or -- that cell blocked, as a castle stands in the
+     * capital's middle -- the open cell nearest it within eight cells, so nobody is sent where they can never arrive
+     * and walks at it for ever. Its middle still where nothing near is open.
+     */
+    private uz.dukeengine.core.math.Coord3D aimAt(uz.dukeengine.core.GameLogic logic,
+            uz.dukeengine.dungeon.map.StaticMap.Zone zone) {
+        float x = zone.middleX(uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE);
+        float y = zone.middleY(uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE);
+        var grid = logic.getPathGrid();
+        if (grid == null) {
+            return new uz.dukeengine.core.math.Coord3D(x, y, 0f);
+        }
+        float size = grid.getCellSize();
+        int cx = (int) Math.floor(x / size);
+        int cy = (int) Math.floor(y / size);
+        if (!grid.isBlocked(cx, cy)) {
+            return new uz.dukeengine.core.math.Coord3D(x, y, 0f);
+        }
+        int reach = 8 * grid.cellsPerMapCell();
+        for (int r = 1; r <= reach; r++) {
+            int[] best = null;
+            double far = Double.MAX_VALUE;
+            for (int dx = -r; dx <= r; dx++) {
+                for (int dy = -r; dy <= r; dy++) {
+                    if (Math.max(Math.abs(dx), Math.abs(dy)) != r || grid.isBlocked(cx + dx, cy + dy)) {
+                        continue;
+                    }
+                    double d = Math.hypot(dx, dy);
+                    if (d < far) {
+                        far = d;
+                        best = new int[] {cx + dx, cy + dy};
+                    }
+                }
+            }
+            if (best != null) {
+                return new uz.dukeengine.core.math.Coord3D((best[0] + 0.5f) * size, (best[1] + 0.5f) * size, 0f);
+            }
+        }
+        return new uz.dukeengine.core.math.Coord3D(x, y, 0f);
     }
 
     /**
      * Where a traveller on {@code route} walks next: the middle of the place after the one he stands in -- or after the
      * nearest, if he is in none -- round and round; null where the map has none of its places.
      */
-    private uz.dukeengine.core.math.Coord3D nextOnRoute(List<String> route, GameObject traveller) {
+    private uz.dukeengine.core.math.Coord3D nextOnRoute(uz.dukeengine.core.GameLogic logic, List<String> route,
+            GameObject traveller) {
         float cell = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
         float x = traveller.getPosition().x();
         float y = traveller.getPosition().y();
@@ -3245,7 +3287,9 @@ public final class DungeonRun {
             if (zone == null) {
                 continue;
             }
-            double far = zone.holds(x, y, cell) ? -1 : Math.hypot(zone.middleX(cell) - x, zone.middleY(cell) - y);
+            var aim = aimAt(logic, zone); // a place whose middle is blocked is come to at the open cell nearest it
+            double far = zone.holds(x, y, cell) || Math.hypot(aim.x() - x, aim.y() - y) <= cell ? -1
+                    : Math.hypot(zone.middleX(cell) - x, zone.middleY(cell) - y);
             if (far < best) {
                 best = far;
                 nearest = i;
@@ -3257,7 +3301,7 @@ public final class DungeonRun {
         for (int step = 1; step <= route.size(); step++) {
             var zone = zoneNamed(route.get((nearest + (best < 0 ? step : 0)) % route.size()));
             if (zone != null) {
-                return new uz.dukeengine.core.math.Coord3D(zone.middleX(cell), zone.middleY(cell), 0f);
+                return aimAt(logic, zone);
             }
         }
         return null;
