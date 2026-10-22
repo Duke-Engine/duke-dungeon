@@ -50,6 +50,12 @@ class LangTest {
         return Content.read(file);
     }
 
+    /** A Person's Points are zones of its map: a quoted one ("Bog'iston") is an id, never words to translate. */
+    @Test
+    void aPersonsPointsAreIds() {
+        assertFalse(Lang.offered("Points", false, 2), "a quoted zone in Points is not offered to a table");
+    }
+
     @Test
     void aKeyIsWhereTheTextLives() {
         var text = """
