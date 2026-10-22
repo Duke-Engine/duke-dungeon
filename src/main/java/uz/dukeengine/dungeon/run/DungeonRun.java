@@ -2837,7 +2837,7 @@ public final class DungeonRun {
     }
 
     /** Whether {@code thing} is what {@code step} asks for. */
-    private static boolean glows(uz.dukeengine.rpg.story.Quest.Step step, GameObject thing) {
+    private boolean glows(uz.dukeengine.rpg.story.Quest.Step step, GameObject thing) {
         return switch (step.goal()) {
             case COLLECT -> {
                 var lying = thing.findModule(uz.dukeengine.rpg.item.GroundItem.class);
@@ -2845,7 +2845,9 @@ public final class DungeonRun {
             }
             case KILL -> thing.getTemplate().name().equals(step.target()) && !thing.isEffectivelyDead();
             case TALK, GIVE, FOLLOW -> thing.getTemplate().name().equals(step.target())
-                    && thing.getPlayerIndex() == uz.dukeengine.core.player.PlayerList.NEUTRAL_INDEX;
+                    && thing.getPlayerIndex() == uz.dukeengine.core.player.PlayerList.NEUTRAL_INDEX
+                    // a Person is known by its own name, not by the creature it is drawn as
+                    || people.stream().anyMatch(who -> who.id().equals(thing.getId()) && who.npc().equals(step.target()));
             case REACH -> false;
         };
     }

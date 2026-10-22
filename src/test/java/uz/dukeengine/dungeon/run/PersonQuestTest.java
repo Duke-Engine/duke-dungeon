@@ -68,6 +68,39 @@ class PersonQuestTest {
         assertTrue(going(session), "accepted: " + session.run().getQuests().active());
     }
 
+    /**
+     * A step that sends him to a Person by name glows on that person, though the thing is drawn as another creature
+     * (the smith is a Blacksmith).
+     */
+    @Test
+    void aStepToAPersonGlowsOnThem() {
+        var duke = Stages.found("people").extrasText();
+        // The skeletons' step made one back to the smith that glows: to the yard, then to him.
+        var kill = "      Goal = KILL\n      Target = Skeleton\n      Count = 2\n";
+        assertTrue(duke.contains(kill));
+        var settings = DungeonSettings.parse(uz.dukeengine.dungeon.content.Content.data() + "\n"
+                + duke.replace(kill, "      Goal = TALK\n      Target = Smith\n      Glow = Yes\n"));
+        var session = Dungeon.newStageSession(Stages.load("people", settings), settings);
+        var game = session.game();
+        game.runHeadless(1);
+        var smith = accepted(session);
+        standAt(game, 12.5f * CELL, 20.5f * CELL); // the yard
+        game.runHeadless(CHECK + 1);
+        assertTrue(session.run().getQuests().active().getFirst().step() == 1, "at the yard: "
+                + session.run().getQuests().active());
+        var glow = settings.story().dialogue().glowLook();
+        game.watch();
+        boolean lit = false;
+        for (int frame = 0; frame < 2 * settings.story().dialogue().glowFrames() && !lit; frame++) {
+            game.runHeadless(1);
+            for (var event : game.getSnapshot().events()) {
+                lit |= event instanceof uz.dukeengine.core.event.EffectPlayed played && played.name().equals(glow)
+                        && smith.getId().equals(played.riding());
+            }
+        }
+        assertTrue(lit, "the smith glows: " + session.run().getQuests().active() + " " + glow);
+    }
+
     @Test
     void theQuestIsDoneAndPays() {
         var session = session();
