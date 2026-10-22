@@ -58,7 +58,7 @@ duke-engine 0.7.0 from the checkout beside this one.
 | `src/main/resources/data/props/gate.duke` | **new** — the gate template |
 | `src/main/resources/data/world/themes/keep.duke` | **new** — the masonry look |
 | `src/main/resources/data/game.duke` | lists the two new files |
-| `src/main/resources/models/props/gate/` | **new** — `gate.glb`, `License.txt` |
+| `src/main/resources/models/buildings/gates/` | **new** — `gate.glb`, `License.txt` |
 | `art/models/join_clips.pl` | **new** — joins a model's clips into one |
 | `src/main/java/uz/dukeengine/dungeon/world/Theme.java` | + `ThemeMonster.playOnce` |
 | `src/main/java/uz/dukeengine/dungeon/Main.java` | a themed thing's `PlayOnce` played once and held |
@@ -1585,7 +1585,7 @@ git commit -m "A gate stands across the keep's doorway until a hero walks up to 
 
 **Files:**
 - Create: `art/models/join_clips.pl`
-- Create: `src/main/resources/models/props/gate/gate.glb` (copied, clips joined), `.../models/props/gate/License.txt`
+- Create: `src/main/resources/models/buildings/gates/gate.glb` (copied, clips joined), `.../models/licenses/old_driveway_gate.txt`
 - Create: `src/main/resources/data/world/themes/keep.duke`
 - Modify: `src/main/resources/data/game.duke` (after `data/world/themes/mine.duke,`)
 - Modify: `src/main/resources/data/world/generation.duke` (`Look` in the `Keep` block)
@@ -1684,7 +1684,7 @@ Expected: FAIL — compilation error, `playOnce()` is not a method of `ThemeMons
 # parts were animated one clip each in Blender (the keep's gate: a clip for each leaf), so that one clip plays them
 # all.
 #
-#   perl art/models/join_clips.pl src/main/resources/models/props/gate/gate.glb open
+#   perl art/models/join_clips.pl src/main/resources/models/buildings/gates/gate.glb open
 use strict;
 use warnings;
 use JSON::PP;
@@ -1718,12 +1718,12 @@ close $out;
 - [ ] **Step 4: Bring the model in, its two clips joined into `open`**
 
 ```bash
-mkdir -p src/main/resources/models/props/gate
-cp "/c/Users/abdur/OneDrive/Рабочий стол/Game assets/buildings/Gate/gate.glb" src/main/resources/models/props/gate/gate.glb
-perl art/models/join_clips.pl src/main/resources/models/props/gate/gate.glb open
+mkdir -p src/main/resources/models/buildings/gates
+cp "/c/Users/abdur/OneDrive/Рабочий стол/Game assets/buildings/Gate/gate.glb" src/main/resources/models/buildings/gates/gate.glb
+perl art/models/join_clips.pl src/main/resources/models/buildings/gates/gate.glb open
 ```
 
-`src/main/resources/models/props/gate/License.txt`:
+`src/main/resources/models/licenses/old_driveway_gate.txt`:
 
 ```
 Old Driveway Gate: two old pillars, two gate lights and an iron gate.
@@ -1783,7 +1783,7 @@ Theme
   ; The slab is a unit thick and centred on its own origin: pushed back half a
   ; unit, its face lands on the boundary.
   WallShift = -0.5
-  Stairs = models/tiles/dungeon/stairs.gltf
+  Stairs = models/terrain/dungeon/stairs.gltf
   ; The top of the wall is a floor tile: cooler and darker, stone in shade.
   CapTint = 0xA8A8B4
   StoreyShadePercent = 108
@@ -1791,8 +1791,8 @@ Theme
   Tones = [
     Tone
       Name = Stone
-      Floor = models/tiles/dungeon/floor.gltf
-      Wall = models/tiles/dungeon/wall.gltf
+      Floor = models/terrain/dungeon/floor.gltf
+      Wall = models/terrain/dungeon/wall.gltf
     End
   ]
   Monsters = [
@@ -1832,7 +1832,7 @@ Theme
     ; and stands as the model rests: closed.
     ThemeMonster
       Name = Gate
-      Model = models/props/gate/gate.glb
+      Model = models/buildings/gates/gate.glb
       ModelScale = 0.37
       Facing = 0
     End,
@@ -1840,7 +1840,7 @@ Theme
     ; the owner's clip, played once and held on its last frame.
     ThemeMonster
       Name = OpenGate
-      Model = models/props/gate/gate.glb
+      Model = models/buildings/gates/gate.glb
       ModelScale = 0.37
       Facing = 0
       PlayOnce = open
@@ -1900,7 +1900,7 @@ record FloorLooks(String name, BiomeMap biomes, List<String> looks, List<Generat
 - [ ] **Step 9: Credit the author** — a row in `CREDITS.md`'s Duke Dungeon table, after the Resource Bits row:
 
 ```
-| The keep's gate — "Old Driveway Gate": two stone pillars with their lamps, and an iron gate | **animatedheaven** ([CGTrader](https://www.cgtrader.com/designers/animatedheaven)) | commercial use with credit | `models/props/gate/` |
+| The keep's gate — "Old Driveway Gate": two stone pillars with their lamps, and an iron gate | **animatedheaven** ([CGTrader](https://www.cgtrader.com/designers/animatedheaven)) | commercial use with credit | `models/buildings/gates/` |
 ```
 
 - [ ] **Step 10: Say it in the README** — after the biomes section, before `## Stage rejimi`:
@@ -1941,6 +1941,6 @@ Expected: PASS — the tests above, and `DungeonTilesTest` (the Keep kit, the ga
 - [ ] **Step 13: Commit**
 
 ```bash
-git add art/models/join_clips.pl src/main/resources/models/props/gate src/main/resources/data/world/themes/keep.duke src/main/resources/data/game.duke src/main/resources/data/world/generation.duke src/main/java/uz/dukeengine/dungeon/world/Theme.java src/main/java/uz/dukeengine/dungeon/Main.java src/main/java/uz/dukeengine/dungeon/content/DungeonSettings.java src/main/java/uz/dukeengine/dungeon/run/FloorLooks.java src/main/java/uz/dukeengine/dungeon/run/DungeonRun.java CREDITS.md README.md src/test/java/uz/dukeengine/dungeon/DungeonThemeTest.java src/test/java/uz/dukeengine/dungeon/DungeonTilesTest.java src/test/java/uz/dukeengine/dungeon/content/KeepSettingsTest.java
+git add art/models/join_clips.pl src/main/resources/models/buildings/gates src/main/resources/data/world/themes/keep.duke src/main/resources/data/game.duke src/main/resources/data/world/generation.duke src/main/java/uz/dukeengine/dungeon/world/Theme.java src/main/java/uz/dukeengine/dungeon/Main.java src/main/java/uz/dukeengine/dungeon/content/DungeonSettings.java src/main/java/uz/dukeengine/dungeon/run/FloorLooks.java src/main/java/uz/dukeengine/dungeon/run/DungeonRun.java CREDITS.md README.md src/test/java/uz/dukeengine/dungeon/DungeonThemeTest.java src/test/java/uz/dukeengine/dungeon/DungeonTilesTest.java src/test/java/uz/dukeengine/dungeon/content/KeepSettingsTest.java
 git commit -m "The keep in worked stone whatever the biome, behind animatedheaven's gate" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```

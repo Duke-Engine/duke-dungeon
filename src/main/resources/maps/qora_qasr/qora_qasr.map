@@ -125,11 +125,11 @@ StaticMap
     r = 5.0,
   ]
   Scenery = [
-    "models/castles/fort/fort_keep.gltf@models/castles/fort/textures/fort_15_dark.jpg 20 0.5 0 1 0 0xF0D8E0",
-    "models/castles/fort/fort_tower_stepped.gltf@models/castles/fort/textures/fort_5_dark.jpg 8 1 0 1 0; models/castles/fort/fort_tower_stepped.gltf@models/castles/fort/textures/fort_5_dark.jpg 32 1 0 1 0",
-    "models/castles/hall/hall_torch.gltf 11 3 0 1 0; models/castles/hall/hall_torch.gltf 29 3 180 1 0",
-    "models/castles/fort/fort_wall.gltf@models/castles/fort/textures/fort_9_dark.jpg 3 12 270 1 0; models/castles/fort/fort_wall.gltf@models/castles/fort/textures/fort_9_dark.jpg 36 12 270 1 0",
-    "models/castles/fort/fort_turret.gltf@models/castles/fort/textures/fort_12_dark.jpg 4 17 0 1 0; models/castles/fort/fort_turret.gltf@models/castles/fort/textures/fort_12_dark.jpg 36 17 0 1 0",
-    "models/castles/fort/fort_gatehouse.gltf@models/castles/fort/textures/fort_14_dark.jpg 20 30.5 0 1 0",
+    "models/buildings/fort/fort_keep.gltf@models/buildings/fort/textures/fort_15_dark.jpg 20 0.5 0 1 0 0xF0D8E0",
+    "models/buildings/fort/fort_tower_stepped.gltf@models/buildings/fort/textures/fort_5_dark.jpg 8 1 0 1 0; models/buildings/fort/fort_tower_stepped.gltf@models/buildings/fort/textures/fort_5_dark.jpg 32 1 0 1 0",
+    "models/buildings/hall/hall_torch.gltf 11 3 0 1 0; models/buildings/hall/hall_torch.gltf 29 3 180 1 0",
+    "models/buildings/fort/fort_wall.gltf@models/buildings/fort/textures/fort_9_dark.jpg 3 12 270 1 0; models/buildings/fort/fort_wall.gltf@models/buildings/fort/textures/fort_9_dark.jpg 36 12 270 1 0",
+    "models/buildings/fort/fort_turret.gltf@models/buildings/fort/textures/fort_12_dark.jpg 4 17 0 1 0; models/buildings/fort/fort_turret.gltf@models/buildings/fort/textures/fort_12_dark.jpg 36 17 0 1 0",
+    "models/buildings/fort/fort_gatehouse.gltf@models/buildings/fort/textures/fort_14_dark.jpg 20 30.5 0 1 0",
   ]
 End

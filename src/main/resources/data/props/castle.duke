@@ -22,7 +22,7 @@ End
 
 ThemeMonster
   Name = CastleColumn
-  Model = models/castles/room/room_column.gltf
+  Model = models/buildings/room/room_column.gltf
   ModelScale = 1
 End
 
@@ -41,7 +41,7 @@ End
 
 ThemeMonster
   Name = CastleTable
-  Model = models/castles/room/room_table.gltf
+  Model = models/buildings/room/room_table.gltf
   ModelScale = 1
 End
 
@@ -60,6 +60,6 @@ End
 
 ThemeMonster
   Name = CastleBasin
-  Model = models/castles/room/room_basin.gltf
+  Model = models/buildings/room/room_basin.gltf
   ModelScale = 1
 End

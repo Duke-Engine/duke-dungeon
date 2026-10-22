@@ -57,7 +57,7 @@ Monster
   Weight = 0
   Colour = 0xC8B890
   Scale = 0.83
-  Model = models/bestiary/orc_grunt.glb
+  Model = models/characters/monsters/orc_grunt.glb
   ModelScale = 4.44
   Idle = Idle
   Walk = Walk
@@ -117,7 +117,7 @@ Monster
   Weight = 0
   Colour = 0xC8B890
   Scale = 1.25
-  Model = models/bestiary/orc_warrior.glb
+  Model = models/characters/monsters/orc_warrior.glb
   ModelScale = 4.67
   Idle = Idle
   Walk = Walk
@@ -184,7 +184,7 @@ Monster
   KeepDistance = [30, 50]
   Colour = 0xC8B890
   Scale = 0.92
-  Model = models/bestiary/monkroose.glb
+  Model = models/characters/monsters/monkroose.glb
   ModelScale = 3.69
   Idle = Idle
   Walk = Walk
@@ -245,7 +245,7 @@ Monster
   SkillDistance = [0, 50]
   Colour = 0x903028
   Scale = 1.5
-  Model = models/bestiary/orc_warrior.glb
+  Model = models/characters/monsters/orc_warrior.glb
   ModelScale = 5.61
   Tint = 0x903028
   Idle = Idle
@@ -331,7 +331,7 @@ Monster
   SkillDistance = [0, 30]
   Colour = 0x6A8A5A
   Scale = 1.83
-  Model = models/bestiary/yeti.glb
+  Model = models/characters/monsters/yeti.glb
   ModelScale = 7.78
   Tint = 0x6A8A5A
   Idle = Idle

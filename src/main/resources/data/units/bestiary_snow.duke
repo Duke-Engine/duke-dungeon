@@ -57,7 +57,7 @@ Monster
   Weight = 0
   Colour = 0xC8B890
   Scale = 0.75
-  Model = models/bestiary/yeti_cub.glb
+  Model = models/characters/monsters/yeti_cub.glb
   ModelScale = 3.69
   Idle = Idle
   Walk = Walk
@@ -117,7 +117,7 @@ Monster
   Weight = 0
   Colour = 0xC8B890
   Scale = 1.42
-  Model = models/bestiary/yeti.glb
+  Model = models/characters/monsters/yeti.glb
   ModelScale = 6.01
   Idle = Idle
   Walk = Walk
@@ -184,7 +184,7 @@ Monster
   KeepDistance = [30, 50]
   Colour = 0xC8B890
   Scale = 0.83
-  Model = models/bestiary/hywirl.glb
+  Model = models/characters/monsters/hywirl.glb
   ModelScale = 3.64
   Idle = Idle
   Walk = Walk
@@ -244,7 +244,7 @@ Monster
   Weight = 0
   Colour = 0xA8D0F0
   Scale = 1.33
-  Model = models/wilds/goleling.glb
+  Model = models/characters/monsters/goleling.glb
   ModelScale = 10.31
   Tint = 0xA8D0F0
   Idle = Idle
@@ -331,7 +331,7 @@ Monster
   SkillDistance = [0, 50]
   Colour = 0xC8E0FF
   Scale = 1.67
-  Model = models/bestiary/yeti.glb
+  Model = models/characters/monsters/yeti.glb
   ModelScale = 7.07
   Tint = 0xC8E0FF
   Idle = Idle
@@ -417,7 +417,7 @@ Monster
   SkillDistance = [10, 60]
   Colour = 0xC8B890
   Scale = 1.67
-  Model = models/bestiary/wyvern.glb
+  Model = models/characters/monsters/wyvern.glb
   ModelScale = 5.19
   Idle = Idle
   Walk = Walk

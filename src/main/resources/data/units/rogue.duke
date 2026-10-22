@@ -141,9 +141,9 @@ Hero
   ; art/huntress/export_huntress.py (./gradlew exportHuntress): pedestal and
   ; banner off, 24k triangles, her skeleton cut to 62 bones.
   ;
-  ; The KayKit rogue he wore before (models/heroes/rogue.glb) is kept for the
+  ; The KayKit rogue he wore before (models/characters/heroes/rogue.glb) is kept for the
   ; kingdom's soldiers.
-  Model = models/heroes/huntress.glb
+  Model = models/characters/heroes/huntress.glb
   ; Written 2.180 tall, the KayKit rogue's height, so the 12 / 2.180 that stood
   ; him twelve units tall stands her the same.
   ModelScale = 5.50
@@ -187,7 +187,7 @@ Hero
     ;
     ; The bow goes in the LEFT hand because the right draws the string.
     Held
-      Model = models/weapons/elven/bow.glb
+      Model = models/items/weapons/elven_bow.glb
       Bone = handslot.l
       ; 1.98 long against her 2.18: at 0.8 it is three quarters of her, a hunting bow
       ; rather than a longbow.
@@ -203,7 +203,7 @@ Hero
     ; outside of her thigh; a held thing runs along its +Y, so the dagger's blade (its
     ; own +Y) points down it, the flat against her leg. Made 0.55 long, a quarter of her.
     Held
-      Model = models/weapons/elven/dagger.glb
+      Model = models/items/weapons/elven_dagger.glb
       Bone = sheath.l
       Scale = 1
     End

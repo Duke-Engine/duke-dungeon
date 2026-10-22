@@ -64,7 +64,7 @@ Monster
   KeepDistance = [25, 45]
   Colour = 0xC8B890
   Scale = 0.67
-  Model = models/bestiary/imp.glb
+  Model = models/characters/monsters/imp.glb
   ModelScale = 4.77
   Idle = Idle
   Walk = Walk
@@ -124,7 +124,7 @@ Monster
   Weight = 0
   Colour = 0xC8B890
   Scale = 1.25
-  Model = models/bestiary/blue_demon.glb
+  Model = models/characters/monsters/blue_demon.glb
   ModelScale = 5.28
   Idle = Idle
   Walk = Walk
@@ -191,7 +191,7 @@ Monster
   KeepDistance = [30, 55]
   Colour = 0xC8B890
   Scale = 1.08
-  Model = models/bestiary/cult_mage.glb
+  Model = models/characters/monsters/cult_mage.glb
   ModelScale = 4.34
   Idle = Idle
   Walk = Walk
@@ -252,7 +252,7 @@ Monster
   SkillDistance = [0, 50]
   Colour = 0xD04020
   Scale = 1.5
-  Model = models/bestiary/blue_demon.glb
+  Model = models/characters/monsters/blue_demon.glb
   ModelScale = 6.34
   Tint = 0xD04020
   Idle = Idle
@@ -338,7 +338,7 @@ Monster
   SkillDistance = [0, 50]
   Colour = 0xF07030
   Scale = 1.42
-  Model = models/wilds/goleling.glb
+  Model = models/characters/monsters/goleling.glb
   ModelScale = 10.95
   Tint = 0xF07030
   Idle = Idle
@@ -438,7 +438,7 @@ Monster
   SkillDistance = [0, 60]
   Colour = 0xC8B890
   Scale = 1.67
-  Model = models/bestiary/demon_brute.glb
+  Model = models/characters/monsters/demon_brute.glb
   ModelScale = 8.62
   Idle = Idle
   Walk = Walk

@@ -17,7 +17,7 @@ Monster
   Weight = 0
   Colour = 0xB02020
   Scale = 1.0
-  Model = models/inuciian/people/imp.glb
+  Model = models/characters/monsters/kampir_imp.glb
   ModelScale = 1.4
   Facing = 90
   Idle = Idle

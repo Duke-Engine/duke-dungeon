@@ -14,7 +14,7 @@ Projectile
   ; The crossbow skeleton's. The same shaft as the hero's, shorter and duller:
   ; what is coming at you should be recognisable as a shot without being
   ; mistaken for one of yours.
-  Model = models/heroes/arrow.gltf
+  Model = models/items/gear/arrow.gltf
   Scale = 4.2
   Facing = 90
   ; Crossbow height rather than bow height: it is held level at the shoulder.

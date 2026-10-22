@@ -62,7 +62,7 @@ Monster
   ; The same skeleton, smaller and in a hot wash so the two are told apart at
   ; a glance -- one texture serves the whole pack, so colour is what separates
   ; them. GeometryHeight is 9.
-  Model = models/monsters/skeleton_minion.glb
+  Model = models/characters/monsters/skeleton_minion.glb
   Animations = Humanoid
   ; What is looking at you out of the dark.
   Effect = EmberEyes
@@ -70,7 +70,7 @@ Monster
   Tint = 0xFFD08A
   Held = Held
     ; panarth's dagger (Low poly medieval weapons, CC BY 4.0): the quick one carries the short blade.
-    Model = models/weapons/medieval/dagger.glb
+    Model = models/items/weapons/dagger.glb
     Bone = handslot.r
   End
   ; It runs rather than walks: it is the one you cannot step away from.

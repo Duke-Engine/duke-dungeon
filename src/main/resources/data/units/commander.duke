@@ -30,7 +30,7 @@ Monster
   Weight = 0
   Colour = 0xE8C15A
   Scale = 1.0
-  Model = models/heroes/ranger.glb
+  Model = models/characters/heroes/ranger.glb
   ; The kit's people box about 2.18 tall: 12 / 2.18, as the rogue's.
   ModelScale = 5.5
   Facing = 90
@@ -43,7 +43,7 @@ Monster
   ; A commander wears her sword: panarth's (Low poly medieval weapons, CC BY 4.0), in the
   ; ranger's right hand.
   Held = Held
-    Model = models/weapons/medieval/sword.glb
+    Model = models/items/weapons/sword.glb
     Bone = handslot.r
   End
 End

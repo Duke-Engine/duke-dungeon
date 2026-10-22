@@ -3,7 +3,7 @@
 # parts were animated one clip each in Blender (the keep's gate: a clip for each leaf), so that one clip plays them
 # all.
 #
-#   perl art/models/join_clips.pl src/main/resources/models/props/gate/gate.glb open
+#   perl art/models/join_clips.pl src/main/resources/models/buildings/gates/gate.glb open
 use strict;
 use warnings;
 use JSON::PP;

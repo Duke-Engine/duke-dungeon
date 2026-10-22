@@ -23,7 +23,7 @@ Monster
   Weight = 0
   Colour = 0xD8B890
   Scale = 1.0
-  Model = models/heroes/knight.glb
+  Model = models/characters/heroes/knight.glb
   Tint = 0xD8B890
   ModelScale = 4.72
   Facing = 90
@@ -52,7 +52,7 @@ Monster
   Weight = 0
   Colour = 0x6878A0
   Scale = 1.0
-  Model = models/heroes/knight.glb
+  Model = models/characters/heroes/knight.glb
   Tint = 0x6878A0
   ModelScale = 4.72
   Facing = 90
@@ -81,7 +81,7 @@ Monster
   Weight = 0
   Colour = 0xB8B0A8
   Scale = 1.0
-  Model = models/heroes/mage.glb
+  Model = models/characters/heroes/mage.glb
   Tint = 0xB8B0A8
   ModelScale = 4.6
   Facing = 90
@@ -112,7 +112,7 @@ Monster
   Weight = 0
   Colour = 0xD8C070
   Scale = 1.0
-  Model = models/inuciian/people/damsel.glb
+  Model = models/characters/people/damsel.glb
   ModelScale = 1
   Facing = 90
 End
@@ -131,7 +131,7 @@ Monster
   Weight = 0
   Colour = 0x806040
   Scale = 1.0
-  Model = models/inuciian/props/cage_empty.glb
+  Model = models/props/village/cage_empty.glb
   ModelScale = 1
   Facing = 90
   Idle = Idle

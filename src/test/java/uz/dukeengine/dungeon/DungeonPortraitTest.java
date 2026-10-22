@@ -244,7 +244,7 @@ class DungeonPortraitTest {
         var rebound = DungeonSettings.parse("""
                 Hero
                   Name = Rogue
-                  Model = models/heroes/ranger.glb
+                  Model = models/characters/heroes/ranger.glb
                   Portrait = PortraitArt
                     Calm = Idle_A
                     Fight = Melee_Unarmed_Idle
@@ -288,14 +288,14 @@ class DungeonPortraitTest {
         var two = DungeonSettings.parse("""
                 Hero
                   Name = Rogue
-                  Model = models/heroes/ranger.glb
+                  Model = models/characters/heroes/ranger.glb
                   Portrait = PortraitArt
                     Calm = Ranged_Bow_Idle
                   End
                 End
                 Hero
                   Name = Mage
-                  Model = models/heroes/mage.glb
+                  Model = models/characters/heroes/mage.glb
                   Idle = Idle_A
                   Portrait = PortraitArt
                     Calm = Idle_A
@@ -306,14 +306,14 @@ class DungeonPortraitTest {
 
         assertEquals(2, two.heroes().size());
         assertEquals("Mage", two.heroes().get(1).name());
-        assertEquals("models/heroes/mage.glb", two.heroes().get(1).model());
+        assertEquals("models/characters/heroes/mage.glb", two.heroes().get(1).model());
         assertEquals(2, two.portraits().size());
         assertEquals("Mage", two.portraits().get(1).name());
         assertEquals(-30f, two.portraits().get(1).yaw(), 0.001f);
         // And the first is untouched by the second, which is what a single unnamed
         // block could not promise: it was one set of fields, so two blocks was one
         // hero wearing whichever was read last.
-        assertEquals("models/heroes/ranger.glb", two.heroes().getFirst().model());
+        assertEquals("models/characters/heroes/ranger.glb", two.heroes().getFirst().model());
         assertEquals("Ranged_Bow_Idle", two.portraits().getFirst().calm());
     }
 }

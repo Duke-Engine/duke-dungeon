@@ -17,7 +17,7 @@
 ; an arch, a floor, a ramp or what hangs on a wall stands in nobody's way (0).
 ;
 ; THE QUEEN'S CASTLE: every fort piece is offered twice, as made and as
-; model@picture with its _dark picture (models/castles/fort/textures/*_dark.jpg):
+; model@picture with its _dark picture (models/buildings/fort/textures/*_dark.jpg):
 ; the same mesh, drawn darker, colder and a little red. A tint may go on top.
 ;
 ; ONE GRID: a cell is 10 units, the hero 12 tall; every piece is written at
@@ -42,679 +42,679 @@ Theme
   TileSize = 4
   WallHeight = 4
   WallShift = -0.5
-  Stairs = models/tiles/dungeon/stairs.gltf
+  Stairs = models/terrain/dungeon/stairs.gltf
   CapTint = 0xA8A8B4
   StoreyShadePercent = 108
   FogTint = 0x07060A
   Tones = [
     Tone
       Name = Stone
-      Floor = models/tiles/dungeon/floor.gltf
-      Wall = models/tiles/dungeon/wall.gltf
+      Floor = models/terrain/dungeon/floor.gltf
+      Wall = models/terrain/dungeon/wall.gltf
     End
   ]
   ; Every piece, offered to the brush and strewn by nothing.
   Scenery = [
     Scatter
-      Model = models/castles/desert/desert_block_long.gltf
+      Model = models/buildings/desert/desert_block_long.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 4x1.3
     End,
     Scatter
-      Model = models/castles/desert/desert_block_long_b.gltf
+      Model = models/buildings/desert/desert_block_long_b.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 4x1.1
     End,
     Scatter
-      Model = models/castles/desert/desert_block_short.gltf
+      Model = models/buildings/desert/desert_block_short.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 2x1.1
     End,
     Scatter
-      Model = models/castles/desert/desert_buttress.gltf
+      Model = models/buildings/desert/desert_buttress.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 0.45
     End,
     Scatter
-      Model = models/castles/desert/desert_buttress_tall.gltf
+      Model = models/buildings/desert/desert_buttress_tall.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 0.45
     End,
     Scatter
-      Model = models/castles/desert/desert_pillar_tall.gltf
+      Model = models/buildings/desert/desert_pillar_tall.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 0.49
     End,
     Scatter
-      Model = models/castles/desert/desert_wall_sloped.gltf
+      Model = models/buildings/desert/desert_wall_sloped.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 3x1.3
     End,
     Scatter
-      Model = models/castles/desert/desert_wall_sloped_b.gltf
+      Model = models/buildings/desert/desert_wall_sloped_b.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 3x1.3
     End,
     Scatter
-      Model = models/castles/desert/desert_wall_tall.gltf
+      Model = models/buildings/desert/desert_wall_tall.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 3x1.1
     End,
     Scatter
-      Model = models/castles/fort/fort_gate.gltf
+      Model = models/buildings/fort/fort_gate.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 0
     End,
     Scatter
-      Model = models/castles/fort/fort_gate.gltf@models/castles/fort/textures/fort_2_02_dark.jpg
+      Model = models/buildings/fort/fort_gate.gltf@models/buildings/fort/textures/fort_2_02_dark.jpg
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 0
     End,
     Scatter
-      Model = models/castles/fort/fort_gatehouse.gltf
+      Model = models/buildings/fort/fort_gatehouse.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 0
     End,
     Scatter
-      Model = models/castles/fort/fort_gatehouse.gltf@models/castles/fort/textures/fort_14_dark.jpg
+      Model = models/buildings/fort/fort_gatehouse.gltf@models/buildings/fort/textures/fort_14_dark.jpg
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 0
     End,
     Scatter
-      Model = models/castles/fort/fort_house_front.gltf
+      Model = models/buildings/fort/fort_house_front.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 1x1.1
     End,
     Scatter
-      Model = models/castles/fort/fort_house_front.gltf@models/castles/fort/textures/fort_13_dark.jpg
+      Model = models/buildings/fort/fort_house_front.gltf@models/buildings/fort/textures/fort_13_dark.jpg
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 1x1.1
     End,
     Scatter
-      Model = models/castles/fort/fort_house_front_narrow.gltf
+      Model = models/buildings/fort/fort_house_front_narrow.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 1x1.1
     End,
     Scatter
-      Model = models/castles/fort/fort_house_front_narrow.gltf@models/castles/fort/textures/fort_10_dark.jpg
+      Model = models/buildings/fort/fort_house_front_narrow.gltf@models/buildings/fort/textures/fort_10_dark.jpg
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 1x1.1
     End,
     Scatter
-      Model = models/castles/fort/fort_keep.gltf
+      Model = models/buildings/fort/fort_keep.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 0.57
     End,
     Scatter
-      Model = models/castles/fort/fort_keep.gltf@models/castles/fort/textures/fort_15_dark.jpg
+      Model = models/buildings/fort/fort_keep.gltf@models/buildings/fort/textures/fort_15_dark.jpg
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 0.57
     End,
     Scatter
-      Model = models/castles/fort/fort_railing.gltf
+      Model = models/buildings/fort/fort_railing.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 0
     End,
     Scatter
-      Model = models/castles/fort/fort_railing.gltf@models/castles/fort/textures/fort_18_dark.jpg
+      Model = models/buildings/fort/fort_railing.gltf@models/buildings/fort/textures/fort_18_dark.jpg
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 0
     End,
     Scatter
-      Model = models/castles/fort/fort_ramp.gltf
+      Model = models/buildings/fort/fort_ramp.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 0
     End,
     Scatter
-      Model = models/castles/fort/fort_ramp.gltf@models/castles/fort/textures/fort_16_dark.jpg
+      Model = models/buildings/fort/fort_ramp.gltf@models/buildings/fort/textures/fort_16_dark.jpg
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 0
     End,
     Scatter
-      Model = models/castles/fort/fort_roof.gltf
+      Model = models/buildings/fort/fort_roof.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 0
     End,
     Scatter
-      Model = models/castles/fort/fort_roof.gltf@models/castles/fort/textures/fort_19_dark.jpg
+      Model = models/buildings/fort/fort_roof.gltf@models/buildings/fort/textures/fort_19_dark.jpg
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 0
     End,
     Scatter
-      Model = models/castles/fort/fort_tower_cone.gltf
+      Model = models/buildings/fort/fort_tower_cone.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 0.39
     End,
     Scatter
-      Model = models/castles/fort/fort_tower_cone.gltf@models/castles/fort/textures/fort_3_dark.jpg
+      Model = models/buildings/fort/fort_tower_cone.gltf@models/buildings/fort/textures/fort_3_dark.jpg
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 0.39
     End,
     Scatter
-      Model = models/castles/fort/fort_tower_open.gltf
+      Model = models/buildings/fort/fort_tower_open.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 0.41
     End,
     Scatter
-      Model = models/castles/fort/fort_tower_open.gltf@models/castles/fort/textures/fort_01_dark.jpg
+      Model = models/buildings/fort/fort_tower_open.gltf@models/buildings/fort/textures/fort_01_dark.jpg
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 0.41
     End,
     Scatter
-      Model = models/castles/fort/fort_tower_stepped.gltf
+      Model = models/buildings/fort/fort_tower_stepped.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 0.49
     End,
     Scatter
-      Model = models/castles/fort/fort_tower_stepped.gltf@models/castles/fort/textures/fort_5_dark.jpg
+      Model = models/buildings/fort/fort_tower_stepped.gltf@models/buildings/fort/textures/fort_5_dark.jpg
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 0.49
     End,
     Scatter
-      Model = models/castles/fort/fort_turret.gltf
+      Model = models/buildings/fort/fort_turret.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 0.5
     End,
     Scatter
-      Model = models/castles/fort/fort_turret.gltf@models/castles/fort/textures/fort_12_dark.jpg
+      Model = models/buildings/fort/fort_turret.gltf@models/buildings/fort/textures/fort_12_dark.jpg
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 0.5
     End,
     Scatter
-      Model = models/castles/fort/fort_wall.gltf
+      Model = models/buildings/fort/fort_wall.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 3x1.1
     End,
     Scatter
-      Model = models/castles/fort/fort_wall.gltf@models/castles/fort/textures/fort_9_dark.jpg
+      Model = models/buildings/fort/fort_wall.gltf@models/buildings/fort/textures/fort_9_dark.jpg
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 3x1.1
     End,
     Scatter
-      Model = models/castles/fort/fort_wall_gable.gltf
+      Model = models/buildings/fort/fort_wall_gable.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 1.5x1.1
     End,
     Scatter
-      Model = models/castles/fort/fort_wall_gable.gltf@models/castles/fort/textures/fort_7_dark.jpg
+      Model = models/buildings/fort/fort_wall_gable.gltf@models/buildings/fort/textures/fort_7_dark.jpg
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 1.5x1.1
     End,
     Scatter
-      Model = models/castles/fort/fort_wall_gable_turret.gltf
+      Model = models/buildings/fort/fort_wall_gable_turret.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 4x1.1
     End,
     Scatter
-      Model = models/castles/fort/fort_wall_gable_turret.gltf@models/castles/fort/textures/fort_8_dark.jpg
+      Model = models/buildings/fort/fort_wall_gable_turret.gltf@models/buildings/fort/textures/fort_8_dark.jpg
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 4x1.1
     End,
     Scatter
-      Model = models/castles/fort/fort_wall_pier.gltf
+      Model = models/buildings/fort/fort_wall_pier.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 0.5x1.1
     End,
     Scatter
-      Model = models/castles/fort/fort_wall_pier.gltf@models/castles/fort/textures/fort_6_dark.jpg
+      Model = models/buildings/fort/fort_wall_pier.gltf@models/buildings/fort/textures/fort_6_dark.jpg
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 0.5x1.1
     End,
     Scatter
-      Model = models/castles/fort/fort_wall_ruined.gltf
+      Model = models/buildings/fort/fort_wall_ruined.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 3x1.1
     End,
     Scatter
-      Model = models/castles/fort/fort_wall_ruined.gltf@models/castles/fort/textures/fort_4_dark.jpg
+      Model = models/buildings/fort/fort_wall_ruined.gltf@models/buildings/fort/textures/fort_4_dark.jpg
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 3x1.1
     End,
     Scatter
-      Model = models/castles/fort/fort_wall_spire_tower.gltf
+      Model = models/buildings/fort/fort_wall_spire_tower.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 2x1.1
     End,
     Scatter
-      Model = models/castles/fort/fort_wall_spire_tower.gltf@models/castles/fort/textures/fort_11_dark.jpg
+      Model = models/buildings/fort/fort_wall_spire_tower.gltf@models/buildings/fort/textures/fort_11_dark.jpg
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 2x1.1
     End,
     Scatter
-      Model = models/castles/hall/hall_corner_round.gltf
+      Model = models/buildings/hall/hall_corner_round.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 0
     End,
     Scatter
-      Model = models/castles/hall/hall_floor.gltf
+      Model = models/buildings/hall/hall_floor.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 0
     End,
     Scatter
-      Model = models/castles/hall/hall_skeleton_plaque.gltf
+      Model = models/buildings/hall/hall_skeleton_plaque.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 0
     End,
     Scatter
-      Model = models/castles/hall/hall_torch.gltf
+      Model = models/buildings/hall/hall_torch.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 0
     End,
     Scatter
-      Model = models/castles/hall/hall_wall.gltf
+      Model = models/buildings/hall/hall_wall.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 3x1.1
     End,
     Scatter
-      Model = models/castles/hall/hall_wall_thick.gltf
+      Model = models/buildings/hall/hall_wall_thick.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 3x1.1
     End,
     Scatter
-      Model = models/castles/rampart/rampart_tower.gltf
+      Model = models/buildings/rampart/rampart_tower.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 1.16
     End,
     Scatter
-      Model = models/castles/rampart/rampart_tower_octagon.gltf
+      Model = models/buildings/rampart/rampart_tower_octagon.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 1.19
     End,
     Scatter
-      Model = models/castles/rampart/rampart_tower_tall.gltf
+      Model = models/buildings/rampart/rampart_tower_tall.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 1.17
     End,
     Scatter
-      Model = models/castles/rampart/rampart_wall.gltf
+      Model = models/buildings/rampart/rampart_wall.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 3x1.4
     End,
     Scatter
-      Model = models/castles/rampart/rampart_wall_arcade.gltf
+      Model = models/buildings/rampart/rampart_wall_arcade.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 3x1.4
     End,
     Scatter
-      Model = models/castles/rampart/rampart_wall_gate.gltf
+      Model = models/buildings/rampart/rampart_wall_gate.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 0
     End,
     Scatter
-      Model = models/castles/room/room_banner.gltf
+      Model = models/buildings/room/room_banner.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 0
     End,
     Scatter
-      Model = models/castles/room/room_banners.gltf
+      Model = models/buildings/room/room_banners.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 0
     End,
     Scatter
-      Model = models/castles/room/room_barrel.gltf
+      Model = models/buildings/room/room_barrel.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 0.24
     End,
     Scatter
-      Model = models/castles/room/room_basin.gltf
+      Model = models/buildings/room/room_basin.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 0.2
     End,
     Scatter
-      Model = models/castles/room/room_chest.gltf
+      Model = models/buildings/room/room_chest.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 0.64
     End,
     Scatter
-      Model = models/castles/room/room_column.gltf
+      Model = models/buildings/room/room_column.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 0.25
     End,
     Scatter
-      Model = models/castles/room/room_column_half.gltf
+      Model = models/buildings/room/room_column_half.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 0.25
     End,
     Scatter
-      Model = models/castles/room/room_column_stump.gltf
+      Model = models/buildings/room/room_column_stump.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 0.25
     End,
     Scatter
-      Model = models/castles/room/room_cornice.gltf
+      Model = models/buildings/room/room_cornice.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 0
     End,
     Scatter
-      Model = models/castles/room/room_crate.gltf
+      Model = models/buildings/room/room_crate.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 0.22
     End,
     Scatter
-      Model = models/castles/room/room_floor.gltf
+      Model = models/buildings/room/room_floor.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 0
     End,
     Scatter
-      Model = models/castles/room/room_pedestal.gltf
+      Model = models/buildings/room/room_pedestal.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 0.2
     End,
     Scatter
-      Model = models/castles/room/room_sconce.gltf
+      Model = models/buildings/room/room_sconce.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 0
     End,
     Scatter
-      Model = models/castles/room/room_shelf.gltf
+      Model = models/buildings/room/room_shelf.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 0
     End,
     Scatter
-      Model = models/castles/room/room_stool.gltf
+      Model = models/buildings/room/room_stool.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 0.22
     End,
     Scatter
-      Model = models/castles/room/room_sword.gltf
+      Model = models/buildings/room/room_sword.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 0
     End,
     Scatter
-      Model = models/castles/room/room_sword_leaning.gltf
+      Model = models/buildings/room/room_sword_leaning.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 0
     End,
     Scatter
-      Model = models/castles/room/room_table.gltf
+      Model = models/buildings/room/room_table.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 0.77
     End,
     Scatter
-      Model = models/castles/room/room_table_small.gltf
+      Model = models/buildings/room/room_table_small.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 0.52
     End,
     Scatter
-      Model = models/castles/room/room_wall.gltf
+      Model = models/buildings/room/room_wall.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 2x1.1
     End,
     Scatter
-      Model = models/castles/room/room_wall_arch.gltf
+      Model = models/buildings/room/room_wall_arch.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 0
     End,
     Scatter
-      Model = models/castles/room/room_wall_window.gltf
+      Model = models/buildings/room/room_wall_window.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 2x1.1
     End,
     Scatter
-      Model = models/castles/town/town_banner_post.gltf
+      Model = models/buildings/town/town_banner_post.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 0
     End,
     Scatter
-      Model = models/castles/town/town_bridge.gltf
+      Model = models/buildings/town/town_bridge.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 0
     End,
     Scatter
-      Model = models/castles/town/town_gate.gltf
+      Model = models/buildings/town/town_gate.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 0
     End,
     Scatter
-      Model = models/castles/town/town_gatehouse.gltf
+      Model = models/buildings/town/town_gatehouse.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 0
     End,
     Scatter
-      Model = models/castles/town/town_house.gltf
+      Model = models/buildings/town/town_house.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 1.2
     End,
     Scatter
-      Model = models/castles/town/town_palace_tower.gltf
+      Model = models/buildings/town/town_palace_tower.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 1.2
     End,
     Scatter
-      Model = models/castles/town/town_palace_tower_low.gltf
+      Model = models/buildings/town/town_palace_tower_low.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 1.2
     End,
     Scatter
-      Model = models/castles/town/town_palace_tower_mid.gltf
+      Model = models/buildings/town/town_palace_tower_mid.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 1.2
     End,
     Scatter
-      Model = models/castles/town/town_stepping_stones.gltf
+      Model = models/buildings/town/town_stepping_stones.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 0
     End,
     Scatter
-      Model = models/castles/town/town_tower_round.gltf
+      Model = models/buildings/town/town_tower_round.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 0.98
     End,
     Scatter
-      Model = models/castles/town/town_tower_round_low.gltf
+      Model = models/buildings/town/town_tower_round_low.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 0.79
     End,
     Scatter
-      Model = models/castles/town/town_tower_slim.gltf
+      Model = models/buildings/town/town_tower_slim.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 0.49
     End,
     Scatter
-      Model = models/castles/town/town_wall_archers.gltf
+      Model = models/buildings/town/town_wall_archers.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 4x1.4
     End,
     Scatter
-      Model = models/castles/town/town_wall_long.gltf
+      Model = models/buildings/town/town_wall_long.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 6x1.1
     End,
     Scatter
-      Model = models/castles/town/town_wall_short.gltf
+      Model = models/buildings/town/town_wall_short.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0
       Footprint = 3.5x1.1
     End,
     Scatter
-      Model = models/castles/town/town_wall_tower.gltf
+      Model = models/buildings/town/town_wall_tower.gltf
       PerHundred = 0
       Scale = 1
       Variety = 0

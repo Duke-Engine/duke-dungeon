@@ -73,18 +73,18 @@ Monster
   KeepDistance = [35, 55]
   ; The staff-carrier in a robe repainted purple. White tint, so the purple is the
   ; robe's own.
-  Model = models/monsters/skeleton_mage.glb
+  Model = models/characters/monsters/skeleton_mage.glb
   Animations = Humanoid
   ; Moves at a jog, not a walk: Running_A at about its own pace rather than Walking_A several times over.
   Walk = Running_A
   ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
   WalkStride = 16.18
   UpperBody = spine
-  Texture = models/monsters/skeleton_texture_purple.png
+  Texture = models/characters/monsters/skeleton_texture_purple.png
   Effect = EmberEyes
   ModelScale = 6.0
   Held = Held
-    Model = models/monsters/staff.gltf
+    Model = models/items/gear/skeleton_staff.gltf
     Bone = handslot.r
   End
   Attack = Ranged_Magic_Shoot

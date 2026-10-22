@@ -24,7 +24,7 @@ Monster
   Weight = 0
   Colour = 0x8A2A22
   Scale = 1.0
-  Model = models/inuciian/people/baba_yaga.glb
+  Model = models/characters/people/baba_yaga.glb
   ModelScale = 1
   Facing = 90
   Idle = Idle

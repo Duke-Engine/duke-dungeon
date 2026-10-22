@@ -173,7 +173,7 @@ A map file writes them only when it has some, so every map drawn before reads an
 ## The demo
 
 `maps/talk` — **"Qo'mondon"**, a small map of its own (`maps/first/first.map` is hand-sculpted and untouched): the hero
-comes in beside the commander (**default** stand-in model: the KayKit ranger, `models/heroes/ranger.glb`, which no
+comes in beside the commander (**default** stand-in model: the KayKit ranger, `models/characters/heroes/ranger.glb`, which no
 hero wears any more). Walking up, she greets him in four lines and hands him a MAIN quest, *Devordagi skeletlar* (kill
 5 skeletons, then come back) and a SIDE one, *Yo'qolgan tumor* (find her lost locket in the far room and give it to
 her). Handing each in plays her thanks and pays experience (and, for the locket, a charm). Its boss is at the far

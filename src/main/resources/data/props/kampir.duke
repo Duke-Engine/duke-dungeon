@@ -6,7 +6,8 @@
 ; written in the game's units (art/inuciian/export_models.py).
 ;
 ; The hut itself, the fences and the small things (bucket, broom, candles, a
-; rat) are scenery, turned as a map turns them: models/inuciian/.
+; rat) are scenery, turned as a map turns them: models/buildings/hut/,
+; models/props/village/ and models/nature/.
 ; ---------------------------------------------------------------------------
 
 ; Her cauldron on its fire, the ladle in it.
@@ -24,7 +25,7 @@ End
 
 ThemeMonster
   Name = Cauldron
-  Model = models/inuciian/props/cauldron.glb
+  Model = models/props/village/cauldron.glb
   ModelScale = 1
 End
 
@@ -43,7 +44,7 @@ End
 
 ThemeMonster
   Name = Well
-  Model = models/inuciian/props/well.glb
+  Model = models/props/village/well.glb
   ModelScale = 1
 End
 
@@ -62,7 +63,7 @@ End
 
 ThemeMonster
   Name = Scarecrow
-  Model = models/inuciian/props/scarecrow.glb
+  Model = models/props/village/scarecrow.glb
   ModelScale = 1
 End
 
@@ -81,7 +82,7 @@ End
 
 ThemeMonster
   Name = Bench
-  Model = models/inuciian/props/bench.glb
+  Model = models/props/village/bench.glb
   ModelScale = 1
 End
 
@@ -100,7 +101,7 @@ End
 
 ThemeMonster
   Name = Stool
-  Model = models/inuciian/props/stool.glb
+  Model = models/props/village/stool.glb
   ModelScale = 1
 End
 
@@ -119,7 +120,7 @@ End
 
 ThemeMonster
   Name = Torch
-  Model = models/inuciian/props/torch.glb
+  Model = models/props/village/torch.glb
   ModelScale = 1
 End
 
@@ -138,6 +139,6 @@ End
 
 ThemeMonster
   Name = Boat
-  Model = models/inuciian/props/boat.glb
+  Model = models/props/village/boat.glb
   ModelScale = 1
 End

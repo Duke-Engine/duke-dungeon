@@ -26,7 +26,7 @@ Theme
   ; Half a cell back into the rock it stands on, so the trunk marks the edge and
   ; the canopy leans over the path rather than standing in it.
   WallShift = -1.6
-  Stairs = models/tiles/forest/stairs.gltf
+  Stairs = models/terrain/forest/stairs.gltf
   ; A tree is not masonry, and these four lines are the whole of that difference.
   ;
   ; WallFillsRock: a wall is a SURFACE -- one piece per face, one course per
@@ -106,17 +106,17 @@ Theme
   ; give or take Variety (a third either way unless it says); Tint a colour over it.
   Scenery = [
     Scatter
-      Model = models/tiles/forest/grass_short.gltf
+      Model = models/terrain/forest/grass_short.gltf
       PerHundred = 35
       Scale = 3
     End,
     Scatter
-      Model = models/tiles/forest/grass_tall.gltf
+      Model = models/terrain/forest/grass_tall.gltf
       PerHundred = 15
       Scale = 3
     End,
     Scatter
-      Model = models/tiles/forest/bush_small.gltf
+      Model = models/terrain/forest/bush_small.gltf
       PerHundred = 6
       Scale = 3
     End
@@ -127,7 +127,7 @@ Theme
   ; goes round. PerCell trees to each cell of the grove, Scale against the model
   ; as made. Only on floors that mix biomes; a cavern's pillars stay rock.
   Grove = Grove
-    Models = [models/tiles/forest/tree.gltf, models/tiles/forest/tree_round.gltf]
+    Models = [models/terrain/forest/tree.gltf, models/terrain/forest/tree_round.gltf]
     PerCell = 1
     Scale = 3.1
     Footprint = 0.15
@@ -135,15 +135,15 @@ Theme
   Tones = [
     Tone
       Name = Wooded
-      Floor = models/tiles/forest/floor.gltf
-      Wall = models/tiles/forest/tree.gltf
-      Walls = [models/tiles/forest/bush_wide.gltf]
+      Floor = models/terrain/forest/floor.gltf
+      Wall = models/terrain/forest/tree.gltf
+      Walls = [models/terrain/forest/bush_wide.gltf]
     End,
     Tone
       Name = Stony
-      Floor = models/tiles/forest/floor_rocky.gltf
-      Wall = models/tiles/forest/tree_round.gltf
-      Walls = [models/tiles/forest/bush_tall.gltf]
+      Floor = models/terrain/forest/floor_rocky.gltf
+      Wall = models/terrain/forest/tree_round.gltf
+      Walls = [models/terrain/forest/bush_tall.gltf]
     End
   ]
   Monsters = [

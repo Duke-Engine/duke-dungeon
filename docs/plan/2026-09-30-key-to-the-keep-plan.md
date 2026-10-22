@@ -78,7 +78,7 @@ duke-engine 0.7.0 from the checkout beside this one, Blender 5.2 run headless on
 | `src/main/resources/data/world/hud.duke` | the pointer over the gate |
 | `art/models/key_crown.glb` | **new** — the owner's model, copied untouched |
 | `art/icons/render_item.py` | **new** — sets a model on its origin and renders its bag picture |
-| `src/main/resources/models/props/key/key_crown.glb` | **new** — the game's copy, written by `render_item.py` |
+| `src/main/resources/models/items/keys/key_crown.glb` | **new** — the game's copy, written by `render_item.py` |
 | `src/main/resources/icons/items/key_crown.png` | **new** — the bag picture, written by `render_item.py` |
 | `CREDITS.md`, `README.md` | the key's row; the keep's section |
 
@@ -915,7 +915,7 @@ git commit -m "The keep's gate stays shut when a hero walks up to it: only its o
 **Files:**
 - Create: `art/models/key_crown.glb` (the owner's, copied untouched)
 - Create: `art/icons/render_item.py`
-- Create (written by the script): `src/main/resources/models/props/key/key_crown.glb`,
+- Create (written by the script): `src/main/resources/models/items/keys/key_crown.glb`,
   `src/main/resources/icons/items/key_crown.png`
 - Create: `src/main/resources/data/props/key.duke`
 - Modify: `src/main/resources/data/game.duke` (after `data/props/gate.duke,`)
@@ -1043,7 +1043,7 @@ set on its own origin and lying on it.
 
     "C:/Program Files/Blender Foundation/Blender 5.2/blender.exe" -b --factory-startup \
         -P art/icons/render_item.py -- art/models/key_crown.glb \
-        src/main/resources/models/props/key/key_crown.glb src/main/resources/icons/items/key_crown.png
+        src/main/resources/models/items/keys/key_crown.glb src/main/resources/icons/items/key_crown.png
 
 Run by hand when an item's model arrives, as art/anim/fbx_to_glb.py is, and the build does not depend on it: what
 ships is what it wrote, which is committed. Kept here rather than done in Blender's window for the reason the icon
@@ -1142,8 +1142,8 @@ render(*(os.path.abspath(path) for path in argv))
 - [ ] **Step 5: Run it**
 
 ```bash
-mkdir -p src/main/resources/models/props/key src/main/resources/icons/items
-"C:/Program Files/Blender Foundation/Blender 5.2/blender.exe" -b --factory-startup -P art/icons/render_item.py -- art/models/key_crown.glb src/main/resources/models/props/key/key_crown.glb src/main/resources/icons/items/key_crown.png
+mkdir -p src/main/resources/models/items/keys src/main/resources/icons/items
+"C:/Program Files/Blender Foundation/Blender 5.2/blender.exe" -b --factory-startup -P art/icons/render_item.py -- art/models/key_crown.glb src/main/resources/models/items/keys/key_crown.glb src/main/resources/icons/items/key_crown.png
 ```
 
 Expected, in about ten seconds: a line `RENDERED <whole path>\key_crown.png, and <whole path>\key_crown.glb set on
@@ -1184,7 +1184,7 @@ End
 ; little over half a cell.
 ThemeMonster
   Name = Key
-  Model = models/props/key/key_crown.glb
+  Model = models/items/keys/key_crown.glb
   ModelScale = 6
 End
 ```
@@ -1302,7 +1302,7 @@ in `themes`, `themedCreature(look, themed, settings);` becomes:
 After the row of the keep's gate:
 
 ```
-| The keep's key — a crown key, lying where the last monster outside the keep fell, and its picture in the bag rendered from it | from the owner's own asset folder, maker not named | **unconfirmed** — to be asked of the owner before a release | `models/props/key/`, `icons/items/key_crown.png` |
+| The keep's key — a crown key, lying where the last monster outside the keep fell, and its picture in the bag rendered from it | from the owner's own asset folder, maker not named | **unconfirmed** — to be asked of the owner before a release | `models/items/keys/`, `icons/items/key_crown.png` |
 ```
 
 - [ ] **Step 10: Run the tests to see them pass**
@@ -1318,7 +1318,7 @@ Expected: PASS — a new file in `game.duke` reaches every test that reads the s
 - [ ] **Step 12: Commit**
 
 ```bash
-git add art/models/key_crown.glb art/icons/render_item.py src/main/resources/models/props/key/key_crown.glb src/main/resources/icons/items/key_crown.png src/main/resources/data/props/key.duke src/main/resources/data/game.duke src/main/java/uz/dukeengine/dungeon/content/Content.java src/main/java/uz/dukeengine/dungeon/content/DungeonSettings.java src/main/java/uz/dukeengine/dungeon/Main.java CREDITS.md src/test/java/uz/dukeengine/dungeon/KeyArtTest.java src/test/java/uz/dukeengine/dungeon/DungeonTilesTest.java
+git add art/models/key_crown.glb art/icons/render_item.py src/main/resources/models/items/keys/key_crown.glb src/main/resources/icons/items/key_crown.png src/main/resources/data/props/key.duke src/main/resources/data/game.duke src/main/java/uz/dukeengine/dungeon/content/Content.java src/main/java/uz/dukeengine/dungeon/content/DungeonSettings.java src/main/java/uz/dukeengine/dungeon/Main.java CREDITS.md src/test/java/uz/dukeengine/dungeon/KeyArtTest.java src/test/java/uz/dukeengine/dungeon/DungeonTilesTest.java
 git commit -m "The keep's key: the owner's crown key lying on the floor in every biome, its bag picture rendered from it" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
 

@@ -20,7 +20,7 @@ import uz.dukeengine.dungeon.content.DungeonSettings;
 class HuntressTest {
 
     private static final DungeonSettings SETTINGS = DungeonSettings.load();
-    private static final String MODEL = "models/heroes/huntress.glb";
+    private static final String MODEL = "models/characters/heroes/huntress.glb";
 
     /** One loader, so her pictures are decoded once: each load of them is direct memory the tests run short of. */
     private static final DesktopAssetManager ASSETS = new DesktopAssetManager(true);
@@ -78,7 +78,7 @@ class HuntressTest {
     @Test
     void sheCarriesTheElvenBowAndItsDagger() {
         var held = SETTINGS.heroNamed("Rogue").held();
-        assertEquals(java.util.List.of("models/weapons/elven/bow.glb", "models/weapons/elven/dagger.glb"),
+        assertEquals(java.util.List.of("models/items/weapons/elven_bow.glb", "models/items/weapons/elven_dagger.glb"),
                 held.stream().map(h -> h.model()).toList());
         assertEquals(java.util.List.of("handslot.l", "sheath.l"), held.stream().map(h -> h.bone()).toList());
     }

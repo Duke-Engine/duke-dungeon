@@ -481,7 +481,7 @@ class DungeonMonsterArtTest {
     @Test
     void theKnightIsLange() {
         var knight = SETTINGS.heroes().stream().filter(him -> him.name().equals("Knight")).findFirst().orElseThrow();
-        assertEquals("models/heroes/lange/lange.glb", knight.model());
+        assertEquals("models/characters/heroes/lange.glb", knight.model());
         var model = assets().loadModel(knight.model());
         var composer = control(model, AnimComposer.class);
         assertNotNull(composer, "Lange's file carries no clips");

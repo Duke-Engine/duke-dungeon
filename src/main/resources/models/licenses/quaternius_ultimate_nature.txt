@@ -1,0 +1,6 @@
+Ultimate Nature Pack, by Quaternius (https://quaternius.com/packs/ultimatenature.html)
+
+Licence: CC0 1.0 Universal (public domain dedication) - https://creativecommons.org/publicdomain/zero/1.0/
+
+Changed here: converted from FBX, flat colours on one palette picture.
+The pack shipped no licence file beside its models; this records what CREDITS.md does.

@@ -57,7 +57,7 @@ Monster
   Weight = 0
   Colour = 0xC8B890
   Scale = 1
-  Model = models/bestiary/bandit.glb
+  Model = models/characters/monsters/bandit.glb
   ModelScale = 6.39
   Idle = Idle
   Walk = Walk
@@ -128,7 +128,7 @@ Monster
   Weight = 0
   Colour = 0xC8B890
   Scale = 1.04
-  Model = models/bestiary/brigand.glb
+  Model = models/characters/monsters/brigand.glb
   ModelScale = 6.84
   Idle = Idle
   Walk = Walk
@@ -195,7 +195,7 @@ Monster
   KeepDistance = [30, 50]
   Colour = 0xC8B890
   Scale = 1
-  Model = models/bestiary/brigand_2.glb
+  Model = models/characters/monsters/brigand_2.glb
   ModelScale = 6.46
   ; Its download faces away from where the rest face.
   Facing = 270
@@ -258,7 +258,7 @@ Monster
   SkillDistance = [0, 50]
   Colour = 0xB04030
   Scale = 1.25
-  Model = models/bestiary/bandit.glb
+  Model = models/characters/monsters/bandit.glb
   ModelScale = 7.99
   Tint = 0xB04030
   Idle = Idle
@@ -357,7 +357,7 @@ Monster
   SkillDistance = [0, 50]
   Colour = 0xC8B890
   Scale = 1.33
-  Model = models/bestiary/ninja_master.glb
+  Model = models/characters/monsters/ninja_master.glb
   ModelScale = 5.3
   Idle = Idle
   Walk = Walk
@@ -449,7 +449,7 @@ Monster
   Weight = 0
   Colour = 0xC8B890
   Scale = 0.67
-  Model = models/bestiary/wolf_grey.glb
+  Model = models/characters/monsters/wolf_grey.glb
   ModelScale = 2.98
   Idle = Idle
   Walk = Walk
@@ -510,7 +510,7 @@ Monster
   SkillDistance = [10, 45]
   Colour = 0xC8B890
   Scale = 1
-  Model = models/bestiary/bull.glb
+  Model = models/characters/monsters/bull.glb
   ModelScale = 2.62
   Idle = Idle
   Walk = Walk

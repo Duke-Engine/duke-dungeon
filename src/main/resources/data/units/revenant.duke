@@ -88,7 +88,7 @@ Monster
   Scale = 1.1
   ; The one that carries a staff, because the one that mends itself should not
   ; look like the ones that only swing. GeometryHeight is 13.
-  Model = models/monsters/skeleton_mage.glb
+  Model = models/characters/monsters/skeleton_mage.glb
   Animations = Humanoid
   ; Moves at a jog, not a walk: Running_A at about its own pace rather than Walking_A several times over.
   Walk = Running_A
@@ -99,7 +99,7 @@ Monster
   Effect = EmberEyes
   ModelScale = 6.0
   Held = Held
-    Model = models/monsters/staff.gltf
+    Model = models/items/gear/skeleton_staff.gltf
     Bone = handslot.r
   End
   ; It heals itself; the pale wash says so before the health bar does.

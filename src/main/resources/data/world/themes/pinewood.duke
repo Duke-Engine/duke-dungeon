@@ -19,7 +19,7 @@ Theme
   ; and eighteen tall, and three stand in every cell of rock.
   WallTileSize = 6
   WallHeight = 0
-  Stairs = models/tiles/forest/stairs.gltf
+  Stairs = models/terrain/forest/stairs.gltf
   WallFillsRock = Yes
   WallClump = 3
   WallSpread = 0.3
@@ -43,24 +43,24 @@ Theme
   ; Thin grass between the needles, and stone.
   Scenery = [
     Scatter
-      Model = models/tiles/forest/grass_short.gltf
+      Model = models/terrain/forest/grass_short.gltf
       PerHundred = 15
       Scale = 3
     End,
     Scatter
-      Model = models/tiles/forest/pebble.gltf
+      Model = models/terrain/forest/pebble.gltf
       PerHundred = 8
       Scale = 3
     End,
     Scatter
-      Model = models/tiles/forest/stone.gltf
+      Model = models/terrain/forest/stone.gltf
       PerHundred = 3
       Scale = 2.5
     End
   ]
   ; Its groves, two narrow pines to a cell: see forest.duke.
   Grove = Grove
-    Models = [models/tiles/forest/pine_tall.gltf, models/tiles/forest/pine.gltf]
+    Models = [models/terrain/forest/pine_tall.gltf, models/terrain/forest/pine.gltf]
     PerCell = 2
     Scale = 1.67
     Footprint = 0.1
@@ -68,15 +68,15 @@ Theme
   Tones = [
     Tone
       Name = Tall
-      Floor = models/tiles/forest/floor_rocky.gltf
-      Wall = models/tiles/forest/pine_tall.gltf
-      Walls = [models/tiles/forest/pine.gltf]
+      Floor = models/terrain/forest/floor_rocky.gltf
+      Wall = models/terrain/forest/pine_tall.gltf
+      Walls = [models/terrain/forest/pine.gltf]
     End,
     Tone
       Name = Young
-      Floor = models/tiles/forest/floor.gltf
-      Wall = models/tiles/forest/pine.gltf
-      Walls = [models/tiles/forest/pine_tall.gltf, models/tiles/forest/bush_tall.gltf]
+      Floor = models/terrain/forest/floor.gltf
+      Wall = models/terrain/forest/pine.gltf
+      Walls = [models/terrain/forest/pine_tall.gltf, models/terrain/forest/bush_tall.gltf]
     End
   ]
   ; What stands about is the wood's own: see forest.duke.

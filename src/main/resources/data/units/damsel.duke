@@ -5,7 +5,7 @@
 ;
 ; A person, neutral and bodiless as the commander. Her model is her in the cage
 ; on its gibbet, the cage swinging (her own file's clip, Idle); she stands at the
-; cell under the cage. Out of it she is models/inuciian/people/damsel.glb.
+; cell under the cage. Out of it she is models/characters/people/damsel.glb.
 ; ---------------------------------------------------------------------------
 Monster
   Name = Damsel
@@ -20,7 +20,7 @@ Monster
   Weight = 0
   Colour = 0xD8C070
   Scale = 1.0
-  Model = models/inuciian/people/damsel_caged.glb
+  Model = models/characters/people/damsel_caged.glb
   ModelScale = 1
   Facing = 90
   Idle = Idle

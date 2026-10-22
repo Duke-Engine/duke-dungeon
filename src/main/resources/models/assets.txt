@@ -1,0 +1,342 @@
+# The game's models, one line a model: path | source pack | licence | old path (before 2026-10-22).
+# Paths are resource paths (models/...). Licence is the pack's licence file under models/licenses/, or - for none
+# (the knight's wave was made for this game, CC0; the crown key's maker is unconfirmed: see CREDITS.md).
+# Textures and .bin buffers sit beside the .gltf that names them and are not listed. Not game data: nothing parses
+# this but the tests and the editor plugin.
+models/buildings/desert/desert_block_long.gltf | Desert Fortress Walls (Nicolai Kilstrup) | models/licenses/desert_fortress_walls.txt | models/castles/desert/desert_block_long.gltf
+models/buildings/desert/desert_block_long_b.gltf | Desert Fortress Walls (Nicolai Kilstrup) | models/licenses/desert_fortress_walls.txt | models/castles/desert/desert_block_long_b.gltf
+models/buildings/desert/desert_block_short.gltf | Desert Fortress Walls (Nicolai Kilstrup) | models/licenses/desert_fortress_walls.txt | models/castles/desert/desert_block_short.gltf
+models/buildings/desert/desert_buttress.gltf | Desert Fortress Walls (Nicolai Kilstrup) | models/licenses/desert_fortress_walls.txt | models/castles/desert/desert_buttress.gltf
+models/buildings/desert/desert_buttress_tall.gltf | Desert Fortress Walls (Nicolai Kilstrup) | models/licenses/desert_fortress_walls.txt | models/castles/desert/desert_buttress_tall.gltf
+models/buildings/desert/desert_pillar_tall.gltf | Desert Fortress Walls (Nicolai Kilstrup) | models/licenses/desert_fortress_walls.txt | models/castles/desert/desert_pillar_tall.gltf
+models/buildings/desert/desert_wall_sloped.gltf | Desert Fortress Walls (Nicolai Kilstrup) | models/licenses/desert_fortress_walls.txt | models/castles/desert/desert_wall_sloped.gltf
+models/buildings/desert/desert_wall_sloped_b.gltf | Desert Fortress Walls (Nicolai Kilstrup) | models/licenses/desert_fortress_walls.txt | models/castles/desert/desert_wall_sloped_b.gltf
+models/buildings/desert/desert_wall_tall.gltf | Desert Fortress Walls (Nicolai Kilstrup) | models/licenses/desert_fortress_walls.txt | models/castles/desert/desert_wall_tall.gltf
+models/buildings/fort/fort_gate.gltf | Medieval Fortress Kit (Aya Rady) | models/licenses/medieval_fortress_kit.txt | models/castles/fort/fort_gate.gltf
+models/buildings/fort/fort_gatehouse.gltf | Medieval Fortress Kit (Aya Rady) | models/licenses/medieval_fortress_kit.txt | models/castles/fort/fort_gatehouse.gltf
+models/buildings/fort/fort_house_front.gltf | Medieval Fortress Kit (Aya Rady) | models/licenses/medieval_fortress_kit.txt | models/castles/fort/fort_house_front.gltf
+models/buildings/fort/fort_house_front_narrow.gltf | Medieval Fortress Kit (Aya Rady) | models/licenses/medieval_fortress_kit.txt | models/castles/fort/fort_house_front_narrow.gltf
+models/buildings/fort/fort_keep.gltf | Medieval Fortress Kit (Aya Rady) | models/licenses/medieval_fortress_kit.txt | models/castles/fort/fort_keep.gltf
+models/buildings/fort/fort_railing.gltf | Medieval Fortress Kit (Aya Rady) | models/licenses/medieval_fortress_kit.txt | models/castles/fort/fort_railing.gltf
+models/buildings/fort/fort_ramp.gltf | Medieval Fortress Kit (Aya Rady) | models/licenses/medieval_fortress_kit.txt | models/castles/fort/fort_ramp.gltf
+models/buildings/fort/fort_roof.gltf | Medieval Fortress Kit (Aya Rady) | models/licenses/medieval_fortress_kit.txt | models/castles/fort/fort_roof.gltf
+models/buildings/fort/fort_tower_cone.gltf | Medieval Fortress Kit (Aya Rady) | models/licenses/medieval_fortress_kit.txt | models/castles/fort/fort_tower_cone.gltf
+models/buildings/fort/fort_tower_open.gltf | Medieval Fortress Kit (Aya Rady) | models/licenses/medieval_fortress_kit.txt | models/castles/fort/fort_tower_open.gltf
+models/buildings/fort/fort_tower_stepped.gltf | Medieval Fortress Kit (Aya Rady) | models/licenses/medieval_fortress_kit.txt | models/castles/fort/fort_tower_stepped.gltf
+models/buildings/fort/fort_turret.gltf | Medieval Fortress Kit (Aya Rady) | models/licenses/medieval_fortress_kit.txt | models/castles/fort/fort_turret.gltf
+models/buildings/fort/fort_wall.gltf | Medieval Fortress Kit (Aya Rady) | models/licenses/medieval_fortress_kit.txt | models/castles/fort/fort_wall.gltf
+models/buildings/fort/fort_wall_gable.gltf | Medieval Fortress Kit (Aya Rady) | models/licenses/medieval_fortress_kit.txt | models/castles/fort/fort_wall_gable.gltf
+models/buildings/fort/fort_wall_gable_turret.gltf | Medieval Fortress Kit (Aya Rady) | models/licenses/medieval_fortress_kit.txt | models/castles/fort/fort_wall_gable_turret.gltf
+models/buildings/fort/fort_wall_pier.gltf | Medieval Fortress Kit (Aya Rady) | models/licenses/medieval_fortress_kit.txt | models/castles/fort/fort_wall_pier.gltf
+models/buildings/fort/fort_wall_ruined.gltf | Medieval Fortress Kit (Aya Rady) | models/licenses/medieval_fortress_kit.txt | models/castles/fort/fort_wall_ruined.gltf
+models/buildings/fort/fort_wall_spire_tower.gltf | Medieval Fortress Kit (Aya Rady) | models/licenses/medieval_fortress_kit.txt | models/castles/fort/fort_wall_spire_tower.gltf
+models/buildings/gates/gate.glb | Old Driveway Gate (animatedheaven) | models/licenses/old_driveway_gate.txt | models/props/gate/gate.glb
+models/buildings/hall/hall_corner_round.gltf | Medieval castle modular kits, interior (Pedram Ashoori) | models/licenses/medieval_castle_interior.txt | models/castles/hall/hall_corner_round.gltf
+models/buildings/hall/hall_floor.gltf | Medieval castle modular kits, interior (Pedram Ashoori) | models/licenses/medieval_castle_interior.txt | models/castles/hall/hall_floor.gltf
+models/buildings/hall/hall_skeleton_plaque.gltf | Medieval castle modular kits, interior (Pedram Ashoori) | models/licenses/medieval_castle_interior.txt | models/castles/hall/hall_skeleton_plaque.gltf
+models/buildings/hall/hall_torch.gltf | Medieval castle modular kits, interior (Pedram Ashoori) | models/licenses/medieval_castle_interior.txt | models/castles/hall/hall_torch.gltf
+models/buildings/hall/hall_wall.gltf | Medieval castle modular kits, interior (Pedram Ashoori) | models/licenses/medieval_castle_interior.txt | models/castles/hall/hall_wall.gltf
+models/buildings/hall/hall_wall_thick.gltf | Medieval castle modular kits, interior (Pedram Ashoori) | models/licenses/medieval_castle_interior.txt | models/castles/hall/hall_wall_thick.gltf
+models/buildings/hut/hut.glb | Baba Yaga's hut (Inuciian) | models/licenses/baba_yagas_hut.txt | models/inuciian/hut.glb
+models/buildings/rampart/rampart_tower.gltf | modular fortress, Free (FelikinRuslan) | models/licenses/modular_fortress.txt | models/castles/rampart/rampart_tower.gltf
+models/buildings/rampart/rampart_tower_octagon.gltf | modular fortress, Free (FelikinRuslan) | models/licenses/modular_fortress.txt | models/castles/rampart/rampart_tower_octagon.gltf
+models/buildings/rampart/rampart_tower_tall.gltf | modular fortress, Free (FelikinRuslan) | models/licenses/modular_fortress.txt | models/castles/rampart/rampart_tower_tall.gltf
+models/buildings/rampart/rampart_wall.gltf | modular fortress, Free (FelikinRuslan) | models/licenses/modular_fortress.txt | models/castles/rampart/rampart_wall.gltf
+models/buildings/rampart/rampart_wall_arcade.gltf | modular fortress, Free (FelikinRuslan) | models/licenses/modular_fortress.txt | models/castles/rampart/rampart_wall_arcade.gltf
+models/buildings/rampart/rampart_wall_gate.gltf | modular fortress, Free (FelikinRuslan) | models/licenses/modular_fortress.txt | models/castles/rampart/rampart_wall_gate.gltf
+models/buildings/room/room_banner.gltf | Stylized Medieval Castle Room (SantyFrow) | models/licenses/stylized_castle_room.txt | models/castles/room/room_banner.gltf
+models/buildings/room/room_banners.gltf | Stylized Medieval Castle Room (SantyFrow) | models/licenses/stylized_castle_room.txt | models/castles/room/room_banners.gltf
+models/buildings/room/room_barrel.gltf | Stylized Medieval Castle Room (SantyFrow) | models/licenses/stylized_castle_room.txt | models/castles/room/room_barrel.gltf
+models/buildings/room/room_basin.gltf | Stylized Medieval Castle Room (SantyFrow) | models/licenses/stylized_castle_room.txt | models/castles/room/room_basin.gltf
+models/buildings/room/room_chest.gltf | Stylized Medieval Castle Room (SantyFrow) | models/licenses/stylized_castle_room.txt | models/castles/room/room_chest.gltf
+models/buildings/room/room_column.gltf | Stylized Medieval Castle Room (SantyFrow) | models/licenses/stylized_castle_room.txt | models/castles/room/room_column.gltf
+models/buildings/room/room_column_half.gltf | Stylized Medieval Castle Room (SantyFrow) | models/licenses/stylized_castle_room.txt | models/castles/room/room_column_half.gltf
+models/buildings/room/room_column_stump.gltf | Stylized Medieval Castle Room (SantyFrow) | models/licenses/stylized_castle_room.txt | models/castles/room/room_column_stump.gltf
+models/buildings/room/room_cornice.gltf | Stylized Medieval Castle Room (SantyFrow) | models/licenses/stylized_castle_room.txt | models/castles/room/room_cornice.gltf
+models/buildings/room/room_crate.gltf | Stylized Medieval Castle Room (SantyFrow) | models/licenses/stylized_castle_room.txt | models/castles/room/room_crate.gltf
+models/buildings/room/room_floor.gltf | Stylized Medieval Castle Room (SantyFrow) | models/licenses/stylized_castle_room.txt | models/castles/room/room_floor.gltf
+models/buildings/room/room_pedestal.gltf | Stylized Medieval Castle Room (SantyFrow) | models/licenses/stylized_castle_room.txt | models/castles/room/room_pedestal.gltf
+models/buildings/room/room_sconce.gltf | Stylized Medieval Castle Room (SantyFrow) | models/licenses/stylized_castle_room.txt | models/castles/room/room_sconce.gltf
+models/buildings/room/room_shelf.gltf | Stylized Medieval Castle Room (SantyFrow) | models/licenses/stylized_castle_room.txt | models/castles/room/room_shelf.gltf
+models/buildings/room/room_stool.gltf | Stylized Medieval Castle Room (SantyFrow) | models/licenses/stylized_castle_room.txt | models/castles/room/room_stool.gltf
+models/buildings/room/room_sword.gltf | Stylized Medieval Castle Room (SantyFrow) | models/licenses/stylized_castle_room.txt | models/castles/room/room_sword.gltf
+models/buildings/room/room_sword_leaning.gltf | Stylized Medieval Castle Room (SantyFrow) | models/licenses/stylized_castle_room.txt | models/castles/room/room_sword_leaning.gltf
+models/buildings/room/room_table.gltf | Stylized Medieval Castle Room (SantyFrow) | models/licenses/stylized_castle_room.txt | models/castles/room/room_table.gltf
+models/buildings/room/room_table_small.gltf | Stylized Medieval Castle Room (SantyFrow) | models/licenses/stylized_castle_room.txt | models/castles/room/room_table_small.gltf
+models/buildings/room/room_wall.gltf | Stylized Medieval Castle Room (SantyFrow) | models/licenses/stylized_castle_room.txt | models/castles/room/room_wall.gltf
+models/buildings/room/room_wall_arch.gltf | Stylized Medieval Castle Room (SantyFrow) | models/licenses/stylized_castle_room.txt | models/castles/room/room_wall_arch.gltf
+models/buildings/room/room_wall_window.gltf | Stylized Medieval Castle Room (SantyFrow) | models/licenses/stylized_castle_room.txt | models/castles/room/room_wall_window.gltf
+models/buildings/town/town_banner_post.gltf | Medieval city wall assets (BUKKBEEK) | models/licenses/medieval_city_wall.txt | models/castles/town/town_banner_post.gltf
+models/buildings/town/town_bridge.gltf | Medieval city wall assets (BUKKBEEK) | models/licenses/medieval_city_wall.txt | models/castles/town/town_bridge.gltf
+models/buildings/town/town_gate.gltf | Medieval city wall assets (BUKKBEEK) | models/licenses/medieval_city_wall.txt | models/castles/town/town_gate.gltf
+models/buildings/town/town_gatehouse.gltf | Medieval city wall assets (BUKKBEEK) | models/licenses/medieval_city_wall.txt | models/castles/town/town_gatehouse.gltf
+models/buildings/town/town_house.gltf | Medieval city wall assets (BUKKBEEK) | models/licenses/medieval_city_wall.txt | models/castles/town/town_house.gltf
+models/buildings/town/town_palace_tower.gltf | Medieval city wall assets (BUKKBEEK) | models/licenses/medieval_city_wall.txt | models/castles/town/town_palace_tower.gltf
+models/buildings/town/town_palace_tower_low.gltf | Medieval city wall assets (BUKKBEEK) | models/licenses/medieval_city_wall.txt | models/castles/town/town_palace_tower_low.gltf
+models/buildings/town/town_palace_tower_mid.gltf | Medieval city wall assets (BUKKBEEK) | models/licenses/medieval_city_wall.txt | models/castles/town/town_palace_tower_mid.gltf
+models/buildings/town/town_stepping_stones.gltf | Medieval city wall assets (BUKKBEEK) | models/licenses/medieval_city_wall.txt | models/castles/town/town_stepping_stones.gltf
+models/buildings/town/town_tower_round.gltf | Medieval city wall assets (BUKKBEEK) | models/licenses/medieval_city_wall.txt | models/castles/town/town_tower_round.gltf
+models/buildings/town/town_tower_round_low.gltf | Medieval city wall assets (BUKKBEEK) | models/licenses/medieval_city_wall.txt | models/castles/town/town_tower_round_low.gltf
+models/buildings/town/town_tower_slim.gltf | Medieval city wall assets (BUKKBEEK) | models/licenses/medieval_city_wall.txt | models/castles/town/town_tower_slim.gltf
+models/buildings/town/town_wall_archers.gltf | Medieval city wall assets (BUKKBEEK) | models/licenses/medieval_city_wall.txt | models/castles/town/town_wall_archers.gltf
+models/buildings/town/town_wall_long.gltf | Medieval city wall assets (BUKKBEEK) | models/licenses/medieval_city_wall.txt | models/castles/town/town_wall_long.gltf
+models/buildings/town/town_wall_short.gltf | Medieval city wall assets (BUKKBEEK) | models/licenses/medieval_city_wall.txt | models/castles/town/town_wall_short.gltf
+models/buildings/town/town_wall_tower.gltf | Medieval city wall assets (BUKKBEEK) | models/licenses/medieval_city_wall.txt | models/castles/town/town_wall_tower.gltf
+models/characters/heroes/huntress.glb | Huntress (Wilson / neilhancart) | models/licenses/huntress.txt | models/heroes/huntress.glb
+models/characters/heroes/knight.glb | KayKit Adventurers Character Pack 2.0 | models/licenses/kaykit_adventurers.txt | models/heroes/knight.glb
+models/characters/heroes/lange.glb | Lange - Half-Elf Knight (phucpham1076) | models/licenses/lange.txt | models/heroes/lange/lange.glb
+models/characters/heroes/mage.glb | KayKit Adventurers Character Pack 2.0 | models/licenses/kaykit_adventurers.txt | models/heroes/mage.glb
+models/characters/heroes/ranger.glb | KayKit Adventurers Character Pack 2.0 | models/licenses/kaykit_adventurers.txt | models/heroes/ranger.glb
+models/characters/heroes/rogue.glb | KayKit Adventurers Character Pack 2.0 | models/licenses/kaykit_adventurers.txt | models/heroes/rogue.glb
+models/characters/monsters/armabee.glb | Quaternius bestiary (poly.pizza) | models/licenses/quaternius_bestiary.txt | models/bestiary/armabee.glb
+models/characters/monsters/armabee_evolved.glb | Quaternius bestiary (poly.pizza) | models/licenses/quaternius_bestiary.txt | models/bestiary/armabee_evolved.glb
+models/characters/monsters/bandit.glb | Quaternius bestiary (poly.pizza) | models/licenses/quaternius_bestiary.txt | models/bestiary/bandit.glb
+models/characters/monsters/bat.glb | Quaternius bestiary (poly.pizza) | models/licenses/quaternius_bestiary.txt | models/bestiary/bat.glb
+models/characters/monsters/blue_demon.glb | Quaternius bestiary (poly.pizza) | models/licenses/quaternius_bestiary.txt | models/bestiary/blue_demon.glb
+models/characters/monsters/brigand.glb | Quaternius bestiary (poly.pizza) | models/licenses/quaternius_bestiary.txt | models/bestiary/brigand.glb
+models/characters/monsters/brigand_2.glb | Quaternius bestiary (poly.pizza) | models/licenses/quaternius_bestiary.txt | models/bestiary/brigand_2.glb
+models/characters/monsters/bull.glb | Quaternius bestiary (poly.pizza) | models/licenses/quaternius_bestiary.txt | models/bestiary/bull.glb
+models/characters/monsters/cactoro.glb | Quaternius wilds (poly.pizza) | models/licenses/quaternius_wilds.txt | models/wilds/cactoro.glb
+models/characters/monsters/crab.glb | Quaternius bestiary (poly.pizza) | models/licenses/quaternius_bestiary.txt | models/bestiary/crab.glb
+models/characters/monsters/crowned_golem.glb | Quaternius bestiary (poly.pizza) | models/licenses/quaternius_bestiary.txt | models/bestiary/crowned_golem.glb
+models/characters/monsters/cult_mage.glb | Quaternius bestiary (poly.pizza) | models/licenses/quaternius_bestiary.txt | models/bestiary/cult_mage.glb
+models/characters/monsters/demon.glb | Quaternius wilds (poly.pizza) | models/licenses/quaternius_wilds.txt | models/wilds/demon.glb
+models/characters/monsters/demon_brute.glb | Quaternius bestiary (poly.pizza) | models/licenses/quaternius_bestiary.txt | models/bestiary/demon_brute.glb
+models/characters/monsters/dino.glb | Quaternius wilds (poly.pizza) | models/licenses/quaternius_wilds.txt | models/wilds/dino.glb
+models/characters/monsters/dragon.glb | Quaternius wilds (poly.pizza) | models/licenses/quaternius_wilds.txt | models/wilds/dragon.glb
+models/characters/monsters/fallen_king.glb | Quaternius bestiary (poly.pizza) | models/licenses/quaternius_bestiary.txt | models/bestiary/fallen_king.glb
+models/characters/monsters/fox.glb | Quaternius bestiary (poly.pizza) | models/licenses/quaternius_bestiary.txt | models/bestiary/fox.glb
+models/characters/monsters/frog.glb | Quaternius wilds (poly.pizza) | models/licenses/quaternius_wilds.txt | models/wilds/frog.glb
+models/characters/monsters/ghost.glb | Quaternius wilds (poly.pizza) | models/licenses/quaternius_wilds.txt | models/wilds/ghost.glb
+models/characters/monsters/ghost_skull.glb | Quaternius bestiary (poly.pizza) | models/licenses/quaternius_bestiary.txt | models/bestiary/ghost_skull.glb
+models/characters/monsters/giant.glb | Quaternius wilds (poly.pizza) | models/licenses/quaternius_wilds.txt | models/wilds/giant.glb
+models/characters/monsters/glub.glb | Quaternius wilds (poly.pizza) | models/licenses/quaternius_wilds.txt | models/wilds/glub.glb
+models/characters/monsters/goblin.glb | Quaternius wilds (poly.pizza) | models/licenses/quaternius_wilds.txt | models/wilds/goblin.glb
+models/characters/monsters/goleling.glb | Quaternius wilds (poly.pizza) | models/licenses/quaternius_wilds.txt | models/wilds/goleling.glb
+models/characters/monsters/hywirl.glb | Quaternius bestiary (poly.pizza) | models/licenses/quaternius_bestiary.txt | models/bestiary/hywirl.glb
+models/characters/monsters/imp.glb | Quaternius bestiary (poly.pizza) | models/licenses/quaternius_bestiary.txt | models/bestiary/imp.glb
+models/characters/monsters/kampir_imp.glb | Baba Yaga's hut (Inuciian) | models/licenses/baba_yagas_hut.txt | models/inuciian/people/imp.glb
+models/characters/monsters/kraken_tentacle.glb | Quaternius bestiary (poly.pizza) | models/licenses/quaternius_bestiary.txt | models/bestiary/kraken_tentacle.glb
+models/characters/monsters/monkroose.glb | Quaternius bestiary (poly.pizza) | models/licenses/quaternius_bestiary.txt | models/bestiary/monkroose.glb
+models/characters/monsters/mushroom_king.glb | Quaternius bestiary (poly.pizza) | models/licenses/quaternius_bestiary.txt | models/bestiary/mushroom_king.glb
+models/characters/monsters/ninja_master.glb | Quaternius bestiary (poly.pizza) | models/licenses/quaternius_bestiary.txt | models/bestiary/ninja_master.glb
+models/characters/monsters/orc_grunt.glb | Quaternius bestiary (poly.pizza) | models/licenses/quaternius_bestiary.txt | models/bestiary/orc_grunt.glb
+models/characters/monsters/orc_warrior.glb | Quaternius bestiary (poly.pizza) | models/licenses/quaternius_bestiary.txt | models/bestiary/orc_warrior.glb
+models/characters/monsters/pirate_anne.glb | Quaternius bestiary (poly.pizza) | models/licenses/quaternius_bestiary.txt | models/bestiary/pirate_anne.glb
+models/characters/monsters/pirate_captain.glb | Quaternius bestiary (poly.pizza) | models/licenses/quaternius_bestiary.txt | models/bestiary/pirate_captain.glb
+models/characters/monsters/pirate_mako.glb | Quaternius bestiary (poly.pizza) | models/licenses/quaternius_bestiary.txt | models/bestiary/pirate_mako.glb
+models/characters/monsters/rat.glb | Quaternius bestiary (poly.pizza) | models/licenses/quaternius_bestiary.txt | models/bestiary/rat.glb
+models/characters/monsters/sharkman.glb | Quaternius bestiary (poly.pizza) | models/licenses/quaternius_bestiary.txt | models/bestiary/sharkman.glb
+models/characters/monsters/skeleton_mage.glb | KayKit Character Pack: Skeletons 1.1 | models/licenses/kaykit_skeletons.txt | models/monsters/skeleton_mage.glb
+models/characters/monsters/skeleton_minion.glb | KayKit Character Pack: Skeletons 1.1 | models/licenses/kaykit_skeletons.txt | models/monsters/skeleton_minion.glb
+models/characters/monsters/skeleton_pirate.glb | Quaternius bestiary (poly.pizza) | models/licenses/quaternius_bestiary.txt | models/bestiary/skeleton_pirate.glb
+models/characters/monsters/skeleton_rogue.glb | KayKit Character Pack: Skeletons 1.1 | models/licenses/kaykit_skeletons.txt | models/monsters/skeleton_rogue.glb
+models/characters/monsters/skeleton_warrior.glb | KayKit Character Pack: Skeletons 1.1 | models/licenses/kaykit_skeletons.txt | models/monsters/skeleton_warrior.glb
+models/characters/monsters/skull_crawler.glb | Quaternius bestiary (poly.pizza) | models/licenses/quaternius_bestiary.txt | models/bestiary/skull_crawler.glb
+models/characters/monsters/slime.glb | Quaternius wilds (poly.pizza) | models/licenses/quaternius_wilds.txt | models/wilds/slime.glb
+models/characters/monsters/spider.glb | Quaternius wilds (poly.pizza) | models/licenses/quaternius_wilds.txt | models/wilds/spider.glb
+models/characters/monsters/sporeling.glb | Quaternius wilds (poly.pizza) | models/licenses/quaternius_wilds.txt | models/wilds/sporeling.glb
+models/characters/monsters/stag.glb | Quaternius bestiary (poly.pizza) | models/licenses/quaternius_bestiary.txt | models/bestiary/stag.glb
+models/characters/monsters/tribal.glb | Quaternius wilds (poly.pizza) | models/licenses/quaternius_wilds.txt | models/wilds/tribal.glb
+models/characters/monsters/wasp.glb | Quaternius bestiary (poly.pizza) | models/licenses/quaternius_bestiary.txt | models/bestiary/wasp.glb
+models/characters/monsters/witch.glb | Quaternius bestiary (poly.pizza) | models/licenses/quaternius_bestiary.txt | models/bestiary/witch.glb
+models/characters/monsters/wolf.glb | Quaternius wilds (poly.pizza) | models/licenses/quaternius_wilds.txt | models/wilds/wolf.glb
+models/characters/monsters/wolf_grey.glb | Quaternius bestiary (poly.pizza) | models/licenses/quaternius_bestiary.txt | models/bestiary/wolf_grey.glb
+models/characters/monsters/wyvern.glb | Quaternius bestiary (poly.pizza) | models/licenses/quaternius_bestiary.txt | models/bestiary/wyvern.glb
+models/characters/monsters/yeti.glb | Quaternius bestiary (poly.pizza) | models/licenses/quaternius_bestiary.txt | models/bestiary/yeti.glb
+models/characters/monsters/yeti_cub.glb | Quaternius bestiary (poly.pizza) | models/licenses/quaternius_bestiary.txt | models/bestiary/yeti_cub.glb
+models/characters/monsters/zombie.glb | Quaternius bestiary (poly.pizza) | models/licenses/quaternius_bestiary.txt | models/bestiary/zombie.glb
+models/characters/monsters/zombie_brute.glb | Quaternius bestiary (poly.pizza) | models/licenses/quaternius_bestiary.txt | models/bestiary/zombie_brute.glb
+models/characters/monsters/zombie_crawler.glb | Quaternius bestiary (poly.pizza) | models/licenses/quaternius_bestiary.txt | models/bestiary/zombie_crawler.glb
+models/characters/monsters/zombie_ghoul.glb | Quaternius bestiary (poly.pizza) | models/licenses/quaternius_bestiary.txt | models/bestiary/zombie_ghoul.glb
+models/characters/mounts/horse.glb | Quaternius Ultimate Animated Animals: horse | models/licenses/horse.txt | models/mounts/horse.glb
+models/characters/people/baba_yaga.glb | Baba Yaga's hut (Inuciian) | models/licenses/baba_yagas_hut.txt | models/inuciian/people/baba_yaga.glb
+models/characters/people/damsel.glb | Baba Yaga's hut (Inuciian) | models/licenses/baba_yagas_hut.txt | models/inuciian/people/damsel.glb
+models/characters/people/damsel_caged.glb | Baba Yaga's hut (Inuciian) | models/licenses/baba_yagas_hut.txt | models/inuciian/people/damsel_caged.glb
+models/effects/knight_wave.glb | Made for this game (art/effects/knight_wave.py, CC0) | - | models/effects/knight_wave.glb
+models/items/food/berry_bush.glb | Food and fire (Quaternius, Kenney; poly.pizza) | models/licenses/food_and_fire.txt | models/food/berry_bush.glb
+models/items/food/boar.glb | Food and fire (Quaternius, Kenney; poly.pizza) | models/licenses/food_and_fire.txt | models/food/boar.glb
+models/items/food/campfire.glb | Food and fire (Quaternius, Kenney; poly.pizza) | models/licenses/food_and_fire.txt | models/food/campfire.glb
+models/items/food/deer.glb | Food and fire (Quaternius, Kenney; poly.pizza) | models/licenses/food_and_fire.txt | models/food/deer.glb
+models/items/food/pumpkin_patch.glb | Food and fire (Quaternius, Kenney; poly.pizza) | models/licenses/food_and_fire.txt | models/food/pumpkin_patch.glb
+models/items/gear/arrow.gltf | KayKit Adventurers Character Pack 2.0 | models/licenses/kaykit_adventurers.txt | models/heroes/arrow.gltf
+models/items/gear/axe.gltf | KayKit Character Pack: Skeletons 1.1 | models/licenses/kaykit_skeletons.txt | models/monsters/axe.gltf
+models/items/gear/blade.gltf | KayKit Character Pack: Skeletons 1.1 | models/licenses/kaykit_skeletons.txt | models/monsters/blade.gltf
+models/items/gear/bow.gltf | KayKit Adventurers Character Pack 2.0 | models/licenses/kaykit_adventurers.txt | models/heroes/bow.gltf
+models/items/gear/crossbow.gltf | KayKit Character Pack: Skeletons 1.1 | models/licenses/kaykit_skeletons.txt | models/monsters/crossbow.gltf
+models/items/gear/quiver.gltf | KayKit Adventurers Character Pack 2.0 | models/licenses/kaykit_adventurers.txt | models/heroes/quiver.gltf
+models/items/gear/shield_round.gltf | KayKit Adventurers Character Pack 2.0 | models/licenses/kaykit_adventurers.txt | models/heroes/shield_round.gltf
+models/items/gear/skeleton_staff.gltf | KayKit Character Pack: Skeletons 1.1 | models/licenses/kaykit_skeletons.txt | models/monsters/staff.gltf
+models/items/gear/spellbook_closed.gltf | KayKit Adventurers Character Pack 2.0 | models/licenses/kaykit_adventurers.txt | models/heroes/spellbook_closed.gltf
+models/items/gear/staff.gltf | KayKit Adventurers Character Pack 2.0 | models/licenses/kaykit_adventurers.txt | models/heroes/staff.gltf
+models/items/gear/sword_1handed.gltf | KayKit Adventurers Character Pack 2.0 | models/licenses/kaykit_adventurers.txt | models/heroes/sword_1handed.gltf
+models/items/gear/sword_2handed.gltf | KayKit Adventurers Character Pack 2.0 | models/licenses/kaykit_adventurers.txt | models/heroes/sword_2handed.gltf
+models/items/keys/key_crown.glb | Crown key (owner's asset folder, maker unconfirmed) | - | models/props/key/key_crown.glb
+models/items/weapons/arrow.glb | Low poly medieval weapons (panarth) | models/licenses/medieval_weapons.txt | models/weapons/medieval/arrow.glb
+models/items/weapons/axe.glb | Low poly medieval weapons (panarth) | models/licenses/medieval_weapons.txt | models/weapons/medieval/axe.glb
+models/items/weapons/bow.glb | Low poly medieval weapons (panarth) | models/licenses/medieval_weapons.txt | models/weapons/medieval/bow.glb
+models/items/weapons/dagger.glb | Low poly medieval weapons (panarth) | models/licenses/medieval_weapons.txt | models/weapons/medieval/dagger.glb
+models/items/weapons/elven_bow.glb | Elven Assassin Weapon Set (nodgerty) | models/licenses/elven_weapons.txt | models/weapons/elven/bow.glb
+models/items/weapons/elven_dagger.glb | Elven Assassin Weapon Set (nodgerty) | models/licenses/elven_weapons.txt | models/weapons/elven/dagger.glb
+models/items/weapons/quiver.glb | Low poly medieval weapons (panarth) | models/licenses/medieval_weapons.txt | models/weapons/medieval/quiver.glb
+models/items/weapons/shield_heater.glb | Low poly medieval weapons (panarth) | models/licenses/medieval_weapons.txt | models/weapons/medieval/shield_heater.glb
+models/items/weapons/shield_round.glb | Low poly medieval weapons (panarth) | models/licenses/medieval_weapons.txt | models/weapons/medieval/shield_round.glb
+models/items/weapons/sword.glb | Low poly medieval weapons (panarth) | models/licenses/medieval_weapons.txt | models/weapons/medieval/sword.glb
+models/items/weapons/warhammer.glb | Low poly medieval weapons (panarth) | models/licenses/medieval_weapons.txt | models/weapons/medieval/warhammer.glb
+models/nature/bushes/bush_1.glb | Quaternius Ultimate Nature Pack | models/licenses/quaternius_ultimate_nature.txt | models/nature/ultimate/bush_1.glb
+models/nature/bushes/bush_2.glb | Quaternius Ultimate Nature Pack | models/licenses/quaternius_ultimate_nature.txt | models/nature/ultimate/bush_2.glb
+models/nature/bushes/bush_bare.glb | Baba Yaga's hut (Inuciian) | models/licenses/baba_yagas_hut.txt | models/inuciian/nature/bush_bare.glb
+models/nature/bushes/bush_berries_1.glb | Quaternius Ultimate Nature Pack | models/licenses/quaternius_ultimate_nature.txt | models/nature/ultimate/bush_berries_1.glb
+models/nature/bushes/bush_large.glb | Baba Yaga's hut (Inuciian) | models/licenses/baba_yagas_hut.txt | models/inuciian/nature/bush_large.glb
+models/nature/bushes/bush_large_dark.glb | Baba Yaga's hut (Inuciian) | models/licenses/baba_yagas_hut.txt | models/inuciian/nature/bush_large_dark.glb
+models/nature/bushes/bush_snow_1.glb | Quaternius Ultimate Nature Pack | models/licenses/quaternius_ultimate_nature.txt | models/nature/ultimate/bush_snow_1.glb
+models/nature/bushes/plant_bush_small.glb | Kenney Nature Kit | models/licenses/kenney_nature_kit.txt | models/nature/kenney/plant_bush_small.glb
+models/nature/cactus/cactus_1.glb | Quaternius Ultimate Nature Pack | models/licenses/quaternius_ultimate_nature.txt | models/nature/ultimate/cactus_1.glb
+models/nature/cactus/cactus_2.glb | Quaternius Ultimate Nature Pack | models/licenses/quaternius_ultimate_nature.txt | models/nature/ultimate/cactus_2.glb
+models/nature/cactus/cactus_3.glb | Quaternius Ultimate Nature Pack | models/licenses/quaternius_ultimate_nature.txt | models/nature/ultimate/cactus_3.glb
+models/nature/cactus/cactus_flowers_2.glb | Quaternius Ultimate Nature Pack | models/licenses/quaternius_ultimate_nature.txt | models/nature/ultimate/cactus_flowers_2.glb
+models/nature/cactus/cactus_short.glb | Kenney Nature Kit | models/licenses/kenney_nature_kit.txt | models/nature/kenney/cactus_short.glb
+models/nature/cactus/cactus_tall.glb | Kenney Nature Kit | models/licenses/kenney_nature_kit.txt | models/nature/kenney/cactus_tall.glb
+models/nature/flowers/flower_purple_a.glb | Kenney Nature Kit | models/licenses/kenney_nature_kit.txt | models/nature/kenney/flower_purple_a.glb
+models/nature/flowers/flower_red_a.glb | Kenney Nature Kit | models/licenses/kenney_nature_kit.txt | models/nature/kenney/flower_red_a.glb
+models/nature/flowers/flower_yellow_a.glb | Kenney Nature Kit | models/licenses/kenney_nature_kit.txt | models/nature/kenney/flower_yellow_a.glb
+models/nature/grass/grass.glb | Kenney Nature Kit | models/licenses/kenney_nature_kit.txt | models/nature/kenney/grass.glb
+models/nature/grass/grass_1.glb | Quaternius Ultimate Nature Pack | models/licenses/quaternius_ultimate_nature.txt | models/nature/ultimate/grass.glb
+models/nature/grass/grass_2.glb | Quaternius Ultimate Nature Pack | models/licenses/quaternius_ultimate_nature.txt | models/nature/ultimate/grass_2.glb
+models/nature/grass/grass_common_short.glb | Quaternius Stylized Nature MegaKit | models/licenses/quaternius_nature_megakit.txt | models/nature/megakit/grass_common_short.glb
+models/nature/grass/grass_common_tall.glb | Quaternius Stylized Nature MegaKit | models/licenses/quaternius_nature_megakit.txt | models/nature/megakit/grass_common_tall.glb
+models/nature/grass/grass_large.glb | Kenney Nature Kit | models/licenses/kenney_nature_kit.txt | models/nature/kenney/grass_large.glb
+models/nature/grass/grass_leafs.glb | Kenney Nature Kit | models/licenses/kenney_nature_kit.txt | models/nature/kenney/grass_leafs.glb
+models/nature/grass/grass_short.glb | Baba Yaga's hut (Inuciian) | models/licenses/baba_yagas_hut.txt | models/inuciian/nature/grass_short.glb
+models/nature/grass/grass_short_1.glb | Quaternius Ultimate Nature Pack | models/licenses/quaternius_ultimate_nature.txt | models/nature/ultimate/grass_short.glb
+models/nature/grass/grass_short_dark.glb | Baba Yaga's hut (Inuciian) | models/licenses/baba_yagas_hut.txt | models/inuciian/nature/grass_short_dark.glb
+models/nature/grass/grass_tall.glb | Baba Yaga's hut (Inuciian) | models/licenses/baba_yagas_hut.txt | models/inuciian/nature/grass_tall.glb
+models/nature/grass/grass_tall_dark.glb | Baba Yaga's hut (Inuciian) | models/licenses/baba_yagas_hut.txt | models/inuciian/nature/grass_tall_dark.glb
+models/nature/grass/grass_wispy_short.glb | Quaternius Stylized Nature MegaKit | models/licenses/quaternius_nature_megakit.txt | models/nature/megakit/grass_wispy_short.glb
+models/nature/grass/grass_wispy_tall.glb | Quaternius Stylized Nature MegaKit | models/licenses/quaternius_nature_megakit.txt | models/nature/megakit/grass_wispy_tall.glb
+models/nature/mushrooms/mushroom_brown.glb | Baba Yaga's hut (Inuciian) | models/licenses/baba_yagas_hut.txt | models/inuciian/nature/mushroom_brown.glb
+models/nature/mushrooms/mushroom_red.glb | Baba Yaga's hut (Inuciian) | models/licenses/baba_yagas_hut.txt | models/inuciian/nature/mushroom_red.glb
+models/nature/mushrooms/mushroom_tan_group.glb | Kenney Nature Kit | models/licenses/kenney_nature_kit.txt | models/nature/kenney/mushroom_tan_group.glb
+models/nature/plants/cattails.glb | Baba Yaga's hut (Inuciian) | models/licenses/baba_yagas_hut.txt | models/inuciian/nature/cattails.glb
+models/nature/plants/clover_1.glb | Quaternius Stylized Nature MegaKit | models/licenses/quaternius_nature_megakit.txt | models/nature/megakit/clover_1.glb
+models/nature/plants/fern_1.glb | Quaternius Stylized Nature MegaKit | models/licenses/quaternius_nature_megakit.txt | models/nature/megakit/fern_1.glb
+models/nature/plants/leaves.glb | Baba Yaga's hut (Inuciian) | models/licenses/baba_yagas_hut.txt | models/inuciian/nature/leaves.glb
+models/nature/plants/plant_1.glb | Quaternius Stylized Nature MegaKit | models/licenses/quaternius_nature_megakit.txt | models/nature/megakit/plant_1.glb
+models/nature/plants/plant_2.glb | Quaternius Ultimate Nature Pack | models/licenses/quaternius_ultimate_nature.txt | models/nature/ultimate/plant_2.glb
+models/nature/plants/wheat.glb | Quaternius Ultimate Nature Pack | models/licenses/quaternius_ultimate_nature.txt | models/nature/ultimate/wheat.glb
+models/nature/rocks/rock.glb | Baba Yaga's hut (Inuciian) | models/licenses/baba_yagas_hut.txt | models/inuciian/nature/rock.glb
+models/nature/rocks/rock_1.glb | Quaternius Ultimate Nature Pack | models/licenses/quaternius_ultimate_nature.txt | models/nature/ultimate/rock_1.glb
+models/nature/rocks/rock_4.glb | Quaternius Ultimate Nature Pack | models/licenses/quaternius_ultimate_nature.txt | models/nature/ultimate/rock_4.glb
+models/nature/rocks/rock_medium_1.glb | Quaternius Stylized Nature MegaKit | models/licenses/quaternius_nature_megakit.txt | models/nature/megakit/rock_medium_1.glb
+models/nature/rocks/rock_moss_4.glb | Quaternius Ultimate Nature Pack | models/licenses/quaternius_ultimate_nature.txt | models/nature/ultimate/rock_moss_4.glb
+models/nature/rocks/rock_small.glb | Baba Yaga's hut (Inuciian) | models/licenses/baba_yagas_hut.txt | models/inuciian/nature/rock_small.glb
+models/nature/rocks/rock_small_a.glb | Kenney Nature Kit | models/licenses/kenney_nature_kit.txt | models/nature/kenney/rock_small_a.glb
+models/nature/rocks/rock_small_d.glb | Kenney Nature Kit | models/licenses/kenney_nature_kit.txt | models/nature/kenney/rock_small_d.glb
+models/nature/rocks/rock_snow_1.glb | Quaternius Ultimate Nature Pack | models/licenses/quaternius_ultimate_nature.txt | models/nature/ultimate/rock_snow_1.glb
+models/nature/rocks/rock_snow_4.glb | Quaternius Ultimate Nature Pack | models/licenses/quaternius_ultimate_nature.txt | models/nature/ultimate/rock_snow_4.glb
+models/nature/rocks/rock_tall_a.glb | Kenney Nature Kit | models/licenses/kenney_nature_kit.txt | models/nature/kenney/rock_tall_a.glb
+models/nature/rocks/rock_tall_c.glb | Kenney Nature Kit | models/licenses/kenney_nature_kit.txt | models/nature/kenney/rock_tall_c.glb
+models/nature/rocks/rock_tall_g.glb | Kenney Nature Kit | models/licenses/kenney_nature_kit.txt | models/nature/kenney/rock_tall_g.glb
+models/nature/rocks/stone_tall_b.glb | Kenney Nature Kit | models/licenses/kenney_nature_kit.txt | models/nature/kenney/stone_tall_b.glb
+models/nature/stumps/stump.glb | Baba Yaga's hut (Inuciian) | models/licenses/baba_yagas_hut.txt | models/inuciian/nature/stump.glb
+models/nature/stumps/tree_stump_moss.glb | Quaternius Ultimate Nature Pack | models/licenses/quaternius_ultimate_nature.txt | models/nature/ultimate/tree_stump_moss.glb
+models/nature/stumps/tree_stump_snow.glb | Quaternius Ultimate Nature Pack | models/licenses/quaternius_ultimate_nature.txt | models/nature/ultimate/tree_stump_snow.glb
+models/nature/trees/birch_tree_1.glb | Quaternius Ultimate Nature Pack | models/licenses/quaternius_ultimate_nature.txt | models/nature/ultimate/birch_tree_1.glb
+models/nature/trees/birch_tree_2.glb | Quaternius Ultimate Nature Pack | models/licenses/quaternius_ultimate_nature.txt | models/nature/ultimate/birch_tree_2.glb
+models/nature/trees/birch_tree_3.glb | Quaternius Ultimate Nature Pack | models/licenses/quaternius_ultimate_nature.txt | models/nature/ultimate/birch_tree_3.glb
+models/nature/trees/birch_tree_snow_1.glb | Quaternius Ultimate Nature Pack | models/licenses/quaternius_ultimate_nature.txt | models/nature/ultimate/birch_tree_snow_1.glb
+models/nature/trees/common_tree_1.glb | Quaternius Stylized Nature MegaKit | models/licenses/quaternius_nature_megakit.txt | models/nature/megakit/common_tree_1.glb
+models/nature/trees/common_tree_2.glb | Quaternius Stylized Nature MegaKit | models/licenses/quaternius_nature_megakit.txt | models/nature/megakit/common_tree_2.glb
+models/nature/trees/common_tree_5.glb | Quaternius Stylized Nature MegaKit | models/licenses/quaternius_nature_megakit.txt | models/nature/megakit/common_tree_5.glb
+models/nature/trees/common_tree_dead_1.glb | Quaternius Ultimate Nature Pack | models/licenses/quaternius_ultimate_nature.txt | models/nature/ultimate/common_tree_dead_1.glb
+models/nature/trees/common_tree_dead_2.glb | Quaternius Ultimate Nature Pack | models/licenses/quaternius_ultimate_nature.txt | models/nature/ultimate/common_tree_dead_2.glb
+models/nature/trees/dead_tree.glb | Baba Yaga's hut (Inuciian) | models/licenses/baba_yagas_hut.txt | models/inuciian/nature/dead_tree.glb
+models/nature/trees/dead_tree_1.glb | Quaternius Stylized Nature MegaKit | models/licenses/quaternius_nature_megakit.txt | models/nature/megakit/dead_tree_1.glb
+models/nature/trees/dead_tree_bent.glb | Baba Yaga's hut (Inuciian) | models/licenses/baba_yagas_hut.txt | models/inuciian/nature/dead_tree_bent.glb
+models/nature/trees/dead_tree_tall.glb | Baba Yaga's hut (Inuciian) | models/licenses/baba_yagas_hut.txt | models/inuciian/nature/dead_tree_tall.glb
+models/nature/trees/palm_tree_1.glb | Quaternius Ultimate Nature Pack | models/licenses/quaternius_ultimate_nature.txt | models/nature/ultimate/palm_tree_1.glb
+models/nature/trees/palm_tree_3.glb | Quaternius Ultimate Nature Pack | models/licenses/quaternius_ultimate_nature.txt | models/nature/ultimate/palm_tree_3.glb
+models/nature/trees/pine.glb | Baba Yaga's hut (Inuciian) | models/licenses/baba_yagas_hut.txt | models/inuciian/nature/pine.glb
+models/nature/trees/pine_5.glb | Quaternius Stylized Nature MegaKit | models/licenses/quaternius_nature_megakit.txt | models/nature/megakit/pine_5.glb
+models/nature/trees/pine_dark.glb | Baba Yaga's hut (Inuciian) | models/licenses/baba_yagas_hut.txt | models/inuciian/nature/pine_dark.glb
+models/nature/trees/pine_tree_1.glb | Quaternius Ultimate Nature Pack | models/licenses/quaternius_ultimate_nature.txt | models/nature/ultimate/pine_tree_1.glb
+models/nature/trees/pine_tree_2.glb | Quaternius Ultimate Nature Pack | models/licenses/quaternius_ultimate_nature.txt | models/nature/ultimate/pine_tree_2.glb
+models/nature/trees/pine_tree_3.glb | Quaternius Ultimate Nature Pack | models/licenses/quaternius_ultimate_nature.txt | models/nature/ultimate/pine_tree_3.glb
+models/nature/trees/pine_tree_snow_1.glb | Quaternius Ultimate Nature Pack | models/licenses/quaternius_ultimate_nature.txt | models/nature/ultimate/pine_tree_snow_1.glb
+models/nature/trees/pine_tree_snow_2.glb | Quaternius Ultimate Nature Pack | models/licenses/quaternius_ultimate_nature.txt | models/nature/ultimate/pine_tree_snow_2.glb
+models/nature/trees/pine_tree_snow_3.glb | Quaternius Ultimate Nature Pack | models/licenses/quaternius_ultimate_nature.txt | models/nature/ultimate/pine_tree_snow_3.glb
+models/nature/trees/pine_tree_snow_4.glb | Quaternius Ultimate Nature Pack | models/licenses/quaternius_ultimate_nature.txt | models/nature/ultimate/pine_tree_snow_4.glb
+models/nature/trees/tree_leafy.glb | Baba Yaga's hut (Inuciian) | models/licenses/baba_yagas_hut.txt | models/inuciian/nature/tree_leafy.glb
+models/nature/trees/tree_leafy_dark.glb | Baba Yaga's hut (Inuciian) | models/licenses/baba_yagas_hut.txt | models/inuciian/nature/tree_leafy_dark.glb
+models/nature/trees/tree_palm_bend.glb | Kenney Nature Kit | models/licenses/kenney_nature_kit.txt | models/nature/kenney/tree_palm_bend.glb
+models/nature/trees/tree_palm_detailed_short.glb | Kenney Nature Kit | models/licenses/kenney_nature_kit.txt | models/nature/kenney/tree_palm_detailed_short.glb
+models/nature/trees/willow_1.glb | Quaternius Ultimate Nature Pack | models/licenses/quaternius_ultimate_nature.txt | models/nature/ultimate/willow_1.glb
+models/nature/trees/willow_3.glb | Quaternius Ultimate Nature Pack | models/licenses/quaternius_ultimate_nature.txt | models/nature/ultimate/willow_3.glb
+models/nature/trees/willow_5.glb | Quaternius Ultimate Nature Pack | models/licenses/quaternius_ultimate_nature.txt | models/nature/ultimate/willow_5.glb
+models/nature/trees/willow_dead_1.glb | Quaternius Ultimate Nature Pack | models/licenses/quaternius_ultimate_nature.txt | models/nature/ultimate/willow_dead_1.glb
+models/nature/trees/willow_dead_2.glb | Quaternius Ultimate Nature Pack | models/licenses/quaternius_ultimate_nature.txt | models/nature/ultimate/willow_dead_2.glb
+models/props/dungeon/barrel.gltf | KayKit Dungeon Asset Pack 1.1 | models/licenses/kaykit_dungeon.txt | models/props/dungeon/barrel.gltf
+models/props/dungeon/chest.gltf | KayKit Dungeon Asset Pack 1.1 | models/licenses/kaykit_dungeon.txt | models/props/dungeon/chest.gltf
+models/props/dungeon/pillar.gltf | KayKit Dungeon Asset Pack 1.1 | models/licenses/kaykit_dungeon.txt | models/props/dungeon/pillar.gltf
+models/props/dungeon/pillar_decorated.gltf | KayKit Dungeon Asset Pack 1.1 | models/licenses/kaykit_dungeon.txt | models/props/dungeon/pillar_decorated.gltf
+models/props/forest/chest.gltf | KayKit Forest Nature Pack 1.0 | models/licenses/kaykit_forest.txt | models/props/forest/chest.gltf
+models/props/forest/rock.gltf | KayKit Forest Nature Pack 1.0 | models/licenses/kaykit_forest.txt | models/props/forest/rock.gltf
+models/props/forest/rock_small.gltf | KayKit Forest Nature Pack 1.0 | models/licenses/kaykit_forest.txt | models/props/forest/rock_small.gltf
+models/props/forest/tree_bare.gltf | KayKit Forest Nature Pack 1.0 | models/licenses/kaykit_forest.txt | models/props/forest/tree_bare.gltf
+models/props/forest/wall.gltf | KayKit Forest Nature Pack 1.0 | models/licenses/kaykit_forest.txt | models/props/forest/wall.gltf
+models/props/fountain/fountain.glb | Fountain (Poly by Google) | models/licenses/poly_fountain.txt | models/props/fountain/fountain.glb
+models/props/graves/mound.glb | Baba Yaga's hut (Inuciian) | models/licenses/baba_yagas_hut.txt | models/inuciian/nature/mound.glb
+models/props/mine/copper_nuggets.gltf | KayKit Resource Bits 1.0 | models/licenses/kaykit_resource_bits.txt | models/props/mine/copper_nuggets.gltf
+models/props/mine/gold_nuggets.gltf | KayKit Resource Bits 1.0 | models/licenses/kaykit_resource_bits.txt | models/props/mine/gold_nuggets.gltf
+models/props/mine/silver_nuggets.gltf | KayKit Resource Bits 1.0 | models/licenses/kaykit_resource_bits.txt | models/props/mine/silver_nuggets.gltf
+models/props/mine/stone_chunks.gltf | KayKit Resource Bits 1.0 | models/licenses/kaykit_resource_bits.txt | models/props/mine/stone_chunks.gltf
+models/props/mine/wood_log.gltf | KayKit Resource Bits 1.0 | models/licenses/kaykit_resource_bits.txt | models/props/mine/wood_log.gltf
+models/props/village/bench.glb | Baba Yaga's hut (Inuciian) | models/licenses/baba_yagas_hut.txt | models/inuciian/props/bench.glb
+models/props/village/boat.glb | Baba Yaga's hut (Inuciian) | models/licenses/baba_yagas_hut.txt | models/inuciian/props/boat.glb
+models/props/village/broom.glb | Baba Yaga's hut (Inuciian) | models/licenses/baba_yagas_hut.txt | models/inuciian/props/broom.glb
+models/props/village/bucket.glb | Baba Yaga's hut (Inuciian) | models/licenses/baba_yagas_hut.txt | models/inuciian/props/bucket.glb
+models/props/village/cage_empty.glb | Baba Yaga's hut (Inuciian) | models/licenses/baba_yagas_hut.txt | models/inuciian/props/cage_empty.glb
+models/props/village/candles.glb | Baba Yaga's hut (Inuciian) | models/licenses/baba_yagas_hut.txt | models/inuciian/props/candles.glb
+models/props/village/cauldron.glb | Baba Yaga's hut (Inuciian) | models/licenses/baba_yagas_hut.txt | models/inuciian/props/cauldron.glb
+models/props/village/fence.glb | Baba Yaga's hut (Inuciian) | models/licenses/baba_yagas_hut.txt | models/inuciian/props/fence.glb
+models/props/village/fence_gate.glb | Baba Yaga's hut (Inuciian) | models/licenses/baba_yagas_hut.txt | models/inuciian/props/fence_gate.glb
+models/props/village/fishing_rod.glb | Baba Yaga's hut (Inuciian) | models/licenses/baba_yagas_hut.txt | models/inuciian/props/fishing_rod.glb
+models/props/village/rat.glb | Baba Yaga's hut (Inuciian) | models/licenses/baba_yagas_hut.txt | models/inuciian/props/rat.glb
+models/props/village/scarecrow.glb | Baba Yaga's hut (Inuciian) | models/licenses/baba_yagas_hut.txt | models/inuciian/props/scarecrow.glb
+models/props/village/stool.glb | Baba Yaga's hut (Inuciian) | models/licenses/baba_yagas_hut.txt | models/inuciian/props/stool.glb
+models/props/village/torch.glb | Baba Yaga's hut (Inuciian) | models/licenses/baba_yagas_hut.txt | models/inuciian/props/torch.glb
+models/props/village/well.glb | Baba Yaga's hut (Inuciian) | models/licenses/baba_yagas_hut.txt | models/inuciian/props/well.glb
+models/terrain/autumn/bush_small.gltf | KayKit Forest Nature Pack 1.0, repainted autumn | models/licenses/kaykit_forest.txt | models/tiles/autumn/bush_small.gltf
+models/terrain/autumn/bush_tall.gltf | KayKit Forest Nature Pack 1.0, repainted autumn | models/licenses/kaykit_forest.txt | models/tiles/autumn/bush_tall.gltf
+models/terrain/autumn/bush_wide.gltf | KayKit Forest Nature Pack 1.0, repainted autumn | models/licenses/kaykit_forest.txt | models/tiles/autumn/bush_wide.gltf
+models/terrain/autumn/grass_short.gltf | KayKit Forest Nature Pack 1.0, repainted autumn | models/licenses/kaykit_forest.txt | models/tiles/autumn/grass_short.gltf
+models/terrain/autumn/grass_tall.gltf | KayKit Forest Nature Pack 1.0, repainted autumn | models/licenses/kaykit_forest.txt | models/tiles/autumn/grass_tall.gltf
+models/terrain/autumn/tree.gltf | KayKit Forest Nature Pack 1.0, repainted autumn | models/licenses/kaykit_forest.txt | models/tiles/autumn/tree.gltf
+models/terrain/autumn/tree_small.gltf | KayKit Forest Nature Pack 1.0, repainted autumn | models/licenses/kaykit_forest.txt | models/tiles/autumn/tree_small.gltf
+models/terrain/dungeon/cliff_a.gltf | KayKit Dungeon Asset Pack 1.1 | models/licenses/kaykit_dungeon.txt | models/tiles/dungeon/cliff_a.gltf
+models/terrain/dungeon/cliff_b.gltf | KayKit Dungeon Asset Pack 1.1 | models/licenses/kaykit_dungeon.txt | models/tiles/dungeon/cliff_b.gltf
+models/terrain/dungeon/cliff_c.gltf | KayKit Dungeon Asset Pack 1.1 | models/licenses/kaykit_dungeon.txt | models/tiles/dungeon/cliff_c.gltf
+models/terrain/dungeon/floor.gltf | KayKit Dungeon Asset Pack 1.1 | models/licenses/kaykit_dungeon.txt | models/tiles/dungeon/floor.gltf
+models/terrain/dungeon/floor_rocks.gltf | KayKit Dungeon Asset Pack 1.1 | models/licenses/kaykit_dungeon.txt | models/tiles/dungeon/floor_rocks.gltf
+models/terrain/dungeon/spire_a.gltf | KayKit Dungeon Asset Pack 1.1 | models/licenses/kaykit_dungeon.txt | models/tiles/dungeon/spire_a.gltf
+models/terrain/dungeon/spire_b.gltf | KayKit Dungeon Asset Pack 1.1 | models/licenses/kaykit_dungeon.txt | models/tiles/dungeon/spire_b.gltf
+models/terrain/dungeon/stairs.gltf | KayKit Dungeon Asset Pack 1.1 | models/licenses/kaykit_dungeon.txt | models/tiles/dungeon/stairs.gltf
+models/terrain/dungeon/wall.gltf | KayKit Dungeon Asset Pack 1.1 | models/licenses/kaykit_dungeon.txt | models/tiles/dungeon/wall.gltf
+models/terrain/forest/bush_small.gltf | KayKit Forest Nature Pack 1.0 | models/licenses/kaykit_forest.txt | models/tiles/forest/bush_small.gltf
+models/terrain/forest/bush_tall.gltf | KayKit Forest Nature Pack 1.0 | models/licenses/kaykit_forest.txt | models/tiles/forest/bush_tall.gltf
+models/terrain/forest/bush_wide.gltf | KayKit Forest Nature Pack 1.0 | models/licenses/kaykit_forest.txt | models/tiles/forest/bush_wide.gltf
+models/terrain/forest/floor.gltf | KayKit Forest Nature Pack 1.0 | models/licenses/kaykit_forest.txt | models/tiles/forest/floor.gltf
+models/terrain/forest/floor_rocky.gltf | KayKit Forest Nature Pack 1.0 | models/licenses/kaykit_forest.txt | models/tiles/forest/floor_rocky.gltf
+models/terrain/forest/grass_short.gltf | KayKit Forest Nature Pack 1.0 | models/licenses/kaykit_forest.txt | models/tiles/forest/grass_short.gltf
+models/terrain/forest/grass_tall.gltf | KayKit Forest Nature Pack 1.0 | models/licenses/kaykit_forest.txt | models/tiles/forest/grass_tall.gltf
+models/terrain/forest/pebble.gltf | KayKit Forest Nature Pack 1.0 | models/licenses/kaykit_forest.txt | models/tiles/forest/pebble.gltf
+models/terrain/forest/pine.gltf | KayKit Forest Nature Pack 1.0 | models/licenses/kaykit_forest.txt | models/tiles/forest/pine.gltf
+models/terrain/forest/pine_tall.gltf | KayKit Forest Nature Pack 1.0 | models/licenses/kaykit_forest.txt | models/tiles/forest/pine_tall.gltf
+models/terrain/forest/rock_cluster.gltf | KayKit Forest Nature Pack 1.0 | models/licenses/kaykit_forest.txt | models/tiles/forest/rock_cluster.gltf
+models/terrain/forest/rock_cluster_low.gltf | KayKit Forest Nature Pack 1.0 | models/licenses/kaykit_forest.txt | models/tiles/forest/rock_cluster_low.gltf
+models/terrain/forest/stairs.gltf | KayKit Forest Nature Pack 1.0 | models/licenses/kaykit_forest.txt | models/tiles/forest/stairs.gltf
+models/terrain/forest/stone.gltf | KayKit Forest Nature Pack 1.0 | models/licenses/kaykit_forest.txt | models/tiles/forest/stone.gltf
+models/terrain/forest/tree.gltf | KayKit Forest Nature Pack 1.0 | models/licenses/kaykit_forest.txt | models/tiles/forest/tree.gltf
+models/terrain/forest/tree_round.gltf | KayKit Forest Nature Pack 1.0 | models/licenses/kaykit_forest.txt | models/tiles/forest/tree_round.gltf
+models/terrain/forest/tree_stunted.gltf | KayKit Forest Nature Pack 1.0 | models/licenses/kaykit_forest.txt | models/tiles/forest/tree_stunted.gltf
+models/terrain/forest/tree_twisted.gltf | KayKit Forest Nature Pack 1.0 | models/licenses/kaykit_forest.txt | models/tiles/forest/tree_twisted.gltf

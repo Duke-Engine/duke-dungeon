@@ -79,8 +79,8 @@ pillars and two statues by the throne. The queen stands on the throne (the map's
 hall's far corner until she calls. Coming through the hall's door (zone `HallDoor`) plays the intro (`QueenIntro`:
 the camera to the throne, she and the heroine speak).
 
-Stand-in looks, until the owner's models: **the queen** (`QueenBoss`, beside the talking `Queen` of the medallion) is the KayKit mage (`models/heroes/mage.glb`, as the merchant
-is) tinted violet, with the mage's staff; **the cursed hero** is the KayKit knight (`models/heroes/knight.glb`)
+Stand-in looks, until the owner's models: **the queen** (`QueenBoss`, beside the talking `Queen` of the medallion) is the KayKit mage (`models/characters/heroes/mage.glb`, as the merchant
+is) tinted violet, with the mage's staff; **the cursed hero** is the KayKit knight (`models/characters/heroes/knight.glb`)
 darkened by `Tint`, the merchant's way, with the knight's sword. Neither is ever drawn into a floor (`MinDepth = 99`,
 `Weight = 0`).
 

@@ -112,15 +112,15 @@ StaticMap
   ]
   ; The kingdom's wall on the stone west of the field: towers five cells apart, walls between, the gate on the road.
   Scenery = [
-    "models/castles/rampart/rampart_tower_tall.gltf 5 3 0 1 0",
-    "models/castles/rampart/rampart_wall.gltf 5 4 270 1 0",
-    "models/castles/rampart/rampart_tower.gltf 5 8 0 1 0",
-    "models/castles/rampart/rampart_wall_arcade.gltf 5 9 270 1 0",
-    "models/castles/rampart/rampart_wall_gate.gltf 5 12 270 1 0",
-    "models/castles/rampart/rampart_tower_tall.gltf 5 15 0 1 0",
-    "models/castles/rampart/rampart_wall.gltf 5 16 270 1 0",
-    "models/castles/rampart/rampart_tower.gltf 5 20 0 1 0",
-    "models/castles/rampart/rampart_wall.gltf 5 21 270 1 0",
-    "models/castles/town/town_banner_post.gltf 13 10 0 1 0; models/castles/town/town_banner_post.gltf 13 16 0 1 0",
+    "models/buildings/rampart/rampart_tower_tall.gltf 5 3 0 1 0",
+    "models/buildings/rampart/rampart_wall.gltf 5 4 270 1 0",
+    "models/buildings/rampart/rampart_tower.gltf 5 8 0 1 0",
+    "models/buildings/rampart/rampart_wall_arcade.gltf 5 9 270 1 0",
+    "models/buildings/rampart/rampart_wall_gate.gltf 5 12 270 1 0",
+    "models/buildings/rampart/rampart_tower_tall.gltf 5 15 0 1 0",
+    "models/buildings/rampart/rampart_wall.gltf 5 16 270 1 0",
+    "models/buildings/rampart/rampart_tower.gltf 5 20 0 1 0",
+    "models/buildings/rampart/rampart_wall.gltf 5 21 270 1 0",
+    "models/buildings/town/town_banner_post.gltf 13 10 0 1 0; models/buildings/town/town_banner_post.gltf 13 16 0 1 0",
   ]
 End

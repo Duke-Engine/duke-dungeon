@@ -3,7 +3,7 @@ set on its own origin and lying on it.
 
     "C:/Program Files/Blender Foundation/Blender 5.2/blender.exe" -b --factory-startup \
         -P art/icons/render_item.py -- art/models/key_crown.glb \
-        src/main/resources/models/props/key/key_crown.glb src/main/resources/icons/items/key_crown.png
+        src/main/resources/models/items/keys/key_crown.glb src/main/resources/icons/items/key_crown.png
 
 Since 2026-10-14 the key's picture in the bag is not this render but icons/items/key.png, a game-icons.net key painted by
 art/icons/ItemIcons.java in the look of every other thing; the render is no longer shipped, and the model still is.

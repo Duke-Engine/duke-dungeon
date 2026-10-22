@@ -110,7 +110,7 @@ Hero
 ; ★ LANGE, since 2026-10-10: phucpham1076's "Lange - Half-Elf Knight" (CC BY 4.0,
 ; see CREDITS.md), the owner's choice for the Act 1 hero, made into the game's by
 ; art/lange/export_lange.py -- his sunglasses taken off, his sword made part of him.
-; The KayKit knight he replaces (models/heroes/knight.glb) stays: it is the
+; The KayKit knight he replaces (models/characters/heroes/knight.glb) stays: it is the
 ; kingdom's soldiers' and the Cursed Hero's.
 ;
 ; His rig is his own, so he moves by the Lange set (data/animations/lange.duke),
@@ -141,7 +141,7 @@ Hero
   ; at 48 and shoots; a swordsman who did that would stand there swinging at air.
   CloseDistance = 8
 
-  Model = models/heroes/lange/lange.glb
+  Model = models/characters/heroes/lange.glb
   ; GeometryHeight is 12 in his template above and Lange stands 1.760 tall (metres:
   ; the top of his hair, printed by art/lange/export_lange.py), so 12 / 1.760. He
   ; stands as tall on screen as the KayKit knight did at 4.72; he only looks

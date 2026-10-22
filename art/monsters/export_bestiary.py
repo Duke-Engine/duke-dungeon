@@ -4,7 +4,7 @@
 
 The downloads folder holds each model as poly.pizza serves it, one .glb a model in a folder named <Model>_<id> (see
 MODELS below, CREDITS.md and data/units/bestiary_*.duke). Nothing from it ships but what this writes, into
-src/main/resources/models/bestiary/. Then art/models/base_colour_only.js is run over every file written.
+src/main/resources/models/characters/monsters/. Then art/models/base_colour_only.js is run over every file written.
 
 As art/monsters/export_monsters.py, and on top of it:
 

@@ -24,8 +24,8 @@ Measured off the models (glTF accessor bounds, base at y = 0, no node transforms
 
 | Model | W (x) | H (y) | D (z) | tris | becomes |
 |---|---|---|---|---|---|
-| `Rock_1_K_Color1` | 3.69 | 3.65 | 3.13 | 529 | `models/tiles/dungeon/cliff_a.gltf` (tone Stone) |
-| `Rock_1_J_Color1` | 3.39 | 3.36 | 3.76 | 521 | `models/tiles/dungeon/cliff_b.gltf` (tone Cracked) |
+| `Rock_1_K_Color1` | 3.69 | 3.65 | 3.13 | 529 | `models/terrain/dungeon/cliff_a.gltf` (tone Stone) |
+| `Rock_1_J_Color1` | 3.39 | 3.36 | 3.76 | 521 | `models/terrain/dungeon/cliff_b.gltf` (tone Cracked) |
 
 `WallTileSize = 3.69` scales a rock to one 10-unit cell across and about one storey (10) tall.
 
@@ -34,8 +34,8 @@ Measured off the models (glTF accessor bounds, base at y = 0, no node transforms
 ### Task 1: The dungeon's rooms are bounded by rock
 
 **Files:**
-- Create: `src/main/resources/models/tiles/dungeon/cliff_a.gltf`, `cliff_a.bin`, `cliff_b.gltf`, `cliff_b.bin`, `forest_texture.png`
-- Delete: `src/main/resources/models/tiles/dungeon/wall_cracked.gltf`, `wall_cracked.bin`
+- Create: `src/main/resources/models/terrain/dungeon/cliff_a.gltf`, `cliff_a.bin`, `cliff_b.gltf`, `cliff_b.bin`, `forest_texture.png`
+- Delete: `src/main/resources/models/terrain/dungeon/wall_cracked.gltf`, `wall_cracked.bin`
 - Modify: `src/main/resources/data/world/themes/dungeon.duke` (the `Theme` block's header comment, placement numbers and `Tones`)
 - Modify: `src/test/java/uz/dukeengine/dungeon/DungeonTilesTest.java` (new test; `everyThemeWhoseWallsStandUpTellsTheirTopsFromTheFloor`)
 - Modify: `CREDITS.md`
@@ -61,10 +61,10 @@ Measured off the models (glTF accessor bounds, base at y = 0, no node transforms
 
         assertTrue(dungeon.standing().fillsRock(),
                 "the dungeon's boundary is rock standing in the rock, not a wall along it");
-        assertEquals("models/tiles/dungeon/wall.gltf", dungeon.rockFace(),
+        assertEquals("models/terrain/dungeon/wall.gltf", dungeon.rockFace(),
                 "and the masonry slab only faces raised ground");
         for (var tone : dungeon.tones()) {
-            assertNotEquals("models/tiles/dungeon/wall.gltf", tone.wall(),
+            assertNotEquals("models/terrain/dungeon/wall.gltf", tone.wall(),
                     tone.name() + " still walls its rooms with masonry");
         }
     }
@@ -78,15 +78,15 @@ Expected: FAIL in `theDungeonIsBoundedByRockAndItsMasonryOnlyHoldsUpRaisedGround
 - [ ] **Step 3: Ship the rocks** — copy, rename, and point each glTF at its renamed buffer:
 
 ```bash
-cp "$FOREST/Rock_1_K_Color1.gltf" src/main/resources/models/tiles/dungeon/cliff_a.gltf
-cp "$FOREST/Rock_1_K_Color1.bin"  src/main/resources/models/tiles/dungeon/cliff_a.bin
-cp "$FOREST/Rock_1_J_Color1.gltf" src/main/resources/models/tiles/dungeon/cliff_b.gltf
-cp "$FOREST/Rock_1_J_Color1.bin"  src/main/resources/models/tiles/dungeon/cliff_b.bin
-cp src/main/resources/models/tiles/forest/forest_texture.png src/main/resources/models/tiles/dungeon/
-sed -i 's/"Rock_1_K_Color1.bin"/"cliff_a.bin"/' src/main/resources/models/tiles/dungeon/cliff_a.gltf
-sed -i 's/"Rock_1_J_Color1.bin"/"cliff_b.bin"/' src/main/resources/models/tiles/dungeon/cliff_b.gltf
-grep -o '"uri"[^,}]*' src/main/resources/models/tiles/dungeon/cliff_*.gltf
-git rm -q src/main/resources/models/tiles/dungeon/wall_cracked.gltf src/main/resources/models/tiles/dungeon/wall_cracked.bin
+cp "$FOREST/Rock_1_K_Color1.gltf" src/main/resources/models/terrain/dungeon/cliff_a.gltf
+cp "$FOREST/Rock_1_K_Color1.bin"  src/main/resources/models/terrain/dungeon/cliff_a.bin
+cp "$FOREST/Rock_1_J_Color1.gltf" src/main/resources/models/terrain/dungeon/cliff_b.gltf
+cp "$FOREST/Rock_1_J_Color1.bin"  src/main/resources/models/terrain/dungeon/cliff_b.bin
+cp src/main/resources/models/terrain/forest/forest_texture.png src/main/resources/models/terrain/dungeon/
+sed -i 's/"Rock_1_K_Color1.bin"/"cliff_a.bin"/' src/main/resources/models/terrain/dungeon/cliff_a.gltf
+sed -i 's/"Rock_1_J_Color1.bin"/"cliff_b.bin"/' src/main/resources/models/terrain/dungeon/cliff_b.gltf
+grep -o '"uri"[^,}]*' src/main/resources/models/terrain/dungeon/cliff_*.gltf
+git rm -q src/main/resources/models/terrain/dungeon/wall_cracked.gltf src/main/resources/models/terrain/dungeon/wall_cracked.bin
 ```
 
 Expected from the grep: each file names its own `.bin` and `forest_texture.png`.
@@ -112,7 +112,7 @@ Expected from the grep: each file names its own `.bin` and `forest_texture.png`.
   WallVariety = 0.35
   ; Masonry is for what was built: the retaining wall under a raised floor, which
   ; the client draws only where rock stands above the foot of its face.
-  RockFace = models/tiles/dungeon/wall.gltf
+  RockFace = models/terrain/dungeon/wall.gltf
   ; The lid is the floor tile, and deeper in the rock nothing stands on it -- so
   ; it is darkened to read as rock in shadow rather than as more floor. Under the
   ; rocks themselves it barely shows: they cover their cell.
@@ -125,13 +125,13 @@ and the tones:
   Tones = [
     Tone
       Name = Stone
-      Floor = models/tiles/dungeon/floor.gltf
-      Wall = models/tiles/dungeon/cliff_a.gltf
+      Floor = models/terrain/dungeon/floor.gltf
+      Wall = models/terrain/dungeon/cliff_a.gltf
     End,
     Tone
       Name = Cracked
-      Floor = models/tiles/dungeon/floor_rocks.gltf
-      Wall = models/tiles/dungeon/cliff_b.gltf
+      Floor = models/terrain/dungeon/floor_rocks.gltf
+      Wall = models/terrain/dungeon/cliff_b.gltf
     End
   ]
 ```
@@ -148,13 +148,13 @@ Expected: PASS — including `everyThemeIsTheSizeItSaysItIs` (3.69 vs the model'
 - [ ] **Step 7: Credit the rocks** — in `CREDITS.md`, after the "…and its rocks and bare trees" row:
 
 ```
-| …and the cliff rocks the caverns are bounded by | KayKit | CC0 | `models/tiles/dungeon/cliff_*.gltf` |
+| …and the cliff rocks the caverns are bounded by | KayKit | CC0 | `models/terrain/dungeon/cliff_*.gltf` |
 ```
 
 - [ ] **Step 8: Commit** — only on the owner's word:
 
 ```bash
-git add -A src/main/resources/models/tiles/dungeon src/main/resources/data/world/themes/dungeon.duke src/test/java/uz/dukeengine/dungeon/DungeonTilesTest.java CREDITS.md
+git add -A src/main/resources/models/terrain/dungeon src/main/resources/data/world/themes/dungeon.duke src/test/java/uz/dukeengine/dungeon/DungeonTilesTest.java CREDITS.md
 git commit -m "The caverns are bounded by rock, and masonry only holds up raised ground"
 ```
 

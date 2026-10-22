@@ -91,7 +91,7 @@ Monster
   Scale = 0.9
   ; The hooded one, which is what a thing that follows you should look like.
   ; It boxes 3.05 rather than 2.17 -- the hood -- so its scale is the odd one.
-  Model = models/monsters/skeleton_rogue.glb
+  Model = models/characters/monsters/skeleton_rogue.glb
   Animations = Humanoid
   ; Moves at a jog, not a walk: Running_A at about its own pace rather than Walking_A several times over.
   Walk = Running_A
@@ -102,7 +102,7 @@ Monster
   Effect = EmberEyes
   ModelScale = 3.9
   Held = Held
-    Model = models/monsters/crossbow.gltf
+    Model = models/items/gear/crossbow.gltf
     Bone = handslot.r
     ; A quarter turn, because the crossbow is the second weapon in these packs that
     ; is not laid out like the rest of them. The blades, axes and staves all run

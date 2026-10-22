@@ -373,13 +373,13 @@ Travel.TravelHint = "Click a tower you have found to travel there — {cost} gol
 ; DayNight.Weathers.5 = ""  ; uz: * = Clear 65, Rain 25, Storm 10
 
 ; ---- data/world/scene.duke ----
-; PaintedGround.Cover = ""  ; uz: models/nature/kenney/grass.glb 5 11, models/nature/kenney/grass_large.glb 4 11, models/nature/ultimate/grass.glb 3 11, models/nature/megakit/grass_common_short.glb 3 10, models/nature/kenney/flower_yellow_a.glb 1 9, models/nature/kenney/flower_red_a.glb 1 9, models/nature/kenney/flower_purple_a.glb 1 9
-; PaintedGround.Cover.1 = ""  ; uz: models/nature/megakit/fern_1.glb 4 9, models/nature/kenney/grass_leafs.glb 3 11, models/nature/megakit/plant_1.glb 2 9, models/nature/kenney/mushroom_tan_group.glb 1 8, models/nature/megakit/clover_1.glb 1 9
-; PaintedGround.Cover.2 = ""  ; uz: models/nature/ultimate/grass_short.glb 4 12, models/nature/megakit/grass_wispy_short.glb 3 10, models/nature/ultimate/wheat.glb 2 10, models/nature/megakit/grass_wispy_tall.glb 1 9
-; PaintedGround.Cover.3 = ""  ; uz: models/nature/ultimate/plant_2.glb 3 8, models/nature/megakit/grass_wispy_short.glb 2 9, models/nature/kenney/rock_small_a.glb 2 6
-; PaintedGround.Cover.4 = ""  ; uz: models/nature/ultimate/plant_2.glb 2 7, models/nature/kenney/rock_small_d.glb 1 6
-; PaintedGround.Cover.5 = ""  ; uz: models/nature/kenney/rock_small_a.glb 2 6, models/nature/kenney/rock_small_d.glb 2 6, models/nature/megakit/grass_wispy_short.glb 2 9
-; PaintedGround.Cover.6 = ""  ; uz: models/inuciian/nature/cattails.glb 1 0.9, models/nature/kenney/grass_large.glb 4 11, models/nature/megakit/grass_common_tall.glb 2 10, models/nature/kenney/grass_leafs.glb 1 11
+; PaintedGround.Cover = ""  ; uz: models/nature/grass/grass.glb 5 11, models/nature/grass/grass_large.glb 4 11, models/nature/grass/grass_1.glb 3 11, models/nature/grass/grass_common_short.glb 3 10, models/nature/flowers/flower_yellow_a.glb 1 9, models/nature/flowers/flower_red_a.glb 1 9, models/nature/flowers/flower_purple_a.glb 1 9
+; PaintedGround.Cover.1 = ""  ; uz: models/nature/plants/fern_1.glb 4 9, models/nature/grass/grass_leafs.glb 3 11, models/nature/plants/plant_1.glb 2 9, models/nature/mushrooms/mushroom_tan_group.glb 1 8, models/nature/plants/clover_1.glb 1 9
+; PaintedGround.Cover.2 = ""  ; uz: models/nature/grass/grass_short_1.glb 4 12, models/nature/grass/grass_wispy_short.glb 3 10, models/nature/plants/wheat.glb 2 10, models/nature/grass/grass_wispy_tall.glb 1 9
+; PaintedGround.Cover.3 = ""  ; uz: models/nature/plants/plant_2.glb 3 8, models/nature/grass/grass_wispy_short.glb 2 9, models/nature/rocks/rock_small_a.glb 2 6
+; PaintedGround.Cover.4 = ""  ; uz: models/nature/plants/plant_2.glb 2 7, models/nature/rocks/rock_small_d.glb 1 6
+; PaintedGround.Cover.5 = ""  ; uz: models/nature/rocks/rock_small_a.glb 2 6, models/nature/rocks/rock_small_d.glb 2 6, models/nature/grass/grass_wispy_short.glb 2 9
+; PaintedGround.Cover.6 = ""  ; uz: models/nature/plants/cattails.glb 1 0.9, models/nature/grass/grass_large.glb 4 11, models/nature/grass/grass_common_tall.glb 2 10, models/nature/grass/grass_leafs.glb 1 11
 
 ; ---- data/world/themes/dungeon.duke ----
 Theme.Dungeon.Name.3 = "Pillar"  ; uz: Pillar

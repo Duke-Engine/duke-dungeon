@@ -57,7 +57,7 @@ Monster
   Weight = 0
   Colour = 0xC8B890
   Scale = 0.58
-  Model = models/bestiary/crab.glb
+  Model = models/characters/monsters/crab.glb
   ModelScale = 4.63
   Idle = Idle
   Walk = Walk
@@ -117,7 +117,7 @@ Monster
   Weight = 0
   Colour = 0xC8B890
   Scale = 1.08
-  Model = models/bestiary/sharkman.glb
+  Model = models/characters/monsters/sharkman.glb
   ModelScale = 8.34
   Idle = Idle
   Walk = Walk
@@ -184,7 +184,7 @@ Monster
   KeepDistance = [30, 55]
   Colour = 0xC8B890
   Scale = 0.92
-  Model = models/bestiary/pirate_anne.glb
+  Model = models/characters/monsters/pirate_anne.glb
   ModelScale = 6.7
   Idle = Idle
   Walk = Walk
@@ -245,7 +245,7 @@ Monster
   SkillDistance = [0, 50]
   Colour = 0xA03030
   Scale = 1.33
-  Model = models/bestiary/sharkman.glb
+  Model = models/characters/monsters/sharkman.glb
   ModelScale = 10.27
   Tint = 0xA03030
   Idle = Idle
@@ -332,7 +332,7 @@ Monster
   SkillDistance = [0, 30]
   Colour = 0xC8B890
   Scale = 2.17
-  Model = models/bestiary/kraken_tentacle.glb
+  Model = models/characters/monsters/kraken_tentacle.glb
   ModelScale = 1.32
   Idle = Idle
   Walk = Walk
@@ -423,7 +423,7 @@ Monster
   Weight = 0
   Colour = 0xC8B890
   Scale = 0.96
-  Model = models/bestiary/pirate_mako.glb
+  Model = models/characters/monsters/pirate_mako.glb
   ModelScale = 7.21
   Idle = Idle
   Walk = Walk
@@ -484,7 +484,7 @@ Monster
   SkillDistance = [0, 50]
   Colour = 0xC8B890
   Scale = 1.08
-  Model = models/bestiary/pirate_captain.glb
+  Model = models/characters/monsters/pirate_captain.glb
   ModelScale = 7.45
   Idle = Idle
   Walk = Walk
@@ -569,7 +569,7 @@ Monster
   Weight = 0
   Colour = 0xC8B890
   Scale = 0.92
-  Model = models/bestiary/skeleton_pirate.glb
+  Model = models/characters/monsters/skeleton_pirate.glb
   ModelScale = 10.32
   Idle = Idle
   Walk = Walk

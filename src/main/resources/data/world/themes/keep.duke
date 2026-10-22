@@ -14,7 +14,7 @@ Theme
   ; The slab is a unit thick and centred on its own origin: pushed back half a
   ; unit, its face lands on the boundary.
   WallShift = -0.5
-  Stairs = models/tiles/dungeon/stairs.gltf
+  Stairs = models/terrain/dungeon/stairs.gltf
   ; The top of the wall is a floor tile: cooler and darker, stone in shade.
   CapTint = 0xA8A8B4
   StoreyShadePercent = 108
@@ -22,8 +22,8 @@ Theme
   Tones = [
     Tone
       Name = Stone
-      Floor = models/tiles/dungeon/floor.gltf
-      Wall = models/tiles/dungeon/wall.gltf
+      Floor = models/terrain/dungeon/floor.gltf
+      Wall = models/terrain/dungeon/wall.gltf
     End
   ]
   Monsters = [
@@ -63,7 +63,7 @@ Theme
     ; and stands as the model rests: closed.
     ThemeMonster
       Name = Gate
-      Model = models/props/gate/gate.glb
+      Model = models/buildings/gates/gate.glb
       ModelScale = 0.37
       Facing = 0
     End,
@@ -71,7 +71,7 @@ Theme
     ; the owner's clip, played once and held on its last frame.
     ThemeMonster
       Name = OpenGate
-      Model = models/props/gate/gate.glb
+      Model = models/buildings/gates/gate.glb
       ModelScale = 0.37
       Facing = 0
       PlayOnce = open

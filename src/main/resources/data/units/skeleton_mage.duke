@@ -84,7 +84,7 @@ Monster
   KeepDistance = [35, 55]
   ; The staff-carrier again, burning: a warm wash tells it from the pale Revenant
   ; before its fire does.
-  Model = models/monsters/skeleton_mage.glb
+  Model = models/characters/monsters/skeleton_mage.glb
   Animations = Humanoid
   ; Moves at a jog, not a walk: Running_A at about its own pace rather than Walking_A several times over.
   Walk = Running_A
@@ -94,7 +94,7 @@ Monster
   Effect = EmberEyes
   ModelScale = 6.0
   Held = Held
-    Model = models/monsters/staff.gltf
+    Model = models/items/gear/skeleton_staff.gltf
     Bone = handslot.r
   End
   Tint = 0xFF9A6A

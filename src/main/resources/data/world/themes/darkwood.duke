@@ -14,7 +14,7 @@ Theme
   ; and eighteen tall, and three stand in every cell of rock.
   WallTileSize = 6
   WallHeight = 0
-  Stairs = models/tiles/forest/stairs.gltf
+  Stairs = models/terrain/forest/stairs.gltf
   WallFillsRock = Yes
   WallClump = 3
   WallSpread = 0.3
@@ -35,72 +35,72 @@ Theme
   End
   ; Wilderness, and alive only just: the dark wood is the pine wood's ground under darker trees.
   Climate = [92, 30]
-  ; What the brush and the generator strew between its trees: Inuciian's pieces (models/inuciian,
+  ; What the brush and the generator strew between its trees: Inuciian's pieces (under models/ by kind,
   ; CC BY 4.0), each written at the size it stands at Scale 1 -- see art/inuciian/export_models.py.
   ; The foliage is the dark copies; the autumn ones stay beside them for a wood in another season.
   Scenery = [
     Scatter
-      Model = models/inuciian/nature/grass_tall_dark.glb
+      Model = models/nature/grass/grass_tall_dark.glb
       PerHundred = 12
       Scale = 1
       Variety = 0.25
     End,
     Scatter
-      Model = models/inuciian/nature/grass_short_dark.glb
+      Model = models/nature/grass/grass_short_dark.glb
       PerHundred = 14
       Scale = 1
       Variety = 0.25
     End,
     Scatter
-      Model = models/inuciian/nature/bush_large_dark.glb
+      Model = models/nature/bushes/bush_large_dark.glb
       PerHundred = 4
       Scale = 1
       Variety = 0.25
     End,
     Scatter
-      Model = models/inuciian/nature/bush_bare.glb
+      Model = models/nature/bushes/bush_bare.glb
       PerHundred = 3
       Scale = 1
       Variety = 0.25
     End,
     Scatter
-      Model = models/inuciian/nature/rock.glb
+      Model = models/nature/rocks/rock.glb
       PerHundred = 2
       Scale = 1
       Variety = 0.25
     End,
     Scatter
-      Model = models/inuciian/nature/rock_small.glb
+      Model = models/nature/rocks/rock_small.glb
       PerHundred = 5
       Scale = 1
       Variety = 0.25
     End,
     Scatter
-      Model = models/inuciian/nature/mushroom_red.glb
+      Model = models/nature/mushrooms/mushroom_red.glb
       PerHundred = 3
       Scale = 1
       Variety = 0.3
     End,
     Scatter
-      Model = models/inuciian/nature/mushroom_brown.glb
+      Model = models/nature/mushrooms/mushroom_brown.glb
       PerHundred = 3
       Scale = 1
       Variety = 0.3
     End,
     Scatter
-      Model = models/inuciian/nature/stump.glb
+      Model = models/nature/stumps/stump.glb
       PerHundred = 1
       Scale = 1
       Variety = 0.25
     End,
     Scatter
-      Model = models/inuciian/nature/mound.glb
+      Model = models/props/graves/mound.glb
       PerHundred = 1
       Scale = 1
       Variety = 0.25
     End,
     Scatter
-      Model = models/inuciian/nature/cattails.glb
+      Model = models/nature/plants/cattails.glb
       PerHundred = 1
       Scale = 1
       Variety = 0.25
@@ -108,7 +108,7 @@ Theme
   ]
   ; Its groves: the dark pine among dead trees, two to a cell.
   Grove = Grove
-    Models = [models/inuciian/nature/pine_dark.glb, models/inuciian/nature/pine_dark.glb, models/inuciian/nature/dead_tree.glb, models/inuciian/nature/dead_tree_bent.glb, models/inuciian/nature/dead_tree_tall.glb]
+    Models = [models/nature/trees/pine_dark.glb, models/nature/trees/pine_dark.glb, models/nature/trees/dead_tree.glb, models/nature/trees/dead_tree_bent.glb, models/nature/trees/dead_tree_tall.glb]
     PerCell = 2
     Scale = 1
     Footprint = 0.1
@@ -116,15 +116,15 @@ Theme
   Tones = [
     Tone
       Name = Tall
-      Floor = models/tiles/forest/floor_rocky.gltf
-      Wall = models/tiles/forest/pine_tall.gltf
-      Walls = [models/tiles/forest/pine.gltf]
+      Floor = models/terrain/forest/floor_rocky.gltf
+      Wall = models/terrain/forest/pine_tall.gltf
+      Walls = [models/terrain/forest/pine.gltf]
     End,
     Tone
       Name = Young
-      Floor = models/tiles/forest/floor.gltf
-      Wall = models/tiles/forest/pine.gltf
-      Walls = [models/tiles/forest/pine_tall.gltf, models/tiles/forest/bush_tall.gltf]
+      Floor = models/terrain/forest/floor.gltf
+      Wall = models/terrain/forest/pine.gltf
+      Walls = [models/terrain/forest/pine_tall.gltf, models/terrain/forest/bush_tall.gltf]
     End
   ]
   ; What stands about is the wood's own: see forest.duke.

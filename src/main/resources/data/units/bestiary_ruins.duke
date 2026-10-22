@@ -57,7 +57,7 @@ Monster
   Weight = 0
   Colour = 0xB09070
   Scale = 0.57
-  Model = models/bestiary/rat.glb
+  Model = models/characters/monsters/rat.glb
   ModelScale = 2.97
   Tint = 0xB09070
   Idle = Idle
@@ -118,7 +118,7 @@ Monster
   Weight = 0
   Colour = 0xA08060
   Scale = 1.33
-  Model = models/wilds/goleling.glb
+  Model = models/characters/monsters/goleling.glb
   ModelScale = 10.31
   Tint = 0xA08060
   Idle = Idle
@@ -211,7 +211,7 @@ Monster
   KeepDistance = [30, 50]
   Colour = 0xC8B890
   Scale = 1
-  Model = models/bestiary/crowned_golem.glb
+  Model = models/characters/monsters/crowned_golem.glb
   ModelScale = 4.67
   Idle = Idle
   Walk = Walk
@@ -272,7 +272,7 @@ Monster
   SkillDistance = [0, 50]
   Colour = 0xF0E8A0
   Scale = 1.42
-  Model = models/wilds/goleling.glb
+  Model = models/characters/monsters/goleling.glb
   ModelScale = 10.95
   Tint = 0xF0E8A0
   Idle = Idle
@@ -372,7 +372,7 @@ Monster
   SkillDistance = [0, 50]
   Colour = 0x504868
   Scale = 1.58
-  Model = models/wilds/goleling.glb
+  Model = models/characters/monsters/goleling.glb
   ModelScale = 12.24
   Tint = 0x504868
   Idle = Idle
@@ -467,7 +467,7 @@ Monster
   SkillDistance = [10, 50]
   Colour = 0x7A5040
   Scale = 1.67
-  Model = models/bestiary/bull.glb
+  Model = models/characters/monsters/bull.glb
   ModelScale = 4.36
   Tint = 0x7A5040
   Idle = Idle

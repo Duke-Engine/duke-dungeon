@@ -36,16 +36,16 @@ Food
   ; takes to grow back (0: never used up), the word a click on it gives (its
   ; cursor's name), and what stands in its place meanwhile (- for nothing).
   Gathers = [
-    "models/tiles/forest/tree.gltf otin 3 90 18000 Chop Stump",
-    "models/tiles/forest/tree_round.gltf otin 3 90 18000 Chop Stump",
-    "models/tiles/forest/tree_twisted.gltf otin 3 90 18000 Chop Stump",
-    "models/tiles/forest/tree_stunted.gltf otin 3 90 18000 Chop Stump",
-    "models/tiles/forest/pine.gltf otin 3 90 18000 Chop Stump",
-    "models/tiles/forest/pine_tall.gltf otin 3 90 18000 Chop Stump",
-    "models/inuciian/nature/pine_dark.glb otin 3 90 18000 Chop Stump",
-    "models/inuciian/nature/dead_tree.glb otin 2 90 18000 Chop Stump",
-    "models/inuciian/nature/dead_tree_bent.glb otin 2 90 18000 Chop Stump",
-    "models/inuciian/nature/dead_tree_tall.glb otin 2 90 18000 Chop Stump",
+    "models/terrain/forest/tree.gltf otin 3 90 18000 Chop Stump",
+    "models/terrain/forest/tree_round.gltf otin 3 90 18000 Chop Stump",
+    "models/terrain/forest/tree_twisted.gltf otin 3 90 18000 Chop Stump",
+    "models/terrain/forest/tree_stunted.gltf otin 3 90 18000 Chop Stump",
+    "models/terrain/forest/pine.gltf otin 3 90 18000 Chop Stump",
+    "models/terrain/forest/pine_tall.gltf otin 3 90 18000 Chop Stump",
+    "models/nature/trees/pine_dark.glb otin 3 90 18000 Chop Stump",
+    "models/nature/trees/dead_tree.glb otin 2 90 18000 Chop Stump",
+    "models/nature/trees/dead_tree_bent.glb otin 2 90 18000 Chop Stump",
+    "models/nature/trees/dead_tree_tall.glb otin 2 90 18000 Chop Stump",
     "BerryBush rezavor 2 45 5400 Harvest -",
     "PumpkinPatch qovoq 1 45 7200 Harvest -",
     "Well suv 1 45 0 Fill -",
@@ -159,7 +159,7 @@ End
 
 ThemeMonster
   Name = Stump
-  Model = models/inuciian/nature/stump.glb
+  Model = models/nature/stumps/stump.glb
   ModelScale = 1
 End
 
@@ -175,7 +175,7 @@ End
 
 ThemeMonster
   Name = BerryBush
-  Model = models/food/berry_bush.glb
+  Model = models/items/food/berry_bush.glb
   ModelScale = 5
 End
 
@@ -190,7 +190,7 @@ End
 
 ThemeMonster
   Name = PumpkinPatch
-  Model = models/food/pumpkin_patch.glb
+  Model = models/items/food/pumpkin_patch.glb
   ModelScale = 3.5
 End
 
@@ -206,7 +206,7 @@ End
 
 ThemeMonster
   Name = Campfire
-  Model = models/food/campfire.glb
+  Model = models/items/food/campfire.glb
   ModelScale = 16
   Effect = CampfireFlame
 End
@@ -486,7 +486,7 @@ Monster
   MinDepth = 99
   Weight = 0
   Colour = 0xB07A48
-  Model = models/food/deer.glb
+  Model = models/items/food/deer.glb
   ModelScale = 2.2
   Idle = Idle
   Walk = Walk
@@ -544,7 +544,7 @@ Monster
   MinDepth = 99
   Weight = 0
   Colour = 0x6A4A38
-  Model = models/food/boar.glb
+  Model = models/items/food/boar.glb
   ModelScale = 4
   ; The pig made a boar: darker, by the game's tint.
   Tint = 0x6E5040
@@ -760,7 +760,7 @@ End
 
 ThemeMonster
   Name = OreRock
-  Model = models/inuciian/nature/rock.glb
+  Model = models/nature/rocks/rock.glb
   ModelScale = 1.2
 End
 
@@ -774,7 +774,7 @@ End
 
 ThemeMonster
   Name = HerbPatch
-  Model = models/inuciian/nature/bush_large.glb
+  Model = models/nature/bushes/bush_large.glb
   ModelScale = 0.6
 End
 

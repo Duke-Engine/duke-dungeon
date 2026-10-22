@@ -59,7 +59,7 @@ Monster
   Weight = 0
   Colour = 0xC8B890
   Scale = 0.92
-  Model = models/wilds/goleling.glb
+  Model = models/characters/monsters/goleling.glb
   ModelScale = 4.5
   ; Its own clips, renamed by art/monsters/export_monsters.py.
   Idle = Idle
@@ -120,7 +120,7 @@ Monster
   Weight = 0
   Colour = 0xC8B890
   Scale = 1.50
-  Model = models/wilds/giant.glb
+  Model = models/characters/monsters/giant.glb
   ModelScale = 4.7
   ; Its own clips, renamed by art/monsters/export_monsters.py.
   Idle = Idle
@@ -189,7 +189,7 @@ Monster
   KeepDistance = [30, 50]
   Colour = 0xC8B890
   Scale = 1.08
-  Model = models/wilds/tribal.glb
+  Model = models/characters/monsters/tribal.glb
   ModelScale = 2.95
   ; Its own clips, renamed by art/monsters/export_monsters.py.
   Idle = Idle
@@ -251,7 +251,7 @@ Monster
   SkillDistance = [0, 50]
   Colour = 0x9AA0B0
   Scale = 1.33
-  Model = models/wilds/goleling.glb
+  Model = models/characters/monsters/goleling.glb
   ModelScale = 6.3
   Tint = 0x9AA0B0
   ; Its own clips, renamed by art/monsters/export_monsters.py.
@@ -339,7 +339,7 @@ Monster
   Weight = 0
   Colour = 0xB07050
   Scale = 2.17
-  Model = models/wilds/giant.glb
+  Model = models/characters/monsters/giant.glb
   ModelScale = 6.75
   Tint = 0xB07050
   ; Its own clips, renamed by art/monsters/export_monsters.py.

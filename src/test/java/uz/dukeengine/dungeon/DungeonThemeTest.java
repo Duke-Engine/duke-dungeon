@@ -77,9 +77,9 @@ class DungeonThemeTest {
         var shipped = uz.dukeengine.dungeon.content.Content.data();
         var repainted = rewritten(shipped, "FogTint = 0x060B06", "FogTint = 0x0000FF");
         repainted = rewritten(repainted, "FogTint = 0x07060A", "FogTint = 0xFF0000");
-        repainted = rewritten(repainted, "Wall = models/tiles/forest/tree.gltf", "Wall = models/tiles/forest/tree_round.gltf");
-        repainted = rewritten(repainted, "Floor = models/tiles/dungeon/floor.gltf",
-                "Floor = models/tiles/dungeon/floor_rocks.gltf");
+        repainted = rewritten(repainted, "Wall = models/terrain/forest/tree.gltf", "Wall = models/terrain/forest/tree_round.gltf");
+        repainted = rewritten(repainted, "Floor = models/terrain/dungeon/floor.gltf",
+                "Floor = models/terrain/dungeon/floor_rocks.gltf");
 
         var asShipped = playedOut(DungeonSettings.parse(shipped));
         var asRepainted = playedOut(DungeonSettings.parse(repainted));

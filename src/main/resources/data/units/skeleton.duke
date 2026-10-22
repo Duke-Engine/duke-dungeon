@@ -103,7 +103,7 @@ Monster
   Scale = 1.0
   ; The plain skeleton of the pack, with a blade. GeometryHeight is 12 in
   ; its template and the model boxes 2.17 tall.
-  Model = models/monsters/skeleton_minion.glb
+  Model = models/characters/monsters/skeleton_minion.glb
   Animations = Humanoid
   ; Moves at a jog, not a walk: Running_A at about its own pace rather than Walking_A several times over.
   Walk = Running_A
@@ -114,7 +114,7 @@ Monster
   Effect = EmberEyes
   ModelScale = 5.5
   Held = Held
-    Model = models/monsters/blade.gltf
+    Model = models/items/gear/blade.gltf
     Bone = handslot.r
   End
 End

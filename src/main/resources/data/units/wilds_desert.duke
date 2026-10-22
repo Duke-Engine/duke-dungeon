@@ -59,7 +59,7 @@ Monster
   Weight = 0
   Colour = 0xC8B890
   Scale = 1.00
-  Model = models/wilds/cactoro.glb
+  Model = models/characters/monsters/cactoro.glb
   ModelScale = 3.2
   ; Its own clips, renamed by art/monsters/export_monsters.py.
   Idle = Idle
@@ -122,7 +122,7 @@ Monster
   Weight = 0
   Colour = 0xC8B890
   Scale = 1.17
-  Model = models/wilds/dino.glb
+  Model = models/characters/monsters/dino.glb
   ModelScale = 4.65
   ; Its own clips, renamed by art/monsters/export_monsters.py.
   Idle = Idle
@@ -191,7 +191,7 @@ Monster
   KeepDistance = [30, 50]
   Colour = 0xC8B890
   Scale = 1.17
-  Model = models/wilds/demon.glb
+  Model = models/characters/monsters/demon.glb
   ModelScale = 5.35
   ; Its own clips, renamed by art/monsters/export_monsters.py.
   Idle = Idle
@@ -254,7 +254,7 @@ Monster
   Weight = 0
   Colour = 0xFF8A40
   Scale = 1.58
-  Model = models/wilds/dino.glb
+  Model = models/characters/monsters/dino.glb
   ModelScale = 6.3
   Tint = 0xFF8A40
   ; Its own clips, renamed by art/monsters/export_monsters.py.
@@ -343,7 +343,7 @@ Monster
   SkillDistance = [10, 60]
   Colour = 0xC8B890
   Scale = 1.83
-  Model = models/wilds/dragon.glb
+  Model = models/characters/monsters/dragon.glb
   ModelScale = 6.95
   ; Its own clips, renamed by art/monsters/export_monsters.py.
   Idle = Idle

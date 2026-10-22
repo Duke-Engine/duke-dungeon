@@ -1,0 +1,6 @@
+Nature Kit, by Kenney (https://kenney.nl/assets/nature-kit)
+
+Licence: CC0 1.0 Universal (public domain dedication) - https://creativecommons.org/publicdomain/zero/1.0/
+
+Changed here: scaled, stood on the ground, recoloured to earthy tones, one material each.
+The pack shipped no licence file beside its models; this records what CREDITS.md does.

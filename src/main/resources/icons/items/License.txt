@@ -16,4 +16,4 @@ OSARE weapon icons -- Blarumyrran -- https://opengameart.org/content/osare-weapo
   Modified: cut from the sheet, black keyed out, framed.
 
 key.png is Delapouite's boss key from game-icons.net. The key lying on the floor is still the owner's model
-(models/props/key/), whose maker is not named: see CREDITS.md.
+(models/items/keys/), whose maker is not named: see CREDITS.md.

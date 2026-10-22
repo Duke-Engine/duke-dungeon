@@ -44,14 +44,14 @@ SWATCH = 8
 # Each hero: his file, where his idle comes from, his look's ModelScale, and his thigh, shin and upper-arm bones,
 # left then right.
 HEROES = {
-    "knight": dict(model="models/heroes/lange/lange.glb", library=None, idle="Idle", scale=6.82,
+    "knight": dict(model="models/characters/heroes/lange.glb", library=None, idle="Idle", scale=6.82,
                    thighs=("L.thigh", "R.thigh"), shins=("L.leg", "R.leg"), arms=("L.shoulder", "R.shoulder")),
-    "rogue": dict(model="models/heroes/huntress.glb", library="animations/characters/huntress.glb",
+    "rogue": dict(model="models/characters/heroes/huntress.glb", library="animations/characters/huntress.glb",
                   idle="Ranged_Bow_Idle", scale=5.50,
                   thighs=("QuickRigCharacter_LeftUpLeg_04", "QuickRigCharacter_RightUpLeg_08"),
                   shins=("QuickRigCharacter_LeftLeg_05", "QuickRigCharacter_RightLeg_09"),
                   arms=("QuickRigCharacter_LeftArm_016", "QuickRigCharacter_RightArm_039")),
-    "mage": dict(model="models/heroes/mage.glb", library="animations/characters/general.glb", idle="Idle_A",
+    "mage": dict(model="models/characters/heroes/mage.glb", library="animations/characters/general.glb", idle="Idle_A",
                  scale=4.52, thighs=("upperleg.l", "upperleg.r"), shins=("lowerleg.l", "lowerleg.r"),
                  arms=("upperarm.l", "upperarm.r")),
 }

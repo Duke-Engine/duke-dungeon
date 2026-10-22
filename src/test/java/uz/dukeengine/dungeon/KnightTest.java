@@ -770,10 +770,10 @@ class KnightTest {
         var one = DungeonSettings.parse("""
                 Hero
                   Name = Solo
-                  Model = models/heroes/rogue.glb
+                  Model = models/characters/heroes/rogue.glb
                   Held = [
                     Held
-                      Model = models/heroes/bow.gltf
+                      Model = models/items/gear/bow.gltf
                       Bone = handslot.l
                       Scale = 2
                       Roll = 180
@@ -783,7 +783,7 @@ class KnightTest {
                 """).heroNamed("Solo").held();
 
         assertEquals(1, one.size());
-        assertEquals("models/heroes/bow.gltf", one.get(0).model());
+        assertEquals("models/items/gear/bow.gltf", one.get(0).model());
         assertEquals("handslot.l", one.get(0).bone());
         assertEquals(2f, one.get(0).scale(), 0.001f);
         assertEquals(180f, one.get(0).roll(), 0.001f);
@@ -797,10 +797,10 @@ class KnightTest {
         var quiver = DungeonSettings.parse("""
                 Hero
                   Name = Solo
-                  Model = models/heroes/rogue.glb
+                  Model = models/characters/heroes/rogue.glb
                   Held = [
                     Held
-                      Model = models/heroes/quiver.gltf
+                      Model = models/items/gear/quiver.gltf
                       Bone = chest
                       X = 0.12
                       Y = 0.10

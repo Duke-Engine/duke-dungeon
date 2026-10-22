@@ -74,7 +74,7 @@ class TrunkGapTest {
         float y = along;
         float middle = TALL / 2f + along;
         while (y < TALL) {
-            pieces.add(new Piece("models/tiles/forest/tree.gltf", FENCE + along, y, 0f, 1f, 0xFFFFFF, trunk));
+            pieces.add(new Piece("models/terrain/forest/tree.gltf", FENCE + along, y, 0f, 1f, 0xFFFFFF, trunk));
             boolean theGap = y < middle && y + (tight + 2 * trunk * 10) / 10f >= middle;
             y += ((theGap ? gap : tight) + 2 * trunk * 10f) / 10f;
         }

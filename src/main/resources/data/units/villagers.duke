@@ -28,7 +28,7 @@ Monster
   Weight = 0
   Colour = 0xA88C68
   Scale = 1.0
-  Model = models/heroes/rogue.glb
+  Model = models/characters/heroes/rogue.glb
   Tint = 0xC8B090
   ModelScale = 5.0
   Facing = 90
@@ -58,7 +58,7 @@ Monster
   Weight = 0
   Colour = 0x8A7A50
   Scale = 1.0
-  Model = models/heroes/ranger.glb
+  Model = models/characters/heroes/ranger.glb
   Tint = 0xB0A070
   ModelScale = 5.5
   Facing = 90
@@ -88,7 +88,7 @@ Monster
   Weight = 0
   Colour = 0x707888
   Scale = 1.0
-  Model = models/heroes/ranger.glb
+  Model = models/characters/heroes/ranger.glb
   Tint = 0x9098A8
   ModelScale = 5.5
   Facing = 90
@@ -118,7 +118,7 @@ Monster
   Weight = 0
   Colour = 0xB08850
   Scale = 1.0
-  Model = models/heroes/mage.glb
+  Model = models/characters/heroes/mage.glb
   Tint = 0xB89058
   ModelScale = 4.5
   Facing = 90
@@ -148,7 +148,7 @@ Monster
   Weight = 0
   Colour = 0x806040
   Scale = 1.0
-  Model = models/heroes/knight.glb
+  Model = models/characters/heroes/knight.glb
   Tint = 0xA08870
   ModelScale = 4.72
   Facing = 90

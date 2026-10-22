@@ -68,7 +68,7 @@ Monster
   Weight = 0
   Colour = 0x9A5AC8
   Scale = 1.0
-  Model = models/heroes/mage.glb
+  Model = models/characters/heroes/mage.glb
   Tint = 0xB48CE6
   ; The mage boxes about 2.655 tall: 13 / 2.655.
   ModelScale = 4.9
@@ -80,7 +80,7 @@ Monster
   WalkStride = 13.21
   UpperBody = spine
   Held = Held
-    Model = models/heroes/staff.gltf
+    Model = models/items/gear/staff.gltf
     Bone = handslot.r
   End
   ; Empty-handed: her own file has no staff and no bone to hang one on.

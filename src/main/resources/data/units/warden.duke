@@ -98,7 +98,7 @@ Monster
   Colour = 0xFFFFFF
   Scale = 1.8
   ; The plain skeleton, grown until it is nothing like one. GeometryHeight is 18.
-  Model = models/monsters/skeleton_minion.glb
+  Model = models/characters/monsters/skeleton_minion.glb
   Animations = Humanoid
   ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
   WalkStride = 6.18
@@ -107,7 +107,7 @@ Monster
   Effect = EmberEyes
   ModelScale = 8.3
   Held = Held
-    Model = models/monsters/axe.gltf
+    Model = models/items/gear/axe.gltf
     Bone = handslot.r
     Scale = 1.2
   End

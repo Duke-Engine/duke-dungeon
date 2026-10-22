@@ -59,7 +59,7 @@ Monster
   Weight = 0
   Colour = 0x50505A
   Scale = 1.0
-  Model = models/heroes/knight.glb
+  Model = models/characters/heroes/knight.glb
   ; Darkened: the medallion's.
   Tint = 0x5A5068
   ModelScale = 4.72
@@ -72,7 +72,7 @@ Monster
   UpperBody = spine
   Held = Held
     ; panarth's sword (Low poly medieval weapons, CC BY 4.0), as long as the kit's.
-    Model = models/weapons/medieval/sword.glb
+    Model = models/items/weapons/sword.glb
     Bone = handslot.r
     Scale = 1
   End

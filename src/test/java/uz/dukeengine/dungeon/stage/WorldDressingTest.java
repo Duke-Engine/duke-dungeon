@@ -79,7 +79,7 @@ class WorldDressingTest {
         var river = WorldMapWriter.channel(WorldMapWriter.SEED);
         boolean fords = java.util.stream.IntStream.range(0, road.length).anyMatch(i -> road[i] && river[i]);
         assertEquals(fords, scenery.stream().anyMatch(p -> p.model().endsWith("town_bridge.gltf")), "a bridge on a ford");
-        assertTrue(scenery.stream().anyMatch(p -> p.model().contains("weapons/medieval/")), "no battlefield arms");
+        assertTrue(scenery.stream().anyMatch(p -> p.model().contains("items/weapons/")), "no battlefield arms");
         var towers = DungeonRun.towers(stage.story(), SETTINGS.travel());
         assertEquals(5, towers.size(), "a tower a road but the forest's");
         assertEquals(towers.size(), stage.story().npcs().stream().filter(p -> p.kind().equals("TowerKeeper"))

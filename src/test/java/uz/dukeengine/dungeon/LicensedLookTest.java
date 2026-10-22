@@ -54,10 +54,10 @@ class LicensedLookTest {
 
     @Test
     void aLicensedModelThatIsNotShippedFallsBackToTheStandIn() {
-        var standIn = look("models/heroes/mage.glb");
+        var standIn = look("models/characters/heroes/mage.glb");
         assertSame(standIn, MonsterLook.licensedOr(look("models/licensed/nobody-has-this.glb"), standIn));
         assertSame(standIn, MonsterLook.licensedOr(null, standIn));
-        var shipped = look("models/heroes/mage.glb");
+        var shipped = look("models/characters/heroes/mage.glb");
         assertSame(shipped, MonsterLook.licensedOr(shipped, standIn), "a shipped model is drawn");
     }
 

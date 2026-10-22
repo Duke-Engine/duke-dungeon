@@ -1,0 +1,6 @@
+Stylized Nature MegaKit, by Quaternius (https://quaternius.com/packs/stylizednaturemegakit.html)
+
+Licence: CC0 1.0 Universal (public domain dedication) - https://creativecommons.org/publicdomain/zero/1.0/
+
+Changed here: scaled, stood on the ground, normal maps dropped, pictures at 512.
+The pack shipped no licence file beside its models; this records what CREDITS.md does.

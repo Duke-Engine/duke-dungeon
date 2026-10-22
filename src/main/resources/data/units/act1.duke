@@ -29,7 +29,7 @@ Monster
   Weight = 0
   Colour = 0xE8C15A
   Scale = 1.0
-  Model = models/heroes/ranger.glb
+  Model = models/characters/heroes/ranger.glb
   ; A little warmer than the talk demo's commander, so the two kinds are not drawn alike.
   Tint = 0xF0D8C0
   ModelScale = 5.5
@@ -41,7 +41,7 @@ Monster
   WalkStride = 14.83
   UpperBody = spine
   Held = Held
-    Model = models/weapons/medieval/sword.glb
+    Model = models/items/weapons/sword.glb
     Bone = handslot.r
   End
 End
@@ -97,7 +97,7 @@ Monster
   Weight = 0
   Colour = 0xE8C15B
   Scale = 1.0
-  Model = models/heroes/ranger.glb
+  Model = models/characters/heroes/ranger.glb
   Tint = 0xF4DCC4
   ModelScale = 5.5
   Facing = 90
@@ -106,7 +106,7 @@ Monster
   WalkStride = 14.83
   UpperBody = spine
   Held = Held
-    Model = models/weapons/medieval/sword.glb
+    Model = models/items/weapons/sword.glb
     Bone = handslot.r
   End
   Skills = [
@@ -140,7 +140,7 @@ Monster
   Weight = 0
   Colour = 0x9A5AC8
   Scale = 1.0
-  Model = models/heroes/mage.glb
+  Model = models/characters/heroes/mage.glb
   Tint = 0xC498E8
   ModelScale = 4.8
   Facing = 90
@@ -184,7 +184,7 @@ Monster
   Weight = 0
   Colour = 0x8A6A4A
   Scale = 1.0
-  Model = models/heroes/knight.glb
+  Model = models/characters/heroes/knight.glb
   Tint = 0xA08060
   ModelScale = 4.72
   Facing = 90
@@ -213,7 +213,7 @@ Monster
   Weight = 0
   Colour = 0xC8B8A0
   Scale = 1.0
-  Model = models/heroes/rogue.glb
+  Model = models/characters/heroes/rogue.glb
   Tint = 0xD0C0B0
   ModelScale = 5.0
   Facing = 90
@@ -275,7 +275,7 @@ Monster
   Weight = 0
   Colour = 0x4A7AC8
   Scale = 1.0
-  Model = models/heroes/knight.glb
+  Model = models/characters/heroes/knight.glb
   ModelScale = 4.72
   Facing = 90
   Animations = Humanoid
@@ -285,7 +285,7 @@ Monster
   WalkStride = 12.73
   UpperBody = spine
   Held = Held
-    Model = models/weapons/medieval/sword.glb
+    Model = models/items/weapons/sword.glb
     Bone = handslot.r
   End
 End
@@ -341,7 +341,7 @@ Monster
   Weight = 0
   Colour = 0x4AA87A
   Scale = 1.0
-  Model = models/heroes/rogue.glb
+  Model = models/characters/heroes/rogue.glb
   ModelScale = 5.0
   Facing = 90
   Animations = Humanoid
@@ -351,7 +351,7 @@ Monster
   WalkStride = 13.48
   UpperBody = spine
   Held = Held
-    Model = models/monsters/blade.gltf
+    Model = models/items/gear/blade.gltf
     Bone = handslot.r
   End
 End
@@ -407,7 +407,7 @@ Monster
   Weight = 0
   Colour = 0x803040
   Scale = 1.6
-  Model = models/monsters/skeleton_warrior.glb
+  Model = models/characters/monsters/skeleton_warrior.glb
   Animations = Humanoid
   ; Moves at a jog, not a walk: Running_A at about its own pace rather than Walking_A several times over.
   Walk = Running_A
@@ -418,7 +418,7 @@ Monster
   ModelScale = 8.3
   Tint = 0x7A4A5A
   Held = Held
-    Model = models/monsters/axe.gltf
+    Model = models/items/gear/axe.gltf
     Bone = handslot.r
     Scale = 1.2
   End
@@ -486,7 +486,7 @@ Monster
   Weight = 0
   Colour = 0x40384A
   Scale = 1.35
-  Model = models/heroes/knight.glb
+  Model = models/characters/heroes/knight.glb
   Tint = 0x40384A
   ModelScale = 6.3
   Facing = 90
@@ -497,7 +497,7 @@ Monster
   WalkStride = 16.99
   UpperBody = spine
   Held = Held
-    Model = models/weapons/medieval/sword.glb
+    Model = models/items/weapons/sword.glb
     Bone = handslot.r
     Scale = 1.3
   End
@@ -531,9 +531,9 @@ Monster
   Weight = 0
   Colour = 0xB06AE8
   Scale = 1
-  Model = models/monsters/skeleton_mage.glb
+  Model = models/characters/monsters/skeleton_mage.glb
   Animations = Humanoid
-  Texture = models/monsters/skeleton_texture_purple.png
+  Texture = models/characters/monsters/skeleton_texture_purple.png
   Effect = EmberEyes
   ; A little taller than the Skeleton Summoner, and paler: the queen's, not the dungeon's.
   ModelScale = 6.3
@@ -575,7 +575,7 @@ Monster
   Weight = 0
   Colour = 0x8A7A58
   Scale = 1.0
-  Model = models/heroes/knight.glb
+  Model = models/characters/heroes/knight.glb
   Tint = 0xA89878
   ModelScale = 4.72
   Facing = 90
@@ -584,7 +584,7 @@ Monster
   WalkStride = 3.52
   UpperBody = spine
   Held = Held
-    Model = models/weapons/medieval/sword.glb
+    Model = models/items/weapons/sword.glb
     Bone = handslot.r
   End
 End
@@ -645,7 +645,7 @@ Monster
   Weight = 0
   Colour = 0x5A9A6A
   Scale = 1.0
-  Model = models/heroes/rogue.glb
+  Model = models/characters/heroes/rogue.glb
   Tint = 0xC8E0C0
   ModelScale = 5.0
   Facing = 90
@@ -656,7 +656,7 @@ Monster
   WalkStride = 13.48
   UpperBody = spine
   Held = Held
-    Model = models/heroes/bow.gltf
+    Model = models/items/gear/bow.gltf
     Bone = handslot.l
     ; The bow runs along +Z, as the crossbow does: a quarter turn lays it along the hand.
     Yaw = 90
@@ -717,7 +717,7 @@ Monster
   Weight = 0
   Colour = 0xE8E0A8
   Scale = 1.0
-  Model = models/heroes/mage.glb
+  Model = models/characters/heroes/mage.glb
   Tint = 0xF0F0D8
   ModelScale = 4.8
   Facing = 90
@@ -728,7 +728,7 @@ Monster
   WalkStride = 12.94
   UpperBody = spine
   Held = Held
-    Model = models/heroes/staff.gltf
+    Model = models/items/gear/staff.gltf
     Bone = handslot.r
   End
   ; It mends the hero and the queen's men: the skeleton healer's light, on his side.

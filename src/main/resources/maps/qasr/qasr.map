@@ -100,15 +100,15 @@ StaticMap
   ; its facing and 1.4 across, so the court is walked into only by its gate; a tower is round.
   ; The keep is the fort's, drawn with its dark picture and a little red over it.
   Scenery = [
-    "models/castles/rampart/rampart_tower_tall.gltf 8 8 0 1 1.17; models/castles/rampart/rampart_wall.gltf 9 8 0 1 3x1.4; models/castles/rampart/rampart_tower_octagon.gltf 13 8 0 1 1.17; models/castles/rampart/rampart_wall_arcade.gltf 14 8 0 1 3x1.4; models/castles/rampart/rampart_tower_tall.gltf 18 8 90 1 1.17",
-    "models/castles/rampart/rampart_wall.gltf 8 9 270 1 3x1.4",
-    "models/castles/room/room_barrel.gltf 10 10 0 1 0.3; models/castles/room/room_crate.gltf 10.8 10.1 20 1 0.3",
-    "models/castles/fort/fort_keep.gltf@models/castles/fort/textures/fort_15_dark.jpg 15.5 11.5 0 1 0.57 0xF0D8E0",
-    "models/castles/rampart/rampart_wall.gltf 18 12 90 1 3x1.4; models/castles/room/room_basin.gltf 11 12.5 0 1 0.3",
-    "models/castles/rampart/rampart_tower.gltf 8 13 0 1 1.17; models/castles/rampart/rampart_tower.gltf 18 13 0 1 1.17",
-    "models/castles/rampart/rampart_wall_arcade.gltf 8 14 270 1 3x1.4",
-    "models/castles/room/room_table.gltf 11 15.5 90 1 0.4; models/castles/town/town_banner_post.gltf 14.5 15.5 0 1 0.2",
-    "models/castles/rampart/rampart_wall.gltf 18 17 90 1 3x1.4",
-    "models/castles/rampart/rampart_tower_tall.gltf 8 18 270 1 1.17; models/castles/rampart/rampart_wall.gltf 12 18 180 1 3x1.4; models/castles/rampart/rampart_tower.gltf 13 18 0 1 1.17; models/castles/rampart/rampart_wall_gate.gltf 17 18 180 1 0; models/castles/rampart/rampart_tower_tall.gltf 18 18 180 1 1.17",
+    "models/buildings/rampart/rampart_tower_tall.gltf 8 8 0 1 1.17; models/buildings/rampart/rampart_wall.gltf 9 8 0 1 3x1.4; models/buildings/rampart/rampart_tower_octagon.gltf 13 8 0 1 1.17; models/buildings/rampart/rampart_wall_arcade.gltf 14 8 0 1 3x1.4; models/buildings/rampart/rampart_tower_tall.gltf 18 8 90 1 1.17",
+    "models/buildings/rampart/rampart_wall.gltf 8 9 270 1 3x1.4",
+    "models/buildings/room/room_barrel.gltf 10 10 0 1 0.3; models/buildings/room/room_crate.gltf 10.8 10.1 20 1 0.3",
+    "models/buildings/fort/fort_keep.gltf@models/buildings/fort/textures/fort_15_dark.jpg 15.5 11.5 0 1 0.57 0xF0D8E0",
+    "models/buildings/rampart/rampart_wall.gltf 18 12 90 1 3x1.4; models/buildings/room/room_basin.gltf 11 12.5 0 1 0.3",
+    "models/buildings/rampart/rampart_tower.gltf 8 13 0 1 1.17; models/buildings/rampart/rampart_tower.gltf 18 13 0 1 1.17",
+    "models/buildings/rampart/rampart_wall_arcade.gltf 8 14 270 1 3x1.4",
+    "models/buildings/room/room_table.gltf 11 15.5 90 1 0.4; models/buildings/town/town_banner_post.gltf 14.5 15.5 0 1 0.2",
+    "models/buildings/rampart/rampart_wall.gltf 18 17 90 1 3x1.4",
+    "models/buildings/rampart/rampart_tower_tall.gltf 8 18 270 1 1.17; models/buildings/rampart/rampart_wall.gltf 12 18 180 1 3x1.4; models/buildings/rampart/rampart_tower.gltf 13 18 0 1 1.17; models/buildings/rampart/rampart_wall_gate.gltf 17 18 180 1 0; models/buildings/rampart/rampart_tower_tall.gltf 18 18 180 1 1.17",
   ]
 End

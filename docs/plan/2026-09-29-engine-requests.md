@@ -1002,13 +1002,13 @@ behind it. It is not headless-testable from the game either, because `DukeRtsApp
 
 ## E34 — A scenery piece drawn with another picture (2026-10-10, small)
 
-The castle kits (`models/castles/`, CC BY 4.0, `art/castles/export_castles.py`) want the queen's dark castle drawn
+The castle kits (`models/buildings/`, CC BY 4.0, `art/castles/export_castles.py`) want the queen's dark castle drawn
 with the same pieces as the kingdom's, in darker, colder pictures. A `ThemeMonster` can already be handed another
 `Texture`; a map's scenery cannot. The game works round it by writing a `_dark.gltf` beside every fort piece —
 the same `.bin`, its images pointed at `textures/*_dark.jpg` — which costs a file a piece and doubles the names
 the editor offers.
 
-Asked: a scenery line may name a picture after its model — `models/castles/fort/fort_wall.gltf@textures/fort_9_dark.jpg
+Asked: a scenery line may name a picture after its model — `models/buildings/fort/fort_wall.gltf@textures/fort_9_dark.jpg
 x y facing scale footprint`, or a seventh word — that replaces the base colour of every material of that piece (or
 of the material whose picture has that file name). `Tileset.piece` caches by model and picture. Done when a
 `TerrainScene` test lays one model twice, once with another picture, and the two draw different textures.
@@ -1356,11 +1356,11 @@ so what is drawn is at least the game's words; the medallion's "0" stays until t
 
 ## E64 — A model dressed in its base colour, not in whichever picture comes first (2026-10-15, small)
 
-The playtest of 1.0.41: Lange (the knight hero, `models/heroes/lange/lange.glb`, its pictures inside the file) and his
+The playtest of 1.0.41: Lange (the knight hero, `models/characters/heroes/lange.glb`, its pictures inside the file) and his
 portrait were drawn pale lavender. `DukeRtsApp.dressModel` takes `skinOf(loaded)` — the **first** `Texture` among
 `Material.getParams()` — and jME 3.7 does not hand them in the file's order: a glTF piece with a normal map lists
 `NormalMap` before `BaseColorMap` (and `EmissiveMap` before both), so the piece was lit over its normal map, and his
-sword over its near-black emissive map. The animatedheaven gate (`models/props/gate/gate.glb`, normal maps) had the
+sword over its near-black emissive map. The animatedheaven gate (`models/buildings/gates/gate.glb`, normal maps) had the
 same. **Repro:** `new DesktopAssetManager(true).loadModel(".../lange.glb")` at 1.0.41's game commit and print each
 geometry's params: `NormalMap` comes first. Asked: `skinOf` asks by name — `BaseColorMap`, `DiffuseMap`, `ColorMap` —
 and only then any texture (`ListShow`'s colour lookup already orders its names). Done when a test dresses a glTF with a

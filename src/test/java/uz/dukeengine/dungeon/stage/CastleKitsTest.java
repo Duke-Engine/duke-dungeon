@@ -20,7 +20,7 @@ import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.dungeon.gen.GeneratedDungeon;
 
 /**
- * The six castle kits (models/castles, written by art/castles/export_castles.py): every piece loads wearing its
+ * The six castle kits (models/buildings, written by art/castles/export_castles.py): every piece loads wearing its
  * picture and stands on the ground; the Castles theme offers every piece with its footprint, and the fort's again with
  * its dark picture; and the courtyard of maps/qasr loads, checks, has its walls meeting its towers and in the way, and
  * is entered by its gate.
@@ -29,7 +29,7 @@ class CastleKitsTest {
 
     private static final DungeonSettings SETTINGS = DungeonSettings.load();
     private static final DesktopAssetManager ASSETS = new DesktopAssetManager(true);
-    private static final String ROOT = "models/castles/";
+    private static final String ROOT = "models/buildings/";
 
     private static List<String> pieces() throws IOException, URISyntaxException {
         var root = Path.of(CastleKitsTest.class.getClassLoader().getResource(ROOT).toURI());

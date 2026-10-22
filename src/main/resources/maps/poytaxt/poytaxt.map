@@ -130,12 +130,12 @@ StaticMap
     s = 5.0,
   ]
   Scenery = [
-    "models/castles/fort/fort_keep.gltf 20 0.5 0 1 0",
-    "models/castles/town/town_palace_tower.gltf 8 3 0 1 0; models/castles/town/town_palace_tower.gltf 32 10.5 0 1 0",
-    "models/castles/room/room_banners.gltf 17 1.5 0 1 0; models/castles/room/room_banners.gltf 23 1.5 0 1 0",
-    "models/castles/town/town_house.gltf 2 13 90 1 0; models/castles/town/town_house.gltf 37.5 14 270 1 0",
-    "models/castles/room/room_barrel.gltf 13 14 0 1 0; models/castles/room/room_crate.gltf 13.8 14.2 20 1 0; models/castles/town/town_banner_post.gltf 20 18 0 1 0",
-    "models/castles/town/town_house.gltf 2 19 90 1 0; models/castles/town/town_house.gltf 37.5 20 270 1 0",
-    "models/castles/town/town_tower_round.gltf 13 26 0 1 0; models/castles/town/town_gatehouse.gltf 20 32 0 1 0; models/castles/town/town_tower_round.gltf 26 26 0 1 0",
+    "models/buildings/fort/fort_keep.gltf 20 0.5 0 1 0",
+    "models/buildings/town/town_palace_tower.gltf 8 3 0 1 0; models/buildings/town/town_palace_tower.gltf 32 10.5 0 1 0",
+    "models/buildings/room/room_banners.gltf 17 1.5 0 1 0; models/buildings/room/room_banners.gltf 23 1.5 0 1 0",
+    "models/buildings/town/town_house.gltf 2 13 90 1 0; models/buildings/town/town_house.gltf 37.5 14 270 1 0",
+    "models/buildings/room/room_barrel.gltf 13 14 0 1 0; models/buildings/room/room_crate.gltf 13.8 14.2 20 1 0; models/buildings/town/town_banner_post.gltf 20 18 0 1 0",
+    "models/buildings/town/town_house.gltf 2 19 90 1 0; models/buildings/town/town_house.gltf 37.5 20 270 1 0",
+    "models/buildings/town/town_tower_round.gltf 13 26 0 1 0; models/buildings/town/town_gatehouse.gltf 20 32 0 1 0; models/buildings/town/town_tower_round.gltf 26 26 0 1 0",
   ]
 End

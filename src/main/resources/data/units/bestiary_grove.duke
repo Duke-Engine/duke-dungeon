@@ -57,7 +57,7 @@ Monster
   Weight = 0
   Colour = 0xC8B890
   Scale = 0.67
-  Model = models/bestiary/armabee.glb
+  Model = models/characters/monsters/armabee.glb
   ModelScale = 4.24
   Idle = Idle
   Walk = Walk
@@ -117,7 +117,7 @@ Monster
   Weight = 0
   Colour = 0xC8B890
   Scale = 1.17
-  Model = models/bestiary/stag.glb
+  Model = models/characters/monsters/stag.glb
   ModelScale = 2.52
   Idle = Idle
   Walk = Walk
@@ -184,7 +184,7 @@ Monster
   KeepDistance = [30, 50]
   Colour = 0xC8B890
   Scale = 0.67
-  Model = models/bestiary/wasp.glb
+  Model = models/characters/monsters/wasp.glb
   ModelScale = 2
   Idle = Idle
   Walk = Walk
@@ -244,7 +244,7 @@ Monster
   Weight = 0
   Colour = 0xC8B890
   Scale = 0.83
-  Model = models/bestiary/armabee_evolved.glb
+  Model = models/characters/monsters/armabee_evolved.glb
   ModelScale = 4.68
   Idle = Idle
   Walk = Walk
@@ -305,7 +305,7 @@ Monster
   SkillDistance = [0, 50]
   Colour = 0xE0A020
   Scale = 1
-  Model = models/bestiary/armabee.glb
+  Model = models/characters/monsters/armabee.glb
   ModelScale = 6.36
   Tint = 0xE0A020
   Idle = Idle
@@ -392,7 +392,7 @@ Monster
   SkillDistance = [0, 60]
   Colour = 0xC8B890
   Scale = 1.5
-  Model = models/bestiary/mushroom_king.glb
+  Model = models/characters/monsters/mushroom_king.glb
   ModelScale = 4.99
   Idle = Idle
   Walk = Walk
@@ -483,7 +483,7 @@ Monster
   Weight = 0
   Colour = 0xC8B890
   Scale = 0.54
-  Model = models/bestiary/fox.glb
+  Model = models/characters/monsters/fox.glb
   ModelScale = 2.43
   Idle = Idle
   Walk = Walk

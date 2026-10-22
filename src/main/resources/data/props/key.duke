@@ -27,7 +27,7 @@ End
 ; little over half a cell.
 ThemeMonster
   Name = Key
-  Model = models/props/key/key_crown.glb
+  Model = models/items/keys/key_crown.glb
   ModelScale = 6
   ; No Tint: the model has no texture, and the client draws it in the silver its
   ; file gives it (baseColorFactor); a tint would only darken that.

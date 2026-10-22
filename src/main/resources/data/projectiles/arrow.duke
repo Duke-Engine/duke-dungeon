@@ -33,7 +33,7 @@ Projectile
 ; Effect names a block further down and is what makes a thing burn.
 ; ---------------------------------------------------------------------------
 
-  Model = models/heroes/arrow.gltf
+  Model = models/items/gear/arrow.gltf
   ; The model is 1.26 long, and 5.4 of that is the length it always flew at.
   Scale = 5.4
   Facing = 90

@@ -25,7 +25,7 @@ Monster
   Weight = 0
   Colour = 0x9A5AC8
   Scale = 1.0
-  Model = models/heroes/mage.glb
+  Model = models/characters/heroes/mage.glb
   Tint = 0xB08AD8
   ; The mage boxes about 2.655 tall: 12 / 2.655.
   ModelScale = 4.8

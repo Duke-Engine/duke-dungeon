@@ -4,7 +4,7 @@
     blender -b --factory-startup -P art/castles/export_castles.py -- <the downloads, unzipped> <out folder> [kit ...]
 
 The source folder holds each download unzipped into a folder named as its zip (modular-fortress-free/,
-medieval-fortress-kit/, ...); see KITS. What ships is what this writes, under resources/models/castles/<kit>/,
+medieval-fortress-kit/, ...); see KITS. What ships is what this writes, under resources/models/buildings/<kit>/,
 which is committed; neither the downloads nor Blender are build dependencies.
 
 ONE GRID. A cell is 10 game units and the hero 12 tall. Each kit is scaled by one factor of its own (KITS'
@@ -40,7 +40,7 @@ TRIANGLES. A piece over 8000 triangles is collapsed to about 5000; the rest are 
 
 THE QUEEN'S CASTLE. Every picture of the fort kit is written twice: as made, and as a `_dark` copy recoloured
 darker, colder and a little red (darken()). A map draws a fort piece dark by naming the picture after the
-model (`models/castles/fort/fort_wall.gltf@models/castles/fort/textures/fort_9_dark.jpg`, engine E34): one
+model (`models/buildings/fort/fort_wall.gltf@models/buildings/fort/textures/fort_9_dark.jpg`, engine E34): one
 mesh, two castles. Every fort piece has one picture, so the swap is the whole piece.
 """
 

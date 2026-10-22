@@ -1,7 +1,7 @@
 """Adds the heroes' landing clip, HeroLanding, to a .glb that already carries a kneel and an idle on the same rig.
 
     py art/anim/hero_landing.py <file.glb> <kneel clip> <idle clip> [<seconds into the kneel>]
-    py art/anim/hero_landing.py src/main/resources/models/heroes/lange/lange.glb Cook Idle 1.2
+    py art/anim/hero_landing.py src/main/resources/models/characters/heroes/lange.glb Cook Idle 1.2
     py art/anim/hero_landing.py src/main/resources/animations/characters/huntress.glb Cook Ranged_Bow_Idle
 
 The seamless campaign's intro (docs/plan/2026-10-15-seamless-campaign.md, section 4.2): he comes down in the

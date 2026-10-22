@@ -11,16 +11,14 @@ import com.jme3.bounding.BoundingBox;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial;
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 
 /**
- * Yalmog'iz kampir's hut in the dark wood: Inuciian's models (models/inuciian, written by
- * art/inuciian/export_models.py) all load, stand on their foot and wear their pictures; the open world's site is
+ * Yalmog'iz kampir's hut in the dark wood: Inuciian's models (sorted by kind under models/, the manifest
+ * models/assets.txt naming them his; written by art/inuciian/export_models.py) all load, stand on their foot and wear their pictures; the open world's site is
  * hers, its people stand in it and say what the story gives them.
  */
 class KampirHutTest {
@@ -28,12 +26,14 @@ class KampirHutTest {
     private static final DungeonSettings SETTINGS = DungeonSettings.load();
     private static final DesktopAssetManager ASSETS = new DesktopAssetManager(true);
 
-    private static List<String> models() throws IOException, URISyntaxException {
-        var root = Path.of(KampirHutTest.class.getClassLoader().getResource("models/inuciian").toURI());
-        try (var files = Files.walk(root)) {
-            return files.filter(file -> file.toString().endsWith(".glb"))
-                    .map(file -> "models/inuciian/" + root.relativize(file).toString().replace('\\', '/'))
-                    .sorted().toList();
+    /** Inuciian's models, as the manifest (path | pack | licence | old path) names them. */
+    private static List<String> models() throws IOException {
+        try (var in = KampirHutTest.class.getClassLoader().getResourceAsStream("models/assets.txt")) {
+            assertNotNull(in, "no models/assets.txt");
+            return new String(in.readAllBytes(), StandardCharsets.UTF_8).lines()
+                    .filter(line -> !line.isBlank() && !line.startsWith("#")).map(line -> line.split("\\|"))
+                    .filter(row -> row[2].trim().equals("models/licenses/baba_yagas_hut.txt"))
+                    .map(row -> row[0].trim()).filter(path -> path.endsWith(".glb")).sorted().toList();
         }
     }
 
@@ -66,7 +66,7 @@ class KampirHutTest {
                 assertTrue(Math.abs(box.getCenter().x) < box.getXExtent() && Math.abs(box.getCenter().z)
                         < box.getZExtent(), path + " is beside its origin, not over it");
             }
-            if (path.contains("people/") || path.endsWith("hut.glb")) {
+            if (path.contains("people/") || path.endsWith("kampir_imp.glb") || path.endsWith("hut.glb")) {
                 assertTrue(pictured(model), path + " carries no picture"); // the rest may be colours alone
             }
         }
@@ -77,16 +77,17 @@ class KampirHutTest {
     void theDarkWoodHasItsDarkCopiesAndKeepsTheAutumnOnes() throws Exception {
         var all = models();
         for (var kind : List.of("pine", "bush_large", "tree_leafy", "grass_tall", "grass_short")) {
-            assertTrue(all.contains("models/inuciian/nature/" + kind + ".glb"), kind);
-            assertTrue(all.contains("models/inuciian/nature/" + kind + "_dark.glb"), kind + "_dark");
+            assertTrue(all.stream().anyMatch(path -> path.endsWith("/" + kind + ".glb")), kind);
+            assertTrue(all.stream().anyMatch(path -> path.endsWith("/" + kind + "_dark.glb")), kind + "_dark");
         }
     }
 
     /** The people who move carry the clip their blocks name, Idle; the girl's cage swings. */
     @Test
     void thePeopleCarryTheirIdle() {
-        for (var path : List.of("baba_yaga", "imp", "damsel_caged")) {
-            var model = ASSETS.loadModel("models/inuciian/people/" + path + ".glb");
+        for (var path : List.of("models/characters/people/baba_yaga.glb", "models/characters/monsters/kampir_imp.glb",
+                "models/characters/people/damsel_caged.glb")) {
+            var model = ASSETS.loadModel(path);
             var composer = new AnimComposer[1];
             model.depthFirstTraversal(spatial -> {
                 if (spatial.getControl(AnimComposer.class) != null) {
@@ -123,9 +124,9 @@ class KampirHutTest {
         assertEquals("Yalmog'iz kampir", story.speaker("BabaYaga").displayName());
 
         var models = stage.paint().scenery().stream().map(piece -> piece.model()).distinct().toList();
-        assertTrue(models.contains("models/inuciian/hut.glb"), "no hut in the yard");
-        assertTrue(models.contains("models/inuciian/nature/pine_dark.glb"), "no dark pines in the dark wood");
-        assertTrue(models.contains("models/tiles/forest/pine.gltf"), "the KayKit pines are gone from the wood");
+        assertTrue(models.contains("models/buildings/hut/hut.glb"), "no hut in the yard");
+        assertTrue(models.contains("models/nature/trees/pine_dark.glb"), "no dark pines in the dark wood");
+        assertTrue(models.contains("models/terrain/forest/pine.gltf"), "the KayKit pines are gone from the wood");
         assertFalse(stage.floor().props().stream().noneMatch(prop -> prop.kind().equals("Cauldron")),
                 "no cauldron");
     }

@@ -30,7 +30,7 @@ import org.junit.jupiter.api.Test;
 class DungeonTilesTest {
 
     /** Where the models live on the classpath, and the size one tile is authored at. */
-    private static final String TILES = "models/tiles/dungeon/";
+    private static final String TILES = "models/terrain/dungeon/";
     private static final float TILE = 4f;
 
     private static AssetManager assets() {
@@ -637,10 +637,10 @@ class DungeonTilesTest {
 
         assertTrue(dungeon.standing().fillsRock(),
                 "the dungeon's boundary is rock standing in the rock, not a wall along it");
-        assertEquals("models/tiles/dungeon/wall.gltf", dungeon.rockFace(),
+        assertEquals("models/terrain/dungeon/wall.gltf", dungeon.rockFace(),
                 "and the masonry slab only faces raised ground");
         for (var tone : dungeon.tones()) {
-            assertNotEquals("models/tiles/dungeon/wall.gltf", tone.wall(),
+            assertNotEquals("models/terrain/dungeon/wall.gltf", tone.wall(),
                     tone.name() + " still walls its rooms with masonry");
         }
     }

@@ -136,7 +136,7 @@ tasks.register("convertAnimations") {
 }
 
 // Six castle kits from Sketchfab (all CC BY 4.0, see CREDITS.md) cut into the pieces a map builds castles of:
-// resources/models/castles/<kit>/, a .gltf a piece over a folder of pictures the kit's pieces share, and the fort's
+// resources/models/buildings/<kit>/, a .gltf a piece over a folder of pictures the kit's pieces share, and the fort's
 // dark copies for the queen's castle. See art/castles/export_castles.py, which says the grid and the pivots.
 //
 //   ./gradlew exportCastles -PcastlesSource="C:/Users/me/Downloads/castles"
@@ -154,7 +154,7 @@ tasks.register("exportCastles") {
             commandLine(
                 blender("exportCastles"), "-b", "--factory-startup",
                 "-P", "art/castles/export_castles.py", "--",
-                source.absolutePath, "src/main/resources/models/castles",
+                source.absolutePath, "src/main/resources/models/buildings",
             )
         }.standardOutput.asText.get()
             .lines().filter { it.startsWith("PIECE") || it.startsWith("DARK") }
@@ -162,14 +162,15 @@ tasks.register("exportCastles") {
     }
 }
 
-// Inuciian's "Baba Yaga's hut" (CC BY 4.0, see CREDITS.md) cut into the models under
-// resources/models/inuciian: the hut, its people, its props and its forest, each one glTF with its
-// pictures inside, and the dark wood's recoloured copies. See art/inuciian/export_models.py.
+// Inuciian's "Baba Yaga's hut" (CC BY 4.0, see CREDITS.md) cut into the models, written under
+// build/exported/inuciian as the pack lays them out: the hut, its people, its props and its forest, each one
+// glTF with its pictures inside, and the dark wood's recoloured copies. See art/inuciian/export_models.py.
 //
 //   ./gradlew exportInuciian -PinuciianSource="C:/Users/me/Downloads/baba-yagas-hut"
 //
 // The source (the Sketchfab download: source/*.blend and textures/) is not in the repository;
-// what ships is what this wrote, which is committed. Blender is found as convertAnimations finds it.
+// what ships is what this wrote, sorted by kind under resources/models/ and committed: the manifest
+// resources/models/assets.txt names each piece's place and, as its old path, where this export puts it. Blender is found as convertAnimations finds it.
 tasks.register("exportInuciian") {
     group = "application"
     description = "Cut Inuciian's Baba Yaga scene into the game's models, using Blender"
@@ -184,7 +185,7 @@ tasks.register("exportInuciian") {
                 blender("exportInuciian"), "-b", "--factory-startup",
                 "-P", "art/inuciian/export_models.py", "--",
                 blend.absolutePath, File(source, "textures").absolutePath,
-                "src/main/resources/models/inuciian",
+                "build/exported/inuciian",
             )
         }.standardOutput.asText.get()
             .lines().filter { it.startsWith("EXPORTED") }
@@ -193,8 +194,10 @@ tasks.register("exportInuciian") {
 }
 
 // Two weapon packs (CC BY 4.0, see CREDITS.md) made into the game's hand-held models: nodgerty's elven
-// bow and dagger in resources/models/weapons/elven, panarth's low-poly medieval weapons one file each in
-// resources/models/weapons/medieval. See art/weapons/export_weapons.py.
+// bow and dagger (written as build/exported/weapons/elven/{bow,dagger}.glb, shipped as
+// resources/models/items/weapons/elven_{bow,dagger}.glb), panarth's low-poly medieval weapons one file each
+// (build/exported/weapons/medieval, shipped by the same names in resources/models/items/weapons).
+// See art/weapons/export_weapons.py.
 //
 //   ./gradlew exportWeapons -PelvenSource=".../free-elven-assassin-weapon-set-bow-dagger" \
 //       -PelvenFbx=".../resault/KatanaBow.fbx" -PmedievalFbx=".../melee.FBX" \
@@ -217,7 +220,7 @@ tasks.register("exportWeapons") {
                 "-P", "art/weapons/export_weapons.py", "--",
                 said("elvenFbx", ".../KatanaBow.fbx"), File(elven, "textures").absolutePath,
                 said("medievalFbx", ".../melee.FBX"), File(medieval, "textures/textureFlat.png").absolutePath,
-                "src/main/resources/models/weapons",
+                "build/exported/weapons",
             )
         }.standardOutput.asText.get()
             .lines().filter { it.startsWith("WEAPON") }
@@ -226,7 +229,7 @@ tasks.register("exportWeapons") {
 }
 
 // neilhancart's "Huntress" (CC BY 4.0, see CREDITS.md) made into the Rogue hero: her model in
-// resources/models/heroes/huntress.glb and the Rogue's clips retargeted onto her skeleton in
+// resources/models/characters/heroes/huntress.glb and the Rogue's clips retargeted onto her skeleton in
 // resources/animations/characters/huntress.glb. See art/huntress/export_huntress.py.
 //
 //   ./gradlew exportHuntress -PhuntressSource="C:/Users/me/Downloads/huntress" \
@@ -251,7 +254,7 @@ tasks.register("exportHuntress") {
                 blender("exportHuntress"), "-b", "--factory-startup",
                 "-P", "art/huntress/export_huntress.py", "--",
                 gltf.absolutePath, "src/main/resources/animations/characters", ual.absolutePath,
-                "src/main/resources/models/heroes/huntress.glb",
+                "src/main/resources/models/characters/heroes/huntress.glb",
             )
         }.standardOutput.asText.get()
             .lines().filter { it.startsWith("HUNTRESS") }
@@ -260,7 +263,7 @@ tasks.register("exportHuntress") {
 }
 
 // phucpham1076's "Lange - Half-Elf Knight" (CC BY 4.0, see CREDITS.md) made into the knight:
-// resources/models/heroes/lange/lange.glb, his pictures and clips inside. See art/lange/export_lange.py.
+// resources/models/characters/heroes/lange.glb, his pictures and clips inside. See art/lange/export_lange.py.
 //
 //   ./gradlew exportLange -PlangeSource="C:/Users/me/Downloads/lange-half-elf-knight" \
 //       -PualSource=".../Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb" \
@@ -304,12 +307,12 @@ tasks.register("exportLange") {
             .forEach { logger.lifecycle(it) }
         copy {
             from(File(out, "lange.glb"))
-            into("src/main/resources/models/heroes/lange")
+            into("src/main/resources/models/characters/heroes")
         }
         // The game draws base colour only: the other maps, and their bytes, are dropped (see the script).
         providers.exec {
             workingDir = rootProject.projectDir
-            commandLine("node", "art/models/base_colour_only.js", "src/main/resources/models/heroes/lange/lange.glb")
+            commandLine("node", "art/models/base_colour_only.js", "src/main/resources/models/characters/heroes/lange.glb")
         }.standardOutput.asText.get().lines().filter { it.isNotBlank() }.forEach { logger.lifecycle(it) }
     }
 }

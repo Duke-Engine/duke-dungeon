@@ -103,7 +103,7 @@ Hero
 ;
 ; ★ He carries the staff and NOT the spellbook the kit also ships for him. Not a
 ; judgement -- a hero has one Held, so a second hand is a small feature
-; rather than a setting. models/heroes/ is where spellbook_closed.gltf would go.
+; rather than a setting. models/items/gear/ is where spellbook_closed.gltf is.
 ; ---------------------------------------------------------------------------
 
   Title = Olov va muz
@@ -119,7 +119,7 @@ Hero
   ; is ever at arm's length something has gone wrong.
   CloseDistance = 40
 
-  Model = models/heroes/mage.glb
+  Model = models/characters/heroes/mage.glb
   ; The model boxes 2.655 tall and a hero is 12, so 12 / 2.655. The smallest
   ; ModelScale of the three, because he is the tallest mesh of the three.
   ModelScale = 4.52
@@ -160,7 +160,7 @@ Hero
     ; same size, so HeldScale is 1; it runs along its own +Y like every blade in
     ; the kit, so it needs no HeldRoll. The bow is the only thing that ever did.
     Held
-      Model = models/heroes/staff.gltf
+      Model = models/items/gear/staff.gltf
       Bone = handslot.r
       Scale = 1
     End,
@@ -186,7 +186,7 @@ Hero
     ; ★ If it is flat but facing the wrong way, HeldRoll = 90 is the other quarter;
     ; if it lies UNDER his hand rather than on it, this is -90.
     Held
-      Model = models/heroes/spellbook_closed.gltf
+      Model = models/items/gear/spellbook_closed.gltf
       Bone = handslot.l
       Scale = 1
       Pitch = 90
