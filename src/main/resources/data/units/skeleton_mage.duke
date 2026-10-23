@@ -6,6 +6,7 @@
 Monster
   Name = SkeletonMage
   DisplayName = Skelet sehrgar
+  Respawn = 120
   KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
   Geometry = Cylinder
     Radius = 4

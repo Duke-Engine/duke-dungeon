@@ -33,7 +33,7 @@ class RespawnTest {
     /** The people map with a skeleton at (26, 26), whose kind comes back after five seconds, and the sentry after four. */
     private static Dungeon.Session session() {
         var data = Content.data()
-                .replaceFirst("(?s)(Name = Skeleton\\R.*?)(\\R  Weight = 40)", "$1\n  Respawn = 5$2");
+                .replaceFirst("(?s)(Name = Skeleton\\R.*?\\R  Respawn = )120", "$15");
         assertTrue(data.contains("Respawn = 5"), "the premise: the skeleton's block has it now");
         var duke = Stages.found("people").extrasText();
         assertTrue(duke.contains("  Leash = 6"));
@@ -150,7 +150,7 @@ class RespawnTest {
                 + "\nPerson\n  Name = Ghost\n  Kind = Villager\n  Respawn = -1\nEnd\n"));
         assertTrue(refused.getMessage().contains("Respawn"), refused.getMessage());
         var monster = assertThrows(IllegalArgumentException.class, () -> DungeonSettings.parse(Content.data()
-                .replaceFirst("(?s)(Name = Skeleton\\R.*?)(\\R  Weight = 40)", "$1\n  Respawn = -1$2")));
+                .replaceFirst("(?s)(Name = Skeleton\\R.*?\\R  Respawn = )120", "$1-1")));
         assertTrue(monster.getMessage().contains("Respawn"), monster.getMessage());
     }
 }

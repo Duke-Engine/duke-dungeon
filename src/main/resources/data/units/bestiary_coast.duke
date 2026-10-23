@@ -522,6 +522,7 @@ End
 ; a drowned sailor walking out of the lake.
 Monster
   Name = SkeletonPirate
+  Respawn = 120
   DisplayName = "Cho'kkan dengizchi"
   KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
   Geometry = Cylinder
