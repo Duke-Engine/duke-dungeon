@@ -595,7 +595,7 @@ public final class DungeonRun {
     private uz.dukeengine.dungeon.stage.StagePaint coveredFrom;
 
     /** A floor of one theme as the simulation walks it: no looks of its own, only how finely. */
-    private record Walked(String name, int navigationCellsPerCell) implements uz.dukeengine.core.map.Subdivided {
+    record Walked(String name, int navigationCellsPerCell) implements uz.dukeengine.core.map.Subdivided {
     }
 
     private uz.dukeengine.core.map.MapTemplate looksOf(GeneratedDungeon floor) {

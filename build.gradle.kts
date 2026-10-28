@@ -63,6 +63,14 @@ dependencies {
     testImplementation(platform("org.junit:junit-bom:5.11.3"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
+// shortcut: processor not on Maven Central yet; make unconditional once the engine release carries it
+if (providers.gradleProperty("dukeEngineLocal").isPresent) {
+    dependencies {
+        annotationProcessor(platform("uz.duke-engine:bom:0.8.0"))
+        annotationProcessor("uz.duke-engine:processor")
+    }
+}
 }
 
 application {
