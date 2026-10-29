@@ -59,6 +59,8 @@ dependencies {
     implementation("uz.duke-engine:rpg-client-3d")
     // The RTS's flavour, which the dungeon still runs on, and its players and orders.
     implementation("uz.duke-engine:rts")
+    // The desktop platform the 3D client now needs at runtime (tests too).
+    runtimeOnly("uz.duke-engine:client3d-desktop")
 
     testImplementation(platform("org.junit:junit-bom:5.11.3"))
     testImplementation("org.junit.jupiter:junit-jupiter")

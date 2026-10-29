@@ -254,8 +254,8 @@ public record Theme(
             return List.copyOf(all);
         }
 
-        public java.awt.Color awtTint() {
-            return new java.awt.Color(tint);
+        public uz.dukeengine.game.Colour colourTint() {
+            return new uz.dukeengine.game.Colour(0xFF000000 | tint);
         }
     }
 
@@ -293,7 +293,7 @@ public record Theme(
         }
     }
 
-    public java.awt.Color awtFogTint() {
-        return new java.awt.Color(fogTint);
+    public uz.dukeengine.game.Colour fogColourTint() {
+        return new uz.dukeengine.game.Colour(0xFF000000 | fogTint);
     }
 }

@@ -102,7 +102,7 @@ public record MonsterLook(
     }
 
     /** The tint as AWT sees it. */
-    public java.awt.Color awtTint() {
-        return new java.awt.Color(tint);
+    public uz.dukeengine.game.Colour colourTint() {
+        return new uz.dukeengine.game.Colour(0xFF000000 | tint);
     }
 }

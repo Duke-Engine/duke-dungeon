@@ -32,7 +32,7 @@ public record Party(int maxPlayers, int port, List<Integer> colours, String whoW
     }
 
     /** The colour seat {@code seat} (1 for the host) wears. */
-    public java.awt.Color colourOf(int seat) {
-        return new java.awt.Color(colours.get(Math.clamp(seat - 1, 0, colours.size() - 1)));
+    public uz.dukeengine.game.Colour colourOf(int seat) {
+        return new uz.dukeengine.game.Colour(0xFF000000 | colours.get(Math.clamp(seat - 1, 0, colours.size() - 1)));
     }
 }

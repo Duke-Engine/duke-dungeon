@@ -68,7 +68,7 @@ public final class Main {
         visuals.effect(look.name(), recipe -> {
             var glow = look.glow();
             if (glow != null) {
-                recipe.glow(glow.parts(), new java.awt.Color(glow.colour()));
+                recipe.glow(glow.parts(), new uz.dukeengine.game.Colour(0xFF000000 | glow.colour()));
             }
             recipe.shake(look.shakeSeconds(), look.shakePower());
         });
@@ -280,7 +280,7 @@ public final class Main {
      */
     private static void arrow(Visuals visuals, String template, DungeonSettings.ArrowLook look) {
         visuals.unit(template, unit -> {
-            unit.colour(look.awtTint()); // the minimap dot, and the fallback shape
+            unit.colour(look.colourTint()); // the minimap dot, and the fallback shape
             unit.effect(look.effect()).effectAt(look.effectOffset());
             if (!look.hasModel()) {
                 // A fireball has no file anywhere: its effect is its body, and the
@@ -298,7 +298,7 @@ public final class Main {
                     // Not decoration: the tint is what gets it a material this
                     // client can light. Without one it keeps the loader's PBR and
                     // the arrow is a black splinter.
-                    .tint(look.awtTint());
+                    .tint(look.colourTint());
         });
     }
 
@@ -329,7 +329,7 @@ public final class Main {
                 continue;
             }
             pieces.put(piece.name(), new uz.dukeengine.client3d.PanelSkin.Piece(
-                    piece.texture(), piece.inset(), piece.scale(), piece.awtTint()));
+                    piece.texture(), piece.inset(), piece.scale(), new uz.dukeengine.game.Colour(0xFF000000 | piece.tint())));
         }
         return new uz.dukeengine.client3d.PanelSkin(pieces);
     }
@@ -444,13 +444,13 @@ public final class Main {
             DungeonSettings settings) {
         var art = settings.animated(themed.look());
         return unit -> {
-            unit.colour(art.awtTint());
+            unit.colour(art.colourTint());
             if (!art.hasModel()) {
                 return;
             }
             unit.model(art.model())
                     .texture(art.texture())
-                    .tint(art.awtTint())
+                    .tint(art.colourTint())
                     .scale(art.modelScale())
                     .facing(art.facing())
                     .idle(art.idle())
@@ -1423,13 +1423,13 @@ public final class Main {
                 // The colour is set either way: it is what the minimap dot is
                 // drawn in, and what the creature falls back to if its model is
                 // missing. A shape in the right colour beats nothing on screen.
-                unit.colour(kind.awtColour()).scale(kind.scale());
+                unit.colour(kind.baseColour()).scale(kind.scale());
                 if (!look.hasModel()) {
                     return;
                 }
                 unit.model(look.model())
                         .texture(look.texture())
-                        .tint(look.awtTint())
+                        .tint(look.colourTint())
                         .scale(look.modelScale())
                         .facing(look.facing())
                         .idle(look.idle())
@@ -1515,7 +1515,7 @@ public final class Main {
         // What a dead monster leaves lying about. No chest in the kit, so it is
         // a box in torch colour -- which is what a thing worth walking over to
         // has to be, whatever it is eventually modelled as.
-        visuals.unit("Chest", unit -> unit.colour(new java.awt.Color(0xE8A33D)).scale(0.5f));
+        visuals.unit("Chest", unit -> unit.colour(new uz.dukeengine.game.Colour(0xFFE8A33D)).scale(0.5f));
 
         // And what the files dress outside any theme: drawn so in every theme that does not dress it -- the key,
         // one look named once rather than a copy in every biome. See the ThemeMonster in data/props/key.duke.

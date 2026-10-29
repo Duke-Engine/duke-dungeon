@@ -2101,8 +2101,8 @@ public final class DungeonSettings {
             return model != null;
         }
 
-        public java.awt.Color awtTint() {
-            return new java.awt.Color(tint);
+        public uz.dukeengine.game.Colour colourTint() {
+            return new uz.dukeengine.game.Colour(0xFF000000 | tint);
         }
     }
 

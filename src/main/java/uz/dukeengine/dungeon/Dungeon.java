@@ -1,6 +1,6 @@
 package uz.dukeengine.dungeon;
 
-import java.awt.Color;
+import uz.dukeengine.game.Colour;
 import uz.dukeengine.dungeon.ai.HeroBrain;
 import uz.dukeengine.dungeon.ai.Orders;
 import uz.dukeengine.dungeon.ai.MonsterBrain;
@@ -56,8 +56,8 @@ import uz.dukeengine.game.script.ScriptModule;
  */
 public final class Dungeon {
 
-    static final Color HERO_COLOUR = new Color(90, 170, 255);
-    static final Color SKELETON_COLOUR = new Color(225, 95, 80);
+    static final Colour HERO_COLOUR = new Colour(0xFF5AAAFF);
+    static final Colour SKELETON_COLOUR = new Colour(0xFFE15F50);
 
     private Dungeon() {
     }

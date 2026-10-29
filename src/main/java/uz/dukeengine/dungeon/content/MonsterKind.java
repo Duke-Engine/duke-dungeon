@@ -68,8 +68,8 @@ public record MonsterKind(
         int manaRegen,
         float respawn) {
 
-    public java.awt.Color awtColour() {
-        return new java.awt.Color(colour);
+    public uz.dukeengine.game.Colour baseColour() {
+        return new uz.dukeengine.game.Colour(0xFF000000 | colour);
     }
 
     /** Whether it holds a band of distance from him rather than closing to fight. */
