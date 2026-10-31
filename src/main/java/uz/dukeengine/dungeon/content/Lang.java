@@ -479,8 +479,11 @@ public final class Lang {
         }
     }
 
-    /** A map folder's file's text, the same way. */
+    /** A map folder's file's text, the same way; a shipped map found through maps.list names a classpath path. */
     static String read(Path path) {
+        if (!path.isAbsolute() && !Files.exists(path)) {
+            return read(path.toString().replace('\\', '/'));
+        }
         try {
             return Files.readString(path, StandardCharsets.UTF_8).replace("\r\n", "\n").replace("\r", "\n");
         } catch (IOException e) {

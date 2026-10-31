@@ -46,7 +46,7 @@ dependencies {
     // The engine, from Maven Central. The BOM names the version once and the modules below take it, so
     // there is one number to change and no way to mix two of them. See settings.gradle.kts for building
     // against a checkout instead.
-    implementation(platform("uz.duke-engine:bom:0.8.0"))
+    implementation(platform("uz.duke-engine:bom:0.9.0"))
 
     // The 3D client, for an angled camera over a world of solid shapes.
     implementation("uz.duke-engine:client3d")
@@ -66,10 +66,27 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
+// maps/maps.list, one line a file under maps/ (people/people.map): a phone packs resources into its APK and
+// cannot scan a folder, so the engine finds the shipped maps by this list (MapPackages.LIST). The engine's own rule.
+val mapList = tasks.register("generateMapList") {
+    val maps = file("src/main/resources/maps")
+    val out = layout.buildDirectory.dir("generated/maplist")
+    inputs.dir(maps)
+    outputs.dir(out)
+    doLast {
+        val lines = maps.walkTopDown().filter { it.isFile }
+            .map { it.relativeTo(maps).invariantSeparatorsPath }.sorted().toList()
+        val target = out.get().file("maps/maps.list").asFile
+        target.parentFile.mkdirs()
+        target.writeText(lines.joinToString("\n", postfix = "\n"))
+    }
+}
+sourceSets["main"].resources.srcDir(files(layout.buildDirectory.dir("generated/maplist")).builtBy(mapList))
+
 // shortcut: processor not on Maven Central yet; make unconditional once the engine release carries it
 if (providers.gradleProperty("dukeEngineLocal").isPresent) {
     dependencies {
-        annotationProcessor(platform("uz.duke-engine:bom:0.8.0"))
+        annotationProcessor(platform("uz.duke-engine:bom:0.9.0"))
         annotationProcessor("uz.duke-engine:processor")
     }
 }
