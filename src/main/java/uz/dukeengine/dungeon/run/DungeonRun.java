@@ -140,6 +140,8 @@ public final class DungeonRun {
 
     /** The players' seats, the first player's first: a game alone has that one. */
     private final List<Seat> seats = new ArrayList<>();
+    private String heroPoseClip;
+    private int heroPoseEnds;
 
     /** Where each floor comes from: the seed chain, or the file one was frozen into. */
     private Floors floors;
@@ -927,6 +929,11 @@ public final class DungeonRun {
             }
             var hero = seat.heroId == null ? null : logic.findObject(seat.heroId);
             standing |= hero != null && hero.getBody().getHealth() > 0f;
+            // The story holds him in its pose: a stray blow, which ends any work, does not cut the scene short.
+            if (hero != null && logic.getFrame() < heroPoseEnds && !hero.isEffectivelyDead()
+                    && !heroPoseClip.equals(hero.getBusyClip())) {
+                hero.busy(heroPoseClip, heroPoseEnds - logic.getFrame());
+            }
         }
         if (!standing) {
             state = State.DEAD;
@@ -1835,6 +1842,10 @@ public final class DungeonRun {
                         }
                         thing.busy(Battles.clipFor(settings, thing.getTemplate().name(), action.clip(),
                                 action.orElse()), action.frames());
+                        if (heroes) {
+                            heroPoseClip = thing.getBusyClip();
+                            heroPoseEnds = logic.getFrame() + action.frames();
+                        }
                     }
                 }
             }
