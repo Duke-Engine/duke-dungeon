@@ -1748,12 +1748,11 @@ public final class WorldMapWriter {
             zones.add(new Zone("Taxt", px + 1, py + 5, 0, 0, 1));
             zones.add(new Zone("Bozor", city.x(), city.y(), 0, 0, 3));
             zones.add(new Zone("Yerto'la", city.x() + 8, city.y() - 8, 0, 0, 2));
-            // The throne: a dais of floor tiles, the seat, banners on the wall behind, a column either side.
-            pieces.add(Piece.of(KITS + "room/room_floor.gltf " + (px + 0.6f) + " " + (py + 5.5f) + " 0 0.5 0"));
-            pieces.add(new Piece(KITS + "room/room_pedestal.gltf", px + 0.6f, py + 5.5f, 90, 1.2f, 0xD8B060, 0f));
-            pieces.add(new Piece(KITS + "room/room_banners.gltf", px + 0.15f, py + 5.5f, 90, 1f, 0xFFFFFF, 0f));
-            pieces.add(new Piece(KITS + "room/room_column.gltf", px + 0.6f, py + 3.8f, 0, 0.8f, 0xFFFFFF, 0f));
-            pieces.add(new Piece(KITS + "room/room_column.gltf", px + 0.6f, py + 7.2f, 0, 0.8f, 0xFFFFFF, 0f));
+            // The throne: the seat on its stone dais, the kingdom's banners on the wall behind, a column either side.
+            pieces.add(realPiece("throne", px + 0.6f, py + 5.5f, 90));
+            pieces.add(realPiece("wall_banners", px + 0.15f, py + 5.5f, 90));
+            pieces.add(realPiece("pillar", px + 0.6f, py + 3.8f, 0));
+            pieces.add(realPiece("pillar", px + 0.6f, py + 7.2f, 0));
             // The cellar corner: crates, barrels and a shelf against the walls.
             float cx = city.x() + 8.5f;
             float cy = city.y() - 8.5f;
@@ -1768,7 +1767,7 @@ public final class WorldMapWriter {
             float gx = graves[0] + 0.5f;
             float gy = graves[1] + 0.5f;
             pieces.add(worldPiece("dead_b", gx + 5.2f, gy - 3.6f, 200, 0f));
-            pieces.add(yardPiece("props/village/candles", gx - 4.6f, gy + 0.4f, 0, 0f));
+            pieces.add(realPiece("candles", gx - 4.6f, gy + 0.4f, 0));
             pieces.add(worldPiece("column_stump", gx + 4.4f, gy + 3.4f, 0, 0f));
             pieces.add(worldPiece("column_stump", gx - 4.4f, gy - 3.6f, 40, 0f));
             // The cave he sees from the old graves: a mouth in the rocks north of them (open-world Act 1).
@@ -1888,6 +1887,11 @@ public final class WorldMapWriter {
         }
 
         /** A piece of the world kit, real size, in nobody's way past its {@code footprint}. */
+        /** One of Act I's realistic props (models/props/realistic), in metres like the world kit: scenery, in nobody's way. */
+        private static Piece realPiece(String prop, float x, float y, int facing) {
+            return new Piece("models/props/realistic/" + prop + ".glb", x, y, facing, KIT_SCALE, 0xFFFFFF, 0f);
+        }
+
         private static Piece worldPiece(String piece, float x, float y, int facing, float footprint) {
             return new Piece("models/world_kit/" + piece + ".glb", x, y, facing, KIT_SCALE, 0xFFFFFF, footprint);
         }
@@ -1984,10 +1988,8 @@ public final class WorldMapWriter {
                 pieces.add(new Piece(path, tenth(wx), tenth(wy), rng.nextInt(360), scale, 0xFFFFFF, 0f));
             }
             pieces.add(piece("town/town_tower_round_low", at[0] - 4 + 0.5f, at[1] - 3 + 0.5f, 0, false));
-            pieces.add(new Piece(KITS + "town/town_banner_post.gltf", at[0] + 4.5f, at[1] - 2.5f, 30, 0.8f, 0xC8B8B8,
-                    0f));
-            pieces.add(new Piece(KITS + "town/town_banner_post.gltf", at[0] - 2.5f, at[1] + 4.5f, 200, 0.8f, 0xC8B8B8,
-                    0f));
+            pieces.add(worldPiece("banner_post", at[0] + 4.5f, at[1] - 2.5f, 30, 0f));
+            pieces.add(worldPiece("banner_post", at[0] - 2.5f, at[1] + 4.5f, 200, 0f));
             pieces.add(piece("fort/fort_wall_ruined", at[0] + 2, at[1] + 4, 180, false));
             zones.add(new Zone(BATTLEFIELD, at[0], at[1], 0, 0, 7));
             keep(at[0], at[1], 8);
