@@ -159,8 +159,8 @@ End
 
 ThemeMonster
   Name = Stump
-  Model = models/nature/stumps/stump.glb
-  ModelScale = 1
+  Model = models/world_kit/stump_a.glb
+  ModelScale = 4
 End
 
 ; A bush with berries (Quaternius, CC0). No shape, as a fire has none: in nobody's way,
@@ -175,8 +175,8 @@ End
 
 ThemeMonster
   Name = BerryBush
-  Model = models/items/food/berry_bush.glb
-  ModelScale = 5
+  Model = models/world_kit/bush_berry.glb
+  ModelScale = 6.667
 End
 
 ; A pumpkin in a village's patch (Quaternius, CC0).
@@ -190,8 +190,8 @@ End
 
 ThemeMonster
   Name = PumpkinPatch
-  Model = models/items/food/pumpkin_patch.glb
-  ModelScale = 3.5
+  Model = models/world_kit/pumpkin_patch.glb
+  ModelScale = 6.667
 End
 
 ; A fire (Kenney's campfire, CC0, its pot over it): no shape, so it is in

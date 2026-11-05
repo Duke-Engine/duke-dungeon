@@ -27,7 +27,7 @@ public final class RealisticModels {
             models.add("models/world_kit/" + tree + ".glb");
             models.add("models/world_kit/" + tree + "_far.glb");
         }
-        for (var piece : List.of("bush_a", "bush_b", "bush_bare", "fern", "grass_tuft", "grass_short", "rock_a", "rock_b", "rock_c",
+        for (var piece : List.of("bush_a", "bush_b", "bush_berry", "bush_bare", "pumpkin_patch", "fern", "grass_tuft", "grass_short", "rock_a", "rock_b", "rock_c",
                 "rock_moss", "crag_a", "crag_b", "crag_c", "stump_a", "stump_moss", "column_stump", "fence", "banner_post",
                 "house_a", "house_b", "house_c", "house_long", "row_a", "row_b", "row_c", "fort_wall_ruined")) {
             models.add("models/world_kit/" + piece + ".glb");

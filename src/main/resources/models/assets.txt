@@ -449,3 +449,6 @@ models/world_kit/textures/thatch.jpg | Realistic world kit (workspace models/wor
 models/world_kit/textures/timber.jpg | Realistic world kit (workspace models/world_kit, own work) | models/licenses/world_kit.txt | -
 models/world_kit/textures/wood_end.jpg | Realistic world kit (workspace models/world_kit, own work) | models/licenses/world_kit.txt | -
 models/buildings/fort_kit/dark/fort_tower_cone.glb | Realistic fort kit (workspace models/fort_kit, own work) | models/licenses/fort_kit.txt | -
+models/world_kit/bush_berry.glb | Realistic world kit (workspace models/world_kit, own work) | models/licenses/world_kit.txt | -
+models/world_kit/pumpkin_patch.glb | Realistic world kit (workspace models/world_kit, own work) | models/licenses/world_kit.txt | -
+models/world_kit/textures/fruit.jpg | Realistic world kit (workspace models/world_kit, own work) | models/licenses/world_kit.txt | -
