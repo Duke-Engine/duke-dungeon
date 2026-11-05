@@ -38,7 +38,7 @@ class MissionScreenTest {
      * Every line drawn and where, and every slab filled, on a window 1600 by 900 where every thing's bar stands at
      * one place — or, where {@link #bars} is set, at the place it names for each.
      */
-    private static final class Drawn implements Canvas {
+    private static class Drawn implements Canvas {
 
         record Line(String text, float x, float y) {
         }
@@ -262,6 +262,29 @@ class MissionScreenTest {
         assertNotNull(said, "he says nothing: " + drawn.lines);
         assertTrue(said.y() < 400f, "above his bar: " + said);
         assertTrue(said.x() < 730f && said.x() + words.length() * 8 > 730f, "and over it: " + said);
+    }
+
+    /** From his shoulder there is no bar over him (the shoulder HUD): what he picks up is still said, over his head. */
+    @Test
+    void withNoBarOverHimHisWordsAreSaidOverHisHead() {
+        var session = Dungeon.newSession(21L);
+        var game = session.game();
+        game.runHeadless(2);
+        var words = SETTINGS.lootDrops().fullWord();
+        session.progress().getLoot().say(words, game.getLogic().getFrame(), 90);
+        game.runHeadless(1);
+        var drawn = new Drawn(null) {
+            @Override
+            public Point screenOf(float x, float y, float height) {
+                return new Point(640f, 300f);
+            }
+        };
+
+        MissionScreen.paint(drawn, session, SETTINGS);
+
+        var said = drawn.line(words);
+        assertNotNull(said, "he says nothing: " + drawn.lines);
+        assertTrue(said.y() < 300f, "above his head: " + said);
     }
 
     @Test

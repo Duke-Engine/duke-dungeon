@@ -62,6 +62,11 @@ final class MissionScreen {
             var progress = heroes.contains(unit.templateName()) ? match.run().progressOf(unit.playerIndex()) : null;
             var said = progress == null ? "" : progress.getLoot().noteAt(snapshot.frame());
             var bar = said.isEmpty() ? null : canvas.barOf(unit.id());
+            if (bar == null && !said.isEmpty()) {
+                // Played from his shoulder he has no bar over him: the words go over his head.
+                var head = canvas.screenOf(unit.x(), unit.y(), unit.z() + 16f);
+                bar = head == null ? null : new Canvas.Box(head.x(), head.y(), 0f, 0f);
+            }
             if (bar != null && seen(canvas, bar)) {
                 bubble(canvas, said, bar, look);
             }
