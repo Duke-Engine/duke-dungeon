@@ -1452,7 +1452,8 @@ public final class WorldMapWriter {
             // A box 3.3 cells square now (4.8 m): in the court's north-east, off its middle, which the story's Saroy
             // puts the hero in, and off the way from the east gate to the throne.
             pieces.addAll(parts("fort/fort_keep", city.x() - 5.5f, city.y() - 1.5f, 0, false));
-            pieces.add(piece("town/town_palace_tower", city.x() - 9f, city.y() - 1.5f, 0, false));
+            // The palace's tower is the kit's round tower: the old white one, its blue bands and roof, stands badly beside stone.
+            pieces.add(piece("town/town_tower_round", city.x() - 9f, city.y() - 1.5f, 0, false));
             // A street of house fronts west and east of the plaza, broken where a road runs, a house at its end.
             String[] fronts = {"fort/fort_house_front", "fort/fort_house_front_narrow", "fort/fort_house_front"};
             for (int side : new int[] {-1, 1}) {
@@ -1469,7 +1470,8 @@ public final class WorldMapWriter {
             }
             var castle = SITES.get(CASTLE);
             ring(pieces, castle.x() - 6, castle.y() - 6, 12, QUEEN, Set.of());
-            pieces.addAll(parts("fort/fort_keep", castle.x() - 6, castle.y() - 6, 0, true));
+            // Inside the ring's north-west corner (the box is 3.3 cells square now, and a keep on the corner would straddle the wall).
+            pieces.addAll(parts("fort/fort_keep", castle.x() - 2.5f, castle.y() - 2.5f, 0, true));
             var steppe = SITES.get(2);
             ring(pieces, steppe.x() - 8, steppe.y() - 8, 16, DESERT, Set.of());
             var meadow = SITES.get(1);

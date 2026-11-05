@@ -66,10 +66,22 @@ class FortRenderCheckTest {
         shoot("queens_gate_shut", 148.5f, 51.5f, EAST, 0);
     }
 
-    /** The royal castle's gate onto the plaza, from inside the city, with a hero at it. */
+    /** The royal castle's gate onto the plaza (54, 229), open from the way in; seen from the plaza. */
     @Test
     void theRoyalGateOpen() throws Exception {
-        shoot("royal_gate_open", 44.5f, 227.5f, EAST, 6000);
+        shoot("royal_gate_open", 61.5f, 230.5f, WEST, 0);
+    }
+
+    /** A corner of the queen's castle (158, 43): the old stepped tower beside the new wall and turret. */
+    @Test
+    void theQueensCorner() throws Exception {
+        shoot("queens_corner", 151.5f, 37.5f, 29, 0);
+    }
+
+    /** The city's street of house fronts (y 236) with the palace's keep and tower behind, from the south. */
+    @Test
+    void theCityStreet() throws Exception {
+        shoot("city_street", 49.5f, 240.5f, NORTH, 0);
     }
 
     /**

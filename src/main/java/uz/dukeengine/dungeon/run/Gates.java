@@ -56,8 +56,9 @@ final class Gates {
             double turned = Math.toRadians(piece.facing());
             float x = (piece.x() + kind.middle() * (float) StrictMath.cos(turned)) * cell;
             float y = (piece.y() - kind.middle() * (float) StrictMath.sin(turned)) * cell;
-            var gate = logic.spawn(template, new Coord3D(x, y, logic.groundHeight(new Coord3D(x, y, 0f))),
-                    owner.getIndex());
+            // On the ground at the gatehouse's origin, where the client stands the stone: the ground may slope across it.
+            var gate = logic.spawn(template, new Coord3D(x, y, logic.groundHeight(
+                    new Coord3D(piece.x() * cell, piece.y() * cell, 0f))), owner.getIndex());
             // Along the wall as the scenery is turned: an object's angle runs the other way about the vertical.
             gate.setOrientation((float) -turned);
             shut.add(gate.getId());
