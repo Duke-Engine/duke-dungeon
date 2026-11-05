@@ -111,6 +111,23 @@ class ControlsTest {
         assertEquals(0f, hero(game).getPosition().distance(stopped), 0.01f, "and let go, he stands");
     }
 
+    /** A body in a narrow way is no reason to let go of what the player holds: W is W until he lets go himself. */
+    @Test
+    void aBodyInANarrowWayDoesNotLetGoOfTheHeldKeys() {
+        var world = Dungeon.world("############\n#..........#\n############\n", SHIPPED);
+        var game = world.game();
+        game.spawn("Knight", world.hero(), 25f, 15f);
+        game.spawn("Soldier", world.hero(), 55f, 15f);
+        game.runHeadless(1);
+        var knight = game.getLogic().getObjects().stream()
+                .filter(thing -> thing.getTemplate().name().equals("Knight")).findFirst().orElseThrow();
+
+        Main.walk(game, 0);
+        game.runHeadless(45);
+
+        assertTrue(knight.getLocomotor().isMoving(), "W is still held, at " + knight.getPosition());
+    }
+
     /** Shift: half as fast again over the same time, along whichever way is open from where he starts. */
     @Test
     void shiftMakesHimRunFasterAndLettingGoEndsIt() {

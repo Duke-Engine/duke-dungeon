@@ -105,7 +105,8 @@ public final class HeroBrain extends UnitScript {
             }
             return;
         }
-        if (!move.isMoving()) {
+        // A held direction has no goal: the keys are the player's, and nothing tells them again once they are let go here.
+        if (!move.isMoving() || move.getGoal() == null) {
             return;
         }
         var ahead = WayAhead.noWayPast(unit(), settings.combat().wayAheadProbe(), null);
