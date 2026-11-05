@@ -1,6 +1,6 @@
 """Copies the realistic Act I models from the workspace (WorkSpaces/duke-games/models/<name>/out) into the game's
 resources, with their textures cut to a size the game can hold in memory, and cuts act1_props.glb into one file per piece
-(the game loads a file per model).
+(the game loads a file per model). act1_props_2.glb (campfire, scarecrow, candles, throne, wall_banners) is cut the same way.
 
     py -3 art/models/realistic_models.py [WORKSPACE_MODELS_DIR]
 
@@ -26,6 +26,7 @@ HUMANS = ["soldier", "commander", "militia", "enemy_commander", "dark_lord", "bl
           "archer", "healer", "villager", "farmer", "traveller", "pedlar", "tower_keeper", "stablemaster"]
 DEAD = ["skeleton", "runner", "brute", "skeleton_mage", "revenant", "grave_raiser", "skeleton_healer", "skeleton_summoner", "stalker", "necromancer", "reaper", "champion", "warden"]
 PIECES = ["grave", "pillar", "pillar_decorated", "barrel", "well", "statue"]
+PIECES_MORE = ["campfire", "scarecrow", "candles", "throne", "wall_banners"]   # act1_props_2.glb
 
 CHARACTERS = Path("src/main/resources/models/characters/realistic")
 PROPS = Path("src/main/resources/models/props/realistic")
@@ -203,8 +204,14 @@ def main():
         write(CHARACTERS / f"{name}.glb", document, rebuild(document, binary, PIXELS))
     # Lange keeps his 2048: he is the one person always on screen.
     shutil.copyfile(models / "hero_lange" / "out" / "hero_lange.glb", HERO)
-    document, binary = read(models / "act1_props" / "out" / "act1_props.glb")
-    for name in PIECES:
+    cut(models, "act1_props.glb", PIECES)
+    cut(models, "act1_props_2.glb", PIECES_MORE)
+
+
+def cut(models, glb, names):
+    """One file per piece of act1_props/out/<glb>, in PROPS."""
+    document, binary = read(models / "act1_props" / "out" / glb)
+    for name in names:
         scene, bin_ = piece(json.loads(json.dumps(document)), binary, name)
         scene_binary = rebuild(scene, bin_, PIXELS)
         write(PROPS / f"{name}.glb", scene, scene_binary)

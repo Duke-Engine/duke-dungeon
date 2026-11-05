@@ -344,10 +344,15 @@ models/props/mine/silver_nuggets.gltf | KayKit Resource Bits 1.0 | models/licens
 models/props/mine/stone_chunks.gltf | KayKit Resource Bits 1.0 | models/licenses/kaykit_resource_bits.txt | models/props/mine/stone_chunks.gltf
 models/props/mine/wood_log.gltf | KayKit Resource Bits 1.0 | models/licenses/kaykit_resource_bits.txt | models/props/mine/wood_log.gltf
 models/props/realistic/barrel.glb | Act I props (workspace models/act1_props) | models/licenses/realistic.txt | -
+models/props/realistic/campfire.glb | Act I props (workspace models/act1_props) | models/licenses/realistic.txt | -
+models/props/realistic/candles.glb | Act I props (workspace models/act1_props) | models/licenses/realistic.txt | -
 models/props/realistic/grave.glb | Act I props (workspace models/act1_props) | models/licenses/realistic.txt | -
 models/props/realistic/pillar.glb | Act I props (workspace models/act1_props) | models/licenses/realistic.txt | -
 models/props/realistic/pillar_decorated.glb | Act I props (workspace models/act1_props) | models/licenses/realistic.txt | -
+models/props/realistic/scarecrow.glb | Act I props (workspace models/act1_props) | models/licenses/realistic.txt | -
 models/props/realistic/statue.glb | Act I props (workspace models/act1_props) | models/licenses/realistic.txt | -
+models/props/realistic/throne.glb | Act I props (workspace models/act1_props) | models/licenses/realistic.txt | -
+models/props/realistic/wall_banners.glb | Act I props (workspace models/act1_props) | models/licenses/realistic.txt | -
 models/props/realistic/well.glb | Act I props (workspace models/act1_props) | models/licenses/realistic.txt | -
 models/props/village/bench.glb | Baba Yaga's hut (Inuciian) | models/licenses/baba_yagas_hut.txt | models/inuciian/props/bench.glb
 models/props/village/boat.glb | Baba Yaga's hut (Inuciian) | models/licenses/baba_yagas_hut.txt | models/inuciian/props/boat.glb
