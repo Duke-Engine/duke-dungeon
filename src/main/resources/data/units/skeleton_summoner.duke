@@ -133,9 +133,9 @@ Monster
       WindUpFrames = 20
       Projectile = SummoningRift
       ; Seen calling them up: the summoning gesture, looped as she stands for it (MonsterBrain.gesture).
-      ; The stand-in's Cast (1.63 s); the Ritualist's own file carries hers under the same name.
-      CastAnim = Cast
-      CastSeconds = 1.63
+      ; The Ritualist's own file carries it; the realistic stand-in has no summoning clip and stands for it.
+      CastAnim = Ranged_Magic_Summon
+      CastSeconds = 1.7
       ; Twelve seconds between castings.
       CooldownFrames = 360
       ManaCost = 40
