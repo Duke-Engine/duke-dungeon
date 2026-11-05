@@ -511,6 +511,7 @@ public final class Main {
         visuals.instancedScenery(uz.dukeengine.dungeon.content.RealisticModels::farMesh);
         visuals.scenerySunCasts(uz.dukeengine.dungeon.content.RealisticModels::castsSun);
         visuals.sunShadowsReach(ground.hazeFrom() * 10f);
+        visuals.sceneryReadFirst(uz.dukeengine.dungeon.content.RealisticModels.sceneryToReadFirst());
         // Seen from his shoulder the world is not a floor plan under a shroud: his eyes reach as far as the air lets him,
         // and what is behind a wall is hardly dimmer. The picture alone: the simulation's sight is his VisionRange still.
         visuals.wideWorldEyes(280f, 0.92f, uz.dukeengine.dungeon.stage.StagePaint::isWide);

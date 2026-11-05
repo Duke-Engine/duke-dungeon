@@ -12,3 +12,10 @@ Prop
 
   Weight = 2
 End
+
+; Its look wherever no theme gives it another: the open world.
+ThemeMonster
+  Name = Statue
+  Model = models/props/realistic/statue.glb
+  ModelScale = 6.667
+End

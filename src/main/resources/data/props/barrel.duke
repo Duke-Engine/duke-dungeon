@@ -11,3 +11,10 @@ Prop
 
   Weight = 3
 End
+
+; Its look wherever no theme gives it another: the open world.
+ThemeMonster
+  Name = Barrel
+  Model = models/props/realistic/barrel.glb
+  ModelScale = 6.667
+End

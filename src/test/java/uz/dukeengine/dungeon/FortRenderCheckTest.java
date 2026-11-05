@@ -78,10 +78,10 @@ class FortRenderCheckTest {
         shoot("queens_corner", 151.5f, 37.5f, 29, 0);
     }
 
-    /** The city's street of house fronts (y 236) with the palace's keep and tower behind, from the south. */
+    /** The city's street of town houses (y 236), east of the plaza, from the plaza. */
     @Test
     void theCityStreet() throws Exception {
-        shoot("city_street", 49.5f, 240.5f, NORTH, 0);
+        shoot("city_street", 62.5f, 229.5f, SOUTH, 0);
     }
 
     /** Deep in the dark wood, the thickest scenery of the world: the view the tree budget is measured on. */
@@ -99,13 +99,25 @@ class FortRenderCheckTest {
     /** The village of Olmazor from its road: houses, house fronts, fence, the watchtower beyond. */
     @Test
     void aVillage() throws Exception {
-        shoot("village", 78.5f, 196.5f, 224, 0);
+        shoot("village", 82.5f, 196.5f, NORTH, 0);
     }
 
     /** The cave's rocks and the watchtower from the opening field. */
     @Test
     void theCaveRocks() throws Exception {
-        shoot("cave_rocks", 68.5f, 199.5f, 224, 0);
+        shoot("cave_rocks", 70.5f, 202.5f, 224, 0);
+    }
+
+    /** The small fort on the meadow, from the road south of it. */
+    @Test
+    void theMeadowFort() throws Exception {
+        shoot("meadow_fort", 102.5f, 173.5f, NORTH, 0);
+    }
+
+    /** The Black Knight's camp, far in the north, from the south. */
+    @Test
+    void theBlackKnightsCamp() throws Exception {
+        shoot("black_camp", 102.5f, 40.5f, NORTH, 0);
     }
 
     /** The hero in the open, far from every wall and tower: his own colours in the sun, to read them beside the shade. */
@@ -156,15 +168,11 @@ class FortRenderCheckTest {
         if (System.getenv("RENDER_FLAT") != null) {
             visuals.unit("Knight", unit -> unit.keepsMaps(false)); // the old rule, for comparison
         }
-        if (System.getenv("RENDER_NOCAST") != null) { visuals.scenerySunCasts(null); }
-        if (System.getenv("RENDER_HEROCAST") != null) { visuals.unit("Knight", unit -> unit.castsShadow()); }
-        if (System.getenv("RENDER_NOINST") != null) { visuals.instancedScenery(null); }
-        if (System.getenv("RENDER_SIGHT") != null) { visuals.wideWorldEyes(Float.parseFloat(System.getenv("RENDER_SIGHT")), 0.92f, uz.dukeengine.dungeon.stage.StagePaint::isWide); }
         visuals.discoveredBy("Knight");
         var feet = Main.feet(SETTINGS);
         var duke = Duke3D.of(game, visuals).window(1280, 720).hotkeys(Main.controls(SETTINGS, feet)).controls(feet)
                 .smoothMotion(true);
-        RenderRig.canvas(duke, session, SETTINGS, System.getenv("RENDER_NOHOUR") == null);
+        RenderRig.canvas(duke, session, SETTINGS, true);
         duke.startMatch(game);
         var app = duke.application();
         var settings = new AppSettings(true);
@@ -193,9 +201,26 @@ class FortRenderCheckTest {
         });
         Thread.sleep(500);
         Main.walk(game, turn);
-        Thread.sleep(400);
+        Thread.sleep(1200);
         Main.walk(game, uz.dukeengine.action.ActionOrders.NONE);
-        Thread.sleep(14000 + settleMillis);
+        // The ground round him is being built, and what it is the first of read in: what that costs, by the second.
+        var frames = new StringBuilder();
+        for (int second = 0; second < 14 + settleMillis / 1000; second++) {
+            Thread.sleep(1000);
+            frames.append(Math.round(app.getTimer().getFrameRate())).append(' ');
+        }
+        System.out.println("FRAMERATE " + name + " by the second after he lands: " + frames);
+        // And walking on: the ground ahead built as he comes to it, what a player feels.
+        if (name.equals("forest_walk")) {
+            var walking = new StringBuilder();
+            Main.walk(game, turn);
+            for (int second = 0; second < 16; second++) {
+                Thread.sleep(1000);
+                walking.append(Math.round(app.getTimer().getFrameRate())).append(' ');
+            }
+            Main.walk(game, uz.dukeengine.action.ActionOrders.NONE);
+            System.out.println("FRAMERATE " + name + " walking north: " + walking);
+        }
         game.runOnSimThread(() -> logic.setGamePaused(true));
         Thread.sleep(1500);
         app.enqueue(() -> app.getRenderer().getStatistics().setEnabled(true));
