@@ -60,6 +60,25 @@ Campaign
   ]
 End
 
+; The world's gates (data/props/world_gate.duke) are open for the act's walks, which are planned through them.
+Trigger
+  Name = Act2GatesOpen
+  Map = world
+  When = MAP_START
+  Repeat = Yes
+  If = [
+    Condition
+      Is = FLAG_SET
+      Target = Act2
+    End
+  ]
+  Actions = [
+    Action
+      Act = OPEN_GATE
+    End
+  ]
+End
+
 ; ---------------------------------------------------------------------------
 ; Places the act adds to the open world (its map's file is written by WorldMapWriter): where its
 ; people stand and its story listens. In cells: name x y radius.

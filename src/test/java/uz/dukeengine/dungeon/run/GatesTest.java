@@ -82,11 +82,11 @@ class GatesTest {
         assertTrue(gates(game, "TownGate").isEmpty());
     }
 
-    /** Act 1's world: the first trigger of the act opens every gate as the map begins, so its routes run through them. */
+    /** Act 1 after its battle (a save's joint 2 is one): the story opens every gate as the map begins. */
     @Test
-    void actOneOpensEveryGateAsTheMapBegins() {
+    void actOneOpensEveryGateOnceTheBattleIsWon() {
         var session = Dungeon.newSession(7L, SETTINGS);
-        session.run().skipTo(SETTINGS.campaign(), 1, null);
+        session.run().skipTo(SETTINGS.campaign(), 2, null);
         var game = session.game();
         game.runHeadless(60);
         assertTrue(gates(game, "TownGate").isEmpty() && gates(game, "Portcullis").isEmpty()

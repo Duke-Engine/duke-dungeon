@@ -929,18 +929,32 @@ Trigger
   ]
 End
 
-; The city's and the castles' gates stand open for the whole act: the road from the battle to the palace and on to the graves
-; is planned through them (a shut gate is a wall to a route), and the story, not the hero's coming near, is what opens
-; them -- the oak leaves swing in and the portcullis rises as the map begins (run/Gates, data/props/world_gate.duke).
+; The city's and the castles' gates open once the battle is won (and stay open on a load after it): the road from the battle
+; to the palace and on to the graves is planned through them (a shut gate is a wall to a route), and it is the story, not
+; the hero's coming near, that opens them -- the oak leaves swing in and the portcullis rises (run/Gates,
+; data/props/world_gate.duke). Not at the map's start: the intro's wave is thrown across a field the gates do not touch,
+; and the gates are laid first.
 Trigger
   Name = Act1GatesOpen
+  Map = world
+  When = FLAG
+  Target = BattleWon
+  Actions = [
+    Action
+      Act = OPEN_GATE
+    End
+  ]
+End
+
+Trigger
+  Name = Act1GatesOpenOnLoad
   Map = world
   When = MAP_START
   Repeat = Yes
   If = [
     Condition
       Is = FLAG_SET
-      Target = Act1
+      Target = BattleWon
     End
   ]
   Actions = [

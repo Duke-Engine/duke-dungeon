@@ -45,6 +45,15 @@ class WorldDressingTest {
         var game = Dungeon.newStageSession(stage, SETTINGS).game();
         game.runHeadless(1);
         var logic = game.getLogic();
+        // The world's gates stand shut across their passages (run/Gates) and a campaign's story opens them; a way is planned
+        // through open ones, a shut gate being a wall to a route.
+        logic.getObjects().forEach(thing -> {
+            var gate = thing.findModule(uz.dukeengine.rpg.mission.GateUpdate.class);
+            if (gate != null) {
+                gate.open();
+            }
+        });
+        game.runHeadless(1);
         var hero = named(game, SETTINGS.run().defaultHero());
         for (var village : villages) {
             var people = stage.story().npcs().stream()
