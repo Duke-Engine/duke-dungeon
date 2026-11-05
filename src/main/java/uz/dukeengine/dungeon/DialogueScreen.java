@@ -433,6 +433,7 @@ final class DialogueScreen implements Painter, CanvasInput {
         if (now == null || now.line() >= now.conversation().lines().size()) {
             if (beforeTalk != null) {
                 var was = beforeTalk;
+                camera.keepClear(false);
                 camera.moveTo(was.x(), was.y(), 0);
                 camera.angle(was.angle());
                 camera.pitch(was.pitch());
@@ -491,6 +492,7 @@ final class DialogueScreen implements Painter, CanvasInput {
         camera.lookToward(speaker.x() + (speaker.x() - listener.x()), speaker.y() + (speaker.y() - listener.y()));
         camera.pitch(pitch);
         camera.zoom(settings.story().dialogue().closeZoom());
+        camera.keepClear(true); // so close, in a court of walls: kept out of them as his own camera is
     }
 
     /** The one of {@code kind} (or of a kind its name begins) standing nearest {@code to} within a talk's reach. */
