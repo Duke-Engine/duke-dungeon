@@ -1236,8 +1236,13 @@ public final class Main {
      *
      * <p>Package-private so a test can ask what a thing is drawn as.
      */
+    /** How much of his own colour the realistic hero keeps in the shade (the client's default is 0.55). */
+    private static final float HERO_SHADE = 1.0f;
+
     static Visuals looks(DungeonSettings settings) {
         var visuals = Visuals.create();
+        // Played from the hero's shoulder: no RTS hint, no bottom bar, no bar over his own head (see ShoulderHud).
+        visuals.shoulderHud(true);
         // The simulation's beams (World.beam), as the data draws them: the ritual's, the pillar of light.
         visuals.lasers(settings.lasers());
         for (var kind : settings.monsters()) {
@@ -1296,6 +1301,11 @@ public final class Main {
                         .upperBody(hero.upperBody());
                 if (hero.texture() != null) {
                     unit.texture(hero.texture());
+                }
+                if (uz.dukeengine.dungeon.content.RealisticModels.keepsMaps(hero.model())) {
+                    // Lange's colours are very dark, and he turns every way: the side the sun is not on kept the
+                    // client's 0.55 of them, which reads as black. His shade keeps nearly all.
+                    unit.shadeKeeps(HERO_SHADE);
                 }
                 carry(unit, hero.held());
                 // The turning darkens him: a tint while he holds the medallion's CursedWord.

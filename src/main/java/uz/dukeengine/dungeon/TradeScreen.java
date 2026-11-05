@@ -89,9 +89,12 @@ final class TradeScreen {
         return dx * dx + dy * dy <= reach * reach;
     }
 
-    /** The purse, at the bottom right above the bar: {@code Oltin: 120}. */
+    /**
+     * The purse, at the bottom right: {@code Oltin: 120}. Only while a merchant's window is open: his gold is on the
+     * sheet the rest of the time, and nothing but the HUD's own is drawn permanently over the world.
+     */
     void purse(Canvas canvas, Dungeon.Session match) {
-        if (match == null || match.game().getLogic() == null) {
+        if (match == null || match.game().getLogic() == null || open(match) < 0) {
             return;
         }
         int gold;

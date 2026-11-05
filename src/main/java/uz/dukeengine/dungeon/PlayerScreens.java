@@ -110,7 +110,12 @@ final class PlayerScreens implements Painter, CanvasInput {
             case QUESTS -> quests.paint(canvas, match);
             case MAP -> map.paint(canvas, match);
             case CRAFT -> craft.paint(canvas, match);
-            case NONE -> hints(canvas, settings);
+            case NONE -> {
+                ShoulderHud.paint(canvas, match.run().getSheet(), settings);
+                if (hintsStillShown(match)) {
+                    hints(canvas, settings, canvas.height() - ShoulderHud.height(canvas));
+                }
+            }
         }
     }
 
@@ -273,14 +278,33 @@ final class PlayerScreens implements Painter, CanvasInput {
                 new Hint(settings.run().foldKey(), screens.trackerWord()));
     }
 
+    /** How long, from the first frame played, the screens' keys are written over the corner: then nothing but the HUD. */
+    private static final long HINTS_NANOS = 20_000_000_000L;
+    private Dungeon.Session hinted;
+    private long hintsFrom;
+
+    private boolean hintsStillShown(Dungeon.Session match) {
+        long now = System.nanoTime();
+        if (hinted != match) {
+            hinted = match;
+            hintsFrom = now;
+        }
+        return now - hintsFrom < HINTS_NANOS;
+    }
+
     /** The key hints in a small row at the left over the panel: a key cap with its letter, and the word beside it. */
     static void hints(Canvas canvas, DungeonSettings settings) {
+        var panel = canvas.bottomPanel();
+        hints(canvas, settings, panel == null ? canvas.height() : panel.y());
+    }
+
+    /** The same row, its feet on {@code floor}. */
+    static void hints(Canvas canvas, DungeonSettings settings, float floor) {
         var look = settings.menu();
         var font = Canvas.Font.of("Georgia", Math.clamp(Math.round(canvas.height() * 0.014f), 10, 16));
         var bold = font.bold(true);
         float cap = canvas.measure(font, "Ag").lineHeight() + 4f;
-        var panel = canvas.bottomPanel();
-        float y = (panel == null ? canvas.height() : panel.y()) - cap - 8f;
+        float y = floor - cap - 8f;
         float x = 12f;
         for (var hint : hints(settings)) {
             canvas.fillRect(x, y, cap, cap, 0xC0000000 | look.stoneDeepColour());

@@ -84,6 +84,12 @@ class FortRenderCheckTest {
         shoot("city_street", 49.5f, 240.5f, NORTH, 0);
     }
 
+    /** The hero in the open, far from every wall and tower: his own colours in the sun, to read them beside the shade. */
+    @Test
+    void theHeroInTheOpen() throws Exception {
+        shoot("hero_open", 100.5f, 225.5f, SOUTH, 0);
+    }
+
     /**
      * The client's camera turned to look the way {@code turn} (256ths, as the walk orders) goes: it starts looking north
      * and only the mouse turns it, which nothing here has, so the client's own turn is called. Test-only, by reflection.
@@ -108,10 +114,14 @@ class FortRenderCheckTest {
         throw new IllegalStateException("no camera on " + app.getClass());
     }
 
-    private static void shoot(String name, float cellX, float cellY, int turn, int settleMillis)
+    private static void shoot(String shotName, float cellX, float cellY, int turn, int settleMillis)
             throws Exception {
+        var name = shotName;
         var folder = Path.of(System.getenv("RENDER_OUT") != null ? System.getenv("RENDER_OUT") : "build/render");
         Files.createDirectories(folder);
+        if (System.getenv("RENDER_FLAT") != null) {
+            name = name + "_colour_only";
+        }
         var picture = folder.resolve(name + ".png");
         Files.deleteIfExists(picture);
 
@@ -119,10 +129,14 @@ class FortRenderCheckTest {
         var game = session.game();
         session.run().startWith(game, "Knight");
         var visuals = Main.looks(SETTINGS);
+        if (System.getenv("RENDER_FLAT") != null) {
+            visuals.unit("Knight", unit -> unit.keepsMaps(false)); // the old rule, for comparison
+        }
         visuals.discoveredBy("Knight");
         var feet = Main.feet(SETTINGS);
         var duke = Duke3D.of(game, visuals).window(1280, 720).hotkeys(Main.controls(SETTINGS, feet)).controls(feet)
                 .smoothMotion(true);
+        RenderRig.canvas(duke, session, SETTINGS);
         duke.startMatch(game);
         var app = duke.application();
         var settings = new AppSettings(true);
