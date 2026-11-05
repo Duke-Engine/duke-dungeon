@@ -40,14 +40,15 @@ final class ShoulderHud {
         float manaY = canvas.height() - margin - manaHigh;
         float healthY = sheet.maxMana() > 0 ? manaY - 3f - high : canvas.height() - margin - high;
         bar(canvas, look.stoneDeepColour(), look.stoneEdgeColour(), x, healthY, wide, high,
-                sheet.health() / (float) sheet.maxHealth(), 0x8E1414, sheet.health() + " / " + sheet.maxHealth(),
+                sheet.health() / (float) sheet.maxHealth(), 0x3C0303, sheet.health() + " / " + sheet.maxHealth(),
                 look.boneColour());
         if (sheet.maxMana() > 0) {
             bar(canvas, look.stoneDeepColour(), look.stoneEdgeColour(), x, manaY, wide, manaHigh,
-                    sheet.mana() / (float) sheet.maxMana(), 0x1B3F9E, null, look.boneColour());
+                    sheet.mana() / (float) sheet.maxMana(), 0x04144E, null, look.boneColour());
         }
     }
 
+    /** The canvas colours are drawn as light, not as paint: the fills are given darker than they are meant to look. */
     private static void bar(Canvas canvas, int back, int edge, float x, float y, float w, float h, float fill,
             int colour, String words, int ink) {
         fill = Math.clamp(fill, 0f, 1f);
