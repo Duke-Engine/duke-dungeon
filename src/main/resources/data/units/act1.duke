@@ -16,7 +16,7 @@ Monster
   KindOf = [INFANTRY, SELECTABLE]
   Geometry = Cylinder
     Radius = 4
-    Height = 12
+    Height = 13
   End
   VisionRange = 0
   Modules = [
@@ -29,21 +29,17 @@ Monster
   Weight = 0
   Colour = 0xE8C15A
   Scale = 1.0
-  Model = models/characters/heroes/ranger.glb
-  ; A little warmer than the talk demo's commander, so the two kinds are not drawn alike.
-  Tint = 0xF0D8C0
-  ModelScale = 5.5
+  ; Realistic since 2026-11-05: the workspace's models/commander on the game rig, its clips in its file, 1 m = 6.667 units.
+  Model = models/characters/realistic/commander.glb
+  ModelScale = 6.667
   Facing = 90
-  Animations = Humanoid
-  ; Moves at a jog, not a walk: Running_A at about its own pace rather than Walking_A several times over.
-  Walk = Running_A
-  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
-  WalkStride = 14.83
-  UpperBody = spine
-  Held = Held
-    Model = models/items/weapons/sword.glb
-    Bone = handslot.r
-  End
+  Idle = Idle
+  Walk = Run
+  ; How far one play of Run carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
+  WalkStride = 17.15
+  Attack = Attack
+  Death = Death
+  UpperBody = spine_01
 End
 
 ; The commander with her sword out: who stands beside him through the first wave (act1.duke, FirstWave), on his
@@ -55,7 +51,7 @@ Monster
   KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
   Geometry = Cylinder
     Radius = 4
-    Height = 12
+    Height = 13
   End
   VisionRange = 90
   Modules = [
@@ -69,8 +65,8 @@ Monster
     WeaponUpdate
       Damage = 18
       AttackRange = 10
-      ReloadFrames = 13
-      PreAttackFrames = 17
+      ReloadFrames = 23
+      PreAttackFrames = 7
     End,
     Swing
     End,
@@ -91,24 +87,23 @@ Monster
   AlertRadius = 90
   RepathFrames = 10
   SwingFrames = 12
-  Idle = Melee_Blocking
-  Attack = Melee_1H_Attack_Chop
+  ; Realistic since 2026-11-05: the workspace's models/commander on the game rig, its clips in its file, 1 m = 6.667 units.
+  Model = models/characters/realistic/commander.glb
+  ModelScale = 6.667
+  ; A shade warmer than the commander out of armour of her own, so the two kinds are not drawn alike.
+  Tint = 0xFAF0E6
+  Facing = 90
+  Idle = Idle
+  Walk = Run
+  ; How far one play of Run carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
+  WalkStride = 17.15
+  Attack = Attack
+  Death = Death
+  UpperBody = spine_01
   MinDepth = 99
   Weight = 0
   Colour = 0xE8C15B
   Scale = 1.0
-  Model = models/characters/heroes/ranger.glb
-  Tint = 0xF4DCC4
-  ModelScale = 5.5
-  Facing = 90
-  Animations = Humanoid
-  Walk = Running_A
-  WalkStride = 14.83
-  UpperBody = spine
-  Held = Held
-    Model = models/items/weapons/sword.glb
-    Bone = handslot.r
-  End
   Skills = [
     Skill
       Key = Q
@@ -184,14 +179,17 @@ Monster
   Weight = 0
   Colour = 0x8A6A4A
   Scale = 1.0
-  Model = models/characters/heroes/knight.glb
-  Tint = 0xA08060
-  ModelScale = 4.72
+  ; Realistic since 2026-11-05: the workspace's models/blacksmith on the game rig, its clips in its file, 1 m = 6.667 units.
+  Model = models/characters/realistic/blacksmith.glb
+  ModelScale = 6.667
   Facing = 90
-  Animations = Humanoid
-  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
-  WalkStride = 3.52
-  UpperBody = spine
+  Idle = Idle
+  Walk = Walk
+  ; How far one play of Walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
+  WalkStride = 8.93
+  Attack = Attack
+  Death = Death
+  UpperBody = spine_01
 End
 
 Monster
@@ -200,7 +198,7 @@ Monster
   KindOf = [INFANTRY, SELECTABLE]
   Geometry = Cylinder
     Radius = 4
-    Height = 12
+    Height = 10
   End
   VisionRange = 0
   Modules = [
@@ -213,14 +211,17 @@ Monster
   Weight = 0
   Colour = 0xC8B8A0
   Scale = 1.0
-  Model = models/characters/heroes/rogue.glb
-  Tint = 0xD0C0B0
-  ModelScale = 5.0
+  ; Realistic since 2026-11-05: the workspace's models/old_woman on the game rig, its clips in its file, 1 m = 6.667 units.
+  Model = models/characters/realistic/old_woman.glb
+  ModelScale = 6.667
   Facing = 90
-  Animations = Humanoid
-  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
-  WalkStride = 3.72
-  UpperBody = spine
+  Idle = Idle
+  Walk = Walk
+  ; How far one play of Walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
+  WalkStride = 6.69
+  Attack = Attack
+  Death = Death
+  UpperBody = spine_01
 End
 
 ; The kingdom's soldiers: KayKit adventurers fighting for the hero — the ALLY act puts them on his
@@ -245,10 +246,10 @@ Monster
     WeaponUpdate
       Damage = 6
       AttackRange = 10
-      ReloadFrames = 13
+      ReloadFrames = 23
       ; The swing up to the blow (MonsterClipFitTest): the client starts its attack as it winds up,
       ; and the blow lands as the clip strikes. Taken off ReloadFrames, so it hits as often as before.
-      PreAttackFrames = 17
+      PreAttackFrames = 7
     End,
     Swing
     End,
@@ -269,25 +270,21 @@ Monster
   AlertRadius = 70
   RepathFrames = 10
   SwingFrames = 12
-  Idle = Melee_Blocking
-  Attack = Melee_1H_Attack_Chop
+  ; Realistic since 2026-11-05: the workspace's models/soldier on the game rig, its clips in its file, 1 m = 6.667 units.
+  Model = models/characters/realistic/soldier.glb
+  ModelScale = 6.667
+  Facing = 90
+  Idle = Idle
+  Walk = Run
+  ; How far one play of Run carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
+  WalkStride = 15.51
+  Attack = Attack
+  Death = Death
+  UpperBody = spine_01
   MinDepth = 99
   Weight = 0
   Colour = 0x4A7AC8
   Scale = 1.0
-  Model = models/characters/heroes/knight.glb
-  ModelScale = 4.72
-  Facing = 90
-  Animations = Humanoid
-  ; Moves at a jog, not a walk: Running_A at about its own pace rather than Walking_A several times over.
-  Walk = Running_A
-  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
-  WalkStride = 12.73
-  UpperBody = spine
-  Held = Held
-    Model = models/items/weapons/sword.glb
-    Bone = handslot.r
-  End
 End
 
 ; ...and a lighter one in the rogue's clothes, with a blade.
@@ -297,7 +294,7 @@ Monster
   KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
   Geometry = Cylinder
     Radius = 4
-    Height = 12
+    Height = 11
   End
   VisionRange = 80
   Modules = [
@@ -311,10 +308,10 @@ Monster
     WeaponUpdate
       Damage = 6
       AttackRange = 10
-      ReloadFrames = 9
+      ReloadFrames = 10
       ; The swing up to the blow (MonsterClipFitTest): the client starts its attack as it winds up,
       ; and the blow lands as the clip strikes. Taken off ReloadFrames, so it hits as often as before.
-      PreAttackFrames = 17
+      PreAttackFrames = 16
     End,
     Swing
     End,
@@ -335,25 +332,21 @@ Monster
   AlertRadius = 70
   RepathFrames = 10
   SwingFrames = 10
-  Idle = Melee_Blocking
-  Attack = Melee_1H_Attack_Chop
+  ; Realistic since 2026-11-05: the workspace's models/militia on the game rig, its clips in its file, 1 m = 6.667 units.
+  Model = models/characters/realistic/militia.glb
+  ModelScale = 6.667
+  Facing = 90
+  Idle = Idle
+  Walk = Run
+  ; How far one play of Run carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
+  WalkStride = 14.11
+  Attack = Attack
+  Death = Death
+  UpperBody = spine_01
   MinDepth = 99
   Weight = 0
   Colour = 0x4AA87A
   Scale = 1.0
-  Model = models/characters/heroes/rogue.glb
-  ModelScale = 5.0
-  Facing = 90
-  Animations = Humanoid
-  ; Moves at a jog, not a walk: Running_A at about its own pace rather than Walking_A several times over.
-  Walk = Running_A
-  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
-  WalkStride = 13.48
-  UpperBody = spine
-  Held = Held
-    Model = models/items/gear/blade.gltf
-    Bone = handslot.r
-  End
 End
 
 ; The enemy army's commander: STAND-IN look (the skeleton warrior, larger and darkened, with an axe).
@@ -365,7 +358,7 @@ Monster
   KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
   Geometry = Cylinder
     Radius = 6
-    Height = 18
+    Height = 15
   End
   VisionRange = 120
   Modules = [
@@ -379,10 +372,10 @@ Monster
     WeaponUpdate
       Damage = 9
       AttackRange = 12
-      ReloadFrames = 17
+      ReloadFrames = 10
       ; The swing up to the blow (MonsterClipFitTest): the client starts its attack as it winds up,
       ; and the blow lands as the clip strikes. Taken off ReloadFrames, so it hits as often as before.
-      PreAttackFrames = 17
+      PreAttackFrames = 24
     End,
     Swing
     End,
@@ -407,21 +400,17 @@ Monster
   Weight = 0
   Colour = 0x803040
   Scale = 1.6
-  Model = models/characters/monsters/skeleton_warrior.glb
-  Animations = Humanoid
-  ; Moves at a jog, not a walk: Running_A at about its own pace rather than Walking_A several times over.
-  Walk = Running_A
-  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
-  WalkStride = 22.38
-  UpperBody = spine
-  Effect = EmberEyes
-  ModelScale = 8.3
-  Tint = 0x7A4A5A
-  Held = Held
-    Model = models/items/gear/axe.gltf
-    Bone = handslot.r
-    Scale = 1.2
-  End
+  ; Realistic since 2026-11-05: the workspace's models/enemy_commander on the game rig, its clips in its file, 1 m = 6.667 units.
+  Model = models/characters/realistic/enemy_commander.glb
+  ModelScale = 6.667
+  Facing = 90
+  Idle = Idle
+  Walk = Run
+  ; How far one play of Run carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
+  WalkStride = 18.75
+  Attack = Attack
+  Death = Death
+  UpperBody = spine_01
   Skills = [
     Skill
       Key = Q
@@ -456,10 +445,10 @@ Monster
     WeaponUpdate
       Damage = 20
       AttackRange = 12
-      ReloadFrames = 13
+      ReloadFrames = 18
       ; The swing up to the blow (MonsterClipFitTest): the client starts its attack as it winds up,
       ; and the blow lands as the clip strikes. Taken off ReloadFrames, so it hits as often as before.
-      PreAttackFrames = 17
+      PreAttackFrames = 12
     End,
     Swing
     End,
@@ -480,27 +469,21 @@ Monster
   AlertRadius = 120
   RepathFrames = 6
   SwingFrames = 16
-  Idle = Melee_Blocking
-  Attack = Melee_1H_Attack_Chop
+  ; Realistic since 2026-11-05: the workspace's models/dark_lord on the game rig, its clips in its file, 1 m = 6.667 units.
+  Model = models/characters/realistic/dark_lord.glb
+  ModelScale = 6.667
+  Facing = 90
+  Idle = Idle
+  Walk = Run
+  ; How far one play of Run carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
+  WalkStride = 20.71
+  Attack = Attack
+  Death = Death
+  UpperBody = spine_01
   MinDepth = 99
   Weight = 0
   Colour = 0x40384A
   Scale = 1.35
-  Model = models/characters/heroes/knight.glb
-  Tint = 0x40384A
-  ModelScale = 6.3
-  Facing = 90
-  Animations = Humanoid
-  ; Moves at a jog, not a walk: Running_A at about its own pace rather than Walking_A several times over.
-  Walk = Running_A
-  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
-  WalkStride = 16.99
-  UpperBody = spine
-  Held = Held
-    Model = models/items/weapons/sword.glb
-    Bone = handslot.r
-    Scale = 1.3
-  End
 End
 
 ; ---------------------------------------------------------------------------
@@ -531,16 +514,20 @@ Monster
   Weight = 0
   Colour = 0xB06AE8
   Scale = 1
-  Model = models/characters/monsters/skeleton_mage.glb
-  Animations = Humanoid
-  Texture = models/characters/monsters/skeleton_texture_purple.png
-  Effect = EmberEyes
-  ; A little taller than the Skeleton Summoner, and paler: the queen's, not the dungeon's.
-  ModelScale = 6.3
+  ; Realistic since 2026-11-05: the workspace's models/skeleton_mage on the game rig, its clips in its file, 1 m = 6.667 units.
+  ; The stand-in where the licensed Ritualist is not shipped: the skeleton mage, paler robe and all.
+  Model = models/characters/realistic/skeleton_mage.glb
+  ModelScale = 6.667
+  ; Paler than the dungeon's: the queen's, not the dungeon's.
   Tint = 0xE0D8F0
-  Idle = Ranged_Magic_Spellcasting_Long
-  ; The stand-in's walk, measured as every creature's is (MonsterClipFitTest).
-  WalkStride = 4.69
+  Facing = 90
+  Idle = Idle
+  Walk = Walk
+  ; How far one play of Walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
+  WalkStride = 8.68
+  Attack = Attack
+  Death = Death
+  UpperBody = spine_01
   Licensed = MonsterLook
     Model = models/licensed/ritualist.glb
     ModelScale = 7.9
@@ -575,18 +562,19 @@ Monster
   Weight = 0
   Colour = 0x8A7A58
   Scale = 1.0
-  Model = models/characters/heroes/knight.glb
-  Tint = 0xA89878
-  ModelScale = 4.72
+  ; Realistic since 2026-11-05: the workspace's models/soldier on the game rig, its clips in its file, 1 m = 6.667 units.
+  Model = models/characters/realistic/soldier.glb
+  ModelScale = 6.667
+  ; The guards' browns, a shade off the soldiers' blue, as the old look was.
+  Tint = 0xE8DCC8
   Facing = 90
-  Animations = Humanoid
-  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
-  WalkStride = 3.52
-  UpperBody = spine
-  Held = Held
-    Model = models/items/weapons/sword.glb
-    Bone = handslot.r
-  End
+  Idle = Idle
+  Walk = Walk
+  ; How far one play of Walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
+  WalkStride = 8.72
+  Attack = Attack
+  Death = Death
+  UpperBody = spine_01
 End
 
 ; The queen's men the commander takes to the old graves (act1.duke, TrainingBegins): with the soldiers, two archers
@@ -597,7 +585,7 @@ Monster
   KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
   Geometry = Cylinder
     Radius = 4
-    Height = 12
+    Height = 11
   End
   VisionRange = 80
   Modules = [
@@ -611,7 +599,8 @@ Monster
     WeaponUpdate
       Damage = 7
       AttackRange = 70
-      ReloadFrames = 45
+      ReloadFrames = 9
+      PreAttackFrames = 36
       AttackOnTheMove = No
     End,
     Swing
@@ -621,7 +610,11 @@ Monster
     Bow
       Projectile = Arrow
       Speed = 200
-      MuzzleOffset = 8
+      ; The glb's bow string neither draws nor holds an arrow, so the arrow is the game's: it appears as the string hand
+      ; lets go (PreAttackFrames 36 = 1.2 s, the release of her Attack) with its middle 4 units ahead of her, so that it
+      ; lies across the bow hand (2.5 units ahead, 0.84 m up at the release) and flies on from there. Its height is the
+      ; Arrow's 7 (1.05 m), halfway between the string hand (1.24 m) and the bow hand.
+      MuzzleOffset = 4
     End,
     EyesOnly
     End,
@@ -639,28 +632,23 @@ Monster
   CloseDistance = 6
   AlertRadius = 80
   RepathFrames = 10
-  SwingFrames = 14
+  SwingFrames = 23
   KeepDistance = [40, 60]
   MinDepth = 99
   Weight = 0
   Colour = 0x5A9A6A
-  Scale = 1.0
-  Model = models/characters/heroes/rogue.glb
-  Tint = 0xC8E0C0
-  ModelScale = 5.0
+  ; Realistic since 2026-11-05: the workspace's models/archer on the game rig, its clips in its file, 1 m = 6.667 units.
+  Model = models/characters/realistic/archer.glb
+  ModelScale = 6.667
   Facing = 90
-  Animations = Humanoid
-  Idle = Ranged_Bow_Idle
-  Attack = Ranged_Bow_Release_Up
-  Walk = Running_A
-  WalkStride = 13.48
-  UpperBody = spine
-  Held = Held
-    Model = models/items/gear/bow.gltf
-    Bone = handslot.l
-    ; The bow runs along +Z, as the crossbow does: a quarter turn lays it along the hand.
-    Yaw = 90
-  End
+  Idle = Idle
+  Walk = Run
+  ; How far one play of Run carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
+  WalkStride = 13.99
+  Attack = Attack
+  Death = Death
+  UpperBody = spine_01
+  Scale = 1.0
 End
 
 Monster
@@ -669,7 +657,7 @@ Monster
   KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
   Geometry = Cylinder
     Radius = 4
-    Height = 12
+    Height = 11
   End
   VisionRange = 80
   Modules = [
@@ -683,7 +671,8 @@ Monster
     WeaponUpdate
       Damage = 4
       AttackRange = 60
-      ReloadFrames = 60
+      ReloadFrames = 43
+      PreAttackFrames = 17
       AttackOnTheMove = No
     End,
     SkillBook
@@ -711,26 +700,23 @@ Monster
   CloseDistance = 6
   AlertRadius = 80
   RepathFrames = 10
-  SwingFrames = 20
+  SwingFrames = 32
   KeepDistance = [40, 60]
   MinDepth = 99
   Weight = 0
   Colour = 0xE8E0A8
-  Scale = 1.0
-  Model = models/characters/heroes/mage.glb
-  Tint = 0xF0F0D8
-  ModelScale = 4.8
+  ; Realistic since 2026-11-05: the workspace's models/healer on the game rig, its clips in its file, 1 m = 6.667 units.
+  Model = models/characters/realistic/healer.glb
+  ModelScale = 6.667
   Facing = 90
-  Animations = Humanoid
-  Attack = Ranged_Magic_Shoot
-  Idle = Ranged_Magic_Spellcasting_Long
-  Walk = Running_A
-  WalkStride = 12.94
-  UpperBody = spine
-  Held = Held
-    Model = models/items/gear/staff.gltf
-    Bone = handslot.r
-  End
+  Idle = Idle
+  Walk = Run
+  ; How far one play of Run carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
+  WalkStride = 13.76
+  Attack = Cast
+  Death = Death
+  UpperBody = spine_01
+  Scale = 1.0
   ; It mends the hero and the queen's men: the skeleton healer's light, on his side.
   SkillDistance = [0, 70]
   Skills = [
@@ -740,7 +726,10 @@ Monster
       Heal = 35
       HealBelowPercent = 70
       Range = 70
+      ; Cast's staff hand is fastest at 0.65 s: the mending leaves with it.
       WindUpFrames = 20
+      CastAnim = Cast
+      CastSeconds = 1.63
       Projectile = MendingLight
       CooldownFrames = 180
       MaxRank = 1

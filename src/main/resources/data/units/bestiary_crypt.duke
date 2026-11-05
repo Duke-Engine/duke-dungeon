@@ -611,9 +611,9 @@ Monster
     WeaponUpdate
       Damage = 4
       AttackRange = 8
-      ReloadFrames = 4
+      ReloadFrames = 8
       ; The swing up to the blow (MonsterClipFitTest), taken off ReloadFrames.
-      PreAttackFrames = 14
+      PreAttackFrames = 10
     End,
     Swing
     End,
@@ -640,14 +640,16 @@ Monster
   Weight = 10
   Colour = 0xC8B890
   Scale = 0.58
-  Model = models/characters/monsters/bat.glb
-  ModelScale = 1.72
+  ; Realistic since 2026-11-05: the workspace's models/act1_props/out/bat.glb, 1 m = 6.667 units. It flies: its clips lift
+  ; it 0.65 m (4.3 units), so no hover is set here, and it has no feet to take a stride from.
+  Model = models/characters/realistic/bat.glb
+  ModelScale = 6.667
+  Facing = 90
   Idle = Idle
-  Walk = Walk
+  Walk = Run
+  WalkStride = 0
   Attack = Attack
   Death = Death
-  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest).
-  WalkStride = 0
 End
 
 ; a rat of the crypt and the ruins.
@@ -700,14 +702,17 @@ Monster
   Weight = 10
   Colour = 0xC8B890
   Scale = 0.52
-  Model = models/characters/monsters/rat.glb
-  ModelScale = 2.71
+  ; Realistic since 2026-11-05: the workspace's models/act1_props/out/rat.glb, a dire rat 0.83 m long, 1 m = 6.667 units.
+  Model = models/characters/realistic/rat.glb
+  ModelScale = 6.667
+  Facing = 90
   Idle = Idle
-  Walk = Walk
+  Walk = Run
+  ; How far one play of Run carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
+  WalkStride = 9.15
   Attack = Attack
   Death = Death
-  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest).
-  WalkStride = 5.4
+  UpperBody = spine
 End
 
 ; ranged: a cultist hag with shadow on her hands.

@@ -24,10 +24,10 @@ Monster
     WeaponUpdate
       Damage = 7
       AttackRange = 10
-      ReloadFrames = 13
+      ReloadFrames = 23
       ; The swing up to the blow (MonsterClipFitTest): the client starts its attack as it winds up,
       ; and the blow lands as the clip strikes. Taken off ReloadFrames, so it hits as often as before.
-      PreAttackFrames = 17
+      PreAttackFrames = 7
     End,
     ; Comes for the hero when it notices him — see MonsterBrain.
     ; Tells the brain the frame a blow landed, so it stands and finishes the swing
@@ -102,20 +102,15 @@ Monster
   Weight = 40
   Colour = 0xE15F50
   Scale = 1.0
-  ; The plain skeleton of the pack, with a blade. GeometryHeight is 12 in
-  ; its template and the model boxes 2.17 tall.
-  Model = models/characters/monsters/skeleton_minion.glb
-  Animations = Humanoid
-  ; Moves at a jog, not a walk: Running_A at about its own pace rather than Walking_A several times over.
-  Walk = Running_A
-  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
-  WalkStride = 14.83
-  UpperBody = spine
-  ; What is looking at you out of the dark.
-  Effect = EmberEyes
-  ModelScale = 5.5
-  Held = Held
-    Model = models/items/gear/blade.gltf
-    Bone = handslot.r
-  End
+  ; Realistic since 2026-11-05: the workspace's models/skeleton on the game rig, its clips in its file, 1 m = 6.667 units.
+  Model = models/characters/realistic/skeleton.glb
+  ModelScale = 6.667
+  Facing = 90
+  Idle = Idle
+  Walk = Run
+  ; How far one play of Run carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
+  WalkStride = 15.57
+  Attack = Attack
+  Death = Death
+  UpperBody = spine_01
 End

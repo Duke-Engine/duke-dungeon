@@ -522,7 +522,7 @@ Trigger
       Act = POSE
       Target = Ritualist
       Clip = Ritual
-      OrElse = Ranged_Magic_Summon
+      OrElse = Cast
       Frames = 150
     End,
     Action

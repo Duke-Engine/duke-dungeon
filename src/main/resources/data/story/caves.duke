@@ -68,7 +68,7 @@ Graveyard
   ; Its graves all down and left unhurt three seconds, it casts seven and raises them all again.
   CalmFrames = 90
   RestoreFrames = 210
-  RestoreClip = Ranged_Magic_Spellcasting_Long
+  RestoreClip = Cast
   RestoreLook = GraveRises
 End
 
@@ -92,7 +92,7 @@ Graveyard
   ; Its graves all down and left unhurt three seconds, it casts seven and raises them all again.
   CalmFrames = 90
   RestoreFrames = 210
-  RestoreClip = Ranged_Magic_Spellcasting_Long
+  RestoreClip = Cast
   RestoreLook = GraveRises
 End
 
@@ -116,7 +116,7 @@ Graveyard
   ; Its graves all down and left unhurt three seconds, it casts seven and raises them all again.
   CalmFrames = 90
   RestoreFrames = 210
-  RestoreClip = Ranged_Magic_Spellcasting_Long
+  RestoreClip = Cast
   RestoreLook = GraveRises
 End
 
@@ -140,6 +140,6 @@ Graveyard
   ; Its graves all down and left unhurt three seconds, it casts seven and raises them all again.
   CalmFrames = 90
   RestoreFrames = 210
-  RestoreClip = Ranged_Magic_Spellcasting_Long
+  RestoreClip = Cast
   RestoreLook = GraveRises
 End

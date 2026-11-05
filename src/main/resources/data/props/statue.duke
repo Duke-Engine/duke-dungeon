@@ -5,7 +5,8 @@ Prop
   VisionRange = 0
   Geometry = Cylinder
     Radius = 3.5
-    Height = 14
+    ; 2.57 m, the plinth with it.
+    Height = 17
   End
 
 

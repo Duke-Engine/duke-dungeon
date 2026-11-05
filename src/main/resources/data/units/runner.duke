@@ -4,7 +4,7 @@ Monster
   KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
   Geometry = Cylinder
     Radius = 3
-    Height = 9
+    Height = 12
   End
   VisionRange = 85
   Modules = [
@@ -19,10 +19,10 @@ Monster
     WeaponUpdate
       Damage = 4
       AttackRange = 8
-      ReloadFrames = 5
+      ReloadFrames = 16
       ; The swing up to the blow (MonsterClipFitTest): the client starts its attack as it winds up,
       ; and the blow lands as the clip strikes. Taken off ReloadFrames, so it hits as often as before.
-      PreAttackFrames = 17
+      PreAttackFrames = 6
     End,
     ; Tells the brain the frame a blow landed, so it stands and finishes the swing
     ; instead of walking off mid-blow. It launches nothing -- see Swing.
@@ -59,23 +59,15 @@ Monster
   Weight = 30
   Colour = 0xF2C14E
   Scale = 0.75
-  ; The same skeleton, smaller and in a hot wash so the two are told apart at
-  ; a glance -- one texture serves the whole pack, so colour is what separates
-  ; them. GeometryHeight is 9.
-  Model = models/characters/monsters/skeleton_minion.glb
-  Animations = Humanoid
-  ; What is looking at you out of the dark.
-  Effect = EmberEyes
-  ModelScale = 4.2
-  Tint = 0xFFD08A
-  Held = Held
-    ; panarth's dagger (Low poly medieval weapons, CC BY 4.0): the quick one carries the short blade.
-    Model = models/items/weapons/dagger.glb
-    Bone = handslot.r
-  End
-  ; It runs rather than walks: it is the one you cannot step away from.
-  Walk = Running_A
-  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
-  WalkStride = 11.32
-  UpperBody = spine
+  ; Realistic since 2026-11-05: the workspace's models/runner on the game rig, its clips in its file, 1 m = 6.667 units.
+  Model = models/characters/realistic/runner.glb
+  ModelScale = 6.667
+  Facing = 90
+  Idle = Idle
+  Walk = Run
+  ; How far one play of Run carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
+  WalkStride = 15.57
+  Attack = Attack
+  Death = Death
+  UpperBody = spine_01
 End

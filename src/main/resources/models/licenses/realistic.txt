@@ -1,0 +1,16 @@
+The realistic Act I models (2026-11-05): models/characters/realistic/*.glb and models/props/realistic/*.glb, built in the
+workspace as models/<name> (human_kit, skeleton_kit and act1_props), with every texture kept (colour, normal, occlusion-
+roughness-metal) and cut to 1024 px by art/models/realistic_models.py.
+
+All of it is CC0 or made for this game by the scripts that built it; nothing here needs attribution:
+  - the people's and the dead's bodies, skin, eyes, brows and lashes, and the game_engine skeleton: MakeHuman system
+    assets through MPFB 2.0.18 (MakeHuman community, CC0 1.0);
+  - Walk, Run and Death, legs and body retargeted: Universal Animation Library [Standard] (Quaternius, CC0 1.0);
+  - metal, rust and scratch detail: ambientCG (Lennart Demes, CC0 1.0); bone and plaster detail: Poly Haven (Amal Kumar,
+    Rob Tuytel, CC0 1.0);
+  - the clothes, armour, weapons, bones, rat, bat and props, all other geometry, texture sets, rigs and the Idle, Hurt,
+    Attack and Cast clips: this project's own scripts (own work).
+The statue is customer_01's body (MakeHuman through MPFB, CC0) posed, solidified and given a rock material.
+
+Lange (models/characters/heroes/hero_lange.glb) is CC BY 4.0 and listed in lange.txt.
+MPFB's own code is GPLv3; it only ran to make the bases and is not in the game.

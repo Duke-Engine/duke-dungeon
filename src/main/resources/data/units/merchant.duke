@@ -25,13 +25,15 @@ Monster
   Weight = 0
   Colour = 0xB08850
   Scale = 1.0
-  Model = models/characters/heroes/mage.glb
-  Tint = 0xC8A070
-  ; The mage boxes about 2.655 tall: 12 / 2.655.
-  ModelScale = 4.5
+  ; Realistic since 2026-11-05: the workspace's models/merchant on the game rig, its clips in its file, 1 m = 6.667 units.
+  Model = models/characters/realistic/merchant.glb
+  ModelScale = 6.667
   Facing = 90
-  Animations = Humanoid
-  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
-  WalkStride = 3.35
-  UpperBody = spine
+  Idle = Idle
+  Walk = Walk
+  ; How far one play of Walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
+  WalkStride = 8.35
+  Attack = Attack
+  Death = Death
+  UpperBody = spine_01
 End

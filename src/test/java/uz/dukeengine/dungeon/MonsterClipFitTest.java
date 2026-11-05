@@ -38,8 +38,13 @@ import uz.dukeengine.rpg.fight.Swing;
  * measured here, off the clips as jME plays them.
  *
  * <p>What cannot be measured is said, not guessed: a creature with no feet (a ghost, a slime, a winged thing that
- * hovers) has no stride, so it keeps its walk at its own pace ({@code WalkStride} 0); and one that shoots looses on
- * its clip's first frames and needs no wind-up.
+ * hovers) has no stride, so it keeps its walk at its own pace ({@code WalkStride} 0); and one that shoots with no
+ * {@code PreAttackFrames} looses on its clip's first frames and needs no wind-up. One that has them (the archer
+ * drawing her bow, a caster raising its staff) is held to its clip's fastest hand like a swordsman is.
+ *
+ * <p>On the game rig (the realistic people and the dead, {@code foot_l} and {@code hand_attach_r}) the ankle rises with
+ * the heel, which the stance count misses: a stride there is two stances of the left foot's slide, as the hero's is
+ * (HeroClipFitTest).
  */
 class MonsterClipFitTest {
 
@@ -53,7 +58,10 @@ class MonsterClipFitTest {
     /** What touches the ground: a foot (KayKit, Quaternius' IK feet), a leg's tip, a deer's hoof target. */
     private static final Pattern FOOT = Pattern.compile("(?!.*toe).*foot.*|.*leg\\.[lr]_end|ffb?\\.[lr]");
     /** What strikes: a hand or what it holds, an arm's tip, or a head that bites. */
-    private static final Pattern STRIKER = Pattern.compile("hand\\.[lr]|handslot\\.[lr]|arm\\.[lr]_end|lowerarm\\.[lr]|head");
+    private static final Pattern STRIKER = Pattern.compile(
+            "hand\\.[lr]|handslot\\.[lr]|arm\\.[lr]_end|lowerarm\\.[lr]|head|hand_[lr]|hand_attach_[lr]");
+    /** How far up its rise the left ankle of the game rig is still on the ground. */
+    private static final float RIG_DOWN = 0.4f;
 
     /** One clip sampled every STEP: each joint's world position, per sample. */
     private record Samples(List<String> joints, List<Vector3f[]> at, double length) {
@@ -80,7 +88,8 @@ class MonsterClipFitTest {
                 }
                 continue;
             }
-            float measured = (float) (stanceSpeed(walk) * walk.length() * look.modelScale());
+            float measured = walk.joints().contains("foot_l") ? rigStride(walk, look.modelScale())
+                    : (float) (stanceSpeed(walk) * walk.length() * look.modelScale());
             table.append(row(kind, look, walk, String.format("%.1f", measured), measured)).append('\n');
             if (Math.abs(look.walkStride() - measured) > STRIDE_SLACK * measured) {
                 problems.add(kind.name() + "'s " + look.walk() + " plants its feet " + measured
@@ -97,7 +106,7 @@ class MonsterClipFitTest {
         var table = new StringBuilder("| Monster | Attack | Length | Fastest at | PreAttack | Between |\n");
         for (var kind : SETTINGS.monsters().stream().filter(k -> !SETTINGS.isMount(k.name()) || k.name().equals(SETTINGS.mount().horse())).toList()) {
             var look = SETTINGS.lookOf(kind);
-            if (!look.hasModel() || look.attack() == null || !melee(kind.name())) {
+            if (!look.hasModel() || look.attack() == null || !winds(kind.name())) {
                 continue;
             }
             var attack = sample(look, look.attack());
@@ -249,11 +258,32 @@ class MonsterClipFitTest {
         return new Samples(joints.stream().map(Joint::getName).toList(), at, clip.getLength());
     }
 
-    /** Whether it strikes where it stands (a Swing and no Bow): a wind-up is a melee blow's. */
-    private static boolean melee(String template) {
+    /** Whether its blow has a wind-up to hold to the clip: it strikes where it stands (a Swing and no Bow), or says so. */
+    private static boolean winds(String template) {
         var modules = templates().findTemplate(template).modules();
-        return modules.stream().anyMatch(Swing.Data.class::isInstance)
+        boolean melee = modules.stream().anyMatch(Swing.Data.class::isInstance)
                 && modules.stream().noneMatch(Bow.Data.class::isInstance);
+        return melee || modules.stream().anyMatch(m -> m instanceof WeaponUpdate.Data w && w.preAttackFrames() > 0);
+    }
+
+    /** The ground a clip of the game rig covers in a play: twice the left foot's slide while its ankle is low. */
+    private static float rigStride(Samples clip, float scale) {
+        int foot = clip.joints().indexOf("foot_l");
+        float low = Float.MAX_VALUE;
+        float high = -Float.MAX_VALUE;
+        for (var at : clip.at()) {
+            low = Math.min(low, at[foot].y);
+            high = Math.max(high, at[foot].y);
+        }
+        float near = Float.MAX_VALUE;
+        float far = -Float.MAX_VALUE;
+        for (var at : clip.at()) {
+            if (at[foot].y <= low + RIG_DOWN * (high - low)) {
+                near = Math.min(near, at[foot].z);
+                far = Math.max(far, at[foot].z);
+            }
+        }
+        return 2f * (far - near) * scale;
     }
 
     private static WeaponUpdate.Data weaponOf(String template) {

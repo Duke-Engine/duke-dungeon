@@ -5,7 +5,8 @@ Prop
   VisionRange = 0
   Geometry = Cylinder
     Radius = 3
-    Height = 12
+    ; 3.46 m of shaft and capital.
+    Height = 23
   End
   ; Three across, so two of them do not close a two-cell corridor — they are
   ; scattered in rooms rather than in corridors, but a room's edge is a doorway.

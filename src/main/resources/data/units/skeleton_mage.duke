@@ -10,7 +10,7 @@ Monster
   KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
   Geometry = Cylinder
     Radius = 4
-    Height = 13
+    Height = 12
   End
   VisionRange = 64
   Modules = [
@@ -27,7 +27,8 @@ Monster
     WeaponUpdate
       Damage = 6
       AttackRange = 58
-      ReloadFrames = 54
+      ReloadFrames = 37
+      PreAttackFrames = 17
       AttackOnTheMove = No
     End,
     ; That it has skills. Which ones is its Skill blocks' business, below.
@@ -72,7 +73,7 @@ Monster
   RepathFrames = 10
   ; How long a throw holds it still -- the fireball or its ordinary fire -- and the
   ; one waits for the other, so each is seen leaving.
-  SwingFrames = 20
+  SwingFrames = 32
   MinDepth = 1
   Weight = 10
   ; No more than two to a room, or a room of them is a firing squad.
@@ -82,25 +83,18 @@ Monster
   ; It throws when he is at least this far and at most this far, surface to surface.
   SkillDistance = [20, 60]
   ; And it holds him between these: nearer and it backs away, further and it comes.
+  ; Realistic since 2026-11-05: the workspace's models/skeleton_mage on the game rig, its clips in its file, 1 m = 6.667 units.
+  Model = models/characters/realistic/skeleton_mage.glb
+  ModelScale = 6.667
+  Facing = 90
+  Idle = Idle
+  Walk = Run
+  ; How far one play of Run carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
+  WalkStride = 15.57
+  Attack = Cast
+  Death = Death
+  UpperBody = spine_01
   KeepDistance = [35, 55]
-  ; The staff-carrier again, burning: a warm wash tells it from the pale Revenant
-  ; before its fire does.
-  Model = models/characters/monsters/skeleton_mage.glb
-  Animations = Humanoid
-  ; Moves at a jog, not a walk: Running_A at about its own pace rather than Walking_A several times over.
-  Walk = Running_A
-  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
-  WalkStride = 16.18
-  UpperBody = spine
-  Effect = EmberEyes
-  ModelScale = 6.0
-  Held = Held
-    Model = models/items/gear/skeleton_staff.gltf
-    Bone = handslot.r
-  End
-  Tint = 0xFF9A6A
-  Attack = Ranged_Magic_Shoot
-  Idle = Ranged_Magic_Spellcasting_Long
 
   ; ---------------------------------------------------------------------------
   ; A monster's own skills.
@@ -141,6 +135,9 @@ Monster
       Radius = 30
       Range = 70
       WindUpFrames = 45
+      ; The gesture plays for the whole telegraph (Cast is 1.63 s; the meteor's mark is 1.5 s).
+      CastAnim = Cast
+      CastSeconds = 1.5
       ; Its own mark, violet as its fireball is -- data/projectiles/
       ; skull_meteor_mark.duke. Not the Mage's MeteorMark: a mark is drawn as wide
       ; as the skill that throws it, and his is wider.
@@ -167,6 +164,10 @@ Monster
       Radius = 16
       HitWidth = 6
       ProjectileSpeed = 120
+      ; Let go as the staff comes up (MonsterClipFitTest samples Cast's fastest hand at 0.52 to 0.65 s), not before it.
+      WindUpFrames = 17
+      CastAnim = Cast
+      CastSeconds = 1.63
       Projectile = SkullFireball
       ; And whoever it hurts -- the one it struck and everyone its burst caught --
       ; stands dazed for a second: no step, no blow, no cast. Its ordinary fire

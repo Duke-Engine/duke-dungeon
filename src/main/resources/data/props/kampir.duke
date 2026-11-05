@@ -37,15 +37,16 @@ Prop
   VisionRange = 0
   Geometry = Cylinder
     Radius = 6
-    Height = 12.5
+    ; The curb is 5.7 units; the roof on its frame, 18.7.
+    Height = 18.7
   End
   Weight = 0
 End
 
 ThemeMonster
   Name = Well
-  Model = models/props/village/well.glb
-  ModelScale = 1
+  Model = models/props/realistic/well.glb
+  ModelScale = 6.667
 End
 
 ; A scarecrow with a target on its coat.

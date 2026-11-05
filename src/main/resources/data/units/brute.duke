@@ -19,10 +19,10 @@ Monster
     WeaponUpdate
       Damage = 20
       AttackRange = 10
-      ReloadFrames = 31
+      ReloadFrames = 24
       ; The swing up to the blow (MonsterClipFitTest): the client starts its attack as it winds up,
       ; and the blow lands as the clip strikes. Taken off ReloadFrames, so it hits as often as before.
-      PreAttackFrames = 17
+      PreAttackFrames = 24
     End,
     ; Tells the brain the frame a blow landed, so it stands and finishes the swing
     ; instead of walking off mid-blow. It launches nothing -- see Swing.
@@ -58,20 +58,16 @@ Monster
   Weight = 18
   Colour = 0x8E5BD0
   Scale = 1.45
-  ; Armoured, with an axe, and half again as tall as the ordinary one: read as
-  ; a different thing across a dark room, which is all a monster has to be.
-  ; GeometryHeight is 16.
-  Model = models/characters/monsters/skeleton_warrior.glb
-  Animations = Humanoid
-  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
-  WalkStride = 5.51
-  UpperBody = spine
-  ; What is looking at you out of the dark.
-  Effect = EmberEyes
-  ModelScale = 7.4
-  Held = Held
-    Model = models/items/gear/axe.gltf
-    Bone = handslot.r
-  End
+  ; Realistic since 2026-11-05: the workspace's models/brute on the game rig, its clips in its file, 1 m = 6.667 units.
+  Model = models/characters/realistic/brute.glb
+  ModelScale = 6.667
+  Facing = 90
+  Idle = Idle
+  Walk = Walk
+  ; How far one play of Walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
+  WalkStride = 12.05
+  Attack = Attack
+  Death = Death
+  UpperBody = spine_01
 End
 

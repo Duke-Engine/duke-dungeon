@@ -185,9 +185,13 @@ public class AuraTest {
         var hero = first(game, "Rogue");
         float unstruck = hero.getBody().getHealth();
         aBuffsLife(game);
-        assertEquals(unstruck, hero.getBody().getHealth(), 0.001f, "the premise: nothing has struck him yet");
+        // Its blow lands 7 frames after it starts (PreAttackFrames, off the Attack clip): it may be struck by now.
+        float struck = unstruck - hero.getBody().getHealth();
+        if (struck == 0f) {
+            struck = untilStruck(game, hero, 150);
+        }
 
-        assertEquals(10.5f, untilStruck(game, hero, 150), 0.001f, "its first blow");
+        assertEquals(10.5f, struck, 0.001f, "its first blow");
     }
 
     /** What the fire mage's fireball takes off a Rogue, thrown by hand -- with a summoner 50 from it, or without. */

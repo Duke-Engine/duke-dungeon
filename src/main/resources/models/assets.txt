@@ -154,6 +154,24 @@ models/characters/mounts/horse.glb | Quaternius Ultimate Animated Animals: horse
 models/characters/people/baba_yaga.glb | Baba Yaga's hut (Inuciian) | models/licenses/baba_yagas_hut.txt | models/inuciian/people/baba_yaga.glb
 models/characters/people/damsel.glb | Baba Yaga's hut (Inuciian) | models/licenses/baba_yagas_hut.txt | models/inuciian/people/damsel.glb
 models/characters/people/damsel_caged.glb | Baba Yaga's hut (Inuciian) | models/licenses/baba_yagas_hut.txt | models/inuciian/people/damsel_caged.glb
+models/characters/realistic/archer.glb | Realistic Act I people (workspace models/archer, MakeHuman + Quaternius motion) | models/licenses/realistic.txt | -
+models/characters/realistic/bat.glb | Act I creatures (workspace models/act1_props) | models/licenses/realistic.txt | -
+models/characters/realistic/blacksmith.glb | Realistic Act I people (workspace models/blacksmith, MakeHuman + Quaternius motion) | models/licenses/realistic.txt | -
+models/characters/realistic/brute.glb | Realistic Act I dead (workspace models/brute, MakeHuman + Quaternius motion) | models/licenses/realistic.txt | -
+models/characters/realistic/commander.glb | Realistic Act I people (workspace models/commander, MakeHuman + Quaternius motion) | models/licenses/realistic.txt | -
+models/characters/realistic/dark_lord.glb | Realistic Act I people (workspace models/dark_lord, MakeHuman + Quaternius motion) | models/licenses/realistic.txt | -
+models/characters/realistic/enemy_commander.glb | Realistic Act I people (workspace models/enemy_commander, MakeHuman + Quaternius motion) | models/licenses/realistic.txt | -
+models/characters/realistic/grave_raiser.glb | Realistic Act I dead (workspace models/grave_raiser, MakeHuman + Quaternius motion) | models/licenses/realistic.txt | -
+models/characters/realistic/healer.glb | Realistic Act I people (workspace models/healer, MakeHuman + Quaternius motion) | models/licenses/realistic.txt | -
+models/characters/realistic/merchant.glb | Realistic Act I people (workspace models/merchant, MakeHuman + Quaternius motion) | models/licenses/realistic.txt | -
+models/characters/realistic/militia.glb | Realistic Act I people (workspace models/militia, MakeHuman + Quaternius motion) | models/licenses/realistic.txt | -
+models/characters/realistic/old_woman.glb | Realistic Act I people (workspace models/old_woman, MakeHuman + Quaternius motion) | models/licenses/realistic.txt | -
+models/characters/realistic/rat.glb | Act I creatures (workspace models/act1_props) | models/licenses/realistic.txt | -
+models/characters/realistic/revenant.glb | Realistic Act I dead (workspace models/revenant, MakeHuman + Quaternius motion) | models/licenses/realistic.txt | -
+models/characters/realistic/runner.glb | Realistic Act I dead (workspace models/runner, MakeHuman + Quaternius motion) | models/licenses/realistic.txt | -
+models/characters/realistic/skeleton.glb | Realistic Act I dead (workspace models/skeleton, MakeHuman + Quaternius motion) | models/licenses/realistic.txt | -
+models/characters/realistic/skeleton_mage.glb | Realistic Act I dead (workspace models/skeleton_mage, MakeHuman + Quaternius motion) | models/licenses/realistic.txt | -
+models/characters/realistic/soldier.glb | Realistic Act I people (workspace models/soldier, MakeHuman + Quaternius motion) | models/licenses/realistic.txt | -
 models/effects/knight_wave.glb | Made for this game (art/effects/knight_wave.py, CC0) | - | models/effects/knight_wave.glb
 models/items/food/berry_bush.glb | Food and fire (Quaternius, Kenney; poly.pizza) | models/licenses/food_and_fire.txt | models/food/berry_bush.glb
 models/items/food/boar.glb | Food and fire (Quaternius, Kenney; poly.pizza) | models/licenses/food_and_fire.txt | models/food/boar.glb
@@ -292,6 +310,12 @@ models/props/mine/gold_nuggets.gltf | KayKit Resource Bits 1.0 | models/licenses
 models/props/mine/silver_nuggets.gltf | KayKit Resource Bits 1.0 | models/licenses/kaykit_resource_bits.txt | models/props/mine/silver_nuggets.gltf
 models/props/mine/stone_chunks.gltf | KayKit Resource Bits 1.0 | models/licenses/kaykit_resource_bits.txt | models/props/mine/stone_chunks.gltf
 models/props/mine/wood_log.gltf | KayKit Resource Bits 1.0 | models/licenses/kaykit_resource_bits.txt | models/props/mine/wood_log.gltf
+models/props/realistic/barrel.glb | Act I props (workspace models/act1_props) | models/licenses/realistic.txt | -
+models/props/realistic/grave.glb | Act I props (workspace models/act1_props) | models/licenses/realistic.txt | -
+models/props/realistic/pillar.glb | Act I props (workspace models/act1_props) | models/licenses/realistic.txt | -
+models/props/realistic/pillar_decorated.glb | Act I props (workspace models/act1_props) | models/licenses/realistic.txt | -
+models/props/realistic/statue.glb | Act I props (workspace models/act1_props) | models/licenses/realistic.txt | -
+models/props/realistic/well.glb | Act I props (workspace models/act1_props) | models/licenses/realistic.txt | -
 models/props/village/bench.glb | Baba Yaga's hut (Inuciian) | models/licenses/baba_yagas_hut.txt | models/inuciian/props/bench.glb
 models/props/village/boat.glb | Baba Yaga's hut (Inuciian) | models/licenses/baba_yagas_hut.txt | models/inuciian/props/boat.glb
 models/props/village/broom.glb | Baba Yaga's hut (Inuciian) | models/licenses/baba_yagas_hut.txt | models/inuciian/props/broom.glb

@@ -32,9 +32,8 @@ Monster
   Weight = 0
   Colour = 0x4E4636
   Scale = 1
-  Model = models/props/graves/mound.glb
-  ModelScale = 1.25
-  Tint = 0x8A7A90
+  Model = models/props/realistic/grave.glb
+  ModelScale = 6.667
   Skills = [
     Skill
       Key = Q
@@ -54,7 +53,7 @@ Monster
   KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
   Geometry = Cylinder
     Radius = 7
-    Height = 20
+    Height = 12
   End
   VisionRange = 130
   Modules = [
@@ -65,7 +64,8 @@ Monster
       Damage = 20
       ; It never walks (no MoveUpdate): it stands among its graves and throws fire from far off.
       AttackRange = 120
-      ReloadFrames = 50
+      ReloadFrames = 33
+      PreAttackFrames = 17
       AttackOnTheMove = No
     End,
     ; The same fire as the Revenant's, thrown by something three times the size --
@@ -111,30 +111,22 @@ Monster
   SkillDistance = [0, 130]
   AlertRadius = 110
   RepathFrames = 8
-  SwingFrames = 18
-  ; Casting, and standing as though about to.
-  Attack = Ranged_Magic_Shoot
-  Idle = Ranged_Magic_Spellcasting_Long
+  ; Realistic since 2026-11-05: the workspace's models/grave_raiser on the game rig, its clips in its file, 1 m = 6.667 units.
+  Model = models/characters/realistic/grave_raiser.glb
+  ModelScale = 6.667
+  Facing = 90
+  Idle = Idle
+  Walk = Walk
+  ; How far one play of Walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
+  WalkStride = 8.68
+  Attack = Cast
+  Death = Death
+  UpperBody = spine_01
+  SwingFrames = 32
   MinDepth = 99
   Weight = 0
   Colour = 0x9A6AD8
   Scale = 1.9
-  ; The staff-carrier, which is what a thing that mends itself should look like.
-  ; GeometryHeight is 20.
-  Model = models/characters/monsters/skeleton_mage.glb
-  Animations = Humanoid
-  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
-  WalkStride = 6.85
-  UpperBody = spine
-  ; What is looking at you out of the dark.
-  Effect = EmberEyes
-  ModelScale = 9.2
-  Held = Held
-    Model = models/items/gear/skeleton_staff.gltf
-    Bone = handslot.r
-    Scale = 1.2
-  End
-  Tint = 0xB89CFF
 
   ; What it gives the dead it raises, all in the skill system: their blows drink life back (its aura over its
   ; graves), one of them at a time strikes faster, and a hurt one is mended.

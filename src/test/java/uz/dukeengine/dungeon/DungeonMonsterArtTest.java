@@ -250,7 +250,12 @@ class DungeonMonsterArtTest {
             var model = assets().loadModel(look.model());
             model.updateModelBound();
             model.updateGeometricState();
-            float height = ((BoundingBox) model.getWorldBound()).getYExtent() * 2f * look.modelScale();
+            var box = (BoundingBox) model.getWorldBound();
+            float height = box.getYExtent() * 2f * look.modelScale();
+            if (height <= 6f) {
+                // A bat in flight is a metre across and a quarter of one tall, and a grave lies down: its longest side.
+                height = Math.max(box.getXExtent(), box.getZExtent()) * 2f * look.modelScale();
+            }
 
             assertTrue(height > 6f && height < 30f,
                     look.model() + " at scale " + look.modelScale()
@@ -749,7 +754,7 @@ class DungeonMonsterArtTest {
     @Test
     void anAnimatedMonsterReallyMoves() {
         var loader = assets();
-        var look = looks().get(0);
+        var look = setLooks().get(0); // the first that the KayKit set moves: the realistic people carry their own clips
         var monster = loader.loadModel(look.model());
         for (var path : HUMANOID.libraries()) {
             AnimationLibrary.copy(loader.loadModel(path), monster, List.of(look.walk()));
@@ -1041,7 +1046,7 @@ class DungeonMonsterArtTest {
      * frame of standing still.
      */
     private static float weaponHandHeight(String clip) {
-        var model = assets().loadModel(SETTINGS.lookOf(SETTINGS.monsters().get(0)).model());
+        var model = assets().loadModel(SETTINGS.lookOf(setKinds().get(0)).model());
         for (var path : HUMANOID.libraries()) {
             AnimationLibrary.copy(assets().loadModel(path), model, List.of(clip));
         }
@@ -1212,7 +1217,7 @@ class DungeonMonsterArtTest {
     @Test
     void theHeroIsOnASkeletonOfHerOwn() {
         var him = assets().loadModel(hero().model());
-        var walk = SETTINGS.lookOf(SETTINGS.monsters().get(0)).walk();
+        var walk = SETTINGS.lookOf(setKinds().get(0)).walk();
         for (var path : HUMANOID.libraries()) {
             AnimationLibrary.copy(assets().loadModel(path), him, List.of(walk));
         }
@@ -1247,7 +1252,7 @@ class DungeonMonsterArtTest {
     @Test
     void aClipHandedOverUnchangedWouldDriveNothing() {
         var loader = assets();
-        var look = looks().get(0);
+        var look = setLooks().get(0);
         var monster = loader.loadModel(look.model());
 
         com.jme3.anim.AnimClip borrowed = null;

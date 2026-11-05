@@ -4,7 +4,7 @@ Monster
   KindOf = [INFANTRY, SELECTABLE, CAN_ATTACK]
   Geometry = Cylinder
     Radius = 4
-    Height = 13
+    Height = 12
   End
   VisionRange = 58
   Modules = [
@@ -20,7 +20,8 @@ Monster
       ; It throws fire rather than walking up. Shorter than the crossbow: this one
       ; is dangerous because it will not die, not because it reaches.
       AttackRange = 46
-      ReloadFrames = 58
+      ReloadFrames = 51
+      PreAttackFrames = 7
       AttackOnTheMove = No
     End,
     ; A small one, and small on purpose -- this is its ordinary attack.
@@ -74,36 +75,22 @@ Monster
   CloseDistance = 38
   AlertRadius = 70
   RepathFrames = 10
+  ; Realistic since 2026-11-05: the workspace's models/revenant on the game rig, its clips in its file, 1 m = 6.667 units.
+  Model = models/characters/realistic/revenant.glb
+  ModelScale = 6.667
+  Facing = 90
+  Idle = Idle
+  Walk = Run
+  ; How far one play of Run carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
+  WalkStride = 15.57
+  Attack = Attack
+  Death = Death
+  UpperBody = spine_01
   SwingFrames = 14
-  ; It casts rather than swings.
-  Attack = Ranged_Magic_Shoot
-  ; And it STANDS with the staff up, which is the half that makes the other half
-  ; visible. With the ordinary idle its weapon hand sits at 0.53 -- down at its
-  ; side -- so the staff hung at its feet and the cast was a twitch between two
-  ; frames of that. Hands up and forward at 0.89, and the throw reads as a throw.
-  Idle = Ranged_Magic_Spellcasting_Long
   MinDepth = 1
   Weight = 12
   Colour = 0x6FA8FF
   Scale = 1.1
-  ; The one that carries a staff, because the one that mends itself should not
-  ; look like the ones that only swing. GeometryHeight is 13.
-  Model = models/characters/monsters/skeleton_mage.glb
-  Animations = Humanoid
-  ; Moves at a jog, not a walk: Running_A at about its own pace rather than Walking_A several times over.
-  Walk = Running_A
-  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
-  WalkStride = 16.18
-  UpperBody = spine
-  ; What is looking at you out of the dark.
-  Effect = EmberEyes
-  ModelScale = 6.0
-  Held = Held
-    Model = models/items/gear/skeleton_staff.gltf
-    Bone = handslot.r
-  End
-  ; It heals itself; the pale wash says so before the health bar does.
-  Tint = 0x9FC4FF
 
   Skills = [
     Skill

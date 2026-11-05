@@ -87,18 +87,18 @@ Theme
   Monsters = [
     ThemeMonster
       Name = Pillar
-      Model = models/props/dungeon/pillar.gltf
-      ModelScale = 2.5
+      Model = models/props/realistic/pillar.glb
+      ModelScale = 6.667
     End,
     ThemeMonster
       Name = Statue
-      Model = models/props/dungeon/pillar_decorated.gltf
-      ModelScale = 2.5
+      Model = models/props/realistic/statue.glb
+      ModelScale = 6.667
     End,
     ThemeMonster
       Name = Barrel
-      Model = models/props/dungeon/barrel.gltf
-      ModelScale = 3.0
+      Model = models/props/realistic/barrel.glb
+      ModelScale = 6.667
     End,
     ThemeMonster
       Name = Chest
