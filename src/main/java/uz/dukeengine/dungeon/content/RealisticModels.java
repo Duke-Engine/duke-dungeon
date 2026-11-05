@@ -11,7 +11,8 @@ import java.util.List;
  */
 public final class RealisticModels {
 
-    private static final List<String> FOLDERS = List.of("models/characters/realistic/", "models/props/realistic/");
+    private static final List<String> FOLDERS = List.of("models/characters/realistic/", "models/props/realistic/",
+            "models/buildings/realistic/");
     /** The hero lives with the heroes; he is named, not moved. */
     private static final List<String> FILES = List.of("models/characters/heroes/hero_lange.glb");
 
