@@ -15,3 +15,6 @@ workspace as models/hero_lange: his rig merged into the game's with an added han
 his right hand, the shield moved to his left arm, brows and lids painted, hair and tunic recoloured, textures downsized to
 2048. His clips Walk, Run, Sprint, Dodge and Death are legs and body retargeted from Quaternius' Universal Animation
 Library (CC0); Idle, Hurt and every Attack_* are made for this game.
+
+2026-11-05: hero_lange.glb is the workspace file as built, with its normal, occlusion-roughness-metal and emissive maps
+back (it was base colour only); the client draws the first two (UnitVisual.keepsMaps). Still 2048 px.

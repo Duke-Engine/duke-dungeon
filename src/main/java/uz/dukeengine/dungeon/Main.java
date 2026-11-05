@@ -439,7 +439,7 @@ public final class Main {
      * What one creature is drawn as, from its ThemeMonster block — in a theme, or outside any — described from
      * nothing.
      */
-    private static java.util.function.Consumer<Visuals.UnitVisual> dressed(Theme.ThemeMonster themed,
+    static java.util.function.Consumer<Visuals.UnitVisual> dressed(Theme.ThemeMonster themed,
             DungeonSettings settings) {
         var art = settings.animated(themed.look());
         return unit -> {
@@ -448,6 +448,7 @@ public final class Main {
                 return;
             }
             unit.model(art.model())
+                    .keepsMaps(uz.dukeengine.dungeon.content.RealisticModels.keepsMaps(art.model()))
                     .texture(art.texture())
                     .tint(art.colourTint())
                     .scale(art.modelScale())
@@ -1250,6 +1251,7 @@ public final class Main {
                     return;
                 }
                 unit.model(look.model())
+                        .keepsMaps(uz.dukeengine.dungeon.content.RealisticModels.keepsMaps(look.model()))
                         .texture(look.texture())
                         .tint(look.colourTint())
                         .scale(look.modelScale())
@@ -1283,6 +1285,7 @@ public final class Main {
             }
             visuals.unit(hero.name(), unit -> {
                 unit.model(hero.model())
+                        .keepsMaps(uz.dukeengine.dungeon.content.RealisticModels.keepsMaps(hero.model()))
                         .scale(hero.modelScale())
                         .facing(hero.facing())
                         .idle(hero.idle())

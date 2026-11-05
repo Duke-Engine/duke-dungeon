@@ -22,10 +22,28 @@ tasks.withType<Test>().configureEach {
     // 512 MB, and the test classes keep their loaders (and so their pictures) for the whole run. Two heroes
     // with pictures of their own -- Lange and the Huntress -- took the suite past it halfway through; the bestiary's
     // licensed monsters (golem and spider skins, troll, minotaur) took it past 1 GB.
-    jvmArgs("-XX:MaxDirectMemorySize=2g")
+    // The realistic Act I people, dead and props (models/*/realistic, 1024 px, three pictures each) took it past 2 GB:
+    // the suite died without a word after the first 450 tests. Hence 4 GB, here and below.
+    jvmArgs("-XX:MaxDirectMemorySize=4g")
     // The living world (a 1024-cell walking grid, its nature kits) took the default 512 MB heap past its end in the
     // last tests of a whole run, which the test process dies of without a word.
-    maxHeapSize = "2g"
+    maxHeapSize = "4g"
+}
+
+// Renders the game offscreen to build/render (or $RENDER_OUT): RenderCheckTest, the real client in a hidden window.
+tasks.register<Test>("renderCheck") {
+    description = "Draws the game's characters at the third-person camera into build/render."
+    group = "verification"
+    testClassesDirs = sourceSets["test"].output.classesDirs
+    classpath = sourceSets["test"].runtimeClasspath
+    useJUnitPlatform { includeTags("render") }
+    // As the game runs: jME asserts that a scene-wide material override is not changed while it renders.
+    enableAssertions = false
+    testLogging.showStandardStreams = true
+}
+// Pictures of the game need a GPU and a context to draw in: ./gradlew renderCheck, not the ordinary run.
+tasks.test {
+    useJUnitPlatform { excludeTags("render") }
 }
 
 // The credits the front menu rolls are CREDITS.md's own rows, shipped beside the game's data.
