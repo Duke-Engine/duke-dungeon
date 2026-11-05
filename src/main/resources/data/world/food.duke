@@ -214,8 +214,8 @@ End
 
 ThemeMonster
   Name = Campfire
-  Model = models/items/food/campfire.glb
-  ModelScale = 16
+  Model = models/props/realistic/campfire.glb
+  ModelScale = 6.667
   Effect = CampfireFlame
 End
 

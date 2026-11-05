@@ -64,8 +64,8 @@ End
 
 ThemeMonster
   Name = Scarecrow
-  Model = models/props/village/scarecrow.glb
-  ModelScale = 1
+  Model = models/props/realistic/scarecrow.glb
+  ModelScale = 6.667
 End
 
 ; A plank bench.
