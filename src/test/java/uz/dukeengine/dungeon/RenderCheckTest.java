@@ -27,7 +27,7 @@ class RenderCheckTest {
 
     private static final DungeonSettings SETTINGS = DungeonSettings.load();
     /** Seconds from the start to the shot: the art is read and warmed under a loading bar first. */
-    private static final int SECONDS = 14;
+    private static final int SECONDS = 30;
     /** 256ths of a turn, 0 along +x counter-clockwise: toward smaller y, where the camera looks. */
     private static final int NORTH = 192;
 
@@ -71,6 +71,17 @@ class RenderCheckTest {
                 new Figure("Brute", 158f, 236f), new Figure("SkeletonMage", 172f, 236f),
                 new Figure("Revenant", 135f, 222f), new Figure("GraveRaiser", 165f, 222f),
                 new Figure("Rat", 146f, 244f), new Figure("Bat", 154f, 244f)));
+    }
+
+    @Test
+    void theWorkingFolkAndTheRestOfTheDead() throws Exception {
+        shoot("folk_and_dead", List.of(
+                new Figure("Villager", 128f, 236f), new Figure("Farmer", 142f, 236f),
+                new Figure("Traveller", 158f, 236f), new Figure("Pedlar", 172f, 236f),
+                new Figure("TowerKeeper", 128f, 222f), new Figure("Otboqar", 142f, 222f),
+                new Figure("SkeletonHealer", 158f, 222f), new Figure("SkeletonSummoner", 172f, 222f),
+                new Figure("Stalker", 124f, 206f), new Figure("Necromancer", 140f, 206f),
+                new Figure("Reaper", 160f, 206f), new Figure("Champion", 178f, 206f)));
     }
 
     @Test
@@ -129,9 +140,6 @@ class RenderCheckTest {
         for (int waited = 0; game.getLogic() == null && waited < 120; waited++) {
             Thread.sleep(1000);
         }
-        // Who the hero is, as a run's status line says it: the shoulder HUD draws no bar over him, as in the game.
-        game.getLogic().getObjects().stream().filter(o -> o.getTemplate().name().equals("Knight")).findFirst()
-                .ifPresent(knight -> game.setStatus("|hero=" + knight.getId().value()));
         Thread.sleep(SECONDS * 1000L - 4000);
         Main.walk(game, NORTH);
         Thread.sleep(500);
