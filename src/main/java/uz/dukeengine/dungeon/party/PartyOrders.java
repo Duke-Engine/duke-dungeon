@@ -25,6 +25,8 @@ public final class PartyOrders {
     static final String CAST = "cast";
     /** Shift held or let go: the order's number is 1 for held. */
     static final String SPRINT = "sprint";
+    /** A button pressed to strike: the order's number is 0 for the light blow and 1 for the heavy. */
+    static final String STRIKE = "strike";
     /** Followed by the hero's template: the one order whose meaning is a name. */
     static final String HERO = "hero:";
     /**
@@ -79,6 +81,8 @@ public final class PartyOrders {
                     cast.key());
             case uz.dukeengine.dungeon.run.Sprinting sprint -> new GameOrder(sprint.playerIndex(), SPRINT, List.of(),
                     null, null, sprint.on() ? 1 : 0);
+            case uz.dukeengine.dungeon.run.Striking strike -> new GameOrder(strike.playerIndex(), STRIKE, List.of(),
+                    null, null, strike.heavy() ? 1 : 0);
             case ChooseHero pick -> new GameOrder(pick.playerIndex(), HERO + pick.hero(), List.of(), null, null, 0);
             case PickUp pick -> new GameOrder(pick.playerIndex(), PICK_UP, List.of(), null, pick.item(), 0);
             case DropItem drop -> new GameOrder(drop.playerIndex(), DROP, List.of(), drop.place(), null, drop.slot());
@@ -132,6 +136,7 @@ public final class PartyOrders {
         return switch (word) {
             case CAST -> new CastSkill(order.playerIndex(), (char) order.number(), order.target(), order.place());
             case SPRINT -> new uz.dukeengine.dungeon.run.Sprinting(order.playerIndex(), order.number() != 0);
+            case STRIKE -> new uz.dukeengine.dungeon.run.Striking(order.playerIndex(), order.number() != 0);
             case PICK_UP -> order.target() == null ? null : new PickUp(order.playerIndex(), order.target());
             case DROP -> order.place() == null ? null
                     : new DropItem(order.playerIndex(), (int) order.number(), order.place());

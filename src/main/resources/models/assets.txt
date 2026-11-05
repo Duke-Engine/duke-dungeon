@@ -82,6 +82,7 @@ models/buildings/town/town_wall_archers.gltf | Medieval city wall assets (BUKKBE
 models/buildings/town/town_wall_long.gltf | Medieval city wall assets (BUKKBEEK) | models/licenses/medieval_city_wall.txt | models/castles/town/town_wall_long.gltf
 models/buildings/town/town_wall_short.gltf | Medieval city wall assets (BUKKBEEK) | models/licenses/medieval_city_wall.txt | models/castles/town/town_wall_short.gltf
 models/buildings/town/town_wall_tower.gltf | Medieval city wall assets (BUKKBEEK) | models/licenses/medieval_city_wall.txt | models/castles/town/town_wall_tower.gltf
+models/characters/heroes/hero_lange.glb | Lange - Half-Elf Knight (phucpham1076), on the game rig by workspace models/hero_lange | models/licenses/lange.txt | -
 models/characters/heroes/huntress.glb | Huntress (Wilson / neilhancart) | models/licenses/huntress.txt | models/heroes/huntress.glb
 models/characters/heroes/knight.glb | KayKit Adventurers Character Pack 2.0 | models/licenses/kaykit_adventurers.txt | models/heroes/knight.glb
 models/characters/heroes/lange.glb | Lange - Half-Elf Knight (phucpham1076) | models/licenses/lange.txt | models/heroes/lange/lange.glb

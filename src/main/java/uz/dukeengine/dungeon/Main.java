@@ -1080,6 +1080,7 @@ public final class Main {
                         .orbiting(uz.dukeengine.client3d.action.CameraFollow.ORBIT_SENSITIVITY, false, 0f))
                 .holdMouse(true)
                 .rightStrikes(true)
+                .strikes((game, heavy) -> strike(game, heavy, settings))
                 .interact(controls.interactKey().charAt(0), controls.interactReach(), controls.interactCone(),
                         controls::promptOf);
     }
@@ -1163,6 +1164,25 @@ public final class Main {
             }
         }
         return mine;
+    }
+
+    /**
+     * A strike button pressed: the left is a light blow, the right a heavy one, sent as the order a party hears. Taken
+     * only for a hero whose data writes combinations; the others (the rogue and the mage, whose bows the engine's
+     * swing toward a point does not fire either) keep the swing ahead they had.
+     */
+    static boolean strike(uz.dukeengine.game.DukeGame game, boolean heavy, DungeonSettings settings) {
+        for (var unit : game.getSnapshot().units()) {
+            if (unit.playerIndex() == game.getLocalPlayerIndex() && unit.selectable()) {
+                if (settings.combosOf(unit.templateName()).isEmpty()) {
+                    return false;
+                }
+                game.postCommand(PartyOrders.of(
+                        new uz.dukeengine.dungeon.run.Striking(game.getLocalPlayerIndex(), heavy)));
+                return true;
+            }
+        }
+        return false;
     }
 
     /** Space: his dodge, unless a screen over the world has the keys. */
@@ -1277,6 +1297,10 @@ public final class Main {
                 // disagree.
                 for (var skill : settings.skillsFor(hero.name())) {
                     unit.alsoAnimation(skill.castAnim());
+                }
+                // And the clip of each step of his combinations, played as his busy clip.
+                for (var step : settings.combosOf(hero.name()).steps()) {
+                    unit.alsoAnimation(step.clip());
                 }
                 // And his work's clips (Chop, Gather, Cook): a clip nobody names is never copied off a
                 // library, and a hero drawn from one (the Huntress, the mage) stood still at a tree.

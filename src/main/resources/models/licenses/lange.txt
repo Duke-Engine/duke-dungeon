@@ -9,3 +9,9 @@ attached to his hand, textures downsized, converted to glTF -- by art/lange/expo
 
 His Attack, Hurt, Death and cast clips are retargeted onto his rig (art/lange/retarget.py) from
 Quaternius' Universal Animation Library (CC0) and KayKit's Character Animations (CC0).
+
+models/characters/heroes/hero_lange.glb (2026-11-05) is the same model on the game's 55-bone rig, built in the
+workspace as models/hero_lange: his rig merged into the game's with an added hand bone, the sword shortened and moved to
+his right hand, the shield moved to his left arm, brows and lids painted, hair and tunic recoloured, textures downsized to
+2048. His clips Walk, Run, Sprint, Dodge and Death are legs and body retargeted from Quaternius' Universal Animation
+Library (CC0); Idle, Hurt and every Attack_* are made for this game.

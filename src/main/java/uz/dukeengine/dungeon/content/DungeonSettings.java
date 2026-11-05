@@ -774,6 +774,7 @@ public final class DungeonSettings {
                 case uz.dukeengine.dungeon.world.Splash block -> splash = once(block, once);
                 case uz.dukeengine.dungeon.world.Screens block -> screens = once(block, once);
                 case uz.dukeengine.dungeon.world.Controls block -> controls = once(block, once);
+                case uz.dukeengine.dungeon.world.Combos block -> combos.add(block);
                 case uz.dukeengine.dungeon.world.Travel block -> travel = once(block, once);
                 case uz.dukeengine.dungeon.world.DayNight block -> dayNight = once(block, once);
                 case UnitBar block -> unitBar = once(block, once);
@@ -1370,6 +1371,7 @@ public final class DungeonSettings {
         validateAttributes();
         validateScreens();
         validateControls();
+        validateCombos();
         require(travel.cost() >= 0, "Travel: Cost cannot be negative");
         validateDayNight();
         require(travel.card().isBlank() || titles.stream().anyMatch(t -> t.name().equals(travel.card())),
@@ -1810,6 +1812,58 @@ public final class DungeonSettings {
     }
 
     /**
+     * The hero's combinations: one block to a hero who has the Combo module (and none to one who has not), every step
+     * a clip with a blow inside its length and a window inside it, and every step they name a step of the block.
+     */
+    private void validateCombos() {
+        var seen = new java.util.HashSet<String>();
+        for (var block : combos) {
+            var hero = heroes.stream().filter(each -> each.name().equals(block.hero())).findFirst().orElse(null);
+            var named = "Combos of " + block.hero();
+            require(hero != null, named + ": no Hero is called that");
+            require(seen.add(block.hero()), named + ": one block to a hero");
+            require(hero.modules().stream().anyMatch(uz.dukeengine.dungeon.run.Combo.Data.class::isInstance),
+                    named + ": " + block.hero() + " has no Combo module to play them");
+            require(block.aimArc() >= 0f && block.aimArc() <= 360f && block.aimRange() >= 0f,
+                    named + ": AimArc is a turn at most and AimRange cannot be negative");
+            require(block.hitArc() > 0f && block.hitArc() <= 360f, named + ": HitArc is above nothing, a turn at most");
+            require(block.step(block.light()) != null && block.step(block.heavy()) != null,
+                    named + ": Light and Heavy each name a step that begins a chain");
+            var names = new java.util.HashSet<String>();
+            for (var step : block.steps()) {
+                var at = named + ", step " + step.name();
+                require(!step.name().isBlank() && names.add(step.name()), at + ": a name of its own");
+                require(step.clip() != null && !step.clip().isBlank(), at + ": a Clip");
+                require(step.damagePercent() > 0, at + ": DamagePercent is above nothing");
+                require(step.hitFrame() >= 1 && step.hitFrame() < step.frames(),
+                        at + ": the blow (HitFrame) lands after the first frame and before the step's Frames are over");
+                require(step.windowOpen() >= 0 && step.windowOpen() <= step.windowClose()
+                        && step.windowClose() < step.frames(), at + ": the window opens, and closes inside the step");
+                require(step.lunge() >= 0f && step.staggerFrames() >= 0,
+                        at + ": Lunge and StaggerFrames cannot be negative");
+                for (var next : java.util.List.of(step.light(), step.heavy())) {
+                    require(next.isEmpty() || block.step(next) != null,
+                            at + " leads to " + next + ", which is no step of the block");
+                }
+            }
+        }
+        for (var hero : heroes) {
+            require(hero.modules().stream().noneMatch(uz.dukeengine.dungeon.run.Combo.Data.class::isInstance)
+                    || seen.contains(hero.name()), "Hero " + hero.name() + " has a Combo module and no Combos block");
+        }
+    }
+
+    /** That hero's combinations, or {@link uz.dukeengine.dungeon.world.Combos#NONE} if his files write none. */
+    public uz.dukeengine.dungeon.world.Combos combosOf(String heroTemplate) {
+        for (var block : combos) {
+            if (block.hero().equals(heroTemplate)) {
+                return block;
+            }
+        }
+        return uz.dukeengine.dungeon.world.Combos.NONE;
+    }
+
+    /**
      * The hero on foot: the interact key is one letter of its own -- not a step (W A S D), the client's pause (P), a
      * screen's, the tracker's, the fire's or the horse's -- the sprint is some faster than a walk, and every prompt word
      * is said in the font.
@@ -1891,6 +1945,7 @@ public final class DungeonSettings {
     // ---- what the data files hold, each block a record ----
 
     private final java.util.List<Hero> heroes = new java.util.ArrayList<>();
+    private final java.util.List<uz.dukeengine.dungeon.world.Combos> combos = new java.util.ArrayList<>();
     private final java.util.List<PortraitArt> portraits = new java.util.ArrayList<>();
     private final java.util.List<Projectile> projectiles = new java.util.ArrayList<>();
     private final java.util.List<Prop> props = new java.util.ArrayList<>();

@@ -117,7 +117,7 @@ class DungeonPortraitTest {
     }
 
     private static boolean inOneOfHisLibraries(HeroLook him, String clip) {
-        for (var path : him.animations()) {
+        for (var path : him.animations().isEmpty() ? java.util.List.of(him.model()) : him.animations()) {
             var composer = control(ASSETS.loadModel(path), AnimComposer.class);
             if (composer != null && composer.getAnimClip(clip) != null) {
                 return true;

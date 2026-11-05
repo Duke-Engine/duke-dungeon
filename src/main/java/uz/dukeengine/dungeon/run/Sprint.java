@@ -12,7 +12,7 @@ import uz.dukeengine.core.thing.GameObject;
  * uz.dukeengine.dungeon.party.PartyOrders} order {@code sprint}, which every machine hears, so the legs stay one world.
  */
 @ModuleGroup(ModuleGroups.MOVEMENT)
-public final class Sprint extends UpdateModule implements SpeedModifier {
+public final class Sprint extends UpdateModule implements SpeedModifier, uz.dukeengine.core.save.Saveable {
 
     /** No configuration: the share is the Controls block's. */
     public record Data() implements ModuleData {
@@ -42,5 +42,16 @@ public final class Sprint extends UpdateModule implements SpeedModifier {
 
     @Override
     public void update() {
+    }
+
+    /** Whether Shift is held: the one thing the legs remember. */
+    @Override
+    public void save(uz.dukeengine.core.save.SaveOut out) {
+        out.writeBoolean(on);
+    }
+
+    @Override
+    public void load(uz.dukeengine.core.save.SaveIn in) {
+        on = in.readBoolean();
     }
 }

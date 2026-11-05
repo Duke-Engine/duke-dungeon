@@ -233,6 +233,10 @@ public final class Dungeon {
                     // And his sprint (Shift): a faster run while the order says so, the Controls block's share.
                     factory.register(uz.dukeengine.dungeon.run.Sprint.Data.class, (owner, data) ->
                             new uz.dukeengine.dungeon.run.Sprint(owner, settings.controls().sprintPercent() / 100f));
+                    // His combinations (the two buttons): the hero's Combos block, and the Combat block's stun look.
+                    factory.register(uz.dukeengine.dungeon.run.Combo.Data.class, (owner, data) ->
+                            new uz.dukeengine.dungeon.run.Combo(owner, settings.combosOf(owner.getTemplate().name()),
+                                    settings.combat().stunLook()));
                     // What a dead monster leaves lying about. The chest is a
                     // creature like any other -- it is in the world, so the client
                     // draws it without being told anything special.
@@ -270,6 +274,17 @@ public final class Dungeon {
         game.localPlayer(heroes.getFirst());
         // The hero run along a held direction or swung toward a point: the action module's orders, heard in every world.
         game.onOrder(order -> uz.dukeengine.action.ActionOrders.apply(order, game.getLogic()));
+        // Where each hero is in his combination is state no other number of the world shows until it lands.
+        game.checksumAlso(() -> {
+            long sum = 0;
+            for (var thing : game.getLogic().getObjects()) {
+                var combo = thing.findModule(uz.dukeengine.dungeon.run.Combo.class);
+                if (combo != null) {
+                    sum = sum * 31 + thing.getId().value() * 7L + combo.checksum();
+                }
+            }
+            return sum;
+        });
         return new Arena(game, heroes.getFirst(), dungeonPlayer, java.util.List.copyOf(heroes), seal, clock);
     }
 
@@ -452,6 +467,10 @@ public final class Dungeon {
                         var hero = Skills.heroOf(game.getLogic(), cast.playerIndex());
                         if (hero != null) {
                             sound(hero, "cast." + hero.getTemplate().name() + "." + cast.key());
+                            var combo = hero.findModule(uz.dukeengine.dungeon.run.Combo.class);
+                            if (combo != null) {
+                                combo.cancel(); // his roll (the only skill he casts) ends the chain
+                            }
                         }
                     }
                 }
@@ -529,6 +548,16 @@ public final class Dungeon {
                     var legs = hero == null ? null : hero.findModule(uz.dukeengine.dungeon.run.Sprint.class);
                     if (legs != null) {
                         legs.set(sprint.on());
+                    }
+                }
+                // A button pressed to strike: his next step, or the one that begins a chain. See Combo.
+                case uz.dukeengine.dungeon.run.Striking strike -> {
+                    var hero = Skills.heroOf(game.getLogic(), strike.playerIndex());
+                    var combo = hero == null ? null : hero.findModule(uz.dukeengine.dungeon.run.Combo.class);
+                    if (combo != null && run.mounted(strike.playerIndex())) {
+                        run.dismount(game, strike.playerIndex()); // as a skill pressed on horseback: he gets off
+                    } else if (combo != null) {
+                        combo.press(strike.heavy());
                     }
                 }
                 // A journey to a found watchtower, paid for. See DungeonRun.travel.

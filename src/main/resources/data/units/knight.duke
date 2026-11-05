@@ -101,6 +101,9 @@ Hero
     End,
     Sprint
     End,
+    ; His swings: a press of either button plays a step of the Combos block below.
+    Combo
+    End,
     ExperienceModule
       ExperienceValue = 0
       ExperienceRequired = [0, 0, 0]
@@ -111,20 +114,15 @@ Hero
 ; ---------------------------------------------------------------------------
 ; The knight.
 ;
-; ★ LANGE, since 2026-10-10: phucpham1076's "Lange - Half-Elf Knight" (CC BY 4.0,
-; see CREDITS.md), the owner's choice for the Act 1 hero, made into the game's by
-; art/lange/export_lange.py -- his sunglasses taken off, his sword made part of him.
-; The KayKit knight he replaces (models/characters/heroes/knight.glb) stays: it is the
-; kingdom's soldiers' and the Cursed Hero's.
+; ★ LANGE, since 2026-11-05 on the game rig: phucpham1076's "Lange - Half-Elf Knight"
+; (CC BY 4.0, see CREDITS.md), rebuilt as models/hero_lange of the workspace -- the
+; game's 55-bone rig, every clip of the third-person game in his own file, so he
+; borrows no library. His sword is in his right hand and his shield on his left arm,
+; both in the file, so he carries nothing in Held.
 ;
-; His rig is his own, so he moves by the Lange set (data/animations/lange.duke),
-; whose one library is his own file, not by the Humanoid set: no KayKit clip
-; moves a bone of his unless art/lange/retarget.py has put it there. Idle and Walk
-; came with him; Attack, Hurt, Death and his casts are borrowed (Quaternius, KayKit).
-;
-; HE IS LEFT-HANDED. Every clip has the sword in his left hand and the right hand
-; free, and the shield slung on his back -- as the model was made. Both are in
-; his file, so he carries nothing in Held.
+; He fights by his Combos (the block at the end of this file), not by Attack: the
+; Combo module plays a clip of his model per swing and lands the blow on the clip's
+; own frame. The older Lange (models/characters/heroes/lange.glb) stays for KnightRiding.
 ; ---------------------------------------------------------------------------
 
   Title = Qalqon va qilich
@@ -145,41 +143,27 @@ Hero
   ; at 48 and shoots; a swordsman who did that would stand there swinging at air.
   CloseDistance = 8
 
-  Model = models/characters/heroes/lange.glb
-  ; GeometryHeight is 12 in his template above and Lange stands 1.760 tall (metres:
-  ; the top of his hair, printed by art/lange/export_lange.py), so 12 / 1.760. He
-  ; stands as tall on screen as the KayKit knight did at 4.72; he only looks
-  ; slighter, because his head is a man's and not half his height.
-  ModelScale = 6.82
+  Model = models/characters/heroes/hero_lange.glb
+  ; 1.77 m to the top of his hair, in a template 12 units high: 12 / 1.77.
+  ModelScale = 6.78
   ; His file faces glTF's +Z, as the KayKit people do.
   Facing = 90
 
-  ; His own clips, in his own file -- see data/animations/lange.duke. Named here
-  ; as well as there so this block says what he plays. Idle and Walk came with him;
-  ; the rest are borrowed from two CC0 libraries and put on his rig by
-  ; art/lange/retarget.py.
-  Animations = Lange
+  ; His clips are in his file, so no Animations set. Run, not Walk: speed 21 on a man 12 tall
+  ; is 3.1 m/s for one 1.77 m high, a jog -- a walk's feet would skate at that pace.
   Idle = Idle
-  ; ★ A RUN, since 2026-10-15. Speed 21 on a man 12 tall is 3.1 m/s for one 1.76 m high:
-  ; a jog, not a walk. His own download's walk planted his feet at a quarter of that, and
-  ; he skated (the owner: it "doesn't stick"). Walk is now Quaternius' walk and jog half
-  ; and half (art/lange/export_lange.py), a long-striding run.
-  Walk = Walk
+  Walk = Run
   ; How far one play of it carries him, in units. The client plays it at the rate that
   ; covers this at his speed, so his feet stay where they land however fast he is made to
   ; go. Measured off the clip by HeroClipFitTest: re-export, re-measure.
-  WalkStride = 20.6
-  ; ★ WIND-UP AND ALL. The client starts this as his weapon winds up, PreAttackFrames
-  ; before the blow, so the whole of his slash (Quaternius' Sword_Attack, left-handed) is
-  ; seen and the blow lands as the blade comes down. 1.083s, inside the 1.133s between
-  ; blows. HeroClipFitTest measures both.
-  Attack = Attack
+  WalkStride = 14.4
+  ; No Attack: a swing is the busy clip of a Combos step, not the weapon's wind-up.
   ; His flinch: played only as he staggers at a heavy blow, for exactly its frames (his STAGGER,
   ; the last of his Skills), when he cannot strike -- so it never covers a swing he really makes.
   Hurt = Hurt
   Death = Death
   ; Struck on the move, a blow (or a flinch) plays from his spine up, his legs running on.
-  UpperBody = spine
+  UpperBody = spine_01
 
   ; No Held: his sword and his shield are in his own file -- see the top of this block.
   ; ★ WHAT HE IS MADE OF -- see Attributes in the World block. STRENGTH is his primary: every
@@ -222,12 +206,12 @@ Hero
 ; measured height without anybody having measured him. If his head comes out badly
 ; once his model is in, Head and Show are the two lines, and neither needs a
 ; rebuild.
-  ; Standing as he stands in the world, and the pull's raised hand for a level. Fight and
+  ; Standing as he stands in the world, and a wide cut for a level. Fight and
   ; Hurt fall back to standing: a slash looped is a man shadow-boxing, a flinch looped a fit.
   Portrait = PortraitArt
     Calm = Idle
     Dead = Death
-    LevelUp = Cast_Pull
+    LevelUp = Attack_L3
 
     ; ★ NOT the KayKit numbers: Lange is drawn as a man, his head an eighth of him
     ; rather than nearly half, his eyes at about 0.92 of his height. So the camera
@@ -253,14 +237,14 @@ Hero
       ; module of his Modules does it: a roll of Distance toward the way he runs (or faces) over DurationFrames
       ; (0.3s), out of harm's way its first TickFrames (0.23s: no blow takes health or staggers him), through
       ; creatures, short of stone, refused over a seal or while held. Every 2.5 seconds, no mana.
-      ; the shoulder drive of his charge, hurried.
+      ; His Dodge clip, the forward roll.
       Key = V
       Effect = MODULE
       Distance = 16
       DurationFrames = 9
       TickFrames = 7
       CooldownFrames = 75
-      CastAnim = Cast_Charge
+      CastAnim = Dodge
       MaxRank = 1
       Name = Chetlanish
     End,
@@ -316,6 +300,112 @@ Hero
       Look = Thrown
       MaxRank = 1
       Name = "Qo'nish zarbasi"
+    End
+  ]
+End
+
+
+; ---------------------------------------------------------------------------
+; His combinations (docs: PLAN-dungeon-action.md, the Qarorlar; the module is run/Combo).
+;
+; The left button is a light blow, the right a heavy one. A press made during a swing is kept; one that
+; falls in the step's window (WindowOpen to WindowClose, in frames from the step's start) plays the step that
+; press leads to, else the chain is over and the next press begins a new one. The chains:
+;
+;   light, light, light       L1 L2 L3
+;   light, light, heavy       L1 L2 Finisher
+;   light, heavy              L1 H1
+;   heavy, heavy              H1 H2
+;
+; Each step names its clip (one of his model's, whose length is Frames: a frame is 1/30 s), the frame the blow
+; lands on (HeroClipFitTest checks it against where the clip's blade is fastest), what share of his weapon's
+; blow it deals, how far it carries him forward on the way to the blow, and, for the heavy ones, how long it
+; stuns whom it strikes. The windows open late in the clip, where the next clip's first pose is (each starts
+; in the last pose of the one before, so the cut is hardly seen).
+;
+; DamagePercent is balanced to the old swing, 30 a blow every 34 frames (0.88 a frame): the light chain
+; deals about 0.9 a frame, the heavy ones a little more for the time they take and what they stun, and
+; each blow strikes everyone in the arc.
+;
+; He turns to the nearest enemy within AimRange of his surface and AimArc degrees (both sides counted
+; together) round his facing when a swing starts, and to nobody else: no enemy there, and it goes where he
+; faces. A blow strikes within his weapon's reach and HitArc degrees round that.
+; ---------------------------------------------------------------------------
+Combos
+  Hero = Knight
+  Light = L1
+  Heavy = H1
+  AimArc = 120
+  AimRange = 22
+  HitArc = 140
+  Steps = [
+    Step
+      Name = L1
+      Clip = Attack_L1
+      DamagePercent = 50
+      HitFrame = 9
+      WindowOpen = 15
+      WindowClose = 18
+      Frames = 21
+      Lunge = 2
+      Light = L2
+      Heavy = H1
+    End,
+    Step
+      Name = L2
+      Clip = Attack_L2
+      DamagePercent = 55
+      HitFrame = 8
+      WindowOpen = 14
+      WindowClose = 17
+      Frames = 20
+      Lunge = 2
+      Light = L3
+      Heavy = Finisher
+    End,
+    Step
+      Name = L3
+      Clip = Attack_L3
+      DamagePercent = 95
+      HitFrame = 10
+      WindowOpen = 30
+      WindowClose = 35
+      Frames = 38
+      Lunge = 3
+    End,
+    Step
+      Name = H1
+      Clip = Attack_H1
+      DamagePercent = 110
+      HitFrame = 20
+      WindowOpen = 30
+      WindowClose = 36
+      Frames = 39
+      Lunge = 4
+      StaggerFrames = 12
+      Heavy = H2
+    End,
+    Step
+      Name = H2
+      Clip = Attack_H2
+      DamagePercent = 150
+      HitFrame = 22
+      WindowOpen = 40
+      WindowClose = 43
+      Frames = 46
+      Lunge = 4
+      StaggerFrames = 18
+    End,
+    Step
+      Name = Finisher
+      Clip = Attack_Finisher
+      DamagePercent = 150
+      HitFrame = 25
+      WindowOpen = 54
+      WindowClose = 57
+      Frames = 60
+      Lunge = 5
+      StaggerFrames = 30
     End
   ]
 End

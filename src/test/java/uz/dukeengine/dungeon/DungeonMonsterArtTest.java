@@ -457,10 +457,10 @@ class DungeonMonsterArtTest {
                 continue; // a hero drawn as a coloured shape asks for no art
             }
             assertNotNull(assets().loadModel(him.model()), him.model() + " is missing");
-            assertFalse(him.animations().isEmpty(),
-                    him.name() + " was left with nowhere to take clips from");
+            // A hero whose file carries his own clips names no library: the model is the library.
+            var libraries = him.animations().isEmpty() ? List.of(him.model()) : him.animations();
             var carried = new ArrayList<AnimComposer>();
-            for (var path : him.animations()) {
+            for (var path : libraries) {
                 var library = assets().loadModel(path);
                 assertNotNull(library, path + " is named for " + him.name() + " but missing");
                 carried.add(control(library, AnimComposer.class));
@@ -469,7 +469,7 @@ class DungeonMonsterArtTest {
                 assertTrue(carried.stream().anyMatch(
                         composer -> composer != null && composer.getAnimClip(clip) != null),
                         clip + " is asked for by " + him.name()
-                                + " but is in none of " + him.animations());
+                                + " but is in none of " + libraries);
             }
         }
     }
@@ -481,15 +481,16 @@ class DungeonMonsterArtTest {
     @Test
     void theKnightIsLange() {
         var knight = SETTINGS.heroes().stream().filter(him -> him.name().equals("Knight")).findFirst().orElseThrow();
-        assertEquals("models/characters/heroes/lange.glb", knight.model());
+        assertEquals("models/characters/heroes/hero_lange.glb", knight.model());
         var model = assets().loadModel(knight.model());
         var composer = control(model, AnimComposer.class);
         assertNotNull(composer, "Lange's file carries no clips");
-        for (var clip : List.of("Idle", "Walk", "Attack", "Hurt", "Death", "Cast_Wave", "Cast_Charge", "Cast_Pull")) {
+        for (var clip : List.of("Idle", "Walk", "Run", "Sprint", "Hurt", "Death", "Dodge", "Attack_L1", "Attack_L2",
+                "Attack_L3", "Attack_H1", "Attack_H2", "Attack_Finisher")) {
             assertNotNull(composer.getAnimClip(clip), "Lange's file has no " + clip);
         }
         var skin = control(model, com.jme3.anim.SkinningControl.class);
-        assertNotNull(skin.getArmature().getJoint("sword"), "the sword is not on a bone of its own");
+        assertNotNull(skin.getArmature().getJoint("hand_attach_r"), "the sword has no hand bone to hang on");
         var names = new ArrayList<String>();
         model.depthFirstTraversal(spatial -> names.add(spatial.getName()));
         assertTrue(names.stream().noneMatch(name -> name != null && name.contains("glasses")), "he still wears glasses");
