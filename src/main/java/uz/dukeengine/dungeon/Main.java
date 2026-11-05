@@ -4,7 +4,6 @@ import java.util.List;
 
 import uz.dukeengine.client3d.Duke3D;
 import uz.dukeengine.client3d.rpg.BagScreen;
-import uz.dukeengine.client3d.EdgeScroll;
 import uz.dukeengine.core.content.Effect;
 import uz.dukeengine.client3d.Fog;
 import uz.dukeengine.client3d.rpg.HeroLooks;
@@ -876,54 +875,6 @@ public final class Main {
         }
     }
 
-    /** The letter the attack order is on; see {@link #orders}. */
-    static final char ATTACK_KEY = 'A';
-
-    /**
-     * And the fifth ring: how far his ordinary attack reaches.
-     *
-     * <p>The question a player is actually asking when he reaches for the attack
-     * key — "from where?" — and the one number on the bar he has never been shown.
-     * A knight reaches eleven and a rogue sixty, which is most of what playing one
-     * rather than the other IS, and neither of them was ever drawn.
-     *
-     * <p><b>Not a fence.</b> Every other ring in the game is the edge of what a
-     * skill can do and a click past it is pulled back to the edge; this one is a
-     * statement, and the same key sends him to fight his way across the whole
-     * floor. The client is told as much — see {@code DukeRtsApp.aimArmedKey}.
-     *
-     * <p>Read off his own template rather than named here, for the reason
-     * {@code HeroBrain.reachOfHisWeapon} gives: two copies of one number drift the
-     * first time anybody re-tunes him, and a ring that lies about his reach is
-     * worse than no ring.
-     */
-    static void attackRingFor(Visuals visuals, uz.dukeengine.game.DukeGame game, String hero) {
-        float reach = reachOf(game, hero);
-        if (reach > 0f) {
-            visuals.skillRange(new uz.dukeengine.client3d.SkillRange(ATTACK_KEY,
-                    uz.dukeengine.client3d.SkillRange.Shape.AT_A_CREATURE, reach, 0f));
-        }
-    }
-
-    /** How far that template's weapon reaches, or 0 if it carries none. */
-    static float reachOf(uz.dukeengine.game.DukeGame game, String hero) {
-        // Null until the game is started, which the hero menu may well be drawn
-        // over. No reach is no ring, which is the right answer for a run that has
-        // not begun.
-        var logic = game.getLogic();
-        var template = logic == null ? null : logic.findTemplate(hero);
-        if (template == null) {
-            return 0f;
-        }
-        float reach = 0f;
-        for (var module : template.modules()) {
-            if (module instanceof uz.dukeengine.combat.module.WeaponUpdate.Data weapon) {
-                reach = Math.max(reach, weapon.attackRange());
-            }
-        }
-        return reach;
-    }
-
     /**
      * The endless dungeon, or the stage somebody asked for.
      *
@@ -1013,10 +964,6 @@ public final class Main {
         // chair is a skill that does nothing at all.
         aimsFor(keys, settings, him);
         ringsFor(visuals, settings, him);
-        // His hero fights by himself again, the RTS way -- an enemy in reach is struck without an order (the owner,
-        // 2026-10-20: the fight-only-when-told of the action controls is gone with them). FightOnlyWhenTold stays an
-        // order for whoever wants it.
-        attackRingFor(visuals, session.game(), him);
     }
 
     /**
@@ -1236,16 +1183,6 @@ public final class Main {
         // The mission list folds to its tab and unfolds again: a thing of the window, so it flips the window's own
         // flag and sends nothing to the simulation.
         keys.on(settings.run().foldKey().charAt(0), settings.screens().trackerWord(), game -> MissionScreen.fold());
-        orders(keys);
-        // The four orders said as the panel's buttons say them: walk, attack, stop, guard (see HeroStatus.orders).
-        var orderWords = settings.hud().orderWords();
-        for (int i = 0; i < orderWords.size(); i++) {
-            keys.describe("FASD".charAt(i), orderWords.get(i));
-        }
-        // Which single creature he has picked out. The target frame describes it, and
-        // only the simulation can say what it is worth -- see Watching.
-        keys.onWatch((game, id) -> game.postCommand(PartyOrders.of(new uz.dukeengine.dungeon.run.Watching(
-                game.getLocalPlayerIndex(), id < 0 ? null : new ObjectId(id)))));
         return keys;
     }
 
@@ -1319,86 +1256,6 @@ public final class Main {
         // A lane is as wide as what runs down it: a shot's HitWidth, a charge's catch either side of him.
         float width = skill.effect() == uz.dukeengine.rpg.skill.SkillEffect.SKEWER ? 2f * skill.radius() : skill.hitWidth();
         return new uz.dukeengine.client3d.SkillRange(skill.key(), shape, reach, area, width);
-    }
-
-    /**
-     * The four orders the buttons beside the map give.
-     *
-     * <p>Three of them are the engine's own and the mouse already gives them; the
-     * buttons are there because a right-click never told the player they existed,
-     * and because a key is a faster way to say "walk there" than aiming at a piece
-     * of floor that might have a skeleton on it.
-     *
-     * <p>The fourth is this game's — see {@link uz.dukeengine.dungeon.ai.HoldGround} —
-     * and it is the one the engine cannot express: stop cancels a walk and says
-     * nothing about his bow.
-     *
-     * <p>Claimed through the same seam the skills are, so the client's rule about
-     * one key doing one thing covers all eight of them together.
-     */
-    private static void orders(Hotkeys keys) {
-        // ★ A, S, D — attack, stop, defend, which is where a hand rests and the
-        // order every RTS since Warcraft has put them in. Walking keeps the fourth
-        // letter and needs it least: pointing at a piece of floor is what the mouse
-        // has always done, and the button is there so a player can SEE that the
-        // four orders exist rather than because anybody reaches for it.
-        keys.onOpenGround('F', (game, spot) -> game.postCommand(
-                new uz.dukeengine.combat.message.CombatOrder.MoveTo(
-                        game.getLocalPlayerIndex(), selected(game), spot)));
-        // Attack takes either, because it means two related things and a player
-        // mid-fight should not have to decide which before he knows what his click
-        // will land on: that creature, or fight your way to that spot.
-        keys.onUnitOrGround('A',
-                (game, id) -> game.postCommand(
-                        new uz.dukeengine.combat.message.CombatOrder.AttackObject(
-                                game.getLocalPlayerIndex(), selected(game), new ObjectId(id))),
-                (game, spot) -> game.postCommand(PartyOrders.of(new uz.dukeengine.dungeon.ai.AttackMove(
-                        game.getLocalPlayerIndex(), spot))));
-        // Stop is the loudest of the four: drop the walk, drop the target, and
-        // start nothing until told otherwise. Two commands because two things are
-        // being said -- the engine's own stop, and this game's "and stay stopped".
-        keys.on('S', game -> {
-            game.postCommand(new uz.dukeengine.combat.message.CombatOrder.StopMoving(
-                    game.getLocalPlayerIndex(), selected(game)));
-            game.postCommand(PartyOrders.of(new uz.dukeengine.dungeon.ai.HoldGround(
-                    game.getLocalPlayerIndex(), true)));
-        });
-        // And Guard is the other half of that pair: stand where you are, and fight
-        // whatever comes to you. The same two commands Stop sends with the second
-        // one inverted, which is the whole difference between the two buttons —
-        // Stop says "stand, and start nothing", this says "stand, and start what
-        // walks into you". It is also the state he is in for most of a run, which
-        // is why it has a button of its own to light.
-        //
-        // ★ The first of the two is what it was missing, and without it this was
-        // not an order at all. It only took a hold OFF: pressing it while he was
-        // walking or chasing did nothing whatever, so it was the one button on the
-        // bar a player could press all game without once seeing it do anything —
-        // while its own word said Himoya.
-        keys.on('D', game -> {
-            game.postCommand(new uz.dukeengine.combat.message.CombatOrder.StopMoving(
-                    game.getLocalPlayerIndex(), selected(game)));
-            game.postCommand(PartyOrders.of(new uz.dukeengine.dungeon.ai.HoldGround(
-                    game.getLocalPlayerIndex(), false)));
-        });
-    }
-
-    /**
-     * Whose orders these are: every unit the player owns.
-     *
-     * <p>A dungeon holds one hero, so "his units" and "the selection" are the same
-     * list — and taking it from the world rather than from the client is what lets
-     * a key work when nothing has been clicked on, which is the whole point of
-     * having the key.
-     */
-    private static java.util.List<ObjectId> selected(uz.dukeengine.game.DukeGame game) {
-        var mine = new java.util.ArrayList<ObjectId>();
-        for (var unit : game.getSnapshot().units()) {
-            if (unit.playerIndex() == game.getLocalPlayerIndex() && unit.selectable()) {
-                mine.add(new ObjectId(unit.id()));
-            }
-        }
-        return mine;
     }
 
     /**
@@ -1594,10 +1451,6 @@ public final class Main {
         // What the dark is worth: whether stone stops sight, how dim a room he
         // has left should be, and what colour nothing is. All of it drawing, and
         // all of it in the file — see Fog in data/world/scene.duke.
-        // Shoving the camera with the cursor, on top of the keys — see
-        // Camera in data/world/world.duke.
-        visuals.edgeScroll(new EdgeScroll(settings.camera().edgeMargin(),
-                settings.camera().edgeSpeedPercent()));
 
         visuals.fog(new Fog(settings.fog().lineOfSight(),
                 settings.fog().unseenPercent() / 100f, settings.fog().rememberedPercent() / 100f,
@@ -1644,9 +1497,6 @@ public final class Main {
                 settings.sun().strengthPercent() / 100f, settings.sun().ambientPercent() / 100f,
                 settings.sun().colour(), settings.sun().ambientTint()));
 
-        // The three arrowheads that answer a click — the client's own OrderMark, which the
-        // block of that name is read straight into.
-        visuals.orderMark(settings.orderMark());
         HeroLooks.of(visuals).panelLook(settings.panelLook());
         visuals.hitNumbers(settings.hitNumbers());
 

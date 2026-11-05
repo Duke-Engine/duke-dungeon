@@ -402,7 +402,6 @@ class MonsterLevelTest {
         game.spawn("Rogue", arena.hero(), 150f, 150f);
         game.spawn("Skeleton", arena.dungeon(), 162f, 150f);
         game.runHeadless(1);
-        arena.orders().hold(arena.hero().getIndex(), true);
         var hero = creature(game, "Rogue");
         Spawner.scale(creature(game, "Skeleton"), 8, SETTINGS);
         float before = hero.getBody().getHealth();
@@ -430,7 +429,6 @@ class MonsterLevelTest {
         game.spawn("Rogue", arena.hero(), 150f, 150f);
         game.spawn(MAGE, arena.dungeon(), 200f, 150f);
         game.runHeadless(1);
-        arena.orders().hold(arena.hero().getIndex(), true);
         var mage = creature(game, MAGE);
         var hero = creature(game, "Rogue");
         Spawner.scale(mage, level, SETTINGS);
@@ -522,17 +520,6 @@ class MonsterLevelTest {
             assertEquals(Math.round(shipped(kind, "ExperienceValue") * 1.35f) * 50 / 100, worthOf(one),
                     kind + "'s worth: half of what its kind is worth at 8");
         }
-    }
-
-    /** The target frame shows its own blow: its weapon's figure times its own level's share -- not the floor's. */
-    @Test
-    void theTargetFrameShowsItsOwnBlow() {
-        var skeleton = alone("Skeleton");
-        Spawner.scale(skeleton, 8, SETTINGS);
-        var target = Target.of(skeleton, null, null, SETTINGS);
-
-        assertEquals(Math.round(shipped("Skeleton", "Damage") * 1.35f), target.attack(), target.toString());
-        assertEquals(8, target.level(), "and its own level");
     }
 
     /** Placed for real: the first floor's boss stands at 10 with 1.9 times its health, and every monster at 1 to 8. */

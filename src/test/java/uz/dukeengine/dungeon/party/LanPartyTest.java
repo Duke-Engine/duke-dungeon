@@ -10,8 +10,8 @@ import java.util.TreeMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
+import uz.dukeengine.action.ActionOrders;
 import uz.dukeengine.dungeon.Dungeon;
-import uz.dukeengine.dungeon.ai.HoldGround;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.game.DukeGame;
 import uz.dukeengine.game.MultiplayerSession;
@@ -45,12 +45,16 @@ class LanPartyTest {
             var hostSums = new TreeMap<Integer, Long>();
             var guestSums = new TreeMap<Integer, Long>();
             boolean ordered = false;
+            uz.dukeengine.core.math.Coord3D startKnight = null;
+            uz.dukeengine.core.math.Coord3D startRogue = null;
             for (int attempt = 0; attempt < 40_000 && (frame(host.game()) < 240 || frame(guest.game()) < 240);
                     attempt++) {
                 boolean moved = step(host.game(), hostSums) | step(guest.game(), guestSums);
                 if (!ordered && frame(guest.game()) >= 90) {
                     // The guest's own order, said on his machine: both have to hear it.
-                    guest.game().postCommand(PartyOrders.of(new HoldGround(2, true)));
+                    guest.game().postCommand(ActionOrders.along(2, java.util.List.of(heroOf(guest.game(), 2, "Knight").getId()), 0));
+                    startKnight = heroOf(host.game(), 2, "Knight").getPosition();
+                    startRogue = heroOf(host.game(), 1, "Rogue").getPosition();
                     ordered = true;
                 }
                 if (!moved) {
@@ -73,9 +77,11 @@ class LanPartyTest {
                 assertNotNull(heroOf(game, 1, "Rogue"), "the host's hero, on both machines");
                 assertNotNull(heroOf(game, 2, "Knight"), "and the guest's");
             }
-            assertTrue(host.orders().isHolding(2), "the host heard the guest's order");
-            assertTrue(guest.orders().isHolding(2), "as the guest did");
-            assertFalse(host.orders().isHolding(1), "and it was his alone");
+            for (var game : new DukeGame[] {host.game(), guest.game()}) {
+                assertTrue(heroOf(game, 2, "Knight").getPosition().distance(startKnight) > 5f,
+                        "the guest's run was heard on both machines");
+                assertEquals(0f, heroOf(game, 1, "Rogue").getPosition().distance(startRogue), 1e-3f, "and it was his alone");
+            }
         } finally {
             hosted.close();
             joined.close();
@@ -111,10 +117,8 @@ class LanPartyTest {
                             .filter(object -> object.getTemplate().name().equals(SETTINGS.bossKindAt(1)))
                             .findFirst().orElseThrow();
                     startingCount = monsters(host.game());
-                    host.game().postCommand(PartyOrders.of(new uz.dukeengine.dungeon.ai.AttackMove(1,
-                            boss.getPosition())));
-                    guest.game().postCommand(PartyOrders.of(new uz.dukeengine.dungeon.ai.AttackMove(2,
-                            boss.getPosition())));
+                    charge(host.game(), 1, "Rogue", boss.getPosition());
+                    charge(guest.game(), 2, "Knight", boss.getPosition());
                     sent = true;
                 }
                 if (!moved) {
@@ -135,6 +139,15 @@ class LanPartyTest {
             hosted.close();
             joined.close();
         }
+    }
+
+    /** A hero run at {@code spot} and swinging toward it, held: said on {@code game}'s machine. */
+    private static void charge(DukeGame game, int player, String template, uz.dukeengine.core.math.Coord3D spot) {
+        var hero = heroOf(game, player, template);
+        var from = hero.getPosition();
+        int angle = (int) Math.round(Math.atan2(spot.y() - from.y(), spot.x() - from.x()) / (2 * Math.PI) * 256) & 0xFF;
+        game.postCommand(ActionOrders.along(player, java.util.List.of(hero.getId()), angle));
+        game.postCommand(ActionOrders.toward(player, java.util.List.of(hero.getId()), spot, true));
     }
 
     /** The dungeon's creatures still standing: whatever has a body and is nobody's hero. */

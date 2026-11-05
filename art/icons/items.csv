@@ -179,10 +179,6 @@ stats,stat_range,stat,common,gi:lorc/arrow-scope,green
 stats,stat_strength,stat,common,gi:delapouite/biceps,red
 stats,stat_agility,stat,common,gi:lorc/run,green
 stats,stat_intelligence,stat,common,gi:lorc/brain,blue
-commands,cmd_move,command,common,gi:skoll/footsteps,silver
-commands,cmd_attack,command,common,gi:lorc/crossed-sabres,steel
-commands,cmd_guard,command,common,gi:lorc/shield-reflect,silver
-commands,cmd_stop,command,common,gi:skoll/halt,red
 effect,coin,coin,common,gi:lorc/crown-coin,gold
 loot,dagger,weapon,all,raven:dagger,
 loot,sword_short,weapon,all,raven:sword,

@@ -198,12 +198,11 @@ class DungeonTilesTest {
      * are files like everything else, and a file is a thing that can be missing.
      */
     @Test
-    void everyCommandAndFigurePictureIsThere() {
+    void everyFigurePictureIsThere() {
         var settings = uz.dukeengine.dungeon.content.DungeonSettings.load();
         int checked = 0;
 
         var named = new java.util.ArrayList<String>();
-        named.addAll(settings.hud().orderIcons());
         named.addAll(settings.hud().statIcons());
         // And every attribute's, which is named in its own block rather than the panel's.
         settings.attributeArt().forEach(attribute -> named.add(attribute.icon()));
@@ -215,7 +214,7 @@ class DungeonTilesTest {
                     path + " is named but not shipped");
             checked++;
         }
-        assertTrue(checked >= 10, "four orders, three figures and three attributes, found "
+        assertTrue(checked >= 6, "three figures and three attributes, found "
                 + checked);
     }
 
@@ -231,7 +230,7 @@ class DungeonTilesTest {
     @Test
     void everyPictureIsSquareAndTheSizeItWasPaintedAt() throws java.io.IOException {
         int checked = 0;
-        for (var folder : new String[][] {{"icons/skills/", "128"}, {"icons/commands/", "128"},
+        for (var folder : new String[][] {{"icons/skills/", "128"},
             {"icons/stats/", "64"}, {"icons/items/", "64"}}) {
             for (var name : shipped(folder[0])) {
                 var image = javax.imageio.ImageIO.read(

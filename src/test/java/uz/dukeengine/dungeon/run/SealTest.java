@@ -176,7 +176,6 @@ class SealTest {
 
         /** His side stands and picks no fights. */
         void hold() {
-            session.orders().hold(game().getLocalPlayerIndex(), true);
         }
 
         void attack(GameObject who, GameObject what) {
@@ -1130,27 +1129,6 @@ class SealTest {
         floor.game().runHeadless(A_WHILE);
 
         assertNotEquals(before, whereTheyStand(inside), "the gate open, nobody in the keep came for him");
-    }
-
-    /** His own brain picks no target across the shut gate, and picks the boss once it is open. */
-    @Test
-    void theHeroPicksNoTargetAcrossTheShutGate() {
-        for (boolean opened : new boolean[] {false, true}) {
-            var floor = floor("Rogue");
-            var boss = floor.boss();
-            floor.remove(floor.guards());
-            floor.put(floor.hero(), 1, 0);
-            floor.put(boss, -2, 0);
-            if (opened) {
-                floor.open();
-            }
-
-            floor.game().runHeadless(60);
-
-            var weapon = floor.hero().findModule(WeaponUpdate.class);
-            assertEquals(opened, weapon.isAttacking() && boss.getId().equals(weapon.getTarget()),
-                    opened ? "the gate open, he never picked the boss" : "he picked the boss across the shut gate");
-        }
     }
 
     /** From the threshold the court behind the shut gate is not in the hero's sight; once it is open, the next look has it. */

@@ -53,6 +53,12 @@ class MonsterKindsTest {
         return new Fight(game, creature(game, "Rogue"), creature(game, kind));
     }
 
+    /** The hero locked on the monster (the soft lock's order): the provocation a deaf monster answers. */
+    private static void provoke(Fight fight) {
+        fight.game().postCommand(new uz.dukeengine.combat.message.CombatOrder.AttackObject(fight.game().getLocalPlayerIndex(),
+                java.util.List.of(fight.hero().getId()), fight.monster().getId()));
+    }
+
     private static GameObject creature(DukeGame game, String template) {
         return game.getLogic().getObjects().stream()
                 .filter(o -> o.getTemplate().name().equals(template))
@@ -176,6 +182,7 @@ class MonsterKindsTest {
             float gap = kind.keepsItsDistance() ? kind.keepFurthest()
                     : Math.min(kind.closeDistance(), kind.senseRadius()) * 0.9f;
             var fight = fight(kind.name(), gap);
+            provoke(fight);
             float heroHealth = fight.hero().getBody().getHealth();
 
             boolean flew = false;
@@ -234,6 +241,7 @@ class MonsterKindsTest {
         var brute = SETTINGS.monsters().stream()
                 .filter(kind -> kind.name().equals("Brute")).findFirst().orElseThrow();
         var fight = fight("Brute", 6f); // already within reach
+        provoke(fight);
         float health = fight.hero().getBody().getHealth();
 
         // Run until it actually lands one. Recovery follows the blow, not the
@@ -364,6 +372,8 @@ class MonsterKindsTest {
         var monster = creature(game, "Skeleton");
         var hero = creature(game, "Rogue");
         float gapBefore = monster.getPosition().distance(hero.getPosition());
+        game.postCommand(new uz.dukeengine.combat.message.CombatOrder.AttackObject(game.getLocalPlayerIndex(),
+                java.util.List.of(hero.getId()), monster.getId())); // locked on it
 
         game.runHeadless(200);
 

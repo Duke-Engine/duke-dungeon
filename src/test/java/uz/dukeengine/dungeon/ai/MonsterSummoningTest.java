@@ -90,7 +90,6 @@ class MonsterSummoningTest {
         game.spawn(SUMMONER, arena.dungeon(), summonerX, ROW);
         game.runHeadless(1);
         // A player has an index once the game has started, and not before.
-        arena.orders().hold(arena.hero().getIndex(), true);
         return new Circle(game, first(game, SUMMONER));
     }
 
@@ -335,7 +334,6 @@ class MonsterSummoningTest {
             // own kind is worth.
             game.spawn(SWORDSMAN, arena.dungeon(), at(55), at(35));
             game.runHeadless(1);
-            arena.orders().hold(arena.hero().getIndex(), true);
             int whole = first(game, SWORDSMAN)
                     .findModule(ExperienceModule.class).getExperienceValue();
 

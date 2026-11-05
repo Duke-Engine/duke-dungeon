@@ -84,7 +84,6 @@ class LifestealTest {
         game.spawn(monster, arena.dungeon(), 150f + gap, 150f);
         game.runHeadless(1);
         // A player has an index once the game has started, and not before.
-        arena.orders().hold(arena.hero().getIndex(), true);
         var it = creature(game, monster);
         it.getBody().setHealth(it.getBody().getMaxHealth() * share);
         return new Duel(game, creature(game, "Rogue"), it);
@@ -160,7 +159,6 @@ class LifestealTest {
         game.spawn("Rogue", arena.hero(), 250f, 155f);
         game.spawn("SkeletonMage", arena.dungeon(), 200f, 150f);
         game.runHeadless(1);
-        arena.orders().hold(arena.hero().getIndex(), true);
         var heroes = game.getLogic().getObjects().stream()
                 .filter(object -> object.getTemplate().name().equals("Rogue")).toList();
         var mage = creature(game, "SkeletonMage");

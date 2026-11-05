@@ -492,7 +492,6 @@ class KnightTest {
         var skeletons = all(game, "Skeleton");
         skeletons.forEach(KnightTest::sturdy);
         skeletons.forEach(KnightTest::holdStill);
-        world.orders().hold(world.hero().getIndex(), true); // his sword picks no fights: the skill alone
         var book = find(game, KNIGHT).findModule(SkillBook.class);
         var full = skeletons.stream().map(each -> each.getBody().getHealth()).toList();
 
@@ -669,7 +668,6 @@ class KnightTest {
         var knight = find(game, KNIGHT);
         var skeletons = all(game, "Skeleton");
         skeletons.forEach(KnightTest::sturdy);
-        world.orders().hold(world.hero().getIndex(), true); // his sword picks no fights: the skill alone
         var far = skeletons.getLast().getPosition();
         var full = skeletons.stream().map(each -> each.getBody().getHealth()).toList();
 

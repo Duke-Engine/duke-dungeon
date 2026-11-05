@@ -308,25 +308,6 @@ class ItemErrandTest {
     }
 
     /**
-     * A body in his way that he is fighting is not a way that stays shut. His brain stands him behind a skeleton in
-     * the corridor and he shoots it; however long that takes -- longer here than the rules let him get no nearer
-     * while not fighting -- he is not getting nowhere. It falls, and he goes on and takes the thing.
-     */
-    @Test
-    void aBodyHeIsFightingDoesNotMakeHimGiveItUp() {
-        var corridor = inACorridorWith(false);
-        corridor.inTheWay().getBody().setHealth(10f); // five of his arrows here: four seconds of fighting
-        var bag = new LootBag();
-
-        assertTrue(ItemErrand.pickUp(corridor.hero(), corridor.chest(), bag, corridor.room().rules(30, 100_000)));
-        corridor.game().runHeadless(600);
-
-        assertTrue(corridor.inTheWay().isEffectivelyDead(), "the skeleton still stands, so this tells nothing");
-        assertEquals(List.of(BLADE), bag.getFound(),
-                "he gave it up while he was fighting his way: " + bag.noteAt(corridor.game().getLogic().getFrame()));
-    }
-
-    /**
      * But a fight in his way that never ends -- a skeleton mended as fast as he hurts it -- ends the errand all the
      * same, once he has gone as long as the rules say, fighting or not, without getting any nearer.
      */

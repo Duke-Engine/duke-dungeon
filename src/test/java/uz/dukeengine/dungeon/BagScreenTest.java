@@ -600,24 +600,12 @@ class BagScreenTest {
         game.setPointedAt(gate.getId().value());
         game.runHeadless(2);
         assertEquals(uz.dukeengine.dungeon.party.PartyOrders.TO_THE_GATE, game.getSnapshot().contextOrder());
-        assertTrue(SETTINGS.cursors().stream()
-                .anyMatch(pointer -> pointer.name().equals(uz.dukeengine.dungeon.party.PartyOrders.TO_THE_GATE)),
-                "no cursor has the order's name, so the pointer over the gate stays the plain one");
 
         // What the client sends for that click.
         game.postCommand(new uz.dukeengine.combat.message.GameOrder(hero.getPlayerIndex(),
                 game.getSnapshot().contextOrder(), List.of(hero.getId()), gate.getPosition(), gate.getId(), 0));
         game.runHeadless(2);
         assertNotNull(hero.findModule(uz.dukeengine.rpg.item.ItemErrand.class), "he is not on his way to it");
-    }
-
-    /** A click on a chest is answered as an attack is — the ring round it, blinking — but yellow, not the arrowheads. */
-    @Test
-    void aPickupIsAnsweredWithTheRingInYellow() {
-        var mark = SETTINGS.orderMark();
-        assertTrue(mark.ringsContextOrders(), "the ring, not a walk's arrowheads");
-        assertEquals(0xFFD23C, mark.contextColour());
-        assertTrue(mark.contextColour() != mark.attackColour(), "and not a fight's colour");
     }
 
     /**

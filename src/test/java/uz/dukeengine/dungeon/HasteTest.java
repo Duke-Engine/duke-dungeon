@@ -266,7 +266,6 @@ class HasteTest {
         game.spawn("Skeleton", arena.dungeon(), 162f, 150f);
         game.spawn(SUMMONER, arena.dungeon(), 162f, 110f);
         game.runHeadless(1);
-        arena.orders().hold(arena.hero().getIndex(), true);
         var hero = first(game, "Rogue");
         var skeleton = first(game, "Skeleton");
         int lasts = haste().durationFrames();
@@ -423,7 +422,6 @@ class HasteTest {
         game.spawn("Rogue", arena.hero(), 150f, 150f);
         game.spawn(SUMMONER, arena.dungeon(), 200f, 150f);
         game.runHeadless(1);
-        arena.orders().hold(arena.hero().getIndex(), true);
         var book = bookOf(first(game, SUMMONER));
 
         game.runHeadless(90);

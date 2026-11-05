@@ -40,17 +40,8 @@ class HeroStatusTest {
         var hero = game.getLogic().getObjects().stream()
                 .filter(o -> o.getTemplate().name().equals("Rogue"))
                 .findFirst().orElseThrow();
-        session.orders().watch(hero.getPlayerIndex(), hero.getId());
         game.runHeadless(1);
         return game.getSnapshot().status();
-    }
-
-    /** Pick the hero out, the way a player does before reading anything about him. */
-    private static void pickOutTheHero(Dungeon.Session session) {
-        var hero = session.game().getLogic().getObjects().stream()
-                .filter(o -> o.getTemplate().name().equals("Rogue"))
-                .findFirst().orElseThrow();
-        session.orders().watch(hero.getPlayerIndex(), hero.getId());
     }
 
     /**
@@ -71,8 +62,6 @@ class HeroStatusTest {
         assertTrue(line.contains("|hp="), "his health: " + line);
         assertTrue(line.contains("|skill="), "his skills: " + line);
         assertTrue(line.contains("|hero="), "the premise: his hero stands: " + line);
-        assertTrue(line.contains("|cmds=mine"),
-                "his orders go to his hero with nothing selected too: " + line);
         assertTrue(line.contains("|depth="), "the floor is still the floor: " + line);
         assertTrue(line.contains("|look="),
                 "and the client learns the floor's stone from this line: " + line);
@@ -328,7 +317,6 @@ class HeroStatusTest {
         var session = Dungeon.newSession(11L);
         var game = session.game();
         game.runHeadless(2);
-        pickOutTheHero(session);
         session.progress().getLoot().take(new uz.dukeengine.rpg.item.Loot("Tome", "Tome", "flask",
                 Stat.ATTRIBUTE, 5, 1, 1, "STR", "", 0, 0, 1, uz.dukeengine.rpg.item.ItemUse.NONE, "", "Zirh"), // worn
                 game.getLogic().getFrame(), 60);
@@ -367,7 +355,6 @@ class HeroStatusTest {
         var session = Dungeon.newSession(4321L, settings);
         var game = session.game();
         game.runHeadless(1);
-        pickOutTheHero(session);
         game.runHeadless(1);
         var line = game.getSnapshot().status();
 
@@ -394,23 +381,12 @@ class HeroStatusTest {
         var session = Dungeon.newSession(7L, classic);
         var game = session.game();
         game.runHeadless(2);
-        pickOutTheHero(session);
         game.runHeadless(30);
         var line = game.getSnapshot().status();
 
         assertTrue(line.contains("|title="), "what he is, under his name: " + line);
         assertTrue(line.contains("|itWord="), "the heading over his bag: " + line);
         assertTrue(line.contains("|skWord="), "the heading over his skills: " + line);
-        // Four orders, each with a key, a drawing, a word and a state.
-        int orders = line.split(java.util.regex.Pattern.quote("|cmd="), -1).length - 1;
-        assertEquals(4, orders, "the four buttons beside the map: " + line);
-        // The picture is a path out of the settings file, not a word the client
-        // holds a drawing for. That was the arrangement until the painted icons
-        // arrived, and it meant the client had an opinion about what "guard"
-        // looks like; the key and the word are still the game's own.
-        assertTrue(line.contains("|cmd=D,icons/commands/"),
-                "the one order the engine has no word for, drawn from the file: " + line);
-        assertTrue(line.contains(",off"), "and an order that is not on says so");
     }
 
     /**
@@ -424,7 +400,6 @@ class HeroStatusTest {
         var session = Dungeon.newSession(11L);
         var game = session.game();
         game.runHeadless(2);
-        pickOutTheHero(session);
         game.runHeadless(1);
         var before = game.getSnapshot().status();
         assertFalse(before.contains("|it="), "he starts with nothing: " + before);
@@ -460,10 +435,8 @@ class HeroStatusTest {
         game.runHeadless(2);
 
         var nothingSelected = game.getSnapshot().status();
-        pickOutTheHero(session);
         game.runHeadless(2);
         var heroSelected = game.getSnapshot().status();
-        pickOutSomethingElse(session);
         game.runHeadless(2);
         var monsterSelected = game.getSnapshot().status();
 
@@ -506,7 +479,6 @@ class HeroStatusTest {
         var session = Dungeon.newSession(4321L);
         var game = session.game();
         game.runHeadless(2);
-        pickOutSomethingElse(session);
         game.runHeadless(2);
 
         var line = game.getSnapshot().status();
@@ -568,17 +540,5 @@ class HeroStatusTest {
                 .map(uz.dukeengine.core.thing.ThingTemplate::name)
                 .toList();
         assertTrue(unnamed.isEmpty(), "named only by their templates: " + unnamed);
-    }
-
-    /** Somebody else's creature, picked out the way a click does. */
-    private static void pickOutSomethingElse(Dungeon.Session session) {
-        var hero = session.game().getLogic().getObjects().stream()
-                .filter(o -> o.getTemplate().name().equals("Rogue"))
-                .findFirst().orElseThrow();
-        var other = session.game().getLogic().getObjects().stream()
-                .filter(o -> o.getPlayerIndex() != hero.getPlayerIndex())
-                .filter(o -> o.getBody() != null)
-                .findFirst().orElseThrow();
-        session.orders().watch(hero.getPlayerIndex(), other.getId());
     }
 }

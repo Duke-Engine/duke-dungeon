@@ -5,7 +5,6 @@ import uz.dukeengine.core.content.AnimationSet;
 import java.util.List;
 import java.util.Map;
 import uz.dukeengine.core.content.Effect;
-import uz.dukeengine.client3d.OrderMark;
 import uz.dukeengine.client3d.HitNumbers;
 import uz.dukeengine.client3d.MenuStyle;
 import uz.dukeengine.client3d.rpg.PanelLook;
@@ -25,7 +24,6 @@ import uz.dukeengine.rpg.hero.HeroAttributes;
 import uz.dukeengine.rpg.hero.Levelling;
 import uz.dukeengine.dungeon.map.ProceduralMap;
 import uz.dukeengine.dungeon.world.Audio;
-import uz.dukeengine.client3d.Camera;
 import uz.dukeengine.dungeon.world.Combat;
 import uz.dukeengine.client3d.Cursor;
 import uz.dukeengine.client3d.EffectBudget;
@@ -98,7 +96,6 @@ public final class DungeonSettings {
     private Run run = Run.DEFAULTS;
     private Progression progression = Progression.DEFAULTS;
     private LootDrops lootDrops = LootDrops.DEFAULTS;
-    private Camera camera = Camera.DEFAULTS;
     private Hud hud = Hud.DEFAULTS;
     private uz.dukeengine.dungeon.world.Party party = uz.dukeengine.dungeon.world.Party.DEFAULTS;
     private uz.dukeengine.dungeon.world.SaveMenu saveMenu = uz.dukeengine.dungeon.world.SaveMenu.DEFAULTS;
@@ -110,7 +107,6 @@ public final class DungeonSettings {
     private UnitBar unitBar = UnitBar.DEFAULTS;
     private StatBlock statBlock = StatBlock.DEFAULTS;
     private SkillRing skillRing = SkillRing.DEFAULTS;
-    private OrderMark orderMark = OrderMark.DEFAULTS;
     private PanelLook panelLook = PanelLook.DEFAULTS;
     private HitNumbers hitNumbers = HitNumbers.DEFAULTS;
     private MenuStyle menu = MenuStyle.DEFAULTS;
@@ -182,9 +178,6 @@ public final class DungeonSettings {
         return lootDrops;
     }
 
-    public Camera camera() {
-        return camera;
-    }
 
     /** Going down together: how many, where the host listens, and the words on the way in. */
     public uz.dukeengine.dungeon.world.Party party() {
@@ -237,9 +230,6 @@ public final class DungeonSettings {
         return skillRing;
     }
 
-    public OrderMark orderMark() {
-        return orderMark;
-    }
 
     public PanelLook panelLook() {
         return panelLook;
@@ -740,7 +730,6 @@ public final class DungeonSettings {
                 case Run block -> run = once(block, once);
                 case Progression block -> progression = once(block, once);
                 case LootDrops block -> lootDrops = once(block, once);
-                case Camera block -> camera = once(block, once);
                 case Hud block -> hud = once(block, once);
                 case uz.dukeengine.dungeon.world.Party block -> party = once(block, once);
                 case uz.dukeengine.dungeon.story.Dialogue block -> dialogue = once(block, once);
@@ -789,7 +778,6 @@ public final class DungeonSettings {
                 case UnitBar block -> unitBar = once(block, once);
                 case StatBlock block -> statBlock = once(block, once);
                 case SkillRing block -> skillRing = once(block, once);
-                case OrderMark block -> orderMark = once(block, once);
                 case PanelLook block -> panelLook = once(block, once);
                 case HitNumbers block -> hitNumbers = once(block, once);
                 case MenuStyle block -> menu = once(block, once);
@@ -1394,8 +1382,6 @@ public final class DungeonSettings {
         require(progression.levelUpBannerFrames() >= 0, "the level-up message cannot last negative frames");
         require(party.maxPlayers() >= 1 && party.maxPlayers() <= 8, "a party is 1 to 8 heroes");
         require(party.port() >= 1 && party.port() <= 65535, "a port is 1 to 65535");
-        require(camera.edgeMargin() >= 0, "the screen's edge cannot be a negative width");
-        require(camera.edgeSpeedPercent() >= 0, "a camera cannot be shoved backwards");
         require(fog.unseenPercent() >= 0 && fog.unseenPercent() <= 100,
                 "UnseenPercent is a share of a lit room");
         require(fog.rememberedPercent() >= 0 && fog.rememberedPercent() <= 100,

@@ -77,7 +77,6 @@ class SkullMeteorTest {
         game.runHeadless(1);
         var mage = creature(game, MAGE);
         Spawner.scale(mage, level, SETTINGS);
-        arena.orders().hold(arena.hero().getIndex(), true);
         game.spawn("Rogue", arena.hero(), 240f, 150f);
         return new Fight(game, creature(game, "Rogue"), mage);
     }
@@ -247,7 +246,6 @@ class SkullMeteorTest {
         game.spawn(MAGE, arena.dungeon(), 200f, 150f);
         game.spawn(HEALER, arena.dungeon(), 150f, 168f);
         game.runHeadless(1);
-        arena.orders().hold(arena.hero().getIndex(), true);
         var hero = creature(game, "Rogue");
         var mage = creature(game, MAGE);
         var bystander = creature(game, HEALER);

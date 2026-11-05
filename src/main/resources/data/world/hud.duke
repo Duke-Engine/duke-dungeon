@@ -42,13 +42,6 @@ Hud
   ItemsWord = NARSALAR
   ; What he is, under his name. A name says which hero; this says what he does.
   HeroTitle = O'q ustasi
-  ; The four orders on the buttons beside the map, drawn in that order. They are
-  ; what a mouse already does; the buttons are there so a player can see that the
-  ; orders exist, which a right-click never told him.
-  CmdMoveWord = Yur
-  CmdAttackWord = Hujum
-  CmdStopWord = To'xta
-  CmdGuardWord = Himoya
   ; And the screen before the game starts, where he chooses who to be. The roster
   ; on it is the file's — one row per Hero block — so a third hero appears
   ; there by existing. There is no way past it: a run begins by taking a row.
@@ -111,16 +104,7 @@ Hud
   ; cold, and washing a fire arrow in cyan would make the one socket that matters
   ; the one you cannot read.
   PaintedSkillIcons = Yes
-  ; The four order buttons and the four figures: flat
-  ; gold on transparency, so these ARE tinted -- gold when they are his, cyan
-  ; while one is armed, grey when the creature is not his to order.
-  ; Which picture goes on which button. In the file rather than in the client,
-  ; which used to hold a drawing per name and so had an opinion about what an
-  ; order looks like.
-  CmdMoveIcon = icons/commands/cmd_move.png
-  CmdAttackIcon = icons/commands/cmd_attack.png
-  CmdStopIcon = icons/commands/cmd_stop.png
-  CmdGuardIcon = icons/commands/cmd_guard.png
+  ; The three figures: flat gold on transparency, so these ARE tinted.
   ; And beside each figure. Named next to the figure rather than counted off
   ; against it: the panel used to pick by position out of a list of its own, so a
   ; game's third figure was a lightning bolt whatever the game thought it was.
@@ -444,78 +428,6 @@ SkillRing
 End
 
 ; ---------------------------------------------------------------------------
-; The flash that answers a click.
-;
-; Three arrowheads set a third of a turn apart, points inward, closing on the
-; spot and going out as they arrive. It is the only thing in the game that talks
-; back to the player in the moment between his click and anything happening, so
-; it is worth more care than its size suggests: the shape says WHERE by aiming at
-; it from three sides, and the movement says NOW without lasting long enough to
-; clutter a fight.
-;
-; Three of these numbers do nearly all the work, and all three look like fussing
-; until you have seen them wrong:
-;
-;   EasePower  -- arrowheads closing at a constant speed read as machinery. Real
-;                 things arrive: fast at first, slowing as they land.
-;   FadeFrom   -- fading from the first frame gives a mark that is half gone
-;                 before it has said anything. It should travel at full strength
-;                 and go out over the last stretch.
-;   SpinDegrees-- a few degrees over the whole flight. Nobody consciously sees
-;                 it; everybody notices the absence of it.
-;
-; Tune by eye -- nothing here needs a rebuild.
-; ---------------------------------------------------------------------------
-OrderMark
-  ; A cell is 10 across and the hero is 4 wide, so this opens about a room's
-  ; doorway and closes to roughly his own footprint.
-  StartRadius = 7
-  ; Not zero, or the last frame is three shapes on top of each other.
-  EndRadius = 1
-
-  ; Short. Long enough to read across a lit room, gone before the next click.
-  Seconds = 0.40
-
-  ; One arrowhead: point to back edge, and across the back.
-  Size = 3.5
-  Width = 3.0
-
-  ; Clear of the floor it is drawn on and not visibly above it. Any lower and it
-  ; fights the floor for the same pixels; any higher and it hovers.
-  Height = 0.25
-
-  ; 1 is a straight line and looks mechanical; 3 is about right.
-  EasePower = 3.0
-  ; Full strength for the first 60% of the flight, out over the last 40%.
-  FadeFrom = 0.6
-  ; Small on purpose. This is life, not a pirouette.
-  SpinDegrees = 22
-
-  ; Drawn additively, so over 1 is what lets it read through torchlight and fog
-  ; without being a lamp. Past about 2.5 it stops being a colour and goes white.
-  Brightness = 1.6
-
-  ; An order given TO SOMEBODY is not the same answer as an order given to a
-  ; piece of floor, so it is not the same picture. The arrowheads say "there";
-  ; a creature needs "THAT ONE", and arrowheads closing on something that is
-  ; about to walk out from under them say it badly. So an attack is a ring round
-  ; the creature that goes hard on and hard off -- the oldest way of picking one
-  ; thing out of a crowd of them, and still the one the eye finds fastest. A
-  ; gentle fade in the middle of a fight is a thing nobody sees.
-  ;
-  ; Two blinks: one reads as a glitch, three reads as a warning light.
-  RingRadius = 7
-  Blinks = 2
-
-  MoveColour = 0x3CFF6E
-  AttackColour = 0xFF4436
-  ; The same ring, round a thing a click gave an order of the game's own -- a
-  ; chest he is sent to pick up. It is somebody's "that one" too, so it is the
-  ; attack's picture; yellow, because it is not a fight.
-  ContextColour = 0xFFD23C
-End
-
-; ---------------------------------------------------------------------------
 ; The numbers that come off a creature as it is hurt or healed.
 ;
 ; They punch rather than drift: large on the spot, shrinking to their own size,
@@ -664,78 +576,11 @@ Cursor
   Tint = 0xDCD2BC
 End
 
-Cursor
-  Name = Friend
-  ; A pointing hand: this is yours and you can take hold of it.
-  Image = ui/cursors/default/hand_small_point.png
-  HotX = 8
-  HotY = 5
-  Tint = 0x7FBF6A
-End
-
-Cursor
-  Name = Attack
-  ; A sword. The one pointer that promises something, so it is only shown over a
-  ; thing the next right-click will really set about.
-  Image = ui/cursors/default/tool_sword_a.png
-  HotX = 2
-  HotY = 2
-  Tint = 0xC4564A
-End
-
-Cursor
-  Name = Aim
-  ; A crosshair, and the one pointer whose tip is its MIDDLE rather than a
-  ; corner -- that is what a crosshair is for, and the numbers say so.
-  Image = ui/cursors/default/target_round_a.png
-  HotX = 15
-  HotY = 15
-  Tint = 0xE8A33D
-End
-
-Cursor
-  Name = Deny
-  ; Armed, and this is stone or somewhere he has never been.
-  Image = ui/cursors/default/cursor_disabled.png
-  HotX = 2
-  HotY = 1
-  Tint = 0xA8322B
-End
-
-; And two of the game's own. PickUp is the word a click on a thing lying on the
-; floor gives him -- the client shows the pointer of that name over one -- and
-; Drop is the pointer while a thing from his bag is in hand, waiting for the
-; floor it goes down on. Both hands hold at their middle, not at a corner.
-Cursor
-  Name = PickUp
-  Image = ui/cursors/default/hand_small_open.png
-  HotX = 15
-  HotY = 13
-  Tint = 0xE8A33D
-End
-
+; Drop is the pointer while a thing from his bag is in hand, waiting for the floor it goes down on. In play the pointer
+; is held (the mouse turns the camera) and free only with Alt or over a screen, so these two are all there is.
 Cursor
   Name = Drop
   Image = ui/cursors/default/hand_small_closed.png
-  HotX = 15
-  HotY = 15
-  Tint = 0xE8A33D
-End
-
-; And the keep's gate, which a click sends him up to: a lock, until he has
-; given it the key. Held at its middle, as the hands are.
-Cursor
-  Name = ToTheGate
-  Image = ui/cursors/default/lock.png
-  HotX = 15
-  HotY = 15
-  Tint = 0xE8A33D
-End
-
-; And a person, whom a click sends him over to talk to: a speech bubble.
-Cursor
-  Name = Talk
-  Image = ui/cursors/default/message_dots_round.png
   HotX = 15
   HotY = 15
   Tint = 0xE8A33D

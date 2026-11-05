@@ -31,45 +31,6 @@ class ControlsTest {
     /** The keys: the orders on F A S D and the skills on their own letters. */
     private static final DungeonSettings SHIPPED = DungeonSettings.load();
 
-    /**
-     * ★ The four orders, and what each of them asks to be pointed at.
-     *
-     * <p>A, S, D under a resting hand — attack, stop, defend — with walking on the
-     * letter left over because it is the one order nobody reaches for the keyboard
-     * to give.
-     *
-     * <p>The claim worth making is the first one: <b>attack takes either</b>. A
-     * key that asked only for a creature could not be pointed into a room the
-     * player has not walked into, which is exactly when he wants to say it — and
-     * the failure would not look like a missing feature, it would look like a
-     * click that did nothing.
-     */
-    @Test
-    void theFourOrdersAskForWhatTheyNeed() {
-        var keys = Main.controls(SHIPPED);
-
-        assertEquals(Hotkeys.Aim.UNIT_OR_GROUND, keys.aimOf('A'),
-                "attack must take a creature OR a piece of floor");
-        assertEquals(Hotkeys.Aim.NOW, keys.aimOf('S'), "stop acts the moment it is pressed");
-        assertEquals(Hotkeys.Aim.NOW, keys.aimOf('D'), "defend acts the moment it is pressed");
-        assertEquals(Hotkeys.Aim.OPEN_GROUND, keys.aimOf('F'),
-                "walking is pointed at floor he could stand on and has seen");
-    }
-
-    /** And none of the four collides with a skill. */
-    @Test
-    void theOrdersAndTheSkillsDoNotShareALetter() {
-        var keys = Main.controls(SHIPPED);
-
-        for (var skill : SHIPPED.skills()) {
-            for (char order : new char[] {'A', 'S', 'D', 'F'}) {
-                assertNotEquals(order, skill.key(), skill.heroTemplate() + "'s "
-                        + skill.key() + " is on an order's letter, so one of the two is"
-                        + " silently unreachable");
-            }
-        }
-    }
-
     @Test
     void everySkillInTheFileGetsAKey() {
         var keys = Main.controls(SHIPPED).claimedKeys();
@@ -345,39 +306,4 @@ class ControlsTest {
         assertEquals("Passiv", SHIPPED.hud().passiveWord());
     }
 
-    /**
-     * With a monster picked out, S still stops his hero and holds him there: the order goes to his own hero, never
-     * to what he is looking at. (Whether the window lets the key through is the card's {@code cmds}, pinned in
-     * WatchingTest.)
-     */
-    @Test
-    void anOrderKeyWithAMonsterPickedOutOrdersHisHero() {
-        var session = Dungeon.newSession(7L, SHIPPED);
-        var game = session.game();
-        game.runHeadless(2);
-        var hero = game.getLogic().getObjects().stream()
-                .filter(thing -> thing.getTemplate().name().equals("Rogue")).findFirst().orElseThrow();
-        var monster = game.getLogic().getObjects().stream()
-                .filter(thing -> thing.getPlayerIndex() != hero.getPlayerIndex() && !thing.isEffectivelyDead()
-                        && thing.findModule(uz.dukeengine.combat.module.WeaponUpdate.class) != null)
-                .findFirst().orElseThrow();
-        session.orders().watch(hero.getPlayerIndex(), monster.getId());
-        assertFalse(session.orders().isHolding(hero.getPlayerIndex()), "the premise: he is not holding yet");
-
-        assertTrue(Main.controls(SHIPPED).pressNow(game, 'S'), "S is an order that acts at once");
-        game.runHeadless(2);
-
-        assertTrue(session.orders().isHolding(hero.getPlayerIndex()), "his hero holds his ground");
-        assertEquals(monster.getId(), session.orders().watchedBy(hero.getPlayerIndex()),
-                "and the monster is still the one shown");
-    }
-
-    /**
-     * A drag across the screen is never a box: one hero and nobody else to gather, so a press is a click where the
-     * mouse lets go, and picks the one thing under it to look at -- never a group.
-     */
-    @Test
-    void aDragNeverSelectsABox() {
-        assertFalse(Main.looks(SHIPPED).isDragSelecting());
-    }
 }

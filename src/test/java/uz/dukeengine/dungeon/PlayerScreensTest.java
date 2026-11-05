@@ -355,7 +355,6 @@ class PlayerScreensTest {
         assertEquals(SETTINGS.screens().questsTitle(), keys.wordOf('L'));
         assertEquals(SETTINGS.screens().mapTitle(), keys.wordOf('M'));
         assertEquals(SETTINGS.screens().trackerWord(), keys.wordOf('J'));
-        assertEquals(SETTINGS.hud().cmdAttackWord(), keys.wordOf('A'), "an order as its button says it");
         var skill = SETTINGS.skillsFor(SETTINGS.run().defaultHero()).getFirst();
         assertEquals(skill.name(), keys.wordOf(skill.key()), "a skill by its name");
         var said = SETTINGS.mainMenu().said();

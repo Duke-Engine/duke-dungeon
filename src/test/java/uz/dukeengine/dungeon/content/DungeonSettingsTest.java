@@ -466,7 +466,7 @@ class DungeonSettingsTest {
     @Test
     void everyPointerNamesAPictureWithItsTipInsideIt() {
         var pointers = DungeonSettings.load().cursors();
-        assertTrue(pointers.size() >= 5, "the client knows five situations: " + pointers.size());
+        assertTrue(pointers.size() >= 2, "the arrow and the hand in the bag: " + pointers.size());
 
         for (var pointer : pointers) {
             byte[] png;
@@ -494,13 +494,13 @@ class DungeonSettingsTest {
                 | ((png[at + 2] & 0xFF) << 8) | (png[at + 3] & 0xFF);
     }
 
-    /** And the five the client draws are all painted. */
+    /** And the two the game uses in play are painted: the arrow, and the hand holding a thing from the bag. */
     @Test
     void everySituationTheClientKnowsIsPainted() {
         var named = DungeonSettings.load().cursors().stream()
                 .map(uz.dukeengine.client3d.Cursor::name).toList();
 
-        for (var situation : java.util.List.of("Point", "Friend", "Attack", "Aim", "Deny")) {
+        for (var situation : java.util.List.of("Point", "Drop")) {
             assertTrue(named.contains(situation),
                     situation + " is a situation the client draws and the file does not paint: "
                             + named);
@@ -511,40 +511,6 @@ class DungeonSettingsTest {
     void aMissingFileSaysWhichOne() {
         var missing = assertThrows(IllegalStateException.class, () -> Content.read("nope.ini"));
         assertTrue(missing.getMessage().contains("nope.ini"), missing.getMessage());
-    }
-
-    /**
-     * The shipped file really does set the order mark, rather than leaving the
-     * client's own numbers in place.
-     *
-     * <p>A block whose name is misspelt is not an error anywhere: the file parses,
-     * the client draws its default, and the whole point of putting the numbers in
-     * the file — that they can be re-tuned by eye — is quietly gone. So the test
-     * is that the file disagrees with the default, which is the one thing a
-     * misspelt block cannot do.
-     */
-    @Test
-    void theShippedFileSetsTheOrderMarkItself() {
-        var settings = DungeonSettings.load();
-        var shipped = new uz.dukeengine.client3d.OrderMark(
-                settings.orderMark().startRadius(), settings.orderMark().endRadius(), settings.orderMark().seconds(),
-                settings.orderMark().size(), settings.orderMark().width(), settings.orderMark().height(),
-                settings.orderMark().easePower(), settings.orderMark().fadeFrom(), settings.orderMark().spinDegrees(),
-                settings.orderMark().brightness(), settings.orderMark().ringRadius(), settings.orderMark().blinks(),
-                settings.orderMark().moveColour(), settings.orderMark().attackColour());
-
-        assertTrue(shipped.startRadius() > shipped.endRadius(),
-                "the arrowheads have to close on the click, not open away from it");
-        assertTrue(shipped.seconds() > 0.2f && shipped.seconds() < 0.7f,
-                "an acknowledgement, not an animation: " + shipped.seconds() + "s");
-        assertTrue(shipped.easePower() > 1f, "a straight line reads as machinery");
-        assertTrue(shipped.fadeFrom() > 0.3f,
-                "it should travel at full strength and go out at the end");
-        assertNotEquals(shipped.moveColour(), shipped.attackColour(),
-                "walking and killing are not the same order");
-        assertTrue(shipped.blinks() >= 1,
-                "the ring on an attacked creature has to flash at least once");
-        assertTrue(shipped.ringRadius() > 0f, "and be some size");
     }
 
     /**

@@ -88,7 +88,6 @@ class MonsterSkillTest {
         game.spawn(MAGE, arena.dungeon(), mageX, ROW);
         game.runHeadless(1);
         // A player has an index once the game has started, and not before.
-        arena.orders().hold(arena.hero().getIndex(), true);
         return new Fight(game, creature(game, "Rogue"), creature(game, MAGE));
     }
 
@@ -271,7 +270,6 @@ class MonsterSkillTest {
             game.spawn("Rogue", arena.hero(), leftFirst ? 240f : 160f, ROW);
             game.spawn(MAGE, arena.dungeon(), 200f, ROW);
             game.runHeadless(1);
-            arena.orders().hold(arena.hero().getIndex(), true);
 
             GameObject ball = null;
             for (int frame = 0; frame < 60 && ball == null; frame++) {
@@ -438,7 +436,6 @@ class MonsterSkillTest {
         game.runHeadless(1);
         var mage = creature(game, MAGE);
         Spawner.scale(mage, level, settings);
-        arena.orders().hold(arena.hero().getIndex(), true);
         game.spawn("Rogue", arena.hero(), 240f, ROW);
         return new Fight(game, creature(game, "Rogue"), mage);
     }

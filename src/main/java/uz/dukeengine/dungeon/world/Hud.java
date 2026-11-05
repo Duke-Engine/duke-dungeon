@@ -41,30 +41,16 @@ import uz.dukeengine.dungeon.content.PortraitArt;
 public record Hud(String depthWord, String rankSuffix, String skillsWord, String pointsWord, String masterWord,
         String damageWord, String cooldownWord, String radiusWord, String rangeWord, String boostWord,
         String secondsWord, String raiseKeyWord, String raiseWord, String maxedWord, String noPointsWord,
-        String lockedWord, String itemsWord, String heroTitle, String cmdMoveWord,
-        String cmdAttackWord, String cmdStopWord, String cmdGuardWord, String chooseHeroWord,
+        String lockedWord, String itemsWord, String heroTitle, String chooseHeroWord,
         String chooseHeroHint, String chooseModeWord, String chooseModeHint, String endlessWord,
         String endlessBlurb, String stagesWord, String stagesBlurb, String chooseStageWord,
         String chooseStageHint, String attackWord, String armourWord, String speedWord, String healthWord,
         String primaryWord, String eachPointWord, String speedNowWord, String manaWord,
-        boolean paintedSkillIcons, String cmdMoveIcon, String cmdAttackIcon, String cmdStopIcon,
-        String cmdGuardIcon, String attackIcon, String armourIcon, String speedIcon, int portraitFps,
+        boolean paintedSkillIcons, String attackIcon, String armourIcon, String speedIcon, int portraitFps,
         PortraitArt portrait, float buffIcon, String lifestealWord, String passiveWord) {
 
     /** What a block leaves out. */
-    public static final Hud DEFAULTS = new Hud("DEPTH", "-lv", "", "", "", "", "", "", "", "", "", "", "", "",
-            "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
-            "", "", false, "", "", "", "", "", "", "", 24, null, 20f, "", "");
-
-    /** The four orders on the buttons beside the map, in the order they are drawn. */
-    public List<String> orderWords() {
-        return List.of(cmdMoveWord, cmdAttackWord, cmdStopWord, cmdGuardWord);
-    }
-
-    /** The four order buttons' pictures, in the order the buttons are drawn. */
-    public List<String> orderIcons() {
-        return List.of(cmdMoveIcon, cmdAttackIcon, cmdStopIcon, cmdGuardIcon);
-    }
+    public static final Hud DEFAULTS = new Hud("DEPTH", "-lv", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", false, "", "", "", 24, null, 20f, "", "");
 
     /**
      * The pictures beside the three figures under the bars, in their own order — beside the figures

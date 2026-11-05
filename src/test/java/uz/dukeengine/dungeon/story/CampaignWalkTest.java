@@ -293,6 +293,8 @@ class CampaignWalkTest {
         play(session, 5);
         walkToPerson(session, "BabaYaga", 20000);
         assertTrue(script.flagged("SecretKnown"));
+        // What walked in since is cut down too: his sword used to meet it on the long road, now the player holds it.
+        clearOut(session, "Yashil_dala");
         play(session, SETTINGS.story().dialogue().checkFrames() * 2 + 5);
         assertTrue(script.flagged("FreedGreen"), "the meadow cleared earlier is freed now");
     }

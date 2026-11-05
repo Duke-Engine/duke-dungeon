@@ -156,9 +156,6 @@ public final class DungeonRun {
     private String look;
     private int runCount; // how many times a new dungeon has been generated after a death
 
-    /** The standing orders every player has given; only the panel reads them. */
-    private final uz.dukeengine.dungeon.ai.Orders orders;
-
     /** The first floor, held while a party's heroes are still being said; {@code null} once it is laid. */
     private GeneratedDungeon gathering;
 
@@ -199,7 +196,7 @@ public final class DungeonRun {
 
     public DungeonRun(GamePlayer heroPlayer, GamePlayer dungeonPlayer, Floors floors,
             DungeonSettings settings, HeroProgress progress,
-            LootTable drops, uz.dukeengine.dungeon.ai.Orders orders,
+            LootTable drops,
             SkillRanks learnt, Seal seal, java.util.concurrent.atomic.AtomicInteger clock) {
         this.seal = seal;
         this.clock = clock;
@@ -209,7 +206,6 @@ public final class DungeonRun {
         this.graveyards = new Graveyards(settings);
         this.caves = new Caves(settings);
         script.judgedBy(this::holds);
-        this.orders = orders;
         this.dungeonPlayer = dungeonPlayer;
         this.floors = floors;
         this.settings = settings;
@@ -914,7 +910,6 @@ public final class DungeonRun {
             case WON -> whileWon(game);
         }
         if (state != State.RUNNING) {
-            target = null; // the banner has the screen, as the tracker gives it up
         }
     }
 
@@ -1028,18 +1023,9 @@ public final class DungeonRun {
         game.setStatus(card(game, mine) + HeroStatus.world(game.getLogic(),
                 Skills.heroOf(game.getLogic(), mine.player.getIndex()), mine.progress, depth,
                 bossId, settings));
-        var picked = orders.watchedBy(mine.player.getIndex());
-        var creature = picked == null ? null : game.getLogic().findObject(picked);
-        var fellow = creature == null ? null : seatOf(creature.getPlayerIndex());
-        target = Target.of(creature, Skills.heroOf(game.getLogic(), mine.player.getIndex()),
-                fellow != null && Skills.heroOf(game.getLogic(), fellow.player.getIndex()) == creature
-                        ? fellow.progress : null, settings);
         sheet = Sheet.of(Skills.heroOf(game.getLogic(), mine.player.getIndex()), mine.progress, mine.gold, mine.souls,
                 settings);
     }
-
-    /** What the target frame shows: this machine's player's pick, worked out each frame, or null for nothing. */
-    private volatile Target target;
 
     /** What the character sheet shows of this machine's hero now, or null: read by the window. */
     private volatile Sheet sheet;
@@ -1056,11 +1042,6 @@ public final class DungeonRun {
      */
     private final List<String> visited = new ArrayList<>();
     private volatile List<String> visitedNow = List.of();
-
-    /** What the target frame shows now, or null: read by the window. */
-    public Target getTarget() {
-        return target;
-    }
 
     /** What the character sheet shows of this machine's hero now, or null for no hero: read by the window. */
     public Sheet getSheet() {
@@ -1091,14 +1072,13 @@ public final class DungeonRun {
      * loses the creature, and its buttons go dim. A dying hero is still the hero the bar is about.
      */
     private String card(DukeGame game, Seat seat) {
-        int player = seat.player.getIndex();
-        var hero = Skills.heroOf(game.getLogic(), player);
+        var hero = Skills.heroOf(game.getLogic(), seat.player.getIndex());
         if (hero != null) {
             return HeroStatus.of(hero, seat.progress, depth, floors.lastDepth(), settings,
-                    game.getLogic().getFrame(), look, orders.isHolding(player), seat.learnt);
+                    game.getLogic().getFrame(), look, seat.learnt);
         }
         return HeroStatus.nothing(depth, floors.lastDepth(), settings,
-                seat.progress.getLoot().noteAt(game.getLogic().getFrame()), look, false);
+                seat.progress.getLoot().noteAt(game.getLogic().getFrame()), look);
     }
 
     /**
@@ -2695,7 +2675,6 @@ public final class DungeonRun {
             return;
         }
         seat.talkingTo = person;
-        orders.attackMove(playerIndex, null);
         uz.dukeengine.combat.module.Errand.giveUpAll(hero);
         var legs = hero.getLocomotor();
         if (legs != null) {
@@ -2718,7 +2697,6 @@ public final class DungeonRun {
             return;
         }
         seat.talkingTo = null;
-        orders.attackMove(playerIndex, null);
         uz.dukeengine.combat.module.Errand.giveUpAll(hero);
         stable.dismount(game.getLogic(), playerIndex, hero, seat.progress); // work is done on foot
         camp.order(game.getLogic(), playerIndex, hero, thing, place);
@@ -2878,7 +2856,6 @@ public final class DungeonRun {
             return;
         }
         seat.talkingTo = null;
-        orders.attackMove(playerIndex, null);
         uz.dukeengine.combat.module.Errand.giveUpAll(hero);
         camp.craft(game.getLogic(), playerIndex, hero, bag, recipes.get(recipe),
                 Math.max(1, seat.progress.getLevel()));

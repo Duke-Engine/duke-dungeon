@@ -59,6 +59,10 @@ dependencies {
     implementation("uz.duke-engine:rpg-client-3d")
     // The RTS's flavour, which the dungeon still runs on, and its players and orders.
     implementation("uz.duke-engine:rts")
+    // The third-person game: a walk along a held direction, a swing toward a point, a dodge roll (the sim half),
+    // and the controls that send them (the window half).
+    implementation("uz.duke-engine:action")
+    implementation("uz.duke-engine:client3d-action")
     // The desktop platform the 3D client now needs at runtime (tests too).
     runtimeOnly("uz.duke-engine:client3d-desktop")
 

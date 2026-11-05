@@ -2,7 +2,6 @@ package uz.dukeengine.dungeon;
 
 import uz.dukeengine.game.Colour;
 import uz.dukeengine.dungeon.ai.HeroBrain;
-import uz.dukeengine.dungeon.ai.Orders;
 import uz.dukeengine.dungeon.ai.MonsterBrain;
 import uz.dukeengine.rpg.fight.ArrowUpdate;
 import uz.dukeengine.rpg.fight.FallingUpdate;
@@ -92,21 +91,17 @@ public final class Dungeon {
 
     /** An empty world of the game's own making: its creatures, behaviour and sides. */
     /**
-     * @param orders the standing orders the hero has been given -- held here
-     *               because the command that sets one and the brain that obeys it
-     *               have no other way to reach each other. See {@link Orders}
      * @param seal   the keep's shut gate, as every blow, shot and mending asks it: told of each floor by the run that
      *               lays it, and of none in a world nobody lays one in. See {@link Seal}
      * @param clock  the run's clock, frames of play since it began, saved with it: the hour the night roamers wake by
      *               (see {@link uz.dukeengine.dungeon.world.DayNight}), kept by the run and read by every brain
      */
-    public record Arena(DukeGame game, GamePlayer hero, GamePlayer dungeon, Orders orders,
+    public record Arena(DukeGame game, GamePlayer hero, GamePlayer dungeon,
             java.util.List<GamePlayer> heroes, Seal seal, java.util.concurrent.atomic.AtomicInteger clock) {
     }
 
     /** A game, the run loop that keeps it going, and the hero's progression. */
-    public record Session(DukeGame game, DungeonRun run, HeroProgress progress,
-            Orders orders) {
+    public record Session(DukeGame game, DungeonRun run, HeroProgress progress) {
     }
 
     /**
@@ -153,7 +148,6 @@ public final class Dungeon {
      */
     public static Arena world(String asciiMap, String levelMap, DungeonSettings settings,
             String creaturesIni, java.util.List<LootBag> bagsBySeat) {
-        var orders = new Orders();
         var seal = new Seal();
         var clock = new java.util.concurrent.atomic.AtomicInteger();
         var heroes = new java.util.ArrayList<GamePlayer>();
@@ -166,7 +160,7 @@ public final class Dungeon {
                     // class, so the editor completes it, opens it and flags a typo. Which creature a
                     // MonsterBrain is the brain of is the block it was put on -- see MonsterBrain.onStart.
                     ScriptModule.registerScript(factory, HeroBrain.Data.class,
-                            () -> new HeroBrain(settings, orders, seal));
+                            () -> new HeroBrain(settings));
                     ScriptModule.registerScript(factory, MonsterBrain.Data.class,
                             () -> new MonsterBrain(settings, seal, clock));
                     // Hero and monsters alike need a body that can grow: levels
@@ -263,7 +257,9 @@ public final class Dungeon {
             }
         }
         game.localPlayer(heroes.getFirst());
-        return new Arena(game, heroes.getFirst(), dungeonPlayer, orders, java.util.List.copyOf(heroes), seal, clock);
+        // The hero run along a held direction or swung toward a point: the action module's orders, heard in every world.
+        game.onOrder(order -> uz.dukeengine.action.ActionOrders.apply(order, game.getLogic()));
+        return new Arena(game, heroes.getFirst(), dungeonPlayer, java.util.List.copyOf(heroes), seal, clock);
     }
 
     /**
@@ -413,7 +409,7 @@ public final class Dungeon {
         var drops = new LootTable(settings.loot(), settings.lootDrops().dropPercent(),
                 settings.lootDrops().bossDropPercent(), settings.lootDrops().valuePercentPerDepth());
         var run = new DungeonRun(arena.hero(), arena.dungeon(), floors, settings, progresses.getFirst(),
-                drops, arena.orders(), learnts.getFirst(), arena.seal(), arena.clock());
+                drops, learnts.getFirst(), arena.seal(), arena.clock());
         for (int seat = 1; seat < heroes; seat++) {
             run.seat(arena.heroes().get(seat), progresses.get(seat), learnts.get(seat));
         }
@@ -456,51 +452,22 @@ public final class Dungeon {
                         Skills.raise(learnt, raise, run.progressOf(raise.playerIndex()).getLevel());
                     }
                 }
-                // "Stand and pick no fights", which none of the engine's three
-                // orders can say. See HoldGround. Like every order after one, it
-                // calls off an errand for something on the floor.
-                // His hero picks no fight of his own (HeroBrain).
-                case uz.dukeengine.dungeon.ai.FightOnlyWhenTold told -> {
-                    arena.orders().fightOnlyWhenTold(told.playerIndex(), told.on());
-                    // And whatever he picked by himself before it arrived is let go.
-                    // His weapon picks nothing by itself from now (E87); his brain says so to every hero he is.
-                    var hero = Skills.heroOf(game.getLogic(), told.playerIndex());
-                    var weapon = hero == null ? null
-                            : hero.findModule(uz.dukeengine.combat.module.WeaponUpdate.class);
-                    if (weapon != null) {
-                        weapon.acquiresNothing(told.on());
-                        if (told.on()) {
-                            weapon.holdFire();
-                        }
-                    }
-                }
-                case uz.dukeengine.dungeon.ai.HoldGround hold -> {
-                    giveUpErrands(game, hold.playerIndex());
-                    arena.orders().hold(hold.playerIndex(), hold.stand());
-                }
-                // "Go there and kill what you meet." See AttackMove.
-                case uz.dukeengine.dungeon.ai.AttackMove march -> {
-                    giveUpErrands(game, march.playerIndex());
-                    arena.orders().attackMove(march.playerIndex(), march.spot());
-                }
-                // Sent for something on the floor, or to put something of his
-                // down: the latest order wins, so a march he was on is over.
+                // Sent for something on the floor (E on it), or to put something of his down.
                 case uz.dukeengine.rpg.item.PickUp pick -> {
                     var progress = run.progressOf(pick.playerIndex());
-                    if (progress != null && uz.dukeengine.rpg.item.ItemErrand.pickUp(
-                            Skills.heroOf(game.getLogic(), pick.playerIndex()),
-                            game.getLogic().findObject(pick.item()), progress.getLoot(),
-                            errandRules(settings, arena))) {
-                        arena.orders().attackMove(pick.playerIndex(), null);
+                    if (progress != null) {
+                        uz.dukeengine.rpg.item.ItemErrand.pickUp(
+                                Skills.heroOf(game.getLogic(), pick.playerIndex()),
+                                game.getLogic().findObject(pick.item()), progress.getLoot(),
+                                errandRules(settings, arena));
                     }
                 }
                 case uz.dukeengine.rpg.item.DropItem drop -> {
                     var progress = run.progressOf(drop.playerIndex());
-                    if (progress != null && !run.keepsMedallion(game, drop.playerIndex(), drop.slot(), false)
-                            && uz.dukeengine.rpg.item.ItemErrand.drop(
-                            Skills.heroOf(game.getLogic(), drop.playerIndex()), drop.slot(), drop.place(),
-                            progress.getLoot(), errandRules(settings, arena))) {
-                        arena.orders().attackMove(drop.playerIndex(), null);
+                    if (progress != null && !run.keepsMedallion(game, drop.playerIndex(), drop.slot(), false)) {
+                        uz.dukeengine.rpg.item.ItemErrand.drop(
+                                Skills.heroOf(game.getLogic(), drop.playerIndex()), drop.slot(), drop.place(),
+                                progress.getLoot(), errandRules(settings, arena));
                     }
                 }
                 // A thing put on out of the backpack or taken off into it, where he stands and at once; a full
@@ -520,34 +487,23 @@ public final class Dungeon {
                 // Sent up to the keep's gate: he walks there and says whether he has the key. See ItemErrand.
                 case uz.dukeengine.dungeon.run.ToTheGate gate -> {
                     var progress = run.progressOf(gate.playerIndex());
-                    if (progress != null && uz.dukeengine.rpg.item.ItemErrand.toTheGate(
-                            Skills.heroOf(game.getLogic(), gate.playerIndex()),
-                            game.getLogic().findObject(gate.gate()), progress.getLoot(),
-                            errandRules(settings, arena))) {
-                        arena.orders().attackMove(gate.playerIndex(), null);
+                    if (progress != null) {
+                        uz.dukeengine.rpg.item.ItemErrand.toTheGate(
+                                Skills.heroOf(game.getLogic(), gate.playerIndex()),
+                                game.getLogic().findObject(gate.gate()), progress.getLoot(),
+                                errandRules(settings, arena));
                     }
                 }
                 // Sent to use a thing of his on another: the key on the gate. See ItemErrand.
                 case uz.dukeengine.rpg.item.UseItem use -> {
                     var progress = run.progressOf(use.playerIndex());
-                    if (progress != null && uz.dukeengine.rpg.item.ItemErrand.use(
-                            Skills.heroOf(game.getLogic(), use.playerIndex()), use.slot(),
-                            game.getLogic().findObject(use.target()), progress.getLoot(),
-                            errandRules(settings, arena))) {
-                        arena.orders().attackMove(use.playerIndex(), null);
+                    if (progress != null) {
+                        uz.dukeengine.rpg.item.ItemErrand.use(
+                                Skills.heroOf(game.getLogic(), use.playerIndex()), use.slot(),
+                                game.getLogic().findObject(use.target()), progress.getLoot(),
+                                errandRules(settings, arena));
                     }
                 }
-                // ★ The three plain orders call it off, and they CANNOT be heard
-                // here: this handler is `onOtherCommand`, the engine's door for
-                // commands it does not recognise, so a MoveTo is applied by rts
-                // and never reaches it. Which is right -- they are the engine's
-                // orders and it owns them. Where the errand hears about them is
-                // HeroBrain, by noticing that its own walk has been taken off it;
-                // see thePlayerHasSpokenSince.
-                // Nothing in the world changes; the panel starts describing
-                // something else. See Watching.
-                case uz.dukeengine.dungeon.run.Watching looking ->
-                        arena.orders().watch(looking.playerIndex(), looking.unit());
                 // A party's player saying who he goes in as.
                 case uz.dukeengine.dungeon.party.ChooseHero pick ->
                         run.choose(game, pick.playerIndex(), pick.hero());
@@ -605,7 +561,7 @@ public final class Dungeon {
             game.onTick(ticked -> progress.tick(ticked.getLogic()));
         }
 
-        return new Session(game, run, progresses.getFirst(), arena.orders());
+        return new Session(game, run, progresses.getFirst());
     }
 
     /**
@@ -656,14 +612,6 @@ public final class Dungeon {
         return new uz.dukeengine.rpg.item.ItemErrand.Rules(drops.pickupRange(), drops.noteFrames(),
                 drops.template(), arena.dungeon().getIndex(), drops.fullWord(), drops.noUseWord(), drops.noWayWord(),
                 drops.stuckFrames(), drops.stuckFightingFrames());
-    }
-
-    /** Whatever errand that player's hero is on, called off: he has been told something else. */
-    private static void giveUpErrands(DukeGame game, int playerIndex) {
-        var hero = Skills.heroOf(game.getLogic(), playerIndex);
-        if (hero != null) {
-            uz.dukeengine.combat.module.Errand.giveUpAll(hero);
-        }
     }
 
     /** The attributes of the hero this creature is, or none for anything that is not one. */

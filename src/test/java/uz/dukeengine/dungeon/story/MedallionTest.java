@@ -140,6 +140,8 @@ class MedallionTest {
         var skeleton = all(game, "Skeleton").getFirst();
         skeleton.setPosition(new Coord3D(hero.getPosition().x() + 30f, hero.getPosition().y(), hero.getPosition().z()));
         skeleton.getBody().setHealth(1f);
+        game.postCommand(new uz.dukeengine.combat.message.CombatOrder.AttackObject(game.getLocalPlayerIndex(),
+                List.of(hero.getId()), skeleton.getId())); // the soft lock's order: he shoots what he is locked on
         for (int frame = 0; frame < 300 && !skeleton.isEffectivelyDead(); frame++) {
             game.runHeadless(1);
         }

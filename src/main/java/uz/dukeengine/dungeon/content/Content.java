@@ -16,7 +16,6 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import uz.dukeengine.core.content.Effect;
-import uz.dukeengine.client3d.OrderMark;
 import uz.dukeengine.client3d.HitNumbers;
 import uz.dukeengine.client3d.MenuStyle;
 import uz.dukeengine.client3d.rpg.PanelLook;
@@ -41,7 +40,6 @@ import uz.dukeengine.rpg.skill.SkillBook;
 import uz.dukeengine.rpg.skill.SummoningUpdate;
 import uz.dukeengine.game.script.ScriptModule;
 import uz.dukeengine.dungeon.world.Audio;
-import uz.dukeengine.client3d.Camera;
 import uz.dukeengine.dungeon.world.Combat;
 import uz.dukeengine.client3d.Cursor;
 import uz.dukeengine.client3d.EffectBudget;
@@ -108,8 +106,8 @@ public final class Content {
             named(Moment.class), named(Cursor.class), named(Skin.class), named(Theme.class),
             named(Theme.ThemeMonster.class),
             named(Combat.class), named(Run.class), named(Progression.class), named(LootDrops.class),
-            named(Camera.class), named(Hud.class), named(UnitBar.class), named(StatBlock.class),
-            named(SkillRing.class), named(OrderMark.class), named(PanelLook.class), named(HitNumbers.class), named(MenuStyle.class), named(Sun.class),
+            named(Hud.class), named(UnitBar.class), named(StatBlock.class),
+            named(SkillRing.class), named(PanelLook.class), named(HitNumbers.class), named(MenuStyle.class), named(Sun.class),
             named(Fog.class), named(uz.dukeengine.dungeon.world.PaintedGround.class), named(Tiles.class), named(EffectBudget.class), named(HitFeel.class),
             named(Audio.class), named(World.class), named(ProceduralMap.class), named(StaticMap.class),
             named(uz.dukeengine.dungeon.world.Party.class),

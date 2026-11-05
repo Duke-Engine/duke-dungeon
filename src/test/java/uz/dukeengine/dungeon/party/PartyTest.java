@@ -126,8 +126,8 @@ class PartyTest {
                 .filter(object -> object.getTemplate().name().equals("Chest")).findFirst().orElseThrow();
         var item = chest.findModule(uz.dukeengine.rpg.item.GroundItem.class).getHolding();
 
-        // Both standing on it: whose it is, is whoever was sent.
-        heroOf(game, 1, "Rogue").setPosition(where);
+        // Both within reach of it, not on top of each other: whose it is, is whoever was sent.
+        heroOf(game, 1, "Rogue").setPosition(new uz.dukeengine.core.math.Coord3D(where.x() + 12f, where.y(), where.z()));
         heroOf(game, 2, "Knight").setPosition(where);
         game.postCommand(PartyOrders.of(new uz.dukeengine.rpg.item.PickUp(2, chest.getId())));
         game.runHeadless(3);

@@ -2,7 +2,6 @@ package uz.dukeengine.dungeon.run;
 
 import uz.dukeengine.core.thing.GameObject;
 import uz.dukeengine.core.thing.ThingTemplate;
-import uz.dukeengine.dungeon.ai.Doing;
 import uz.dukeengine.rpg.hero.LevelBonus;
 import uz.dukeengine.dungeon.content.DungeonSettings;
 import uz.dukeengine.rpg.hero.Attribute;
@@ -49,17 +48,13 @@ final class HeroStatus {
      * have the first floor drawn in the wrong kit until something was clicked.
      */
     static String nothing(int depth, int lastDepth, DungeonSettings settings, String note,
-            String look, boolean his) {
+            String look) {
         var card = HeroCard.named("")
                 .depth(howFarDown(depth, lastDepth), settings.hud().depthWord())
                 // The headings belong to the furniture rather than to whoever is
                 // selected: the sockets under them are drawn empty, and an empty
                 // grid with no heading over it is a hole rather than a bag.
                 .headings(settings.hud().skillsWord(), settings.hud().itemsWord());
-        // The buttons are furniture too, and stay for the same reason the sockets
-        // do. Nothing is selected, so nothing is doing anything for them to show;
-        // they may be pressed while his hero stands, whose orders they give -- {@code his}.
-        orders(card, settings, null, his);
         if (note != null && !note.isEmpty()) {
             // Finding a sword is worth saying whether or not he is selected.
             card.note(note);
@@ -149,7 +144,7 @@ final class HeroStatus {
 
     static String of(GameObject hero, HeroProgress progress, int depth, int lastDepth,
             DungeonSettings settings, int frame, String look,
-            boolean holding, uz.dukeengine.rpg.skill.SkillRanks learnt) {
+            uz.dukeengine.rpg.skill.SkillRanks learnt) {
         if (hero == null || hero.getBody() == null) {
             return "";
         }
@@ -161,7 +156,6 @@ final class HeroStatus {
                 .experience(progress.getExperienceIntoLevel(), progress.getExperienceForNextLevel())
                 .depth(howFarDown(depth, lastDepth), settings.hud().depthWord());
         stats(card, hero, progress, settings);
-        orders(card, settings, Doing.of(hero, holding), true);
         card.headings(settings.hud().skillsWord(), settings.hud().itemsWord());
         items(card, progress);
         var book = hero.findModule(SkillBook.class);
@@ -244,28 +238,6 @@ final class HeroStatus {
     }
 
     /**
-     * The four orders on the buttons beside the map: key, drawing, word, state.
-     *
-     * <p>Sent rather than assumed because three of the four are the engine's and
-     * one is this game's, and the client has no way of knowing which orders a game
-     * offers — the same reason the skill row is sent rather than assumed. The keys
-     * match what {@code Main.controls} claims, and the words come out of the file
-     * with every other word on the panel.
-     *
-     * <p><b>Every one of them has a state worth sending</b>, which is the thing
-     * this used to miss. They were four things to press and nothing else, and that
-     * is half a control: each is also a state the creature can be in, and exactly
-     * one of the four is true at any moment -- see {@link Doing}. Nobody plays by
-     * clicking them, so what earns them their space on the bar is what they can
-     * tell him.
-     *
-     * <p>{@code his} is whether the player may press them at all: whether he has a
-     * hero standing, whose orders they give whatever is selected. A creature that
-     * is not his still SHOWS what it is doing -- reading a skeleton's intent off
-     * the bar is worth as much as reading his own -- and with no hero of his the
-     * buttons go dim, because a lit button that does nothing is worse than no button.
-     */
-    /**
      * A passive's card says so where an active one names its key -- "1-daraja · Passiv": it is never pressed (its key
      * is bound to nothing, see Main.aimsFor). The panel reads the last {@code tipAt} it is sent. Its slot is drawn as a
      * framed picture by the engine itself (HeroCard.skills writes "passive", E65).
@@ -280,34 +252,6 @@ final class HeroStatus {
             }
         }
     }
-
-    private static void orders(HeroCard card, DungeonSettings settings, Doing doing, boolean his) {
-        var words = settings.hud().orderWords();
-        var pictures = settings.hud().orderIcons();
-        // Drawn in this order and read in this order — walk, attack, stop, guard —
-        // which is the order the words come in the file and the order Doing counts
-        // its four states in. The LETTERS are not in that order and are not meant
-        // to be: A S D are attack, stop and defend, under a hand that never leaves
-        // them, and walking takes the letter left over because it is the one order
-        // nobody uses the keyboard for.
-        //
-        // The letters are here because they are the game's claim about its own
-        // controls — see Main.controls, which has to match. What each button LOOKS
-        // like is not: that used to be a drawing named here by a word the client
-        // held a mesh for, so changing how an order looked meant editing two
-        // modules. It comes out of the file now, beside the word.
-        char[] keys = {'F', 'A', 'S', 'D'};
-        card.ordersAreHis(his);
-        for (int i = 0; i < keys.length; i++) {
-            String word = i < words.size() ? words.get(i) : "";
-            if (word.isBlank()) {
-                continue; // a game that does not name an order does not offer it
-            }
-            card.order(keys[i], i < pictures.size() ? pictures.get(i) : "", word,
-                    doing != null && doing.button() == i);
-        }
-    }
-
     /**
      * What he is carrying, as one field per kind of thing with how many of it: grouped and counted, three of the
      * same sword one picture reading three.

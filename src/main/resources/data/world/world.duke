@@ -20,29 +20,6 @@ World
   NavigationCellsPerCell = 2
 End
 
-; ---------------------------------------------------------------------------
-; The camera.
-;
-; The keys still pan and the wheel still zooms; this adds the oldest control in
-; the genre on top of them, and the two work at once. Resting the cursor against
-; the edge of the screen pushes the view that way, so moving it costs nothing --
-; the mouse is already where the player is looking.
-;
-; The speed is a share of what the keys move at rather than a figure of its own,
-; and the keys' speed is itself a function of how far out the camera is. So a
-; shove moves the same amount of SCREEN at every zoom, instead of being right
-; at one height and wrong at the others.
-;
-; An EdgeMargin of 0 turns it off, which is what every other game on this client
-; gets unless it asks.
-; ---------------------------------------------------------------------------
-Camera
-  ; How close to the edge, in window pixels. Wide enough to hit without aiming,
-  ; narrow enough not to fire while crossing the screen.
-  EdgeMargin = 14
-  EdgeSpeedPercent = 100
-End
-
 Run
   ; How long the death message stays up before the next dungeon appears.
   RespawnDelayFrames = 60

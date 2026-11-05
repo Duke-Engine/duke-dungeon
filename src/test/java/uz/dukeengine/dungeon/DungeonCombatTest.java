@@ -73,90 +73,6 @@ class DungeonCombatTest {
     }
 
     /**
-     * Clicking a distant skeleton kills it. This is exactly what the 3D client
-     * sends on a right-click — an attack order and nothing else — and the engine's
-     * weapon deliberately will not walk the hero into range, so without the game
-     * supplying that half the hero would stand still and the skeleton would live.
-     */
-    @Test
-    void clickingADistantSkeletonSendsTheHeroToKillIt() {
-        var fight = fight(60f, 150f, 300f, 150f);
-        var skeletonId = fight.skeleton().getId();
-        float startDistance = fight.hero().getPosition().distance(fight.skeleton().getPosition());
-
-        fight.game().postCommand(new CombatOrder.AttackObject(
-                fight.game().getLocalPlayerIndex(), List.of(fight.hero().getId()), skeletonId));
-        fight.game().runHeadless(600);
-
-        assertTrue(fight.hero().getPosition().distance(new Coord3D(60f, 150f, 0f)) > startDistance / 4f,
-                "the hero should have left where he was standing and closed the distance");
-        assertNull(fight.game().getLogic().findObject(skeletonId),
-                "the skeleton he was pointed at should be dead");
-    }
-
-    /**
-     * And the engine's own auto-acquire still works: walked next to a skeleton with
-     * no attack order at all, the hero fights it. The click behaviour is an
-     * addition, not a replacement.
-     */
-    @Test
-    void theHeroAutoAttacksWhatHeWalksInto() {
-        var fight = fight(60f, 150f, 300f, 150f);
-        var skeletonId = fight.skeleton().getId();
-
-        // Only a move order — never an AttackObject.
-        fight.game().postCommand(new CombatOrder.MoveTo(fight.game().getLocalPlayerIndex(),
-                List.of(fight.hero().getId()), fight.skeleton().getPosition()));
-        fight.game().runHeadless(600);
-
-        assertNull(fight.game().getLogic().findObject(skeletonId),
-                "a skeleton the hero walked into should have been engaged unprompted");
-    }
-
-    /**
-     * Sent somewhere, he goes there — even straight past something that takes a
-     * swing at him on the way.
-     *
-     * <p>His weapon picks up whatever comes within reach, and the game's own
-     * closing behaviour used to read that as "arrived" and halt him. So walking a
-     * hero past a skeleton stopped him dead in front of it: the game cancelled the
-     * order the player had just given. Where he was sent outranks what his weapon
-     * noticed, and the weapon fires in passing anyway.
-     */
-    @Test
-    void aMoveOrderOutranksSomethingHePassesOnTheWay() {
-        // The skeleton sits beside the line he is walking, close enough for his
-        // weapon to reach it and for it to reach him.
-        var fight = fight(60f, 150f, 180f, 150f);
-        var destination = new Coord3D(320f, 150f, 0f);
-
-        fight.game().postCommand(new CombatOrder.MoveTo(fight.game().getLocalPlayerIndex(),
-                List.of(fight.hero().getId()), destination));
-        fight.game().runHeadless(500);
-
-        assertTrue(fight.hero().getPosition().distance(destination) < 20f,
-                "he should have walked past it and arrived, but stopped at "
-                        + fight.hero().getPosition());
-    }
-
-    /**
-     * And once he has arrived, he defends himself again. Sent just past the skeleton rather than across the room:
-     * he walks round it without being held up, and one sent far enough outruns it until it gives up the chase.
-     */
-    @Test
-    void havingArrivedHeFightsWhateverFollowedHim() {
-        var fight = fight(60f, 150f, 180f, 150f);
-        var skeletonId = fight.skeleton().getId();
-
-        fight.game().postCommand(new CombatOrder.MoveTo(fight.game().getLocalPlayerIndex(),
-                List.of(fight.hero().getId()), new Coord3D(220f, 150f, 0f)));
-        fight.game().runHeadless(900);
-
-        assertNull(fight.game().getLogic().findObject(skeletonId),
-                "the skeleton that chased him down should have been dealt with");
-    }
-
-    /**
      * The skeletons are no longer furniture: one that notices the hero comes to
      * him. The hero is given no orders at all, so any closing is the skeleton's
      * own doing.
@@ -233,36 +149,6 @@ class DungeonCombatTest {
                 "and he should be heading back west");
     }
 
-    /**
-     * A hero attacking something behind him turns to face it. The engine sets a
-     * heading only while walking, so a fighter who has arrived — or who never
-     * moved, because the fight came to him — would otherwise strike over his
-     * shoulder.
-     */
-    @Test
-    void theHeroTurnsToFaceWhatHeIsAttacking() {
-        // Close enough to swing without walking, and directly behind him: any
-        // turning here is the game's doing, since he never takes a step.
-        // The boss, not a skeleton: a skeleton spawned inside the hero's reach is
-        // killed in the boot frame and never survives to be faced. What is being
-        // asked here is which way he turns, and that must not depend on how hard
-        // the game currently has him hitting.
-        var fight = fight(200f, 150f, 182f, 150f, "Champion");
-        var hero = fight.hero();
-        var skeleton = fight.skeleton();
-        hero.setOrientation(0f); // looking east; the skeleton is west
-
-        assertTrue(offBy(hero, skeleton) > 1f, "he should start out looking the wrong way");
-
-        fight.game().runHeadless(30);
-
-        assertNotNull(fight.game().getLogic().findObject(skeleton.getId()),
-                "the skeleton should still be alive for him to be facing");
-        assertTrue(offBy(hero, skeleton) < 0.2f,
-                "the hero should have turned to face it, but was off by "
-                        + offBy(hero, skeleton) + " radians");
-    }
-
     /** And so does a skeleton: it looks at the hero it is hitting. */
     @Test
     void aSkeletonTurnsToFaceTheHero() {
@@ -285,31 +171,6 @@ class DungeonCombatTest {
         // Shortest way round, so 359° counts as 1° rather than as nearly a full turn.
         return (float) Math.abs(StrictMath.atan2(
                 StrictMath.sin(difference), StrictMath.cos(difference)));
-    }
-
-    /**
-     * A skeleton that walks up and starts hitting the hero gets hit back, with no
-     * order given. This is the case the player is actually in most of the time —
-     * standing still while the dungeon comes to him — and it is the one that broke
-     * when the skeletons learned to advance: they stopped at their own maximum
-     * reach, which was further than the hero's, so he stood there being chipped at
-     * and never once swung back.
-     */
-    @Test
-    void theHeroFightsBackAgainstWhateverAttacksHim() {
-        float gap = SETTINGS.combat().skeletonSenseRadius() * 0.7f;
-        var fight = fight(150f, 150f, 150f + gap, 150f);
-        var skeleton = fight.skeleton();
-        float skeletonHealthBefore = skeleton.getBody().getHealth();
-
-        // The hero is given no orders whatsoever. Everything that happens is the
-        // skeleton advancing and the hero answering on his own.
-        fight.game().runHeadless(400);
-
-        assertTrue(skeleton.getBody().getHealth() < skeletonHealthBefore
-                        || fight.game().getLogic().findObject(skeleton.getId()) == null,
-                "a skeleton attacking the hero should have been fought back, but it is "
-                        + "untouched at " + skeleton.getBody().getHealth() + " health");
     }
 
     /** Skeletons fight back once they arrive — the advance is not a harmless parade. */

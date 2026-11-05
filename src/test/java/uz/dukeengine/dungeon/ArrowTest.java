@@ -230,7 +230,7 @@ class ArrowTest {
      */
     private static GameObject firstArrow(Duel duel) {
         var arrow = creature(duel.game(), "Arrow");
-        if (arrow == null) {
+        for (int frame = 0; arrow == null && frame < 30; frame++) { // his wind-up first: he swings when told, not on sight
             duel.game().runHeadless(1);
             arrow = creature(duel.game(), "Arrow");
         }
@@ -340,61 +340,6 @@ class ArrowTest {
                         + hero.getPosition());
         assertEquals(victim.getBody().getMaxHealth(), victim.getBody().getHealth(), 0.01f,
                 "he shot it on the way past");
-    }
-
-    /** And starts again the moment he stops. */
-    @Test
-    void heShootsAgainOnceHeIsStanding() {
-        var world = Dungeon.world(arena(), SETTINGS);
-        var game = world.game();
-        game.spawn("Rogue", world.hero(), 150f, 150f);
-        game.spawn("Skeleton", world.dungeon(), 300f, 150f);
-        game.runHeadless(1);
-        var hero = creature(game, "Rogue");
-        var victim = creature(game, "Skeleton");
-
-        // Sent to a spot the skeleton is standing within bow-shot of, and then
-        // left there long enough for the bow to come up.
-        game.postCommand(new CombatOrder.MoveTo(game.getLocalPlayerIndex(),
-                List.of(hero.getId()), new Coord3D(250f, 150f, 0f)));
-        game.runHeadless(240);
-
-        assertTrue(victim.getBody().getHealth() < victim.getBody().getMaxHealth(),
-                "standing within reach of it, he should have shot it");
-    }
-
-    /**
-     * Sending him somewhere still outranks an attack order, which is the thing
-     * remembering the target himself could most easily have broken.
-     *
-     * <p>The brain now keeps hold of what he was pointed at, because walking
-     * disarms him and a disarmed weapon has forgotten. Something has to notice
-     * when the player changes his mind, and what notices is where he is headed.
-     */
-    @Test
-    void aMoveOrderStillCancelsAnAttackOrder() {
-        var world = Dungeon.world(arena(), SETTINGS);
-        var game = world.game();
-        game.spawn("Rogue", world.hero(), 150f, 150f);
-        game.spawn("Skeleton", world.dungeon(), 320f, 150f); // beyond his bow: an order
-        game.runHeadless(1);
-        var hero = creature(game, "Rogue");
-        var victim = creature(game, "Skeleton");
-
-        game.postCommand(new CombatOrder.AttackObject(game.getLocalPlayerIndex(),
-                List.of(hero.getId()), victim.getId()));
-        game.runHeadless(20);
-        assertTrue(hero.getPosition().x() > 155f, "he should have set off toward it");
-
-        // Well off his line to the skeleton, and inside the arena: the map this
-        // test builds is 60 by 30 cells, which is 600 by 300 in world units.
-        var away = new Coord3D(150f, 250f, 0f);
-        game.postCommand(new CombatOrder.MoveTo(game.getLocalPlayerIndex(),
-                List.of(hero.getId()), away));
-        game.runHeadless(500);
-
-        assertTrue(hero.getPosition().distance(away) < 25f,
-                "he went back to the skeleton instead, ending at " + hero.getPosition());
     }
 
     /** The hero still fights: none of this leaves him unable to kill anything. */

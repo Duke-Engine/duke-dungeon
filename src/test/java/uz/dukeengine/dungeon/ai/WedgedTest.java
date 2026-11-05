@@ -183,21 +183,6 @@ class WedgedTest {
         return new Queue(game, hero, creature(game, "Skeleton", 0), hero);
     }
 
-    @Test
-    void sentWalkingIntoABodyHeStopsAtItRatherThanTreadingTheFloor() {
-        var queue = sentDownACorridorWithABodyInIt();
-        queue.game().runHeadless(28); // long enough to walk up to it
-
-        var watch = watch(queue, 50);
-
-        assertTrue(queue.hero().getPosition().x() < 60f, "he never reached the body at all");
-        assertFalse(queue.blocker().isEffectivelyDead(),
-                "it died during the window, so there was nothing in his way to measure");
-        assertEquals(0, watch.framesWalking(),
-                "he should have settled against it, but was walking on "
-                        + watch.framesWalking() + " of the next 50 frames");
-    }
-
     /** And the errand is a pause, not a cancellation: the way opens and he goes on. */
     @Test
     void andHeCarriesOnWithTheErrandWhenTheWayOpens() {

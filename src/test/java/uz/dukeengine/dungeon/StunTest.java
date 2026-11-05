@@ -93,7 +93,6 @@ class StunTest {
         game.spawn(FIRE_MAGE, arena.dungeon(), mageX, mageY);
         game.runHeadless(1);
         // A player has an index once the game has started, and not before.
-        arena.orders().hold(arena.hero().getIndex(), true);
         var heroes = game.getLogic().getObjects().stream()
                 .filter(object -> object.getTemplate().name().equals("Rogue")).toList();
         return new Fight(game, heroes);

@@ -148,7 +148,6 @@ final class Bag {
         bag.show(match.game(), () -> bagOf(match), PartyOrders::of,
                 canvas -> {
                     MissionScreen.paint(canvas, match, settings);
-                    targetFrame(canvas, match, settings);
                 });
         // And a click on a person is a talk, a rule beside the bag's own (E20).
         var story = settings.story();
@@ -165,14 +164,6 @@ final class Bag {
         // And a tree of the map's own scenery is felled: a click on the ground under it (E66).
         match.game().groundOrder((selection, place) -> match.run().groundWord(match.game(), place));
         DialogueScreen.show(match);
-    }
-
-    /** The target frame over {@code match}: the run's pick, with what the buffs say is on it. */
-    static void targetFrame(uz.dukeengine.client3d.Canvas canvas, Dungeon.Session match, DungeonSettings settings) {
-        var target = match.run().getTarget();
-        var buffs = shown;
-        TargetFrame.paint(canvas, target, target == null || buffs == null ? List.of()
-                : buffs.buffs().getOrDefault(target.id(), List.of()), settings);
     }
 
     /**

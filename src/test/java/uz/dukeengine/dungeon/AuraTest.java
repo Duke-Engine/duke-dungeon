@@ -183,7 +183,6 @@ public class AuraTest {
         game.spawn("Skeleton", arena.dungeon(), 162f, 150f);
         game.spawn(SUMMONER, arena.dungeon(), 162f, 90f);
         game.runHeadless(1);
-        arena.orders().hold(arena.hero().getIndex(), true);
         var hero = first(game, "Rogue");
         float unstruck = hero.getBody().getHealth();
         aBuffsLife(game);
@@ -202,7 +201,6 @@ public class AuraTest {
             game.spawn(SUMMONER, arena.dungeon(), 200f, 100f);
         }
         game.runHeadless(1);
-        arena.orders().hold(arena.hero().getIndex(), true);
         aBuffsLife(game);
         var hero = first(game, "Rogue");
         float health = hero.getBody().getHealth();
@@ -394,7 +392,6 @@ public class AuraTest {
             game.spawn(REVENANT, arena.dungeon(), x, 100f);
         }
         game.runHeadless(1);
-        arena.orders().hold(arena.hero().getIndex(), true);
         aBuffsLife(game);
         return new Room(game, List.of(first(game, "Rogue"), first(game, striker)));
     }
@@ -468,7 +465,6 @@ public class AuraTest {
         arena.game().spawn("Rogue", arena.hero(), 150f, 150f);
         arena.game().spawn("Rogue", arena.hero(), 150f, 160f);
         arena.game().runHeadless(1);
-        arena.orders().hold(arena.hero().getIndex(), true);
         return arena.game().getLogic().getObjects().stream()
                 .filter(object -> object.getTemplate().name().equals("Rogue")).toList();
     }
@@ -885,7 +881,6 @@ public class AuraTest {
         game.spawn(SUMMONER, arena.dungeon(), 100f, 150f);
         game.spawn("Rogue", arena.hero(), 115f, 150f);
         game.runHeadless(1);
-        arena.orders().hold(arena.hero().getIndex(), true);
         aBuffsLife(game);
         var hero = first(game, "Rogue");
 
@@ -1204,7 +1199,6 @@ public class AuraTest {
         game.spawn(SUMMONER, arena.dungeon(), 100f, 150f);
         game.spawn("Rogue", arena.hero(), 115f, 150f);
         game.runHeadless(1);
-        arena.orders().hold(arena.hero().getIndex(), true);
         aBuffsLife(game);
         var hero = first(game, "Rogue");
         assertEquals(1.5f, might(first(game, SUMMONER)), 0.0001f, "the premise: the summoner bears its might");

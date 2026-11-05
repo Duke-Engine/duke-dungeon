@@ -88,7 +88,6 @@ class MonsterHealingTest {
         }
         game.runHeadless(1);
         // A player has an index once the game has started, and not before.
-        arena.orders().hold(arena.hero().getIndex(), true);
         var patients = new ArrayList<GameObject>();
         for (var object : game.getLogic().getObjects()) {
             if (object.getBody() != null && object.getPlayerIndex() == arena.dungeon().getIndex()
