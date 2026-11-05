@@ -1239,7 +1239,7 @@ public final class Main {
      * <p>Package-private so a test can ask what a thing is drawn as.
      */
     /** How much of his own colour the realistic hero keeps in the shade (the client's default is 0.55). */
-    private static final float HERO_SHADE = 1.0f;
+    private static final float HERO_SHADE = 0.8f;
 
     static Visuals looks(DungeonSettings settings) {
         var visuals = Visuals.create();
