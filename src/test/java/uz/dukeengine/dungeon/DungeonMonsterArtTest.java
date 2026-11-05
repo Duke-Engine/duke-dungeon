@@ -491,7 +491,7 @@ class DungeonMonsterArtTest {
         var composer = control(model, AnimComposer.class);
         assertNotNull(composer, "Lange's file carries no clips");
         for (var clip : List.of("Idle", "Walk", "Run", "Sprint", "Hurt", "Death", "Dodge", "Attack_L1", "Attack_L2",
-                "Attack_L3", "Attack_H1", "Attack_H2", "Attack_Finisher")) {
+                "Attack_L3", "Attack_H1", "Attack_H2", "Attack_Finisher", "HeroLanding", "LevelUp")) {
             assertNotNull(composer.getAnimClip(clip), "Lange's file has no " + clip);
         }
         var skin = control(model, com.jme3.anim.SkinningControl.class);

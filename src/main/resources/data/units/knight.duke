@@ -211,7 +211,7 @@ Hero
   Portrait = PortraitArt
     Calm = Idle
     Dead = Death
-    LevelUp = Attack_L3
+    LevelUp = LevelUp
 
     ; ★ NOT the KayKit numbers: Lange is drawn as a man, his head an eighth of him
     ; rather than nearly half, his eyes at about 0.92 of his height. So the camera
