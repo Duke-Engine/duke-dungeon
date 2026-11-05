@@ -72,24 +72,19 @@ Monster
   Scale = 1
   SkillDistance = [20, 70]
   KeepDistance = [35, 55]
-  ; The staff-carrier in a robe repainted purple. White tint, so the purple is the
-  ; robe's own.
-  Model = models/characters/monsters/skeleton_mage.glb
-  Animations = Humanoid
-  ; Moves at a jog, not a walk: Running_A at about its own pace rather than Walking_A several times over.
-  Walk = Running_A
-  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
-  WalkStride = 16.18
-  UpperBody = spine
-  Texture = models/characters/monsters/skeleton_texture_purple.png
+  ; Violet rags over bare ribs and a skull on her staff.
+  ; Realistic since 2026-11-05: the workspace's models/skeleton_summoner on the game rig, its clips in its file, 1 m = 6.667 units.
+  Model = models/characters/realistic/skeleton_summoner.glb
+  ModelScale = 7.5
+  Facing = 90
+  Idle = Idle
+  Walk = Run
+  ; How far one play of Run carries it, ESTIMATED off the clip's foot travel (MonsterClipFitTest has not measured it): its feet stay put.
+  WalkStride = 17.52
+  Attack = Cast
+  Death = Death
+  UpperBody = spine_01
   Effect = EmberEyes
-  ModelScale = 6.0
-  Held = Held
-    Model = models/items/gear/skeleton_staff.gltf
-    Bone = handslot.r
-  End
-  Attack = Ranged_Magic_Shoot
-  Idle = Ranged_Magic_Spellcasting_Long
   ; ★ LICENSED LOOK. Drawn as the "Dark Fantasy Female Ritualist" (CGTrader, Royalty Free -- see CREDITS.md) where
   ; models/licensed/ritualist.glb is shipped: it lives in the git-ignored licensed-assets/ folder,
   ; never in this repository, so a clone without it (and CI) draws the stand-in above. Her clips
@@ -138,9 +133,9 @@ Monster
       WindUpFrames = 20
       Projectile = SummoningRift
       ; Seen calling them up: the summoning gesture, looped as she stands for it (MonsterBrain.gesture).
-      ; KayKit's name, so the stand-in's library plays it too; the Ritualist's own file carries hers.
-      CastAnim = Ranged_Magic_Summon
-      CastSeconds = 1.7
+      ; The stand-in's Cast (1.63 s); the Ritualist's own file carries hers under the same name.
+      CastAnim = Cast
+      CastSeconds = 1.63
       ; Twelve seconds between castings.
       CooldownFrames = 360
       ManaCost = 40

@@ -23,8 +23,8 @@ JSON_CHUNK = 0x4E4F534A
 BIN_CHUNK = 0x004E4942
 
 HUMANS = ["soldier", "commander", "militia", "enemy_commander", "dark_lord", "blacksmith", "old_woman", "merchant",
-          "archer", "healer"]
-DEAD = ["skeleton", "runner", "brute", "skeleton_mage", "revenant", "grave_raiser"]
+          "archer", "healer", "villager", "farmer", "traveller", "pedlar", "tower_keeper", "stablemaster"]
+DEAD = ["skeleton", "runner", "brute", "skeleton_mage", "revenant", "grave_raiser", "skeleton_healer", "skeleton_summoner", "stalker", "necromancer", "reaper", "champion", "warden"]
 PIECES = ["grave", "pillar", "pillar_decorated", "barrel", "well", "statue"]
 
 CHARACTERS = Path("src/main/resources/models/characters/realistic")

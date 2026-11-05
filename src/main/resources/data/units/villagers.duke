@@ -5,7 +5,7 @@
 ; the commander they stand on the engine's neutral side, have no Body and are
 ; never drawn into a floor (Weight 0). Who says what is data/story/villages.duke.
 ;
-; Their looks are KayKit's adventurers (CC0), tinted as working people.
+; Their looks are the realistic working folk of the workspace's models (villager, farmer, traveller, pedlar, tower_keeper), on the game rig.
 ; ---------------------------------------------------------------------------
 
 ; A villager, who strolls about her village.
@@ -28,14 +28,17 @@ Monster
   Weight = 0
   Colour = 0xA88C68
   Scale = 1.0
-  Model = models/characters/heroes/rogue.glb
-  Tint = 0xC8B090
-  ModelScale = 5.0
+  ; Realistic since 2026-11-05: the workspace's models/villager on the game rig, its clips in its file, 1 m = 6.667 units.
+  Model = models/characters/realistic/villager.glb
+  ModelScale = 6.667
   Facing = 90
-  Animations = Humanoid
-  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
-  WalkStride = 3.72
-  UpperBody = spine
+  Idle = Idle
+  Walk = Walk
+  ; How far one play of Walk carries it, ESTIMATED off the clip's foot travel (MonsterClipFitTest has not measured it): its feet stay put.
+  WalkStride = 7.71
+  Attack = Attack
+  Death = Death
+  UpperBody = spine_01
 End
 
 ; A farmer, who keeps near his field.
@@ -58,14 +61,17 @@ Monster
   Weight = 0
   Colour = 0x8A7A50
   Scale = 1.0
-  Model = models/characters/heroes/ranger.glb
-  Tint = 0xB0A070
-  ModelScale = 5.5
+  ; Realistic since 2026-11-05: the workspace's models/farmer on the game rig, its clips in its file, 1 m = 6.667 units.
+  Model = models/characters/realistic/farmer.glb
+  ModelScale = 6.667
   Facing = 90
-  Animations = Humanoid
-  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
-  WalkStride = 4.1
-  UpperBody = spine
+  Idle = Idle
+  Walk = Walk
+  ; How far one play of Walk carries it, ESTIMATED off the clip's foot travel (MonsterClipFitTest has not measured it): its feet stay put.
+  WalkStride = 7.90
+  Attack = Attack
+  Death = Death
+  UpperBody = spine_01
 End
 
 ; A traveller on the roads between the villages.
@@ -88,14 +94,17 @@ Monster
   Weight = 0
   Colour = 0x707888
   Scale = 1.0
-  Model = models/characters/heroes/ranger.glb
-  Tint = 0x9098A8
-  ModelScale = 5.5
+  ; Realistic since 2026-11-05: the workspace's models/traveller on the game rig, its clips in its file, 1 m = 6.667 units.
+  Model = models/characters/realistic/traveller.glb
+  ModelScale = 6.667
   Facing = 90
-  Animations = Humanoid
-  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
-  WalkStride = 4.1
-  UpperBody = spine
+  Idle = Idle
+  Walk = Walk
+  ; How far one play of Walk carries it, ESTIMATED off the clip's foot travel (MonsterClipFitTest has not measured it): its feet stay put.
+  WalkStride = 8.67
+  Attack = Attack
+  Death = Death
+  UpperBody = spine_01
 End
 
 ; A pedlar who walks the roads with his wares: his stock is data/story/villages.duke.
@@ -118,14 +127,17 @@ Monster
   Weight = 0
   Colour = 0xB08850
   Scale = 1.0
-  Model = models/characters/heroes/mage.glb
-  Tint = 0xB89058
-  ModelScale = 4.5
+  ; Realistic since 2026-11-05: the workspace's models/pedlar on the game rig, its clips in its file, 1 m = 6.667 units.
+  Model = models/characters/realistic/pedlar.glb
+  ModelScale = 6.667
   Facing = 90
-  Animations = Humanoid
-  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
-  WalkStride = 3.35
-  UpperBody = spine
+  Idle = Idle
+  Walk = Walk
+  ; How far one play of Walk carries it, ESTIMATED off the clip's foot travel (MonsterClipFitTest has not measured it): its feet stay put.
+  WalkStride = 8.39
+  Attack = Attack
+  Death = Death
+  UpperBody = spine_01
 End
 
 ; A watchtower's keeper: talked to, he opens the map to travel from (data/world/travel.duke).
@@ -148,12 +160,15 @@ Monster
   Weight = 0
   Colour = 0x806040
   Scale = 1.0
-  Model = models/characters/heroes/knight.glb
-  Tint = 0xA08870
-  ModelScale = 4.72
+  ; Realistic since 2026-11-05: the workspace's models/tower_keeper on the game rig, its clips in its file, 1 m = 6.667 units.
+  Model = models/characters/realistic/tower_keeper.glb
+  ModelScale = 6.667
   Facing = 90
-  Animations = Humanoid
-  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
-  WalkStride = 3.52
-  UpperBody = spine
+  Idle = Idle
+  Walk = Walk
+  ; How far one play of Walk carries it, ESTIMATED off the clip's foot travel (MonsterClipFitTest has not measured it): its feet stay put.
+  WalkStride = 9.59
+  Attack = Attack
+  Death = Death
+  UpperBody = spine_01
 End

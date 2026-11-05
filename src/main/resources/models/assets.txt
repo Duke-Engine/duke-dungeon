@@ -178,20 +178,33 @@ models/characters/realistic/archer.glb | Realistic Act I people (workspace model
 models/characters/realistic/bat.glb | Act I creatures (workspace models/act1_props) | models/licenses/realistic.txt | -
 models/characters/realistic/blacksmith.glb | Realistic Act I people (workspace models/blacksmith, MakeHuman + Quaternius motion) | models/licenses/realistic.txt | -
 models/characters/realistic/brute.glb | Realistic Act I dead (workspace models/brute, MakeHuman + Quaternius motion) | models/licenses/realistic.txt | -
+models/characters/realistic/champion.glb | Realistic Act I dead (workspace models/champion, MakeHuman + Quaternius motion) | models/licenses/realistic.txt | -
 models/characters/realistic/commander.glb | Realistic Act I people (workspace models/commander, MakeHuman + Quaternius motion) | models/licenses/realistic.txt | -
 models/characters/realistic/dark_lord.glb | Realistic Act I people (workspace models/dark_lord, MakeHuman + Quaternius motion) | models/licenses/realistic.txt | -
 models/characters/realistic/enemy_commander.glb | Realistic Act I people (workspace models/enemy_commander, MakeHuman + Quaternius motion) | models/licenses/realistic.txt | -
+models/characters/realistic/farmer.glb | Realistic Act I people (workspace models/farmer, MakeHuman + Quaternius motion) | models/licenses/realistic.txt | -
 models/characters/realistic/grave_raiser.glb | Realistic Act I dead (workspace models/grave_raiser, MakeHuman + Quaternius motion) | models/licenses/realistic.txt | -
 models/characters/realistic/healer.glb | Realistic Act I people (workspace models/healer, MakeHuman + Quaternius motion) | models/licenses/realistic.txt | -
 models/characters/realistic/merchant.glb | Realistic Act I people (workspace models/merchant, MakeHuman + Quaternius motion) | models/licenses/realistic.txt | -
 models/characters/realistic/militia.glb | Realistic Act I people (workspace models/militia, MakeHuman + Quaternius motion) | models/licenses/realistic.txt | -
+models/characters/realistic/necromancer.glb | Realistic Act I dead (workspace models/necromancer, MakeHuman + Quaternius motion) | models/licenses/realistic.txt | -
 models/characters/realistic/old_woman.glb | Realistic Act I people (workspace models/old_woman, MakeHuman + Quaternius motion) | models/licenses/realistic.txt | -
+models/characters/realistic/pedlar.glb | Realistic Act I people (workspace models/pedlar, MakeHuman + Quaternius motion) | models/licenses/realistic.txt | -
 models/characters/realistic/rat.glb | Act I creatures (workspace models/act1_props) | models/licenses/realistic.txt | -
+models/characters/realistic/reaper.glb | Realistic Act I dead (workspace models/reaper, MakeHuman + Quaternius motion) | models/licenses/realistic.txt | -
 models/characters/realistic/revenant.glb | Realistic Act I dead (workspace models/revenant, MakeHuman + Quaternius motion) | models/licenses/realistic.txt | -
 models/characters/realistic/runner.glb | Realistic Act I dead (workspace models/runner, MakeHuman + Quaternius motion) | models/licenses/realistic.txt | -
 models/characters/realistic/skeleton.glb | Realistic Act I dead (workspace models/skeleton, MakeHuman + Quaternius motion) | models/licenses/realistic.txt | -
+models/characters/realistic/skeleton_healer.glb | Realistic Act I dead (workspace models/skeleton_healer, MakeHuman + Quaternius motion) | models/licenses/realistic.txt | -
 models/characters/realistic/skeleton_mage.glb | Realistic Act I dead (workspace models/skeleton_mage, MakeHuman + Quaternius motion) | models/licenses/realistic.txt | -
+models/characters/realistic/skeleton_summoner.glb | Realistic Act I dead (workspace models/skeleton_summoner, MakeHuman + Quaternius motion) | models/licenses/realistic.txt | -
 models/characters/realistic/soldier.glb | Realistic Act I people (workspace models/soldier, MakeHuman + Quaternius motion) | models/licenses/realistic.txt | -
+models/characters/realistic/stablemaster.glb | Realistic Act I people (workspace models/stablemaster, MakeHuman + Quaternius motion) | models/licenses/realistic.txt | -
+models/characters/realistic/stalker.glb | Realistic Act I dead (workspace models/stalker, MakeHuman + Quaternius motion) | models/licenses/realistic.txt | -
+models/characters/realistic/tower_keeper.glb | Realistic Act I people (workspace models/tower_keeper, MakeHuman + Quaternius motion) | models/licenses/realistic.txt | -
+models/characters/realistic/traveller.glb | Realistic Act I people (workspace models/traveller, MakeHuman + Quaternius motion) | models/licenses/realistic.txt | -
+models/characters/realistic/villager.glb | Realistic Act I people (workspace models/villager, MakeHuman + Quaternius motion) | models/licenses/realistic.txt | -
+models/characters/realistic/warden.glb | Realistic Act I dead (workspace models/warden, MakeHuman + Quaternius motion) | models/licenses/realistic.txt | -
 models/effects/knight_wave.glb | Made for this game (art/effects/knight_wave.py, CC0) | - | models/effects/knight_wave.glb
 models/items/food/berry_bush.glb | Food and fire (Quaternius, Kenney; poly.pizza) | models/licenses/food_and_fire.txt | models/food/berry_bush.glb
 models/items/food/boar.glb | Food and fire (Quaternius, Kenney; poly.pizza) | models/licenses/food_and_fire.txt | models/food/boar.glb

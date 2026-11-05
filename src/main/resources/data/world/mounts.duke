@@ -420,12 +420,17 @@ Monster
   Weight = 0
   Colour = 0x806040
   Scale = 1.0
-  Model = models/characters/heroes/ranger.glb
-  Tint = 0x9A7A58
-  ModelScale = 5.5
+  ; Realistic since 2026-11-05: the workspace's models/stablemaster on the game rig, its clips in its file, 1 m = 6.667 units.
+  Model = models/characters/realistic/stablemaster.glb
+  ModelScale = 6.667
   Facing = 90
-  Animations = Humanoid
-  WalkStride = 4.1
+  Idle = Idle
+  Walk = Walk
+  ; How far one play of Walk carries it, ESTIMATED off the clip's foot travel (MonsterClipFitTest has not measured it): its feet stay put.
+  WalkStride = 8.96
+  Attack = Attack
+  Death = Death
+  UpperBody = spine_01
 End
 
 Speaker

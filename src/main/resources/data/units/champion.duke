@@ -59,20 +59,19 @@ Monster
   Scale = 2.2
   ; Twice anything else, and darkened until it reads as its own creature.
   ; GeometryHeight is 24.
-  Model = models/characters/monsters/skeleton_warrior.glb
-  Animations = Humanoid
-  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
-  WalkStride = 8.27
-  UpperBody = spine
+  ; Realistic since 2026-11-05: the workspace's models/champion on the game rig, its clips in its file, 1 m = 6.667 units.
+  Model = models/characters/realistic/champion.glb
+  ModelScale = 9.7
+  Facing = 90
+  Idle = Idle
+  Walk = Walk
+  ; How far one play of Walk carries it, ESTIMATED off the clip's foot travel (MonsterClipFitTest has not measured it): its feet stay put.
+  WalkStride = 17.43
+  Attack = Attack
+  Death = Death
+  UpperBody = spine_01
   ; What is looking at you out of the dark.
   Effect = EmberEyes
-  ModelScale = 11.1
-  Held = Held
-    Model = models/items/gear/axe.gltf
-    Bone = handslot.r
-    Scale = 1.4
-  End
-  Tint = 0x6E4A55
 
   Skills = [
     Skill

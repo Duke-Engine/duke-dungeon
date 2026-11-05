@@ -90,39 +90,19 @@ Monster
   Colour = 0x4FC3A1
   Scale = 0.9
   ; The hooded one, which is what a thing that follows you should look like.
-  ; It boxes 3.05 rather than 2.17 -- the hood -- so its scale is the odd one.
-  Model = models/characters/monsters/skeleton_rogue.glb
-  Animations = Humanoid
-  ; Moves at a jog, not a walk: Running_A at about its own pace rather than Walking_A several times over.
-  Walk = Running_A
-  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
-  WalkStride = 10.52
-  UpperBody = spine
+  ; Drawn as high as the KayKit hooded one was (3.05 x 3.9 = 11.9 units); the model is 1.74 m, so ModelScale is 6.85.
+  ; Realistic since 2026-11-05: the workspace's models/stalker on the game rig, its clips in its file, 1 m = 6.667 units.
+  Model = models/characters/realistic/stalker.glb
+  ModelScale = 6.85
+  Facing = 90
+  Idle = Idle
+  Walk = Run
+  ; How far one play of Run carries it, ESTIMATED off the clip's foot travel (MonsterClipFitTest has not measured it): its feet stay put.
+  WalkStride = 16.0
+  Attack = Attack
+  Death = Death
+  UpperBody = spine_01
   ; What is looking at you out of the dark.
   Effect = EmberEyes
-  ModelScale = 3.9
-  Held = Held
-    Model = models/items/gear/crossbow.gltf
-    Bone = handslot.r
-    ; A quarter turn, because the crossbow is the second weapon in these packs that
-    ; is not laid out like the rest of them. The blades, axes and staves all run
-    ; along their own +Y and the bone is authored for that; a crossbow runs along
-    ; +Z -- as the hero's bow does -- so hung as it came it lay ACROSS the body,
-    ; flat and pointing sideways at the floor, which is what a skeleton holding a
-    ; crossbow like a tray looks like.
-    ;
-    ; Ninety degrees about the upright puts its length on the hand's own forward,
-    ; which in the aiming pose is where the creature is looking.
-    Yaw = 90
-  End
-  ; Two hands on a crossbow, so it is the two-handed shot rather than the chop
-  ; every other thing down here throws.
-  Attack = Ranged_2H_Shoot
-  ; And it STANDS as though it were holding one. Without this the shot played
-  ; correctly and nobody could see it: a skeleton at rest with its arms down,
-  ; a crossbow hanging at its side, and a one-second clip between two frames of
-  ; that -- which reads as a bolt appearing out of its chest rather than as a
-  ; creature shooting. Idle is what a thing looks like for the other nine tenths
-  ; of the time, and for this one it should be aiming.
-  Idle = Ranged_2H_Aiming
+  ; A bow, drawn and loosed like the archer's: Attack draws to the jaw at 0.9 s and looses at 1.2 s.
 End

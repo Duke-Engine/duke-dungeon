@@ -97,21 +97,20 @@ Monster
   ; this dot is the only thing telling the player where the floor ends.
   Colour = 0xFFFFFF
   Scale = 1.8
-  ; The plain skeleton, grown until it is nothing like one. GeometryHeight is 18.
-  Model = models/characters/monsters/skeleton_minion.glb
-  Animations = Humanoid
-  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
-  WalkStride = 6.18
-  UpperBody = spine
+  ; A big dead guard in rust-red plate, drawn as high as the KayKit one was (2.166 x 8.3 = 18 units; the model is 2.40 m, ModelScale 7.5). GeometryHeight is 18.
+  ; Realistic since 2026-11-05: the workspace's models/warden on the game rig, its clips in its file, 1 m = 6.667 units.
+  Model = models/characters/realistic/warden.glb
+  ModelScale = 7.5
+  Facing = 90
+  Idle = Idle
+  Walk = Walk
+  ; How far one play of Walk carries it, ESTIMATED off the clip's foot travel (MonsterClipFitTest has not measured it): its feet stay put.
+  WalkStride = 13.47
+  Attack = Attack
+  Death = Death
+  UpperBody = spine_01
   ; What is looking at you out of the dark.
   Effect = EmberEyes
-  ModelScale = 8.3
-  Held = Held
-    Model = models/items/gear/axe.gltf
-    Bone = handslot.r
-    Scale = 1.2
-  End
-  Tint = 0xC9B8A0
 
   Skills = [
     Skill

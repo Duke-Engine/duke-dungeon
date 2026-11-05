@@ -73,24 +73,19 @@ Monster
   Colour = 0x8FDC6A
   Scale = 1
   KeepDistance = [35, 55]
-  ; The staff-carrier in a robe repainted green: its colour says what it does before
-  ; its light does. White tint, so the green is the robe's own.
-  Model = models/characters/monsters/skeleton_mage.glb
-  Animations = Humanoid
-  ; Moves at a jog, not a walk: Running_A at about its own pace rather than Walking_A several times over.
-  Walk = Running_A
-  ; How far one play of its walk carries it, measured off the clip (MonsterClipFitTest): its feet stay put.
-  WalkStride = 16.18
-  UpperBody = spine
-  Texture = models/characters/monsters/skeleton_texture_green.png
+  ; A robe gone pale green-grey: its colour says what it does before its light does.
+  ; Realistic since 2026-11-05: the workspace's models/skeleton_healer on the game rig, its clips in its file, 1 m = 6.667 units.
+  Model = models/characters/realistic/skeleton_healer.glb
+  ModelScale = 7.5
+  Facing = 90
+  Idle = Idle
+  Walk = Run
+  ; How far one play of Run carries it, ESTIMATED off the clip's foot travel (MonsterClipFitTest has not measured it): its feet stay put.
+  WalkStride = 17.52
+  Attack = Cast
+  Death = Death
+  UpperBody = spine_01
   Effect = EmberEyes
-  ModelScale = 6.0
-  Held = Held
-    Model = models/items/gear/skeleton_staff.gltf
-    Bone = handslot.r
-  End
-  Attack = Ranged_Magic_Shoot
-  Idle = Ranged_Magic_Spellcasting_Long
 
   ; What it mends out of, in the hero's words and units, as the Skeleton Mage's:
   ; enough to mend at its cooldown through a fight of a minute or more.
