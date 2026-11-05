@@ -54,7 +54,7 @@ final class HeroStatus {
                 // The headings belong to the furniture rather than to whoever is
                 // selected: the sockets under them are drawn empty, and an empty
                 // grid with no heading over it is a hole rather than a bag.
-                .headings(settings.hud().skillsWord(), settings.hud().itemsWord());
+                .headings("", settings.hud().itemsWord());
         if (note != null && !note.isEmpty()) {
             // Finding a sword is worth saying whether or not he is selected.
             card.note(note);
@@ -143,8 +143,7 @@ final class HeroStatus {
     }
 
     static String of(GameObject hero, HeroProgress progress, int depth, int lastDepth,
-            DungeonSettings settings, int frame, String look,
-            uz.dukeengine.rpg.skill.SkillRanks learnt) {
+            DungeonSettings settings, int frame, String look) {
         if (hero == null || hero.getBody() == null) {
             return "";
         }
@@ -156,7 +155,7 @@ final class HeroStatus {
                 .experience(progress.getExperienceIntoLevel(), progress.getExperienceForNextLevel())
                 .depth(howFarDown(depth, lastDepth), settings.hud().depthWord());
         stats(card, hero, progress, settings);
-        card.headings(settings.hud().skillsWord(), settings.hud().itemsWord());
+        card.headings("", settings.hud().itemsWord());
         items(card, progress);
         var book = hero.findModule(SkillBook.class);
         if (book != null && book.getMaxMana() > 0) {
@@ -173,17 +172,6 @@ final class HeroStatus {
             }
         }
         if (book != null) {
-            var hud = settings.hud();
-            card.skills(book, learnt, level, new HeroCard.Words(hud.rankSuffix(), hud.masterWord(),
-                    hud.lockedWord(), new HeroCard.TipWords(hud.damageWord(), hud.cooldownWord(),
-                            hud.radiusWord(), hud.rangeWord(), hud.boostWord(), hud.raiseWord(),
-                            hud.raiseKeyWord(), hud.maxedWord(), hud.noPointsWord(), hud.rankSuffix(),
-                            hud.secondsWord(), hud.manaWord())));
-            passives(card, book, learnt, hud);
-            // How many levels he has not spent yet, and the word for them. Beside
-            // the heading rather than on a slot, because it belongs to none of
-            // them: it is what the four are competing for.
-            card.points(learnt.unspent(level), hud.pointsWord());
             // Where his last cast wants drawing, and as what -- only the hero's: a skeleton mage's fire is drawn by
             // the fire, which is a thing in the world and needs nobody to say so.
             card.casts(book, hero);
@@ -201,58 +189,9 @@ final class HeroStatus {
         if (look != null && !look.isBlank()) {
             card.field("look", look);
         }
-        return withoutHisStagger(card.toString(), book);
+        return card.toString();
     }
 
-    /** The fields HeroCard.skills writes for a skill, each {@code name=<key>,...}. */
-    private static final java.util.Set<String> SLOT_FIELDS =
-            java.util.Set.of("cost", "skill", "srank", "tipName", "tipAt", "tipText", "tipFoot", "tipRow");
-
-    /**
-     * The line without his STAGGER's slot: no slot of the four, never bought and always his, it would be a fifth
-     * framed picture on a bar of four that says nothing he can act on. HeroCard writes every skill of the book, so
-     * its fields are taken back out here.
-     */
-    static String withoutHisStagger(String line, SkillBook book) {
-        if (book == null) {
-            return line;
-        }
-        var keys = book.getSkills().stream()
-                .filter(skill -> skill.effect() == uz.dukeengine.rpg.skill.SkillEffect.STAGGER
-                        || skill.effect() == uz.dukeengine.rpg.skill.SkillEffect.MODULE // nor his dodge: Space
-                        || skill.effect() == uz.dukeengine.rpg.skill.SkillEffect.MOUNT // nor his horse: T
-                        || skill.effect() == uz.dukeengine.rpg.skill.SkillEffect.PUSH) // nor the story's landing
-                .map(skill -> skill.key() + ",").toList();
-        if (keys.isEmpty()) {
-            return line;
-        }
-        var kept = new java.util.ArrayList<String>();
-        for (var field : line.split("[|]", -1)) {
-            int equals = field.indexOf('=');
-            boolean his = equals > 0 && SLOT_FIELDS.contains(field.substring(0, equals))
-                    && keys.stream().anyMatch(key -> field.startsWith(key, equals + 1));
-            if (!his) {
-                kept.add(field);
-            }
-        }
-        return String.join("|", kept);
-    }
-
-    /**
-     * A passive's card says so where an active one names its key -- "1-daraja · Passiv": it is never pressed (its key
-     * is bound to nothing, see Main.aimsFor). The panel reads the last {@code tipAt} it is sent. Its slot is drawn as a
-     * framed picture by the engine itself (HeroCard.skills writes "passive", E65).
-     */
-    static void passives(HeroCard card, SkillBook book, uz.dukeengine.rpg.skill.SkillRanks learnt,
-            uz.dukeengine.dungeon.world.Hud hud) {
-        for (var skill : book.getSkills()) {
-            if (skill.effect().isPassive()) {
-                int rank = learnt.rankOf(skill.key());
-                card.field("tipAt", skill.key() + ","
-                        + (rank > 0 ? rank + hud.rankSuffix() + " · " : "") + hud.passiveWord());
-            }
-        }
-    }
     /**
      * What he is carrying, as one field per kind of thing with how many of it: grouped and counted, three of the
      * same sword one picture reading three.

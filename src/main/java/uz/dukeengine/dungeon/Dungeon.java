@@ -455,14 +455,6 @@ public final class Dungeon {
                         }
                     }
                 }
-                // And spending one of those levels, which is a click on the little
-                // button beside a slot.
-                case uz.dukeengine.rpg.skill.UpgradeSkill raise -> {
-                    var learnt = run.learntOf(raise.playerIndex());
-                    if (learnt != null) {
-                        Skills.raise(learnt, raise, run.progressOf(raise.playerIndex()).getLevel());
-                    }
-                }
                 // Sent for something on the floor (E on it), or to put something of his down.
                 case uz.dukeengine.rpg.item.PickUp pick -> {
                     var progress = run.progressOf(pick.playerIndex());

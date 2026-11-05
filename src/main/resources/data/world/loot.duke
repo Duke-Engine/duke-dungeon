@@ -79,7 +79,6 @@ ItemRules
   CritChanceWord = Kritik zarba
   CritDamageWord = Kritik zarba kuchi
   MoveSpeedWord = Yurish tezligi
-  SkillRankWord = "%s mahorati"
   ; The longest line a card says, in letters: a unique's story is broken to it.
   Wrap = 40
 End
@@ -492,8 +491,7 @@ End
 ; Affixes. Low and High are the least and the most it rolls at item level 1 and
 ; at 15, drawn straight between. Prefix names a magic thing: "O'tkir qisqa qilich".
 ; Each is the engine's Affix (E43) and counts while the thing is worn. ATTRIBUTE
-; is the thing's own attribute, or one drawn among the three; SKILL_RANK raises the
-; skill on one of its Keys; Also is what it brings with it, fixed.
+; is the thing's own attribute, or one drawn among the three; Also is what it brings with it, fixed.
 ; ---------------------------------------------------------------------------
 
 Affix
@@ -620,22 +618,10 @@ Affix
   Weight = 25
 End
 
-; A rank on one of his three skills while he wears it.
-Affix
-  Name = mohir
-  Stat = SKILL_RANK
-  Prefix = Mohir
-  Slots = [Qurol, Tumor, "Dubulg'a"]
-  Keys = [Q, W, E]
-  Low = [1, 1]
-  High = [1, 2]
-  Weight = 8
-End
-
 ; ---------------------------------------------------------------------------
 ; Uniques: epic things, written by hand, four to six affixes each. Gives are its
-; affixes, a Stat and how much (ATTRIBUTE its own attribute, SKILL_RANK:Q a rank on
-; that key's skill); its base's figure is the base's best. Skills are passives it
+; affixes, a Stat and how much (ATTRIBUTE its own attribute); its base's figure is the base's best. Skills are
+; passives it
 ; lends: an aura reaches whoever stands with him too.
 ; ---------------------------------------------------------------------------
 
@@ -662,7 +648,7 @@ Unique
   DisplayName = "Bo'ri boshi"
   Base = shoxli_dubulga
   Level = 8
-  Gives = ["HEALTH 90", "MANA_REGEN 3", "LIFESTEAL 4", "SKILL_RANK:Q 1"]
+  Gives = ["HEALTH 90", "MANA_REGEN 3", "LIFESTEAL 4", "HEALTH_REGEN 4"]
   Lore = "Oxirgi oq bo'rining bosh suyagidan; to'lin oyda uvillaydi."
 End
 
@@ -681,7 +667,7 @@ Unique
   DisplayName = Kampir marjoni
   Base = zumrad_tumor
   Level = 8
-  Gives = ["MANA 40", "MANA_REGEN 4", "SKILL_RANK:E 1", "CRIT_CHANCE 5", "CRIT_DAMAGE 30"]
+  Gives = ["MANA 40", "MANA_REGEN 4", "CRIT_CHANCE 5", "CRIT_DAMAGE 30"]
   Lore = "Yalmog'iz kampir uni qochgan qizning bo'ynidan yulib olgan."
   Skills = [
     Skill

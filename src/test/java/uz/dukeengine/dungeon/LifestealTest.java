@@ -303,21 +303,4 @@ class LifestealTest {
         assertTrue(refused.getMessage().contains("never cast"), refused.getMessage());
     }
 
-    /**
-     * Passives are monsters' for now: a hero's slots, aims, rings and tips have no place for a skill that is not
-     * cast, so one written on a hero -- the Rogue's R made a LIFESTEAL, say -- is refused. It is the message that is
-     * checked: the Rogue's R also has a ManaCost and a Look, which a passive may not, so without this rule it would be
-     * refused all the same, by the next one.
-     */
-    @Test
-    void aHeroMayNotHaveOne() {
-        var rogue = ShippedBlock.of("Rogue");
-        var drinker = rogue.text().replace("      Effect = EMPOWER\n", "      Effect = LIFESTEAL\n");
-        assertNotEquals(rogue.text(), drinker, "the premise: the Rogue's R was made a LIFESTEAL");
-
-        var refused = assertThrows(IllegalArgumentException.class,
-                () -> DungeonSettings.parse(Content.data().replace(rogue.text(), drinker)));
-        assertTrue(refused.getMessage().contains("Rogue") && refused.getMessage().contains("only a monster"),
-                refused.getMessage());
-    }
 }

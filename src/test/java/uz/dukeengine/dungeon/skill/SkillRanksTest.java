@@ -284,57 +284,6 @@ class SkillRanksTest {
 
     // ---- against the file the game actually ships ----
 
-    /**
-     * Every shipped hero's four add up to the hero's own ceiling.
-     *
-     * <p>Asked of the file rather than of the fixture above, because the file is
-     * what is played. A hero whose skills sum to fourteen has a level that can
-     * buy nothing; one whose skills sum to sixteen can never finish a build.
-     */
-    @Test
-    void everyShippedHeroSpendsExactlyHisLevels() {
-        var settings = DungeonSettings.load();
-        int ceiling = settings.levelling().maxLevel();
-
-        for (var hero : settings.heroes()) {
-            int capacity = settings.skillsFor(hero.name()).stream()
-                    .mapToInt(Skill::maxRank).sum();
-            assertEquals(ceiling, capacity, hero.name() + " has " + capacity
-                    + " ranks to fill and " + ceiling + " levels to fill them with");
-        }
-    }
-
-    /** And each of them has exactly one skill that waits for the hero to grow. */
-    @Test
-    void everyShippedHeroHasOneUltimate() {
-        var settings = DungeonSettings.load();
-
-        for (var hero : settings.heroes()) {
-            var ultimates = settings.skillsFor(hero.name()).stream()
-                    .filter(Skill::isUltimate).toList();
-            assertEquals(1, ultimates.size(), hero.name() + " has " + ultimates.size());
-            assertEquals('R', ultimates.get(0).key(), "and it is on R, as the panel assumes");
-        }
-    }
-
-    /** Walking a real hero's ladder works as well as the fixture's. */
-    @Test
-    void aShippedHeroCanBeBuiltToTheTop() {
-        var settings = DungeonSettings.load();
-        var ranks = new SkillRanks(settings.progression().skillSpread());
-        ranks.startWith(settings.skillsFor(settings.run().defaultHero()));
-
-        for (int level = 1; level <= settings.levelling().maxLevel(); level++) {
-            assertTrue(spendOne(ranks, level),
-                    settings.run().defaultHero() + " had nothing to take at level " + level);
-        }
-
-        for (var skill : ranks.getSkills()) {
-            assertEquals(skill.maxRank(), ranks.rankOf(skill.key()),
-                    skill.key() + " did not fill up");
-        }
-    }
-
     // ---- helpers ----
 
     /**

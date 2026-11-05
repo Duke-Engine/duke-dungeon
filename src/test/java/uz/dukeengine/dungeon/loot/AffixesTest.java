@@ -77,12 +77,8 @@ class AffixesTest {
                 assertTrue(made.affixes().stream().anyMatch(affix -> affix.stat().equals(Stat.CRIT_DAMAGE)),
                         made.id() + ": a critical blow is a harder one");
             }
-            var skill = made.affixes().stream().filter(affix -> affix.stat().startsWith(Stat.SKILL_RANK)).toList();
-            skill.forEach(affix -> assertTrue(affix.stat().matches("SKILL_RANK:[QWE]"), affix.stat()));
         }
         assertTrue(seen > 0, "a mace may roll critical blows");
-        var card = ITEMS.say(Stat.SKILL_RANK + ":Q", "", 1);
-        assertEquals("+1 Q mahorati", card);
     }
 
     @Test

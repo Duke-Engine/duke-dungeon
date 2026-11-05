@@ -181,37 +181,6 @@ class HeroAttributesTest {
 
     // ---- what comes back on its own ----
 
-    /**
-     * Health and mana come back at his own rate, and no attribute moves either.
-     *
-     * <p>Counted to the point over two whole seconds: a Knight mends two a second and
-     * gets one mana back a second. Then he is given twenty strength and twenty
-     * intelligence — a far bigger body and a far bigger pool — and it is still exactly
-     * that.
-     */
-    @Test
-    void whatComesBackOnItsOwnIsHisAndNoAttributeMovesIt() {
-        var it = play("Knight");
-        var knight = SETTINGS.heroNamed("Knight");
-        var body = it.body();
-        var book = body.findModule(SkillBook.class);
-        // His own mend: no point in his dragon blood (E), so it is not held -- said as a run says it.
-        book.setRank('E', 0);
-        int health = 2 * knight.healthRegen() / 10;
-        int mana = 2 * knight.manaRegen() / 10;
-
-        assertEquals(health, mendedOverTwoSeconds(it), "his health, before");
-        assertTrue(book.cast('R', 1), "the pull should have gone off, and cost him");
-        assertEquals(mana, regainedOverTwoSeconds(it), "his mana, before");
-
-        take(it, "STR", 20);
-        take(it, "INT", 20);
-        assertTrue(book.getMana() < book.getMaxMana(), "the pool must still have room to fill");
-
-        assertEquals(health, mendedOverTwoSeconds(it), "strength gave him a body, not a faster mend");
-        assertEquals(mana, regainedOverTwoSeconds(it), "intelligence gave him a pool, not a trickle");
-    }
-
     // ---- his legs ----
 
     /** New legs are still walking where the old ones were sent. */

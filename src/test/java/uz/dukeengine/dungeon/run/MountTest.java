@@ -194,10 +194,11 @@ class MountTest {
         mount(session);
         var book = hero(game).findModule(SkillBook.class);
         int mana = book.getMana();
-        var skill = SHIPPED.skillsFor(hero(game).getTemplate().name()).getFirst();
+        var skill = SHIPPED.bookFor(hero(game).getTemplate().name()).stream()
+                .filter(each -> each.effect() == uz.dukeengine.rpg.skill.SkillEffect.MODULE).findFirst().orElseThrow();
         game.postCommand(PartyOrders.of(new CastSkill(player, skill.key(), null, hero(game).getPosition())));
         game.runHeadless(2);
-        assertFalse(session.run().mounted(player), "a skill pressed gets him off");
+        assertFalse(session.run().mounted(player), "the dodge pressed gets him off");
         assertEquals(mana, book.getMana(), 2, "and is not cast: no mana spent");
 
         mount(session);

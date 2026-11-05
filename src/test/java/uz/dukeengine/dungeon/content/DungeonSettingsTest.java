@@ -64,18 +64,18 @@ class DungeonSettingsTest {
      */
     @Test
     void theHerosBarIsTheOneTheFileDescribes() {
-        assertEquals(List.of(PanelBlock.MINIMAP, PanelBlock.HERO, PanelBlock.SKILLS, PanelBlock.DEPTH),
+        assertEquals(List.of(PanelBlock.MINIMAP, PanelBlock.HERO, PanelBlock.DEPTH),
                 DungeonSettings.load().panelLook().blocks(),
                 "the client's bag is off the bar: the game draws one of its own that can be used");
         var shipped = Content.data();
-        assertTrue(shipped.contains("Blocks = [Minimap, Hero, Skills, Depth]"));
+        assertTrue(shipped.contains("Blocks = [Minimap, Hero, Depth]"));
         // Its own lettering, and room to grow into on a big screen now the lettering stays sharp at any scale:
         // the three lines this game says differently from the design.
         var look = DungeonSettings.load().panelLook();
         assertEquals("fonts/Cinzel-Regular.ttf", look.lettering());
         assertEquals("fonts/Cinzel-Bold.ttf", look.titleLettering());
         assertEquals(1.5f, look.maxScale(), 0.0001f);
-        var asDesigned = shipped.replace("Blocks = [Minimap, Hero, Skills, Depth]",
+        var asDesigned = shipped.replace("Blocks = [Minimap, Hero, Depth]",
                         "Blocks = [Minimap, Hero, Bag, Skills, Depth]")
                 .replace("  MaxScale = 1.5\n", "  MaxScale = " + PanelLook.DEFAULTS.maxScale() + "\n")
                 .replaceAll("(?m)^  (Title)?Lettering = .*\\n", "");
@@ -241,28 +241,6 @@ class DungeonSettingsTest {
                 "Hero\n  Name = Rogue\n  Skills = [\n    Skill\n      Key = Q\n      Effect = DASH\n"
                         + "      Distance = 40\n    End\n  ]\nEnd\n"),
                 "a re-tuning of his Q was refused for the book it leaves to him");
-    }
-
-    /**
-     * A unit's skills are found by their key -- the book casts, recharges and charges "the skill on Q", and a monster's
-     * brain asks it the same -- so a second skill on a key the unit already has would be found by nobody: it would stand
-     * in the file and do nothing, and nothing would say so. The file is refused, naming the unit and the key: a
-     * monster's and a hero's alike, and a key written in the other case is no other key.
-     */
-    @Test
-    void aUnitWithTwoSkillsOnOneKeyIsRefused() {
-        for (var clash : new String[][] {
-                {"SkeletonMage", "      Key = Q\n", "      Key = R\n", "Monster SkeletonMage", "key R"},
-                {"Rogue", "      Key = W\n", "      Key = q\n", "Hero Rogue", "key Q"}}) {
-            var unit = ShippedBlock.of(clash[0]);
-            var clashing = unit.text().replace(clash[1], clash[2]);
-            assertNotEquals(unit.text(), clashing, "the premise: " + clash[0] + " was given two skills on one key");
-
-            var refused = assertThrows(IllegalArgumentException.class,
-                    () -> DungeonSettings.parse(Content.data().replace(unit.text(), clashing)), clash[0]);
-            assertTrue(refused.getMessage().contains(clash[3]) && refused.getMessage().contains(clash[4]),
-                    refused.getMessage());
-        }
     }
 
     /**

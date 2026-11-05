@@ -60,7 +60,6 @@ class HeroStatusTest {
 
         assertTrue(line.startsWith("name=Erika"), "nothing is selected, and the bar is his: " + line);
         assertTrue(line.contains("|hp="), "his health: " + line);
-        assertTrue(line.contains("|skill="), "his skills: " + line);
         assertTrue(line.contains("|hero="), "the premise: his hero stands: " + line);
         assertTrue(line.contains("|depth="), "the floor is still the floor: " + line);
         assertTrue(line.contains("|look="),
@@ -92,145 +91,6 @@ class HeroStatusTest {
         assertTrue(lineFrom(11L).startsWith("name=Erika"), lineFrom(11L));
         assertFalse(lineFrom(11L).startsWith("name=Hero"),
                 "that is his template, not his name");
-    }
-
-    /** One slot per skill the file gives him, in the file's order. */
-    @Test
-    void thereIsASlotForEverySkill() {
-        var line = lineFrom(77L);
-        var settings = DungeonSettings.load();
-
-        // His skills, not the file's: the panel describes whoever is being played,
-        // and the file holds a second hero's four as well now.
-        var his = settings.skillsFor(settings.run().defaultHero());
-        assertEquals(his.size(), line.split("\\|skill=", -1).length - 1,
-                "a slot each, no more and no fewer: " + line);
-        for (var skill : his) {
-            assertTrue(line.contains("|skill=" + skill.key() + ","),
-                    skill.key() + " has no slot in " + line);
-        }
-        // And none for his STAGGER, which his book holds beside the four: never bought, it is no slot of the bar.
-        for (var skill : settings.bookFor(settings.run().defaultHero())) {
-            if (skill.effect() == uz.dukeengine.rpg.skill.SkillEffect.STAGGER) {
-                assertFalse(line.contains("=" + skill.key() + ","), "his stagger is drawn on the bar: " + line);
-            }
-        }
-    }
-
-    /**
-     * A locked slot says what it is waiting for, in the game's words.
-     *
-     * <p>An ultimate is the one thing on the panel the player cannot use yet, so
-     * it is the one slot that has to explain itself — and it explains itself in
-     * whatever language {@code RankSuffix} is written in.
-     */
-    @Test
-    void alockedSlotSaysWhatItWaitsFor() {
-        var settings = DungeonSettings.load();
-        var waiting = settings.skills().stream()
-                .filter(skill -> skill.isUltimate())
-                .findFirst().orElseThrow(() ->
-                        new AssertionError("nothing waits for a level any more"));
-
-        assertTrue(lineFrom(5L).contains(
-                        "|skill=" + waiting.key() + "," + waiting.icon()
-                                + ",lock," + waiting.levelForRank(1) + settings.hud().rankSuffix()),
-                "the locked slot should name its level the way the panel names them");
-    }
-
-    /**
-     * An ordinary slot nobody has bought says nothing about levels.
-     *
-     * <p>Because there is nothing to say: it waits for a POINT, not for a level,
-     * and the button beside it is the whole story. An ultimate is the other way
-     * and is the test above.
-     */
-    @Test
-    void anUnboughtOrdinarySlotNamesNoLevel() {
-        var settings = DungeonSettings.load();
-        var ordinary = settings.skillsFor(settings.run().defaultHero()).stream()
-                .filter(skill -> !skill.isUltimate())
-                .findFirst().orElseThrow();
-
-        assertTrue(lineFrom(5L).contains(
-                        "|skill=" + ordinary.key() + "," + ordinary.icon()
-                                + ",lock|"),
-                "an unbought ordinary slot should say 'lock' and stop there");
-    }
-
-    /** And every slot says what is in it, what fits, and whether a point may go there. */
-    @Test
-    void everySlotSaysWhatIsInIt() {
-        var settings = DungeonSettings.load();
-        var line = lineFrom(5L);
-
-        for (var skill : settings.skillsFor(settings.run().defaultHero())) {
-            assertTrue(line.contains("|srank=" + skill.key() + ",0," + skill.maxRank() + ","),
-                    "no rank field for " + skill.key() + " in: " + line);
-        }
-        assertTrue(line.contains("|pts=1," + settings.hud().pointsWord()),
-                "a hero at his first level has one point to spend: " + line);
-    }
-
-    /**
-     * Each slot carries the picture the file gave it, found where the file says to
-     * look for it.
-     *
-     * <p>The whole point of naming icons in INI: the client is handed a path and
-     * draws whatever is at it, so a fifth skill is a fifth block of the file rather
-     * than a line of Java. This is that from the writing end — {@code HeroPanelTest}
-     * holds the other.
-     *
-     * <p>A skill that names <em>no</em> icon is not a fault: the slot draws the
-     * letter of its key, which is what every slot did before there were any
-     * pictures, and a hero whose art has not arrived yet is playable that way on
-     * purpose. So what is held here is that a named picture arrives — not that one
-     * was named.
-     */
-    @Test
-    void everySlotCarriesThePictureTheFileGaveIt() {
-        var line = lineFrom(77L);
-        var settings = DungeonSettings.load();
-
-        for (var skill : settings.skillsFor(settings.run().defaultHero())) {
-            var icon = skill.icon();
-            if (icon.isBlank()) {
-                continue; // no picture named: the slot draws the letter, as it always did
-            }
-            assertTrue(line.contains("|skill=" + skill.key() + "," + icon + ","),
-                    skill.key() + " should carry " + icon + " in " + line);
-        }
-    }
-
-    /**
-     * And the archer's four, who have had pictures for a long time, still have them.
-     *
-     * <p>The half of the check above that was worth keeping once a hero was allowed
-     * to have none. Losing an icon is silent — the slot falls back to its letter —
-     * so the hero who has them needs somebody to say so.
-     */
-    @Test
-    void theArcherStillHasAllFourOfHisPictures() {
-        var settings = DungeonSettings.load();
-
-        for (var skill : settings.skillsFor("Rogue")) {
-            assertFalse(skill.icon().isBlank(),
-                    "the archer's " + skill.key() + " lost the Icon it had");
-        }
-    }
-
-    /** The panel's words are the file's — the client writes none of its own. */
-    @Test
-    void changingTheFileChangesTheWords() {
-        var settings = DungeonSettings.parse("""
-                Hud
-                  DepthWord = FLOOR
-                  RankSuffix = th level
-                End
-                """);
-
-        assertEquals("FLOOR", settings.hud().depthWord());
-        assertEquals("th level", settings.hud().rankSuffix());
     }
 
     /**
@@ -386,7 +246,6 @@ class HeroStatusTest {
 
         assertTrue(line.contains("|title="), "what he is, under his name: " + line);
         assertTrue(line.contains("|itWord="), "the heading over his bag: " + line);
-        assertTrue(line.contains("|skWord="), "the heading over his skills: " + line);
     }
 
     /**

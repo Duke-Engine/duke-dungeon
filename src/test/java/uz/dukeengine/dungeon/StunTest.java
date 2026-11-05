@@ -121,28 +121,6 @@ class StunTest {
         }
     }
 
-    /**
-     * Stunned, he casts nothing and spends nothing -- the cooldown stands as it stood, as it does for a cast he
-     * cannot pay for -- and the frame the stun is over, the same key goes off.
-     */
-    @Test
-    void aStunnedHeroCastsNothingAndCastsAgainOnceItIsOver() {
-        var arena = Dungeon.world(room(), SETTINGS);
-        var game = arena.game();
-        game.spawn("Rogue", arena.hero(), 150f, 150f);
-        game.runHeadless(1);
-        var hero = creature(game, "Rogue");
-        var book = hero.findModule(SkillBook.class);
-
-        hero.findModule(StatusUpdate.class).apply(ObjectStatus.DISABLED, 30);
-
-        assertFalse(book.cast('W', 1), "he cast while stunned");
-        assertTrue(book.isReady('W'), "and the cast that never went off spent its cooldown");
-        game.runHeadless(30);
-        assertFalse(hero.hasStatus(ObjectStatus.DISABLED), "thirty frames on, he is still stunned");
-        assertTrue(book.cast('W', 1), "and the stun over, he still cannot cast");
-    }
-
     // ---- the fire mage's fireball ----
 
     /** As shipped: its fireball stuns for a second. */
@@ -204,17 +182,6 @@ class StunTest {
         }
         assertTrue(thrown, "the premise: it threw its fireball at him");
         assertTrue(hero.getBody().getHealth() < hero.getBody().getMaxHealth(), "and he was hurt");
-    }
-
-    /** Only what a skillshot throws carries a stun: written on any other skill, the file is refused. */
-    @Test
-    void aStunOnAnythingButASkillshotIsRefused() {
-        // The Mage's Frost Nova, which comes down on a spot rather than being thrown.
-        var data = Content.data().replace("      SlowFrames = 90\n", "      SlowFrames = 90\n      StunFrames = 30\n");
-        assertNotEquals(Content.data(), data, "the premise: the nova was given a stun");
-
-        var refused = assertThrows(IllegalArgumentException.class, () -> DungeonSettings.parse(data));
-        assertTrue(refused.getMessage().contains("StunFrames"), refused.getMessage());
     }
 
     // ---- the stars ----

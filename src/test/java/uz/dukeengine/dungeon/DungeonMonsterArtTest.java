@@ -598,50 +598,6 @@ class DungeonMonsterArtTest {
     // ---- the gestures a spell is cast with ----
 
     /**
-     * Every clip a skill says it is cast with is on the hero who casts it.
-     *
-     * <p>Two things have to line up and neither says so out loud. The clip is
-     * named in a {@code Skill} block; the libraries it could come from are
-     * named in the hero's own. Nothing checks that the second contains the first,
-     * and the failure is the quietest in the game — the spell goes off, the
-     * effect opens, and the caster stands there like a man who dropped something.
-     *
-     * <p>Asked of the retargeted clip rather than of the library's, because a
-     * clip can be present and still arrive on nothing: the tracks are rebuilt
-     * against the joints of the model, and a library on a different skeleton
-     * matches none of them. That is the difference between a gesture nobody
-     * shipped and a gesture nobody can play, and they look identical on screen.
-     */
-    @Test
-    void everyGestureASkillIsCastWithIsOnTheHeroWhoCastsIt() {
-        int checked = 0;
-        for (var hero : SETTINGS.heroes()) {
-            if (!hero.hasModel()) {
-                continue;
-            }
-            for (var skill : SETTINGS.skillsFor(hero.name())) {
-                if (skill.castAnim() == null || skill.castAnim().isBlank()) {
-                    continue; // a skill cast without a gesture, which is most of them
-                }
-                var model = assets().loadModel(hero.model());
-                // A gesture in his own file is on him already (Lange's): nothing to copy, nothing missing.
-                var own = control(model, AnimComposer.class);
-                int arrived = own != null && own.getAnimClip(skill.castAnim()) != null ? 1 : 0;
-                for (var path : hero.animations()) {
-                    arrived += uz.dukeengine.client3d.AnimationLibrary.copy(
-                            assets().loadModel(path), model,
-                            java.util.List.of(skill.castAnim()));
-                }
-                assertEquals(1, arrived, hero.name() + "'s " + skill.key() + " is cast with "
-                        + skill.castAnim() + ", which none of " + hero.animations()
-                        + " could put on him");
-                checked++;
-            }
-        }
-        assertTrue(checked > 0, "some skill should name a gesture, or this proves nothing");
-    }
-
-    /**
      * And it is long enough to be stretched to what the skill asks of it.
      *
      * <p>A gesture is played at whatever speed makes it last {@code CastSeconds},

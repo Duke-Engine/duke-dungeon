@@ -67,18 +67,6 @@ class StaggerTest {
         return stagger().damage() * 4f; // well past his bar after his armour
     }
 
-    @Test
-    void itIsHisFromTheStartAndNoneOfHisFour() {
-        var stagger = stagger();
-        assertEquals(SETTINGS.heroNamed(KNIGHT).hurt(), stagger.castAnim(), "his stagger plays other than his flinch");
-        assertEquals(4, SETTINGS.skillsFor(KNIGHT).size(), "the stagger took one of his four slots");
-        for (var hero : SETTINGS.heroes()) {
-            assertEquals(1, SETTINGS.bookFor(hero.name()).stream()
-                    .filter(skill -> skill.effect() == uz.dukeengine.rpg.skill.SkillEffect.STAGGER).count(),
-                    hero.name() + " has no STAGGER");
-        }
-    }
-
     /** Any critical blow staggers, however light. */
     @Test
     void aCriticalBlowStaggersHimHoweverLight() {

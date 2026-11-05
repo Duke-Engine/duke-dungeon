@@ -124,25 +124,6 @@ class SkullMeteorTest {
         assertEquals(SkillEffect.SKILLSHOT, SETTINGS.skillsFor(MAGE).get(1).effect(), "and its fireball second");
     }
 
-    /** Its mark is its own, drawn violet as its fireball, and measured by its own skill: the Mage's keeps its own. */
-    @Test
-    void itsMarkIsItsOwnAndMeasuredByItsOwnSkill() {
-        var mark = SETTINGS.projectile(MARK);
-        assertEquals("SkullMeteor", mark.effect());
-        assertEquals(SETTINGS.projectile(fireball().projectile()).tint(), mark.tint(), "its fireball's violet");
-
-        var visuals = Visuals.create();
-        Main.measureLooks(visuals, SETTINGS);
-
-        assertEquals(meteor().radius(), visuals.getEffectReach(mark.effect()), 0.001f, "as wide as its blast");
-        assertEquals(meteor().windUpFrames() / (float) GameConstants.LOGICFRAMES_PER_SECOND,
-                visuals.getEffectSeconds(mark.effect()), 0.001f, "and lying there as long as it falls");
-        var his = SETTINGS.skillsFor("Mage").stream().filter(skill -> skill.effect() == SkillEffect.METEOR)
-                .findFirst().orElseThrow();
-        assertEquals(his.radius(), visuals.getEffectReach(SETTINGS.projectile(his.projectile()).effect()), 0.001f,
-                "and the Mage's own meteor is as wide as his");
-    }
-
     /** It is heard as it appears, as the rift is. */
     @Test
     void itIsHeardAsItAppears() {

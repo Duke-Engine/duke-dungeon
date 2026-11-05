@@ -1027,7 +1027,7 @@ public final class DungeonSettings {
         }
         // Any figure the hero reads (E43, E44), an attribute by its name, or a skill's rank on a key.
         java.util.function.Predicate<String> isStat = stat -> uz.dukeengine.dungeon.loot.Items.STATS.contains(stat)
-                || rules.indexOf(stat) >= 0 || stat.matches(Stat.SKILL_RANK + ":[A-Z]");
+                || rules.indexOf(stat) >= 0;
         for (var affix : affixes) {
             var named = "Affix " + affix.name();
             require(isStat.test(affix.stat()), named + " has Stat = " + affix.stat() + ", and no figure is called that");
@@ -1035,8 +1035,6 @@ public final class DungeonSettings {
             affix.slots().forEach(slot -> require(slots.isEmpty() || slots.contains(slot),
                     named + " rolls on " + slot + ", and LootDrops wears no slot called that"));
             require(sayable(affix.prefix()), named + ": its Prefix may not contain ',' or '|'");
-            require(!affix.stat().equals(Stat.SKILL_RANK) || !affix.keys().isEmpty(),
-                    named + " raises a skill: say whose in Keys");
             for (var also : affix.also()) {
                 var words = also.strip().split(" +");
                 require(words.length == 2 && words[1].matches("-?[0-9]+") && isStat.test(words[0]),

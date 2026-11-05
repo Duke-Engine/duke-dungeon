@@ -39,14 +39,14 @@ public final class Items {
 
     /** The base's own figures: an affix of one is added to the thing's {@code Value}. */
     static final Set<String> FIGURES = Set.of(Stat.ATTACK, Stat.ARMOUR, Stat.HEALTH, Stat.MANA, Stat.ATTRIBUTE);
-    /** Every figure an affix may move (an attribute's by its name, a skill's rank as {@code SKILL_RANK:Q}). */
+    /** Every figure an affix may move (an attribute's by its name). */
     public static final Set<String> STATS = Set.of(Stat.ATTACK, Stat.ARMOUR, Stat.HEALTH, Stat.MANA, Stat.ATTRIBUTE,
             Stat.HEALTH_REGEN, Stat.MANA_REGEN, Stat.ATTACK_SPEED, Stat.CRIT_CHANCE, Stat.CRIT_DAMAGE, Stat.MOVE_SPEED,
-            Stat.SKILL_RANK, LIFESTEAL);
+            LIFESTEAL);
     /** The order a card and a comparison say figures in. */
     private static final List<String> ORDER = List.of(Stat.ATTACK, Stat.ARMOUR, Stat.HEALTH, Stat.MANA,
             Stat.ATTRIBUTE, Stat.ATTACK_SPEED, Stat.CRIT_CHANCE, Stat.CRIT_DAMAGE, Stat.HEALTH_REGEN, Stat.MANA_REGEN,
-            LIFESTEAL, Stat.MOVE_SPEED, Stat.SKILL_RANK);
+            LIFESTEAL, Stat.MOVE_SPEED);
     private static final String LETTERS = "CMRE";
     private static final List<String> FRAMES = List.of("common", "magic", "rare", "epic");
     /** The highest item level an affix's range is written for; above it, it rolls as at it. */
@@ -262,15 +262,12 @@ public final class Items {
 
     /**
      * The figure an affix moves on this thing: an attribute affix the thing's own attribute, or one drawn among them
-     * all; a skill's rank, on one of its keys drawn; any other its own word.
+     * all; any other its own word.
      */
     private String statOf(DeterministicRng rng, Affix affix, String attribute) {
         if (Stat.ATTRIBUTE.equals(affix.stat())) {
             var all = List.copyOf(words.attributes().keySet());
             return !attribute.isBlank() || all.isEmpty() ? attribute : all.get(rng.nextInt(all.size()));
-        }
-        if (Stat.SKILL_RANK.equals(affix.stat()) && !affix.keys().isEmpty()) {
-            return Stat.SKILL_RANK + ":" + affix.keys().get(rng.nextInt(affix.keys().size()));
         }
         return affix.stat();
     }
@@ -570,8 +567,8 @@ public final class Items {
     }
 
     /**
-     * Every figure a thing moves while worn, by figure (an attribute's as {@code ATTRIBUTE:Strength}, a skill's rank as
-     * {@code SKILL_RANK:Q}): its own, its extra, its affixes and the lifesteal it lends — read off the engine's thing, so
+     * Every figure a thing moves while worn, by figure (an attribute's as {@code ATTRIBUTE:Strength}):
+     * its own, its extra, its affixes and the lifesteal it lends — read off the engine's thing, so
      * it holds for the data's own as well.
      */
     public Map<String, Integer> figures(Loot item) {
@@ -599,17 +596,14 @@ public final class Items {
     }
 
     /**
-     * One figure as a card says it: {@code +12% Zarba}, {@code -20 Jon}, {@code +3 Epchillik}, {@code +1 Q mahorati}.
-     * {@code stat} may be an attribute's name, or {@code SKILL_RANK:Q}.
+     * One figure as a card says it: {@code +12% Zarba}, {@code -20 Jon}, {@code +3 Epchillik}.
+     * {@code stat} may be an attribute's name.
      */
     public String say(String stat, String attribute, int value) {
         var sign = value < 0 ? "-" : "+";
         int size = Math.abs(value);
         if (words.attributes().containsKey(stat)) {
             return sign + size + " " + words.attributes().get(stat);
-        }
-        if (stat.startsWith(Stat.SKILL_RANK + ":")) {
-            return sign + size + " " + rules.skillRankWord().formatted(stat.substring(Stat.SKILL_RANK.length() + 1));
         }
         return switch (stat) {
             case Stat.ATTACK -> sign + size + "% " + words.attack();

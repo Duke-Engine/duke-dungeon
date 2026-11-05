@@ -99,25 +99,6 @@ class SoundscapeTest {
 
     // ---- what the game raises by name ----
 
-    /** Each hero is heard as himself: his weapon, his pain, his death, and each of his four skills. */
-    @Test
-    void everyHeroIsHeardAsHimself() {
-        for (var hero : SETTINGS.heroes()) {
-            for (var moment : List.of("fired.", "hurt.", "died.")) {
-                var cue = BANK.find(moment + hero.name());
-                assertNotNull(cue, moment + hero.name());
-                assertEquals(moment + hero.name(), cue.name(), moment + hero.name() + " is his own, not a fallback");
-            }
-            var skills = SETTINGS.skillsFor(hero.name());
-            assertFalse(skills.isEmpty(), hero.name() + " has skills");
-            for (var skill : skills) {
-                var name = "cast." + hero.name() + "." + skill.key();
-                assertNotNull(BANK.find(name), name);
-                assertEquals(name, BANK.find(name).name(), name + " is its own");
-            }
-        }
-    }
-
     /** Every creature that fights sounds when it strikes, is hit and dies -- its own, or the general one. */
     @Test
     void everyCreatureStrikesIsHitAndDies() {

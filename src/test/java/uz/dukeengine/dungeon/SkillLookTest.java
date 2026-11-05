@@ -160,47 +160,6 @@ class SkillLookTest {
 
     // ---- what a mark is drawn ON ----
 
-    /**
-     * And a charge leaves one of each: dust where he pushed off, and himself.
-     *
-     * <p>Both halves of the distinction in a single cast, which is why it is worth
-     * a test of its own. The near end is where his boot struck and has nothing to
-     * do with him afterwards; the far end is him. Getting it backwards drags a
-     * puff of dust along behind a running man and leaves him arriving in silence.
-     */
-    @Test
-    void aChargeLeavesItsDustBehindAndBringsHimselfAlong() {
-        var arena = knightInARoom();
-        var knight = knightIn(arena);
-        var book = knight.findModule(SkillBook.class);
-
-        assertTrue(book.cast('W', 1), "the premise: he charged");
-
-        var marks = book.getCastMarks();
-        assertEquals(2, marks.size(), "a dash is drawn at both ends of the run");
-        assertEquals(ObjectId.INVALID, marks.get(0).on(),
-                "the dust he kicked up is set to follow him about");
-        assertEquals(knight.getId(), marks.get(1).on(),
-                "the end he arrived at is not marked as his");
-    }
-
-    /** The wave is marked on him as he throws it, and the pull on him as wide as it reaches. */
-    @Test
-    void theWaveAndThePullAreMarkedOnHim() {
-        var arena = knightInARoom();
-        var knight = knightIn(arena);
-        var book = knight.findModule(SkillBook.class);
-
-        assertTrue(book.cast('Q', 1, null, new uz.dukeengine.core.math.Coord3D(300f, 150f, 0f)), "the premise: the wave");
-        assertEquals(1, book.getCastMarks().size(), "the wave was drawn by nothing");
-        assertEquals(knight.getId(), book.getCastMarks().getFirst().on(), "the wave's mark is not his");
-
-        assertTrue(book.cast('R', 1), "the premise: the pull");
-        var pull = book.getCastMarks().getFirst();
-        assertEquals(knight.getId(), pull.on(), "the pull's mark is not his");
-        assertEquals(skillOf("Knight", 'R').radius(), pull.radius(), 0.001f, "the pull is not drawn as wide as it reaches");
-    }
-
     private static GameObject knightIn(uz.dukeengine.game.DukeGame arena) {
         return arena.getLogic().getObjects().stream()
                 .filter(object -> object.getTemplate().name().equals("Knight"))

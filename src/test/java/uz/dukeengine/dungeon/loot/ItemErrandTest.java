@@ -485,44 +485,6 @@ class ItemErrandTest {
         return room;
     }
 
-    /**
-     * A skill is the player's latest word too: cast on the way, it ends the errand he was on, as any order does. He
-     * stands where the dash put him, the thing he was taking down stays in his bag, and nothing is said of it later.
-     */
-    @Test
-    void aSkillCastOnTheWayEndsAnErrandToPutAThingDown() {
-        var room = room(100f);
-        var bag = new LootBag();
-        bag.take(BLADE, 0, 0);
-        assertTrue(ItemErrand.drop(room.hero(), 0, new Coord3D(320f, 150f, 0f), bag, room.rules()));
-        room.game().runHeadless(10);
-
-        castHisDash(room);
-        room.game().runHeadless(STUCK + 120);
-
-        assertNull(room.hero().findModule(ItemErrand.class), "the errand is still on him");
-        assertEquals(List.of(BLADE), bag.getFound(), "it went down where he stood, long after the cast");
-        assertTrue(room.chests().isEmpty());
-    }
-
-    /** And an errand to take a thing: the chest stays where it lies, and he never says he could not get to it. */
-    @Test
-    void aSkillCastOnTheWayEndsAnErrandToTakeAThing() {
-        var room = room(100f);
-        var chest = room.chestAt(320f, BLADE);
-        var bag = new LootBag();
-        assertTrue(ItemErrand.pickUp(room.hero(), chest, bag, room.rules()));
-        room.game().runHeadless(10);
-
-        castHisDash(room);
-        room.game().runHeadless(STUCK + 120);
-
-        assertNull(room.hero().findModule(ItemErrand.class), "the errand is still on him");
-        assertEquals("", bag.noteAt(room.game().getLogic().getFrame()),
-                "he spoke of a chest he was not after any more");
-        assertEquals(BLADE, chest.findModule(GroundItem.class).getHolding());
-    }
-
     /** The Rogue's E: a dash, cast as the player's key casts it -- an order, come in between frames. */
     private static void castHisDash(Room room) {
         var order = new uz.dukeengine.rpg.skill.CastSkill(room.hero().getPlayerIndex(), 'E');

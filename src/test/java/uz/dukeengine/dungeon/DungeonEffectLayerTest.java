@@ -265,33 +265,6 @@ class DungeonEffectLayerTest {
 
     // ---- how long ----
 
-    /**
-     * The meteor's warning lasts exactly as long as the meteor takes to fall.
-     *
-     * <p>They used to be two numbers — WindUpFrames on the skill and MarkSeconds on
-     * the effect — with a comment asking whoever changed one to change the other.
-     * Now the warning says nothing about how long it lasts and takes the skill's.
-     */
-    @Test
-    void theWarningLastsExactlyAsLongAsTheFall() {
-        var visuals = Visuals.create();
-        Main.measureLooks(visuals, SETTINGS);
-        var meteor = SETTINGS.skills().stream()
-                .filter(skill -> skill.look().equals("MeteorCall")).findFirst().orElseThrow();
-        float falls = meteor.windUpFrames() / (float) GameConstants.LOGICFRAMES_PER_SECOND;
-
-        assertEquals(falls, visuals.getEffectSeconds("MeteorCall"), 0.001f,
-                "the ground is marked for the wind-up");
-        assertEquals(falls, visuals.getEffectSeconds("Meteor"), 0.001f,
-                "and the rock takes the same wind-up to come down");
-        for (var art : SETTINGS.effectLayers()) {
-            if (art.effect().equals("MeteorCall") && EffectLayer.MARK.equals(drawn(art).type())) {
-                assertEquals(0f, drawn(art).seconds(), 0.001f, art.name()
-                        + " says how long it lasts, and the skill already does");
-            }
-        }
-    }
-
     /** A skill that lasts gives its duration to its look, in seconds. */
     @Test
     void aLastingSkillsLookLastsAsLongAsTheSkill() {
@@ -306,74 +279,6 @@ class DungeonEffectLayerTest {
             }
         }
         assertTrue(checked > 0, "no lasting skill was checked at all");
-    }
-
-    /**
-     * The frost on whoever the nova caught lasts exactly as long as they are slowed.
-     *
-     * <p>The client cannot see the slow -- nothing it is sent says who is dragging
-     * his feet -- so the frost is laid for the skill's SlowFrames on everyone the
-     * nova reached, which is who the simulation slowed.
-     */
-    @Test
-    void theFrostOnTheCaughtLastsAsLongAsTheSlow() {
-        var visuals = Visuals.create();
-        Main.measureLooks(visuals, SETTINGS);
-        var nova = SETTINGS.skills().stream()
-                .filter(skill -> skill.look().equals("FrostNova")).findFirst().orElseThrow();
-        assertTrue(nova.slowFrames() > 0, "the nova slows what it catches");
-
-        assertEquals(nova.slowFrames() / (float) GameConstants.LOGICFRAMES_PER_SECOND,
-                visuals.getEffectSeconds("FrostNova"), 0.001f);
-        var caught = SETTINGS.effectLayers().stream()
-                .filter(art -> art.effect().equals("FrostNova"))
-                .map(DungeonEffectLayerTest::drawn)
-                .filter(layer -> EffectLayer.CAUGHT.equals(layer.at()))
-                .toList();
-        assertFalse(caught.isEmpty(), "something is drawn on whoever the nova caught");
-        for (var layer : caught) {
-            assertEquals(0f, layer.seconds(), 0.001f,
-                    "a layer on the caught that says how long it lasts no longer follows the slow");
-        }
-    }
-
-    /**
-     * The meteor's warning is exactly as wide as the blast it warns of.
-     *
-     * <p>The one shape in the game a player bets his life on: step out of the
-     * orange and live. So it is measured in the skill's reach rather than in units,
-     * and the reach it is given is the skill's Radius.
-     */
-    @Test
-    void theWarningIsAsWideAsTheBlast() {
-        var visuals = Visuals.create();
-        Main.measureLooks(visuals, SETTINGS);
-        var meteor = SETTINGS.skills().stream()
-                .filter(skill -> skill.look().equals("MeteorCall")).findFirst().orElseThrow();
-
-        assertEquals(meteor.radius(), visuals.getEffectReach("MeteorCall"), 0.001f);
-        var warning = SETTINGS.effectLayers().stream()
-                .filter(art -> art.effect().equals("MeteorCall") && art.name().equals("Warning"))
-                .map(DungeonEffectLayerTest::drawn).findFirst().orElseThrow();
-        assertEquals(EffectLayer.REACH, warning.measure());
-    }
-
-    /** A layer measured in reach belongs to something the game gives a reach. */
-    @Test
-    void everyLayerMeasuredInReachHasAReach() {
-        var visuals = Visuals.create();
-        Main.measureLooks(visuals, SETTINGS);
-        var unmeasured = new ArrayList<String>();
-        for (var art : SETTINGS.effectLayers()) {
-            if (EffectLayer.REACH.equals(drawn(art).measure())
-                    && visuals.getEffectReach(art.effect()) <= 0f) {
-                unmeasured.add(art.effect() + " " + art.name());
-            }
-        }
-        if (!unmeasured.isEmpty()) {
-            fail("measured in the reach of a skill that has none:\n"
-                    + String.join("\n", unmeasured));
-        }
     }
 
     /**
@@ -543,42 +448,6 @@ class DungeonEffectLayerTest {
             }
         }
         return blasts;
-    }
-
-    /**
-     * Each blast's edge is drawn where its damage stops.
-     *
-     * <p>A burst smaller than the ground it hurts lies about where it is safe to
-     * stand, and one bigger lies the other way. So the rings of a blast are
-     * measured in the skill's reach, the reach the effect is given is the very
-     * Radius the simulation hurts within, and each ring's brightest line -- found
-     * in its own texture here, not assumed -- lies on that radius.
-     */
-    @Test
-    void theEdgeOfEachBlastIsWhereItsDamageStops() throws java.io.IOException {
-        var visuals = Visuals.create();
-        Main.measureLooks(visuals, SETTINGS);
-        var blasts = blastsAndTheirRadius();
-        assertTrue(blasts.containsKey("Fireball") && blasts.containsKey("Meteor"),
-                "the fireball and the meteor both burst: " + blasts);
-
-        for (var blast : blasts.entrySet()) {
-            assertEquals(blast.getValue(), visuals.getEffectReach(blast.getKey()), 0.001f,
-                    blast.getKey() + " is not given the Radius its blast hurts within");
-            int rings = 0;
-            for (var art : SETTINGS.effectLayers()) {
-                var layer = drawn(art);
-                if (!art.effect().equals(blast.getKey()) || !EffectLayer.RING.equals(layer.type())) {
-                    continue;
-                }
-                assertEquals(EffectLayer.REACH, layer.measure(), art.name() + " is not measured in reach");
-                float edge = layer.sizeEnd() * brightestRadius(layer.texture()) / 2f;
-                assertEquals(1f, edge, 0.05f, blast.getKey() + " " + art.name()
-                        + " ends at " + edge + " of the blast's radius");
-                rings++;
-            }
-            assertTrue(rings > 0, blast.getKey() + " draws no ring at its edge");
-        }
     }
 
     /**

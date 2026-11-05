@@ -15,30 +15,9 @@
 Hud
   DepthWord = CHUQURLIK
   RankSuffix = -daraja
-  ; The heading over the skill row and over his bag.
-  SkillsWord = MAHORAT
-  ; What an unspent level is called, beside the heading above.
-  PointsWord = NUQTA
-  ; What a slot with nothing left to buy says, and one nobody has bought yet.
-  MasterWord = USTA
-  ; The tooltip's rows and its footer. Every one of them a finished word, because
-  ; the client serves three other games and writes none of its own.
-  DamageWord = Zarar
-  CooldownWord = Kuluar
-  RadiusWord = Radius
-  RangeWord = Masofa
-  BoostWord = Kuch
+  ; The unit after a number of seconds (a buff's time left).
   SecondsWord = s
-  ; The three things the footer can say: spend one, nothing left to spend it on,
-  ; nothing to spend.
-  ; The foot of a card that may be raised reads "<RaiseKeyWord><letter> · <RaiseWord>"
-  ; -- Ctrl+Q · 1 nuqta sarflanadi. The letter is the skill's own and is put in
-  ; by the game, since only it knows which key the skill sits on.
-  RaiseKeyWord = Ctrl+
-  RaiseWord = 1 nuqta sarflanadi
-  MaxedWord = Eng yuqori daraja
-  NoPointsWord = Nuqta yo'q
-  LockedWord = yopiq
+  ; The heading over his bag.
   ItemsWord = NARSALAR
   ; What he is, under his name. A name says which hero; this says what he does.
   HeroTitle = O'q ustasi
@@ -88,8 +67,6 @@ Hud
   ; bosses' own lifesteal goes by. BuffIcon is at least a pixel.
   BuffIcon = 20
   LifestealWord = Qon so'rish
-  ; What a passive skill's card says in place of its key: it holds on its own, never pressed.
-  PassiveWord = Passiv
   ; ★ AND THESE ARE PAINTED, which is the one thing the panel has to be told
   ; about a picture. It tints what it draws -- that is how ONE white drawing
   ; served a slot that is ready, one reloading and one locked, three colours of
@@ -557,7 +534,7 @@ End
 ; carved edges laid over it are the Skin blocks below, and are not these.
 ; ---------------------------------------------------------------------------
 PanelLook
-  Blocks = [Minimap, Hero, Skills, Depth]
+  Blocks = [Minimap, Hero, Depth]
   ; A block that stands on its own instead, hung from a corner or an edge of the
   ; window on a plate of the same stone:
   ;

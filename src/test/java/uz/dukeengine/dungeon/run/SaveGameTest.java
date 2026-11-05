@@ -63,40 +63,6 @@ class SaveGameTest {
         assertEquals(boots, SaveGame.read(good, "slot2.duke"));
     }
 
-    @Test
-    void aBagAndASkillBookComeBackAsTheyWere() {
-        var bag = SHIPPED.lootDrops().bag();
-        var gauntlet = item("Gauntlet");
-        var boots = item("Boots");
-        bag.take(gauntlet, 0, 0); // worn
-        bag.take(gauntlet.worth(5), 0, 0); // carried, in the backpack's first place
-        bag.take(item("Key"), 0, 0); // carried, in its second
-        bag.take(boots.worth(7), 0, 0); // worn
-        bag.remove(0); // a gap, which comes back a gap
-        assertEquals(gauntlet, bag.at(bag.wornPlace("Zirh")));
-        var learnt = new SkillRanks(SHIPPED.progression().skillSpread());
-        learnt.startWith(SHIPPED.skillsFor("Rogue"));
-        var keys = SHIPPED.skillsFor("Rogue").stream().filter(skill -> !skill.isUltimate()).toList();
-        learnt.raise(keys.get(0).key(), 5);
-        learnt.raise(keys.get(0).key(), 5);
-        learnt.raise(keys.get(1).key(), 5);
-
-        var saved = SaveGame.read(SaveGame.of(1L, null, 1, "Rogue", SHIPPED.levelling().totalXpFor(5), learnt, bag)
-                .text(), "test");
-        var bagAgain = SHIPPED.lootDrops().bag();
-        var learntAgain = new SkillRanks(SHIPPED.progression().skillSpread());
-        saved.restore(bagAgain, learntAgain, SHIPPED);
-
-        assertEquals(bag.slots(), bagAgain.slots(), "worn where it was worn, carried where it was carried");
-        assertNull(bagAgain.at(0), "the gap is where it was");
-        assertEquals(bag.attributes(SHIPPED.attributeRules()), bagAgain.attributes(SHIPPED.attributeRules()),
-                "and what he wears acts as it did");
-        for (var skill : SHIPPED.skillsFor("Rogue")) {
-            assertEquals(learnt.rankOf(skill.key()), learntAgain.rankOf(skill.key()), "rank of " + skill.key());
-        }
-        assertEquals("", bagAgain.noteAt(0), "putting things back says nothing");
-    }
-
     /**
      * A save of version 1 was written when his six slots all acted: each thing goes back as a pick-up would, worn
      * where its slot is free and otherwise carried — so what he had on is on, and a second of a kind is carried.

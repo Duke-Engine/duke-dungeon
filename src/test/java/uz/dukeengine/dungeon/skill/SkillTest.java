@@ -116,36 +116,4 @@ class SkillTest {
 
     // ---- what the shipped file actually says ----
 
-    /** The hero really has four skills, on the four keys, from the file. */
-    @Test
-    void theShippedHeroHasFourSkills() {
-        var his = DungeonSettings.load().skillsFor("Rogue");
-
-        assertEquals(4, his.size());
-        assertEquals("QWER", his.stream()
-                .map(skill -> String.valueOf(skill.key()))
-                .reduce("", String::concat), "in the order the file lists them");
-    }
-
-    /** And they are four different things, not one thing four times. */
-    @Test
-    void theyDoFourDifferentThings() {
-        var effects = DungeonSettings.load().skillsFor("Rogue").stream()
-                .map(Skill::effect)
-                .distinct()
-                .count();
-
-        assertEquals(4, effects, "each key should be worth pressing for its own reason");
-    }
-
-    /** Exactly one of them is an ultimate — the one that waits for a level. */
-    @Test
-    void oneOfThemIsAnUltimate() {
-        var locked = DungeonSettings.load().skillsFor("Rogue").stream()
-                .filter(skill -> skill.isUltimate())
-                .toList();
-
-        assertEquals(1, locked.size());
-        assertEquals('R', locked.get(0).key());
-    }
 }

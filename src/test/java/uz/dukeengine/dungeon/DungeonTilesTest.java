@@ -159,38 +159,6 @@ class DungeonTilesTest {
     }
 
     /**
-     * The skill icons the settings file names are shipped where it says.
-     *
-     * <p>The one asset group with nothing else watching it. An icon goes from the
-     * file, through the status line, to a panel that falls back to nothing when
-     * the file will not load — so a moved or misspelt icon is an empty square in
-     * the corner of the bar and not one word anywhere. The path is the file's
-     * own, so this asks the settings rather than guessing at one.
-     */
-    @Test
-    void everySkillIconTheSettingsFileNamesIsThere() {
-        var settings = uz.dukeengine.dungeon.content.DungeonSettings.load();
-        int checked = 0;
-
-        // Every hero the file describes, not only the one it starts with. Three
-        // of them have four skills each, and a picture named for a hero nobody
-        // has played yet is exactly the one that would go missing unnoticed.
-        for (var hero : settings.heroes()) {
-            for (var skill : settings.skillsFor(hero.name())) {
-                var path = skill.icon();
-                if (path.isBlank()) {
-                    continue; // a skill drawn with a word rather than a picture
-                }
-                assertNotNull(DungeonTilesTest.class.getClassLoader().getResource(path),
-                        hero.name() + "'s " + skill.key() + " asks for " + path
-                                + ", which is not shipped");
-                checked++;
-            }
-        }
-        assertTrue(checked >= 12, "three heroes with four skills each, found " + checked);
-    }
-
-    /**
      * The pictures on the order buttons and beside the figures are shipped too.
      *
      * <p>These used to be line drawings the client held under names the game spelt

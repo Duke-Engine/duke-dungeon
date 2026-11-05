@@ -70,33 +70,6 @@ class ResumeTest {
         assertEquals(List.of(), written, "a load does not write back what it just read");
     }
 
-    @Test
-    void aLoadPutsBackHisLevelSkillsAndBag() {
-        var skills = SHIPPED.skillsFor(HERO).stream().filter(skill -> !skill.isUltimate()).toList();
-        var save = new SaveGame(11L, null, 1, HERO, SHIPPED.levelling().totalXpFor(4),
-                List.of(new SaveGame.Rank(skills.get(0).key(), 2), new SaveGame.Rank(skills.get(1).key(), 1)),
-                List.of(new SaveGame.Item(2, "Boots", 1, 3, 0)));
-
-        var session = Dungeon.newSession(99L, SHIPPED);
-        session.run().resume(save, Floors.resumed(save, SHIPPED));
-        session.game().runHeadless(3);
-
-        assertEquals(4, session.progress().getLevel());
-        assertEquals(save.experience(), session.progress().getExperience());
-        assertEquals(2, session.run().getLearnt().rankOf(skills.get(0).key()));
-        assertEquals(1, session.run().getLearnt().rankOf(skills.get(1).key()));
-        assertEquals("Boots", session.progress().getLoot().at(2).id());
-        var hero = find(session.game(), HERO);
-        assertTrue(hero.getBody().getHealth() >= hero.getBody().getMaxHealth(), "he arrives whole");
-
-        // And the next floor carries it on, as any descent does.
-        var saved = new ArrayList<SaveGame>();
-        session.run().onCheckpoint(saved::add);
-        defeatTheBoss(session);
-        assertTrue(saved.getLast().experience() >= save.experience());
-        assertEquals("Boots", saved.getLast().bag().getFirst().id());
-    }
-
     // ---- a save taken mid-floor: Saqlash, and leaving the game ----
 
     @Test

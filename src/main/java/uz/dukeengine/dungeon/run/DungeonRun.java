@@ -1075,7 +1075,7 @@ public final class DungeonRun {
         var hero = Skills.heroOf(game.getLogic(), seat.player.getIndex());
         if (hero != null) {
             return HeroStatus.of(hero, seat.progress, depth, floors.lastDepth(), settings,
-                    game.getLogic().getFrame(), look, seat.learnt);
+                    game.getLogic().getFrame(), look);
         }
         return HeroStatus.nothing(depth, floors.lastDepth(), settings,
                 seat.progress.getLoot().noteAt(game.getLogic().getFrame()), look);

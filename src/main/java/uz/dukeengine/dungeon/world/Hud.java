@@ -12,7 +12,6 @@ import uz.dukeengine.dungeon.content.PortraitArt;
  * @param depthWord         the word under the depth numeral
  * @param rankSuffix        what turns a level into the words beside his name — added straight onto
  *     the number, so "-daraja" makes "7-daraja" and " lv" would make "7 lv"
- * @param pointsWord        what an unspent level is called, beside the skill heading
  * @param heroTitle         what he is, drawn under his name
  * @param chooseModeWord    the first screen: which of the two games is being played
  * @param chooseStageWord   the screen after it, when he chose the frozen kind
@@ -36,21 +35,18 @@ import uz.dukeengine.dungeon.content.PortraitArt;
  *     it, a haste -- in the pixels the panel was designed at, and grown as the panel is
  * @param lifestealWord     what a lifesteal aura's share is called on that picture's card, as the
  *     attack word is a might's
- * @param passiveWord       what a passive skill's card says in place of its key: it is never pressed
  */
-public record Hud(String depthWord, String rankSuffix, String skillsWord, String pointsWord, String masterWord,
-        String damageWord, String cooldownWord, String radiusWord, String rangeWord, String boostWord,
-        String secondsWord, String raiseKeyWord, String raiseWord, String maxedWord, String noPointsWord,
-        String lockedWord, String itemsWord, String heroTitle, String chooseHeroWord,
+public record Hud(String depthWord, String rankSuffix, String secondsWord, String itemsWord, String heroTitle,
+        String chooseHeroWord,
         String chooseHeroHint, String chooseModeWord, String chooseModeHint, String endlessWord,
         String endlessBlurb, String stagesWord, String stagesBlurb, String chooseStageWord,
         String chooseStageHint, String attackWord, String armourWord, String speedWord, String healthWord,
         String primaryWord, String eachPointWord, String speedNowWord, String manaWord,
         boolean paintedSkillIcons, String attackIcon, String armourIcon, String speedIcon, int portraitFps,
-        PortraitArt portrait, float buffIcon, String lifestealWord, String passiveWord) {
+        PortraitArt portrait, float buffIcon, String lifestealWord) {
 
     /** What a block leaves out. */
-    public static final Hud DEFAULTS = new Hud("DEPTH", "-lv", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", false, "", "", "", 24, null, 20f, "", "");
+    public static final Hud DEFAULTS = new Hud("DEPTH", "-lv", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", false, "", "", "", 24, null, 20f, "");
 
     /**
      * The pictures beside the three figures under the bars, in their own order — beside the figures

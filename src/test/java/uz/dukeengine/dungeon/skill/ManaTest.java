@@ -81,75 +81,6 @@ class ManaTest {
 
     // ---- spending ----
 
-    /**
-     * Casting takes the skill's price out of the pool.
-     *
-     * <p>The knight's pull throughout, wherever a cast has to actually go off:
-     * it aims at himself, so it cannot be refused for want of a target and the
-     * test stays about the mana. Everything aimed somewhere -- a meteor, a
-     * skillshot -- refuses on its own terms when there is nowhere to put it, and
-     * a test that could not tell the two refusals apart would be worthless.
-     */
-    @Test
-    void castingCosts() {
-        var it = arena("Knight");
-        pool(it.book(), 200, 0);
-        int cost = skillOf("Knight", 'R').manaAt(1);
-
-        assertTrue(it.book().cast('R', 1), "the knight should have been able to pull");
-
-        assertEquals(200 - cost, it.book().getMana(), "the cast should have cost him " + cost);
-        assertTrue(cost > 0, "and the file should be charging something for it");
-    }
-
-    /**
-     * Broke: nothing happens at all.
-     *
-     * <p>The whole of what the refusal has to be. A cooldown started, a charge
-     * taken or an effect drawn would each leave the player believing he cast
-     * something — and the cooldown in particular would be the cruellest of the
-     * three, since the skill he could not afford would then also be the one he
-     * has to wait for.
-     */
-    @Test
-    void withoutTheManaNothingHappensAtAll() {
-        var it = arena("Knight");
-        int cost = skillOf("Knight", 'R').manaAt(1);
-        pool(it.book(), cost - 1, 0);
-
-        assertFalse(it.book().cast('R', 1), "he cannot afford it");
-
-        assertEquals(0, it.book().cooldownOf('R'), "and the cooldown must not have started");
-        assertTrue(it.book().isReady('R'), "the slot is still ready, it is the purse that is not");
-        assertEquals(cost - 1, it.book().getMana(), "and nothing was taken from him");
-    }
-
-    /** And he is told, once, on the frame he asked. */
-    @Test
-    void andHeIsToldWhyRatherThanLeftGuessing() {
-        var it = arena("Knight");
-        pool(it.book(), 1, 0);
-
-        assertEquals(0, it.book().getRefusedForManaFrame(), "nothing refused yet");
-        it.book().cast('R', 1);
-
-        assertTrue(it.book().getRefusedForManaFrame() > 0,
-                "a refusal nobody is told about is a key that did not work");
-    }
-
-    /** A skill he can afford and one he cannot, side by side. */
-    @Test
-    void whatHeCanAffordIsAskedPerSkill() {
-        var it = arena("Mage");
-        int cheap = skillOf("Mage", 'Q').manaAt(1);
-        int dear = skillOf("Mage", 'R').manaAt(1);
-        pool(it.book(), cheap, 0);
-
-        assertTrue(it.book().canAfford('Q', 1), "the cheapest is exactly affordable");
-        assertFalse(it.book().canAfford('R', 1), "the ultimate is not");
-        assertTrue(dear > cheap, "and the file should price them apart");
-    }
-
     // ---- getting it back ----
 
     /**
@@ -208,33 +139,6 @@ class ManaTest {
 
     // ---- what a level is worth ----
 
-    /** A bigger pool is a gift, not a refill: what was spent stays spent. */
-    @Test
-    void agrowingPoolIsAGiftRatherThanARefill() {
-        var it = arena("Knight");
-        pool(it.book(), 100, 0);
-        assertTrue(it.book().cast('R', 1), "the pull should have gone off");
-        int after = it.book().getMana();
-        assertTrue(after < 100, "and it should have cost him something");
-
-        it.book().poolOf(140, 0);
-
-        assertEquals(after + 40, it.book().getMana(),
-                "forty more to hold means forty more in hand, not a full purse");
-        assertEquals(140, it.book().getMaxMana());
-    }
-
-    /** A hero whose file names no pool pays nothing, as the game worked before. */
-    @Test
-    void aHeroWithNoPoolCastsFree() {
-        var it = arena("Knight");
-        it.book().poolOf(0, 0);
-
-        assertTrue(it.book().canAfford('R', 1), "no pool, no price");
-        assertTrue(it.book().cast('R', 1), "and the cast goes through");
-        assertEquals(0, it.book().getMana());
-    }
-
     /**
      * A level makes the pool bigger by what his intelligence has grown into, and
      * nothing else does — the trickle is his own and stays where it was.
@@ -252,34 +156,6 @@ class ManaTest {
             assertTrue(rules.mana(his.atLevel(15)) > rules.mana(his.atLevel(1)),
                     hero.name() + "'s pool should deepen with his intelligence");
         }
-    }
-
-    /**
-     * A point in a skill moves what it costs, either way.
-     *
-     * <p>Which way is the file's to say per skill, and the two read very
-     * differently — so the test is that the file is actually using both rather
-     * than that any one skill goes up.
-     */
-    @Test
-    void aPointMovesWhatASkillCosts() {
-        boolean somethingClimbs = false;
-        boolean somethingFalls = false;
-        for (var hero : SETTINGS.heroes()) {
-            for (var skill : SETTINGS.skillsFor(hero.name())) {
-                if (skill.manaCostPerLevel() > 0) {
-                    somethingClimbs = true;
-                    assertTrue(skill.manaAt(2) > skill.manaAt(1),
-                            hero.name() + "'s " + skill.key() + " should cost more at rank two");
-                } else if (skill.manaCostPerLevel() < 0) {
-                    somethingFalls = true;
-                    assertTrue(skill.manaAt(2) < skill.manaAt(1),
-                            hero.name() + "'s " + skill.key() + " should cost less at rank two");
-                }
-            }
-        }
-        assertTrue(somethingClimbs, "no skill in the game grows dearer with rank");
-        assertTrue(somethingFalls, "and none grows cheaper, so the sign is doing nothing");
     }
 
     /** And a cost can never fall through the floor into paying him to cast. */
@@ -340,27 +216,6 @@ class ManaTest {
                 assertTrue(skill.manaAt(1) > 0,
                         hero.name() + "'s " + skill.key() + " is free to cast");
             }
-        }
-    }
-
-    /**
-     * No hero can open with everything he has.
-     *
-     * <p>The one balance fact worth a test rather than a look. If all four fit
-     * inside the pool then mana is a second cooldown and nothing else: he presses
-     * all four and waits, which is what he did before any of this. It has to
-     * force a choice at least once.
-     */
-    @Test
-    void noHeroCanOpenWithAllFourAtOnce() {
-        for (var hero : SETTINGS.heroes()) {
-            int all = 0;
-            for (var skill : SETTINGS.skillsFor(hero.name())) {
-                all += skill.manaAt(1);
-            }
-            int pool = poolAtTheFirstLevel(hero);
-            assertTrue(all > pool, hero.name() + " can cast all four for " + all
-                    + " out of a pool of " + pool + ", so mana costs him no decision");
         }
     }
 
@@ -437,36 +292,4 @@ class ManaTest {
         return signature.toString();
     }
 
-    /**
-     * And slow is not starved.
-     *
-     * <p>The other end of the same question. A full pool at his first level pays for
-     * his cheapest skill several times over, and the trickle brings one back inside a
-     * pause between two rooms: he has something to lean on, and he knows what leaning
-     * on it costs.
-     */
-    @Test
-    void butSlowIsNotStarved() {
-        for (var hero : SETTINGS.heroes()) {
-            Skill cheapest = null;
-            for (var skill : SETTINGS.skillsFor(hero.name())) {
-                if (skill.effect().isPassive()) {
-                    continue; // never cast, so never paid for: the knight's dragon blood
-                }
-                if (cheapest == null || skill.manaAt(1) < cheapest.manaAt(1)) {
-                    cheapest = skill;
-                }
-            }
-            int pool = poolAtTheFirstLevel(hero);
-            assertTrue(pool >= cheapest.manaAt(1) * 3, hero.name() + "'s pool of " + pool
-                    + " pays for his cheapest, at " + cheapest.manaAt(1) + ", fewer than three times");
-            float secondsForOne = cheapest.manaAt(1) / (hero.manaRegen() / 10f);
-            assertTrue(secondsForOne <= 20f, hero.name() + " waits " + secondsForOne
-                    + "s for his cheapest to come back -- that is watching a bar");
-            assertTrue(secondsForOne >= cheapest.cooldownAt(1)
-                            / (float) GameConstants.LOGICFRAMES_PER_SECOND,
-                    hero.name() + "'s cheapest comes back faster than its own cooldown, so the"
-                            + " trickle is a second cooldown again");
-        }
-    }
 }

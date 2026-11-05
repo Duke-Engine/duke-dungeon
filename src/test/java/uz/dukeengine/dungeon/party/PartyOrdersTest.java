@@ -14,7 +14,6 @@ import uz.dukeengine.rpg.item.PickUp;
 import uz.dukeengine.rpg.item.UseItem;
 import uz.dukeengine.dungeon.run.ToTheGate;
 import uz.dukeengine.rpg.skill.CastSkill;
-import uz.dukeengine.rpg.skill.UpgradeSkill;
 import uz.dukeengine.combat.message.GameOrder;
 import uz.dukeengine.rts.network.CommandCodec;
 
@@ -25,7 +24,6 @@ class PartyOrdersTest {
             new CastSkill(2, 'Q', new ObjectId(41), null),
             new CastSkill(3, 'W', null, new Coord3D(123.456f, 78.9f, 0.1f)),
             new CastSkill(1, 'E'),
-            new UpgradeSkill(4, 'R'),
             new ChooseHero(2, "Knight"),
             new PickUp(3, new ObjectId(88)),
             new DropItem(2, 5, new Coord3D(31.75f, 402.5f, 0f)),
