@@ -265,6 +265,11 @@ final class PlayerScreens implements Painter, CanvasInput {
                 0xFF000000 | look.boneColour());
     }
 
+    /** A heading's word as the other hints are written: NARSALAR as Narsalar. */
+    private static String sentence(String word) {
+        return word.isEmpty() ? word : word.charAt(0) + word.substring(1).toLowerCase(java.util.Locale.ROOT);
+    }
+
     /** One key hint: the key's letter and the screen's word. */
     record Hint(String key, String word) {
     }
@@ -274,6 +279,7 @@ final class PlayerScreens implements Painter, CanvasInput {
         var screens = settings.screens();
         return java.util.List.of(new Hint(screens.sheetKey(), screens.sheetTitle()),
                 new Hint(screens.questsKey(), screens.questsTitle()), new Hint(screens.mapKey(), screens.mapTitle()),
+                new Hint("I", sentence(settings.hud().itemsWord())),
                 new Hint(screens.craftKey(), settings.crafting().title()),
                 new Hint(settings.run().foldKey(), screens.trackerWord()));
     }
@@ -281,15 +287,22 @@ final class PlayerScreens implements Painter, CanvasInput {
     /** How long, from the first frame played, the screens' keys are written over the corner: then nothing but the HUD. */
     private static final long HINTS_NANOS = 20_000_000_000L;
     private Dungeon.Session hinted;
-    private long hintsFrom;
+    private long hintsShown;
+    private long hintsLast;
 
+    /** Whether the keys are still to be written: counted over the frames they were, not through an intro or a talk. */
     private boolean hintsStillShown(Dungeon.Session match) {
         long now = System.nanoTime();
         if (hinted != match) {
             hinted = match;
-            hintsFrom = now;
+            hintsShown = 0;
+            hintsLast = 0;
         }
-        return now - hintsFrom < HINTS_NANOS;
+        if (hintsLast > 0 && now - hintsLast < 500_000_000L) {
+            hintsShown += now - hintsLast;
+        }
+        hintsLast = now;
+        return hintsShown < HINTS_NANOS;
     }
 
     /** The key hints in a small row at the left over the panel: a key cap with its letter, and the word beside it. */

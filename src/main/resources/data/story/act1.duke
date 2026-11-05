@@ -399,7 +399,8 @@ Cutscene
   ]
 End
 
-; The camera held on the landing through the ritual, the beams, the pillar and the meteor.
+; The camera held on the landing through the ritual, the beams, the pillar and the meteor. Its look is named: a shot
+; that names none looks as the player's camera does, and from his shoulder that is low, level and behind the town wall.
 Cutscene
   Name = Ritual
   Shots = [
@@ -407,6 +408,9 @@ Cutscene
       Zone = Qonish
       Frames = 1
       Hold = 240
+      Turn = 0
+      Pitch = 40
+      Zoom = 230
     End
   ]
 End
@@ -1248,6 +1252,9 @@ Cutscene
       Zone = Bozor
       Frames = 30
       Hold = 20
+      Turn = 0
+      Pitch = 45
+      Zoom = 140
     End,
     Shot
       Says = CommanderInCapital
@@ -1942,6 +1949,9 @@ Cutscene
       Zone = Throne
       Frames = 60
       Hold = 20
+      Turn = 0
+      Pitch = 40
+      Zoom = 110
     End,
     Shot
       Says = DarkLordWarns

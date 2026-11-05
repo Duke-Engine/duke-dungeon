@@ -558,7 +558,9 @@ public final class Main {
         var duke = Duke3D.of(session.game(), visuals).window(1280, 720).hotkeys(keys).controls(feet).smoothMotion(true).musicByGame(true);
         // His bag, the engine's RPG part in the game's words: what he carries, and a hand to take a thing
         // out of it and put it down. Told of every match it is drawn over -- this one, and a party's that replaces it.
-        var bag = Bag.on(settings, duke);
+        // Played from his shoulder with the pointer held by the camera, the bag is a panel on I, not one always up.
+        var bag = Bag.on(settings, duke).onRequest(true);
+        keys.on('I', settings.hud().itemsWord(), game -> bag.toggle());
         Bag.show(bag, session, settings);
         // And over it, the box a conversation is said in, which hands the bag whatever it does not take.
         // Under it all, the open world's hour and weather laid over the world -- see Atmosphere.

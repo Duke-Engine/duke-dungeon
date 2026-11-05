@@ -181,12 +181,18 @@ Cutscene
       Zone = Altar
       Frames = 1
       Hold = 60
+      Turn = 0
+      Pitch = 40
+      Zoom = 100
     End,
     Shot
       ; ...then to the throne, where the medallion has appeared in her hand...
       Zone = Throne
       Frames = 60
       Hold = 20
+      Turn = 0
+      Pitch = 40
+      Zoom = 100
     End,
     Shot
       ; ...and what she says of it.

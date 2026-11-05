@@ -194,11 +194,12 @@ final class Atmosphere implements Painter {
         return alpha << 24 | 0xE8F0FF;
     }
 
-    /** A sun or a moon and the hour, over the minimap's corner, above the key hints. */
+    /** A sun or a moon and the hour: above the key hints over a bottom panel, else in the top left corner. */
     private void clock(Canvas canvas, float hour, float bottom) {
         var font = Canvas.Font.of("Georgia", Math.clamp(Math.round(canvas.height() * 0.014f), 10, 16));
         float line = canvas.measure(font, "Ag").lineHeight() + 4f;
-        float y = bottom - 2f * (line + 8f);
+        // With no panel the bottom left is his health and mana: the hour keeps to the top, out of the picture's way.
+        float y = canvas.bottomPanel() == null ? 12f : bottom - 2f * (line + 8f);
         float x = 12f;
         boolean night = day.night(hour);
         canvas.drawImage(Canvas.Image.of("kit/effects/particles/circle_05.png"), x, y, x + line, y + line,
