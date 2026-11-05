@@ -119,6 +119,12 @@ final class PlayerScreens implements Painter, CanvasInput {
         under.resized(width, height);
     }
 
+    /** A screen of his open holds the keys from his feet, as whatever is under it may. */
+    @Override
+    public boolean holdsKeys() {
+        return open != Open.NONE || under.holdsKeys();
+    }
+
 
     @Override
     public boolean take(Event event) {

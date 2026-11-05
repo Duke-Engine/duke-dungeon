@@ -52,7 +52,6 @@ import uz.dukeengine.client3d.Moment;
 import uz.dukeengine.dungeon.world.Progression;
 import uz.dukeengine.dungeon.world.Run;
 import uz.dukeengine.client3d.Skin;
-import uz.dukeengine.client3d.SkillRing;
 import uz.dukeengine.dungeon.world.StatBlock;
 import uz.dukeengine.client3d.Sun;
 import uz.dukeengine.dungeon.world.Theme;
@@ -94,6 +93,7 @@ public final class Content {
                     Recovery.Data.class, SkillBook.Data.class, Bow.Data.class, EyesOnly.Data.class,
                     ArrowUpdate.Data.class, FallingUpdate.Data.class, MendingUpdate.Data.class,
                     SummoningUpdate.Data.class, Swing.Data.class, GroundItem.Data.class,
+                    uz.dukeengine.action.Dodge.Data.class, uz.dukeengine.dungeon.run.Sprint.Data.class,
                     uz.dukeengine.rpg.hero.FountainUpdate.Data.class,
                     uz.dukeengine.rpg.mission.GateUpdate.Data.class))
             .flatMap(List::stream).toList();
@@ -107,7 +107,7 @@ public final class Content {
             named(Theme.ThemeMonster.class),
             named(Combat.class), named(Run.class), named(Progression.class), named(LootDrops.class),
             named(Hud.class), named(UnitBar.class), named(StatBlock.class),
-            named(SkillRing.class), named(PanelLook.class), named(HitNumbers.class), named(MenuStyle.class), named(Sun.class),
+            named(PanelLook.class), named(HitNumbers.class), named(MenuStyle.class), named(Sun.class),
             named(Fog.class), named(uz.dukeengine.dungeon.world.PaintedGround.class), named(Tiles.class), named(EffectBudget.class), named(HitFeel.class),
             named(Audio.class), named(World.class), named(ProceduralMap.class), named(StaticMap.class),
             named(uz.dukeengine.dungeon.world.Party.class),
@@ -115,7 +115,7 @@ public final class Content {
             named(uz.dukeengine.rpg.story.Npc.class), named(uz.dukeengine.rpg.story.Quest.class),
             named(uz.dukeengine.dungeon.story.Dialogue.class), named(uz.dukeengine.dungeon.world.SaveMenu.class),
             named(uz.dukeengine.dungeon.world.MainMenu.class), named(uz.dukeengine.dungeon.world.Splash.class), named(uz.dukeengine.dungeon.world.Screens.class),
-            named(uz.dukeengine.dungeon.world.Travel.class), named(uz.dukeengine.dungeon.world.DayNight.class),
+            named(uz.dukeengine.dungeon.world.Controls.class), named(uz.dukeengine.dungeon.world.Travel.class), named(uz.dukeengine.dungeon.world.DayNight.class),
             named(uz.dukeengine.rpg.story.Trigger.class), named(uz.dukeengine.dungeon.story.Cutscene.class),
             named(uz.dukeengine.rpg.story.Merchant.class), named(uz.dukeengine.dungeon.story.Trade.class),
             named(uz.dukeengine.dungeon.story.GoldBurst.class),

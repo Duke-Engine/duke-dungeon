@@ -74,6 +74,16 @@ final class DialogueScreen implements Painter, CanvasInput {
         return match;
     }
 
+    /**
+     * Whether held keys may walk him: not while a conversation or a cutscene has the screen -- the client then sends
+     * his walk's NONE once. The bag under it is no window that opens: it is on the screen the whole time he plays
+     * (BagScreen.isOpen is that), so it holds nothing; the trade window shuts as he walks off, so neither.
+     */
+    @Override
+    public boolean holdsKeys() {
+        return busy() || underInput != null && underInput.holdsKeys();
+    }
+
 
     /** Whether a conversation or a cutscene has the screen: nothing else may open over it. */
     boolean busy() {

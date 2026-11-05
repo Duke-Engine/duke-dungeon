@@ -20,7 +20,7 @@ import uz.dukeengine.rpg.skill.SkillBook;
  * the player cannot say with a key:
  *
  * <ul>
- * <li>his weapon picks no fight by itself, every frame it is asked;
+ * <li>his weapon picks no fight by itself (it is built so, in {@code Dungeon}, and asked again each frame);
  * <li>he faces what his weapon is on while he stands, and lets go of a target that is dead;
  * <li>he waits, rather than shoves, when a body stands in the doorway of an errand he was sent on (E on a thing on the
  *     floor, on a person, on the gate): see {@link ItemErrand} and {@link WayAhead}.
@@ -53,15 +53,6 @@ public final class HeroBrain extends UnitScript {
 
     public HeroBrain(DungeonSettings settings) {
         this.settings = settings;
-    }
-
-    @Override
-    public void onStart() {
-        // His weapon picks no fight by itself: he swings when told, and what it is on is the swing's or the lock's.
-        var weapon = unit().findModule(WeaponUpdate.class);
-        if (weapon != null) {
-            weapon.acquiresNothing(true);
-        }
     }
 
     @Override

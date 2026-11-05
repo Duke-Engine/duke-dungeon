@@ -355,8 +355,8 @@ class PlayerScreensTest {
         assertEquals(SETTINGS.screens().questsTitle(), keys.wordOf('L'));
         assertEquals(SETTINGS.screens().mapTitle(), keys.wordOf('M'));
         assertEquals(SETTINGS.screens().trackerWord(), keys.wordOf('J'));
-        var skill = SETTINGS.skillsFor(SETTINGS.run().defaultHero()).getFirst();
-        assertEquals(skill.name(), keys.wordOf(skill.key()), "a skill by its name");
+        assertEquals(SETTINGS.controls().dodgeWord(), keys.wordOf(' '), "the roll, on Space");
+        assertEquals(SETTINGS.controls().interactWord(), keys.wordOf('E'), "the interact key");
         var said = SETTINGS.mainMenu().said();
         assertEquals("Tugmalar", said.get("Keys"), "the list's heading in Uzbek");
         assertTrue(said.keySet().containsAll(List.of("Pause", "Select all", "Pan up")), "the client's own controls");

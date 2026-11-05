@@ -548,12 +548,13 @@ public final class Main {
         // reaches back into both: whose eyes open the map, what his four keys ask
         // the player to point at, and how far each of them reaches are all part of
         // who you chose, and none of them is known until he is chosen.
-        var keys = controls(settings);
+        var feet = feet(settings);
+        var keys = controls(settings, feet);
         // Held too: a party is a match of its own, built once its players have met, and
         // it is the client that is asked to play it — see PartyFront.
         // A player with no settings file yet starts in a 1280 x 720 window, not filling his screen (playtest of 1.0.41);
         // what he chose, once he has, is the engine's settings.properties and wins over this.
-        var duke = Duke3D.of(session.game(), visuals).window(1280, 720).hotkeys(keys).musicByGame(true);
+        var duke = Duke3D.of(session.game(), visuals).window(1280, 720).hotkeys(keys).controls(feet).musicByGame(true);
         // His bag, the engine's RPG part in the game's words: what he carries, and a hand to take a thing
         // out of it and put it down. Told of every match it is drawn over -- this one, and a party's that replaces it.
         var bag = Bag.on(settings, duke);
@@ -572,6 +573,8 @@ public final class Main {
         var launch = new LaunchScreen(new Soundscape(screens, duke, settings), screens, settings.splash(),
                 settings.mainMenu(), () -> duke.holdBackdrop(false), duke::sound);
         duke.canvas(launch).input(launch).onLoading(launch::loaded).onBackdropLoading(launch::loaded);
+        // What the dodge asks before it rolls him: whether a screen over the world holds the keys.
+        over = launch;
         duke.holdBackdrop(true);
         screensOn(keys, screens, settings);
         duke.worldPicture(settings.screens().mostTexels(), screens.map()::picture);
@@ -803,77 +806,6 @@ public final class Main {
                         front.join())));
     }
 
-    /**
-     * Point the four keys at what THIS hero's skills ask the player for.
-     *
-     * <p>One hero's four, never the file's twelve. A key belongs to a SLOT rather
-     * than to a skill — all three of them cast on Q, W, E and R — so binding every
-     * skill in the file would leave whichever hero was read last deciding what Q
-     * asks for. That is not a small wrongness: the rogue's Q wants a creature, and the
-     * knight's and the mage's want a direction.
-     *
-     * <p><b>Called again every time a hero is chosen</b>, and that is the whole
-     * point of it being a method. Settled once at startup it was settled from
-     * {@code DefaultHero}, so picking anybody else got you his skills with the
-     * default hero's aims — and a skill handed the wrong sort of target does not
-     * misfire, it refuses: {@code SkillBook} declines a fireball with no direction
-     * and leaves the cooldown unspent, which from a chair is a key that does
-     * nothing whatever.
-     *
-     * <p>Rebinding a letter replaces what it asks for and not whether the game has
-     * claimed it, so the client's own controls are untouched by this — the letters
-     * were claimed at startup and every hero in the file uses the same four. A
-     * hero who wanted a fifth letter would need that letter claimed up front;
-     * {@code HeroChoiceTest} holds the four still so the day that changes is a
-     * failing test rather than a dead key.
-     */
-    static void aimsFor(Hotkeys keys, DungeonSettings settings, String hero) {
-        for (var skill : settings.skillsFor(hero)) {
-            char key = skill.key();
-            char letter = key;
-            keys.describe(letter, skill.name()); // its name on the Settings screen's list of keys (E46)
-            if (skill.effect().isPassive()) {
-                // Never cast: its key does nothing -- no aim, no order, no refusal (the panel takes no click on its
-                // slot since E65). Bound to nothing rather than left alone, so another hero's skill on the same
-                // letter does not stay behind.
-                keys.on(letter, game -> { });
-                continue;
-            }
-            switch (skill.effect().aim()) {
-                case UNIT -> keys.onUnit(letter, (game, id) -> game.postCommand(PartyOrders.of(new CastSkill(
-                        game.getLocalPlayerIndex(), key, new ObjectId(id), null))));
-                case GROUND -> keys.onGround(letter, (game, spot) -> game.postCommand(PartyOrders.of(
-                        new CastSkill(game.getLocalPlayerIndex(), key, null, spot))));
-                // The shield charge is aimed down a lane, as the wave is: any spot says which way, stone included
-                // (Dungeon.toTheEndOfItsLane puts it out at his whole Distance).
-                case OPEN_GROUND -> {
-                    if (skill.effect() == uz.dukeengine.rpg.skill.SkillEffect.SKEWER) {
-                        keys.onGround(letter, (game, spot) -> game.postCommand(PartyOrders.of(
-                                new CastSkill(game.getLocalPlayerIndex(), key, null, spot))));
-                    } else {
-                        keys.onOpenGround(letter, (game, spot) -> game.postCommand(PartyOrders.of(
-                                new CastSkill(game.getLocalPlayerIndex(), key, null, spot))));
-                    }
-                }
-                case SELF -> keys.on(letter, game -> game.postCommand(PartyOrders.of(
-                        new CastSkill(game.getLocalPlayerIndex(), key))));
-            }
-        }
-    }
-
-    /**
-     * And draw HIS four rings, for the same reason and with the same lifetime.
-     *
-     * <p>A ring is keyed by the letter too, so the rogue's Q and the mage's Q are
-     * two quite different circles — one round a creature, one down a lane. Left at
-     * the file's hero the mage would have been shown where his fireball could
-     * reach in the shape of somebody else's skill.
-     */
-    static void ringsFor(Visuals visuals, DungeonSettings settings, String hero) {
-        for (var skill : settings.skillsFor(hero)) {
-            visuals.skillRange(rangeOf(skill, settings.skillRing().selfRadius()));
-        }
-    }
 
     /**
      * The endless dungeon, or the stage somebody asked for.
@@ -962,8 +894,6 @@ public final class Main {
         // creature, and a fireball handed a creature instead of a
         // direction has nowhere to fly and refuses, which from a
         // chair is a skill that does nothing at all.
-        aimsFor(keys, settings, him);
-        ringsFor(visuals, settings, him);
     }
 
     /**
@@ -1134,27 +1064,54 @@ public final class Main {
     }
 
     /**
-     * The keys that cast skills, taken from the same file that says what the
-     * skills are.
-     *
-     * <p>Read out of the settings rather than written here, so adding a fifth
-     * skill — or a second hero with different keys — binds its key by being in the
-     * file. A press does one thing: post the command. Deciding whether the skill
-     * is ready, unlocked, or able to reach what it was aimed at is the
-     * simulation's, on its own thread, on a frame boundary.
-     *
-     * <p>Which of the three ways a key is bound follows from what the skill does,
-     * because the effect is what knows: a strike is pointed at a creature, a dash
-     * at a spot, and the two that go off around the caster are pointed at nothing.
-     * The client keeps the press-then-click; this only says what to send once the
-     * player has chosen.
+     * The hero played from his shoulder, as the window sees it: the mouse turns the camera and the pointer is held
+     * (Alt lets it go; a menu, a screen or a conversation does too), W A S D run him the way the camera looks, Shift
+     * sprints, both buttons swing, and E works the nearest thing in front of him. Nothing here reaches the simulation
+     * but as orders of the game's own ({@code GameOrder}), so a party hears every one.
      */
+    static uz.dukeengine.client3d.action.ActionControls feet(DungeonSettings settings) {
+        var controls = settings.controls();
+        return new uz.dukeengine.client3d.action.ActionControls()
+                .mouse(uz.dukeengine.client3d.action.MouseScheme.ACTION)
+                .walk(uz.dukeengine.client3d.action.DirectionKeys.WASD, Main::walk)
+                .sprint((game, on) -> game.postCommand(PartyOrders.of(
+                        new uz.dukeengine.dungeon.run.Sprinting(game.getLocalPlayerIndex(), on))))
+                .follow(uz.dukeengine.client3d.action.CameraFollow.of(null)
+                        .orbiting(uz.dukeengine.client3d.action.CameraFollow.ORBIT_SENSITIVITY, false, 0f))
+                .holdMouse(true)
+                .rightStrikes(true)
+                .interact(controls.interactKey().charAt(0), controls.interactReach(), controls.interactCone(),
+                        controls::promptOf);
+    }
+
+    /**
+     * The client's own keys, cut down to the few a hero on foot keeps: Escape's menu, P to pause, F11 for the full
+     * screen, Alt to free the pointer, Shift to sprint. Nothing pans, selects, groups or stops: there is no RTS here.
+     */
+    static uz.dukeengine.client3d.KeyMap onFootKeys() {
+        return uz.dukeengine.client3d.KeyMap.empty()
+                .bind(uz.dukeengine.client3d.KeyMap.Control.OPTIONS,
+                        uz.dukeengine.client3d.KeyMap.Key.of(com.jme3.input.KeyInput.KEY_ESCAPE))
+                .bind(uz.dukeengine.client3d.KeyMap.Control.PAUSE,
+                        uz.dukeengine.client3d.KeyMap.Key.of(com.jme3.input.KeyInput.KEY_P))
+                .bind(uz.dukeengine.client3d.KeyMap.Control.FULLSCREEN,
+                        uz.dukeengine.client3d.KeyMap.Key.of(com.jme3.input.KeyInput.KEY_F11))
+                .bind(uz.dukeengine.client3d.KeyMap.Control.FREE_POINTER,
+                        uz.dukeengine.client3d.KeyMap.Key.alt(com.jme3.input.KeyInput.KEY_LMENU),
+                        uz.dukeengine.client3d.KeyMap.Key.alt(com.jme3.input.KeyInput.KEY_RMENU))
+                .bind(uz.dukeengine.client3d.KeyMap.Control.SPRINT,
+                        uz.dukeengine.client3d.KeyMap.Key.of(com.jme3.input.KeyInput.KEY_LSHIFT),
+                        uz.dukeengine.client3d.KeyMap.Key.of(com.jme3.input.KeyInput.KEY_RSHIFT));
+    }
 
     static Hotkeys controls(DungeonSettings settings) {
+        return controls(settings, feet(settings));
+    }
+
+    /** The game's keys, with E bound to {@code onFoot}'s interact. */
+    static Hotkeys controls(DungeonSettings settings, uz.dukeengine.client3d.action.ActionControls onFoot) {
         var keys = Hotkeys.create();
-        // The file's default hero to begin with, and whoever is actually chosen
-        // the moment he is -- see aimsFor, and whoToPlay, which calls it again.
-        aimsFor(keys, settings, settings.run().defaultHero());
+        keys.controls(onFootKeys());
         // The belt's keys, 1 to its size: a draught from that stack, as this game's order, named on the Settings
         // screen's list of keys (E46; digits bind since E45's fix).
         var rules = settings.items().rules();
@@ -1175,87 +1132,67 @@ public final class Main {
             keys.on(mount.key().charAt(0), mount.keyWord(), game -> game.postCommand(
                     PartyOrders.of(new uz.dukeengine.dungeon.run.Ride(game.getLocalPlayerIndex(), null))));
         }
-        // Spending a level on a slot. A click on the badge rather than a letter,
-        // so it comes through a door of its own -- and it is a COMMAND like every
-        // other decision, settled on a frame boundary where the rules live.
-        keys.onRaiseSkill((game, key) -> game.postCommand(PartyOrders.of(new uz.dukeengine.rpg.skill.UpgradeSkill(
-                game.getLocalPlayerIndex(), key))));
         // The mission list folds to its tab and unfolds again: a thing of the window, so it flips the window's own
         // flag and sends nothing to the simulation.
         keys.on(settings.run().foldKey().charAt(0), settings.screens().trackerWord(), game -> MissionScreen.fold());
+        // Space rolls him, the way he runs or faces; E works the nearest thing in front of him.
+        var controls = settings.controls();
+        keys.on(' ', controls.dodgeWord(), game -> dodge(game, settings));
+        keys.on(controls.interactKey().charAt(0), controls.interactWord(), onFoot::interact);
         return keys;
     }
 
+    /** The way the held keys last said, for the dodge: NONE while none is held. */
+    private static volatile int walking = uz.dukeengine.client3d.action.DirectionKeys.NONE;
+
+    /** The screens over the world, top first (the launch screen's chain): the dodge rolls only while none holds keys. */
+    static volatile uz.dukeengine.client3d.CanvasInput over;
+
+    /** His hero walked along {@code angle} (256ths of a turn, or NONE to stop): the held keys' order. */
+    static void walk(uz.dukeengine.game.DukeGame game, int angle) {
+        walking = angle;
+        game.postCommand(uz.dukeengine.action.ActionOrders.along(game.getLocalPlayerIndex(), heroes(game), angle));
+    }
+
+    /** Whose orders these are: every unit the local player owns that he can select -- his hero. */
+    private static java.util.List<ObjectId> heroes(uz.dukeengine.game.DukeGame game) {
+        var mine = new java.util.ArrayList<ObjectId>();
+        for (var unit : game.getSnapshot().units()) {
+            if (unit.playerIndex() == game.getLocalPlayerIndex() && unit.selectable()) {
+                mine.add(new ObjectId(unit.id()));
+            }
+        }
+        return mine;
+    }
+
+    /** Space: his dodge, unless a screen over the world has the keys. */
+    static void dodge(uz.dukeengine.game.DukeGame game, DungeonSettings settings) {
+        var screens = over;
+        if (screens == null || !screens.holdsKeys()) {
+            roll(game, walking, settings);
+        }
+    }
+
     /**
-     * What one skill's ring should look like, worked out from the skill itself.
-     *
-     * <p>The effect is what knows. A strike is pointed at a creature within its
-     * range whatever its numbers say; a blast dropped on a spot needs both how far
-     * it can be thrown and how much it covers; a shot down a lane needs the length
-     * and the width of the lane. So nothing here is a second set of numbers to
-     * keep in step with the skills — every figure is the skill's own, and a hero
-     * added next month gets his rings by having skills.
-     *
-     * <p>The one number that is not a skill's is the ring for something that only
-     * touches the caster: there is no reach to draw, so the look says how wide to
-     * draw "just him".
+     * His dodge cast along {@code angle} (256ths of a turn), or the way he faces for NONE: a point 16 off, though the
+     * roll goes its Distance toward any point. Nothing if his hero has none.
      */
-    static uz.dukeengine.client3d.SkillRange rangeOf(
-            uz.dukeengine.rpg.skill.Skill skill, float selfRadius) {
-        var shape = switch (skill.effect()) {
-            // A mending is pointed at a creature as a strike is -- one of its own.
-            case STRIKE, HEAL -> uz.dukeengine.client3d.SkillRange.Shape.AT_A_CREATURE;
-            case AREA_AT_SPOT -> uz.dukeengine.client3d.SkillRange.Shape.AT_A_SPOT;
-            // A wave runs down a lane as a shot does, only on through what it meets.
-            // And the shield charge: a line as long as his drive and as wide as what it catches -- the owner,
-            // 2026-10-10: "a line like the first skill's, not a point inside a circle".
-            case SKILLSHOT, WAVE, SKEWER -> uz.dukeengine.client3d.SkillRange.Shape.DOWN_A_LANE;
-            // A blink is pointed at a spot exactly as a dash is. That it does not
-            // cross what is between is the simulation's business; what the player
-            // has to do with the mouse is the same thing, so the ring is the same.
-            case DASH, BLINK -> uz.dukeengine.client3d.SkillRange.Shape.AT_A_SPOT;
-            case METEOR -> uz.dukeengine.client3d.SkillRange.Shape.AT_A_SPOT;
-            // A summoning calls them up round him, as far out as its Radius; a haste finds one of
-            // his own round him, as far out as its Range; a pull gathers whoever is within its Radius.
-            case AREA_DAMAGE, SUMMON, HASTE, PULL, PUSH -> uz.dukeengine.client3d.SkillRange.Shape.AROUND_HIM;
-            // None of these is aimed past him: one sharpens his sword, one thickens
-            // his skin, and the passives -- never cast -- drink from his blows or
-            // lend round him.
-            case EMPOWER, GUARD, LIFESTEAL, DAMAGE_AURA, MANA_AURA, LIFESTEAL_AURA, SOUL_DRINK, UNYIELDING,
-                    DRAGON_BLOOD, STAGGER, MOVE_SPEED, MOUNT
-                    -> uz.dukeengine.client3d.SkillRange.Shape.ON_HIMSELF;
-            // An effect of the engine's no hero here has: nothing past him either.
-            default -> uz.dukeengine.client3d.SkillRange.Shape.ON_HIMSELF;
-        };
-        float reach = switch (skill.effect()) {
-            case STRIKE, AREA_AT_SPOT, SKILLSHOT, HEAL -> skill.range();
-            case DASH, BLINK, SKEWER, WAVE -> skill.distance();
-            case METEOR -> skill.range();
-            case AREA_DAMAGE, SUMMON, PULL, PUSH -> skill.radius();
-            case HASTE -> skill.range();
-            case EMPOWER, GUARD, LIFESTEAL, DAMAGE_AURA, MANA_AURA, LIFESTEAL_AURA, SOUL_DRINK, UNYIELDING,
-                    DRAGON_BLOOD, STAGGER, MOVE_SPEED, MOUNT -> selfRadius;
-            default -> selfRadius;
-        };
-        // What it LEAVES where it lands: a blast's radius, a lane's width. A dash
-        // leaves a man, and a circle round a man-sized spot is a second ring saying
-        // what the pointer already said -- so it draws none.
-        // What it LEAVES where it lands: a blast's radius. A dash leaves a man,
-        // and a circle round a man-sized spot is a second ring saying what the
-        // pointer already said -- so it draws none.
-        //
-        // ★ Nor does a SKILLSHOT, though it bursts. Where it bursts depends on
-        // where it STOPS, which is the first body or the first wall, so a circle
-        // drawn at the far end of its reach is a promise the shot does not have
-        // to keep. Its Radius is still real and still hurts -- see SkillBook --
-        // it simply is not a thing that can be honestly drawn before the cast.
-        float area = switch (skill.effect()) {
-            case AREA_AT_SPOT, METEOR -> skill.radius();
-            default -> 0f;
-        };
-        // A lane is as wide as what runs down it: a shot's HitWidth, a charge's catch either side of him.
-        float width = skill.effect() == uz.dukeengine.rpg.skill.SkillEffect.SKEWER ? 2f * skill.radius() : skill.hitWidth();
-        return new uz.dukeengine.client3d.SkillRange(skill.key(), shape, reach, area, width);
+    static void roll(uz.dukeengine.game.DukeGame game, int angle, DungeonSettings settings) {
+        for (var unit : game.getSnapshot().units()) {
+            if (unit.playerIndex() != game.getLocalPlayerIndex()) {
+                continue;
+            }
+            for (var skill : settings.bookFor(unit.templateName())) {
+                if (skill.effect() == uz.dukeengine.rpg.skill.SkillEffect.MODULE) {
+                    double way = angle < 0 ? unit.orientation() : angle * 2.0 * Math.PI / 256.0;
+                    var point = new uz.dukeengine.core.math.Coord3D(unit.x() + 16f * (float) Math.cos(way),
+                            unit.y() + 16f * (float) Math.sin(way), 0f);
+                    game.postCommand(PartyOrders.of(new CastSkill(game.getLocalPlayerIndex(), skill.key(), null,
+                            point)));
+                    return;
+                }
+            }
+        }
     }
 
     /**
@@ -1499,18 +1436,6 @@ public final class Main {
 
         HeroLooks.of(visuals).panelLook(settings.panelLook());
         visuals.hitNumbers(settings.hitNumbers());
-
-        // How far each skill reaches, so the client can draw it before it is spent
-        // — see SkillRing, and SkillRange for what each shape means.
-        visuals.rangeLook(new uz.dukeengine.client3d.RangeLook(
-                settings.skillRing().bandWidth(), settings.skillRing().fillAlpha(), settings.skillRing().edgeAlpha(),
-                settings.skillRing().height(), settings.skillRing().pulseDepth(), settings.skillRing().pulsePerSecond(),
-                settings.skillRing().segments(), settings.skillRing().allowColour(), settings.skillRing().denyColour(),
-                settings.skillRing().areaColour(), settings.skillRing().brightness()));
-        // The file's default hero to begin with, and whoever is actually chosen
-        // the moment he is -- see ringsFor.
-        ringsFor(visuals, settings, settings.run().defaultHero());
-
         themes(visuals, settings);
 
         // The floor is a modular kit, laid out by the client from the same grid

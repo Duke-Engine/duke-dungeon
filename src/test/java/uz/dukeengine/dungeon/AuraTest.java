@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 import uz.dukeengine.client3d.EffectLayer;
-import uz.dukeengine.client3d.SkillRange;
 import uz.dukeengine.client3d.Visuals;
 import uz.dukeengine.combat.module.StatusUpdate;
 import uz.dukeengine.core.GameConstants;
@@ -1608,7 +1607,7 @@ public class AuraTest {
 
     /**
      * As shipped: the summoner's E, written after its haste -- half as hard again for everyone of its own within 60 of
-     * it, never cast -- and its ring drawn on him alone, as a lifesteal's is.
+     * it, never cast --.
      */
     @Test
     void asShippedTheSummonersMight() {
@@ -1623,6 +1622,5 @@ public class AuraTest {
         assertEquals(60f, might.radius(), 0.001f);
         assertEquals(1, might.maxRank());
         assertEquals("Qudrat", might.name());
-        assertEquals(SkillRange.Shape.ON_HIMSELF, Main.rangeOf(might, 5f).shape());
     }
 }

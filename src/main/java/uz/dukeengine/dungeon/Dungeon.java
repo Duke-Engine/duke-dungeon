@@ -180,9 +180,15 @@ public final class Dungeon {
                                     HeroBuild.legs(data, attributesOf(settings, owner), rules)));
                     // Named after the creature that holds it, so every blow is heard as fired.<Template> --
                     // a knight's sword, a brute's axe, a stalker's crossbow -- see data/sounds/sfx.duke.
-                    factory.register(uz.dukeengine.combat.module.WeaponUpdate.Data.class,
-                            (owner, data) -> new uz.dukeengine.combat.module.WeaponUpdate(owner, namedFor(owner,
-                                    HeroBuild.weapon(data, attributesOf(settings, owner), rules))));
+                    factory.register(uz.dukeengine.combat.module.WeaponUpdate.Data.class, (owner, data) -> {
+                        var weapon = new uz.dukeengine.combat.module.WeaponUpdate(owner, namedFor(owner,
+                                HeroBuild.weapon(data, attributesOf(settings, owner), rules)));
+                        // A hero swings when told and picks no fight of his own, from his first frame (HeroBrain).
+                        if (owner.getTemplate().modules().stream().anyMatch(HeroBrain.Data.class::isInstance)) {
+                            weapon.acquiresNothing(true);
+                        }
+                        return weapon;
+                    });
                     // Health coming back on its own, at the rate his block names --
                     // set by HeroProgress, as his mana is.
                     factory.register(Recovery.Data.class, (owner, data) -> new Recovery(owner));
@@ -222,6 +228,11 @@ public final class Dungeon {
                     // This is how the brain finds out that it struck -- and where
                     // the keep's shut gate takes a blow struck through it.
                     factory.register(Swing.Data.class, (owner, data) -> new Swing(owner, seal));
+                    // His roll (Space), the action module's: what a skill of Effect MODULE does on a hero that has it.
+                    factory.register(uz.dukeengine.action.Dodge.Data.class, uz.dukeengine.action.Dodge::new);
+                    // And his sprint (Shift): a faster run while the order says so, the Controls block's share.
+                    factory.register(uz.dukeengine.dungeon.run.Sprint.Data.class, (owner, data) ->
+                            new uz.dukeengine.dungeon.run.Sprint(owner, settings.controls().sprintPercent() / 100f));
                     // What a dead monster leaves lying about. The chest is a
                     // creature like any other -- it is in the world, so the client
                     // draws it without being told anything special.
@@ -520,6 +531,14 @@ public final class Dungeon {
                 case uz.dukeengine.dungeon.run.Sell sell -> run.sell(game, sell.playerIndex(), sell.merchant(), sell.slot());
                 // A draught from the belt, keys 1-4. See Belt.
                 case uz.dukeengine.dungeon.run.Drink drink -> run.drink(game, drink.playerIndex(), drink.belt());
+                // Shift held or let go: his hero runs fast or at his own pace.
+                case uz.dukeengine.dungeon.run.Sprinting sprint -> {
+                    var hero = Skills.heroOf(game.getLogic(), sprint.playerIndex());
+                    var legs = hero == null ? null : hero.findModule(uz.dukeengine.dungeon.run.Sprint.class);
+                    if (legs != null) {
+                        legs.set(sprint.on());
+                    }
+                }
                 // A journey to a found watchtower, paid for. See DungeonRun.travel.
                 case uz.dukeengine.dungeon.run.TravelTo travel ->
                         run.travel(game, travel.playerIndex(), travel.tower());

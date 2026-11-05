@@ -38,6 +38,7 @@ class SkillLookTest {
         return SETTINGS.skills().stream().filter(skill -> heroes.contains(skill.heroTemplate()))
                 // Nor his horse: what it looks like is his riding, no Look.
                 .filter(skill -> !skill.effect().isPassive()
+                        && skill.effect() != uz.dukeengine.rpg.skill.SkillEffect.MODULE // nor his dodge
                         && skill.effect() != uz.dukeengine.rpg.skill.SkillEffect.MOUNT)
                 .toList();
     }

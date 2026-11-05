@@ -82,7 +82,7 @@ public final class Lang {
      */
     static final Set<String> ID_KEYS = Set.of("Zone", "Open", "Where", "At", "Cells", "Map", "Model", "Icon", "Picture",
             "Look", "Sound", "Music", "Plays", "Flags", "Items", "Needs", "Gives", "Forage", "Recipes", "Gathers",
-            "Hunts", "Clips", "Opens", "Ambience", "SceneLook", "Also", "Route", "Files", "Kind",
+            "Hunts", "Clips", "Opens", "Ambience", "InteractOrders", "SceneLook", "Also", "Route", "Files", "Kind",
             "Modules", "Animations", "Cue", "Cues", "Sfx", "Footsteps", "Start", "Talk", "Says", "Starts", "Base", "Points");
 
     /** Files written in English to begin with (sounds, projectiles, rigs, a test's creatures): nothing is missing there. */

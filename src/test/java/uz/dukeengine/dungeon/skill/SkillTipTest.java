@@ -32,6 +32,7 @@ class SkillTipTest {
         // His slots: not his STAGGER, never bought nor drawn on his bar.
         return SETTINGS.skills().stream().filter(skill -> heroes.contains(skill.heroTemplate()))
                 .filter(skill -> skill.effect() != uz.dukeengine.rpg.skill.SkillEffect.STAGGER
+                        && skill.effect() != uz.dukeengine.rpg.skill.SkillEffect.MODULE // nor his dodge
                         && skill.effect() != uz.dukeengine.rpg.skill.SkillEffect.MOUNT
                         && skill.effect() != uz.dukeengine.rpg.skill.SkillEffect.PUSH) // nor the story's landing push
                 .toList();

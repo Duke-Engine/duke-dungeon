@@ -97,6 +97,11 @@ Hero
     ; Health coming back on its own, at the rate his Hero block names.
     Recovery
     End,
+    ; His roll (Space) and his run when Shift is held: see the Dodge skill and the Controls block.
+    Dodge
+    End,
+    Sprint
+    End,
     ; Counts what he kills. He is worth nothing himself, and the engine's own four
     ; ranks are switched off (0 0 0), leaving a plain experience total for the game
     ; to spend on levels of its own devising.
@@ -539,6 +544,22 @@ Hero
       Blurb = Bir muddat uning hamma zarbalari kuchliroq bo'ladi. O'zi hech kimga tegmaydi — bu boshqa hamma narsani qimmatroq qiladigan oyna.
       ManaCost = 40
       ManaCostPerLevel = 0
+    End,
+    Skill
+      ; His dodge, no slot of any bar: pressed on Space (Main.dodge), never bought, his from the start. The Dodge
+      ; module of his Modules does it: a roll of Distance toward the way he runs (or faces) over DurationFrames
+      ; (0.3s), out of harm's way its first TickFrames (0.23s: no blow takes health or staggers him), through
+      ; creatures, short of stone, refused over a seal or while held. Every 2.5 seconds, no mana.
+      ; Quaternius' UAL Roll, retargeted onto her rig with her other clips.
+      Key = V
+      Effect = MODULE
+      Distance = 16
+      DurationFrames = 9
+      TickFrames = 7
+      CooldownFrames = 75
+      CastAnim = Roll
+      MaxRank = 1
+      Name = Chetlanish
     End,
     Skill
       ; His stagger, no slot of the four: never bought, never drawn on his bar, his from the start. A

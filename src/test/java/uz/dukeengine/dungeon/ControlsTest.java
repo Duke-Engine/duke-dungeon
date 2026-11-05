@@ -2,308 +2,210 @@ package uz.dukeengine.dungeon;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.List;
 import org.junit.jupiter.api.Test;
-import uz.dukeengine.client3d.Hotkeys;
+import uz.dukeengine.action.ActionOrders;
+import uz.dukeengine.client3d.KeyMap;
+import uz.dukeengine.core.thing.GameObject;
+import uz.dukeengine.dungeon.content.Content;
 import uz.dukeengine.dungeon.content.DungeonSettings;
+import uz.dukeengine.dungeon.party.PartyOrders;
+import uz.dukeengine.dungeon.run.Sprinting;
+import uz.dukeengine.game.DukeGame;
 
 /**
- * The keys the game claims, and what each of them asks the player to point at.
- *
- * <p>Why this is worth a test: there are two ways to cast a skill — press its
- * letter, or click its slot on the hero's bar — and they have to be the same
- * thing. They are, structurally: the click ends up at the client's own
- * {@code pressHotkey}, the same method a keypress reaches, so both walk into the
- * <em>one</em> binding registered here, both arm a skill that needs aiming, and
- * both end in {@code postCommand}. Nothing applies an effect on the render
- * thread.
- *
- * <p>What a test can hold still is the other half of that: that there is exactly
- * one binding per skill, that it came out of the data file, and that what it asks
- * to be pointed at follows from what the skill does. If a second, parallel way of
- * casting were ever added, it would have to come through here too.
+ * The hero played from his shoulder (PLAN-dungeon-action.md): the mouse turns the camera, W A S D run him, Shift
+ * sprints, Space rolls, E works the nearest thing, 1-4 drink, C L M K open the screens, T calls the horse. Everything
+ * he does reaches the simulation as an order of the game's own, so a party hears it.
  */
 class ControlsTest {
 
-    /** The keys: the orders on F A S D and the skills on their own letters. */
     private static final DungeonSettings SHIPPED = DungeonSettings.load();
 
-    @Test
-    void everySkillInTheFileGetsAKey() {
-        var keys = Main.controls(SHIPPED).claimedKeys();
-
-        for (var skill : SHIPPED.skills()) {
-            if (skill.effect() == uz.dukeengine.rpg.skill.SkillEffect.STAGGER
-                    || skill.effect() == uz.dukeengine.rpg.skill.SkillEffect.PUSH) {
-                continue; // never pressed (the push: the story's), no slot: no letter on purpose
-            }
-            assertTrue(keys.contains(skill.key()),
-                    skill.key() + " is in the file but bound to nothing");
-        }
-        assertFalse(keys.isEmpty());
+    private static GameObject hero(DukeGame game) {
+        return game.getLogic().getObjects().stream()
+                .filter(thing -> thing.getTemplate().name().equals(SHIPPED.run().defaultHero())).findFirst()
+                .orElseThrow();
     }
 
-    /**
-     * What a key asks for follows from the effect, not from the key.
-     *
-     * <p>A strike is aimed at a creature whatever its numbers say, and there is no
-     * useful sense in which one hero's dash is aimed and another's is not — so the
-     * effect is what knows, and this checks that the binding took its word for it.
-     */
+    /** The keys a hero on foot claims: his own, and none of an RTS's or a skill's. */
     @Test
-    void whatAKeyAsksForFollowsFromWhatTheSkillDoes() {
-        var controls = Main.controls(SHIPPED);
+    void theKeysAreTheOnesOfAManOnFoot() {
+        var claimed = Main.controls(SHIPPED).claimedKeys();
 
-        // The played hero's four. Both heroes cast on the same four keys, so the
-        // file has two skills on Q and only one of them is bound.
-        for (var skill : SHIPPED.skillsFor(SHIPPED.run().defaultHero())) {
-            var aim = controls.aimOf(skill.key());
-            assertNotNull(aim, "no binding for " + skill.key());
-            assertEquals(switch (skill.effect().aim()) {
-                case UNIT -> Hotkeys.Aim.UNIT;
-                case GROUND -> Hotkeys.Aim.GROUND;
-                case OPEN_GROUND -> Hotkeys.Aim.OPEN_GROUND;
-                case SELF -> Hotkeys.Aim.NOW;
-            }, aim, skill.key() + " asks for the wrong thing");
-        }
-    }
-
-    /**
-     * ★ And it follows whoever is CHOSEN, not whoever the file starts with.
-     *
-     * <p>The bug this is here for, reported from a chair as "the mage's Q does
-     * nothing — no damage and no effect". Everything the client knows about a
-     * skill is keyed by its letter, and all of it used to be settled once at
-     * startup out of {@code DefaultHero}. So picking any hero but that one got
-     * you his skills wearing the default hero's aims: the rogue's Q wants a
-     * creature, the mage's wants a direction, and a fireball handed a creature
-     * has nowhere to fly. It does not misfire — {@code SkillBook} REFUSES it and
-     * leaves the cooldown unspent, so the key is simply dead.
-     *
-     * <p>Asked of every hero in the file rather than of the mage, because the
-     * mage is only the one somebody noticed: the knight's Q wants a patch of
-     * floor and was equally dead, and the fourth hero would have been too.
-     */
-    @Test
-    void whatAKeyAsksForFollowsWhoeverWasChosen() {
-        for (int row = 0; row < SHIPPED.heroes().size(); row++) {
-            var him = SHIPPED.heroes().get(row).name();
-            var visuals = uz.dukeengine.client3d.Visuals.create();
-            var controls = Main.controls(SHIPPED);
-
-            // Through the menu row, not through the helper behind it. Asking the
-            // helper would pass whether or not anything ever calls it, which is
-            // exactly the state this was found in.
-            Main.whoToPlay(Dungeon.newSession(21L, SHIPPED), SHIPPED, visuals, controls)
-                    .options().get(row).taken().run();
-
-            for (var skill : SHIPPED.skillsFor(him)) {
-                assertEquals(switch (skill.effect().aim()) {
-                    case UNIT -> Hotkeys.Aim.UNIT;
-                    case GROUND -> Hotkeys.Aim.GROUND;
-                    // The shield charge is aimed down a lane as the wave is: any spot is a way (Main.aimsFor).
-                    case OPEN_GROUND -> skill.effect() == uz.dukeengine.rpg.skill.SkillEffect.SKEWER
-                            ? Hotkeys.Aim.GROUND : Hotkeys.Aim.OPEN_GROUND;
-                    case SELF -> Hotkeys.Aim.NOW;
-                }, controls.aimOf(skill.key()),
-                        him + "'s " + skill.key() + " asks for the wrong thing, so pressing"
-                                + " it hands the skill a target it cannot use and it refuses");
-                var ring = visuals.getSkillRange(skill.key());
-                assertNotNull(ring, him + "'s " + skill.key() + " has no ring to draw");
-                assertEquals(Main.rangeOf(skill, SHIPPED.skillRing().selfRadius()), ring,
-                        him + "'s " + skill.key() + " is drawn as somebody else's skill");
+        for (char key : "E 1234TJG".toCharArray()) {
+            if (key != 'G' || !SHIPPED.food().buildKey().isBlank()) {
+                assertTrue(claimed.contains(key), key + " is the game's");
             }
         }
-    }
-
-    /**
-     * Every hero casts on the same four letters, and that is load-bearing.
-     *
-     * <p>The letters a game claims are settled once, at startup, before anybody
-     * has chosen anything — the client needs them to know which of its own
-     * controls to give up. Re-pointing a key at a different hero's skill changes
-     * what it ASKS for and not whether it was claimed, so a hero wanting a fifth
-     * letter would get a key the client had already taken for itself and a skill
-     * that could never be cast.
-     *
-     * <p>So this is a failing test rather than a dead key on the day somebody
-     * gives a hero a T. The fix then is to claim the union of every hero's keys
-     * up front; there is no reason to write that until there is a hero who needs
-     * it.
-     */
-    @Test
-    void everyHeroCastsOnTheSameFourLetters() {
-        var first = keysOf(SHIPPED.heroes().get(0).name());
-        for (var hero : SHIPPED.heroes()) {
-            assertEquals(first, keysOf(hero.name()), hero.name()
-                    + " casts on different letters from " + SHIPPED.heroes().get(0).name()
-                    + ", and only the ones claimed at startup can ever be pressed");
+        for (char free : "WASDQRFHXZ".toCharArray()) {
+            assertFalse(claimed.contains(free), free + " is a step, or nothing: no order and no skill is on it");
         }
     }
 
-    private static java.util.List<Character> keysOf(String hero) {
-        return SHIPPED.skillsFor(hero).stream().map(skill -> skill.key()).sorted().toList();
+    /** The client's own controls are cut down to Escape, pause, the full screen, Alt and Shift. */
+    @Test
+    void theClientsOwnKeysAreCutDownToWhatAManOnFootKeeps() {
+        var keys = Main.onFootKeys();
+
+        assertEquals(2, keys.keysOf(KeyMap.Control.SPRINT).size(), "either Shift");
+        assertEquals(2, keys.keysOf(KeyMap.Control.FREE_POINTER).size(), "either Alt");
+        assertEquals(1, keys.keysOf(KeyMap.Control.OPTIONS).size());
+        for (var gone : List.of(KeyMap.Control.PAN_UP, KeyMap.Control.PAN_LEFT, KeyMap.Control.PAN_DOWN,
+                KeyMap.Control.PAN_RIGHT, KeyMap.Control.STOP, KeyMap.Control.CENTRE_ON_BASE,
+                KeyMap.Control.ADD_TO_SELECTION, KeyMap.Control.SELECT_ALL, KeyMap.Control.TURN_LEFT)) {
+            assertTrue(keys.keysOf(gone).isEmpty(), gone + " is an RTS's");
+        }
     }
 
-    /**
-     * A hero the file invented gets his keys the same way, with no Java at all.
-     *
-     * <p>Two lines of file: who is being played, and what he can do. The first was
-     * not needed while there was one hero and is the whole point now — keys belong
-     * to whoever walks into the dungeon, because two heroes cast on the same four
-     * letters and only one of them can have Q.
-     */
+    /** The prompt over the nearest thing is in the game's words, for every order a click gives a word to. */
     @Test
-    void aSecondHerosKeysComeFromTheFileToo() {
-        var settings = DungeonSettings.parse("""
-                Run
-                  DefaultHero = Rogue
-                End
-                Hero
-                  Name = Rogue
-                  Skills = [
-                    Skill
-                      Key = Z
-                      Effect = DASH
-                      Distance = 40
-                      CooldownFrames = 60
-                    End
-                  ]
-                End
-                """);
+    void theInteractPromptNamesEveryContextOrder() {
+        var controls = SHIPPED.controls();
 
-        assertTrue(Main.controls(settings).claimedKeys().contains('Z'),
-                "a skill nobody wrote Java for should still have a key");
-        assertEquals(Hotkeys.Aim.OPEN_GROUND, Main.controls(settings).aimOf('Z'));
+        assertEquals("[E] Gaplashish", controls.promptOf(PartyOrders.TALK, 'E'));
+        for (var order : uz.dukeengine.dungeon.food.Food.WORDS) {
+            assertNotNull(controls.promptOf(order, 'E'), order);
+        }
+        for (var order : List.of(PartyOrders.PICK_UP, PartyOrders.TO_THE_GATE)) {
+            assertNotNull(controls.promptOf(order, 'E'), order);
+        }
+        assertEquals("[E] Minish", controls.promptOf(uz.dukeengine.dungeon.mount.Mount.RIDE, 'E'), "E on his horse");
+        assertNull(controls.promptOf("Nothing", 'E'));
     }
 
-    /**
-     * And the hero who is <em>not</em> being played gets none of them.
-     *
-     * <p>The fault this is really about. Both of the shipped heroes cast on Q, W,
-     * E and R, and what a key asks the player to point at follows from the skill
-     * behind it — so binding every skill in the file would leave Q asking for
-     * whatever the last hero read wanted. The archer's Q wants a creature and the
-     * knight's wants a patch of floor, and the wrong one of those is not a small
-     * wrongness: the click is refused and the skill never goes off.
-     */
     @Test
-    void theHeroWhoIsNotPlayedGetsNoKeys() {
-        var settings = DungeonSettings.parse("""
-                Run
-                  DefaultHero = Rogue
-                End
-                Hero
-                  Name = Rogue
-                  Skills = [
-                    Skill
-                      Key = Z
-                      Effect = DASH
-                      Distance = 40
-                      CooldownFrames = 60
-                    End
-                  ]
-                End
-                Hero
-                  Name = Bard
-                  Skills = [
-                    Skill
-                      Key = Y
-                      Effect = AREA_DAMAGE
-                      Radius = 20
-                      CooldownFrames = 60
-                    End
-                  ]
-                End
-                """);
-
-        var controls = Main.controls(settings);
-
-        assertTrue(controls.claimedKeys().contains('Z'));
-        assertFalse(controls.claimedKeys().contains('Y'),
-                "a hero nobody is playing took a key off the one who is");
+    void anInteractKeyOnAStepOrAnotherKeysPlaceIsRefused() {
+        var data = Content.data();
+        assertThrows(IllegalArgumentException.class,
+                () -> DungeonSettings.parse(data.replace("InteractKey = E", "InteractKey = W")), "W is a step");
+        assertThrows(IllegalArgumentException.class,
+                () -> DungeonSettings.parse(data.replace("InteractKey = E", "InteractKey = M")), "M is the map's");
+        assertThrows(IllegalArgumentException.class,
+                () -> DungeonSettings.parse(data.replace("SprintPercent = 150", "SprintPercent = 50")),
+                "a sprint is faster than a walk");
     }
 
-    /** The shipped file's two heroes really do share their four letters. */
+    /** The held keys' order moves him, and letting go stops him: through the same order a party hears. */
     @Test
-    void bothShippedHeroesCastOnTheSameFourKeys() {
-        var archer = SHIPPED.skillsFor("Rogue").stream().map(s -> s.key()).sorted().toList();
-        var knight = SHIPPED.skillsFor("Knight").stream().map(s -> s.key()).sorted().toList();
+    void theHeldKeysRunHim() {
+        var session = Dungeon.newSession(7L, SHIPPED);
+        var game = session.game();
+        game.runHeadless(5);
+        var start = hero(game).getPosition();
 
-        assertEquals(archer, knight,
-                "if they stopped sharing keys, binding only the played hero's would be"
-                        + " a precaution against nothing -- worth knowing either way");
-        assertFalse(archer.isEmpty(), "the archer lost his skills");
+        Main.walk(game, 0);
+        game.runHeadless(30);
+        var run = hero(game).getPosition();
+        assertTrue(run.x() - start.x() > 10f, "he ran along +x: " + start + " to " + run);
+
+        Main.walk(game, uz.dukeengine.client3d.action.DirectionKeys.NONE);
+        game.runHeadless(5);
+        var stopped = hero(game).getPosition();
+        game.runHeadless(20);
+        assertEquals(0f, hero(game).getPosition().distance(stopped), 0.01f, "and let go, he stands");
     }
 
-    /**
-     * A lane is drawn as a reach and a direction, and nothing else.
-     *
-     * <p>The lane takes the shot's own width rather than the blast's — a fireball
-     * bursts five times wider than the ball is, and drawing the lane at the burst
-     * claimed the shot would sweep a band the width of a room.
-     *
-     * <p>And it carries no area at all, which is the half worth pinning. A circle
-     * where the blast lands cannot be drawn honestly before the cast: the shot
-     * bursts wherever it STOPS, at the first body or the first wall, so a circle
-     * at the far end of its reach is right only when the shot hits nothing the
-     * whole way — the one case nobody is aiming for.
-     */
+    /** Shift: half as fast again over the same time, along whichever way is open from where he starts. */
     @Test
-    void aLaneIsAReachAndADirectionAndNothingElse() {
-        var settings = DungeonSettings.load();
-        var fireball = settings.skills().stream()
-                .filter(skill -> skill.effect() == uz.dukeengine.rpg.skill.SkillEffect.SKILLSHOT)
-                .findFirst().orElseThrow(() -> new AssertionError("nothing is a skillshot"));
+    void shiftMakesHimRunFasterAndLettingGoEndsIt() {
+        int open = openWay();
+        float most = distanceRun(false, open);
+        float sprinted = distanceRun(true, open);
 
-        var drawn = uz.dukeengine.dungeon.Main.rangeOf(fireball, settings.skillRing().selfRadius());
-
-        assertEquals(uz.dukeengine.client3d.SkillRange.Shape.DOWN_A_LANE, drawn.shape());
-        assertEquals(fireball.hitWidth(), drawn.width(), 0.001f, "the lane is the shot");
-        assertEquals(fireball.range(), drawn.reach(), 0.001f, "and the ring is his reach");
-        assertEquals(0f, drawn.area(), 0.001f,
-                "a blast circle is back, and it is a promise the shot cannot keep");
-        assertTrue(fireball.radius() > 0f,
-                "the blast itself is still real, and still hurts -- it is only not drawn");
+        assertTrue(most > 20f, "a way to run along: " + most);
+        assertEquals(1.5f, sprinted / most, 0.1f, "the Controls block's SprintPercent");
     }
 
-
-    /**
-     * The owner, 2026-10-15: a passive (the knight's E, Dragon Blood) is not a button. Its key asks for nothing and
-     * sends nothing -- for every hero, chosen through the menu -- and its card says "Passiv" where a key would be.
-     */
-    @Test
-    void aPassivesKeyDoesNothingAndItsCardSaysPassive() {
-        int passives = 0;
-        for (int row = 0; row < SHIPPED.heroes().size(); row++) {
-            var him = SHIPPED.heroes().get(row).name();
-            var session = Dungeon.newSession(21L, SHIPPED);
-            var controls = Main.controls(SHIPPED);
-            Main.whoToPlay(session, SHIPPED, uz.dukeengine.client3d.Visuals.create(), controls)
-                    .options().get(row).taken().run();
-            session.game().runHeadless(2);
-            var line = session.game().getSnapshot().status();
-            for (var skill : SHIPPED.skillsFor(him)) {
-                if (!skill.effect().isPassive()) {
-                    continue;
-                }
-                passives++;
-                // A key that sent anything would need the game; this one is handed none.
-                assertTrue(controls.pressNow(null, skill.key()), him + "'s " + skill.key() + " is left to a stale key");
-                var at = line.substring(line.lastIndexOf("|tipAt=" + skill.key() + ","));
-                at = at.substring(0, at.indexOf('|', 1) < 0 ? at.length() : at.indexOf('|', 1));
-                assertTrue(at.endsWith(SHIPPED.hud().passiveWord()), him + "'s card says " + at);
-                // The bar's slot is never "ready" or "cool": the engine draws it as a framed picture (E65) once learnt.
-                var slot = line.substring(line.lastIndexOf("|skill=" + skill.key() + ","));
-                slot = slot.substring(0, slot.indexOf('|', 1) < 0 ? slot.length() : slot.indexOf('|', 1));
-                assertTrue(slot.endsWith(",lock") || slot.endsWith(",passive"), him + "'s slot says " + slot);
+    /** The way (256ths of a turn) most open from where he starts: the longest of four runs. */
+    private static int openWay() {
+        int open = 0;
+        float most = 0f;
+        for (int angle = 0; angle < 256; angle += 64) {
+            float ran = distanceRun(false, angle);
+            if (ran > most) {
+                most = ran;
+                open = angle;
             }
         }
-        assertTrue(passives > 0, "no hero has a passive to show");
-        assertEquals("Passiv", SHIPPED.hud().passiveWord());
+        return open;
     }
 
+    private static float distanceRun(boolean sprint, int angle) {
+        var session = Dungeon.newSession(7L, SHIPPED);
+        var game = session.game();
+        game.runHeadless(5);
+        var start = hero(game).getPosition();
+        if (sprint) {
+            game.postCommand(PartyOrders.of(new Sprinting(game.getLocalPlayerIndex(), true)));
+        }
+        Main.walk(game, angle);
+        game.runHeadless(30);
+        return hero(game).getPosition().distance(start);
+    }
+
+
+    @Test
+    void sprintingTravelsAsAnOrder() {
+        var order = PartyOrders.of(new Sprinting(2, true));
+        assertEquals(new Sprinting(2, true), PartyOrders.commandOf(order));
+        assertEquals(new Sprinting(2, false), PartyOrders.commandOf(PartyOrders.of(new Sprinting(2, false))));
+    }
+
+    /** Space: the roll of his Dodge skill, the way he runs, out of harm's way for its first frames. */
+    @Test
+    void spaceRollsHimTheWayHeRuns() {
+        var session = Dungeon.newSession(7L, SHIPPED);
+        var game = session.game();
+        game.runHeadless(5);
+        var start = hero(game).getPosition();
+
+        Main.roll(game, openWay(), SHIPPED);
+        game.runHeadless(12);
+
+        assertEquals(16f, hero(game).getPosition().distance(start), 2.5f, "sixteen along the way he ran");
+    }
+
+    /** The hero fights what he is told to and nothing else: no sight of a monster makes his weapon pick it. */
+    @Test
+    void theHeroPicksNoFightOfHisOwnAndSwingsWhenTold() {
+        var world = Dungeon.world("##########\n#........#\n#........#\n#........#\n##########\n", SHIPPED);
+        var game = world.game();
+        game.spawn("Knight", world.hero(), 30f, 20f);
+        game.spawn("Skeleton", world.dungeon(), 38f, 20f);
+        game.runHeadless(1);
+        var knight = game.getLogic().getObjects().stream()
+                .filter(thing -> thing.getTemplate().name().equals("Knight")).findFirst().orElseThrow();
+        var skeleton = game.getLogic().getObjects().stream()
+                .filter(thing -> thing.getTemplate().name().equals("Skeleton")).findFirst().orElseThrow();
+        float before = skeleton.getBody().getHealth();
+
+        game.runHeadless(120);
+        assertEquals(before, skeleton.getBody().getHealth(), 0.01f, "the skeleton in reach is untouched until he swings");
+
+        game.postCommand(ActionOrders.toward(knight.getPlayerIndex(), List.of(knight.getId()),
+                skeleton.getPosition(), false));
+        game.runHeadless(120);
+        assertTrue(skeleton.getBody().getHealth() < before, "one swing, told, and it is hurt");
+    }
+
+    /** The autosave comes when it comes: with W held, or a swing under way, it still writes. */
+    @Test
+    void aSaveWhileHeRunsOrSwingsStillWrites() {
+        var session = Dungeon.newSession(7L, SHIPPED);
+        var game = session.game();
+        game.runHeadless(5);
+
+        Main.walk(game, openWay());
+        game.postCommand(ActionOrders.toward(game.getLocalPlayerIndex(), List.of(hero(game).getId()),
+                hero(game).getPosition(), true));
+        game.runHeadless(10);
+
+        assertNotNull(session.run().saveNow(), "the run is written as it stands");
+    }
 }

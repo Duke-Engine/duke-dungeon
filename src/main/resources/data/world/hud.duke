@@ -376,57 +376,6 @@ StatBlock
   AttributeTint = 0xC9A24B
 End
 
-SkillRing
-  ; Thin enough to be a line, thick enough to survive being far away.
-  BandWidth = 1.6
-  ; How many straight pieces the circle is really made of.
-  Segments = 96
-
-  ; The wash inside is there to say "inside", not to hide the floor.
-  FillAlpha = 0.10
-  EdgeAlpha = 0.85
-
-  ; Clear of the floor, like every other flat mark. A hair above the order mark
-  ; so the two never fight for the same pixels when a click lands in a ring.
-  Height = 0.3
-
-  ; The only movement left. It opened out and turned slowly to begin with, which
-  ; is what the genre does and which was wrong here: an indicator is a ruler, and
-  ; a ruler that is still settling is a ruler you have to wait for. It appears at
-  ; its size and stands still. The breath is what keeps it reading as live rather
-  ; than painted on -- set PulseDepth to 0 for a ring that does not move at all.
-  PulseDepth = 0.25
-  PulsePerSecond = 1.4
-
-  ; A skill that only touches the caster has no reach to draw, so the ring has to
-  ; be some size -- and the size that says "only me" is HIS size and barely more.
-  ; His body is 4 across, so this is a ring drawn against him. Anything larger
-  ; reads as an area, which is the one thing it is not.
-  SelfRadius = 5
-
-  ; Added rather than blended, so over 1 is what lets it read through torchlight.
-  Brightness = 1.5
-
-  ; ★ THE SAME CYAN THE ARMED SLOT IS DRAWN IN, so the panel and the floor say
-  ; the same thing in the same word: cyan means "you are choosing where this
-  ; goes". It used to be a blue on the floor and gold on the bar, which is two
-  ; languages for one moment -- and the gold was worse than merely different,
-  ; because gold is the bar's own colour and an armed slot drawn in it says
-  ; "slightly more gold than usual".
-  ;
-  ; Cold on purpose. Everything down here is stone, torch and gold, all of them
-  ; warm; a cold colour has nothing to blend into.
-  ;
-  ; Red is still "this will not work" -- it is the one thing that must not be
-  ; mistaken for the rest, so it keeps a colour of its own.
-  AllowColour = 0x35D6AE
-  DenyColour  = 0xFF4436
-  ; The blast, a shade off the reach ring rather than a different colour: it is
-  ; part of the same aiming and reading it as a warning was the old amber's
-  ; doing.
-  AreaColour  = 0x9BFFE8
-End
-
 ; ---------------------------------------------------------------------------
 ; The numbers that come off a creature as it is hurt or healed.
 ;

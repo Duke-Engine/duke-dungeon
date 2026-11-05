@@ -345,6 +345,20 @@ Crafting.NoneWord = "No recipes yet"  ; uz: Hozircha hunar yo'q
 ; Crafting.From.66 = ""  ; uz: teri 6
 ; Crafting.From.67 = ""  ; uz: giyoh 4
 
+; ---- data/world/controls.duke ----
+Controls.DodgeWord = "Dodge"  ; uz: Chetlanish
+Controls.SprintWord = "Sprint"  ; uz: Yugurish
+Controls.InteractWord = "Use"  ; uz: Ishlatish
+Controls.InteractWords = "Talk"  ; uz: Gaplashish
+Controls.InteractWords.1 = "Chop"  ; uz: Kesish
+Controls.InteractWords.2 = "Gather"  ; uz: Terish
+Controls.InteractWords.3 = "Fill"  ; uz: Suv olish
+Controls.InteractWords.4 = "Mine"  ; uz: Qazish
+Controls.InteractWords.5 = "Cook"  ; uz: Pishirish
+Controls.InteractWords.6 = "Pick up"  ; uz: Olish
+Controls.InteractWords.7 = "To the gate"  ; uz: Darvozaga
+Controls.InteractWords.8 = "Ride"  ; uz: Minish
+
 ; ---- data/world/travel.duke ----
 Travel.NoGoldWord = "Not enough gold"  ; uz: Oltin yetmaydi
 Travel.UnknownWord = "You haven't found this tower yet"  ; uz: Bu minora hali topilmagan
@@ -432,8 +446,9 @@ Hero.Rogue.Blurb.2 = "A swift dash in the chosen direction. It harms no one — 
 Hero.Rogue.Name.7 = "Take Aim"  ; uz: Nishonga ol
 Hero.Rogue.Blurb.3 = "For a while every blow she lands hits harder. It strikes no one itself — it is a window that makes everything else count for more."  ; uz: Bir muddat uning hamma zarbalari kuchliroq bo'ladi. O'zi hech kimga tegmaydi — bu boshqa hamma narsani qimmatroq qiladigan oyna.
 Hero.Rogue.NotIn = "Bog'iston"  ; uz: Bog'iston
-Hero.Rogue.Name.8 = "Horse"  ; uz: Ot
-Hero.Rogue.Name.9 = "Landing Strike"  ; uz: Qo'nish zarbasi
+Hero.Rogue.Name.8 = "Dodge"  ; uz: Chetlanish
+Hero.Rogue.Name.9 = "Horse"  ; uz: Ot
+Hero.Rogue.Name.10 = "Landing Strike"  ; uz: Qo'nish zarbasi
 
 ; ---- data/units/knight.duke ----
 Hero.Knight.DisplayName = "Garen"  ; uz: Garen
@@ -450,8 +465,9 @@ Hero.Knight.Blurb.2 = "Dragon blood runs in his veins: he takes less damage from
 Hero.Knight.Name.7 = "Reverse Polarity"  ; uz: Teskari qutb
 Hero.Knight.Blurb.3 = "Drags every enemy around him to a single point right in front of him, damaging and stunning them. Gathered like that, they fall to a single Sword Wave."  ; uz: Atrofidagi barcha dushmanlarni bir nuqtaga — o'zining ro'parasiga — tortib keladi, ularga zarar yetkazadi va gangitib qo'yadi. To'plangan dushmanlarni bitta to'lqin bilan kesish mumkin.
 Hero.Knight.NotIn = "Bog'iston"  ; uz: Bog'iston
-Hero.Knight.Name.8 = "Horse"  ; uz: Ot
-Hero.Knight.Name.9 = "Landing Strike"  ; uz: Qo'nish zarbasi
+Hero.Knight.Name.8 = "Dodge"  ; uz: Chetlanish
+Hero.Knight.Name.9 = "Horse"  ; uz: Ot
+Hero.Knight.Name.10 = "Landing Strike"  ; uz: Qo'nish zarbasi
 
 ; ---- data/units/skeleton.duke ----
 Monster.Skeleton.DisplayName = "Skeleton"  ; uz: Skelet
@@ -502,8 +518,9 @@ Hero.Mage.Name.6 = "Blink"  ; uz: Siljish
 Hero.Mage.Blurb.2 = "She vanishes and reappears elsewhere in an instant. Whatever lies between — wall or enemy — makes no difference."  ; uz: Bir zumda boshqa joyda paydo bo'ladi. Oradagi narsa — devormi, dushmanmi — umuman ahamiyatsiz.
 Hero.Mage.Blurb.3 = "Calls a meteor down on the chosen spot. It does not fall at once: a warning circle marks the ground, and whoever steps out of it in time survives."  ; uz: Tanlangan joyga meteor chaqiradi. U bir zumda tushmaydi: yerda ogohlantiruvchi doira paydo bo'ladi, va undan chiqib ketishga ulgurgan omon qoladi.
 Hero.Mage.NotIn = "Bog'iston"  ; uz: Bog'iston
-Hero.Mage.Name.8 = "Horse"  ; uz: Ot
-Hero.Mage.Name.9 = "Landing Strike"  ; uz: Qo'nish zarbasi
+Hero.Mage.Name.8 = "Dodge"  ; uz: Chetlanish
+Hero.Mage.Name.9 = "Horse"  ; uz: Ot
+Hero.Mage.Name.10 = "Landing Strike"  ; uz: Qo'nish zarbasi
 
 ; ---- data/units/warden.duke ----
 Monster.Warden.DisplayName = "Warden"  ; uz: Qo'riqchi

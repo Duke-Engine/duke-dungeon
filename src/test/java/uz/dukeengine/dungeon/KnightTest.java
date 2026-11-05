@@ -190,28 +190,6 @@ class KnightTest {
     }
 
     /**
-     * The owner, 2026-10-10: the wave is a half-moon on the floor and half as fast as it was; the charge is aimed as a
-     * line, like the wave, not at a point inside a circle.
-     */
-    @Test
-    void theWaveIsAHalfMoonAndTheChargeIsAimedAsALine() {
-        var wave = skillOf(KNIGHT, 'Q');
-        assertEquals(55f, wave.projectileSpeed(), 0.001f, "the wave flies at other than half its first 110");
-        // 1.0.43: it leaves at the cast and his slash comes down a quarter of the way into its gesture, so a long
-        // gesture sends it half across the room before the blade is seen to throw it.
-        assertTrue(wave.castSeconds() <= 0.6f, "the slash is so slow the wave is far ahead when the blade falls");
-        var looks = SETTINGS.effectLayers().stream().filter(art -> art.effect().equals("SwordWave")).toList();
-        assertTrue(looks.stream().noneMatch(art -> "AURA".equals(art.fields().get("type"))),
-                "the wave still carries a ball round it");
-
-        var charge = skillOf(KNIGHT, 'W');
-        var ring = Main.rangeOf(charge, SETTINGS.skillRing().selfRadius());
-        assertEquals(uz.dukeengine.client3d.SkillRange.Shape.DOWN_A_LANE, ring.shape(), "the charge is not aimed as a line");
-        assertEquals(charge.distance(), ring.reach(), 0.001f, "its line is not as long as his drive");
-        assertEquals(2f * charge.radius(), ring.width(), 0.001f, "its line is not as wide as what it catches");
-    }
-
-    /**
      * The owner's playtest of 1.0.39: "a plain dot flies off, not a wave". The half-moon was an ARC layer of the
      * wave's effect, and the client carries only TRAIL, AURA and timeless LIGHT layers with a thing in flight
      * (LayeredEffects.inFlight) -- an ARC is kept for where it lands, so only the sparks flew. The half-moon is

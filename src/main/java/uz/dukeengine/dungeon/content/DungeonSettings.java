@@ -38,7 +38,6 @@ import uz.dukeengine.client3d.Moment;
 import uz.dukeengine.dungeon.world.Progression;
 import uz.dukeengine.dungeon.world.Run;
 import uz.dukeengine.client3d.Skin;
-import uz.dukeengine.client3d.SkillRing;
 import uz.dukeengine.dungeon.world.StatBlock;
 import uz.dukeengine.client3d.Sun;
 import uz.dukeengine.dungeon.world.Theme;
@@ -102,11 +101,11 @@ public final class DungeonSettings {
     private uz.dukeengine.dungeon.world.MainMenu mainMenu = uz.dukeengine.dungeon.world.MainMenu.DEFAULTS;
     private uz.dukeengine.dungeon.world.Splash splash = uz.dukeengine.dungeon.world.Splash.DEFAULTS;
     private uz.dukeengine.dungeon.world.Screens screens = uz.dukeengine.dungeon.world.Screens.DEFAULTS;
+    private uz.dukeengine.dungeon.world.Controls controls = uz.dukeengine.dungeon.world.Controls.DEFAULTS;
     private uz.dukeengine.dungeon.world.Travel travel = uz.dukeengine.dungeon.world.Travel.DEFAULTS;
     private uz.dukeengine.dungeon.world.DayNight dayNight = uz.dukeengine.dungeon.world.DayNight.DEFAULTS;
     private UnitBar unitBar = UnitBar.DEFAULTS;
     private StatBlock statBlock = StatBlock.DEFAULTS;
-    private SkillRing skillRing = SkillRing.DEFAULTS;
     private PanelLook panelLook = PanelLook.DEFAULTS;
     private HitNumbers hitNumbers = HitNumbers.DEFAULTS;
     private MenuStyle menu = MenuStyle.DEFAULTS;
@@ -200,6 +199,11 @@ public final class DungeonSettings {
     }
 
     /** The character sheet, the quest log and the world map: their keys and words. */
+    /** How the hero is played from his shoulder: the sprint, the interact key and its words. */
+    public uz.dukeengine.dungeon.world.Controls controls() {
+        return controls;
+    }
+
     /** Fast travel between a map's watchtowers: see {@link uz.dukeengine.dungeon.world.Travel}. */
     public uz.dukeengine.dungeon.world.Travel travel() {
         return travel;
@@ -224,10 +228,6 @@ public final class DungeonSettings {
 
     public StatBlock statBlock() {
         return statBlock;
-    }
-
-    public SkillRing skillRing() {
-        return skillRing;
     }
 
 
@@ -773,11 +773,11 @@ public final class DungeonSettings {
                 case uz.dukeengine.dungeon.world.MainMenu block -> mainMenu = once(block, once);
                 case uz.dukeengine.dungeon.world.Splash block -> splash = once(block, once);
                 case uz.dukeengine.dungeon.world.Screens block -> screens = once(block, once);
+                case uz.dukeengine.dungeon.world.Controls block -> controls = once(block, once);
                 case uz.dukeengine.dungeon.world.Travel block -> travel = once(block, once);
                 case uz.dukeengine.dungeon.world.DayNight block -> dayNight = once(block, once);
                 case UnitBar block -> unitBar = once(block, once);
                 case StatBlock block -> statBlock = once(block, once);
-                case SkillRing block -> skillRing = once(block, once);
                 case PanelLook block -> panelLook = once(block, once);
                 case HitNumbers block -> hitNumbers = once(block, once);
                 case MenuStyle block -> menu = once(block, once);
@@ -1371,6 +1371,7 @@ public final class DungeonSettings {
         require(progression.armourPercentPerLevel() >= 0, "a level cannot take armour away");
         validateAttributes();
         validateScreens();
+        validateControls();
         require(travel.cost() >= 0, "Travel: Cost cannot be negative");
         validateDayNight();
         require(travel.card().isBlank() || titles.stream().anyMatch(t -> t.name().equals(travel.card())),
@@ -1618,6 +1619,11 @@ public final class DungeonSettings {
                                 && skill.castAnim() != null && !skill.castAnim().isBlank(),
                         skill.heroTemplate() + "'s STAGGER needs the least blow (Damage), StunFrames, and the flinch"
                                 + " it plays (CastAnim)");
+                case MODULE -> require(skill.distance() > 0f && skill.durationFrames() > 0 && skill.tickFrames() >= 0
+                                && skill.tickFrames() <= skill.durationFrames() && skill.castAnim() != null
+                                && !skill.castAnim().isBlank(),
+                        skill.heroTemplate() + "'s MODULE (the dodge) needs a Distance, its DurationFrames, its TickFrames out of"
+                                + " harm's way (no more than the roll) and the roll it plays (CastAnim)");
                 case PUSH -> require(skill.radius() > 0f && skill.distance() > 0f && skill.durationFrames() > 0,
                         skill.heroTemplate() + "'s PUSH needs a Radius, a Distance and its DurationFrames");
                 case HEAL -> {
@@ -1803,6 +1809,34 @@ public final class DungeonSettings {
                 "PrimaryWord and EachPointWord may not contain '|'");
         require(hud.buffIcon() >= 1f, "Hud: BuffIcon is how big each picture over a picked creature's bar is drawn, at"
                 + " least a pixel: " + hud.buffIcon());
+    }
+
+    /**
+     * The hero on foot: the interact key is one letter of its own -- not a step (W A S D), the client's pause (P), a
+     * screen's, the tracker's, the fire's or the horse's -- the sprint is some faster than a walk, and every prompt word
+     * is said in the font.
+     */
+    private void validateControls() {
+        var taken = new java.util.HashSet<Character>(List.of('W', 'A', 'S', 'D', 'P',
+                Character.toUpperCase(run.foldKey().charAt(0))));
+        screens.keys().forEach(key -> taken.add(Character.toUpperCase(key)));
+        if (!food.buildKey().isBlank()) {
+            taken.add(Character.toUpperCase(food.buildKey().charAt(0)));
+        }
+        if (mount.on()) {
+            taken.add(Character.toUpperCase(mount.key().charAt(0)));
+        }
+        var interact = controls.interactKey();
+        require(interact.length() == 1 && interact.charAt(0) >= 'A' && interact.charAt(0) <= 'Z'
+                && !taken.contains(interact.charAt(0)),
+                "Controls: InteractKey is one letter of its own, not a step's or another key's: " + interact);
+        require(controls.sprintPercent() >= 100 && controls.sprintPercent() <= 400,
+                "Controls: SprintPercent is a run between his own pace and four times it: " + controls.sprintPercent());
+        require(controls.interactReach() > 0f && controls.interactCone() > 0f && controls.interactCone() <= 360f,
+                "Controls: InteractReach and InteractCone are above nothing, the cone at most a full turn");
+        require(controls.interactOrders().size() == controls.interactWords().size()
+                && controls.interactWords().stream().allMatch(DungeonSettings::sayable),
+                "Controls: InteractOrders and InteractWords go in pairs, each word sayable");
     }
 
     /** The screens' keys: three letters, none of them a key something else is already on. */
@@ -2223,8 +2257,8 @@ public final class DungeonSettings {
     public java.util.List<Skill> skillsFor(String heroTemplate) {
         var his = new java.util.ArrayList<Skill>();
         for (var skill : bookFor(heroTemplate)) {
-            // His stagger, his horse (T) and his landing's PUSH (the story's) are no slot of the four.
-            if (skill.effect() != SkillEffect.STAGGER
+            // His stagger, his dodge (Space), his horse (T) and his landing's PUSH (the story's) are no slot.
+            if (skill.effect() != SkillEffect.STAGGER && skill.effect() != SkillEffect.MODULE
                     && skill.effect() != SkillEffect.MOUNT && skill.effect() != SkillEffect.PUSH) {
                 his.add(skill);
             }

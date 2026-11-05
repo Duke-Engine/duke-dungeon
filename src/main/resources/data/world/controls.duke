@@ -1,0 +1,28 @@
+; ---------------------------------------------------------------------------
+; How the hero is played, from his shoulder (docs: PLAN-dungeon-action.md in the workspace).
+;
+; The mouse turns the camera and the pointer is hidden (Alt lets it go, and a menu, a screen or a conversation does).
+; W A S D run him the way the camera looks, Shift sprints, Space rolls, E works the nearest thing in front of him,
+; 1-4 drink from the belt, C L M K open the screens, T calls his horse. The left and right buttons swing.
+; The keys themselves are in Main.controls; this file is the numbers and the words.
+; ---------------------------------------------------------------------------
+Controls
+  ; What Space and Shift are called on the keys page.
+  DodgeWord = Chetlanish
+  SprintWord = Yugurish
+
+  ; Shift: a share of his speed, 150 is half as fast again.
+  SprintPercent = 150
+
+  ; Work, talk to or take the nearest thing in front of him: within InteractReach of him, inside InteractCone degrees
+  ; round the way he faces (the camera's forward while he walks).
+  InteractKey = E
+  InteractWord = Ishlatish
+  InteractReach = 14
+  InteractCone = 100
+  ; The prompt over that thing, "[E] Gaplashish": each context order's word (the cursor's name -- a person's Talk,
+  ; data/world/food.duke's Gathers, a thing on the floor's PickUp, the gate's ToTheGate, his horse's Ride), then what it
+  ; says. Riding (data/world/mounts.duke): T calls and mounts, E on his horse mounts it, Space on horseback gets him off.
+  InteractOrders = [Talk, Chop, Harvest, Fill, Mine, Cook, PickUp, ToTheGate, Ride]
+  InteractWords = ["Gaplashish", "Kesish", "Terish", "Suv olish", "Qazish", "Pishirish", "Olish", "Darvozaga", "Minish"]
+End

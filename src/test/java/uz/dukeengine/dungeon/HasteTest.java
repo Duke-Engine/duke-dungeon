@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import uz.dukeengine.client3d.EffectLayer;
-import uz.dukeengine.client3d.SkillRange;
 import uz.dukeengine.client3d.Visuals;
 import uz.dukeengine.core.event.EffectPlayed;
 import uz.dukeengine.core.thing.GameObject;
@@ -468,8 +467,7 @@ class HasteTest {
 
     /**
      * As shipped: the summoner's W, written after its summoning -- three quarters again as fast for five seconds, one
-     * of its own as far as 60 from it, 25 mana and the summoning's twelve seconds between -- and its ring drawn round
-     * it as far as its Range.
+     * of its own as far as 60 from it, 25 mana and the summoning's twelve seconds between.
      */
     @Test
     void asShippedTheSummonersHaste() {
@@ -482,8 +480,5 @@ class HasteTest {
                 haste.manaCost(), haste.cooldownFrames(), haste.maxRank()));
         assertEquals(60f, haste.range(), 0.001f);
         assertEquals("Shiddat", haste.name());
-        var ring = Main.rangeOf(haste, 5f);
-        assertEquals(SkillRange.Shape.AROUND_HIM, ring.shape());
-        assertEquals(haste.range(), ring.reach(), 0.001f);
     }
 }

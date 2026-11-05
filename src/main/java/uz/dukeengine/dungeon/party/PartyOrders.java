@@ -24,6 +24,8 @@ import uz.dukeengine.combat.message.GameOrder;
 public final class PartyOrders {
 
     static final String CAST = "cast";
+    /** Shift held or let go: the order's number is 1 for held. */
+    static final String SPRINT = "sprint";
     static final String RAISE = "raise";
     /** Followed by the hero's template: the one order whose meaning is a name. */
     static final String HERO = "hero:";
@@ -78,6 +80,8 @@ public final class PartyOrders {
             case CastSkill cast -> new GameOrder(cast.playerIndex(), CAST, List.of(), cast.point(), cast.target(),
                     cast.key());
             case UpgradeSkill raise -> new GameOrder(raise.playerIndex(), RAISE, List.of(), null, null, raise.key());
+            case uz.dukeengine.dungeon.run.Sprinting sprint -> new GameOrder(sprint.playerIndex(), SPRINT, List.of(),
+                    null, null, sprint.on() ? 1 : 0);
             case ChooseHero pick -> new GameOrder(pick.playerIndex(), HERO + pick.hero(), List.of(), null, null, 0);
             case PickUp pick -> new GameOrder(pick.playerIndex(), PICK_UP, List.of(), null, pick.item(), 0);
             case DropItem drop -> new GameOrder(drop.playerIndex(), DROP, List.of(), drop.place(), null, drop.slot());
@@ -131,6 +135,7 @@ public final class PartyOrders {
         return switch (word) {
             case CAST -> new CastSkill(order.playerIndex(), (char) order.number(), order.target(), order.place());
             case RAISE -> new UpgradeSkill(order.playerIndex(), (char) order.number());
+            case SPRINT -> new uz.dukeengine.dungeon.run.Sprinting(order.playerIndex(), order.number() != 0);
             case PICK_UP -> order.target() == null ? null : new PickUp(order.playerIndex(), order.target());
             case DROP -> order.place() == null ? null
                     : new DropItem(order.playerIndex(), (int) order.number(), order.place());
