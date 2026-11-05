@@ -82,6 +82,27 @@ models/buildings/town/town_wall_archers.gltf | Medieval city wall assets (BUKKBE
 models/buildings/town/town_wall_long.gltf | Medieval city wall assets (BUKKBEEK) | models/licenses/medieval_city_wall.txt | models/castles/town/town_wall_long.gltf
 models/buildings/town/town_wall_short.gltf | Medieval city wall assets (BUKKBEEK) | models/licenses/medieval_city_wall.txt | models/castles/town/town_wall_short.gltf
 models/buildings/town/town_wall_tower.gltf | Medieval city wall assets (BUKKBEEK) | models/licenses/medieval_city_wall.txt | models/castles/town/town_wall_tower.gltf
+models/buildings/fort_kit/dark/fort_gatehouse.glb | Realistic fort kit (workspace models/fort_kit, own work) | models/licenses/fort_kit.txt | -
+models/buildings/fort_kit/dark/fort_keep.glb | Realistic fort kit (workspace models/fort_kit, own work) | models/licenses/fort_kit.txt | -
+models/buildings/fort_kit/dark/fort_tower_cone.glb | Realistic fort kit (workspace models/fort_kit, own work) | models/licenses/fort_kit.txt | -
+models/buildings/fort_kit/dark/fort_turret.glb | Realistic fort kit (workspace models/fort_kit, own work) | models/licenses/fort_kit.txt | -
+models/buildings/fort_kit/dark/fort_wall.glb | Realistic fort kit (workspace models/fort_kit, own work) | models/licenses/fort_kit.txt | -
+models/buildings/fort_kit/dark/fort_wall_gable.glb | Realistic fort kit (workspace models/fort_kit, own work) | models/licenses/fort_kit.txt | -
+models/buildings/fort_kit/footprint.glb | Made for this game (art/models/fort_models.py, own work) | models/licenses/fort_kit.txt | -
+models/buildings/fort_kit/fort_gatehouse.glb | Realistic fort kit (workspace models/fort_kit, own work) | models/licenses/fort_kit.txt | -
+models/buildings/fort_kit/fort_keep.glb | Realistic fort kit (workspace models/fort_kit, own work) | models/licenses/fort_kit.txt | -
+models/buildings/fort_kit/fort_tower_cone.glb | Realistic fort kit (workspace models/fort_kit, own work) | models/licenses/fort_kit.txt | -
+models/buildings/fort_kit/fort_turret.glb | Realistic fort kit (workspace models/fort_kit, own work) | models/licenses/fort_kit.txt | -
+models/buildings/fort_kit/fort_wall.glb | Realistic fort kit (workspace models/fort_kit, own work) | models/licenses/fort_kit.txt | -
+models/buildings/fort_kit/fort_wall_gable.glb | Realistic fort kit (workspace models/fort_kit, own work) | models/licenses/fort_kit.txt | -
+models/buildings/fort_kit/town_gatehouse.glb | Realistic fort kit (workspace models/fort_kit, own work) | models/licenses/fort_kit.txt | -
+models/buildings/fort_kit/town_tower_round.glb | Realistic fort kit (workspace models/fort_kit, own work) | models/licenses/fort_kit.txt | -
+models/buildings/fort_kit/town_tower_round_low.glb | Realistic fort kit (workspace models/fort_kit, own work) | models/licenses/fort_kit.txt | -
+models/buildings/fort_kit/town_wall_long.glb | Realistic fort kit (workspace models/fort_kit, own work) | models/licenses/fort_kit.txt | -
+models/buildings/fort_kit/town_wall_tower.glb | Realistic fort kit (workspace models/fort_kit, own work) | models/licenses/fort_kit.txt | -
+models/buildings/realistic/dark/fort_portcullis.glb | Realistic fort kit (workspace models/fort_kit, own work) | models/licenses/fort_kit.txt | -
+models/buildings/realistic/fort_portcullis.glb | Realistic fort kit (workspace models/fort_kit, own work) | models/licenses/fort_kit.txt | -
+models/buildings/realistic/town_gate.glb | Realistic fort kit (workspace models/fort_kit, own work) | models/licenses/fort_kit.txt | -
 models/characters/heroes/hero_lange.glb | Lange - Half-Elf Knight (phucpham1076), on the game rig by workspace models/hero_lange | models/licenses/lange.txt | -
 models/characters/heroes/huntress.glb | Huntress (Wilson / neilhancart) | models/licenses/huntress.txt | models/heroes/huntress.glb
 models/characters/heroes/knight.glb | KayKit Adventurers Character Pack 2.0 | models/licenses/kaykit_adventurers.txt | models/heroes/knight.glb

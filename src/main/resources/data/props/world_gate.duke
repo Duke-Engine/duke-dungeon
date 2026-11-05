@@ -1,0 +1,133 @@
+; The gates of the open world's walls: the town gatehouse's oak leaves and the fort's portcullis. The stone of a gatehouse
+; is scenery (models/buildings/fort_kit, its piers boxes of the map); the passage between the piers is shut by one of
+; these, laid on it by run/Gates from the gatehouse's scenery line, and open once it has opened.
+;
+; Same mechanism as the keep's gate (gate.duke): the shut gate has a shape, so the path grid is closed across the passage;
+; opening swaps it for the same model with no shape, which plays its `Open` clip as it appears. Blocking is the sim's,
+; the swing is only a picture. Opened by a hero coming near (run/Gates) or by a story's OPEN_GATE.
+;
+;   - the passage is 3.2 m / 1.9 m wide, a cell is 10 units = 1.5 m: the box is two cells long (19) and 4 thick, centred on
+;     the wall's line, so it closes the cells between the piers and nothing else
+;   - the model's origin is the middle of the passage (art/models/fort_models.py), 6.667 units to the metre
+Prop
+  Name = TownGate
+  DisplayName = Darvoza
+  KindOf = [STRUCTURE]
+  VisionRange = 0
+  Geometry = Box
+    MajorRadius = 9.5
+    MinorRadius = 2
+    Height = 56
+  End
+  Modules = [
+    GateUpdate
+      Opens = OpenTownGate
+    End
+  ]
+  Weight = 0
+End
+
+Object
+  Name = OpenTownGate
+  DisplayName = Darvoza
+  KindOf = [STRUCTURE]
+  VisionRange = 0
+End
+
+Prop
+  Name = Portcullis
+  DisplayName = Panjara
+  KindOf = [STRUCTURE]
+  VisionRange = 0
+  Geometry = Box
+    MajorRadius = 9.5
+    MinorRadius = 2
+    Height = 45
+  End
+  Modules = [
+    GateUpdate
+      Opens = OpenPortcullis
+    End
+  ]
+  Weight = 0
+End
+
+Object
+  Name = OpenPortcullis
+  DisplayName = Panjara
+  KindOf = [STRUCTURE]
+  VisionRange = 0
+End
+
+; The queen's castle: the same portcullis in basalt.
+Prop
+  Name = DarkPortcullis
+  DisplayName = Panjara
+  KindOf = [STRUCTURE]
+  VisionRange = 0
+  Geometry = Box
+    MajorRadius = 9.5
+    MinorRadius = 2
+    Height = 45
+  End
+  Modules = [
+    GateUpdate
+      Opens = OpenDarkPortcullis
+    End
+  ]
+  Weight = 0
+End
+
+Object
+  Name = OpenDarkPortcullis
+  DisplayName = Panjara
+  KindOf = [STRUCTURE]
+  VisionRange = 0
+End
+
+; How they are drawn, wherever they stand: one look each, as the key's is. The shut one stands as the file rests, closed;
+; the open one plays `Open` once from its first frame and holds its last.
+ThemeMonster
+  Name = TownGate
+  Model = models/buildings/realistic/town_gate.glb
+  ModelScale = 6.667
+  Facing = 0
+End
+
+ThemeMonster
+  Name = OpenTownGate
+  Model = models/buildings/realistic/town_gate.glb
+  ModelScale = 6.667
+  Facing = 0
+  PlayOnce = Open
+End
+
+ThemeMonster
+  Name = Portcullis
+  Model = models/buildings/realistic/fort_portcullis.glb
+  ModelScale = 6.667
+  Facing = 0
+End
+
+ThemeMonster
+  Name = OpenPortcullis
+  Model = models/buildings/realistic/fort_portcullis.glb
+  ModelScale = 6.667
+  Facing = 0
+  PlayOnce = Open
+End
+
+ThemeMonster
+  Name = DarkPortcullis
+  Model = models/buildings/realistic/dark/fort_portcullis.glb
+  ModelScale = 6.667
+  Facing = 0
+End
+
+ThemeMonster
+  Name = OpenDarkPortcullis
+  Model = models/buildings/realistic/dark/fort_portcullis.glb
+  ModelScale = 6.667
+  Facing = 0
+  PlayOnce = Open
+End

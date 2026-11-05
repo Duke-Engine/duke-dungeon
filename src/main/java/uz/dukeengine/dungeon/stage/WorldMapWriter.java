@@ -1378,14 +1378,28 @@ public final class WorldMapWriter {
                 Map.entry("fort/fort_wall", "3x1.1"), Map.entry("fort/fort_wall_gable", "1x1.1"),
                 Map.entry("fort/fort_wall_ruined", "3x1.1"), Map.entry("fort/fort_gatehouse", "0"),
                 Map.entry("fort/fort_house_front", "1x1.1"), Map.entry("fort/fort_house_front_narrow", "1x1.1"),
-                Map.entry("fort/fort_keep", "0.57"), Map.entry("fort/fort_tower_cone", "0.39"),
+                Map.entry("fort/fort_keep", "0"), Map.entry("fort/fort_tower_cone", "0.8"),
                 Map.entry("fort/fort_tower_stepped", "0.49"), Map.entry("fort/fort_tower_open", "0.41"),
-                Map.entry("fort/fort_turret", "0.5"),
+                Map.entry("fort/fort_turret", "0.6"),
                 Map.entry("desert/desert_block_long", "4x1.3"), Map.entry("desert/desert_block_long_b", "4x1.1"),
                 Map.entry("desert/desert_pillar_tall", "0.49"),
                 Map.entry("rampart/rampart_wall", "3x1.4"), Map.entry("rampart/rampart_wall_arcade", "3x1.4"),
                 Map.entry("rampart/rampart_wall_gate", "0"), Map.entry("rampart/rampart_tower", "1.17"),
                 Map.entry("rampart/rampart_tower_tall", "1.17"));
+
+        /**
+         * The pieces of the realistic fort kit (art/models/fort_models.py, models/buildings/fort_kit), 6.667 units to the
+         * metre, a wall run turned so its outside is on the -y side of facing 0 like a ring is laid. Their dark copies
+         * are in {@code dark/} (the queen's castle) and their footprints are the kit's README's: the piers of a gatehouse
+         * are boxes of their own, the passage between them shut by run/Gates until it opens, and the keep a box.
+         */
+        private static final Set<String> FORT_KIT = Set.of("town_wall_long", "town_wall_tower", "town_gatehouse",
+                "town_tower_round", "town_tower_round_low", "fort_wall", "fort_wall_gable", "fort_gatehouse",
+                "fort_tower_cone", "fort_turret", "fort_keep");
+        /** A metre in units: the hero is 12 units, 1.8 m. */
+        private static final float KIT_SCALE = 6.667f;
+        /** A model with nothing to draw, for the lines that only stand in the way: see {@link #box}. */
+        private static final String FOOTPRINT = KITS + "fort_kit/footprint.glb";
 
         /** The fort's pictures, by piece, that its dark copy is drawn with: the queen's castle. */
         private static final Map<String, String> DARK = Map.of("fort_wall", "fort_9", "fort_wall_gable", "fort_7",
@@ -1404,7 +1418,7 @@ public final class WorldMapWriter {
         }
 
         private static final Style TOWN = new Style(6, 0, new String[] {"town/town_wall_long"}, "town/town_gatehouse",
-                "town/town_gate", "town/town_wall_tower", 4, "town/town_tower_round", "town/town_tower_round_low",
+                null, "town/town_wall_tower", 4, "town/town_tower_round", "town/town_tower_round_low",
                 false);
         private static final Style ROYAL = new Style(3, 0, new String[] {"fort/fort_wall"}, "fort/fort_gatehouse",
                 null, "fort/fort_wall_gable", 2f, "fort/fort_tower_cone", "fort/fort_turret", false);
@@ -1435,7 +1449,9 @@ public final class WorldMapWriter {
             // royal castle, 9 a side, against its west wall, its gate to the east onto the plaza.
             ring(pieces, city.x() - 12, city.y() - 12, 24, TOWN, Set.of());
             ring(pieces, city.x() - 11, city.y() - 4, 9, ROYAL, Set.of(1 * 100 + 1));
-            pieces.add(piece("fort/fort_keep", city.x() - 6.5f, city.y() + 0.5f, 0, false));
+            // A box 3.3 cells square now (4.8 m): in the court's north-east, off its middle, which the story's Saroy
+            // puts the hero in, and off the way from the east gate to the throne.
+            pieces.addAll(parts("fort/fort_keep", city.x() - 5.5f, city.y() - 1.5f, 0, false));
             pieces.add(piece("town/town_palace_tower", city.x() - 9f, city.y() - 1.5f, 0, false));
             // A street of house fronts west and east of the plaza, broken where a road runs, a house at its end.
             String[] fronts = {"fort/fort_house_front", "fort/fort_house_front_narrow", "fort/fort_house_front"};
@@ -1453,7 +1469,7 @@ public final class WorldMapWriter {
             }
             var castle = SITES.get(CASTLE);
             ring(pieces, castle.x() - 6, castle.y() - 6, 12, QUEEN, Set.of());
-            pieces.add(piece("fort/fort_keep", castle.x() - 6, castle.y() - 6, 0, true));
+            pieces.addAll(parts("fort/fort_keep", castle.x() - 6, castle.y() - 6, 0, true));
             var steppe = SITES.get(2);
             ring(pieces, steppe.x() - 8, steppe.y() - 8, 16, DESERT, Set.of());
             var meadow = SITES.get(1);
@@ -1499,7 +1515,7 @@ public final class WorldMapWriter {
                     float oy = sy + way[1] * style.wallAt();
                     if (gates.contains(k * 100 + i) || roadAcross(sx, sy, way, style.segment())) {
                         if (style.gate() != null) {
-                            out.add(piece(style.gate(), ox, oy, facings[k], style.dark()));
+                            out.addAll(parts(style.gate(), ox, oy, facings[k], style.dark()));
                         }
                         if (style.inGate() != null) {
                             out.add(piece(style.inGate(), ox, oy, facings[k], style.dark()));
@@ -1567,9 +1583,41 @@ public final class WorldMapWriter {
         /** One piece of a kit at (x, y) turned {@code facing}, standing in the way as its kit says; dark if asked. */
         private static Piece piece(String kitPiece, float x, float y, int facing, boolean dark) {
             var name = kitPiece.substring(kitPiece.indexOf('/') + 1);
+            if (FORT_KIT.contains(name)) {
+                return Piece.of(KITS + "fort_kit/" + (dark ? "dark/" : "") + name + ".glb " + x + " " + y + " " + facing
+                        + " " + KIT_SCALE + " " + FOOT.get(kitPiece));
+            }
             var model = KITS + kitPiece + ".gltf"
                     + (dark ? "@" + KITS + "fort/textures/" + DARK.get(name) + "_dark.jpg" : "");
             return Piece.of(model + " " + x + " " + y + " " + facing + " 1 " + FOOT.get(kitPiece));
+        }
+
+        /** A piece and what else of it stands in the way: a gatehouse's two piers, a keep's box. */
+        private static List<Piece> parts(String kitPiece, float x, float y, int facing, boolean dark) {
+            var out = new ArrayList<Piece>();
+            out.add(piece(kitPiece, x, y, facing, dark));
+            switch (kitPiece.substring(kitPiece.indexOf('/') + 1)) {
+                case "town_gatehouse" -> { // piers 0..1.4 m and 4.6..6.0 m of 6.0, the body 3.4 m thick
+                    out.add(box(x, y, facing, 0f, 0.93f, 2.3f));
+                    out.add(box(x, y, facing, 3.07f, 0.93f, 2.3f));
+                }
+                case "fort_gatehouse" -> { // piers 0..0.55 m and 2.45..3.0 m of 3.0
+                    out.add(box(x, y, facing, 0f, 0.37f, 1.6f));
+                    out.add(box(x, y, facing, 1.63f, 0.37f, 1.6f));
+                }
+                case "fort_keep" -> out.add(box(x - 1.65f, y, 0, 0f, 3.3f, 3.3f)); // 4.8 m square about its origin
+                default -> {
+                }
+            }
+            return out;
+        }
+
+        /** A box of {@code length} cells and {@code depth} across, {@code at} cells along {@code facing} from (x, y). */
+        private static Piece box(float x, float y, int facing, float at, float length, float depth) {
+            double turned = Math.toRadians(facing);
+            float bx = Math.round((x + at * StrictMath.cos(turned)) * 1000) / 1000f;
+            float by = Math.round((y - at * StrictMath.sin(turned)) * 1000) / 1000f;
+            return Piece.of(FOOTPRINT + " " + bx + " " + by + " " + facing + " 1 " + length + "x" + depth);
         }
 
         /** The cells the castles close, made taken so nothing is placed in a wall, and kept clear of trees. */
@@ -1735,7 +1783,7 @@ public final class WorldMapWriter {
             for (int[] at : new int[][] {{-5, -5}, {5, -5}, {-5, 3}, {5, 3}}) {
                 pieces.add(piece("fort/fort_tower_stepped", camp[0] + at[0], camp[1] + at[1], 0, true));
             }
-            pieces.add(piece("fort/fort_keep", camp[0], camp[1] - 5, 0, true));
+            pieces.addAll(parts("fort/fort_keep", camp[0], camp[1] - 5, 0, true));
             zones.add(new Zone(CAMP, camp[0], camp[1], 0, 0, 3));
             keep(camp[0], camp[1], 8);
             quiet.add(camp);

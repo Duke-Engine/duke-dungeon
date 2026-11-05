@@ -22,23 +22,36 @@ class WorldCastlesTest {
     @Test
     void everySiteHasItsCastleAndTheQueensIsDark() {
         var scenery = Stages.load("world", SETTINGS).paint().scenery();
-        for (var kit : List.of("town/town_wall_long", "town/town_gatehouse", "fort/fort_wall.gltf",
-                "fort/fort_keep", "desert/desert_block_long", "rampart/rampart_wall", "fort/fort_wall_ruined",
+        // The city's and the royal and queen's castles are the realistic fort kit (models/buildings/fort_kit, .glb); the
+        // others are still the old kits' .gltf pieces.
+        for (var kit : List.of("town_wall_long", "town_gatehouse", "fort_kit/fort_wall.glb",
+                "fort_keep", "desert/desert_block_long", "rampart/rampart_wall", "fort/fort_wall_ruined",
                 "town/town_tower_slim")) {
             assertTrue(scenery.stream().anyMatch(p -> p.model().contains(kit)), "no " + kit + " in the world");
         }
-        var queens = scenery.stream().filter(p -> p.model().contains("/fort/") && !p.picture().isEmpty()).toList();
+        // Dark: the kit's own basalt files (fort_kit/dark), or the old pieces drawn with their _dark picture.
+        var queens = scenery.stream().filter(p -> p.model().contains("fort_kit/dark/")
+                || p.model().contains("/fort/") && !p.picture().isEmpty()).toList();
         assertTrue(queens.size() >= 30, "the queen's castle has " + queens.size() + " dark pieces");
-        assertTrue(queens.stream().allMatch(p -> p.picture().endsWith("_dark.jpg")));
+        assertTrue(queens.stream().allMatch(p -> p.model().contains("fort_kit/dark/") || p.picture().endsWith("_dark.jpg")));
         assertTrue(scenery.stream().filter(p -> p.model().contains("_wall")).filter(p -> !p.model().contains("gate"))
                 .allMatch(p -> p.boxLength() > 0), "a wall stands in nobody's way");
-        long cityGates = scenery.stream().filter(p -> p.model().endsWith("town_gatehouse.gltf")).count();
+        long cityGates = scenery.stream().filter(p -> p.model().endsWith("town_gatehouse.glb")).count();
         assertTrue(cityGates >= 2, "the city has " + cityGates + " gates");
     }
 
     @Test
     void theHeroWalksFromTheCityIntoEveryCourtByAGate() {
         var game = Dungeon.newStageSession(Stages.load("world", SETTINGS), SETTINGS).game();
+        game.runHeadless(1);
+        // The gates stand shut across their passages (run/Gates) and the story opens them: Act 1's first trigger does,
+        // so the way is planned once they are open -- a shut gate is a wall to a route.
+        game.getLogic().getObjects().forEach(thing -> {
+            var gate = thing.findModule(uz.dukeengine.rpg.mission.GateUpdate.class);
+            if (gate != null) {
+                gate.open();
+            }
+        });
         game.runHeadless(1);
         var logic = game.getLogic();
         var grid = logic.getPathGrid();

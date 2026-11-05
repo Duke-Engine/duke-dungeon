@@ -783,6 +783,14 @@ Prop.Gate.WithoutKeyWord = "I need the key to the boss's chamber"  ; uz: Boss xo
 Prop.Gate.WithKeyWord = "I have the key — now to the gate"  ; uz: Kalit menda — uni darvozaga berishim kerak
 Object.OpenGate.DisplayName = "Gate"  ; uz: Darvoza
 
+; ---- data/props/world_gate.duke ----
+Prop.TownGate.DisplayName = "Gate"  ; uz: Darvoza
+Object.OpenTownGate.DisplayName = "Gate"  ; uz: Darvoza
+Prop.Portcullis.DisplayName = "Portcullis"  ; uz: Panjara
+Object.OpenPortcullis.DisplayName = "Portcullis"  ; uz: Panjara
+Prop.DarkPortcullis.DisplayName = "Portcullis"  ; uz: Panjara
+Object.OpenDarkPortcullis.DisplayName = "Portcullis"  ; uz: Panjara
+
 ; ---- data/props/key.duke ----
 Object.Key.DisplayName = "Key"  ; uz: Kalit
 

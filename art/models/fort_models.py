@@ -203,7 +203,22 @@ def cut(document, binary, root_name, name, length, turn, leave_out=(), keep_only
     return scene, bytes(packed)
 
 
+def footprint():
+    """A model with nothing to see (one triangle a millimetre across): the lines of a map that only stand in the way."""
+    import struct
+    points = struct.pack("<9f", 0, 0, 0, 0.001, 0, 0, 0, 0, 0.001)
+    document = {
+        "asset": {"version": "2.0"}, "scene": 0, "scenes": [{"nodes": [0]}], "nodes": [{"name": "footprint", "mesh": 0}],
+        "meshes": [{"name": "footprint", "primitives": [{"attributes": {"POSITION": 0}, "material": 0}]}],
+        "materials": [{"name": "none", "pbrMetallicRoughness": {"baseColorFactor": [0.5, 0.5, 0.5, 1], "metallicFactor": 0}}],
+        "accessors": [{"bufferView": 0, "componentType": 5126, "count": 3, "type": "VEC3", "min": [0, 0, 0],
+                       "max": [0.001, 0, 0.001]}],
+        "bufferViews": [{"buffer": 0, "byteLength": len(points)}], "buffers": [{"byteLength": len(points)}]}
+    write(WALLS / "footprint.glb", document, points)
+
+
 def main():
+    footprint()
     models = Path(sys.argv[1] if len(sys.argv) > 1 else "../../WorkSpaces/duke-games/models")
     for kit, walls, gates, only in (("fort_kit.glb", WALLS, GATES_FOLDER, None),
                                     ("fort_kit_dark.glb", WALLS / "dark", GATES_FOLDER / "dark", DARK)):

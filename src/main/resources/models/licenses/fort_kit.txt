@@ -1,0 +1,12 @@
+The realistic fort kit (2026-11-05): models/buildings/fort_kit/*.glb (town wall, wall tower, gatehouse, round towers, fort wall,
+gable, gatehouse, cone tower, turret, keep; dark/ for the queen's castle) and models/buildings/realistic/*.glb (the town gate's
+leaves with their fan, the fort's portcullis; dark/ too), cut from workspace models/fort_kit/out/fort_kit.glb and
+fort_kit_dark.glb by art/models/fort_models.py, textures cut to 1024 px.
+
+All geometry and every texture set (stone, mortar, oak, iron, slate; basalt for the dark one) were made by the kit's own scripts
+(Blender Python for the meshes and clips, numpy for the tileable sets from noise, cellular noise and hand-written rules). No
+AI generator was used and nothing was downloaded from the web: own work, nothing needs attribution. The owner's
+medieval-city-wall and medieval-fortress zips were looked at for proportions only; nothing of them is in these files.
+
+models/buildings/fort_kit/footprint.glb is one triangle a millimetre across, written by the same script: the map's lines that
+only stand in the way (a gatehouse's piers, a keep's box) name it.

@@ -162,6 +162,7 @@ Game
     data/props/chest.duke,
     data/props/fountain.duke,
     data/props/gate.duke,
+    data/props/world_gate.duke,
     data/props/key.duke,
     data/props/kampir.duke,
     data/props/castle.duke,

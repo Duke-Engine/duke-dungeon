@@ -188,6 +188,8 @@ public final class DungeonRun {
 
     /** The keep's shut gate, as everything that hurts or mends asks it: told of each floor as it is laid. */
     private final Seal seal;
+    /** The gates of the map's gatehouses: shut across their passages until a hero comes near, or the story opens them. */
+    private final Gates gates = new Gates();
     /** Frames of play since the run began, saved with it: the hour of the open world's day (DayNight). */
     private final java.util.concurrent.atomic.AtomicInteger clock;
 
@@ -705,6 +707,7 @@ public final class DungeonRun {
      */
     private void onTheFloor(DukeGame game, GeneratedDungeon floor, Spawner.Placed placed) {
         seal.floor(floor.keep(), placed.gate());
+        gates.lay(game.getLogic(), heroPlayer(), floors.paint() == null ? null : floors.paint().scenery());
         fight.reset();
         for (int i = 0; i < seats.size(); i++) {
             var bag = seats.get(i).progress.getLoot();
@@ -935,6 +938,7 @@ public final class DungeonRun {
                 hero.busy(heroPoseClip, heroPoseEnds - logic.getFrame());
             }
         }
+        gates.tick(logic, seats.stream().map(seat -> seat.heroId).toList());
         if (!standing) {
             state = State.DEAD;
             endedFrame = logic.getFrame();
