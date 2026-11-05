@@ -81,7 +81,7 @@ class FortRenderCheckTest {
     /** The city's street of town houses (y 236), east of the plaza, from the plaza. */
     @Test
     void theCityStreet() throws Exception {
-        shoot("city_street", 56.5f, 233.5f, WEST, 0);
+        shoot("city_street", 58.5f, 232.5f, EAST, 0);
     }
 
     /** Deep in the dark wood, the thickest scenery of the world: the view the tree budget is measured on. */
