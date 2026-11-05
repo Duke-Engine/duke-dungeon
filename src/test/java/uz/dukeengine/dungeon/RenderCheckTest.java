@@ -129,6 +129,9 @@ class RenderCheckTest {
         for (int waited = 0; game.getLogic() == null && waited < 120; waited++) {
             Thread.sleep(1000);
         }
+        // Who the hero is, as a run's status line says it: the shoulder HUD draws no bar over him, as in the game.
+        game.getLogic().getObjects().stream().filter(o -> o.getTemplate().name().equals("Knight")).findFirst()
+                .ifPresent(knight -> game.setStatus("|hero=" + knight.getId().value()));
         Thread.sleep(SECONDS * 1000L - 4000);
         Main.walk(game, NORTH);
         Thread.sleep(500);
