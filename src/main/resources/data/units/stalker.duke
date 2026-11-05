@@ -103,6 +103,5 @@ Monster
   Death = Death
   UpperBody = spine_01
   ; What is looking at you out of the dark.
-  Effect = EmberEyes
   ; A bow, drawn and loosed like the archer's: Attack draws to the jaw at 0.9 s and looses at 1.2 s.
 End

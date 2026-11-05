@@ -84,7 +84,6 @@ Monster
   Attack = Cast
   Death = Death
   UpperBody = spine_01
-  Effect = EmberEyes
   ; ★ LICENSED LOOK. Drawn as the "Dark Fantasy Female Ritualist" (CGTrader, Royalty Free -- see CREDITS.md) where
   ; models/licensed/ritualist.glb is shipped: it lives in the git-ignored licensed-assets/ folder,
   ; never in this repository, so a clone without it (and CI) draws the stand-in above. Her clips

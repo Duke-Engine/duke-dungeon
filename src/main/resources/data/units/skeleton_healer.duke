@@ -85,7 +85,6 @@ Monster
   Attack = Cast
   Death = Death
   UpperBody = spine_01
-  Effect = EmberEyes
 
   ; What it mends out of, in the hero's words and units, as the Skeleton Mage's:
   ; enough to mend at its cooldown through a fight of a minute or more.

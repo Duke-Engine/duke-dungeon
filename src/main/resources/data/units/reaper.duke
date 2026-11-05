@@ -69,7 +69,6 @@ Monster
   Death = Death
   UpperBody = spine_01
   ; What is looking at you out of the dark.
-  Effect = EmberEyes
 
   Skills = [
     Skill
