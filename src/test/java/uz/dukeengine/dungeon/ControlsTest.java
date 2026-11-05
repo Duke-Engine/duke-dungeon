@@ -166,9 +166,64 @@ class ControlsTest {
         var start = hero(game).getPosition();
 
         Main.roll(game, openWay(), SHIPPED);
-        game.runHeadless(12);
+        game.runHeadless(24); // heard, then the roll's eighteen frames
 
         assertEquals(16f, hero(game).getPosition().distance(start), 2.5f, "sixteen along the way he ran");
+    }
+
+    /**
+     * The roll is long enough to be one and is out of harm's way for most of it, not all: an eighteenth frame of it
+     * (0.6s) he is up and a blow takes him again. Its clip, 1.43s long, is played once through in the roll's frames.
+     */
+    @Test
+    void theRollLastsLongEnoughToBeOneAndHisClipIsFittedToIt() {
+        var skill = SHIPPED.bookFor("Knight").stream()
+                .filter(one -> one.effect() == uz.dukeengine.rpg.skill.SkillEffect.MODULE).findFirst().orElseThrow();
+        assertTrue(skill.durationFrames() >= 15 && skill.durationFrames() <= 24, "a roll of 0.5 to 0.8s");
+        assertTrue(skill.tickFrames() >= skill.durationFrames() / 2 && skill.tickFrames() < skill.durationFrames(),
+                "out of harm's way for more than half of it and not the last of it");
+        assertEquals(skill.durationFrames() / (float) uz.dukeengine.core.GameConstants.LOGICFRAMES_PER_SECOND,
+                Main.looks(SHIPPED).of("Knight").busyFitOf(skill.castAnim()), 1e-5f,
+                "his Dodge clip is played over the roll's frames");
+
+        var session = Dungeon.newSession(7L, SHIPPED);
+        session.run().startWith(session.game(), "Knight"); // the file's default hero is the archer
+        var game = session.game();
+        game.runHeadless(10);
+        var knight = game.getLogic().getObjects().stream()
+                .filter(thing -> thing.getTemplate().name().equals("Knight")).findFirst().orElseThrow();
+        Main.roll(game, 0, SHIPPED);
+        game.runHeadless(6);
+        assertTrue(knight.hasStatus(uz.dukeengine.core.thing.ObjectStatus.INVULNERABLE), "out of harm's way rolling");
+        assertEquals("Dodge", knight.getBusyClip());
+        game.runHeadless(skill.durationFrames());
+        assertFalse(knight.hasStatus(uz.dukeengine.core.thing.ObjectStatus.INVULNERABLE), "and not for ever");
+        assertNull(knight.getBusyClip(), "the clip is let go with the roll");
+    }
+
+    /** The camera behind his shoulder comes from the file: how far back, how high, how far it may tilt. */
+    @Test
+    void theCameraFramesHimFromTheControlsBlock() {
+        var look = Main.shoulder(SHIPPED.controls());
+
+        assertEquals(24f, look.distance(), "3.6 m back of a 12-unit, 1.8 m man");
+        assertEquals(10f, look.lookHeight(), "looking at his upper chest");
+        assertTrue(look.side() > 0f && look.side() < 6f, "over his right shoulder");
+        assertTrue(look.pitchMin() < 0f && look.pitchMax() < Math.PI / 2, "up at him from below, never straight overhead");
+        assertEquals(Math.toRadians(14), look.pitchStart(), 1e-6);
+        assertTrue(look.blockerHeight() >= 12f, "a wall pulls it in; a barrel does not");
+    }
+
+    @Test
+    void aCameraThatCannotStandIsRefused() {
+        var data = Content.data();
+        assertThrows(IllegalArgumentException.class,
+                () -> DungeonSettings.parse(data.replace("CameraPitchMax = 70", "CameraPitchMax = 95")), "overhead and past");
+        assertThrows(IllegalArgumentException.class,
+                () -> DungeonSettings.parse(data.replace("CameraPitchMin = -12", "CameraPitchMin = 80")),
+                "its least above its most");
+        assertThrows(IllegalArgumentException.class,
+                () -> DungeonSettings.parse(data.replace("CameraDistance = 24", "CameraDistance = 0")), "inside his head");
     }
 
     /** The hero fights what he is told to and nothing else: no sight of a monster makes his weapon pick it. */

@@ -1886,6 +1886,15 @@ public final class DungeonSettings {
                 "Controls: SprintPercent is a run between his own pace and four times it: " + controls.sprintPercent());
         require(controls.interactReach() > 0f && controls.interactCone() > 0f && controls.interactCone() <= 360f,
                 "Controls: InteractReach and InteractCone are above nothing, the cone at most a full turn");
+        require(controls.cameraDistance() > 0f && controls.cameraLookHeight() >= 0f && controls.cameraSensitivity() > 0f
+                && controls.cameraFollowSeconds() >= 0f && controls.cameraReleaseSeconds() >= 0f
+                && controls.cameraBlockerHeight() >= 0f,
+                "Controls: the camera stands some way back, looks at a point over his feet, turns by the pixel and"
+                        + " eases in times that are not negative");
+        require(controls.cameraPitchMin() < controls.cameraPitchMax() && controls.cameraPitchMax() < 90f
+                && controls.cameraPitch() >= controls.cameraPitchMin()
+                && controls.cameraPitch() <= controls.cameraPitchMax(),
+                "Controls: CameraPitch is between CameraPitchMin and CameraPitchMax, which stays short of overhead");
         require(controls.interactOrders().size() == controls.interactWords().size()
                 && controls.interactWords().stream().allMatch(DungeonSettings::sayable),
                 "Controls: InteractOrders and InteractWords go in pairs, each word sayable");

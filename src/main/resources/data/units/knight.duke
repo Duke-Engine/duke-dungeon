@@ -235,14 +235,17 @@ Hero
     Skill
       ; His dodge, no slot of any bar: pressed on Space (Main.dodge), never bought, his from the start. The Dodge
       ; module of his Modules does it: a roll of Distance toward the way he runs (or faces) over DurationFrames
-      ; (0.3s), out of harm's way its first TickFrames (0.23s: no blow takes health or staggers him), through
+      ; (0.6s), out of harm's way its first TickFrames (0.4s: no blow takes health or staggers him), through
       ; creatures, short of stone, refused over a seal or while held. Every 2.5 seconds, no mana.
-      ; His Dodge clip, the forward roll.
+      ; His Dodge clip, the forward roll, is 1.43s long and is played once through in the roll's frames (Main.looks,
+      ; busyFitted: 2.4 times its own pace). It was a roll of 0.3s: sixteen units in nine frames is 53 a second, nearly
+      ; three times his run and almost twice a sprint, a hop and not a roll. At 0.6s it is 27 a second, 1.4 times his run:
+      ; a dive, not a jump; and he is exposed the last third of it, as a man getting up is.
       Key = V
       Effect = MODULE
       Distance = 16
-      DurationFrames = 9
-      TickFrames = 7
+      DurationFrames = 18
+      TickFrames = 12
       CooldownFrames = 75
       CastAnim = Dodge
       MaxRank = 1

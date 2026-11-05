@@ -350,7 +350,7 @@ class ComboTest {
         game.postCommand(PartyOrders.of(new Striking(game.getLocalPlayerIndex(), false)));
         game.runHeadless(HEARD);
         assertNull(combo.step(), "a press while he rolls, out of harm's way, begins nothing");
-        game.runHeadless(12);
+        game.runHeadless(18);
         game.postCommand(PartyOrders.of(new Striking(game.getLocalPlayerIndex(), false)));
         game.runHeadless(HEARD);
         assertNotNull(combo.step(), "and the next press, once he is up, begins a new chain");

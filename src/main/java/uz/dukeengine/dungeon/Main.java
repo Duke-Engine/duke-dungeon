@@ -554,7 +554,7 @@ public final class Main {
         // it is the client that is asked to play it — see PartyFront.
         // A player with no settings file yet starts in a 1280 x 720 window, not filling his screen (playtest of 1.0.41);
         // what he chose, once he has, is the engine's settings.properties and wins over this.
-        var duke = Duke3D.of(session.game(), visuals).window(1280, 720).hotkeys(keys).controls(feet).musicByGame(true);
+        var duke = Duke3D.of(session.game(), visuals).window(1280, 720).hotkeys(keys).controls(feet).smoothMotion(true).musicByGame(true);
         // His bag, the engine's RPG part in the game's words: what he carries, and a hand to take a thing
         // out of it and put it down. Told of every match it is drawn over -- this one, and a party's that replaces it.
         var bag = Bag.on(settings, duke);
@@ -1076,13 +1076,21 @@ public final class Main {
                 .walk(uz.dukeengine.client3d.action.DirectionKeys.WASD, Main::walk)
                 .sprint((game, on) -> game.postCommand(PartyOrders.of(
                         new uz.dukeengine.dungeon.run.Sprinting(game.getLocalPlayerIndex(), on))))
-                .follow(uz.dukeengine.client3d.action.CameraFollow.of(null)
-                        .orbiting(uz.dukeengine.client3d.action.CameraFollow.ORBIT_SENSITIVITY, false, 0f))
+                .shoulder(shoulder(controls))
                 .holdMouse(true)
                 .rightStrikes(true)
                 .strikes((game, heavy) -> strike(game, heavy, settings))
                 .interact(controls.interactKey().charAt(0), controls.interactReach(), controls.interactCone(),
                         controls::promptOf);
+    }
+
+    /** The camera behind his right shoulder, from the Controls block: its angles in degrees there, radians in the engine. */
+    static uz.dukeengine.client3d.action.ShoulderCamera shoulder(uz.dukeengine.dungeon.world.Controls controls) {
+        return new uz.dukeengine.client3d.action.ShoulderCamera(controls.cameraDistance(), controls.cameraSide(),
+                controls.cameraLookHeight(), (float) Math.toRadians(controls.cameraPitch()),
+                (float) Math.toRadians(controls.cameraPitchMin()), (float) Math.toRadians(controls.cameraPitchMax()),
+                (float) Math.toRadians(controls.cameraSensitivity()), controls.cameraFollowSeconds(),
+                controls.cameraReleaseSeconds(), controls.cameraBlockerHeight());
     }
 
     /**
@@ -1297,6 +1305,14 @@ public final class Main {
                 // disagree.
                 for (var skill : settings.skillsFor(hero.name())) {
                     unit.alsoAnimation(skill.castAnim());
+                }
+                // His roll (no slot, so not above): its clip is made at a length of its own, so it is played once
+                // through in the frames the roll lasts, not looped for them (the first fifth of it was all that showed).
+                for (var skill : settings.bookFor(hero.name())) {
+                    if (skill.effect() == uz.dukeengine.rpg.skill.SkillEffect.MODULE) {
+                        unit.alsoAnimation(skill.castAnim()).busyFitted(skill.castAnim(), skill.durationFrames()
+                                / (float) uz.dukeengine.core.GameConstants.LOGICFRAMES_PER_SECOND);
+                    }
                 }
                 // And the clip of each step of his combinations, played as his busy clip.
                 for (var step : settings.combosOf(hero.name()).steps()) {

@@ -25,4 +25,25 @@ Controls
   ; says. Riding (data/world/mounts.duke): T calls and mounts, E on his horse mounts it, Space on horseback gets him off.
   InteractOrders = [Talk, Chop, Harvest, Fill, Mine, Cook, PickUp, ToTheGate, Ride]
   InteractWords = ["Gaplashish", "Kesish", "Terish", "Suv olish", "Qazish", "Pishirish", "Olish", "Darvozaga", "Minish"]
+
+  ; The camera behind his right shoulder, in world units (he is 12 high, 1.8 m: 24 is 3.6 m) and degrees.
+  ; It stands CameraDistance back along the way it looks and CameraSide to the right of the point it looks past him at,
+  ; so he is on the left of the picture; that point is CameraLookHeight over his feet (10: his upper chest).
+  CameraDistance = 24
+  CameraSide = 3.5
+  CameraLookHeight = 10
+  ; How steeply it looks down when the game begins, and the most and least it may: under 0 looks up at him from below, the
+  ; ground still keeps it above itself; 70 is short of straight overhead, which would spin it.
+  CameraPitch = 14
+  CameraPitchMin = -12
+  CameraPitchMax = 70
+  ; How far the mouse turns it for each pixel, degrees. There is no lag on it: the turn is the mouse's own.
+  CameraSensitivity = 0.25
+  ; The time constant it eases after him with, seconds: it hides the simulation's thirty steps a second and a swing's
+  ; lunge. And the one it eases back out with after a wall pulled it in; going in is at once, never through the wall.
+  CameraFollowSeconds = 0.1
+  CameraReleaseSeconds = 0.5
+  ; How high a thing must stand to pull it in. A barrel, a stone, a grave are seen over; a wall, a tower, a pillar are not.
+  ; Creatures and the hero never are.
+  CameraBlockerHeight = 12
 End
