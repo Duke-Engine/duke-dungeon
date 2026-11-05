@@ -87,7 +87,7 @@ final class Gates {
     }
 
     private static boolean near(GameObject hero, GameObject gate) {
-        return Math.hypot(hero.getPosition().x() - gate.getPosition().x(),
+        return StrictMath.hypot(hero.getPosition().x() - gate.getPosition().x(),
                 hero.getPosition().y() - gate.getPosition().y()) <= REACH;
     }
 }

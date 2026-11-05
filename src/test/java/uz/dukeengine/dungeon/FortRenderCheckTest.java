@@ -186,6 +186,7 @@ class FortRenderCheckTest {
                 System.out.println("GATE " + template + " at " + thing.getPosition() + " owner " + thing.getPlayerIndex());
             }
         }
+        System.out.println("FPS " + name + ": " + app.getTimer().getFrameRate());
         System.out.println("PAUSED " + logic.isGamePaused());
         System.out.println("HERO " + hero.getId() + " owner " + hero.getPlayerIndex() + " at " + hero.getPosition());
         System.out.println("GATES " + name + ": " + gates);

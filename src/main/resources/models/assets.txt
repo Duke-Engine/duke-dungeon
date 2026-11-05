@@ -84,7 +84,6 @@ models/buildings/town/town_wall_short.gltf | Medieval city wall assets (BUKKBEEK
 models/buildings/town/town_wall_tower.gltf | Medieval city wall assets (BUKKBEEK) | models/licenses/medieval_city_wall.txt | models/castles/town/town_wall_tower.gltf
 models/buildings/fort_kit/dark/fort_gatehouse.glb | Realistic fort kit (workspace models/fort_kit, own work) | models/licenses/fort_kit.txt | -
 models/buildings/fort_kit/dark/fort_keep.glb | Realistic fort kit (workspace models/fort_kit, own work) | models/licenses/fort_kit.txt | -
-models/buildings/fort_kit/dark/fort_tower_cone.glb | Realistic fort kit (workspace models/fort_kit, own work) | models/licenses/fort_kit.txt | -
 models/buildings/fort_kit/dark/fort_turret.glb | Realistic fort kit (workspace models/fort_kit, own work) | models/licenses/fort_kit.txt | -
 models/buildings/fort_kit/dark/fort_wall.glb | Realistic fort kit (workspace models/fort_kit, own work) | models/licenses/fort_kit.txt | -
 models/buildings/fort_kit/dark/fort_wall_gable.glb | Realistic fort kit (workspace models/fort_kit, own work) | models/licenses/fort_kit.txt | -
