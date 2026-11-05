@@ -125,8 +125,8 @@ class KampirHutTest {
 
         var models = stage.paint().scenery().stream().map(piece -> piece.model()).distinct().toList();
         assertTrue(models.contains("models/buildings/hut/hut.glb"), "no hut in the yard");
-        assertTrue(models.contains("models/nature/trees/pine_dark.glb"), "no dark pines in the dark wood");
-        assertTrue(models.contains("models/terrain/forest/pine.gltf"), "the KayKit pines are gone from the wood");
+        assertTrue(models.contains("models/world_kit/spruce_a.glb"), "no spruces in the dark wood");
+        assertTrue(models.contains("models/world_kit/pine_a.glb"), "no pines in the dark wood");
         assertFalse(stage.floor().props().stream().noneMatch(prop -> prop.kind().equals("Cauldron")),
                 "no cauldron");
     }

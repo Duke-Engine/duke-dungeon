@@ -502,6 +502,18 @@ public final class Main {
         // The edge of the ground built round the camera, faded away -- on a wide world only, the one predicate its
         // sleep and its sectors answer to.
         visuals.haze(ground.hazeFrom(), ground.hazeTo(), uz.dukeengine.dungeon.stage.StagePaint::isWide);
+        // Asked of each map as it is laid: a painted one is built round the camera, a kit floor whole. Here, not in main,
+        // so the render checks draw the world as the game does.
+        visuals.streamGround(ground.streamCells(),
+                map -> map instanceof uz.dukeengine.core.map.Painted painted
+                        && painted.palette() != null && !painted.palette().isEmpty());
+        // A thick wood is thousands of pieces: a draw a model a chunk, the world kit's trees a tenth of their faces away from the camera.
+        visuals.instancedScenery(uz.dukeengine.dungeon.content.RealisticModels::farMesh);
+        visuals.scenerySunCasts(uz.dukeengine.dungeon.content.RealisticModels::castsSun);
+        visuals.sunShadowsReach(ground.hazeFrom() * 10f);
+        // Seen from his shoulder the world is not a floor plan under a shroud: his eyes reach as far as the air lets him,
+        // and what is behind a wall is hardly dimmer. The picture alone: the simulation's sight is his VisionRange still.
+        visuals.wideWorldEyes(280f, 0.92f, uz.dukeengine.dungeon.stage.StagePaint::isWide);
         // And it begins seen: its ground, cliffs and scenery remembered from the first frame, its creatures only where
         // the hero's eyes reach (E38). Every floor of the descent and every small map begins black.
         visuals.fogStartsExplored(uz.dukeengine.dungeon.stage.StagePaint::isWide);
@@ -532,10 +544,6 @@ public final class Main {
         // Held rather than passed straight in: the question below reaches back
         // into it, because whose eyes open the map is part of who you chose.
         var visuals = looks(settings);
-        // Asked of each map as it is laid: a painted one is built round the camera, a kit floor whole.
-        visuals.streamGround(settings.paintedGround().streamCells(),
-                map -> map instanceof uz.dukeengine.core.map.Painted painted
-                        && painted.palette() != null && !painted.palette().isEmpty());
         // Open to sight besides his eyes (E103): what a cutscene's camera is brought to, and the capital.
         visuals.alsoSeen(() -> {
             var match = DialogueScreen.match();

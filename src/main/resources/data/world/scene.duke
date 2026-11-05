@@ -242,17 +242,17 @@ PaintedGround
   ; geometry, so what it costs is triangles, not draw calls: a meadow cell is
   ; about 200 more of them (engine ask E98 for a ground-cover layer of its own).
   Cover = [
-    ground/world/grass.png = "models/nature/grass/grass.glb 5 11, models/nature/grass/grass_large.glb 4 11, models/nature/grass/grass_1.glb 3 11, models/nature/grass/grass_common_short.glb 3 10, models/nature/flowers/flower_yellow_a.glb 1 9, models/nature/flowers/flower_red_a.glb 1 9, models/nature/flowers/flower_purple_a.glb 1 9",
-    ground/world/forest.png = "models/nature/plants/fern_1.glb 4 9, models/nature/grass/grass_leafs.glb 3 11, models/nature/plants/plant_1.glb 2 9, models/nature/mushrooms/mushroom_tan_group.glb 1 8, models/nature/plants/clover_1.glb 1 9",
+    ground/world/grass.png = "models/world_kit/grass_tuft.glb 5 6.667, models/world_kit/grass_short.glb 8 6.667",
+    ground/world/forest.png = "models/world_kit/fern.glb 4 5.5, models/world_kit/grass_short.glb 3 6",
     ground/world/steppe.png = "models/nature/grass/grass_short_1.glb 4 12, models/nature/grass/grass_wispy_short.glb 3 10, models/nature/plants/wheat.glb 2 10, models/nature/grass/grass_wispy_tall.glb 1 9",
     ground/world/sand.png = "models/nature/plants/plant_2.glb 3 8, models/nature/grass/grass_wispy_short.glb 2 9, models/nature/rocks/rock_small_a.glb 2 6",
     ground/world/snow.png = "models/nature/plants/plant_2.glb 2 7, models/nature/rocks/rock_small_d.glb 1 6",
-    ground/world/rock.png = "models/nature/rocks/rock_small_a.glb 2 6, models/nature/rocks/rock_small_d.glb 2 6, models/nature/grass/grass_wispy_short.glb 2 9",
+    ground/world/rock.png = "models/world_kit/rock_c.glb 2 1.4, models/world_kit/rock_c.glb 2 2.4, models/world_kit/grass_short.glb 3 5",
     ground/world/mud.png = "models/nature/plants/cattails.glb 1 0.9, models/nature/grass/grass_large.glb 4 11, models/nature/grass/grass_common_tall.glb 2 10, models/nature/grass/grass_leafs.glb 1 11",
   ]
   CoverPerCell = [
-    ground/world/grass.png = 1.2,
-    ground/world/forest.png = 0.8,
+    ground/world/grass.png = 2.6,
+    ground/world/forest.png = 1.1,
     ground/world/steppe.png = 0.8,
     ground/world/sand.png = 0.2,
     ground/world/snow.png = 0.15,

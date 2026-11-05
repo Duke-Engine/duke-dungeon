@@ -19,6 +19,17 @@ public final class RealisticModels {
     private RealisticModels() {
     }
 
+    /** The far mesh of a tree of the world kit (models/world_kit/spruce_a.glb, ...spruce_a_far.glb); null for anything else. */
+    public static String farMesh(String path) {
+        return path != null && path.matches("models/world_kit/(spruce|pine|oak|birch|dead)_[abc]\\.glb")
+                ? path.substring(0, path.length() - 4) + "_far.glb" : null;
+    }
+
+    /** Whether a piece of scenery casts the sun's shadow: the world kit's, all but what is too low or small to show one. */
+    public static boolean castsSun(String path) {
+        return path != null && path.startsWith("models/world_kit/") && !path.contains("fern") && !path.contains("grass");
+    }
+
     /** Whether the model at this resource path ({@code models/...}) keeps its maps. */
     public static boolean keepsMaps(String path) {
         return path != null && (FILES.contains(path) || FOLDERS.stream().anyMatch(path::startsWith));

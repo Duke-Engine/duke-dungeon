@@ -50,8 +50,8 @@ GATES = {
     "town_gate": ("town_gate", 3.0, None),
     "fort_portcullis": ("fort_gatehouse", 1.5, ("Portcullis",)),
 }
-# The queen's castle's: her corner towers are the old stepped ones, so no dark cone tower is cut.
-DARK = ["fort_wall", "fort_wall_gable", "fort_gatehouse", "fort_portcullis", "fort_turret", "fort_keep"]
+# The queen's castle's, with its corner towers, and the Black Knight's camp's towers.
+DARK = ["fort_wall", "fort_wall_gable", "fort_gatehouse", "fort_portcullis", "fort_turret", "fort_keep", "fort_tower_cone"]
 HALF_TURN = [0.0, 1.0, 0.0, 0.0]
 
 

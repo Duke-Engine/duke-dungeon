@@ -25,18 +25,19 @@ DayNight
   ; The sky at an hour, eased between the hours written and round midnight:
   ; the hour, the sun's height in degrees, its strength and the shade's in
   ; percent (scene.duke's Sun is 40, 100, 55), then the sun's colour, the
-  ; shade's and the haze's -- the haze is also what the fog paints where nothing has been seen, so it is
-  ; dark at every hour: an RTS's black shroud, never a pale mist (the owner, 2026-10-20). Night is a cold low "moon": dark, and every road
-  ; and creature still read through it.
+  ; shade's and the haze's -- the haze is also the sky behind the world and what the fog paints where nothing has
+  ; been seen. It was dark at every hour, an RTS's black shroud (the owner, 2026-10-20); seen from the hero's shoulder that
+  ; is a dusk that never lifts, so by day it is now the air's own colour, and at night still dark. Night is a cold low
+  ; "moon": dark, and every road and creature still read through it.
   Sky = [
     "0 30 28 40 0x8CA8E0 0x4A5A9A 0x0A1428",
     "4.5 30 28 40 0x8CA8E0 0x4A5A9A 0x0A1428",
     "5.5 8 40 42 0xB08AC0 0x6A5A90 0x16121E",
-    "6.5 12 75 48 0xFFA868 0x9A86B0 0x1C1418",
-    "8 30 95 54 0xFFE8C8 0xD8DCF4 0x141A20",
-    "12 40 100 55 0xFFF7E6 0xE6E6FF 0x161C24",
-    "17 28 95 54 0xFFE8C8 0xD8DCF4 0x141A20",
-    "18.5 10 80 46 0xFF8A48 0xA07A9A 0x1C1412",
+    "6.5 12 75 48 0xFFA868 0x9A86B0 0x7A6A6E",
+    "8 30 95 54 0xFFE8C8 0xD8DCF4 0x8FA4B8",
+    "12 40 100 55 0xFFF7E6 0xE6E6FF 0x9DB2C8",
+    "17 28 95 54 0xFFE8C8 0xD8DCF4 0x96A0AE",
+    "18.5 10 80 46 0xFF8A48 0xA07A9A 0x6E5A52",
     "19.5 6 45 42 0xB070A0 0x5A4A88 0x140E1C",
     "20.5 30 28 40 0x8CA8E0 0x4A5A9A 0x0A1428",
   ]

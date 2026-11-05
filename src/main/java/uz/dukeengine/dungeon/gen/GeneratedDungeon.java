@@ -102,6 +102,11 @@ public record GeneratedDungeon(
                     line.footprint(), line.picture(), line.boxLength(), line.boxDepth());
         }
 
+        /** The same, standing in the way as a box {@code length} cells along it and {@code depth} across. */
+        public Piece withBox(float length, float depth) {
+            return new Piece(model, x, y, facing, scale, tint, 0f, picture, length, depth);
+        }
+
         /** As a map file writes it: the picture, the box and the tint only where they say something. */
         public String written() {
             return new SceneryLine(model, picture, x, y, facing, scale, footprint, boxLength, boxDepth, tint).written();

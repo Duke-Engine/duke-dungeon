@@ -84,6 +84,30 @@ class FortRenderCheckTest {
         shoot("city_street", 49.5f, 240.5f, NORTH, 0);
     }
 
+    /** Deep in the dark wood, the thickest scenery of the world: the view the tree budget is measured on. */
+    @Test
+    void aForestWalk() throws Exception {
+        shoot("forest_walk", 72.5f, 72.5f, NORTH, 0);
+    }
+
+    /** The meadow's grove on the road north of the city, seen from the old graves' side. */
+    @Test
+    void aMeadowGrove() throws Exception {
+        shoot("meadow_grove", 40.5f, 165.5f, EAST, 0);
+    }
+
+    /** The village of Olmazor from its road: houses, house fronts, fence, the watchtower beyond. */
+    @Test
+    void aVillage() throws Exception {
+        shoot("village", 78.5f, 196.5f, 224, 0);
+    }
+
+    /** The cave's rocks and the watchtower from the opening field. */
+    @Test
+    void theCaveRocks() throws Exception {
+        shoot("cave_rocks", 68.5f, 199.5f, 224, 0);
+    }
+
     /** The hero in the open, far from every wall and tower: his own colours in the sun, to read them beside the shade. */
     @Test
     void theHeroInTheOpen() throws Exception {
@@ -132,11 +156,15 @@ class FortRenderCheckTest {
         if (System.getenv("RENDER_FLAT") != null) {
             visuals.unit("Knight", unit -> unit.keepsMaps(false)); // the old rule, for comparison
         }
+        if (System.getenv("RENDER_NOCAST") != null) { visuals.scenerySunCasts(null); }
+        if (System.getenv("RENDER_HEROCAST") != null) { visuals.unit("Knight", unit -> unit.castsShadow()); }
+        if (System.getenv("RENDER_NOINST") != null) { visuals.instancedScenery(null); }
+        if (System.getenv("RENDER_SIGHT") != null) { visuals.wideWorldEyes(Float.parseFloat(System.getenv("RENDER_SIGHT")), 0.92f, uz.dukeengine.dungeon.stage.StagePaint::isWide); }
         visuals.discoveredBy("Knight");
         var feet = Main.feet(SETTINGS);
         var duke = Duke3D.of(game, visuals).window(1280, 720).hotkeys(Main.controls(SETTINGS, feet)).controls(feet)
                 .smoothMotion(true);
-        RenderRig.canvas(duke, session, SETTINGS);
+        RenderRig.canvas(duke, session, SETTINGS, System.getenv("RENDER_NOHOUR") == null);
         duke.startMatch(game);
         var app = duke.application();
         var settings = new AppSettings(true);
@@ -150,7 +178,7 @@ class FortRenderCheckTest {
         for (int waited = 0; game.getLogic() == null && waited < 180; waited++) {
             Thread.sleep(1000);
         }
-        Thread.sleep(8000);
+        Thread.sleep(15000);
         // To where the shot says, on the simulation thread; then a step the way he faces, so the
         // camera comes round behind him.
         turnCamera(app, turn);
@@ -167,13 +195,16 @@ class FortRenderCheckTest {
         Main.walk(game, turn);
         Thread.sleep(400);
         Main.walk(game, uz.dukeengine.action.ActionOrders.NONE);
-        Thread.sleep(6000 + settleMillis);
+        Thread.sleep(14000 + settleMillis);
         game.runOnSimThread(() -> logic.setGamePaused(true));
         Thread.sleep(1500);
         app.enqueue(() -> app.getRenderer().getStatistics().setEnabled(true));
         Thread.sleep(1000);
         app.enqueue(shots::takeScreenshot);
-        Thread.sleep(500);
+        // However slow the frame: the old forest took seconds over one.
+        for (int waited = 0; !Files.exists(picture) && waited < 60; waited++) {
+            Thread.sleep(500);
+        }
         var report = new StringBuilder();
         app.enqueue(() -> {
             var stats = app.getRenderer().getStatistics();

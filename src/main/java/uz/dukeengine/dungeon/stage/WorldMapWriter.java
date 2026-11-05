@@ -1423,7 +1423,7 @@ public final class WorldMapWriter {
         private static final Style ROYAL = new Style(3, 0, new String[] {"fort/fort_wall"}, "fort/fort_gatehouse",
                 null, "fort/fort_wall_gable", 2f, "fort/fort_tower_cone", "fort/fort_turret", false);
         private static final Style QUEEN = new Style(3, 0, new String[] {"fort/fort_wall"}, "fort/fort_gatehouse",
-                null, "fort/fort_wall_gable", 2f, "fort/fort_tower_stepped", "fort/fort_turret", true);
+                null, "fort/fort_wall_gable", 2f, "fort/fort_tower_cone", "fort/fort_turret", true);
         private static final Style DESERT = new Style(4, 0, new String[] {"desert/desert_block_long",
                 "desert/desert_block_long_b"}, null, null, null, 0, "desert/desert_pillar_tall",
                 "desert/desert_pillar_tall", false);
@@ -1431,7 +1431,7 @@ public final class WorldMapWriter {
                 "rampart/rampart_wall_arcade"}, "rampart/rampart_wall_gate", null, null, 3,
                 "rampart/rampart_tower_tall", "rampart/rampart_tower", false);
         private static final Style RUIN = new Style(3, 0, new String[] {"fort/fort_wall_ruined", "",
-                "fort/fort_wall_ruined", "fort/fort_wall_ruined"}, null, null, null, 0, "fort/fort_tower_open", null,
+                "fort/fort_wall_ruined", "fort/fort_wall_ruined"}, null, null, null, 0, "fort/fort_turret", null,
                 false);
 
         /**
@@ -1454,19 +1454,10 @@ public final class WorldMapWriter {
             pieces.addAll(parts("fort/fort_keep", city.x() - 5.5f, city.y() - 1.5f, 0, false));
             // The palace's tower is the kit's round tower: the old white one, its blue bands and roof, stands badly beside stone.
             pieces.add(piece("town/town_tower_round", city.x() - 9f, city.y() - 1.5f, 0, false));
-            // A street of house fronts west and east of the plaza, broken where a road runs, a house at its end.
-            String[] fronts = {"fort/fort_house_front", "fort/fort_house_front_narrow", "fort/fort_house_front"};
+            // A street of town houses west and east of the plaza, broken where a road runs: real houses, three cells a
+            // front and more deep, so they fill the ground behind the line that the old fronts and the house behind them stood on.
             for (int side : new int[] {-1, 1}) {
-                for (int i = 0; i < 6; i++) {
-                    int x = side < 0 ? city.x() - 10 + i : city.x() + 4 + i;
-                    int y = city.y() + 6;
-                    if (!roadNear(x, y, 1)) {
-                        pieces.add(piece(fronts[i % fronts.length], x, y, 0, false));
-                    }
-                }
-                if (!roadNear(city.x() + side * 8, city.y() + 9, 2)) {
-                    pieces.add(piece("town/town_house", city.x() + side * 8 + 0.5f, city.y() + 9.5f, 0, false));
-                }
+                street(pieces, side < 0 ? city.x() - 10 : city.x() + 4, city.y() + 6, 6, side < 0 ? 0 : 1);
             }
             var castle = SITES.get(CASTLE);
             ring(pieces, castle.x() - 6, castle.y() - 6, 12, QUEEN, Set.of());
@@ -1491,7 +1482,7 @@ public final class WorldMapWriter {
                     spot = besideTheRoad(roadMiddles.get(r)[0], roadMiddles.get(r)[1]);
                 }
                 if (spot != null) {
-                    pieces.add(piece("town/town_tower_slim", spot[0] + 0.5f, spot[1] + 0.5f, 0, false));
+                    pieces.add(piece("town/town_tower_round_low", spot[0] + 0.5f, spot[1] + 0.5f, 0, false));
                     towers.add(spot);
                 }
             }
@@ -1585,6 +1576,9 @@ public final class WorldMapWriter {
         /** One piece of a kit at (x, y) turned {@code facing}, standing in the way as its kit says; dark if asked. */
         private static Piece piece(String kitPiece, float x, float y, int facing, boolean dark) {
             var name = kitPiece.substring(kitPiece.indexOf('/') + 1);
+            if (name.equals("fort_wall_ruined")) {
+                return worldPiece(name, x, y, facing, 0f).withBox(3f, 1.1f);
+            }
             if (FORT_KIT.contains(name)) {
                 return Piece.of(KITS + "fort_kit/" + (dark ? "dark/" : "") + name + ".glb " + x + " " + y + " " + facing
                         + " " + KIT_SCALE + " " + FOOT.get(kitPiece));
@@ -1767,23 +1761,23 @@ public final class WorldMapWriter {
             pieces.add(new Piece(KITS + "room/room_barrel.gltf", cx - 1.7f, cy - 1.8f, 0, 1f, 0xFFFFFF, 0f));
             pieces.add(new Piece(KITS + "room/room_shelf.gltf", cx + 2.2f, cy + 0.6f, 270, 1f, 0xFFFFFF, 0f));
             // The field: banner posts by the line.
-            pieces.add(new Piece(KITS + "town/town_banner_post.gltf", fx - 5.5f, fy + 8.5f, 0, 1f, 0xFFFFFF, 0f));
-            pieces.add(new Piece(KITS + "town/town_banner_post.gltf", fx + 6.5f, fy + 8.5f, 0, 1f, 0xFFFFFF, 0f));
+            pieces.add(worldPiece("banner_post", fx - 5.5f, fy + 8.5f, 0, 0f));
+            pieces.add(worldPiece("banner_post", fx + 6.5f, fy + 8.5f, 0, 0f));
             // The old graves: a dead tree, candles, stumps. The graves themselves are the graveyard's own, which can be
             // struck down (data/story/graveyards.duke): mounds drawn here as well stood about as a picture of graves.
             float gx = graves[0] + 0.5f;
             float gy = graves[1] + 0.5f;
-            pieces.add(yardPiece("nature/trees/dead_tree_bent", gx + 5.2f, gy - 3.6f, 200, 0f));
+            pieces.add(worldPiece("dead_b", gx + 5.2f, gy - 3.6f, 200, 0f));
             pieces.add(yardPiece("props/village/candles", gx - 4.6f, gy + 0.4f, 0, 0f));
-            pieces.add(Piece.of(KITS + "room/room_column_stump.gltf " + (gx + 4.4f) + " " + (gy + 3.4f) + " 0 1 0"));
-            pieces.add(Piece.of(KITS + "room/room_column_stump.gltf " + (gx - 4.4f) + " " + (gy - 3.6f) + " 40 1 0"));
+            pieces.add(worldPiece("column_stump", gx + 4.4f, gy + 3.4f, 0, 0f));
+            pieces.add(worldPiece("column_stump", gx - 4.4f, gy - 3.6f, 40, 0f));
             // The cave he sees from the old graves: a mouth in the rocks north of them (open-world Act 1).
             int[] mouth = roomNear(graves[0] + 3, graves[1] - 16, 3, true);
             caveMouth(pieces, zones, CAVE_SEEN, mouth);
             // The Black Knight's camp, far in the north: dark towers round a yard, its gate to the south.
             int[] camp = roomNear((int) (0.40 * SIZE), (int) (0.10 * SIZE), 6, true);
             for (int[] at : new int[][] {{-5, -5}, {5, -5}, {-5, 3}, {5, 3}}) {
-                pieces.add(piece("fort/fort_tower_stepped", camp[0] + at[0], camp[1] + at[1], 0, true));
+                pieces.add(piece("fort/fort_tower_cone", camp[0] + at[0], camp[1] + at[1], 0, true));
             }
             pieces.addAll(parts("fort/fort_keep", camp[0], camp[1] - 5, 0, true));
             zones.add(new Zone(CAMP, camp[0], camp[1], 0, 0, 3));
@@ -1813,9 +1807,9 @@ public final class WorldMapWriter {
         private void caveMouth(List<Piece> pieces, List<Zone> zones, String name, int[] at) {
             float x = at[0] + 0.5f;
             float y = at[1] + 0.5f;
-            pieces.add(new Piece(ROCKS + "rock_tall_a.glb", x - 1.6f, y - 0.4f, 20, 9f, 0x6A645C, 0.9f));
-            pieces.add(new Piece(ROCKS + "rock_tall_c.glb", x + 1.6f, y - 0.4f, 200, 7f, 0x6A645C, 0.6f));
-            pieces.add(new Piece(ROCKS + "rock_tall_g.glb", x, y - 1.7f, 90, 8f, 0x5A544C, 0.7f));
+            pieces.add(worldPiece("crag_a", x - 1.6f, y - 0.4f, 20, 0.9f));
+            pieces.add(worldPiece("crag_c", x + 1.6f, y - 0.4f, 200, 0.6f));
+            pieces.add(worldPiece("crag_b", x, y - 1.7f, 90, 0.7f));
             zones.add(new Zone(name, at[0], at[1], 0, 0, 1));
             keep(at[0], at[1], 4);
             quiet.add(at);
@@ -1854,18 +1848,23 @@ public final class WorldMapWriter {
         private List<Piece> village(String name, int x, int y, int number, Set<Long> taken, List<Prop> props,
                 List<StaticMap.Placed> npcs, List<Zone> zones) {
             var pieces = new ArrayList<Piece>();
-            pieces.add(piece("town/town_house", x - 3 + 0.5f, y - 3 + 0.5f, 0, false));
-            pieces.add(piece("town/town_house", x + 3 + 0.5f, y - 3 + 0.5f, 0, false));
-            String[] fronts = {"fort/fort_house_front", "fort/fort_house_front_narrow"};
+            String[] houses = {"house_a", "house_b", "house_c"};
+            pieces.addAll(house(houses[number % 3], x - 3 + 0.5f, y - 3 + 0.5f, 0, 6f, 4.5f));
+            pieces.addAll(house(houses[(number + 1) % 3], x + 3 + 0.5f, y - 3 + 0.5f, 0, 6f, 4.5f));
+            // A long house across the south of the green, its door to it, where no road is in the way; else what fits.
+            boolean clear = true;
             for (int i = 0; i < 4; i++) {
-                if (!roadNear(x - 2 + i, y + 3, 1)) {
-                    pieces.add(piece(fronts[(i + number) % 2], x - 2 + i, y + 3, 0, false));
-                }
+                clear &= !roadNear(x - 2 + i, y + 3, 1);
+            }
+            if (clear) {
+                pieces.addAll(house("house_long", x, y + 3 + 1.1f, 180, 6f, 3.3f));
+            } else {
+                street(pieces, x - 2, y + 3, 4, number);
             }
             for (int i = 0; i < 5; i++) {
                 float fx = x - 2.4f + i * 1.2f;
                 if (!roadNear((int) fx, y + 5, 1)) {
-                    pieces.add(new Piece("models/props/village/fence.glb", fx, y + 5.5f, 0, 1f, 0xFFFFFF, 0.2f));
+                    pieces.add(worldPiece("fence", fx, y + 5.5f, 0, 0.2f));
                 }
             }
             closeUnder(pieces, taken);
@@ -1886,6 +1885,46 @@ public final class WorldMapWriter {
             keep(x, y, 7);
             quiet.add(new int[] {x, y});
             return pieces;
+        }
+
+        /** A piece of the world kit, real size, in nobody's way past its {@code footprint}. */
+        private static Piece worldPiece(String piece, float x, float y, int facing, float footprint) {
+            return new Piece("models/world_kit/" + piece + ".glb", x, y, facing, KIT_SCALE, 0xFFFFFF, footprint);
+        }
+
+        /** A free-standing house centred on (x, y), its door on the +y side of facing 0, standing in the way as its walls do. */
+        private static List<Piece> house(String model, float x, float y, int facing, float metres, float deep) {
+            float length = Math.round(metres / 1.5f * 100) / 100f;
+            float depth = Math.round(deep / 1.5f * 100) / 100f;
+            return List.of(worldPiece(model, x, y, facing, 0f), box(x - length / 2, y, 0, 0f, length, depth));
+        }
+
+        /**
+         * A terrace of town houses along the line y from cell x0, {@code cells} long, doors to the north, each a run of
+         * cells no road comes near: three cells a house while they last, two for what is left. A row house's origin is its
+         * far corner of its front, for a facing of 180 turns it along -x with its door to -y.
+         */
+        private void street(List<Piece> out, int x0, int y, int cells, int variety) {
+            String[] threes = {"row_a", "row_b"};
+            float depth = 3.33f; // 5 m back from the line
+            int run = 0;
+            int built = variety;
+            for (int i = 0; i <= cells; i++) {
+                if (i < cells && !roadNear(x0 + i, y, 1)) {
+                    run++;
+                    continue;
+                }
+                int x = x0 + i - run;
+                while (run >= 2) {
+                    int wide = run >= 3 ? 3 : 2;
+                    out.add(worldPiece(wide == 3 ? threes[built % 2] : "row_c", x + wide, y, 180, 0f));
+                    out.add(box(x, y + depth / 2, 0, 0f, wide, depth));
+                    x += wide;
+                    run -= wide;
+                    built++;
+                }
+                run = 0;
+            }
         }
 
         /** A ruined temple at {@code at}: three rows of columns, some fallen, two broken walls, its old floor. */
@@ -1944,7 +1983,7 @@ public final class WorldMapWriter {
                 float scale = model.startsWith(KITS) ? 1f : 4f;
                 pieces.add(new Piece(path, tenth(wx), tenth(wy), rng.nextInt(360), scale, 0xFFFFFF, 0f));
             }
-            pieces.add(piece("town/town_tower_slim", at[0] - 4 + 0.5f, at[1] - 3 + 0.5f, 0, false));
+            pieces.add(piece("town/town_tower_round_low", at[0] - 4 + 0.5f, at[1] - 3 + 0.5f, 0, false));
             pieces.add(new Piece(KITS + "town/town_banner_post.gltf", at[0] + 4.5f, at[1] - 2.5f, 30, 0.8f, 0xC8B8B8,
                     0f));
             pieces.add(new Piece(KITS + "town/town_banner_post.gltf", at[0] - 2.5f, at[1] + 4.5f, 200, 0.8f, 0xC8B8B8,
@@ -2132,49 +2171,53 @@ public final class WorldMapWriter {
         private record Scatter(String model, int perTenThousand, float scale, float footprint) {
         }
 
+        /** A piece of the realistic world kit (models/world_kit), its size a share of real size; its trunk as the piece it replaced. */
+        private static Scatter kit(String piece, int perTenThousand, float size, float footprint) {
+            return new Scatter("world_kit/" + piece, perTenThousand, KIT_SCALE * size, footprint);
+        }
+
         /**
-         * The dark wood, thick: Inuciian's dark pines and dead crooked trees among the KayKit pines and broadleaves,
-         * Quaternius' pines, a birch, now and then a great MegaKit tree; mossy stumps and rocks, dark and berried
-         * bushes between them, toadstools. What grows under them is the ground's cover (GroundCover). A model with a
-         * folder in its name is named under models/ by its kind (Inuciian's at scale 1); a bare name is a KayKit forest
-         * tile. Footprints are the trunks, measured, at the scale given.
+         * The dark wood, thick: spruces and pines with oaks, a birch and dead trees among them, mossy stumps and rocks, bushes
+         * and ferns between them, each in the place and with the trunk its toy-sized forerunner had (art/models/world_models.py,
+         * Act I's rework: the same draws of the seed, so nothing moves). What grows under them is the ground's cover
+         * (GroundCover). A model with a folder in its name is named under models/; a bare name is a KayKit forest tile.
          */
         private static final Scatter[] FOREST_TREES = {
-                new Scatter("nature/trees/pine_dark", 1300, 1f, 0.09f), new Scatter("pine_tall", 700, 1.67f, 0.05f),
-                new Scatter("pine", 900, 1.67f, 0.05f), new Scatter("nature/trees/pine_tree_1", 150, 6f, 0.14f),
-                new Scatter("nature/trees/pine_tree_2", 150, 6f, 0.14f),
-                new Scatter("nature/trees/pine_tree_3", 100, 6f, 0.14f),
-                new Scatter("tree", 400, 3.1f, TRUNK), new Scatter("tree_round", 300, 3.1f, TRUNK),
-                new Scatter("nature/trees/dead_tree", 200, 1f, 0.25f),
-                new Scatter("nature/trees/dead_tree_bent", 150, 1f, 0.22f),
-                new Scatter("tree_twisted", 250, 3.1f, 0.17f),
-                new Scatter("nature/trees/dead_tree_tall", 120, 1f, 0.1f),
-                new Scatter("nature/trees/birch_tree_2", 120, 6f, 0.07f),
-                new Scatter("nature/trees/common_tree_5", 25, 6f, 0.13f),
-                new Scatter("nature/trees/common_tree_1", 15, 6f, 0.13f),
-                new Scatter("nature/bushes/bush_large_dark", 300, 1f, 0f),
-                new Scatter("nature/bushes/bush_bare", 200, 1f, 0f),
-                new Scatter("nature/bushes/bush_berries_1", 120, 6f, 0f),
-                new Scatter("nature/grass/grass_tall_dark", 150, 1f, 0f),
-                new Scatter("nature/mushrooms/mushroom_red", 60, 1f, 0f),
-                new Scatter("nature/mushrooms/mushroom_brown", 60, 1f, 0f),
-                new Scatter("nature/stumps/tree_stump_moss", 80, 6f, 0.32f),
-                new Scatter("nature/rocks/rock_moss_4", 80, 8f, 0.3f),
-                new Scatter("nature/stumps/stump", 40, 1f, 0.1f), new Scatter("nature/rocks/rock", 50, 1f, 0.18f)};
-        /** The meadow's groves: KayKit's broadleaves with birches and MegaKit's common trees among them. */
+                kit("spruce_a", 1300, 1f, 0.09f), kit("pine_a", 700, 1f, 0.05f),
+                kit("spruce_b", 900, 1f, 0.05f), kit("spruce_c", 150, 1f, 0.14f),
+                kit("pine_b", 150, 1f, 0.14f),
+                kit("spruce_c", 100, 0.8f, 0.14f),
+                kit("oak_a", 400, 1f, TRUNK), kit("oak_b", 300, 1f, TRUNK),
+                kit("dead_a", 200, 1f, 0.25f),
+                kit("dead_b", 150, 1f, 0.22f),
+                kit("oak_b", 250, 0.85f, 0.17f),
+                kit("dead_a", 120, 1.15f, 0.1f),
+                kit("birch_a", 120, 1f, 0.07f),
+                kit("oak_a", 25, 1.1f, 0.13f),
+                kit("oak_b", 15, 1.1f, 0.13f),
+                kit("bush_b", 300, 1f, 0f),
+                kit("bush_bare", 200, 1f, 0f),
+                kit("bush_a", 120, 1f, 0f),
+                kit("fern", 150, 1.2f, 0f),
+                kit("fern", 60, 0.9f, 0f),
+                kit("fern", 60, 1.4f, 0f),
+                kit("stump_moss", 80, 1f, 0.32f),
+                kit("rock_moss", 80, 0.55f, 0.3f),
+                kit("stump_a", 40, 0.6f, 0.1f), kit("rock_c", 50, 0.6f, 0.18f)};
+        /** The meadow's groves: oaks with birches among them, bushes under them. */
         private static final Scatter[] GROVE = {
-                new Scatter("tree", 1200, 3.1f, TRUNK), new Scatter("tree_round", 1200, 3.1f, TRUNK),
-                new Scatter("nature/trees/birch_tree_1", 250, 6f, 0.07f),
-                new Scatter("nature/trees/birch_tree_3", 200, 6f, 0.07f),
-                new Scatter("nature/trees/common_tree_1", 50, 6f, 0.13f),
-                new Scatter("nature/trees/common_tree_2", 50, 6f, 0.13f),
-                new Scatter("bush_small", 300, 3f, 0f), new Scatter("nature/bushes/bush_1", 150, 6f, 0f)};
+                kit("oak_a", 1200, 1f, TRUNK), kit("oak_b", 1200, 1f, TRUNK),
+                kit("birch_a", 250, 1f, 0.07f),
+                kit("birch_b", 200, 1f, 0.07f),
+                kit("oak_a", 50, 0.8f, 0.13f),
+                kit("oak_b", 50, 0.8f, 0.13f),
+                kit("bush_a", 300, 0.9f, 0f), kit("bush_b", 150, 1f, 0f)};
         /** The open meadow: its grass is the ground's cover; bushes, and a lone tree. */
         private static final Scatter[] MEADOW = {
-                new Scatter("bush_small", 80, 3f, 0f), new Scatter("nature/bushes/bush_1", 60, 6f, 0f),
-                new Scatter("nature/bushes/bush_2", 60, 6f, 0f),
-                new Scatter("nature/bushes/bush_berries_1", 20, 6f, 0f),
-                new Scatter("nature/trees/birch_tree_1", 30, 6f, 0.07f), new Scatter("tree_round", 40, 3.1f, TRUNK)};
+                kit("bush_a", 80, 0.8f, 0f), kit("bush_b", 60, 1f, 0f),
+                kit("bush_a", 60, 1f, 0f),
+                kit("bush_b", 20, 0.8f, 0f),
+                kit("birch_a", 30, 1f, 0.07f), kit("oak_a", 40, 1f, TRUNK)};
         private static final Scatter[] STEPPE = {
                 new Scatter("bush_small", 120, 3f, 0f), new Scatter("tree_stunted", 30, 3.1f, TRUNK),
                 new Scatter("nature/trees/common_tree_dead_2", 25, 6f, 0.09f), new Scatter("pebble", 100, 3f, 0f),
@@ -2196,12 +2239,12 @@ public final class WorldMapWriter {
                 new Scatter("nature/rocks/rock_tall_g", 15, 6f, 0.44f)};
         /** The highlands: rock, MegaKit's and Quaternius' pines, and Kenney's standing stones. */
         private static final Scatter[] HIGHLANDS = {
-                new Scatter("rock_cluster", 200, 3f, 0.42f), new Scatter("stone", 150, 3f, 0.16f),
-                new Scatter("nature/rocks/rock_medium_1", 150, 8f, 0.44f),
-                new Scatter("nature/rocks/rock_4", 150, 8f, 0.3f),
-                new Scatter("nature/rocks/stone_tall_b", 25, 6f, 0.67f), new Scatter("pebble", 200, 3f, 0f),
-                new Scatter("pine", 250, 1.67f, 0.05f), new Scatter("nature/trees/pine_tree_2", 200, 6f, 0.14f),
-                new Scatter("nature/trees/pine_5", 100, 6f, 0.09f)};
+                kit("rock_b", 200, 0.8f, 0.42f), kit("rock_c", 150, 0.5f, 0.16f),
+                kit("rock_a", 150, 0.75f, 0.44f),
+                kit("rock_c", 150, 1f, 0.3f),
+                kit("crag_b", 25, 0.6f, 0.67f), kit("rock_c", 200, 0.3f, 0f),
+                kit("pine_b", 250, 1f, 0.05f), kit("pine_a", 200, 1f, 0.14f),
+                kit("spruce_c", 100, 1f, 0.09f)};
         /** The snow: Quaternius' snowy pines and birch, snowy rocks, bushes and stumps. */
         private static final Scatter[] SNOW = {
                 new Scatter("nature/trees/pine_tree_snow_1", 200, 6f, 0.14f),

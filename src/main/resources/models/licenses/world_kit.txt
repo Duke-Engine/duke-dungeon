@@ -1,0 +1,4 @@
+The world kit of Duke Dungeon's open world (models/world_kit): trees, bushes, undergrowth, rocks, stumps, a fence, town houses,
+a banner post and a ruined wall. Made for this game by Blender Python and numpy (workspace models/world_kit), every picture
+made by script from noise and hand-written rules; nothing downloaded, no reference mesh shipped. Own work: nothing needs
+attribution.

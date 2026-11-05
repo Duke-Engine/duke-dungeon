@@ -25,8 +25,8 @@ class WorldCastlesTest {
         // The city's and the royal and queen's castles are the realistic fort kit (models/buildings/fort_kit, .glb); the
         // others are still the old kits' .gltf pieces.
         for (var kit : List.of("town_wall_long", "town_gatehouse", "fort_kit/fort_wall.glb",
-                "fort_keep", "desert/desert_block_long", "rampart/rampart_wall", "fort/fort_wall_ruined",
-                "town/town_tower_slim")) {
+                "fort_keep", "desert/desert_block_long", "rampart/rampart_wall", "world_kit/fort_wall_ruined",
+                "fort_kit/town_tower_round_low")) {
             assertTrue(scenery.stream().anyMatch(p -> p.model().contains(kit)), "no " + kit + " in the world");
         }
         // Dark: the kit's own basalt files (fort_kit/dark), or the old pieces drawn with their _dark picture.
