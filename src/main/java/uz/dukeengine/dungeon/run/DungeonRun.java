@@ -1549,6 +1549,18 @@ public final class DungeonRun {
     }
 
     /** Whether a living hero stands within {@link #COMEBACK_CELLS} cells of a spot. */
+    private boolean heroIn(uz.dukeengine.core.GameLogic logic, uz.dukeengine.dungeon.map.StaticMap.Zone zone) {
+        float cell = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
+        for (var seat : seats) {
+            var hero = seat.heroId == null ? null : logic.findObject(seat.heroId);
+            if (hero != null && !hero.isEffectivelyDead()
+                    && zone.holds(hero.getPosition().x(), hero.getPosition().y(), cell)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private boolean heroWithin(uz.dukeengine.core.GameLogic logic, float x, float y) {
         float reach = COMEBACK_CELLS * uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
         for (var seat : seats) {
@@ -2776,7 +2788,8 @@ public final class DungeonRun {
         float cell = uz.dukeengine.core.pathfind.PathGrid.DEFAULT_CELL_SIZE;
         for (var each : quests.active()) {
             var place = zoneNamed(placeOf(settings.story(), each.quest(), each.step()));
-            if (place != null) {
+            // A place he stands in needs no light to be found: over the first wave's field it rose round him and hid him.
+            if (place != null && !heroIn(logic, place)) {
                 logic.effect(questBeam, new uz.dukeengine.core.math.Coord3D(place.middleX(cell), place.middleY(cell),
                         0f), 0f);
             }

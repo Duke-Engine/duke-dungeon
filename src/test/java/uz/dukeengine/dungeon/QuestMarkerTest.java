@@ -95,6 +95,28 @@ class QuestMarkerTest {
         assertTrue(lit, "no pillar on the cellar in a whole BeamFrames");
     }
 
+    /** Standing in the place, he is shown no pillar over it: it would rise round him and hide him from his own camera. */
+    @Test
+    void noPillarStandsOverThePlaceHeIsIn() {
+        var session = Dungeon.newStageSession(Stages.load("world", SETTINGS), SETTINGS);
+        var game = session.game();
+        game.runHeadless(1);
+        session.run().getQuests().start("Cellar");
+        var cellar = Stages.load("world", SETTINGS).story().zones().stream()
+                .filter(z -> z.name().equals("Yerto'la")).findFirst().orElseThrow();
+        var hero = game.getLogic().findObject(session.run().heroId());
+        hero.setPosition(new uz.dukeengine.core.math.Coord3D(cellar.middleX(CELL), cellar.middleY(CELL),
+                hero.getPosition().z()));
+        game.watch();
+        for (int frame = 0; frame <= 2 * SETTINGS.items().rules().beamFrames(); frame++) {
+            game.runHeadless(1);
+            for (var event : game.getSnapshot().events()) {
+                assertFalse(event instanceof EffectPlayed played && played.name().equals(SETTINGS.run().questBeam()),
+                        "a pillar over the cellar he stands in");
+            }
+        }
+    }
+
     /** A quest's place is never taken for the key: its pillar and its colour are its own. */
     @Test
     void aQuestsPlaceLooksUnlikeTheKey() {

@@ -28,8 +28,9 @@ Laser
   Name = SkyPillarBeam
   Material = MatDefs/game/Beam.j3md
   NumBeams = 3
-  InnerBeamWidth = 6
-  OuterBeamWidth = 22
+  InnerBeamWidth = 4
+  ; Thinner than it was (22): over the field from above it filled the picture.
+  OuterBeamWidth = 13
   InnerColour = 0xFFFFFFFF
   OuterColour = 0x90FFD27A
   Texture = kit/effects/particles/trace_07.png
