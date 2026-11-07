@@ -42,8 +42,8 @@ Hero
     MoveUpdate
       ; Slower than 29, and this is the price of the rest of the page. He cannot
       ; leave a fight he has walked into, so walking in has to be a decision.
-      ; Before his agility: 19.5 and ten points at 0.15 are 21.
-      Speed = 19.5
+      ; Before his agility: 23 and ten points at 0.15 are 24.5 (2026-11-07: up from 19.5, still the slowest hero).
+      Speed = 23
       ; 0 = turn on the spot, as the archer does. See the note in his block: a
       ; positive rate is SAGE's vehicle behaviour and makes a man drive in arcs.
       TurnRate = 0
@@ -149,14 +149,14 @@ Hero
   ; His file faces glTF's +Z, as the KayKit people do.
   Facing = 90
 
-  ; His clips are in his file, so no Animations set. Run, not Walk: speed 21 on a man 12 tall
-  ; is 3.1 m/s for one 1.77 m high, a jog -- a walk's feet would skate at that pace.
+  ; His clips are in his file, so no Animations set. Run, not Walk: speed 24.5 on a man 12 tall
+  ; is 3.6 m/s for one 1.77 m high, a jog -- a walk's feet would skate at that pace.
   Idle = Idle
   Walk = Run
   ; How far one play of it carries him, in units. The client plays it at the rate that
   ; covers this at his speed, so his feet stay where they land however fast he is made to
   ; go. Measured off the clip by HeroClipFitTest: re-export, re-measure. The jog plants at
-  ; 4.8 m/s, so at his 3.1 it plays at about two thirds, and full pace in a sprint.
+  ; 4.8 m/s, so at his 3.6 it plays at three quarters of its own pace.
   WalkStride = 31.8
   ; No Attack: a swing is the busy clip of a Combos step, not the weapon's wind-up.
   ; His flinch: played only as he staggers at a heavy blow, for exactly its frames (his STAGGER,
