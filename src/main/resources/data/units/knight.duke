@@ -341,6 +341,25 @@ Combos
   AimArc = 120
   AimRange = 22
   HitArc = 140
+  ; Out of a fight his sword is on his back and his shield slung (the client shows SwordBack and ShieldBack while
+  ; he holds SHEATHED, and plays Idle_Calm and Run_Calm). A living enemy within ThreatRange of him, or a press,
+  ; has him Draw: his hands close on hilt and rim at DrawGrip, and a press waits until it is over. CalmFrames
+  ; (5 s) with neither and no swing, and he puts them away: they leave his hands at SheatheLetGo. Both clips are
+  ; 0.9 s, the grip at 0.3 s from Draw's start and from Sheathe's end (WorkSpaces models/hero_lange/scripts/sheath.py).
+  Sheath = Sheath
+    DrawClip = Draw
+    DrawFrames = 27
+    DrawGrip = 9
+    SheatheClip = Sheathe
+    SheatheFrames = 27
+    SheatheLetGo = 18
+    ThreatRange = 70
+    CalmFrames = 150
+    CalmIdle = Idle_Calm
+    CalmWalk = Run_Calm
+    InHands = [Sword, Shield]
+    OnBack = [SwordBack, ShieldBack]
+  End
   Steps = [
     Step
       Name = L1

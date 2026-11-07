@@ -54,6 +54,7 @@ class ComboTest {
             game.runHeadless(1);
             knight = find("Knight");
             knight.setOrientation(0f);
+            knight.clearCondition(Combo.SHEATHED); // his sword in hand: what is tried here is the swing, not the draw
             combo = knight.findModule(Combo.class);
         }
 
@@ -84,7 +85,56 @@ class ComboTest {
         var session = Dungeon.newSession(7L, SHIPPED);
         session.run().startWith(session.game(), "Knight");
         session.game().runHeadless(5);
+        session.game().getLogic().getObjects().stream().filter(thing -> thing.getTemplate().name().equals("Knight"))
+                .forEach(knight -> knight.clearCondition(Combo.SHEATHED)); // sword in hand, as Field has him
         return session;
+    }
+
+    @Test
+    void outOfAFightHisSwordIsOnHisBackAndAPressDrawsItBeforeTheSwing() {
+        var sheath = KNIGHT.sheath();
+        var arena = Dungeon.world(ROOM, SHIPPED);
+        var game = arena.game();
+        game.spawn("Knight", arena.hero(), 100f, 60f);
+        game.runHeadless(1);
+        var knight = game.getLogic().getObjects().stream()
+                .filter(thing -> thing.getTemplate().name().equals("Knight")).findFirst().orElseThrow();
+        var combo = knight.findModule(Combo.class);
+        assertTrue(knight.hasCondition(Combo.SHEATHED), "he sets out with it on his back");
+
+        combo.press(false);
+        game.runHeadless(1);
+        assertEquals(sheath.drawClip(), knight.getBusyClip(), "the press draws first");
+        assertNull(combo.step());
+        game.runHeadless(sheath.drawGrip() - 1);
+        assertTrue(knight.hasCondition(Combo.SHEATHED), "not his until his hand closes on the hilt");
+        game.runHeadless(1);
+        assertFalse(knight.hasCondition(Combo.SHEATHED), "in his hand from the grip");
+        game.runHeadless(sheath.drawFrames() - sheath.drawGrip());
+        assertEquals("L1", combo.step() == null ? null : combo.step().name(), "the press kept swings once it is out");
+
+        game.runHeadless(KNIGHT.step("L1").frames() + sheath.calmFrames());
+        assertEquals(sheath.sheatheClip(), knight.getBusyClip(), "calm for a while, he puts it away");
+        assertFalse(knight.hasCondition(Combo.SHEATHED));
+        game.runHeadless(sheath.sheatheLetGo());
+        assertTrue(knight.hasCondition(Combo.SHEATHED), "on his back from the let-go");
+    }
+
+    @Test
+    void anEnemyComingNearHasHimDrawWithoutAPress() {
+        var sheath = KNIGHT.sheath();
+        var arena = Dungeon.world(ROOM, SHIPPED);
+        var game = arena.game();
+        game.spawn("Knight", arena.hero(), 100f, 60f);
+        game.runHeadless(1);
+        var knight = game.getLogic().getObjects().stream()
+                .filter(thing -> thing.getTemplate().name().equals("Knight")).findFirst().orElseThrow();
+        assertTrue(knight.hasCondition(Combo.SHEATHED));
+        game.spawn("Skeleton", arena.dungeon(), 100f + sheath.threatRange() * 0.5f, 60f);
+        game.runHeadless(2);
+        assertEquals(sheath.drawClip(), knight.getBusyClip());
+        game.runHeadless(sheath.drawFrames());
+        assertFalse(knight.hasCondition(Combo.SHEATHED));
     }
 
     /**

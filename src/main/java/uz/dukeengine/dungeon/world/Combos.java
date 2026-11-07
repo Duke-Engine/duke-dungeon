@@ -18,9 +18,38 @@ import uz.dukeengine.core.data.Clip;
  * @param aimRange  how far from his surface that look reaches
  * @param hitArc    degrees, counted both sides together, round his facing in which a step's blow strikes
  * @param steps     every step, by name
+ * @param sheath    his weapons put away out of a fight and taken out for one, or null for a hero always armed
  */
 public record Combos(String hero, String light, String heavy, float aimArc, float aimRange, float hitArc,
-        List<Step> steps) {
+        List<Step> steps, Sheath sheath) {
+
+    /**
+     * His sword on his back and his shield slung while nothing threatens him, drawn as an enemy comes near or a button
+     * is pressed, put away again after a while with neither. The client shows the pieces on his back while he holds
+     * the word {@code SHEATHED}; it changes on the frame his hands close on them, or let them go.
+     *
+     * @param drawClip     the clip of taking them out, played over his walk
+     * @param drawFrames   how long it holds him, whole
+     * @param drawGrip     the frame his hands close on hilt and rim: from then on he is armed
+     * @param sheatheClip  the clip of putting them away
+     * @param sheatheFrames how long it holds him, whole
+     * @param sheatheLetGo the frame his hands let them go on his back: from then on he is not
+     * @param threatRange  how near a living enemy (from his surface) has him draw
+     * @param calmFrames   how long with no enemy that near and no swing he keeps them out
+     * @param calmIdle     the idle he stands at ease in, his hands empty
+     * @param calmWalk     the run he goes at ease in, paced as his own
+     * @param inHands      the pieces of his model held: hidden while they are on his back
+     * @param onBack       the pieces of his model on his back: shown only then
+     */
+    public record Sheath(@Clip String drawClip, int drawFrames, int drawGrip, @Clip String sheatheClip,
+            int sheatheFrames, int sheatheLetGo, float threatRange, int calmFrames, @Clip String calmIdle,
+            @Clip String calmWalk, List<String> inHands, List<String> onBack) {
+
+        public Sheath {
+            inHands = inHands == null ? List.of() : List.copyOf(inHands);
+            onBack = onBack == null ? List.of() : List.copyOf(onBack);
+        }
+    }
 
     /**
      * One swing.
@@ -52,7 +81,7 @@ public record Combos(String hero, String light, String heavy, float aimArc, floa
     }
 
     /** What a hero with no combinations has: no steps, so a press begins nothing. */
-    public static final Combos NONE = new Combos("", "", "", 0f, 0f, 0f, List.of());
+    public static final Combos NONE = new Combos("", "", "", 0f, 0f, 0f, List.of(), null);
 
     public Combos {
         hero = hero == null ? "" : hero;

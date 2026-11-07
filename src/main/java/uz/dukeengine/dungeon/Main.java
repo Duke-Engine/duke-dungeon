@@ -1319,6 +1319,14 @@ public final class Main {
                     unit.shadeKeeps(HERO_SHADE);
                 }
                 carry(unit, hero.held());
+                // Out of a fight his weapons are on his back and he goes at ease: see Combos.Sheath.
+                var sheath = settings.combosOf(hero.name()).sheath();
+                if (sheath != null) {
+                    var word = uz.dukeengine.dungeon.run.Combo.SHEATHED;
+                    unit.rolesWhile(word, sheath.calmIdle(), sheath.calmWalk())
+                            .pieces(java.util.Set.of(word), sheath.inHands(), sheath.onBack())
+                            .pieces(java.util.Set.of(), sheath.onBack(), sheath.inHands());
+                }
                 // The turning darkens him: a tint while he holds the medallion's CursedWord.
                 var medallion = settings.medallion();
                 unit.tint(java.util.Set.of(medallion.cursedWord()), medallion.cursedRed(), medallion.cursedGreen(),

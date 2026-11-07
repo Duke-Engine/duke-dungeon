@@ -57,6 +57,15 @@ public final class Combo extends UpdateModule implements Saveable {
     private int age;
     private Press kept = Press.NONE;
 
+    /** The word he holds while his weapons are on his back: the client shows them there, and plays him at ease. */
+    public static final String SHEATHED = "SHEATHED";
+
+    /** Frames into drawing or putting away, -1 for neither; how long he has been calm, armed; whether he has begun. */
+    private int drawing = -1;
+    private int sheathing = -1;
+    private int calm;
+    private boolean begun;
+
     public Combo(GameObject owner, Combos combos, String stunLook) {
         super(owner);
         this.combos = combos;
@@ -99,6 +108,9 @@ public final class Combo extends UpdateModule implements Saveable {
             cancel();
             return;
         }
+        if (combos.sheath() != null && !armed(combos.sheath())) {
+            return; // his weapons on his back, or on their way there or out: a press is kept for when they are out
+        }
         if (step == null) {
             if (kept != Press.NONE) {
                 start(combos.first(kept == Press.HEAVY));
@@ -128,6 +140,70 @@ public final class Combo extends UpdateModule implements Saveable {
                 start(combos.first(kept == Press.HEAVY));
             }
         }
+    }
+
+    /**
+     * His weapons drawn as a threat comes or a button is pressed, put away after {@code sheath}'s calm: whether they are
+     * out in his hands this frame, so a swing may begin. Drawing and putting away are played over his walk; a blow or a
+     * roll that cuts either off leaves him where its hands were at once (drawn, or put away).
+     */
+    private boolean armed(Combos.Sheath sheath) {
+        var owner = getOwner();
+        boolean threatened = !enemies(sheath.threatRange(), 360f).isEmpty();
+        if (!begun) {
+            begun = true;
+            if (!threatened) {
+                owner.setCondition(SHEATHED); // he sets out with them on his back
+            }
+        }
+        if (drawing >= 0) {
+            drawing++;
+            if (!sheath.drawClip().equals(owner.getBusyClip())) {
+                drawing = sheath.drawFrames(); // cut off: they are out
+            }
+            if (drawing >= sheath.drawGrip()) {
+                owner.clearCondition(SHEATHED);
+            }
+            if (drawing < sheath.drawFrames()) {
+                return false;
+            }
+            drawing = -1;
+            calm = 0;
+        }
+        if (sheathing >= 0) {
+            sheathing++;
+            boolean cut = !sheath.sheatheClip().equals(owner.getBusyClip());
+            if (sheathing < sheath.sheatheLetGo() && (cut || threatened || kept != Press.NONE)) {
+                if (!cut) {
+                    owner.busy(null, 0); // still in his hands: he keeps them out
+                }
+                sheathing = -1;
+                calm = 0;
+                return true;
+            }
+            if (sheathing >= sheath.sheatheLetGo() || cut) {
+                owner.setCondition(SHEATHED);
+            }
+            if (sheathing < sheath.sheatheFrames() && !cut) {
+                return false;
+            }
+            sheathing = -1;
+        }
+        if (owner.hasCondition(SHEATHED)) {
+            if (threatened || kept != Press.NONE) {
+                drawing = 0;
+                owner.busy(sheath.drawClip(), sheath.drawFrames(), true);
+            }
+            return false;
+        }
+        calm = step == null && kept == Press.NONE && !threatened ? calm + 1 : 0;
+        if (calm >= sheath.calmFrames()) {
+            calm = 0;
+            sheathing = 0;
+            owner.busy(sheath.sheatheClip(), sheath.sheatheFrames(), true);
+            return false;
+        }
+        return true;
     }
 
     /** Begin {@code next}: turned to the enemy soft aim finds, his errands and route walks given up, his clip on. */
@@ -220,14 +296,16 @@ public final class Combo extends UpdateModule implements Saveable {
 
     /** One number for the world's checksum: which step, how far into it, which press is kept. */
     public long checksum() {
-        return step == null ? kept.ordinal()
-                : ((long) (combos.steps().indexOf(step) + 1) << 24) ^ ((long) age << 4) ^ kept.ordinal();
+        long sheath = ((long) (drawing + 1) << 40) ^ ((long) (sheathing + 1) << 48) ^ ((long) calm << 32);
+        return sheath ^ (step == null ? kept.ordinal()
+                : ((long) (combos.steps().indexOf(step) + 1) << 24) ^ ((long) age << 4) ^ kept.ordinal());
     }
 
-    /** The swing under way and the press kept for it. */
+    /** The swing under way and the press kept for it; how far he is through drawing or putting away. */
     @Override
     public void save(SaveOut out) {
         out.writeString(step == null ? null : step.name()).writeInt(age).writeEnum(kept);
+        out.writeInt(drawing).writeInt(sheathing).writeInt(calm).writeBoolean(begun);
     }
 
     @Override
@@ -236,5 +314,9 @@ public final class Combo extends UpdateModule implements Saveable {
         step = name == null ? null : combos.step(name);
         age = in.readInt();
         kept = in.readEnum(Press.class);
+        drawing = in.readInt();
+        sheathing = in.readInt();
+        calm = in.readInt();
+        begun = in.readBoolean();
     }
 }
