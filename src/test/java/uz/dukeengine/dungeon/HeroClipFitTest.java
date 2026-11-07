@@ -38,8 +38,6 @@ class HeroClipFitTest {
     private static final double STEP = 1 / 60.0;
     /** How far up its range a foot is still counted as on the ground: an ankle rises with the heel before the toe leaves. */
     private static final double DOWN = 0.1;
-    /** How far up its rise the left ankle of the game rig is still on the ground. */
-    private static final float RIG_DOWN = 0.4f;
     /** How far apart WalkStride and the clip may be: the measurement's own accuracy, checked on Quaternius' rigs. */
     private static final float STRIDE_SLACK = 0.12f;
     /** How far apart the blow and the swing's fastest frame may be: three frames of the game's thirty. */
@@ -55,7 +53,7 @@ class HeroClipFitTest {
     void everyHerosStrideIsTheOneHisWalkPlantsHisFeetAt() {
         for (var hero : heroes()) {
             var walk = sample(hero, hero.walk());
-            // On the game rig (the knight) the ankle rises with the heel, which the stance count misses: two stances of the foot's slide.
+            // On the game rig (the knight) the ankle rises with the heel, which the stance count misses: the pushing foot's speed.
             float measured = SETTINGS.combosOf(hero.name()).isEmpty()
                     ? (float) (stanceSpeed(walk) * walk.length() * hero.modelScale()) : rigStride(walk, hero.modelScale());
             assertTrue(Math.abs(hero.walkStride() - measured) <= STRIDE_SLACK * measured,
@@ -155,27 +153,26 @@ class HeroClipFitTest {
     }
 
     /**
-     * The ground a clip of the game rig covers in a play: twice how far the left foot slides while its ankle is within
-     * {@link #RIG_DOWN} of its rise -- one stance each foot, one after the other (the rig's in-place Walk, 0.88 m/s by its
-     * README, measures 0.87).
+     * The ground a clip of the game rig covers in a play: how fast the lower foot sweeps back while it pushes (faster
+     * than half its quickest; the rest is landing and flight), times the clip's length. Two sweeps of the foot were
+     * counted before, which holds for a walk but misses a run's flight and halved the knight's Run stride (2026-11-07).
+     * The rig's in-place Walk, 0.88 m/s by its README, measures 0.87.
      */
     private static float rigStride(Samples clip, float scale) {
-        int foot = clip.joints().indexOf("foot_l");
-        float low = Float.MAX_VALUE;
-        float high = -Float.MAX_VALUE;
-        for (var at : clip.at()) {
-            low = Math.min(low, at[foot].y);
-            high = Math.max(high, at[foot].y);
-        }
-        float near = Float.MAX_VALUE;
-        float far = -Float.MAX_VALUE;
-        for (var at : clip.at()) {
-            if (at[foot].y <= low + RIG_DOWN * (high - low)) {
-                near = Math.min(near, at[foot].z);
-                far = Math.max(far, at[foot].z);
+        int left = clip.joints().indexOf("foot_l");
+        int right = clip.joints().indexOf("foot_r");
+        var back = new ArrayList<Double>();
+        for (int i = 1; i < clip.at().size(); i++) {
+            var was = clip.at().get(i - 1);
+            var is = clip.at().get(i);
+            int foot = is[left].y <= is[right].y ? left : right;
+            if (foot == (was[left].y <= was[right].y ? left : right)) {
+                back.add((was[foot].z - is[foot].z) / STEP); // the rig faces +Z, so a planted foot goes to -Z
             }
         }
-        return 2f * (far - near) * scale;
+        double top = back.stream().mapToDouble(Double::doubleValue).max().orElseThrow();
+        var pushing = back.stream().filter(v -> v > top / 2).sorted().toList();
+        return (float) (pushing.get(pushing.size() / 2) * clip.length() * scale);
     }
 
     /** The median speed of a foot while it is down, both feet averaged: how fast the ground goes past him. */

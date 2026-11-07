@@ -155,8 +155,9 @@ Hero
   Walk = Run
   ; How far one play of it carries him, in units. The client plays it at the rate that
   ; covers this at his speed, so his feet stay where they land however fast he is made to
-  ; go. Measured off the clip by HeroClipFitTest: re-export, re-measure.
-  WalkStride = 14.4
+  ; go. Measured off the clip by HeroClipFitTest: re-export, re-measure. The jog plants at
+  ; 4.8 m/s, so at his 3.1 it plays at about two thirds, and full pace in a sprint.
+  WalkStride = 31.8
   ; No Attack: a swing is the busy clip of a Combos step, not the weapon's wind-up.
   ; His flinch: played only as he staggers at a heavy blow, for exactly its frames (his STAGGER,
   ; the last of his Skills), when he cannot strike -- so it never covers a swing he really makes.
