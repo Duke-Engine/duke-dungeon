@@ -28,7 +28,8 @@ import uz.dukeengine.rpg.Facing;
  * the step's window plays the step the data leads to -- else the chain is over and a press begins a new one.
  *
  * <p>Every swing turns him to the nearest enemy inside the soft-aim arc and range (none: it goes where he faces), holds
- * him at his clip (the engine keeps a steered walk waiting and goes on after), carries him forward by the step's lunge,
+ * his clip on him (a held direction walks on under it, the swing played from his upper body), carries him forward by
+ * the step's lunge where he is not walking,
  * and lands its blow on the step's frame on every enemy inside the hit arc, for the step's share of his weapon's
  * damage -- through {@link WeaponUpdate#blow}, so his bonuses, criticals and the sword's seal all count as ever. A
  * heavy step may stun whom it hits. A roll or a stun cuts the chain off; a blow that does not stagger him does not.
@@ -106,7 +107,7 @@ public final class Combo extends UpdateModule implements Saveable {
         }
         age++;
         if (owner.getBusyClip() == null) {
-            owner.busy(step.clip(), step.frames() - age); // a blow that did not stagger him broke it off: it goes on
+            owner.busy(step.clip(), step.frames() - age, true); // a blow that did not stagger him broke it off: it goes on
         }
         if (age <= step.hitFrame()) {
             lunge();
@@ -143,15 +144,15 @@ public final class Combo extends UpdateModule implements Saveable {
             Facing.turnToward(owner, near.getFirst());
         }
         Errand.giveUpAll(owner);
-        owner.busy(next.clip(), next.frames());
-        if (owner.getLocomotor() instanceof MoveUpdate legs && !legs.standsAtWork() && legs.isMoving()) {
-            legs.stop(); // a route walk ends here; a held direction does not (standsAtWork), and goes on after
+        owner.busy(next.clip(), next.frames(), true); // a held direction walks on under the swing
+        if (owner.getLocomotor() instanceof MoveUpdate legs && !legs.isSteered() && legs.isMoving()) {
+            legs.stop(); // a route walk ends here; a held direction does not
         }
     }
 
     /** Forward by the step's lunge, an equal part a frame up to the blow, as far as the ground and bodies allow. */
     private void lunge() {
-        if (step.lunge() <= 0f || !(getOwner().getLocomotor() instanceof MoveUpdate legs)) {
+        if (step.lunge() <= 0f || !(getOwner().getLocomotor() instanceof MoveUpdate legs) || legs.isSteered()) {
             return;
         }
         var here = getOwner().getPosition();

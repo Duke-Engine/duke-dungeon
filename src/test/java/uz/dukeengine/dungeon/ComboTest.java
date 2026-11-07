@@ -459,7 +459,7 @@ class ComboTest {
     }
 
     @Test
-    void aHeldDirectionWaitsInTheSwingAndGoesOnAfterIt() {
+    void aHeldDirectionWalksOnUnderTheSwing() {
         var session = knightSession();
         var game = session.game();
         game.runHeadless(5);
@@ -488,11 +488,16 @@ class ComboTest {
         game.runHeadless(HEARD);
         var held = knight.getPosition();
         game.runHeadless(6);
-        assertTrue(knight.getPosition().distance(held) < KNIGHT.step("L1").lunge() + 0.5f,
-                "he stands at his clip: only the lunge moves him");
+        var combo = knight.findModule(Combo.class);
+        assertNotNull(combo.step(), "swinging");
+        assertTrue(knight.getPosition().distance(held) > 3f, "the held key carries him on in the swing");
+        var view = game.getSnapshot().units().stream().filter(unit -> unit.id() == knight.getId().value())
+                .findFirst().orElseThrow();
+        assertTrue(view.moving(), "drawn walking");
+        assertEquals(combo.step().clip(), view.busyClip(), "and swinging over it");
         game.runHeadless(KNIGHT.step("L1").frames());
         game.runHeadless(20);
-        assertTrue(knight.getPosition().distance(held) > 8f, "and the held key carries him on after the swing");
+        assertTrue(knight.getPosition().distance(held) > 8f, "and after it");
     }
 
     @Test
